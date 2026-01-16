@@ -33,6 +33,7 @@ import MatchEditModal from './MatchEditModal';
 import InviteMemberModal from './InviteMemberModal';
 import UserDetailModal from './UserDetailModal';
 import UsersTable from './detail/UsersTable';
+import SeasonPickerModal from './detail/SeasonPickerModal';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import { createTeamreelDemoTransaction } from '../../utils/teamreelTransactions';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
@@ -126,6 +127,11 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
   const [detailUser, setDetailUser] = useState<any | null>(null);
   const [isUserDetailModalOpen, setIsUserDetailModalOpen] = useState(false);
+
+  // Season assignment picker (Users tab)
+  const [seasonPickerOpen, setSeasonPickerOpen] = useState(false);
+  const [seasonPickerMode, setSeasonPickerMode] = useState<'assign' | 'unassign'>('assign');
+  const [seasonPickerMember, setSeasonPickerMember] = useState<any | null>(null);
 
   // Tab Data State
   const [childProjects, setChildProjects] = useState<Project[]>([]);
@@ -2928,6 +2934,101 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                         const isSpecificSeasonFilter = Boolean(userSeasonFilterId) && !isUnassignedSeasonFilter;
 
                         const getPmPeriodId = (pm: any) => String(pm?.period_id ?? pm?.period ?? '').trim();
+
+                        const normalizeAccessRole = (raw: any): 'viewer' | 'editor' | 'admin' => {
+                          const role = String(raw || '').trim().toLowerCase();
+                          if (role === 'admin') return 'admin';
+                          if (role === 'editor') return 'editor';
+                          if (role === 'viewer') return 'viewer';
+
+                          // Legacy / sports roles occasionally leak into membership.role in demo data
+                          if (['coach', 'trainer'].includes(role)) return 'editor';
+                          if (['manager', 'owner'].includes(role)) return 'admin';
+                          // player/member/guest/etc -> safe default
+                          return 'viewer';
+                        };
+
+                        const getTeamAccessRoleForMember = (item: any, teamId: string): 'viewer' | 'editor' | 'admin' => {
+                          const pms = getMemberProjectMemberships(item);
+                          const base = pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(teamId) && !String(pm?.period_id ?? pm?.period ?? '').trim());
+                          const anyTeam = pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(teamId));
+                          return normalizeAccessRole(base?.role ?? anyTeam?.role ?? 'viewer');
+                        };
+
+                        const getSeasonMembershipIdForMember = (item: any, teamId: string, seasonId: string): string => {
+                          const pms = getMemberProjectMemberships(item);
+                          const pm = pms.find((pm: any) => {
+                            const pid = String(pm?.project_id ?? pm?.project?.id ?? '');
+                            const sid = String(pm?.period_id ?? pm?.period ?? '').trim();
+                            return pid === String(teamId) && sid === String(seasonId);
+                          });
+                          return String(pm?.id ?? '').trim();
+                        };
+
+                        const seasonsForEffectiveTeam = (() => {
+                          if (!effectiveTeamId) return (seasons as any[]).filter(isSeasonPeriod);
+                          return (seasons as any[])
+                            .filter(isSeasonPeriod)
+                            .filter((s: any) => String(s?.project_id ?? s?.project?.id ?? '') === String(effectiveTeamId));
+                        })();
+
+                        const handleSeasonPickerConfirm = async (seasonId: string) => {
+                          if (!effectiveTeamId) throw new Error('Team missing');
+                          const item = seasonPickerMember;
+                          if (!item) throw new Error('Member missing');
+
+                          const u = item?.user || item;
+                          const userId = Number(u?.id);
+                          if (!userId) throw new Error('User id missing');
+
+                          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+                          if (seasonPickerMode === 'assign') {
+                            const role = getTeamAccessRoleForMember(item, String(effectiveTeamId));
+                            const res = await fetch(
+                              `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(effectiveTeamId))}/members/`,
+                              {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'X-CSRFToken': getCsrfToken() || '',
+                                },
+                                credentials: 'include',
+                                body: JSON.stringify({
+                                  user_id: userId,
+                                  role,
+                                  period_id: String(seasonId),
+                                }),
+                              }
+                            );
+                            if (!res.ok) {
+                              const text = await res.text().catch(() => '');
+                              if (!/already|exists|duplicate/i.test(text)) {
+                                throw new Error(text || 'Failed to assign user to season');
+                              }
+                            }
+                          } else {
+                            const pmId = getSeasonMembershipIdForMember(item, String(effectiveTeamId), String(seasonId));
+                            if (!pmId) throw new Error('No season membership found for this user');
+                            const res = await fetch(
+                              `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(effectiveTeamId))}/members/${encodeURIComponent(String(pmId))}/`,
+                              {
+                                method: 'DELETE',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'X-CSRFToken': getCsrfToken() || '',
+                                },
+                                credentials: 'include',
+                              }
+                            );
+                            if (!res.ok) {
+                              const text = await res.text().catch(() => '');
+                              throw new Error(text || 'Failed to unassign user from season');
+                            }
+                          }
+
+                          await fetchOrgMembers(true);
+                        };
                         const hasTeamMembershipForSeason = (item: any, seasonId: string) => {
                           const pms = getMemberProjectMemberships(item);
                           return pms.some((pm: any) => {
@@ -3018,75 +3119,15 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 teamById={teamById}
                                 userCanManageMembers={Boolean(userCanManageMembers)}
                                 seasonId={isSpecificSeasonFilter ? String(userSeasonFilterId) : ''}
-                                onAssignSeason={async (item: any) => {
-                                  if (!isSpecificSeasonFilter) return;
-                                  if (!effectiveTeamId) return;
-                                  const seasonId = String(userSeasonFilterId);
-                                  const u = item?.user || item;
-                                  const userId = Number(u?.id);
-                                  if (!userId) throw new Error('User id missing');
-
-                                  const pms = (() => {
-                                    const list =
-                                      (item as any)?.project_memberships ||
-                                      (u as any)?.project_memberships ||
-                                      (item as any)?.project_membership_details ||
-                                      (u as any)?.project_membership_details ||
-                                      [];
-                                    return Array.isArray(list) ? list : [];
-                                  })();
-                                  const pmRole = String(
-                                    (pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(effectiveTeamId) && !String(pm?.period_id ?? pm?.period ?? '').trim())?.role) ||
-                                      (pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(effectiveTeamId))?.role) ||
-                                      'viewer'
-                                  ).trim();
-
-                                  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                                  const res = await fetch(
-                                    `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(effectiveTeamId))}/members/`,
-                                    {
-                                      method: 'POST',
-                                      headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRFToken': getCsrfToken() || '',
-                                      },
-                                      credentials: 'include',
-                                      body: JSON.stringify({
-                                        user_id: userId,
-                                        role: pmRole,
-                                        period_id: seasonId,
-                                      }),
-                                    }
-                                  );
-
-                                  if (!res.ok) {
-                                    const text = await res.text().catch(() => '');
-                                    if (!/already|exists|duplicate/i.test(text)) {
-                                      throw new Error(text || 'Failed to assign user to season');
-                                    }
-                                  }
-
-                                  await fetchOrgMembers(true);
+                                onOpenAssignSeason={(item: any) => {
+                                  setSeasonPickerMode('assign');
+                                  setSeasonPickerMember(item);
+                                  setSeasonPickerOpen(true);
                                 }}
-                                onUnassignSeason={async (projectMembershipId: string) => {
-                                  if (!effectiveTeamId) return;
-                                  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                                  const res = await fetch(
-                                    `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(effectiveTeamId))}/members/${encodeURIComponent(String(projectMembershipId))}/`,
-                                    {
-                                      method: 'DELETE',
-                                      headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRFToken': getCsrfToken() || '',
-                                      },
-                                      credentials: 'include',
-                                    }
-                                  );
-                                  if (!res.ok) {
-                                    const text = await res.text().catch(() => '');
-                                    throw new Error(text || 'Failed to unassign user from season');
-                                  }
-                                  await fetchOrgMembers(true);
+                                onOpenUnassignSeason={(item: any) => {
+                                  setSeasonPickerMode('unassign');
+                                  setSeasonPickerMember(item);
+                                  setSeasonPickerOpen(true);
                                 }}
                                 onViewUser={(userObj) => {
                                   setDetailUser(userObj);
@@ -3130,6 +3171,19 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                   renderPagedUsersTable(unlinked, usersUnlinkedPage, setUsersUnlinkedPage)
                                 )}
                               </div>
+
+                              <SeasonPickerModal
+                                open={seasonPickerOpen}
+                                mode={seasonPickerMode}
+                                seasons={seasonsForEffectiveTeam}
+                                member={seasonPickerMember}
+                                projectId={String(effectiveTeamId || '')}
+                                onClose={() => {
+                                  setSeasonPickerOpen(false);
+                                  setSeasonPickerMember(null);
+                                }}
+                                onConfirm={handleSeasonPickerConfirm}
+                              />
                             </>
                           );
                         }
@@ -3169,78 +3223,15 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                               teamById={teamById}
                               userCanManageMembers={Boolean(userCanManageMembers)}
                               seasonId={isSpecificSeasonFilter ? String(userSeasonFilterId) : ''}
-                              onAssignSeason={async (item: any) => {
-                                if (!isSpecificSeasonFilter) {
-                                  window.alert('Select a season filter first.');
-                                  return;
-                                }
-                                if (!effectiveTeamId) return;
-                                const seasonId = String(userSeasonFilterId);
-                                const u = item?.user || item;
-                                const userId = Number(u?.id);
-                                if (!userId) throw new Error('User id missing');
-
-                                const pms = (() => {
-                                  const list =
-                                    (item as any)?.project_memberships ||
-                                    (u as any)?.project_memberships ||
-                                    (item as any)?.project_membership_details ||
-                                    (u as any)?.project_membership_details ||
-                                    [];
-                                  return Array.isArray(list) ? list : [];
-                                })();
-                                const pmRole = String(
-                                  (pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(effectiveTeamId) && !String(pm?.period_id ?? pm?.period ?? '').trim())?.role) ||
-                                    (pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(effectiveTeamId))?.role) ||
-                                    'viewer'
-                                ).trim();
-
-                                const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                                const res = await fetch(
-                                  `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(effectiveTeamId))}/members/`,
-                                  {
-                                    method: 'POST',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                      'X-CSRFToken': getCsrfToken() || '',
-                                    },
-                                    credentials: 'include',
-                                    body: JSON.stringify({
-                                      user_id: userId,
-                                      role: pmRole,
-                                      period_id: seasonId,
-                                    }),
-                                  }
-                                );
-
-                                if (!res.ok) {
-                                  const text = await res.text().catch(() => '');
-                                  if (!/already|exists|duplicate/i.test(text)) {
-                                    throw new Error(text || 'Failed to assign user to season');
-                                  }
-                                }
-
-                                await fetchOrgMembers(true);
+                              onOpenAssignSeason={(item: any) => {
+                                setSeasonPickerMode('assign');
+                                setSeasonPickerMember(item);
+                                setSeasonPickerOpen(true);
                               }}
-                              onUnassignSeason={async (projectMembershipId: string) => {
-                                if (!effectiveTeamId) return;
-                                const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-                                const res = await fetch(
-                                  `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(effectiveTeamId))}/members/${encodeURIComponent(String(projectMembershipId))}/`,
-                                  {
-                                    method: 'DELETE',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                      'X-CSRFToken': getCsrfToken() || '',
-                                    },
-                                    credentials: 'include',
-                                  }
-                                );
-                                if (!res.ok) {
-                                  const text = await res.text().catch(() => '');
-                                  throw new Error(text || 'Failed to unassign user from season');
-                                }
-                                await fetchOrgMembers(true);
+                              onOpenUnassignSeason={(item: any) => {
+                                setSeasonPickerMode('unassign');
+                                setSeasonPickerMember(item);
+                                setSeasonPickerOpen(true);
                               }}
                               onViewUser={(userObj) => {
                                 setDetailUser(userObj);
@@ -3256,6 +3247,19 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 setIsEditMemberRoleModalOpen(true);
                               }}
                               onRemoveMembership={handleRemoveMembership as any}
+                            />
+
+                            <SeasonPickerModal
+                              open={seasonPickerOpen}
+                              mode={seasonPickerMode}
+                              seasons={seasonsForEffectiveTeam}
+                              member={seasonPickerMember}
+                              projectId={String(effectiveTeamId || '')}
+                              onClose={() => {
+                                setSeasonPickerOpen(false);
+                                setSeasonPickerMember(null);
+                              }}
+                              onConfirm={handleSeasonPickerConfirm}
                             />
                           </>
                         );

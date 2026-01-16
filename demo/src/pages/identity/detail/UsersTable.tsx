@@ -21,8 +21,8 @@ type Props = {
   teamById: Map<string, any>;
   userCanManageMembers: boolean;
   seasonId?: string;
-  onAssignSeason?: (item: any) => Promise<void>;
-  onUnassignSeason?: (projectMembershipId: string, email: string) => Promise<void>;
+  onOpenAssignSeason?: (item: any) => void;
+  onOpenUnassignSeason?: (item: any) => void;
   onViewUser?: (user: any) => void;
   onViewMembership: (membershipId: string) => void;
   onEditMembership: (item: any) => void;
@@ -39,8 +39,8 @@ export default function UsersTable({
   teamById,
   userCanManageMembers,
   seasonId,
-  onAssignSeason,
-  onUnassignSeason,
+  onOpenAssignSeason,
+  onOpenUnassignSeason,
   onViewUser,
   onViewMembership,
   onEditMembership,
@@ -88,22 +88,8 @@ export default function UsersTable({
         ''
     );
 
-  const getPmPeriodId = (pm: any) => String(pm?.period_id ?? pm?.period ?? '').trim();
-
-  const getTeamSeasonMembershipId = (item: any): string => {
-    const season = String(seasonId || '').trim();
-    if (!season) return '';
-    const pms = getMemberProjectMemberships(item);
-    const match = pms.find((pm: any) => getPmTeamId(pm) === String(currentProjectId) && getPmPeriodId(pm) === season);
-    return String(match?.id ?? '').trim();
-  };
-
-  const canAssignForRow = (item: any): boolean => {
-    const season = String(seasonId || '').trim();
-    if (!season) return false;
-    // If already assigned, disable assign to avoid duplicate memberships.
-    return !getTeamSeasonMembershipId(item);
-  };
+  // seasonId is optional context (e.g. current filter) but the actual Assign/Unassign
+  // selection happens in the modal, not inline.
 
   const getRoleDisplay = (item: any): { label: string; title: string } => {
     const userObj = item?.user || item;
@@ -261,43 +247,24 @@ export default function UsersTable({
                       <button type="button" onClick={() => onEditMembership(item)} className="app-action-button" style={actionButtonStyle('warning')}>
                         Edit
                       </button>
-                      {onAssignSeason ? (
+                      {onOpenAssignSeason ? (
                         <button
                           type="button"
-                          disabled={!canAssignForRow(item)}
-                          onClick={async () => {
-                            if (!String(seasonId || '').trim()) {
-                              window.alert('Select a season filter first.');
-                              return;
-                            }
-                            if (!window.confirm(`Assign ${userObj.email} to this season?`)) return;
-                            await onAssignSeason(item);
-                          }}
+                          onClick={() => onOpenAssignSeason(item)}
                           className="app-action-button"
                           style={actionButtonStyle('success')}
-                          title={!String(seasonId || '').trim() ? 'Select a season filter first' : undefined}
+                          title={String(seasonId || '').trim() ? `Assign (filter: ${String(seasonId)})` : 'Assign to a season'}
                         >
                           Assign
                         </button>
                       ) : null}
-                      {onUnassignSeason ? (
+                      {onOpenUnassignSeason ? (
                         <button
                           type="button"
-                          disabled={!getTeamSeasonMembershipId(item)}
-                          onClick={async () => {
-                            const pmId = getTeamSeasonMembershipId(item);
-                            if (!pmId) {
-                              if (!String(seasonId || '').trim()) {
-                                window.alert('Select a season filter first.');
-                              }
-                              return;
-                            }
-                            if (!window.confirm(`Unassign ${userObj.email} from this season?`)) return;
-                            await onUnassignSeason(pmId, String(userObj.email || ''));
-                          }}
+                          onClick={() => onOpenUnassignSeason(item)}
                           className="app-action-button"
                           style={actionButtonStyle('neutral')}
-                          title={!String(seasonId || '').trim() ? 'Select a season filter first' : 'No season membership found'}
+                          title={String(seasonId || '').trim() ? `Unassign (filter: ${String(seasonId)})` : 'Unassign from a season'}
                         >
                           Unassign
                         </button>
