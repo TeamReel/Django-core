@@ -80,6 +80,7 @@ import {
 import NotificationRoutingLogsPage from './pages/docs/NotificationRoutingLogsPage';
 import MatchDetailPage from './pages/activities/MatchDetailPage';
 import HierarchyMatchDetailPage from './pages/activities/HierarchyMatchDetailPage';
+import ProjectHierarchyMatchRedirectPage from './pages/activities/ProjectHierarchyMatchRedirectPage';
 import LegacyMatchRedirectPage from './pages/activities/LegacyMatchRedirectPage';
 import AIStudioPage from './pages/aistudio/AIStudioPage';
 import ContentLibraryPage from './pages/content/ContentLibraryPage';
@@ -554,7 +555,7 @@ export default function App() {
         path="/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId/matches/:matchId"
         element={
           <ProtectedRoute>
-            <ProjectMatchRedirect />
+            <ProjectHierarchyMatchRedirectPage />
           </ProtectedRoute>
         }
       />
@@ -669,7 +670,7 @@ export default function App() {
         path="/organisations/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId/matches/:matchId"
         element={
           <ProtectedRoute>
-            <ProjectMatchRedirect />
+            <ProjectHierarchyMatchRedirectPage />
           </ProtectedRoute>
         }
       />
