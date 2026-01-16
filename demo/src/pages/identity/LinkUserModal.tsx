@@ -24,6 +24,13 @@ type User = {
   projects?: Array<{ id?: string | number; slug?: string | null; membership_id?: string | number | null }>;
 };
 
+type PeriodOption = {
+  id: string;
+  name: string;
+  parent_period?: any;
+  data?: any;
+};
+
 export default function LinkUserModal({
   opened,
   onClose,
@@ -49,6 +56,9 @@ export default function LinkUserModal({
   const [clubId, setClubId] = useState('');
   const [teamId, setTeamId] = useState('');
   const [projectRole, setProjectRole] = useState<string>('viewer');
+
+  const [seasonId, setSeasonId] = useState('');
+  const [seasonOptions, setSeasonOptions] = useState<PeriodOption[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -149,6 +159,8 @@ export default function LinkUserModal({
     setProjectRole('viewer');
     setClubId('');
     setTeamId('');
+    setSeasonId('');
+    setSeasonOptions([]);
     setOrganisationId(initialOrgIdFromSlugOrId || '');
   }, [initialOrgIdFromSlugOrId, opened]);
 
@@ -160,6 +172,41 @@ export default function LinkUserModal({
     const parent = String((t as any)?.parent_id || '').trim();
     if (parent && !clubId) setClubId(parent);
   }, [clubId, opened, teamId, teams]);
+
+  // Load season options for the selected team.
+  useEffect(() => {
+    if (!opened) return;
+    const tid = String(teamId || '').trim();
+    if (!tid) {
+      setSeasonOptions([]);
+      setSeasonId('');
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const url = `${apiBaseUrl}/api/v1/periods/?page_size=250&project_id=${encodeURIComponent(tid)}&type=season`;
+        const results = await fetchAllPages<PeriodOption>(
+          url,
+          { credentials: 'include' },
+          { ttlMs: 15_000, cacheKey: `periods:seasons:link-user:${tid}`, maxPages: 10, maxItems: 2000 },
+        );
+
+        if (cancelled) return;
+        const seasons = (results || []).filter((p: any) => !p?.parent_period);
+        setSeasonOptions(seasons);
+      } catch {
+        if (cancelled) return;
+        setSeasonOptions([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBaseUrl, opened, teamId]);
 
   const createOrganisationMembership = async () => {
     if (!user) return;
@@ -193,7 +240,7 @@ export default function LinkUserModal({
     }
   };
 
-  const createProjectMembership = async (projectId: string) => {
+  const createProjectMembership = async (projectId: string, periodId?: string) => {
     if (!user) return;
     const pid = String(projectId || '').trim();
     if (!pid) return;
@@ -207,10 +254,12 @@ export default function LinkUserModal({
     };
 
     // Best-effort idempotency.
-    if (existingProjectIds.has(pid)) return;
+    // If a period is specified, we allow creating an additional membership scoped to that period.
+    if (!periodId && existingProjectIds.has(pid)) return;
 
     const accessRole = resolveAccessRole(projectRole);
     const teamRole = String(projectRole || '').trim();
+    const effectivePeriodId = String(periodId || '').trim() || undefined;
 
     const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/`, {
       method: 'POST',
@@ -223,6 +272,7 @@ export default function LinkUserModal({
         user_id: Number(user.id),
         role: accessRole,
         metadata: teamRole ? { team_role: teamRole } : undefined,
+        period_id: effectivePeriodId,
       }),
     });
 
@@ -383,7 +433,7 @@ export default function LinkUserModal({
         await createProjectMembership(String(clubId));
       }
       if (teamId) {
-        await createProjectMembership(String(teamId));
+        await createProjectMembership(String(teamId), seasonId || undefined);
       }
 
       setSuccessNote('Linked successfully.');
@@ -575,6 +625,8 @@ export default function LinkUserModal({
                   onChange={(e) => {
                     setClubId(e.target.value);
                     setTeamId('');
+                    setSeasonId('');
+                    setSeasonOptions([]);
                   }}
                   style={{
                     width: '100%',
@@ -591,7 +643,6 @@ export default function LinkUserModal({
                     <option
                       key={String(c.id)}
                       value={String(c.id)}
-                      disabled={existingProjectIds.has(String(c.id))}
                     >
                       {c.name}{existingProjectIds.has(String(c.id)) ? ' (already linked)' : ''}
                     </option>
@@ -641,7 +692,10 @@ export default function LinkUserModal({
                 </label>
                 <select
                   value={teamId}
-                  onChange={(e) => setTeamId(e.target.value)}
+                  onChange={(e) => {
+                    setTeamId(e.target.value);
+                    setSeasonId('');
+                  }}
                   style={{
                     width: '100%',
                     padding: '8px',
@@ -657,7 +711,6 @@ export default function LinkUserModal({
                     <option
                       key={String(t.id)}
                       value={String(t.id)}
-                      disabled={existingProjectIds.has(String(t.id))}
                     >
                       {t.name}{existingProjectIds.has(String(t.id)) ? ' (already linked)' : ''}
                     </option>
@@ -728,7 +781,37 @@ export default function LinkUserModal({
               </select>
               <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px', lineHeight: 1.35 }}>
                 This is a sports role label (stored as membership metadata). Access permissions are mapped to the backend
-                role automatically: Player/Coach/Manager  Viewer, Admin/Owner  Admin.
+                role automatically: Player/Coach/Manager → Viewer, Admin/Owner → Admin.
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '13px' }}>
+                Season (optional)
+              </label>
+              <select
+                value={seasonId}
+                onChange={(e) => setSeasonId(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-input-bg)',
+                  color: 'var(--app-text)',
+                  fontSize: '14px',
+                }}
+                disabled={!teamId || seasonOptions.length === 0}
+              >
+                <option value="">{!teamId ? 'Select a team first…' : '(optional) Select Season…'}</option>
+                {seasonOptions.map((p) => (
+                  <option key={String(p.id)} value={String(p.id)}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px', lineHeight: 1.35 }}>
+                If set, the team membership will be scoped to this season via `period_id`.
               </div>
             </div>
 
