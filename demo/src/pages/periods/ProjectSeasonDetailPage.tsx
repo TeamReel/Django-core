@@ -122,6 +122,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [membersError, setMembersError] = useState<string | null>(null);
   const [membersReloadToken, setMembersReloadToken] = useState(0);
 
+  const [teamRoster, setTeamRoster] = useState<any[]>([]);
+  const [teamRosterLoading, setTeamRosterLoading] = useState(false);
+  const [teamRosterError, setTeamRosterError] = useState<string | null>(null);
+  const [teamRosterReloadToken, setTeamRosterReloadToken] = useState(0);
+
+  const [eligibleSearch, setEligibleSearch] = useState('');
+  const [selectedEligibleUserIds, setSelectedEligibleUserIds] = useState<Set<string>>(new Set());
+  const [selectedSquadMembershipIds, setSelectedSquadMembershipIds] = useState<Set<string>>(new Set());
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
+
   const [memberSearch, setMemberSearch] = useState('');
   const [memberSearchResults, setMemberSearchResults] = useState<any[]>([]);
   const [selectedAddUserId, setSelectedAddUserId] = useState<string>('');
@@ -563,6 +573,125 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       cancelled = true;
     };
   }, [apiBaseUrl, project, resolvedSeasonId, membersReloadToken]);
+
+  // Fetch full team roster (all memberships on the team, any period) so we can show
+  // "team members not in squad" for quick assignment.
+  useEffect(() => {
+    if (activeTab !== 'squad') return;
+    const projectIdForMembers = String((project as any)?.id || '').trim();
+    if (!projectIdForMembers) return;
+
+    let cancelled = false;
+    const run = async () => {
+      setTeamRosterLoading(true);
+      setTeamRosterError(null);
+      try {
+        const rosterUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/?page_size=500`;
+        const roster = await fetchAllPages<any>(
+          rosterUrl,
+          { credentials: 'include' },
+          { bypass: true, maxItems: 5000 }
+        );
+        if (!cancelled) setTeamRoster(Array.isArray(roster) ? roster : []);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'Failed to load team roster';
+        if (!cancelled) setTeamRosterError(msg);
+      } finally {
+        if (!cancelled) setTeamRosterLoading(false);
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, apiBaseUrl, project, teamRosterReloadToken]);
+
+  const getUserId = (m: any): string => {
+    const u = m?.user || m;
+    const id = u?.id ?? m?.user_id;
+    return String(id || '').trim();
+  };
+
+  const getUserLabel = (m: any): { name: string; email: string } => {
+    const u = m?.user || m;
+    const name =
+      u?.name ||
+      `${u?.first_name || ''} ${u?.last_name || ''}`.trim() ||
+      String(u?.email || '').trim() ||
+      '—';
+    const email = String(u?.email || '').trim() || '—';
+    return { name, email };
+  };
+
+  const normalizeAccessRole = (raw: any): 'viewer' | 'editor' | 'admin' => {
+    const role = String(raw || '').trim().toLowerCase();
+    if (role === 'admin') return 'admin';
+    if (role === 'editor') return 'editor';
+    if (role === 'viewer') return 'viewer';
+    if (['coach', 'trainer'].includes(role)) return 'editor';
+    if (['manager', 'owner'].includes(role)) return 'admin';
+    return 'viewer';
+  };
+
+  const getBestRoleForUser = (userId: string): 'viewer' | 'editor' | 'admin' => {
+    const relevant = teamRoster.filter((m: any) => getUserId(m) === String(userId));
+    const base = relevant.find((m: any) => !String(m?.period_id ?? m?.period ?? '').trim());
+    const anyOne = relevant[0];
+    return normalizeAccessRole(base?.role ?? anyOne?.role ?? 'viewer');
+  };
+
+  const squadUserIdSet = useMemo(() => {
+    const s = new Set<string>();
+    for (const m of members || []) {
+      const uid = getUserId(m);
+      if (uid) s.add(uid);
+    }
+    return s;
+  }, [members]);
+
+  const eligibleTeamMembers = useMemo(() => {
+    const byUserId = new Map<string, any>();
+    for (const m of teamRoster || []) {
+      const uid = getUserId(m);
+      if (!uid) continue;
+      if (squadUserIdSet.has(uid)) continue;
+      if (!byUserId.has(uid)) byUserId.set(uid, m);
+    }
+
+    const q = String(eligibleSearch || '').trim().toLowerCase();
+    const list = Array.from(byUserId.values());
+    const filtered = q
+      ? list.filter((m: any) => {
+          const { name, email } = getUserLabel(m);
+          return `${name} ${email}`.toLowerCase().includes(q);
+        })
+      : list;
+
+    return filtered.sort((a: any, b: any) => {
+      const la = getUserLabel(a).name.toLowerCase();
+      const lb = getUserLabel(b).name.toLowerCase();
+      return la.localeCompare(lb);
+    });
+  }, [eligibleSearch, squadUserIdSet, teamRoster]);
+
+  const toggleEligibleUser = (userId: string) => {
+    setSelectedEligibleUserIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
+      return next;
+    });
+  };
+
+  const toggleSquadMembership = (membershipId: string) => {
+    setSelectedSquadMembershipIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(membershipId)) next.delete(membershipId);
+      else next.add(membershipId);
+      return next;
+    });
+  };
 
   // Search for users that can be added to this season squad
   useEffect(() => {
@@ -1281,12 +1410,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           type="button"
                           className="app-action-button"
                           onClick={() => setIsAddSquadMemberModalOpen(true)}
-                          style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: 500 }}
+                          style={{ ...actionButtonStyle('neutral'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: 500 }}
                         >
-                          Add User
+                          Add User (advanced)
                         </button>
                         <div style={{ color: 'var(--app-muted-text)', fontSize: '13px' }}>
-                          Add a user to this season’s squad.
+                          Use quick Assign/Unassign below for team members.
                         </div>
                       </div>
                     )}
@@ -1294,118 +1423,312 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     {membersLoading && <Alert variant="info">Loading squad…</Alert>}
                     {membersError && <Alert variant="error">{membersError}</Alert>}
 
-                    {!membersLoading && !membersError && members.length === 0 ? (
-                      <Alert variant="info">No members found for this season.</Alert>
-                    ) : !membersLoading && !membersError ? (
-                      <div className="overflow-x-auto">
-                        <Table style={compactTableStyle}>
-                          <thead>
-                            <tr>
-                              <th style={compactThStyle}>Name</th>
-                              <th style={compactThStyle}>Email</th>
-                              <th style={compactThStyle}>Role</th>
-                              <th style={compactThStyle}>Position</th>
-                              <th style={compactThStyle}>#</th>
-                              <th style={compactThStyle} className="text-right">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {members.map((m: any) => {
-                              const memberUser = m.user || m;
-                              const name =
-                                memberUser.name ||
-                                `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
-                                memberUser.email ||
-                                '—';
+                    {teamRosterLoading && <Alert variant="info">Loading team roster…</Alert>}
+                    {teamRosterError && <Alert variant="error">{teamRosterError}</Alert>}
 
-                              const email = memberUser.email || '—';
-                              const role = String(m.role || 'member');
-                              const position = m.metadata?.position || '—';
-                              const shirtNumber = m.metadata?.shirt_number ?? '';
-                              const membershipId = String(m.id || '').trim();
-                              const userId = memberUser?.id;
+                    {userCanEditProject ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                            <div style={{ display: 'grid', gap: 2 }}>
+                              <div style={{ fontWeight: 600 }}>Not in squad (team members)</div>
+                              <div style={{ fontSize: 13, color: 'var(--app-muted-text)' }}>
+                                Select users that belong to the team and assign them to this season squad.
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className="app-action-button"
+                              disabled={bulkSubmitting || selectedEligibleUserIds.size === 0}
+                              onClick={async () => {
+                                const projectIdForMembers = String((project as any)?.id || '').trim();
+                                const seasonUuid = String(resolvedSeasonId || '').trim();
+                                if (!projectIdForMembers || !seasonUuid) return;
 
-                              return (
-                                <tr key={membershipId}>
-                                  <td style={compactTextTdStyle}>
-                                    {userId ? (
-                                      <Link
-                                        to={`/users/${userId}`}
-                                        className="text-blue-600 hover:underline"
-                                        style={{ textDecoration: 'none' }}
-                                      >
-                                        {name}
-                                      </Link>
-                                    ) : (
-                                      name
-                                    )}
-                                  </td>
-                                  <td style={compactTextTdStyle}>{email}</td>
-                                  <td style={compactTdStyle}>
-                                    <Badge variant={role === 'admin' || role === 'manager' ? 'warning' : 'default'}>
-                                      {role}
-                                    </Badge>
-                                  </td>
-                                  <td style={compactTextTdStyle}>{position}</td>
-                                  <td style={compactTdStyle}>{shirtNumber || '—'}</td>
-                                  <td style={compactTdStyle}>
-                                    <div style={compactActionsStyle}>
-                                      {userId ? (
-                                        <button
-                                          type="button"
-                                          className="app-action-button"
-                                          onClick={() => navigate(`/users/${userId}`)}
-                                          style={actionButtonStyle('primary')}
-                                        >
-                                          View
-                                        </button>
-                                      ) : (
-                                        <span style={{ color: 'var(--app-muted-text)' }}>—</span>
-                                      )}
+                                const userIds = Array.from(selectedEligibleUserIds.values()).filter(Boolean);
+                                if (userIds.length === 0) return;
 
-                                      {userCanEditProject && membershipId && (
-                                        <button
-                                          type="button"
-                                          className="app-action-button"
-                                          onClick={async () => {
-                                            if (!window.confirm(`Remove ${name} from this season squad?`)) return;
-                                            const projectIdForMembers = String((project as any)?.id || '').trim();
-                                            if (!projectIdForMembers) return;
-                                            try {
-                                              const res = await fetch(
-                                                `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/${encodeURIComponent(membershipId)}/`,
-                                                {
-                                                  method: 'DELETE',
-                                                  headers: {
-                                                    'Content-Type': 'application/json',
-                                                    'X-CSRFToken': getCsrfToken(),
-                                                  },
-                                                  credentials: 'include',
-                                                }
-                                              );
-                                              if (!res.ok) {
-                                                const text = await res.text();
-                                                throw new Error(text || 'Failed to remove member');
-                                              }
-                                              setMembersReloadToken((x) => x + 1);
-                                            } catch (e) {
-                                              alert(e instanceof Error ? e.message : 'Failed to remove member');
-                                            }
-                                          }}
-                                          style={actionButtonStyle('danger')}
-                                        >
-                                          Remove
-                                        </button>
-                                      )}
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </Table>
+                                try {
+                                  setBulkSubmitting(true);
+                                  for (const uid of userIds) {
+                                    const role = getBestRoleForUser(uid);
+                                    const res = await fetch(
+                                      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/`,
+                                      {
+                                        method: 'POST',
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                          'X-CSRFToken': getCsrfToken(),
+                                        },
+                                        credentials: 'include',
+                                        body: JSON.stringify({
+                                          user_id: Number(uid),
+                                          role,
+                                          period_id: String(seasonUuid),
+                                        }),
+                                      }
+                                    );
+                                    if (!res.ok) {
+                                      const text = await res.text().catch(() => '');
+                                      // ignore duplicates
+                                      if (!/already|exists|duplicate/i.test(text)) {
+                                        throw new Error(text || 'Failed to assign user');
+                                      }
+                                    }
+                                  }
+                                  setSelectedEligibleUserIds(new Set());
+                                  setMembersReloadToken((x) => x + 1);
+                                  setTeamRosterReloadToken((x) => x + 1);
+                                } catch (e) {
+                                  alert(e instanceof Error ? e.message : 'Failed to assign users');
+                                } finally {
+                                  setBulkSubmitting(false);
+                                }
+                              }}
+                              style={{ ...actionButtonStyle('success'), padding: '8px 14px', fontSize: '14px', minWidth: '160px', fontWeight: 500 }}
+                              title="Assign selected users to the squad"
+                            >
+                              Assign ({selectedEligibleUserIds.size})
+                            </button>
+                          </div>
+
+                          <div style={{ marginBottom: '8px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <Input
+                              value={eligibleSearch}
+                              onChange={(e) => setEligibleSearch(e.target.value)}
+                              placeholder="Search team members"
+                              style={{ width: '280px' }}
+                            />
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => {
+                                const allIds = eligibleTeamMembers.map((m: any) => getUserId(m)).filter(Boolean);
+                                const allSelected = allIds.length > 0 && allIds.every((id: string) => selectedEligibleUserIds.has(id));
+                                setSelectedEligibleUserIds(allSelected ? new Set() : new Set(allIds));
+                              }}
+                              disabled={bulkSubmitting || eligibleTeamMembers.length === 0}
+                            >
+                              {(() => {
+                                const allIds = eligibleTeamMembers.map((m: any) => getUserId(m)).filter(Boolean);
+                                const allSelected = allIds.length > 0 && allIds.every((id: string) => selectedEligibleUserIds.has(id));
+                                return allSelected ? 'Unselect all' : 'Select all';
+                              })()}
+                            </Button>
+                          </div>
+
+                          {eligibleTeamMembers.length === 0 ? (
+                            <Alert variant="info">Everyone who belongs to the team is already in this season squad.</Alert>
+                          ) : (
+                            <div className="overflow-x-auto">
+                              <Table style={compactTableStyle}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ ...compactThStyle, width: '44px' }}></th>
+                                    <th style={compactThStyle}>Name</th>
+                                    <th style={compactThStyle}>Email</th>
+                                    <th style={compactThStyle}>Access</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {eligibleTeamMembers.map((m: any) => {
+                                    const userId = getUserId(m);
+                                    const { name, email } = getUserLabel(m);
+                                    const checked = Boolean(userId && selectedEligibleUserIds.has(userId));
+                                    const role = getBestRoleForUser(userId);
+                                    return (
+                                      <tr key={`eligible:${userId || email}`}>
+                                        <td style={compactTdStyle}>
+                                          <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            disabled={!userId || bulkSubmitting}
+                                            onChange={() => {
+                                              if (!userId) return;
+                                              toggleEligibleUser(userId);
+                                            }}
+                                          />
+                                        </td>
+                                        <td style={compactTextTdStyle}>{name}</td>
+                                        <td style={compactTextTdStyle}>{email}</td>
+                                        <td style={compactTdStyle}>
+                                          <Badge variant="default">{role}</Badge>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </Table>
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                            <div style={{ display: 'grid', gap: 2 }}>
+                              <div style={{ fontWeight: 600 }}>In squad</div>
+                              <div style={{ fontSize: 13, color: 'var(--app-muted-text)' }}>
+                                Select squad members and unassign them from this season.
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className="app-action-button"
+                              disabled={bulkSubmitting || selectedSquadMembershipIds.size === 0}
+                              onClick={async () => {
+                                const projectIdForMembers = String((project as any)?.id || '').trim();
+                                if (!projectIdForMembers) return;
+                                const ids = Array.from(selectedSquadMembershipIds.values()).filter(Boolean);
+                                if (ids.length === 0) return;
+
+                                try {
+                                  setBulkSubmitting(true);
+                                  for (const membershipId of ids) {
+                                    const res = await fetch(
+                                      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/${encodeURIComponent(membershipId)}/`,
+                                      {
+                                        method: 'DELETE',
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                          'X-CSRFToken': getCsrfToken(),
+                                        },
+                                        credentials: 'include',
+                                      }
+                                    );
+                                    if (!res.ok) {
+                                      const text = await res.text().catch(() => '');
+                                      throw new Error(text || 'Failed to unassign user');
+                                    }
+                                  }
+                                  setSelectedSquadMembershipIds(new Set());
+                                  setMembersReloadToken((x) => x + 1);
+                                  setTeamRosterReloadToken((x) => x + 1);
+                                } catch (e) {
+                                  alert(e instanceof Error ? e.message : 'Failed to unassign users');
+                                } finally {
+                                  setBulkSubmitting(false);
+                                }
+                              }}
+                              style={{ ...actionButtonStyle('danger'), padding: '8px 14px', fontSize: '14px', minWidth: '170px', fontWeight: 500 }}
+                              title="Unassign selected users from the squad"
+                            >
+                              Unassign ({selectedSquadMembershipIds.size})
+                            </button>
+                          </div>
+
+                          {!membersLoading && !membersError && members.length === 0 ? (
+                            <Alert variant="info">No members found for this season.</Alert>
+                          ) : !membersLoading && !membersError ? (
+                            <div className="overflow-x-auto">
+                              <Table style={compactTableStyle}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ ...compactThStyle, width: '44px' }}></th>
+                                    <th style={compactThStyle}>Name</th>
+                                    <th style={compactThStyle}>Email</th>
+                                    <th style={compactThStyle}>Role</th>
+                                    <th style={compactThStyle}>Position</th>
+                                    <th style={compactThStyle}>#</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {members.map((m: any) => {
+                                    const memberUser = m.user || m;
+                                    const name =
+                                      memberUser.name ||
+                                      `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
+                                      memberUser.email ||
+                                      '—';
+
+                                    const email = memberUser.email || '—';
+                                    const role = String(m.role || 'member');
+                                    const position = m.metadata?.position || '—';
+                                    const shirtNumber = m.metadata?.shirt_number ?? '';
+                                    const membershipId = String(m.id || '').trim();
+                                    const checked = Boolean(membershipId && selectedSquadMembershipIds.has(membershipId));
+
+                                    return (
+                                      <tr key={membershipId}>
+                                        <td style={compactTdStyle}>
+                                          <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            disabled={!membershipId || bulkSubmitting}
+                                            onChange={() => {
+                                              if (!membershipId) return;
+                                              toggleSquadMembership(membershipId);
+                                            }}
+                                          />
+                                        </td>
+                                        <td style={compactTextTdStyle}>{name}</td>
+                                        <td style={compactTextTdStyle}>{email}</td>
+                                        <td style={compactTdStyle}>
+                                          <Badge variant={role === 'admin' || role === 'manager' ? 'warning' : 'default'}>
+                                            {role}
+                                          </Badge>
+                                        </td>
+                                        <td style={compactTextTdStyle}>{position}</td>
+                                        <td style={compactTdStyle}>{shirtNumber || '—'}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </Table>
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
-                    ) : null}
+                    ) : (
+                      // Read-only view (no bulk actions)
+                      <>
+                        {!membersLoading && !membersError && members.length === 0 ? (
+                          <Alert variant="info">No members found for this season.</Alert>
+                        ) : !membersLoading && !membersError ? (
+                          <div className="overflow-x-auto">
+                            <Table style={compactTableStyle}>
+                              <thead>
+                                <tr>
+                                  <th style={compactThStyle}>Name</th>
+                                  <th style={compactThStyle}>Email</th>
+                                  <th style={compactThStyle}>Role</th>
+                                  <th style={compactThStyle}>Position</th>
+                                  <th style={compactThStyle}>#</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {members.map((m: any) => {
+                                  const memberUser = m.user || m;
+                                  const name =
+                                    memberUser.name ||
+                                    `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
+                                    memberUser.email ||
+                                    '—';
+
+                                  const email = memberUser.email || '—';
+                                  const role = String(m.role || 'member');
+                                  const position = m.metadata?.position || '—';
+                                  const shirtNumber = m.metadata?.shirt_number ?? '';
+
+                                  return (
+                                    <tr key={String(m.id || email)}>
+                                      <td style={compactTextTdStyle}>{name}</td>
+                                      <td style={compactTextTdStyle}>{email}</td>
+                                      <td style={compactTdStyle}>
+                                        <Badge variant={role === 'admin' || role === 'manager' ? 'warning' : 'default'}>
+                                          {role}
+                                        </Badge>
+                                      </td>
+                                      <td style={compactTextTdStyle}>{position}</td>
+                                      <td style={compactTdStyle}>{shirtNumber || '—'}</td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </Table>
+                          </div>
+                        ) : null}
+                      </>
+                    )}
                   </div>
                 </Card>
               )}
