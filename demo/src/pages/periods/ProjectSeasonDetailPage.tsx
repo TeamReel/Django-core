@@ -693,6 +693,98 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     });
   };
 
+  const assignUsersToSeasonSquad = async (userIds: string[]) => {
+    const projectIdForMembers = String((project as any)?.id || '').trim();
+    const seasonUuid = String(resolvedSeasonId || '').trim();
+    if (!projectIdForMembers || !seasonUuid) return;
+
+    const ids = (userIds || []).map((x) => String(x || '').trim()).filter(Boolean);
+    if (ids.length === 0) return;
+
+    try {
+      setBulkSubmitting(true);
+      for (const uid of ids) {
+        const role = getBestRoleForUser(uid);
+        const res = await fetch(
+          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              user_id: Number(uid),
+              role,
+              period_id: String(seasonUuid),
+            }),
+          }
+        );
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          // ignore duplicates
+          if (!/already|exists|duplicate/i.test(text)) {
+            throw new Error(text || 'Failed to assign user');
+          }
+        }
+      }
+
+      setSelectedEligibleUserIds((prev) => {
+        const next = new Set(prev);
+        for (const uid of ids) next.delete(uid);
+        return next;
+      });
+      setMembersReloadToken((x) => x + 1);
+      setTeamRosterReloadToken((x) => x + 1);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Failed to assign users');
+    } finally {
+      setBulkSubmitting(false);
+    }
+  };
+
+  const unassignMembershipsFromSeasonSquad = async (membershipIds: string[]) => {
+    const projectIdForMembers = String((project as any)?.id || '').trim();
+    if (!projectIdForMembers) return;
+
+    const ids = (membershipIds || []).map((x) => String(x || '').trim()).filter(Boolean);
+    if (ids.length === 0) return;
+
+    try {
+      setBulkSubmitting(true);
+      for (const membershipId of ids) {
+        const res = await fetch(
+          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/${encodeURIComponent(membershipId)}/`,
+          {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            credentials: 'include',
+          }
+        );
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(text || 'Failed to unassign user');
+        }
+      }
+
+      setSelectedSquadMembershipIds((prev) => {
+        const next = new Set(prev);
+        for (const membershipId of ids) next.delete(membershipId);
+        return next;
+      });
+      setMembersReloadToken((x) => x + 1);
+      setTeamRosterReloadToken((x) => x + 1);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Failed to unassign users');
+    } finally {
+      setBulkSubmitting(false);
+    }
+  };
+
   // Search for users that can be added to this season squad
   useEffect(() => {
     if (!userCanEditProject) return;
@@ -1441,49 +1533,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               className="app-action-button"
                               disabled={bulkSubmitting || selectedEligibleUserIds.size === 0}
                               onClick={async () => {
-                                const projectIdForMembers = String((project as any)?.id || '').trim();
-                                const seasonUuid = String(resolvedSeasonId || '').trim();
-                                if (!projectIdForMembers || !seasonUuid) return;
-
                                 const userIds = Array.from(selectedEligibleUserIds.values()).filter(Boolean);
-                                if (userIds.length === 0) return;
-
-                                try {
-                                  setBulkSubmitting(true);
-                                  for (const uid of userIds) {
-                                    const role = getBestRoleForUser(uid);
-                                    const res = await fetch(
-                                      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/`,
-                                      {
-                                        method: 'POST',
-                                        headers: {
-                                          'Content-Type': 'application/json',
-                                          'X-CSRFToken': getCsrfToken(),
-                                        },
-                                        credentials: 'include',
-                                        body: JSON.stringify({
-                                          user_id: Number(uid),
-                                          role,
-                                          period_id: String(seasonUuid),
-                                        }),
-                                      }
-                                    );
-                                    if (!res.ok) {
-                                      const text = await res.text().catch(() => '');
-                                      // ignore duplicates
-                                      if (!/already|exists|duplicate/i.test(text)) {
-                                        throw new Error(text || 'Failed to assign user');
-                                      }
-                                    }
-                                  }
-                                  setSelectedEligibleUserIds(new Set());
-                                  setMembersReloadToken((x) => x + 1);
-                                  setTeamRosterReloadToken((x) => x + 1);
-                                } catch (e) {
-                                  alert(e instanceof Error ? e.message : 'Failed to assign users');
-                                } finally {
-                                  setBulkSubmitting(false);
-                                }
+                                await assignUsersToSeasonSquad(userIds);
                               }}
                               style={{ ...actionButtonStyle('success'), padding: '8px 14px', fontSize: '14px', minWidth: '160px', fontWeight: 500 }}
                               title="Assign selected users to the squad"
@@ -1528,6 +1579,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     <th style={compactThStyle}>Name</th>
                                     <th style={compactThStyle}>Email</th>
                                     <th style={compactThStyle}>Access</th>
+                                    <th style={{ ...compactThStyle, width: '120px' }} className="text-right">
+                                      Action
+                                    </th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1554,6 +1608,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         <td style={compactTdStyle}>
                                           <Badge variant="default">{role}</Badge>
                                         </td>
+                                        <td style={compactTdStyle} className="text-right">
+                                          <button
+                                            type="button"
+                                            className="app-action-button"
+                                            disabled={!userId || bulkSubmitting}
+                                            onClick={async () => {
+                                              if (!userId) return;
+                                              await assignUsersToSeasonSquad([userId]);
+                                            }}
+                                            style={{ ...actionButtonStyle('success'), padding: '6px 10px', fontSize: '13px' }}
+                                            title="Assign this user to the season squad"
+                                          >
+                                            Assign
+                                          </button>
+                                        </td>
                                       </tr>
                                     );
                                   })}
@@ -1576,38 +1645,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               className="app-action-button"
                               disabled={bulkSubmitting || selectedSquadMembershipIds.size === 0}
                               onClick={async () => {
-                                const projectIdForMembers = String((project as any)?.id || '').trim();
-                                if (!projectIdForMembers) return;
                                 const ids = Array.from(selectedSquadMembershipIds.values()).filter(Boolean);
-                                if (ids.length === 0) return;
-
-                                try {
-                                  setBulkSubmitting(true);
-                                  for (const membershipId of ids) {
-                                    const res = await fetch(
-                                      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/${encodeURIComponent(membershipId)}/`,
-                                      {
-                                        method: 'DELETE',
-                                        headers: {
-                                          'Content-Type': 'application/json',
-                                          'X-CSRFToken': getCsrfToken(),
-                                        },
-                                        credentials: 'include',
-                                      }
-                                    );
-                                    if (!res.ok) {
-                                      const text = await res.text().catch(() => '');
-                                      throw new Error(text || 'Failed to unassign user');
-                                    }
-                                  }
-                                  setSelectedSquadMembershipIds(new Set());
-                                  setMembersReloadToken((x) => x + 1);
-                                  setTeamRosterReloadToken((x) => x + 1);
-                                } catch (e) {
-                                  alert(e instanceof Error ? e.message : 'Failed to unassign users');
-                                } finally {
-                                  setBulkSubmitting(false);
-                                }
+                                await unassignMembershipsFromSeasonSquad(ids);
                               }}
                               style={{ ...actionButtonStyle('danger'), padding: '8px 14px', fontSize: '14px', minWidth: '170px', fontWeight: 500 }}
                               title="Unassign selected users from the squad"
@@ -1629,6 +1668,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     <th style={compactThStyle}>Role</th>
                                     <th style={compactThStyle}>Position</th>
                                     <th style={compactThStyle}>#</th>
+                                    <th style={{ ...compactThStyle, width: '120px' }} className="text-right">
+                                      Action
+                                    </th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1669,6 +1711,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         </td>
                                         <td style={compactTextTdStyle}>{position}</td>
                                         <td style={compactTdStyle}>{shirtNumber || '—'}</td>
+                                        <td style={compactTdStyle} className="text-right">
+                                          <button
+                                            type="button"
+                                            className="app-action-button"
+                                            disabled={!membershipId || bulkSubmitting}
+                                            onClick={async () => {
+                                              if (!membershipId) return;
+                                              await unassignMembershipsFromSeasonSquad([membershipId]);
+                                            }}
+                                            style={{ ...actionButtonStyle('danger'), padding: '6px 10px', fontSize: '13px' }}
+                                            title="Unassign this user from the season squad"
+                                          >
+                                            Unassign
+                                          </button>
+                                        </td>
                                       </tr>
                                     );
                                   })}
