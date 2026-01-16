@@ -666,7 +666,8 @@ export default function ProjectSeasonSquadPage() {
                     <tr>
                       <th style={compactThStyle}>Name</th>
                       <th style={compactThStyle}>Email</th>
-                      <th style={compactThStyle}>Role</th>
+                      <th style={compactThStyle}>Access</th>
+                      <th style={compactThStyle}>Functional</th>
                       <th style={compactThStyle}>Position</th>
                       <th style={compactThStyle}>#</th>
                       <th style={compactThStyle} className="text-right">
@@ -684,7 +685,26 @@ export default function ProjectSeasonSquadPage() {
                         '—';
 
                       const email = user.email || '—';
-                      const role = String(m.role || 'member');
+                      const normalizeAccessRole = (raw: any): 'viewer' | 'editor' | 'admin' => {
+                        const role = String(raw || '').trim().toLowerCase();
+                        if (role === 'admin') return 'admin';
+                        if (role === 'editor') return 'editor';
+                        if (role === 'viewer') return 'viewer';
+                        if (['coach', 'trainer'].includes(role)) return 'editor';
+                        if (['manager', 'owner'].includes(role)) return 'admin';
+                        return 'viewer';
+                      };
+
+                      const functionalRoles = (() => {
+                        const direct = (m as any)?.functional_roles ?? (m as any)?.functionalRoles;
+                        if (Array.isArray(direct)) return direct.map((r) => String(r || '').trim()).filter(Boolean);
+
+                        const meta = (m as any)?.metadata || {};
+                        const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();
+                        return legacy ? [legacy] : [];
+                      })();
+
+                      const role = normalizeAccessRole(m.role || 'viewer');
                       const position = m.metadata?.position || '—';
                       const shirtNumber = m.metadata?.shirt_number ?? '';
                       const membershipId = m.id;
@@ -707,9 +727,22 @@ export default function ProjectSeasonSquadPage() {
                           </td>
                           <td style={compactTextTdStyle}>{email}</td>
                           <td style={compactTdStyle}>
-                            <Badge variant={role === 'admin' || role === 'manager' ? 'warning' : 'default'}>
+                            <Badge variant={role === 'admin' ? 'warning' : 'default'}>
                               {role}
                             </Badge>
+                          </td>
+                          <td style={compactTdStyle}>
+                            {functionalRoles.length ? (
+                              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                {functionalRoles.map((r: string) => (
+                                  <Badge key={r} variant="default">
+                                    {r}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              '—'
+                            )}
                           </td>
                           <td style={compactTextTdStyle}>{position}</td>
                           <td style={compactTdStyle}>{shirtNumber || '—'}</td>
@@ -753,7 +786,7 @@ export default function ProjectSeasonSquadPage() {
 
                     {members.length === 0 && (
                       <tr>
-                        <td colSpan={6} style={{ ...compactTdStyle, textAlign: 'center', padding: '24px' }}>
+                        <td colSpan={7} style={{ ...compactTdStyle, textAlign: 'center', padding: '24px' }}>
                           No members found for this season.
                         </td>
                       </tr>

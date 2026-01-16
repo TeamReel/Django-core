@@ -641,6 +641,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     return normalizeAccessRole(base?.role ?? anyOne?.role ?? 'viewer');
   };
 
+  const getFunctionalRolesFromMembership = (m: any): string[] => {
+    const direct = (m as any)?.functional_roles ?? (m as any)?.functionalRoles;
+    if (Array.isArray(direct)) return direct.map((r) => String(r || '').trim()).filter(Boolean);
+
+    const meta = (m as any)?.metadata || {};
+    const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();
+    return legacy ? [legacy] : [];
+  };
+
+  const getFunctionalRolesForUser = (userId: string): string[] => {
+    const relevant = teamRoster.filter((m: any) => getUserId(m) === String(userId));
+    const set = new Set<string>();
+    for (const m of relevant) {
+      for (const r of getFunctionalRolesFromMembership(m)) set.add(r);
+    }
+    return Array.from(set.values());
+  };
+
   const squadUserIdSet = useMemo(() => {
     const s = new Set<string>();
     for (const m of members || []) {
@@ -1704,6 +1722,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     <th style={compactThStyle}>Name</th>
                                     <th style={compactThStyle}>Email</th>
                                     <th style={compactThStyle}>Access</th>
+                                    <th style={compactThStyle}>Functional</th>
                                     <th style={{ ...compactThStyle, width: '120px' }} className="text-right">
                                       Action
                                     </th>
@@ -1715,6 +1734,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     const { name, email } = getUserLabel(m);
                                     const checked = Boolean(userId && selectedEligibleUserIds.has(userId));
                                     const role = getBestRoleForUser(userId);
+                                    const functionalRoles = getFunctionalRolesForUser(userId);
                                     return (
                                       <tr key={`eligible:${userId || email}`}>
                                         <td style={compactTdStyle}>
@@ -1732,6 +1752,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         <td style={compactTextTdStyle}>{email}</td>
                                         <td style={compactTdStyle}>
                                           <Badge variant="default">{role}</Badge>
+                                        </td>
+                                        <td style={compactTdStyle}>
+                                          {functionalRoles.length ? (
+                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                              {functionalRoles.map((r) => (
+                                                <Badge key={r} variant="default">
+                                                  {r}
+                                                </Badge>
+                                              ))}
+                                            </div>
+                                          ) : (
+                                            '—'
+                                          )}
                                         </td>
                                         <td style={compactTdStyle} className="text-right">
                                           <button
@@ -1815,7 +1848,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     <th style={{ ...compactThStyle, width: '44px' }}></th>
                                     <th style={compactThStyle}>Name</th>
                                     <th style={compactThStyle}>Email</th>
-                                    <th style={compactThStyle}>Role</th>
+                                    <th style={compactThStyle}>Access</th>
+                                    <th style={compactThStyle}>Functional</th>
                                     <th style={compactThStyle}>Position</th>
                                     <th style={compactThStyle}>#</th>
                                     <th style={{ ...compactThStyle, width: '120px' }} className="text-right">
@@ -1833,7 +1867,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       '—';
 
                                     const email = memberUser.email || '—';
-                                    const role = String(m.role || 'member');
+                                    const role = normalizeAccessRole(m.role || 'viewer');
+                                    const functionalRoles = getFunctionalRolesFromMembership(m);
                                     const position = m.metadata?.position || '—';
                                     const shirtNumber = m.metadata?.shirt_number ?? '';
                                     const membershipId = String(m.id || '').trim();
@@ -1855,9 +1890,22 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         <td style={compactTextTdStyle}>{name}</td>
                                         <td style={compactTextTdStyle}>{email}</td>
                                         <td style={compactTdStyle}>
-                                          <Badge variant={role === 'admin' || role === 'manager' ? 'warning' : 'default'}>
+                                          <Badge variant={role === 'admin' ? 'warning' : 'default'}>
                                             {role}
                                           </Badge>
+                                        </td>
+                                        <td style={compactTdStyle}>
+                                          {functionalRoles.length ? (
+                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                              {functionalRoles.map((r: string) => (
+                                                <Badge key={r} variant="default">
+                                                  {r}
+                                                </Badge>
+                                              ))}
+                                            </div>
+                                          ) : (
+                                            '—'
+                                          )}
                                         </td>
                                         <td style={compactTextTdStyle}>{position}</td>
                                         <td style={compactTdStyle}>{shirtNumber || '—'}</td>
@@ -1897,7 +1945,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 <tr>
                                   <th style={compactThStyle}>Name</th>
                                   <th style={compactThStyle}>Email</th>
-                                  <th style={compactThStyle}>Role</th>
+                                  <th style={compactThStyle}>Access</th>
+                                  <th style={compactThStyle}>Functional</th>
                                   <th style={compactThStyle}>Position</th>
                                   <th style={compactThStyle}>#</th>
                                 </tr>
@@ -1912,7 +1961,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     '—';
 
                                   const email = memberUser.email || '—';
-                                  const role = String(m.role || 'member');
+                                  const role = normalizeAccessRole(m.role || 'viewer');
+                                  const functionalRoles = getFunctionalRolesFromMembership(m);
                                   const position = m.metadata?.position || '—';
                                   const shirtNumber = m.metadata?.shirt_number ?? '';
 
@@ -1921,9 +1971,22 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       <td style={compactTextTdStyle}>{name}</td>
                                       <td style={compactTextTdStyle}>{email}</td>
                                       <td style={compactTdStyle}>
-                                        <Badge variant={role === 'admin' || role === 'manager' ? 'warning' : 'default'}>
+                                        <Badge variant={role === 'admin' ? 'warning' : 'default'}>
                                           {role}
                                         </Badge>
+                                      </td>
+                                      <td style={compactTdStyle}>
+                                        {functionalRoles.length ? (
+                                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                            {functionalRoles.map((r: string) => (
+                                              <Badge key={r} variant="default">
+                                                {r}
+                                              </Badge>
+                                            ))}
+                                          </div>
+                                        ) : (
+                                          '—'
+                                        )}
                                       </td>
                                       <td style={compactTextTdStyle}>{position}</td>
                                       <td style={compactTdStyle}>{shirtNumber || '—'}</td>

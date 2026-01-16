@@ -13,6 +13,7 @@ interface Member {
   };
   role: string;
   joined_at: string;
+  functional_roles?: string[];
   metadata?: {
     position?: string;
     shirt_number?: number;
@@ -112,6 +113,15 @@ export const MemberList: React.FC<MemberListProps> = ({
       fetchMembers();
   }, [selectedPeriod, projectId, apiBaseUrl]);
 
+  const getFunctionalRoles = (m: any): string[] => {
+    const direct = (m as any)?.functional_roles ?? (m as any)?.functionalRoles;
+    if (Array.isArray(direct)) return direct.map((r) => String(r || '').trim()).filter(Boolean);
+
+    const meta = (m as any)?.metadata || {};
+    const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();
+    return legacy ? [legacy] : [];
+  };
+
   return (
     <div>
        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -150,7 +160,8 @@ export const MemberList: React.FC<MemberListProps> = ({
                   <th style={{ width: '50px' }}>#</th>
                   <th>Name</th>
                   <th>Position</th>
-                  <th>Role</th>
+                  <th>Access</th>
+                  <th>Functional</th>
                   <th>Joined</th>
                 </tr>
               </thead>
@@ -161,6 +172,8 @@ export const MemberList: React.FC<MemberListProps> = ({
                   const ADMIN_LIKE_PROJECT_ROLES = new Set(['owner', 'admin', 'manager', 'coach']);
                   const membershipRole = normalizeRoleName(item.role || 'member');
                   const role = ADMIN_LIKE_PROJECT_ROLES.has(membershipRole) ? 'Team Admin' : 'Team Member';
+
+                  const functionalRoles = getFunctionalRoles(item);
 
                   // Metadata usually lives on the Membership object (item), not user
                   const position = item.metadata?.position || '-';
@@ -185,6 +198,19 @@ export const MemberList: React.FC<MemberListProps> = ({
                           {role}
                         </Badge>
                       </td>
+                      <td>
+                        {functionalRoles.length ? (
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {functionalRoles.map((r) => (
+                              <Badge key={r} variant="default" size="sm">
+                                {r}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span style={{ color: '#888' }}>—</span>
+                        )}
+                      </td>
                       <td style={{ fontSize: '0.85rem' }}>
                         {item.joined_at
                           ? new Date(item.joined_at).toLocaleDateString()
@@ -195,7 +221,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                 })}
                 {members.length === 0 && (
                     <tr>
-                        <td colSpan={5} style={{ textAlign: 'center', padding: '20px', color: '#888' }}>
+                        <td colSpan={6} style={{ textAlign: 'center', padding: '20px', color: '#888' }}>
                             No members found for this season.
                         </td>
                     </tr>
