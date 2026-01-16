@@ -1387,6 +1387,7 @@ export default function TopNavbar() {
             {/* Credits / Transactions Icon */}
             {user ? (
               <button
+                className="nav-credits-button"
                 onClick={() => {
                   const id = Number(currentUserId);
                   if (!Number.isFinite(id)) return;
@@ -1469,6 +1470,9 @@ export default function TopNavbar() {
             display: none !important;
           }
           .desktop-only {
+            display: none !important;
+          }
+          .nav-credits-button {
             display: none !important;
           }
           #mega-menu-panel {
