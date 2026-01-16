@@ -198,9 +198,27 @@ export default function UsersTable({
               return Array.isArray(list) ? list : [];
             })();
 
-            const teamIds = Array.from(
+            const rawProjectIds = Array.from(
               new Set(pms.map((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '')).filter(Boolean))
             );
+
+            // The People table "Team" column should show teams, not the club.
+            // Users can have a direct club membership AND a team membership (or multiple season memberships
+            // for the same team). We filter out the club project id so that multiple seasons don't look like
+            // "multiple teams".
+            const teamIds = rawProjectIds.filter((id) => {
+              if (!id) return false;
+              if (currentClubId && String(id) === String(currentClubId)) return false;
+              // Prefer IDs we can resolve to a team.
+              if (teamById.has(String(id))) return true;
+
+              // Fallback: if the membership payload includes project info with a parent, treat it as a team.
+              const pm = pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(id));
+              const parentId = String(pm?.project?.parent_id ?? pm?.project?.parent_project_id ?? pm?.project?.parent?.id ?? '').trim();
+              if (parentId && currentClubId && parentId === String(currentClubId)) return true;
+              return false;
+            });
+
             const teamId = teamIds.length === 1 ? teamIds[0] : '';
 
             const getTeamNameFromPm = (pm: any): string =>
@@ -219,25 +237,40 @@ export default function UsersTable({
             const canViewUser = typeof onViewUser === 'function';
             const canViewMembership = hasOrgMembership && typeof onViewMembership === 'function';
 
-            const multiTeamTitle = teamIds
+            const teamEntries = teamIds
               .map((id) => {
                 const t = teamById.get(String(id));
-                const teamNameFromMap = String((t as any)?.name || '').trim();
-                if (teamNameFromMap) return teamNameFromMap;
                 const pm = pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(id));
-                const nameFromPm = String(pm?.project?.name ?? pm?.project_name ?? '').trim();
-                return nameFromPm || id;
+                const name =
+                  String((t as any)?.name || '').trim() ||
+                  String(pm?.project?.name ?? pm?.project_name ?? '').trim() ||
+                  id;
+                const slugOrId =
+                  String((t as any)?.slug || '').trim() ||
+                  String(pm?.project?.slug ?? pm?.project_slug ?? '').trim() ||
+                  id;
+                return { id, name, slugOrId };
               })
-              .join(', ');
+              .filter((x) => Boolean(String(x.slugOrId || '').trim()));
 
             return (
               <tr key={String(userObj.id)}>
                 {!isTeamRoute && (
                   <td style={compactTextTdStyle}>
-                    {teamIds.length > 1 ? (
-                      <span title={multiTeamTitle}>
-                        Multiple
-                      </span>
+                    {teamEntries.length > 1 ? (
+                      <>
+                        {teamEntries.map((t, idx) => (
+                          <React.Fragment key={t.id}>
+                            {idx > 0 ? '; ' : null}
+                            <Link
+                              to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${t.slugOrId}`}
+                              className="text-blue-600 hover:underline"
+                            >
+                              {t.name}
+                            </Link>
+                          </React.Fragment>
+                        ))}
+                      </>
                     ) : teamSlugOrId ? (
                       <Link
                         to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}`}
