@@ -647,10 +647,8 @@ export default function TopNavbar() {
 
     const matchPath = matchId && orgSlug && seasonSlugOrId && competitionSlugOrId
       ? (clubSlugOrId && teamSlugOrId
-        ? `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`
-        : (teamSlugOrId
-          ? `/organisations/${orgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`
-          : `/matches/${matchId}`))
+        ? `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}/${competitionSlugOrId}/${matchId}`
+        : `/matches/${matchId}`)
       : (matchId ? `/matches/${matchId}` : competitionPath);
 
     return {

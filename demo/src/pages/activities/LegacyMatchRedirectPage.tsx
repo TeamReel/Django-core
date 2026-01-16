@@ -36,6 +36,7 @@ export default function LegacyMatchRedirectPage() {
         });
         if (!matchRes.ok) throw new Error(matchRes.status === 404 ? 'Match not found' : 'Failed to load match');
         const match = getEnvelopeData<any>(await matchRes.json());
+        const matchKeyOrId = String(match?.slug || match?.id || id).trim();
 
         // 2) Fetch competition (match.period)
         const competitionId = String(match?.period?.id || match?.period_id || '').trim();
@@ -52,6 +53,7 @@ export default function LegacyMatchRedirectPage() {
           return;
         }
         const competition = getEnvelopeData<any>(await competitionRes.json());
+        const competitionKeyOrId = String(periodPathKey(competition) || competitionId).trim();
 
         const seasonUuid = String(competition?.parent_period?.id || competition?.parent_period_id || '').trim();
         if (!seasonUuid) {
@@ -98,10 +100,12 @@ export default function LegacyMatchRedirectPage() {
         }
 
         const seasonsBasePath = clubSlugOrId
-          ? `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons`
-          : `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons`;
+          ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}/seasons`
+          : `/${orgSlugOrId}/projects/${teamSlugOrId}/seasons`;
 
-        const target = `${seasonsBasePath}/${seasonKeyOrId}/competitions/${competitionId}/matches/${id}`;
+        const target = clubSlugOrId
+          ? `${seasonsBasePath}/${seasonKeyOrId}/${competitionKeyOrId}/${matchKeyOrId}`
+          : `${seasonsBasePath}/${seasonKeyOrId}/competitions/${competitionId}/matches/${matchKeyOrId}`;
 
         // If somehow already at target, avoid loops.
         if (location.pathname === target) {
