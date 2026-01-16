@@ -39,6 +39,39 @@ from .serializers import (
 logger = logging.getLogger(__name__)
 
 
+def _safe_check_permission(
+    *, user_id: int, permission_code: str, resource_type: str, resource_id: int
+) -> bool:
+    """Wrapper around permissions.evaluator.check_permission.
+
+    The permission evaluator may depend on external services (e.g. cache) and can raise.
+    Member/roster endpoints should never 500 due to evaluator infrastructure issues.
+    """
+
+    try:
+        from permissions.evaluator import check_permission
+
+        return bool(
+            check_permission(
+                user_id,
+                permission_code,
+                resource_type=resource_type,
+                resource_id=resource_id,
+            )
+        )
+    except Exception:
+        logger.exception(
+            "check_permission failed",
+            extra={
+                "user_id": user_id,
+                "permission": permission_code,
+                "resource_type": resource_type,
+                "resource_id": resource_id,
+            },
+        )
+        return False
+
+
 class ProjectCursorPagination(CursorPagination):
     """
     Cursor pagination for project lists.
@@ -88,8 +121,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         # Minimal access control: only project members or admins that can edit team profiles
         if not request.user.is_superuser:
-            from permissions.evaluator import check_permission
-
             is_project_member = ProjectMembership.objects.filter(
                 project=project,
                 user=request.user,
@@ -100,9 +131,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
             # are containers and should not expose membership lists to basic viewers.
             is_team_project = project.parent_project_id is not None
 
-            can_edit_team_profiles = check_permission(
-                request.user.id,
-                "profile.edit_team",
+            can_edit_team_profiles = _safe_check_permission(
+                user_id=request.user.id,
+                permission_code="profile.edit_team",
                 resource_type="project",
                 resource_id=project.id,
             )
@@ -563,21 +594,19 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         ).exists():
             return
 
-        from permissions.evaluator import check_permission
-
         # Direct team-member management capability on this project
-        if check_permission(
-            user.id,
-            "profile.edit_team",
+        if _safe_check_permission(
+            user_id=user.id,
+            permission_code="profile.edit_team",
             resource_type="project",
             resource_id=project.id,
         ):
             return
 
         # Club Admin can manage child teams via project.edit_children on the parent (club)
-        if project.parent_project_id and check_permission(
-            user.id,
-            "project.edit_children",
+        if project.parent_project_id and _safe_check_permission(
+            user_id=user.id,
+            permission_code="project.edit_children",
             resource_type="project",
             resource_id=project.parent_project_id,
         ):
@@ -618,21 +647,19 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         if is_project_member:
             return
 
-        from permissions.evaluator import check_permission
-
         # Admins who can edit team profiles can also view the roster
-        if check_permission(
-            user.id,
-            "profile.edit_team",
+        if _safe_check_permission(
+            user_id=user.id,
+            permission_code="profile.edit_team",
             resource_type="project",
             resource_id=project.id,
         ):
             return
 
         # Club Admin viewing child team roster
-        if project.parent_project_id and check_permission(
-            user.id,
-            "project.edit_children",
+        if project.parent_project_id and _safe_check_permission(
+            user_id=user.id,
+            permission_code="project.edit_children",
             resource_type="project",
             resource_id=project.parent_project_id,
         ):
@@ -684,21 +711,19 @@ class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
         ).exists():
             return
 
-        from permissions.evaluator import check_permission
-
         # Direct team-member management capability on this project
-        if check_permission(
-            user.id,
-            "profile.edit_team",
+        if _safe_check_permission(
+            user_id=user.id,
+            permission_code="profile.edit_team",
             resource_type="project",
             resource_id=project.id,
         ):
             return
 
         # Club Admin can manage child teams via project.edit_children on the parent (club)
-        if project.parent_project_id and check_permission(
-            user.id,
-            "project.edit_children",
+        if project.parent_project_id and _safe_check_permission(
+            user_id=user.id,
+            permission_code="project.edit_children",
             resource_type="project",
             resource_id=project.parent_project_id,
         ):

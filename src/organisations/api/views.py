@@ -181,6 +181,10 @@ class MembershipViewSet(viewsets.ModelViewSet):
             from .serializers import MembershipCreateSerializer
 
             return MembershipCreateSerializer
+        if self.action == "list":
+            from .serializers import MembershipListSerializer
+
+            return MembershipListSerializer
         if self.action in ["update", "partial_update"]:
             from .serializers import MembershipUpdateSerializer
 

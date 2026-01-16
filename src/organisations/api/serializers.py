@@ -60,6 +60,18 @@ class UserSerializer(serializers.ModelSerializer):
         return list(orgs_data.values())
 
 
+class UserBasicSerializer(serializers.ModelSerializer):
+    """Lightweight user serializer for large list endpoints.
+
+    Avoids expensive per-user computed fields (e.g. organisations) to prevent N+1 queries.
+    """
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "first_name", "last_name", "is_active"]
+        read_only_fields = fields
+
+
 class OrganisationListSerializer(serializers.ModelSerializer):
     """
     Lightweight serializer for organisation list view.
@@ -288,7 +300,38 @@ class MembershipSerializer(serializers.ModelSerializer):
     def get_organisation(self, obj):
         """Return minimal organisation details."""
         return {
-            "id": obj.organisation.id,
+            "id": str(obj.organisation.id),
+            "name": obj.organisation.name,
+            "slug": obj.organisation.slug,
+        }
+
+
+class MembershipListSerializer(serializers.ModelSerializer):
+    """List serializer for memberships.
+
+    This is intentionally lighter than MembershipSerializer to keep directory pages fast.
+    """
+
+    user = UserBasicSerializer(read_only=True)
+    organisation = serializers.SerializerMethodField()
+    invited_by = UserBasicSerializer(read_only=True)
+
+    class Meta:
+        model = Membership
+        fields = [
+            "id",
+            "user",
+            "organisation",
+            "role",
+            "joined_at",
+            "invited_by",
+            "is_active",
+        ]
+        read_only_fields = fields
+
+    def get_organisation(self, obj):
+        return {
+            "id": str(obj.organisation.id),
             "name": obj.organisation.name,
             "slug": obj.organisation.slug,
         }
