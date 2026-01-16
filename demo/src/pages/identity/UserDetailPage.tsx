@@ -1668,29 +1668,31 @@ export const UserDetailPage: React.FC = () => {
                     return (
                       <tr key={String(m?.id)}>
                         <td style={compactTextTdStyle}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedDetailMatch(m);
-                              setIsMatchDetailModalOpen(true);
-                            }}
-                            style={{
-                              border: 'none',
-                              background: 'transparent',
-                              padding: 0,
-                              color: '#007bff',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              textDecoration: 'underline',
-                              maxWidth: '100%',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            }}
-                            title="Open match details"
-                          >
-                            {String(m?.title || '') || '—'}
-                          </button>
+                          {matchPath ? (
+                            <a
+                              href={matchPath}
+                              className="text-blue-600 hover:underline"
+                              style={{
+                                textDecoration: 'none',
+                                fontWeight: 700,
+                                display: 'inline-block',
+                                maxWidth: '100%',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setSelectedDetailMatch(m);
+                                setIsMatchDetailModalOpen(true);
+                              }}
+                              title="Open match details"
+                            >
+                              {String(m?.title || '') || '—'}
+                            </a>
+                          ) : (
+                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                          )}
                         </td>
                         <td style={compactTextTdStyle}>{String(m?.start_time || '')}</td>
                         <td style={compactTextTdStyle}>{renderNavLink(teamName, teamPath)}</td>
@@ -1698,6 +1700,7 @@ export const UserDetailPage: React.FC = () => {
                           <div style={compactActionsStyle}>
                             <button
                               type="button"
+                              className="app-action-button"
                               onClick={() => {
                                 setSelectedDetailMatch(m);
                                 setIsMatchDetailModalOpen(true);
@@ -1708,6 +1711,7 @@ export const UserDetailPage: React.FC = () => {
                             </button>
                             <button
                               type="button"
+                              className="app-action-button"
                               onClick={() => {
                                 setSelectedEditMatch(m);
                                 setIsMatchEditModalOpen(true);
@@ -1718,6 +1722,7 @@ export const UserDetailPage: React.FC = () => {
                             </button>
                             <button
                               type="button"
+                              className="app-action-button"
                               onClick={async () => {
                                 if (!m?.id) return;
                                 if (!window.confirm(`Delete match ${m.title || m.id}?`)) return;
@@ -1731,15 +1736,6 @@ export const UserDetailPage: React.FC = () => {
                               style={actionButtonStyle('danger')}
                             >
                               Delete
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => matchPath && navigate(matchPath)}
-                              disabled={!matchPath}
-                              style={actionButtonStyle('neutral')}
-                              title="Open match page"
-                            >
-                              Open
                             </button>
                           </div>
                         </td>
