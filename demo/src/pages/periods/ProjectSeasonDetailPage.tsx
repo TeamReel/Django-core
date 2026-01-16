@@ -1160,13 +1160,28 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     {compMatches.map((match: any) => (
                                       <tr key={match.id}>
                                         <td style={compactTextTdStyle}>
-                                          <Link
-                                            to={`/matches/${(match as any).slug || match.id}`}
-                                            className="text-blue-600 hover:underline"
-                                            style={{ textDecoration: 'none' }}
-                                          >
-                                            {match.title || match.name || 'Match'}
-                                          </Link>
+                                          {(() => {
+                                            const compKey = periodPathKey(competition as any) || String(competition?.id || '').trim();
+                                            const matchKey = String((match as any).slug || match.id || '').trim();
+
+                                            const matchPath = isTeamRoute
+                                              ? `${seasonsBasePath}/${seasonPathKey}/${compKey}/${matchKey}`
+                                              : matchKey
+                                                ? `/matches/${matchKey}`
+                                                : '';
+
+                                            return matchPath ? (
+                                              <Link
+                                                to={matchPath}
+                                                className="text-blue-600 hover:underline"
+                                                style={{ textDecoration: 'none' }}
+                                              >
+                                                {match.title || match.name || 'Match'}
+                                              </Link>
+                                            ) : (
+                                              <span style={{ color: 'var(--app-muted-text)' }}>{match.title || match.name || 'Match'}</span>
+                                            );
+                                          })()}
                                         </td>
                                         <td style={compactTextTdStyle}>{match.start_time ? new Date(match.start_time).toLocaleString() : '—'}</td>
                                         <td style={compactTdStyle}>
@@ -1562,8 +1577,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   const compId = String(
                                     (match as any).period_id || match.period?.id || (match as any).period || ''
                                   ).trim();
+                                  const compKey = periodPathKey((match as any).period || null) || compId;
                                   const matchKey = (match as any).slug || match.id;
-                                  const matchPath = `/matches/${matchKey}`;
+                                  const matchPath = isTeamRoute
+                                    ? `${seasonsBasePath}/${seasonPathKey}/${compKey}/${String(matchKey)}`
+                                    : `/matches/${String(matchKey)}`;
                                   return (
                                 <Link
                                       to={matchPath}
