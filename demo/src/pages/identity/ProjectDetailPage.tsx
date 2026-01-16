@@ -2907,6 +2907,19 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                             if (!ok) return false;
                           }
 
+                          // Season filter: require a project membership scoped to this season.
+                          // Organisation members may have many project memberships; we filter by membership.period_id.
+                          if (userSeasonFilterId) {
+                            const seasonId = String(userSeasonFilterId);
+                            const ok = pms.some((pm: any) => {
+                              const pmSeasonId = String(pm?.period_id ?? pm?.period ?? '').trim();
+                              if (!pmSeasonId || pmSeasonId !== seasonId) return false;
+                              if (effectiveTeamId) return getPmTeamId(pm) === String(effectiveTeamId);
+                              return true;
+                            });
+                            if (!ok) return false;
+                          }
+
                           return true;
                         });
 
