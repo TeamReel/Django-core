@@ -2982,6 +2982,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                           page: number,
                           setPage: (n: number) => void,
                           label?: string,
+                          seasonActionMode?: 'linked' | 'unlinked',
                         ) => {
                           const totalPages = Math.max(1, Math.ceil(items.length / usersPageSize));
                           const safePage = Math.min(page, totalPages);
@@ -3017,6 +3018,78 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 currentProjectId={String(project?.id || '')}
                                 teamById={teamById}
                                 userCanManageMembers={Boolean(userCanManageMembers)}
+                                seasonId={isSpecificSeasonFilter ? String(userSeasonFilterId) : undefined}
+                                seasonActionMode={seasonActionMode}
+                                onAssignSeason={async (item: any) => {
+                                  if (!isSpecificSeasonFilter) return;
+                                  if (!effectiveTeamId) return;
+                                  const seasonId = String(userSeasonFilterId);
+                                  const u = item?.user || item;
+                                  const userId = Number(u?.id);
+                                  if (!userId) throw new Error('User id missing');
+
+                                  const pms = (() => {
+                                    const list =
+                                      (item as any)?.project_memberships ||
+                                      (u as any)?.project_memberships ||
+                                      (item as any)?.project_membership_details ||
+                                      (u as any)?.project_membership_details ||
+                                      [];
+                                    return Array.isArray(list) ? list : [];
+                                  })();
+                                  const pmRole = String(
+                                    (pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(effectiveTeamId) && !String(pm?.period_id ?? pm?.period ?? '').trim())?.role) ||
+                                      (pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(effectiveTeamId))?.role) ||
+                                      'viewer'
+                                  ).trim();
+
+                                  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                  const res = await fetch(
+                                    `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(effectiveTeamId))}/members/`,
+                                    {
+                                      method: 'POST',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': getCsrfToken() || '',
+                                      },
+                                      credentials: 'include',
+                                      body: JSON.stringify({
+                                        user_id: userId,
+                                        role: pmRole,
+                                        period_id: seasonId,
+                                      }),
+                                    }
+                                  );
+
+                                  if (!res.ok) {
+                                    const text = await res.text().catch(() => '');
+                                    if (!/already|exists|duplicate/i.test(text)) {
+                                      throw new Error(text || 'Failed to assign user to season');
+                                    }
+                                  }
+
+                                  await fetchOrgMembers(true);
+                                }}
+                                onUnassignSeason={async (projectMembershipId: string) => {
+                                  if (!effectiveTeamId) return;
+                                  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                  const res = await fetch(
+                                    `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(effectiveTeamId))}/members/${encodeURIComponent(String(projectMembershipId))}/`,
+                                    {
+                                      method: 'DELETE',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': getCsrfToken() || '',
+                                      },
+                                      credentials: 'include',
+                                    }
+                                  );
+                                  if (!res.ok) {
+                                    const text = await res.text().catch(() => '');
+                                    throw new Error(text || 'Failed to unassign user from season');
+                                  }
+                                  await fetchOrgMembers(true);
+                                }}
                                 onViewUser={(userObj) => {
                                   setDetailUser(userObj);
                                   setIsUserDetailModalOpen(true);
@@ -3048,7 +3121,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 {linked.length === 0 ? (
                                   <Alert variant="info">No users are linked to this season.</Alert>
                                 ) : (
-                                  renderPagedUsersTable(linked, usersLinkedPage, setUsersLinkedPage)
+                                  renderPagedUsersTable(linked, usersLinkedPage, setUsersLinkedPage, undefined, 'linked')
                                 )}
                               </div>
                               <div style={{ marginBottom: '8px' }}>
@@ -3056,7 +3129,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                                 {unlinked.length === 0 ? (
                                   <Alert variant="info">Everyone is linked to this season.</Alert>
                                 ) : (
-                                  renderPagedUsersTable(unlinked, usersUnlinkedPage, setUsersUnlinkedPage)
+                                  renderPagedUsersTable(unlinked, usersUnlinkedPage, setUsersUnlinkedPage, undefined, 'unlinked')
                                 )}
                               </div>
                             </>

@@ -20,6 +20,10 @@ type Props = {
   currentProjectId: string;
   teamById: Map<string, any>;
   userCanManageMembers: boolean;
+  seasonId?: string;
+  seasonActionMode?: 'linked' | 'unlinked';
+  onAssignSeason?: (item: any) => Promise<void>;
+  onUnassignSeason?: (projectMembershipId: string, email: string) => Promise<void>;
   onViewUser?: (user: any) => void;
   onViewMembership: (membershipId: string) => void;
   onEditMembership: (item: any) => void;
@@ -35,6 +39,10 @@ export default function UsersTable({
   currentProjectId,
   teamById,
   userCanManageMembers,
+  seasonId,
+  seasonActionMode,
+  onAssignSeason,
+  onUnassignSeason,
   onViewUser,
   onViewMembership,
   onEditMembership,
@@ -81,6 +89,16 @@ export default function UsersTable({
         pm?.project?.parent_project_id ??
         ''
     );
+
+  const getPmPeriodId = (pm: any) => String(pm?.period_id ?? pm?.period ?? '').trim();
+
+  const getTeamSeasonMembershipId = (item: any): string => {
+    const season = String(seasonId || '').trim();
+    if (!season) return '';
+    const pms = getMemberProjectMemberships(item);
+    const match = pms.find((pm: any) => getPmTeamId(pm) === String(currentProjectId) && getPmPeriodId(pm) === season);
+    return String(match?.id ?? '').trim();
+  };
 
   const getRoleDisplay = (item: any): { label: string; title: string } => {
     const userObj = item?.user || item;
@@ -238,6 +256,36 @@ export default function UsersTable({
                       <button type="button" onClick={() => onEditMembership(item)} className="app-action-button" style={actionButtonStyle('warning')}>
                         Edit
                       </button>
+                      {Boolean(seasonId) && seasonActionMode === 'unlinked' && onAssignSeason ? (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!window.confirm(`Assign ${userObj.email} to this season?`)) return;
+                            await onAssignSeason(item);
+                          }}
+                          className="app-action-button"
+                          style={actionButtonStyle('success')}
+                        >
+                          Assign
+                        </button>
+                      ) : null}
+                      {Boolean(seasonId) && seasonActionMode === 'linked' && onUnassignSeason ? (
+                        <button
+                          type="button"
+                          disabled={!getTeamSeasonMembershipId(item)}
+                          onClick={async () => {
+                            const pmId = getTeamSeasonMembershipId(item);
+                            if (!pmId) return;
+                            if (!window.confirm(`Unassign ${userObj.email} from this season?`)) return;
+                            await onUnassignSeason(pmId, String(userObj.email || ''));
+                          }}
+                          className="app-action-button"
+                          style={actionButtonStyle('neutral')}
+                          title={!getTeamSeasonMembershipId(item) ? 'No season membership found' : undefined}
+                        >
+                          Unassign
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         onClick={async () => {

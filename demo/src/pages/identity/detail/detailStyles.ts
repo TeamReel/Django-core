@@ -35,7 +35,7 @@ export const compactActionsStyle: React.CSSProperties = {
   flexWrap: 'wrap',
 };
 
-export type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
+export type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger' | 'success';
 
 export const actionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => {
   const base: React.CSSProperties = {
@@ -54,6 +54,9 @@ export const actionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProper
   }
   if (tone === 'danger') {
     return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+  }
+  if (tone === 'success') {
+    return { ...base, border: '1px solid #28a745', color: '#28a745' };
   }
   return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
 };
