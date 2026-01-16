@@ -721,8 +721,49 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         for (const pm of clubFirstPage || []) {
           mergeMembership(pm, clubProject);
         }
+
+        // If the club itself has no direct project memberships (common), eagerly merge the first page
+        // of each child team roster so the Users tab isn't empty while background fetch continues.
+        try {
+          const teams = await ensureChildTeamsLoaded(clubProject);
+          const teamList = Array.isArray(teams) ? teams : [];
+          for (const t of teamList) {
+            const teamId = String((t as any)?.id || '').trim();
+            if (!teamId) continue;
+            const teamMembersUrl = `${apiV1BaseUrl}/projects/${encodeURIComponent(teamId)}/members/?${params.toString()}`;
+            const teamFirstPage = await fetchAllPages<any>(
+              teamMembersUrl,
+              { headers, credentials: 'include' },
+              { ...(force ? { bypass: true } : undefined), maxPages: 1 }
+            );
+            for (const pm of teamFirstPage || []) mergeMembership(pm, t);
+          }
+        } catch (e) {
+          console.warn('[ProjectDetailPage] Club team roster first-page fetch failed:', e);
+        }
+
         if (orgMembersFetchTokenRef.current === fetchToken) {
-          setOrgMembers(Array.from(byOrgMembershipId.values()));
+          const merged = Array.from(byOrgMembershipId.values());
+          if (merged.length > 0) {
+            setOrgMembers(merged);
+          } else {
+            // Final fallback: load org members (full roster) so club pages never render empty.
+            // This uses the same includes as the org-members branch below.
+            const membersParams = new URLSearchParams();
+            membersParams.set('include_project_memberships', 'true');
+            membersParams.set('include_role_assignments', 'true');
+            membersParams.set('include_project_membership_details', 'true');
+            membersParams.set('page_size', '500');
+
+            const membersUrl = `${apiV1BaseUrl}/organisations/${encodeURIComponent(currentOrgSlug)}/members/?${membersParams.toString()}`;
+
+            const firstPage = await fetchAllPages<any>(
+              membersUrl,
+              { headers, credentials: 'include' },
+              { ...(force ? { bypass: true } : undefined), maxPages: 1 }
+            );
+            setOrgMembers(Array.isArray(firstPage) ? firstPage : []);
+          }
         }
 
         // Background: fetch all team members and merge.
