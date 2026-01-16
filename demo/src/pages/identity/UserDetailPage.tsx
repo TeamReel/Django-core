@@ -7,6 +7,7 @@ import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
+import { periodPathKey } from '../../utils/periodPath';
 import UserDetailModal from './UserDetailModal';
 import UserEditModal from './UserEditModal';
 import LinkUserModal from './LinkUserModal';
@@ -1661,13 +1662,22 @@ export const UserDetailPage: React.FC = () => {
                     const teamIdValue = String(m?.project?.id || m?.project_id || '').trim();
                     const team = teamMemberships.find((t: any) => String(t?.id) === teamIdValue);
                     const clubIdValue = String(team?.parent || '').trim();
-                    const clubSlug = clubSlugById.get(clubIdValue) || '';
+                    const clubKeyOrId = String(clubSlugById.get(clubIdValue) || clubIdValue || '').trim();
                     const teamSlugOrId = String(team?.slug || team?.id || '').trim();
-                    const teamPath = primaryOrgSlug && clubSlug && teamSlugOrId
-                      ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}`
+                    const teamPath = primaryOrgSlug && clubKeyOrId && teamSlugOrId
+                      ? `/${primaryOrgSlug}/${clubKeyOrId}/${teamSlugOrId}`
                       : '';
                     const teamName = String(team?.name || m?.project?.name || m?.project_name || '').trim();
-                    const matchPath = (m as any)?.id ? `/matches/${String((m as any)?.slug || (m as any)?.id)}` : '';
+
+                    const matchKeyOrId = String((m as any)?.slug || (m as any)?.id || '').trim();
+                    const competition = (m as any)?.period || null;
+                    const competitionKeyOrId = String(periodPathKey(competition) || competition?.slug || competition?.id || '').trim();
+                    const season = competition?.parent_period || null;
+                    const seasonKeyOrId = String(periodPathKey(season) || season?.slug || season?.id || competition?.parent_period_id || '').trim();
+
+                    const matchPath = (primaryOrgSlug && clubKeyOrId && teamSlugOrId && seasonKeyOrId && competitionKeyOrId && matchKeyOrId)
+                      ? `/${primaryOrgSlug}/${clubKeyOrId}/${teamSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}/${matchKeyOrId}`
+                      : (matchKeyOrId ? `/matches/${matchKeyOrId}` : '');
                     return (
                       <tr key={String(m?.id)}>
                         <td style={compactTextTdStyle}>
