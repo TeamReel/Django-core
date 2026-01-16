@@ -1144,20 +1144,20 @@ export const UserDetailPage: React.FC = () => {
                       <td style={compactTdStyle}>
                         <div style={compactActionsStyle}>
                           {r.teamPath ? (
-                            <button type="button" onClick={() => navigate(r.teamPath)} style={actionButtonStyle('primary')}>
+                            <button type="button" className="app-action-button" onClick={() => navigate(r.teamPath)} style={actionButtonStyle('primary')}>
                               View Team
                             </button>
                           ) : (
-                            <button type="button" disabled style={{ ...actionButtonStyle('primary'), opacity: 0.5, cursor: 'not-allowed' }}>
+                            <button type="button" className="app-action-button" disabled style={{ ...actionButtonStyle('primary'), opacity: 0.5, cursor: 'not-allowed' }}>
                               View Team
                             </button>
                           )}
                           {r.seasonPath ? (
-                            <button type="button" onClick={() => navigate(r.seasonPath)} style={actionButtonStyle('primary')}>
+                            <button type="button" className="app-action-button" onClick={() => navigate(r.seasonPath)} style={actionButtonStyle('primary')}>
                               View Season
                             </button>
                           ) : (
-                            <button type="button" disabled style={{ ...actionButtonStyle('primary'), opacity: 0.5, cursor: 'not-allowed' }}>
+                            <button type="button" className="app-action-button" disabled style={{ ...actionButtonStyle('primary'), opacity: 0.5, cursor: 'not-allowed' }}>
                               View Season
                             </button>
                           )}
@@ -1234,11 +1234,12 @@ export const UserDetailPage: React.FC = () => {
                       </td>
                       <td style={compactTdStyle}>
                         <div style={compactActionsStyle}>
-                          <button type="button" onClick={() => orgPath && navigate(orgPath)} disabled={!orgPath} style={actionButtonStyle('primary')}>
+                          <button type="button" className="app-action-button" onClick={() => orgPath && navigate(orgPath)} disabled={!orgPath} style={actionButtonStyle('primary')}>
                             View
                           </button>
                           <button
                             type="button"
+                            className="app-action-button"
                             style={actionButtonStyle('warning')}
                             disabled={!orgSlugOrId}
                             onClick={async () => {
@@ -1257,6 +1258,7 @@ export const UserDetailPage: React.FC = () => {
                           </button>
                           <button
                             type="button"
+                            className="app-action-button"
                             style={actionButtonStyle('danger')}
                             disabled={!orgSlugOrId}
                             onClick={async () => {
@@ -1350,11 +1352,12 @@ export const UserDetailPage: React.FC = () => {
                       </td>
                       <td style={compactTdStyle}>
                         <div style={compactActionsStyle}>
-                          <button type="button" onClick={() => clubPath && navigate(clubPath)} disabled={!clubPath} style={actionButtonStyle('primary')}>
+                          <button type="button" className="app-action-button" onClick={() => clubPath && navigate(clubPath)} disabled={!clubPath} style={actionButtonStyle('primary')}>
                             View
                           </button>
                           <button
                             type="button"
+                            className="app-action-button"
                             onClick={() => {
                               if (!projectId) return;
                               if (!direct) return;
@@ -1368,6 +1371,7 @@ export const UserDetailPage: React.FC = () => {
                           </button>
                           <button
                             type="button"
+                            className="app-action-button"
                             style={actionButtonStyle('danger')}
                             disabled={!projectId || !direct}
                             onClick={async () => {
@@ -1462,11 +1466,12 @@ export const UserDetailPage: React.FC = () => {
                       </td>
                       <td style={compactTdStyle}>
                         <div style={compactActionsStyle}>
-                          <button type="button" onClick={() => teamPath && navigate(teamPath)} disabled={!teamPath} style={actionButtonStyle('primary')}>
+                          <button type="button" className="app-action-button" onClick={() => teamPath && navigate(teamPath)} disabled={!teamPath} style={actionButtonStyle('primary')}>
                             View
                           </button>
                           <button
                             type="button"
+                            className="app-action-button"
                             onClick={() => {
                               if (!projectId) return;
                               setEditingMembership({ projectId, projectName: String(t?.name || 'Team'), currentRole: String(t?.role || 'viewer') });
@@ -1479,6 +1484,7 @@ export const UserDetailPage: React.FC = () => {
                           </button>
                           <button
                             type="button"
+                            className="app-action-button"
                             style={actionButtonStyle('danger')}
                             disabled={!projectId}
                             onClick={async () => {
@@ -1551,7 +1557,7 @@ export const UserDetailPage: React.FC = () => {
                         </td>
                         <td style={compactTdStyle}>
                           <div style={compactActionsStyle}>
-                            <button type="button" onClick={() => seasonPath && navigate(seasonPath)} disabled={!seasonPath} style={actionButtonStyle('primary')}>
+                            <button type="button" className="app-action-button" onClick={() => seasonPath && navigate(seasonPath)} disabled={!seasonPath} style={actionButtonStyle('primary')}>
                               View
                             </button>
                           </div>
@@ -1618,7 +1624,7 @@ export const UserDetailPage: React.FC = () => {
                         </td>
                         <td style={compactTdStyle}>
                           <div style={compactActionsStyle}>
-                            <button type="button" onClick={() => competitionPath && navigate(competitionPath)} disabled={!competitionPath} style={actionButtonStyle('primary')}>
+                            <button type="button" className="app-action-button" onClick={() => competitionPath && navigate(competitionPath)} disabled={!competitionPath} style={actionButtonStyle('primary')}>
                               View
                             </button>
                           </div>
