@@ -13,6 +13,8 @@ import LinkUserModal from './LinkUserModal';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import { useAuth } from '@django-core/auth-ui';
+import MatchDetailModal from './MatchDetailModal';
+import MatchEditModal from './MatchEditModal';
 import {
   actionButtonStyle,
   compactActionsStyle,
@@ -209,6 +211,12 @@ export const UserDetailPage: React.FC = () => {
   const [linkedCompetitions, setLinkedCompetitions] = useState<any[]>([]);
   const [linkedMatches, setLinkedMatches] = useState<any[]>([]);
   const [loadingRelations, setLoadingRelations] = useState(false);
+  const [relationsReloadToken, setRelationsReloadToken] = useState(0);
+
+  const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
+  const [selectedDetailMatch, setSelectedDetailMatch] = useState<any | null>(null);
+  const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
+  const [selectedEditMatch, setSelectedEditMatch] = useState<any | null>(null);
 
   const [hierarchySearch, setHierarchySearch] = useState('');
 
@@ -809,7 +817,50 @@ export const UserDetailPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [apiBaseUrl, primaryOrgSlug, teamSeasonPairs, user, userId]);
+  }, [apiBaseUrl, primaryOrgSlug, teamSeasonPairs, user, userId, relationsReloadToken]);
+
+  const saveMatchEdits = async (matchToEdit: any, patch: any) => {
+    const matchIdValue = String(matchToEdit?.id || '').trim();
+    if (!matchIdValue) throw new Error('Missing match id');
+
+    const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(matchIdValue)}/`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCsrfToken(),
+      },
+      credentials: 'include',
+      body: JSON.stringify(patch || {}),
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || 'Failed to update match');
+    }
+
+    // Refresh the matches list (safe + keeps derived joins consistent).
+    setRelationsReloadToken((t) => t + 1);
+  };
+
+  const deleteMatch = async (matchToDelete: any) => {
+    const matchIdValue = String(matchToDelete?.id || '').trim();
+    if (!matchIdValue) throw new Error('Missing match id');
+
+    const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(matchIdValue)}/`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
+      },
+      credentials: 'include',
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || 'Failed to delete match');
+    }
+
+    setRelationsReloadToken((t) => t + 1);
+  };
 
   if (loading) {
     return (
@@ -1613,16 +1664,82 @@ export const UserDetailPage: React.FC = () => {
                       ? `/organisations/${primaryOrgSlug}/projects/${clubSlug}/teams/${teamSlugOrId}`
                       : '';
                     const teamName = String(team?.name || m?.project?.name || m?.project_name || '').trim();
-                    const matchPath = m?.id ? `/matches/${String(m?.id)}` : '';
+                    const matchPath = (m as any)?.id ? `/matches/${String((m as any)?.slug || (m as any)?.id)}` : '';
                     return (
                       <tr key={String(m?.id)}>
-                        <td style={compactTextTdStyle}>{renderNavLink(String(m?.title || ''), matchPath)}</td>
+                        <td style={compactTextTdStyle}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedDetailMatch(m);
+                              setIsMatchDetailModalOpen(true);
+                            }}
+                            style={{
+                              border: 'none',
+                              background: 'transparent',
+                              padding: 0,
+                              color: '#007bff',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              textDecoration: 'underline',
+                              maxWidth: '100%',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                            title="Open match details"
+                          >
+                            {String(m?.title || '') || '—'}
+                          </button>
+                        </td>
                         <td style={compactTextTdStyle}>{String(m?.start_time || '')}</td>
                         <td style={compactTextTdStyle}>{renderNavLink(teamName, teamPath)}</td>
                         <td style={compactTdStyle}>
                           <div style={compactActionsStyle}>
-                            <button type="button" onClick={() => matchPath && navigate(matchPath)} disabled={!matchPath} style={actionButtonStyle('primary')}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedDetailMatch(m);
+                                setIsMatchDetailModalOpen(true);
+                              }}
+                              style={actionButtonStyle('primary')}
+                            >
                               View
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedEditMatch(m);
+                                setIsMatchEditModalOpen(true);
+                              }}
+                              style={actionButtonStyle('warning')}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (!m?.id) return;
+                                if (!window.confirm(`Delete match ${m.title || m.id}?`)) return;
+                                try {
+                                  await deleteMatch(m);
+                                } catch (e) {
+                                  alert(e instanceof Error ? e.message : 'Failed to delete match');
+                                }
+                              }}
+                              disabled={!m?.id}
+                              style={actionButtonStyle('danger')}
+                            >
+                              Delete
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => matchPath && navigate(matchPath)}
+                              disabled={!matchPath}
+                              style={actionButtonStyle('neutral')}
+                              title="Open match page"
+                            >
+                              Open
                             </button>
                           </div>
                         </td>
@@ -1647,6 +1764,28 @@ export const UserDetailPage: React.FC = () => {
           </div>
         )}
       </PageContent>
+
+      <MatchDetailModal
+        opened={isMatchDetailModalOpen}
+        onClose={() => {
+          setIsMatchDetailModalOpen(false);
+          setSelectedDetailMatch(null);
+        }}
+        match={selectedDetailMatch}
+      />
+
+      <MatchEditModal
+        opened={isMatchEditModalOpen}
+        onClose={() => {
+          setIsMatchEditModalOpen(false);
+          setSelectedEditMatch(null);
+        }}
+        match={selectedEditMatch}
+        onSave={async (payload) => {
+          if (!selectedEditMatch) return;
+          await saveMatchEdits(selectedEditMatch, payload);
+        }}
+      />
 
       <CreateTransactionModal
         isOpen={isCreateTxnModalOpen}

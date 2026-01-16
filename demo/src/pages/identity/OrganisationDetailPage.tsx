@@ -3619,11 +3619,7 @@ export const OrganisationDetailPage: React.FC = () => {
                           const seasonSlugOrId = season?.slug || season?.id || compSeasonId;
                           const compSlugOrId = String((competition as any)?.slug || periodId || '').trim();
                           const matchSlugOrId = String((m as any)?.slug || m.id || '').trim();
-                          const matchDetailPath = (teamSlugOrId && seasonSlugOrId && compSlugOrId)
-                            ? (clubSlugOrId
-                              ? `/${currentOrgSlug}/${clubSlugOrId}/${teamSlugOrId}/seasons/${seasonSlugOrId}/${compSlugOrId}/${matchSlugOrId}`
-                              : `/${currentOrgSlug}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${compSlugOrId}/matches/${matchSlugOrId}`)
-                            : `/matches/${matchSlugOrId}`;
+                          const matchDetailPath = `/matches/${matchSlugOrId}`;
 
                           const formattedStart = m.start_time ? new Date(m.start_time).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
 
