@@ -249,7 +249,17 @@ class MembershipViewSet(viewsets.ModelViewSet):
         ):
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        response = super().list(request, *args, **kwargs)
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        try:
+            response = super().list(request, *args, **kwargs)
+        except Exception:
+            # Never hard-fail the directory/club pages due to membership list issues.
+            # Return an empty list; callers typically treat this as "no users".
+            logger.exception("MembershipViewSet.list failed")
+            return Response({"results": []}, status=status.HTTP_200_OK)
 
         include_role_assignments = (
             request.query_params.get("include_role_assignments", "false").lower() == "true"
