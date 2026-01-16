@@ -281,6 +281,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 user=user, deleted_at__isnull=True
             ).values_list("project_id", flat=True)
 
+            # 4b. Include hierarchy for membership-based access
+            # - Team members should be able to see their club container
+            membership_parent_project_ids = Project.all_objects.filter(
+                id__in=membership_project_ids,
+                parent_project__isnull=False,
+            ).values_list("parent_project_id", flat=True)
+
+            # - Club admins/members should be able to see child teams
+            membership_child_project_ids = Project.all_objects.filter(
+                parent_project_id__in=membership_project_ids
+            ).values_list("id", flat=True)
+
             queryset = queryset.filter(
                 Q(organisation_id__in=user_org_ids)
                 | Q(organisation_id__in=assigned_org_ids)
@@ -288,6 +300,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 | Q(id__in=assigned_parent_project_ids)
                 | Q(id__in=assigned_child_project_ids)
                 | Q(id__in=membership_project_ids)
+                | Q(id__in=membership_parent_project_ids)
+                | Q(id__in=membership_child_project_ids)
             ).distinct()
         else:
             # Ensure distinct results for superusers as well, just in case
@@ -594,6 +608,18 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         ).exists():
             return
 
+        # Legacy: Club Admin managing a child team via admin membership on the parent club
+        if (
+            project.parent_project_id
+            and ProjectMembership.objects.filter(
+                project_id=project.parent_project_id,
+                user=user,
+                role=ProjectMembership.Role.ADMIN,
+                deleted_at__isnull=True,
+            ).exists()
+        ):
+            return
+
         # Direct team-member management capability on this project
         if _safe_check_permission(
             user_id=user.id,
@@ -645,6 +671,18 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
 
         # Any active project member can view the member list.
         if is_project_member:
+            return
+
+        # Legacy: Club Admin can view child team roster via admin membership on the parent club
+        if (
+            project.parent_project_id
+            and ProjectMembership.objects.filter(
+                project_id=project.parent_project_id,
+                user=user,
+                role=ProjectMembership.Role.ADMIN,
+                deleted_at__isnull=True,
+            ).exists()
+        ):
             return
 
         # Admins who can edit team profiles can also view the roster
@@ -1155,6 +1193,18 @@ class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
             role=ProjectMembership.Role.ADMIN,
             deleted_at__isnull=True,
         ).exists():
+            return
+
+        # Legacy: Club Admin managing a child team via admin membership on the parent club
+        if (
+            project.parent_project_id
+            and ProjectMembership.objects.filter(
+                project_id=project.parent_project_id,
+                user=user,
+                role=ProjectMembership.Role.ADMIN,
+                deleted_at__isnull=True,
+            ).exists()
+        ):
             return
 
         # Direct team-member management capability on this project

@@ -5,9 +5,10 @@ import { useSearch, useDebounce, type GroupedSearchResults, type SearchResult } 
 interface SearchBarProps {
   placeholder?: string;
   className?: string;
+  onQueryChange?: (query: string) => void;
 }
 
-export function SearchBar({ placeholder = 'Search...', className = '' }: SearchBarProps) {
+export function SearchBar({ placeholder = 'Search...', className = '', onQueryChange }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [results, setResults] = useState<GroupedSearchResults | null>(null);
@@ -47,6 +48,7 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
   const handleResultClick = (result: SearchResult) => {
     setIsOpen(false);
     setQuery('');
+    onQueryChange?.('');
     navigate(result.url);
   };
 
@@ -114,7 +116,11 @@ export function SearchBar({ placeholder = 'Search...', className = '' }: SearchB
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            const next = e.target.value;
+            setQuery(next);
+            onQueryChange?.(next);
+          }}
           placeholder={placeholder}
           style={{
             width: '100%',

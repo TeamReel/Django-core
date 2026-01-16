@@ -135,6 +135,7 @@ export default function TopNavbar() {
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [myCreditsBalance, setMyCreditsBalance] = useState<string | null>(null);
+  const [navSearchHasQuery, setNavSearchHasQuery] = useState(false);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const orgIdForMyBalance = String((context as any)?.organisation?.id || '').trim();
@@ -1257,14 +1258,17 @@ export default function TopNavbar() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {/* Search Bar */}
             <div
-              className="nav-search-container"
+              className={`nav-search-container${navSearchHasQuery ? ' has-query' : ''}`}
               style={{
                 flex: '1 1 360px',
                 minWidth: '220px',
                 maxWidth: '560px',
               }}
             >
-              <SearchBar placeholder="Search..." />
+              <SearchBar
+                placeholder="Search..."
+                onQueryChange={(q) => setNavSearchHasQuery(Boolean(String(q || '').trim()))}
+              />
             </div>
 
             {/* Theme Toggle - for superadmin: check global flag only, for others: check resolved flag (with org overrides) */}
@@ -1362,6 +1366,7 @@ export default function TopNavbar() {
             {/* Notification Icon */}
             <button
               onClick={() => navigate('/notifications')}
+              className="nav-right-fixed"
               style={{
                 position: 'relative',
                 padding: '8px',
@@ -1369,7 +1374,8 @@ export default function TopNavbar() {
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontSize: '20px'
+                fontSize: '20px',
+                flexShrink: 0,
               }}
               title="Notifications"
             >
@@ -1435,7 +1441,9 @@ export default function TopNavbar() {
             ) : null}
 
             {/* Profile Avatar Dropdown */}
-            <ProfileAvatarDropdown />
+            <div className="nav-right-fixed" style={{ flexShrink: 0 }}>
+              <ProfileAvatarDropdown />
+            </div>
           </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1472,9 +1480,11 @@ export default function TopNavbar() {
         .nav-search-container {
           transition: max-width 160ms ease, flex-basis 160ms ease;
         }
-        .nav-search-container:focus-within {
-          max-width: 820px !important;
-          flex-basis: 640px;
+        @media (min-width: 1025px) {
+          .nav-search-container:focus-within {
+            max-width: 820px !important;
+            flex-basis: 640px;
+          }
         }
         @media (max-width: 1024px) {
           .mobile-menu-button {
@@ -1494,9 +1504,16 @@ export default function TopNavbar() {
           }
           .nav-search-container {
             width: auto !important;
-            flex: 1;
-            min-width: 120px;
-            max-width: none !important;
+            flex: 0 1 170px !important;
+            min-width: 120px !important;
+            max-width: 190px !important;
+          }
+          .nav-search-container.has-query {
+            flex: 1 1 260px !important;
+            max-width: min(520px, 58vw) !important;
+          }
+          .nav-right-fixed {
+            flex-shrink: 0 !important;
           }
         }
         @media (max-width: 480px) {
@@ -1507,7 +1524,11 @@ export default function TopNavbar() {
             display: none !important;
           }
           .nav-search-container {
-            min-width: 120px;
+            min-width: 110px !important;
+            max-width: 150px !important;
+          }
+          .nav-search-container.has-query {
+            max-width: 60vw !important;
           }
         }
       `}</style>
