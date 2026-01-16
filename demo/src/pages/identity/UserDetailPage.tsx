@@ -654,9 +654,53 @@ export const UserDetailPage: React.FC = () => {
     return userProjects.filter((p: any) => !p?.parent);
   }, [userProjects]);
 
+  const directClubMembershipById = useMemo(() => {
+    const m = new Map<string, any>();
+    for (const c of clubMemberships) {
+      const id = String(c?.id || '').trim();
+      if (id) m.set(id, c);
+    }
+    return m;
+  }, [clubMemberships]);
+
   const teamMemberships = useMemo(() => {
     return userProjects.filter((p: any) => Boolean(p?.parent));
   }, [userProjects]);
+
+  const clubsForTab = useMemo(() => {
+    // Prefer direct club memberships, but also show inferred clubs from team memberships.
+    // This prevents an empty Clubs tab for users that only have team memberships.
+    const merged = new Map<string, any>();
+
+    for (const c of clubMemberships) {
+      const id = String(c?.id || '').trim();
+      if (!id) continue;
+      merged.set(id, c);
+    }
+
+    for (const t of teamMemberships) {
+      const clubId = String(t?.parent || '').trim();
+      if (!clubId) continue;
+
+      // If the user has a direct club membership, we already added it.
+      if (merged.has(clubId)) continue;
+
+      // Enrich inferred club with data from the org clubs list (slug, etc.) when available.
+      const apiClub = clubsById.get(clubId);
+      const inferred = {
+        id: clubId,
+        name: String(apiClub?.name || t?.parent_name || '').trim(),
+        slug: String(apiClub?.slug || '').trim(),
+        // No direct membership fields for inferred clubs.
+        role: '',
+        membership_id: null,
+      };
+
+      merged.set(clubId, inferred);
+    }
+
+    return Array.from(merged.values());
+  }, [clubMemberships, teamMemberships, clubsById]);
 
   const clubSlugById = useMemo(() => {
     const m = new Map<string, string>();
@@ -1215,35 +1259,43 @@ export const UserDetailPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {clubMemberships.map((c: any) => {
-                  const clubPath = primaryOrgSlug && c?.slug ? `/organisations/${primaryOrgSlug}/projects/${c.slug}` : '';
+                {clubsForTab.map((c: any) => {
                   const projectId = String(c?.id || '').trim();
-                  const membershipId = (c as any)?.membership_id;
+                  const direct = projectId ? directClubMembershipById.get(projectId) : null;
+                  const slug = String(c?.slug || direct?.slug || '').trim();
+                  const clubPath = primaryOrgSlug && slug ? `/organisations/${primaryOrgSlug}/projects/${slug}` : '';
+                  const membershipId = (direct as any)?.membership_id;
                   return (
                     <tr key={String(c?.id)}>
                       <td style={compactTextTdStyle}>{renderNavLink(String(c?.name || ''), clubPath)}</td>
                       <td style={compactTextTdStyle}>
-                        <button
-                          type="button"
-                          disabled={!projectId}
-                          onClick={() => {
-                            if (!projectId) return;
-                            setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(c?.role || 'viewer') });
-                            setIsEditMembershipModalOpen(true);
-                          }}
-                          style={{
-                            border: 'none',
-                            background: 'transparent',
-                            padding: 0,
-                            color: projectId ? '#007bff' : 'var(--app-muted-text)',
-                            fontWeight: 700,
-                            cursor: projectId ? 'pointer' : 'not-allowed',
-                            textDecoration: projectId ? 'underline' : 'none',
-                          }}
-                          title={projectId ? 'Click to edit role' : 'Missing project id'}
-                        >
-                          {String(c?.role || '') || '—'}
-                        </button>
+                        {direct ? (
+                          <button
+                            type="button"
+                            disabled={!projectId}
+                            onClick={() => {
+                              if (!projectId) return;
+                              setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(direct?.role || 'viewer') });
+                              setIsEditMembershipModalOpen(true);
+                            }}
+                            style={{
+                              border: 'none',
+                              background: 'transparent',
+                              padding: 0,
+                              color: projectId ? '#007bff' : 'var(--app-muted-text)',
+                              fontWeight: 700,
+                              cursor: projectId ? 'pointer' : 'not-allowed',
+                              textDecoration: projectId ? 'underline' : 'none',
+                            }}
+                            title={projectId ? 'Click to edit role' : 'Missing project id'}
+                          >
+                            {String(direct?.role || '') || '—'}
+                          </button>
+                        ) : (
+                          <span title="This user is linked to this club via team membership.">
+                            <span style={{ color: 'var(--app-muted-text)', fontWeight: 700 }}>Via team</span>
+                          </span>
+                        )}
                       </td>
                       <td style={compactTdStyle}>
                         <div style={compactActionsStyle}>
@@ -1254,10 +1306,11 @@ export const UserDetailPage: React.FC = () => {
                             type="button"
                             onClick={() => {
                               if (!projectId) return;
-                              setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(c?.role || 'viewer') });
+                              if (!direct) return;
+                              setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(direct?.role || 'viewer') });
                               setIsEditMembershipModalOpen(true);
                             }}
-                            disabled={!projectId}
+                            disabled={!projectId || !direct}
                             style={actionButtonStyle('warning')}
                           >
                             Edit
@@ -1265,9 +1318,10 @@ export const UserDetailPage: React.FC = () => {
                           <button
                             type="button"
                             style={actionButtonStyle('danger')}
-                            disabled={!projectId}
+                            disabled={!projectId || !direct}
                             onClick={async () => {
                               if (!projectId) return;
+                              if (!direct) return;
                               if (!window.confirm('Remove this user from the club?')) return;
                               try {
                                 await removeProjectMembership(projectId, membershipId);
@@ -1283,7 +1337,7 @@ export const UserDetailPage: React.FC = () => {
                     </tr>
                   );
                 })}
-                {!clubMemberships.length && (
+                {!clubsForTab.length && (
                   <tr>
                     <td style={compactTdStyle} colSpan={3}>
                       <em style={{ color: 'var(--app-muted-text)' }}>No club memberships.</em>
