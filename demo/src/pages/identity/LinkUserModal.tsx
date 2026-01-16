@@ -726,6 +726,10 @@ export default function LinkUserModal({
                   </option>
                 ))}
               </select>
+              <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px', lineHeight: 1.35 }}>
+                This is a sports role label (stored as membership metadata). Access permissions are mapped to the backend
+                role automatically: Player/Coach/Manager  Viewer, Admin/Owner  Admin.
+              </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px' }}>
