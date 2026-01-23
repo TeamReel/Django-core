@@ -215,7 +215,7 @@ export const MemberDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <div>
           <PageHeader
             title="Member Details"
@@ -229,13 +229,13 @@ export const MemberDetailPage: React.FC = () => {
             <Card>Loading...</Card>
           </PageContent>
         </div>
-      </AppShell>
+      </>
     );
   }
 
   if (error || !member) {
     return (
-      <AppShell>
+      <>
         <div>
           <PageHeader
             title="Error"
@@ -252,12 +252,12 @@ export const MemberDetailPage: React.FC = () => {
             </Button>
           </PageContent>
         </div>
-      </AppShell>
+      </>
     );
   }
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
           title={`${member.user.first_name || ''} ${member.user.last_name || ''}`.trim() || member.user.email}
@@ -425,6 +425,6 @@ export const MemberDetailPage: React.FC = () => {
             </Card>
         </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 };

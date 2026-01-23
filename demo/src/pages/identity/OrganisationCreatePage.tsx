@@ -78,7 +78,7 @@ export const OrganisationCreatePage: React.FC = () => {
   };
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="Create Organisation"
         breadcrumbs={[
@@ -135,6 +135,6 @@ export const OrganisationCreatePage: React.FC = () => {
           </form>
         </Card>
       </PageContent>
-    </AppShell>
+    </>
   );
 };

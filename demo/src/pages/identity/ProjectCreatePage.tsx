@@ -89,7 +89,7 @@ export const ProjectCreatePage: React.FC = () => {
   };
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="Create Project"
         breadcrumbs={[
@@ -161,7 +161,7 @@ export const ProjectCreatePage: React.FC = () => {
           </form>
         </Card>
       </PageContent>
-    </AppShell>
+    </>
   );
 };
 

@@ -2194,7 +2194,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
   if (loading || context.isLoading) {
     return (
-      <AppShell>
+      <div className="p-6">
         <div>
           <PageHeader
             title="Project Details"
@@ -2220,13 +2220,13 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             </Card>
           </PageContent>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   if (error || !project) {
     return (
-      <AppShell>
+      <div className="p-6">
         <div>
           <PageHeader
             title="Project Details"
@@ -2253,7 +2253,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             </Button>
           </PageContent>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
@@ -2321,7 +2321,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
         title={project.name}
@@ -5494,7 +5494,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         </div>
       ) : null}
       </div>
-    </AppShell>
+    </>
   );
 };
 

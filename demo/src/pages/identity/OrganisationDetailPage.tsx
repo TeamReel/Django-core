@@ -1297,7 +1297,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <AppShell>
+      <div className="p-6">
         <div>
           <PageHeader
             title="Organisation Details"
@@ -1314,13 +1314,13 @@ export const OrganisationDetailPage: React.FC = () => {
             </Card>
           </PageContent>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   if (error || !org) {
     return (
-      <AppShell>
+      <div className="p-6">
         <div>
           <PageHeader
             title="Organisation Details"
@@ -1338,12 +1338,12 @@ export const OrganisationDetailPage: React.FC = () => {
             </Button>
           </PageContent>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
         title={org.name}
@@ -4348,7 +4348,7 @@ export const OrganisationDetailPage: React.FC = () => {
         onClose={() => setIsUserDetailModalOpen(false)}
       />
       </div>
-    </AppShell>
+    </>
   );
 };
 

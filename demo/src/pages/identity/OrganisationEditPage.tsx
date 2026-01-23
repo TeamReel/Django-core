@@ -154,7 +154,7 @@ export const OrganisationEditPage: React.FC = () => {
   }
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title={`Edit ${name}`}
         breadcrumbs={[
@@ -236,6 +236,6 @@ export const OrganisationEditPage: React.FC = () => {
           </form>
         </Card>
       </PageContent>
-    </AppShell>
+    </>
   );
 };

@@ -182,7 +182,7 @@ export const ProjectEditPage: React.FC = () => {
   }
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title={`Edit ${name}`}
         breadcrumbs={[
@@ -299,7 +299,7 @@ export const ProjectEditPage: React.FC = () => {
           </form>
         </Card>
       </PageContent>
-    </AppShell>
+    </>
   );
 };
 

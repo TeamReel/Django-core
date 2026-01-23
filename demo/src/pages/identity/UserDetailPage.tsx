@@ -870,13 +870,13 @@ export const UserDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <LoadingState message="Loading user..." />
-      </AppShell>
+      </>
     );
   }
-  if (error) return <AppShell><Alert variant="error" title="Error">{error}</Alert></AppShell>;
-  if (!user) return <AppShell><div>User not found</div></AppShell>;
+  if (error) return <><Alert variant="error" title="Error">{error}</Alert></>;
+  if (!user) return <><div>User not found</div></>;
 
   const backPath = orgId ? `/organisations/${orgId}/users` : '/users';
   const userDisplayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || `User ${userId}`;
@@ -931,7 +931,7 @@ export const UserDetailPage: React.FC = () => {
   })();
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title={userDisplayName}
         breadcrumbs={[
@@ -1861,7 +1861,7 @@ export const UserDetailPage: React.FC = () => {
           <Alert variant="warning">{linkOptionsError}</Alert>
         </div>
       ) : null}
-    </AppShell>
+    </>
   );
 };
 
