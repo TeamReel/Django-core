@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, type FormEvent } from 'react';
+import { useMemo, useState, useEffect, useRef, type FormEvent } from 'react';
 
 interface User {
   id: string;
@@ -25,12 +25,14 @@ type ProjectChoice = {
   key: string;
   name: string;
   isTeam?: boolean;
+  parentKey?: string;
 };
 
 type OrgProjectChoice = {
   key: string;
   name: string;
   parentName?: string | null;
+  parentKey?: string | null;
   isTeam: boolean;
 };
 
@@ -51,14 +53,22 @@ export default function UserEditModal({
   const [orgRole, setOrgRole] = useState<'member' | 'admin'>('member');
   const [orgMembershipId, setOrgMembershipId] = useState<string | null>(null);
 
-  const [selectedProjectKey, setSelectedProjectKey] = useState<string>('');
-  const [projectMembershipId, setProjectMembershipId] = useState<string | null>(null);
-  const [projectAccessRole, setProjectAccessRole] = useState<'viewer' | 'editor' | 'admin'>('viewer');
+  // Split state for hierarchical editing
+  const [selectedClubKey, setSelectedClubKey] = useState<string>('');
+  const [clubMembershipId, setClubMembershipId] = useState<string | null>(null);
+  const [clubAccessRole, setClubAccessRole] = useState<'viewer' | 'editor' | 'admin'>('viewer');
+
+  const [selectedTeamKey, setSelectedTeamKey] = useState<string>('');
+  const [teamMembershipId, setTeamMembershipId] = useState<string | null>(null);
+  const [teamAccessRole, setTeamAccessRole] = useState<'viewer' | 'editor' | 'admin'>('viewer');
   const [functionalRoles, setFunctionalRoles] = useState<string[]>([]);
   const [initialFunctionalRoles, setInitialFunctionalRoles] = useState<string[]>([]);
 
-  const [linkProjectKey, setLinkProjectKey] = useState<string>('');
+  // Link state
+  const [linkClubKey, setLinkClubKey] = useState<string>('');
+  const [linkTeamKey, setLinkTeamKey] = useState<string>('');
   const [linkAccessRole, setLinkAccessRole] = useState<'viewer' | 'editor' | 'admin'>('viewer');
+
   const [orgProjects, setOrgProjects] = useState<OrgProjectChoice[]>([]);
   const [orgProjectsLoading, setOrgProjectsLoading] = useState(false);
   const [orgProjectsError, setOrgProjectsError] = useState<string | null>(null);
@@ -99,8 +109,6 @@ export default function UserEditModal({
   const availableProjects = useMemo<ProjectChoice[]>(() => {
     const list = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
 
-    // Create a map of org projects to look up hierarchy info (isTeam) if available.
-    // Note: orgProjects might be empty initially until loaded, so this enrichment improves as data loads.
     const orgProjectMap = new Map<string, OrgProjectChoice>();
     if (Array.isArray(orgProjects)) {
       for (const op of orgProjects) {
@@ -114,38 +122,41 @@ export default function UserEditModal({
         const name = String(p?.name || p?.title || p?.slug || p?.id || '').trim();
 
         let isTeam = false;
+        let parentKey: string | undefined = undefined;
 
-        // Strategy 1: Check if the project object itself hints at parent/team (unlikely in simple list, but possible)
-        if (p?.parent_id || p?.parent || p?.is_team || p?.isTeam) {
-            isTeam = true;
+        // Try to determine parent from orgProjects map
+        const match = orgProjectMap.get(key);
+        if (match) {
+          if (match.isTeam) isTeam = true;
+          if (match.parentKey) parentKey = match.parentKey;
         }
 
-        // Strategy 2: Check against loaded orgProjects (authoritative source for hierarchy)
+        // Fallback strategies for isTeam
         if (!isTeam) {
-            const match = orgProjectMap.get(key);
-            if (match && match.isTeam) isTeam = true;
+            if (p?.parent_id || p?.parent || p?.is_team || p?.isTeam) isTeam = true;
         }
-
-        // Strategy 3: Naming heuristic (matches "Team", digits at end, or contains "-")
         if (!isTeam) {
-             // If name matches "Team X" or "O19-1" or ends in digits like "Feyenoord 1" (and not just "Feyenoord")
-             // But "Feyenoord 1" implies team. "Feyenoord" implies club.
-             // Heuristic: If it has a dash OR explicitly says "Team" OR ends in a digit-based suffix (like "-1", " 1", " U19")
              if (
                  name.toLowerCase().includes('team') ||
                  name.includes('-') ||
-                 /\s\d+$/.test(name) ||  // "Feyenoord 1"
-                 /\sO\d+/i.test(name) || // "Feyenoord O19"
-                 /\sU\d+/i.test(name)    // "Feyenoord U19"
+                 /\s\d+$/.test(name) ||
+                 /\sO\d+/i.test(name) ||
+                 /\sU\d+/i.test(name)
              ) {
                  isTeam = true;
              }
         }
 
+        // Fallback for parentKey from local project object if available
+        if (!parentKey && (p?.parent_id || p?.parent_slug)) {
+            parentKey = String(p.parent_slug || p.parent_id).trim();
+        }
+
         return {
           key,
           name,
-          isTeam
+          isTeam,
+          parentKey
         };
       })
       .filter((p: any) => Boolean(p.key));
@@ -160,9 +171,42 @@ export default function UserEditModal({
     return legacy ? [legacy] : [];
   };
 
+  const prevUserIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (user) {
-      setActiveTab(scopeProjectKey ? 'access' : 'personal');
+      if (user.id !== prevUserIdRef.current) {
+        setActiveTab(scopeProjectKey ? 'access' : 'personal');
+
+        // Reset selections
+        setSelectedClubKey('');
+        setSelectedTeamKey('');
+
+        // Attempt to apply scope
+        const forced = String(scopeProjectKey || '').trim();
+        if (forced) {
+            // Find in available projects to see if it is team or club
+            const found = availableProjects.find(p => p.key === forced);
+            if (found) {
+                if (found.isTeam) {
+                    setSelectedTeamKey(found.key);
+                    if (found.parentKey) setSelectedClubKey(found.parentKey);
+                } else {
+                    setSelectedClubKey(found.key);
+                }
+            } else {
+                // If not found (maybe not loaded yet?), just try setting it as club default
+                setSelectedClubKey(forced);
+            }
+        } else {
+            // Default: Select first club
+            const firstClub = availableProjects.find(p => !p.isTeam);
+            if (firstClub) setSelectedClubKey(firstClub.key);
+        }
+
+        prevUserIdRef.current = user.id;
+      }
+
       setFormData({
         first_name: user.first_name,
         last_name: user.last_name,
@@ -171,12 +215,6 @@ export default function UserEditModal({
         role: user.role
       });
 
-      // Default selected project scope
-      const forced = String(scopeProjectKey || '').trim();
-      if (forced) setSelectedProjectKey(forced);
-      else setSelectedProjectKey(availableProjects[0]?.key || '');
-
-      // Org membership role defaults
       const orgSlug = String(organisationSlug || '').trim().toLowerCase();
       const orgs = Array.isArray((user as any)?.organisations) ? (user as any).organisations : [];
       const orgEntry = orgSlug
@@ -196,7 +234,7 @@ export default function UserEditModal({
   }, [user, organisationSlug, scopeProjectKey, availableProjects]);
 
   useEffect(() => {
-    // Load club/team options scoped to the current federation (organisation) when available.
+    // Load local org projects for hierarchy
     const run = async () => {
       if (!opened) return;
       const orgSlug = String(organisationSlug || '').trim();
@@ -212,17 +250,11 @@ export default function UserEditModal({
         const res = await fetch(
           `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=500`,
           {
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-            },
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             credentials: 'include',
           }
         );
-        if (!res.ok) {
-          const text = await res.text().catch(() => '');
-          throw new Error(text || `Failed to load projects (${res.status})`);
-        }
+        if (!res.ok) throw new Error(`Failed to load projects`);
 
         const raw = await res.json().catch(() => null);
         const list = (raw as any)?.data?.results || (raw as any)?.results || (raw as any)?.data || [];
@@ -232,10 +264,23 @@ export default function UserEditModal({
             const name = String(p?.name || p?.title || p?.slug || p?.id || '').trim();
             const parentName = String(p?.parent_name || p?.parentName || '').trim() || null;
             const parentId = String(p?.parent_id || p?.parentId || '').trim();
+            // Try to resolve parentKey if parentId is not just an ID but maybe a slug?
+            // The API usually returns parent_id as UUID. But often consistent with key if using IDs.
+            // If the project key is a slug, parent_id might not match parentKey (slug).
+            // However, for filtering, we usually compare against IDs if keys are IDs.
+            // But here our keys are slugs usually...
+            // Let's assume parentId is the ID. Ideally we'd want parentSlug.
+            // If parentSlug is not available, we might struggle.
+            // But let's check validation.py or serializer.
+            // In Django REST, often Nested Parent is just ID.
+            // If we use Slugs for keys, we need Parent Slug.
+            const parentKey = String(p?.parent_slug || p?.parentSlug || parentId || '').trim() || undefined;
+
             return {
               key,
               name,
               parentName,
+              parentKey,
               isTeam: Boolean(parentId),
             };
           })
@@ -258,103 +303,159 @@ export default function UserEditModal({
     void run();
   }, [opened, organisationSlug, apiBaseUrl]);
 
-  useEffect(() => {
-    // Fetch project membership for selected project scope so we can edit access + functional roles
-    const run = async () => {
-      if (!opened || !user) return;
-      const projectKey = String(selectedProjectKey || '').trim();
-      if (!projectKey) {
-        setProjectMembershipId(null);
-        setProjectAccessRole('viewer');
-        setFunctionalRoles([]);
-        setInitialFunctionalRoles([]);
-        return;
-      }
-
-      try {
+  const fetchMemberInfo = async (projectKey: string) => {
+    if (!projectKey || !user || !opened) return null;
+    try {
         let found = null;
+        const normalizedKey = projectKey.trim().toLowerCase();
 
-        // Strategy 1: Try to look up membership ID from the user object locally.
-        // This avoids pagination limits (500) on the list endpoint if the project is large.
+        // Strategy 1: Local lookup from user object (fastest, avoids list limit)
         const userProjects = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
-        const localProject = userProjects.find((p: any) =>
-          String(p?.slug || p?.id || '').trim().toLowerCase() === String(projectKey).toLowerCase()
-        );
-        const knownMembershipId = localProject?.membership_id ? String(localProject.membership_id).trim() : null;
+        const local = userProjects.find((p: any) => String(p?.slug || p?.id || '').trim().toLowerCase() === normalizedKey);
+        const knownId = local?.membership_id ? String(local.membership_id).trim() : null;
 
-        if (knownMembershipId) {
-          try {
-            const directRes = await fetch(
-              `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/members/${encodeURIComponent(knownMembershipId)}/`,
-              {
-                headers: {
-                  'Content-Type': 'application/json',
-                  'X-Requested-With': 'XMLHttpRequest',
-                },
-                credentials: 'include',
-              }
-            );
-            if (directRes.ok) {
-              found = await directRes.json();
-            }
-          } catch (err) {
-            console.warn('Direct membership fetch failed, falling back to list search:', err);
-          }
+        if (knownId) {
+            try {
+                const r = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/members/${encodeURIComponent(knownId)}/`, {
+                   headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                   credentials: 'include'
+                });
+                if (r.ok) found = await r.json();
+            } catch {}
         }
 
-        // Strategy 2: List search (fallback)
+        // Strategy 2: List lookup (fallback)
         if (!found) {
-          const res = await fetch(
-            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/members/?page_size=500`,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-              },
-              credentials: 'include',
-            }
-          );
-          if (!res.ok) {
-            const text = await res.text().catch(() => '');
-            throw new Error(text || `Failed to load project membership (${res.status})`);
-          }
-
-          const raw = await res.json().catch(() => null);
-          const members = (raw as any)?.data?.results || (raw as any)?.results || (raw as any)?.data || [];
-          const uid = String((user as any)?.id || '').trim();
-          const matches = Array.isArray(members)
-            ? members.filter((m: any) => String(m?.user?.id ?? m?.user_id ?? '').trim() === uid)
-            : [];
-
-          // Prefer the base (non-period) membership when multiple exist.
-          const isBaseMembership = (m: any) => !String(m?.period_id ?? m?.period ?? '').trim();
-          found = matches.find(isBaseMembership) || matches[0] || null;
+             const r = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/members/?page_size=500`, {
+                   headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                   credentials: 'include'
+             });
+             if (r.ok) {
+                 const raw = await r.json();
+                 const members = (raw as any)?.data?.results || (raw as any)?.results || (raw as any)?.data || [];
+                 const uid = String((user as any)?.id || '').trim();
+                 const matches = members.filter((m: any) => String(m?.user?.id ?? m?.user_id ?? '').trim() === uid);
+                 found = matches.find((m: any) => !String(m?.period_id ?? m?.period ?? '')) || matches[0] || null;
+             }
         }
+        return found;
+    } catch (e) {
+        console.warn('Fetch member failed', e);
+        return null;
+    }
+  };
 
-        const membershipId = String(found?.id || knownMembershipId || '').trim();
-        setProjectMembershipId(membershipId || null);
-
-        const roleRaw = String(found?.role || 'viewer').trim().toLowerCase();
-        if (roleRaw === 'admin' || roleRaw === 'editor' || roleRaw === 'viewer') {
-          setProjectAccessRole(roleRaw as any);
+  // 1. Club Membership Effect
+  useEffect(() => {
+    const run = async () => {
+        if (!selectedClubKey) {
+            setClubMembershipId(null);
+            setClubAccessRole('viewer');
+            return;
+        }
+        const m = await fetchMemberInfo(selectedClubKey);
+        if (m) {
+            setClubMembershipId(m.id);
+            const r = String(m.role || 'viewer').toLowerCase();
+            setClubAccessRole((['admin','editor','viewer'].includes(r) ? r : 'viewer') as any);
         } else {
-          setProjectAccessRole('viewer');
+            setClubMembershipId(null);
+            setClubAccessRole('viewer');
         }
-
-        const fr = found ? readFunctionalRolesFromMembership(found) : [];
-        setFunctionalRoles(fr);
-        setInitialFunctionalRoles(fr);
-      } catch (e) {
-        setProjectMembershipId(null);
-        setProjectAccessRole('viewer');
-        setFunctionalRoles([]);
-        setInitialFunctionalRoles([]);
-        setExtraError(e instanceof Error ? e.message : 'Failed to load membership');
-      }
     };
-
     void run();
-  }, [opened, user, selectedProjectKey, apiBaseUrl]);
+  }, [selectedClubKey, user, opened]);
+
+  // 2. Team Membership Effect
+  useEffect(() => {
+    const run = async () => {
+        if (!selectedTeamKey) {
+            setTeamMembershipId(null);
+            setTeamAccessRole('viewer');
+            setFunctionalRoles([]);
+            setInitialFunctionalRoles([]);
+            return;
+        }
+        const m = await fetchMemberInfo(selectedTeamKey);
+        if (m) {
+            setTeamMembershipId(m.id);
+            const r = String(m.role || 'viewer').toLowerCase();
+            setTeamAccessRole((['admin','editor','viewer'].includes(r) ? r : 'viewer') as any);
+            const fr = readFunctionalRolesFromMembership(m);
+            setFunctionalRoles(fr);
+            setInitialFunctionalRoles(fr);
+        } else {
+            // Check if we already have a membership but it's not loaded
+            setTeamMembershipId(null);
+            setTeamAccessRole('viewer');
+            setFunctionalRoles([]);
+            setInitialFunctionalRoles([]);
+        }
+    };
+    void run();
+  }, [selectedTeamKey, user, opened]);
+
+  const updateClubRole = async () => {
+      if (!selectedClubKey || !clubMembershipId) {
+          // If trying to save a context where user is not a member, skip or error?
+          // We only update if membership exists.
+          return;
+      }
+      const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(selectedClubKey)}/members/${encodeURIComponent(clubMembershipId)}/`, {
+         method: 'PATCH',
+         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
+         credentials: 'include',
+         body: JSON.stringify({ role: clubAccessRole })
+      });
+      if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(`Failed to update club role: ${txt}`);
+      }
+  };
+
+  const updateTeamRole = async () => {
+       if (!selectedTeamKey || !teamMembershipId) return;
+
+       // 1 update access role
+      const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(selectedTeamKey)}/members/${encodeURIComponent(teamMembershipId)}/`, {
+         method: 'PATCH',
+         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
+         credentials: 'include',
+         body: JSON.stringify({ role: teamAccessRole })
+      });
+      if (!res.ok) {
+           const txt = await res.text();
+           throw new Error(`Failed to update team role: ${txt}`);
+      }
+
+      // 2 update functional roles
+      const prev = new Set(initialFunctionalRoles);
+      const next = new Set(functionalRoles);
+      const toAdd = Array.from(next).filter(r => !prev.has(r));
+      const toRemove = Array.from(prev).filter(r => !next.has(r));
+      const uid = Number((user as any)?.id);
+
+      if (toAdd.length) {
+          const r = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(selectedTeamKey)}/functional-roles/assign/`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
+              credentials: 'include',
+              body: JSON.stringify({ user_id: uid, roles: toAdd })
+          });
+          if (!r.ok) throw new Error('Failed to assign roles');
+      }
+      if (toRemove.length) {
+          const r = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(selectedTeamKey)}/functional-roles/unassign/`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
+              credentials: 'include',
+              body: JSON.stringify({ user_id: uid, roles: toRemove })
+          });
+          if (!r.ok) throw new Error('Failed to unassign roles');
+      }
+
+      setInitialFunctionalRoles(Array.from(next).sort());
+  };
 
   const updateOrgRoleIfNeeded = async (): Promise<void> => {
     const orgSlug = String(organisationSlug || '').trim();
@@ -385,84 +486,6 @@ export default function UserEditModal({
     }
   };
 
-  const updateProjectRolesIfNeeded = async (): Promise<void> => {
-    const projectKey = String(selectedProjectKey || '').trim();
-    if (!projectKey) return;
-    if (!projectMembershipId) throw new Error('User is not a member of this project');
-
-    // 1) Update access role
-    const res = await fetch(
-      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/members/${encodeURIComponent(projectMembershipId)}/`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ role: projectAccessRole }),
-      }
-    );
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      throw new Error(text || 'Failed to update project access role');
-    }
-
-    // 2) Update functional roles via diff
-    const prev = new Set((Array.isArray(initialFunctionalRoles) ? initialFunctionalRoles : []).map((r) => String(r || '').trim()).filter(Boolean));
-    const next = new Set((Array.isArray(functionalRoles) ? functionalRoles : []).map((r) => String(r || '').trim()).filter(Boolean));
-    const toAdd = Array.from(next).filter((r) => !prev.has(r));
-    const toRemove = Array.from(prev).filter((r) => !next.has(r));
-
-    const uid = Number((user as any)?.id);
-    if (!uid) throw new Error('Missing user id');
-
-    if (toAdd.length) {
-      const assignRes = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/functional-roles/assign/`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ user_id: uid, roles: toAdd }),
-        }
-      );
-      if (!assignRes.ok) {
-        const text = await assignRes.text().catch(() => '');
-        throw new Error(text || 'Failed to assign functional roles');
-      }
-    }
-
-    if (toRemove.length) {
-      const unassignRes = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/functional-roles/unassign/`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ user_id: uid, roles: toRemove }),
-        }
-      );
-      if (!unassignRes.ok) {
-        const text = await unassignRes.text().catch(() => '');
-        throw new Error(text || 'Failed to unassign functional roles');
-      }
-    }
-
-    // Update baseline so subsequent edits diff correctly
-    const nextSorted = Array.from(next.values()).sort((a, b) => a.localeCompare(b));
-    setInitialFunctionalRoles(nextSorted);
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -470,18 +493,15 @@ export default function UserEditModal({
     try {
       await onSave(formData);
 
-      // Optional: org role edit
+      // Save all roles
       await updateOrgRoleIfNeeded();
-
-      // Optional: project roles edit
-      if (String(selectedProjectKey || '').trim()) {
-        await updateProjectRolesIfNeeded();
-      }
+      await updateClubRole();
+      await updateTeamRole();
 
       // Refresh parent data only after *all* updates are done.
       await onSaved?.();
 
-      onClose();
+      // Keep modal open to allow further edits
     } catch (error) {
       console.error(error);
       setExtraError(error instanceof Error ? error.message : 'Failed to save');
@@ -522,10 +542,10 @@ export default function UserEditModal({
     }
   };
 
-  const linkToProject = async (): Promise<void> => {
+  const performLinkToProject = async (key: string, role: string, type: 'club' | 'team') => {
     if (!user) return;
-    const projectKey = String(linkProjectKey || '').trim();
-    if (!projectKey) throw new Error('Select a club/team first');
+    const projectKey = String(key || '').trim();
+    if (!projectKey) throw new Error('Select a project first');
 
     setAddingToProject(true);
     setExtraError(null);
@@ -540,16 +560,23 @@ export default function UserEditModal({
             'X-Requested-With': 'XMLHttpRequest',
           },
           credentials: 'include',
-          body: JSON.stringify({ user_id: Number((user as any)?.id), role: linkAccessRole }),
+          body: JSON.stringify({ user_id: Number((user as any)?.id), role: role }),
         }
       );
       if (!res.ok) {
         const text = await res.text().catch(() => '');
-        throw new Error(text || 'Failed to link user to club/team');
+        throw new Error(text || 'Failed to link user to project');
       }
 
       // Jump to access tab and load the newly linked membership for editing.
-      setSelectedProjectKey(projectKey);
+      if (type === 'club') setSelectedClubKey(projectKey);
+      if (type === 'team') {
+          setSelectedTeamKey(projectKey);
+          // Try to set club parent if known
+          const p = orgProjects.find(op => op.key === projectKey);
+          if (p?.parentKey) setSelectedClubKey(p.parentKey);
+      }
+
       setActiveTab('access');
       await onSaved?.();
     } finally {
@@ -768,106 +795,75 @@ export default function UserEditModal({
                 <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '12px' }}>
                   <div style={{ fontWeight: 800, marginBottom: '10px' }}>Club Settings</div>
 
-                  {scopeProjectKey ? (
-                    <div style={{ marginBottom: '10px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                      Scope: {String(scopeProjectKey)}
-                    </div>
-                  ) : (
-                    <div style={{ marginBottom: '10px' }}>
-                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Choose a club</label>
-                      <select
-                        value={selectedProjectKey && !availableProjects.find(p => p.key === selectedProjectKey && p.isTeam)?.isTeam ? selectedProjectKey : ''}
-                        onChange={(e) => {
-                            const val = e.target.value;
-                            if (val) setSelectedProjectKey(val);
-                        }}
-                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
-                      >
-                        <option value="">(select)</option>
-                        {availableProjects.filter(p => !p.isTeam).map((p) => (
-                          <option key={p.key} value={p.key}>
-                            {p.name}
-                          </option>
-                        ))}
-                      </select>
-                       <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                        Missing a club? Use the “Add to club/team” tab.
-                      </div>
-                    </div>
-                  )}
+                  <div style={{ marginBottom: '10px' }}>
+                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Choose a club</label>
+                    <select
+                      value={selectedClubKey}
+                      onChange={(e) => setSelectedClubKey(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
+                    >
+                      <option value="">(select)</option>
+                      {availableProjects.filter(p => !p.isTeam).map((p) => (
+                        <option key={p.key} value={p.key}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                  {selectedProjectKey && !availableProjects.find(p => p.key === selectedProjectKey && p.isTeam)?.isTeam ? (
+                  {selectedClubKey && clubMembershipId ? (
                     <div style={{ marginBottom: '12px' }}>
                         <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Access role</label>
                         <select
-                          value={projectAccessRole}
-                          onChange={(e) => setProjectAccessRole(e.target.value as any)}
+                          value={clubAccessRole}
+                          onChange={(e) => setClubAccessRole(e.target.value as any)}
                           style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
                         >
                           <option value="viewer">viewer</option>
                           <option value="editor">editor</option>
                           <option value="admin">admin</option>
                         </select>
-                        {!projectMembershipId ? (
-                          <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                            User is not (directly) a member of this club.
-                          </div>
-                        ) : null}
-                      </div>
-
+                    </div>
+                  ) : selectedClubKey ? (
+                    <div style={{ marginBottom: '10px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                         User is not a member of this club. Go to "Add to club/team" tabs to add them.
+                    </div>
                   ) : null}
                 </div>
 
                  <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '12px' }}>
                   <div style={{ fontWeight: 800, marginBottom: '10px' }}>Team Settings</div>
 
-                   {scopeProjectKey ? (
-                    <div style={{ marginBottom: '10px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                      Scope: {String(scopeProjectKey)}
-                    </div>
-                  ) : (
-                    <div style={{ marginBottom: '10px' }}>
+                   <div style={{ marginBottom: '10px' }}>
                       <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Choose a team</label>
                       <select
-                        value={selectedProjectKey && availableProjects.find(p => p.key === selectedProjectKey && p.isTeam)?.isTeam ? selectedProjectKey : ''}
-                        onChange={(e) => {
-                             const val = e.target.value;
-                             if (val) setSelectedProjectKey(val);
-                        }}
+                        value={selectedTeamKey}
+                        onChange={(e) => setSelectedTeamKey(e.target.value)}
                         style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
                       >
                         <option value="">(select)</option>
-                        {availableProjects.filter(p => p.isTeam).map((p) => (
+                        {availableProjects.filter(p => p.isTeam).filter(p => !selectedClubKey || p.parentKey === selectedClubKey).map((p) => (
                           <option key={p.key} value={p.key}>
                             {p.name}
                           </option>
                         ))}
                       </select>
                        <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                        Missing a team? Use the “Add to club/team” tab.
+                        {selectedClubKey ? 'Showing teams for selected club.' : 'Select a club above to filter teams.'}
                       </div>
                     </div>
-                  )}
 
-
-                  {selectedProjectKey && availableProjects.find(p => p.key === selectedProjectKey && p.isTeam)?.isTeam ? (
+                  {selectedTeamKey && teamMembershipId ? (
                     <>
                       <div style={{ marginBottom: '12px' }}>
                         <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Access role</label>
                         <select
-                          value={projectAccessRole}
-                          onChange={(e) => setProjectAccessRole(e.target.value as any)}
+                          value={teamAccessRole}
+                          onChange={(e) => setTeamAccessRole(e.target.value as any)}
                           style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
                         >
                           <option value="viewer">viewer</option>
                           <option value="editor">editor</option>
                           <option value="admin">admin</option>
                         </select>
-                        {!projectMembershipId ? (
-                          <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                            User is not (directly) a member of this team.
-                          </div>
-                        ) : null}
                       </div>
 
                       <div>
@@ -911,17 +907,13 @@ export default function UserEditModal({
                             );
                           })}
                         </div>
-
-                        <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px', lineHeight: 1.35 }}>
-                          Note: Team Admins automatically show as “Coach” in the API.
-                        </div>
                       </div>
                     </>
-                  ) : (
+                  ) : selectedTeamKey ? (
                     <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                      Select a club/team to edit access + functional roles.
+                        User is not a member of this team.
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
             ) : null}
@@ -942,67 +934,96 @@ export default function UserEditModal({
                 ) : null}
 
                 <div style={{ padding: '12px', border: '1px solid var(--app-border)', borderRadius: '8px', background: 'var(--app-surface-2)' }}>
-                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Club / Team</label>
-                  <select
-                    value={linkProjectKey}
-                    onChange={(e) => setLinkProjectKey(e.target.value)}
-                    disabled={orgProjectsLoading || !organisationSlug || addingToProject}
-                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
-                  >
-                    <option value="">(select)</option>
-                    {orgProjects.map((p) => {
-                      const label = p.isTeam && p.parentName ? `${p.parentName} → ${p.name}` : p.name;
-                      return (
-                        <option key={p.key} value={p.key}>
-                          {label}
-                        </option>
-                      );
-                    })}
-                  </select>
-                  <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                    Pick a Club (parent) or Team (child). After linking, you can edit access + functional roles in the “Access & roles” tab.
-                  </div>
+                   <div style={{marginBottom: '10px', fontWeight: 800}}>Select Scope</div>
 
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <div style={{ flex: '1 1 220px' }}>
-                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Initial access role</label>
+                   <div style={{marginBottom: '10px'}}>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>1. Select Club</label>
                       <select
-                        value={linkAccessRole}
-                        onChange={(e) => setLinkAccessRole(e.target.value as any)}
-                        disabled={addingToProject}
+                        value={linkClubKey}
+                        onChange={(e) => {
+                            setLinkClubKey(e.target.value);
+                            // Reset team when club changes
+                            setLinkTeamKey('');
+                        }}
+                        disabled={orgProjectsLoading || !organisationSlug || addingToProject}
                         style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
                       >
-                        <option value="viewer">viewer</option>
-                        <option value="editor">editor</option>
-                        <option value="admin">admin</option>
+                        <option value="">(Select Club)</option>
+                        {orgProjects.filter(p => !p.isTeam).map((p) => (
+                           <option key={p.key} value={p.key}>{p.name}</option>
+                        ))}
                       </select>
-                    </div>
+                   </div>
 
-                    <div style={{ flex: '0 0 auto', marginTop: '22px' }}>
-                      <button
+                   <div style={{marginBottom: '10px'}}>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>2. Select Team (optional)</label>
+                      <select
+                        value={linkTeamKey}
+                        onChange={(e) => setLinkTeamKey(e.target.value)}
+                        disabled={!linkClubKey || addingToProject}
+                         style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
+                      >
+                        <option value="">(Select Team)</option>
+                        {orgProjects
+                            .filter(p => p.isTeam)
+                            .filter(p => !linkClubKey || p.parentKey === linkClubKey)
+                            .map((p) => (
+                                <option key={p.key} value={p.key}>{p.name}</option>
+                            ))}
+                      </select>
+                   </div>
+
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                       <div style={{flex: '1 1 auto'}}>
+                          <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Initial Role</label>
+                          <select
+                            value={linkAccessRole}
+                            onChange={(e) => setLinkAccessRole(e.target.value as any)}
+                            disabled={addingToProject}
+                            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
+                          >
+                            <option value="viewer">viewer</option>
+                            <option value="editor">editor</option>
+                            <option value="admin">admin</option>
+                          </select>
+                       </div>
+                    </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                    <button
                         type="button"
-                        disabled={addingToProject || !linkProjectKey}
-                        onClick={async () => {
-                          try {
-                            await linkToProject();
-                          } catch (e) {
-                            setExtraError(e instanceof Error ? e.message : 'Failed to link to club/team');
-                          }
-                        }}
+                        disabled={addingToProject || !linkClubKey}
+                        onClick={() => performLinkToProject(linkClubKey, linkAccessRole, 'club')}
                         style={{
-                          padding: '10px 12px',
+                          padding: '10px 16px',
                           borderRadius: '6px',
                           border: '1px solid #007bff',
                           backgroundColor: '#007bff',
                           color: '#fff',
-                          cursor: addingToProject || !linkProjectKey ? 'not-allowed' : 'pointer',
+                          cursor: addingToProject || !linkClubKey ? 'not-allowed' : 'pointer',
                           fontWeight: 800,
                         }}
-                      >
-                        {addingToProject ? 'Adding…' : 'Add to club/team'}
-                      </button>
-                    </div>
-                  </div>
+                    >
+                        {addingToProject && !linkTeamKey ? 'Adding...' : 'Add to Club'}
+                    </button>
+
+                    <button
+                        type="button"
+                        disabled={addingToProject || !linkTeamKey}
+                        onClick={() => performLinkToProject(linkTeamKey, linkAccessRole, 'team')}
+                        style={{
+                          padding: '10px 16px',
+                          borderRadius: '6px',
+                          border: '1px solid #17a2b8',
+                          backgroundColor: '#17a2b8',
+                          color: '#fff',
+                          cursor: addingToProject || !linkTeamKey ? 'not-allowed' : 'pointer',
+                          fontWeight: 800,
+                        }}
+                    >
+                        {addingToProject && linkTeamKey ? 'Adding...' : 'Add to Team'}
+                    </button>
                 </div>
               </div>
             ) : null}
