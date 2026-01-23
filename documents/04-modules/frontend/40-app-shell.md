@@ -206,3 +206,37 @@ The sidebar groups are limited to 4 key areas for normal users.
     *   Ensure Search and Avatar are correctly positioned.
 4.  **Stage 4: Page Cleanup**
     *   Remove `<AppShell>` from individual pages.
+
+## 7. Hierarchy & Context Rules (Mandatory)
+
+### 7.1. Hierarchy Backbone
+The application context and navigation **must** follow this strict hierarchy:
+**Federation (Organisation) → Club (Project parent) → Team (Project child) → Season (Period) → Competition (Period child) → Match (Activity)**
+
+### 7.2. Navigation Rules
+1.  **Sidebar "Work" Order:** Must reflect hierarchy breadth-to-depth: Federations, Clubs, Teams, Seasons, Competitions, Matches.
+2.  **Members Location:** "Members" belongs to Season context (scoped membership), NOT strictly top-level.
+3.  **User Domain:** Users are separate entities (cross-cutting) and not part of the Work hierarchy breadcrumb chain.
+
+### 7.3. Context Resolution (Panel A)
+*   Panel A "Context" group must display the resolved chain in order: Club > Team > Season > Competition > Match.
+*   It should act as a vertical breadcrumb for the current task context.
+*   **Visual Separation:** The Context block must be visually distinct from the Application Navigation (e.g., breadcrumb styling vs menu styling).
+
+## 8. UX Stability & Freeze Rules (As of Jan 2026)
+
+### 8.1. Architecture Freeze
+1.  **Sidebar Structure:** The separation between the **Context Block** (Top) and **Navigation Sections** (Below) is STABLE. Do not merge them.
+    *   *Context* = "Where I am" (Dynamic, hierarchical).
+    *   *Menu* = "Where I can go" (Static, categorical).
+2.  **Hierarchy Truth:** `Federation → Club → Team → Season → Competition → Match` is the authoritative source for sorting, breadcrumbs, and context logic.
+3.  **Domain Separation:** "Users" are never part of the Work Hierarchy key chain. "Members" are Season-scoped only.
+
+### 8.2. Visual Standards (ImageKit-style)
+*   **Panel A:** Uses distinct uppercase Section Headers (WORK HIERARCHY, CONTENT, etc.).
+*   **Context Block:** Uses a compact, breadcrumb-like list style, separated by a divider.
+*   **De-emphasis:** Platform and Help sections should be visually recessive.
+
+### 8.3. Modification Protocol
+*   Future changes must **NOT** alter the Panel A layout structure or section ordering without explicit approval.
+*   New routes must map to existing sections; do not create new top-level sections for single pages.
