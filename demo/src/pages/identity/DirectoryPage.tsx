@@ -42,7 +42,6 @@ export const DirectoryPage: React.FC = () => {
   }, [searchParams, activeTab]);
 
   return (
-    <AppShell>
       <div>
         <PageHeader
           title="Directory"

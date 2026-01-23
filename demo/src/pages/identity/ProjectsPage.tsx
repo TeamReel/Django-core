@@ -282,9 +282,7 @@ export const ProjectsPage: React.FC = () => {
   // This prevents "undefined" org context errors during navigation.
   if (orgId && context.isLoading) {
     return (
-      <AppShell>
         <LoadingState message="Loading organisation context..." />
-      </AppShell>
     );
   }
 
@@ -529,7 +527,7 @@ export const ProjectsPage: React.FC = () => {
   ];
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title={displayOrgName ? `${displayOrgName} - Projects` : 'All Projects'}
         breadcrumbs={breadcrumbItems}
@@ -928,7 +926,7 @@ export const ProjectsPage: React.FC = () => {
         project={selectedProject}
         onSave={handleSaveProject}
       />
-    </div>
+    </>
   );
 };
 

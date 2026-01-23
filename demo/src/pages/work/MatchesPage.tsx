@@ -145,7 +145,7 @@ export default function MatchesPage() {
   ];
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="Matches"
         subtitle={selectedTeamId ? `Showing matches for ${teamName}` : 'Select a team to view matches'}
@@ -265,6 +265,6 @@ export default function MatchesPage() {
           </Card>
         )}
       </PageContent>
-    </div>
+    </>
   );
 }

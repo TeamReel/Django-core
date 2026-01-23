@@ -344,9 +344,7 @@ export default function UsersPage() {
   // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
   if (orgIdParam && context.isLoading) {
     return (
-      <AppShell>
         <LoadingState message="Loading organisation context..." />
-      </AppShell>
     );
   }
 
@@ -569,7 +567,7 @@ export default function UsersPage() {
   }
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title={
             isSuperAdmin
@@ -1262,6 +1260,6 @@ export default function UsersPage() {
         onClose={() => setIsDetailModalOpen(false)}
         user={detailUser}
       />
-    </div>
+    </>
   );
 }

@@ -166,7 +166,6 @@ export const OrganisationsPage: React.FC = () => {
   };
 
   return (
-    <AppShell>
       <div>
         <PageHeader
         title="Federations"
@@ -455,7 +454,6 @@ export const OrganisationsPage: React.FC = () => {
         }}
       />
       </div>
-    </div>
   );
 };
 
