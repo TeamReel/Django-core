@@ -142,10 +142,10 @@ export const PermissionsPage: React.FC = () => {
     'org.view_all': 'View all organisations/federations (cross-club visibility)',
     'org.manage_settings': 'Manage organisation settings and metadata',
     'org.manage_credits': 'Manage credit allocation at federation level',
-    'project.view_all': 'View all projects/clubs/teams (opponent selection)',
-    'project.edit_own': 'Edit own project/team settings',
+    'project.view_all': 'View all clubs/teams (e.g., opponent selection)',
+    'project.edit_own': 'Edit own club/team settings',
     'project.edit_children': 'Edit child projects (club → teams)',
-    'project.manage_credits': 'Manage credit transactions for project/team',
+    'project.manage_credits': 'Manage credit transactions for club/team',
     'match.create': 'Create new matches for team',
     'match.edit_own_team': "Edit matches where the user's team is involved",
     'match.delete': 'Delete matches',
@@ -237,7 +237,7 @@ export const PermissionsPage: React.FC = () => {
       ],
     },
     {
-      category: 'Projects',
+      category: 'Clubs',
       permissions: [
         {
           permission: 'project.view_all',
@@ -278,7 +278,7 @@ export const PermissionsPage: React.FC = () => {
       ],
     },
     {
-      category: 'Matches',
+      category: 'Teams',
       permissions: [
         {
           permission: 'match.create',
@@ -316,11 +316,6 @@ export const PermissionsPage: React.FC = () => {
           team_member: true,
           supporter: true,
         },
-      ],
-    },
-    {
-      category: 'Content',
-      permissions: [
         {
           permission: 'content.create',
           superadmin: true,
@@ -357,11 +352,6 @@ export const PermissionsPage: React.FC = () => {
           team_member: false,
           supporter: false,
         },
-      ],
-    },
-    {
-      category: 'Profiles',
-      permissions: [
         {
           permission: 'profile.edit_own',
           superadmin: true,
@@ -380,11 +370,6 @@ export const PermissionsPage: React.FC = () => {
           team_member: false,
           supporter: false,
         },
-      ],
-    },
-    {
-      category: 'Lineups',
-      permissions: [
         {
           permission: 'lineup.create',
           superadmin: true,
