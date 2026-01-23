@@ -8,20 +8,19 @@ interface SidebarProps {
 }
 
 interface NavItem {
-  path: string; // The link target
+  path: string;
   label: string;
   icon: string;
   visibility: 'everyone' | 'org_admin' | 'staff';
-  matchPaths?: string[]; // Optional: extra paths that trigger active state
 }
 
 interface NavGroup {
-  id: string; // Unique ID
-  label: string; // Label for the primary icon or section
-  icon: string; // Icon for the primary column
-  path?: string; // If the group itself is a link (e.g. Dashboard)
+  id: string;
+  label: string;
+  icon: string;
+  path?: string; // Default path if clicked
   visibility: 'everyone' | 'org_admin' | 'staff';
-  items: NavItem[]; // Children (rendered in secondary column)
+  items: NavItem[]; // Secondary items
   bottom?: boolean;
 }
 
@@ -32,16 +31,16 @@ const NAV_CONFIG: NavGroup[] = [
     icon: '🏠',
     path: '/dashboard',
     visibility: 'everyone',
-    items: [] // No children
+    items: []
   },
   {
-    id: 'directory',
-    label: 'Directory',
-    icon: '📂',
+    id: 'work',
+    label: 'Work',
+    icon: '⚽',
     visibility: 'everyone',
     items: [
       { path: '/directory', label: 'Federations', icon: '🌐', visibility: 'everyone' },
-      { path: '/matches', label: 'Matches', icon: '⚽', visibility: 'everyone' },
+      { path: '/matches', label: 'Matches', icon: '⏱️', visibility: 'everyone' },
       { path: '/competitions', label: 'Competitions', icon: '🏆', visibility: 'everyone' },
       { path: '/seasons', label: 'Seasons', icon: '📅', visibility: 'everyone' },
       { path: '/clubs', label: 'Clubs', icon: '🏟️', visibility: 'everyone' },
@@ -54,7 +53,7 @@ const NAV_CONFIG: NavGroup[] = [
     icon: '📚',
     visibility: 'everyone',
     items: [
-      { path: '/content', label: 'Library', icon: '📚', visibility: 'everyone' },
+      { path: '/content', label: 'Library', icon: '📂', visibility: 'everyone' },
       { path: '/studio', label: 'AI Studio', icon: '✨', visibility: 'everyone' },
     ]
   },
@@ -78,6 +77,8 @@ const NAV_CONFIG: NavGroup[] = [
       { path: '/flags', label: 'Feature Flags', icon: '🚩', visibility: 'staff' },
       { path: '/integration-status', label: 'Integration', icon: '🔄', visibility: 'staff' },
       { path: '/design-system', label: 'Design System', icon: '🎨', visibility: 'staff' },
+      { path: '/observability', label: 'Observability', icon: '📊', visibility: 'staff' },
+      { path: '/security', label: 'Security', icon: '🛡️', visibility: 'staff' },
     ]
   },
   {
@@ -98,9 +99,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
   const location = useLocation();
   const isStaff = isSystemAdmin || isLandAdmin;
 
-  const getFilteredGroups = (config: NavGroup[]) => {
-    return config.map(group => {
-      // Check group visibility
+  // Filter groups and items based on permissions
+  const visibleGroups = useMemo(() => {
+    return NAV_CONFIG.map(group => {
+      // 1. Check Primary Group Permission
       const isGroupVisible =
         group.visibility === 'everyone' ||
         (group.visibility === 'org_admin' && (isOrgAdmin || isSystemAdmin)) ||
@@ -108,7 +110,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
       if (!isGroupVisible) return null;
 
-      // Filter children
+      // 2. Check Secondary Items Permission
       const visibleItems = group.items.filter(item => {
          if (item.visibility === 'everyone') return true;
          if (item.visibility === 'org_admin') return isOrgAdmin || isSystemAdmin;
@@ -118,106 +120,149 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
       return { ...group, items: visibleItems };
     }).filter((g): g is NavGroup => g !== null);
-  };
+  }, [isOrgAdmin, isStaff, isSystemAdmin]);
 
-  const visibleGroups = useMemo(() => getFilteredGroups(NAV_CONFIG), [isOrgAdmin, isStaff]);
-
-  // Determine active parent group
+  // Determine ACTIVE Primary Group
+  // Logic: Is current path equal to Group Path OR does it match any Child Item path?
   const activeGroup = visibleGroups.find(group => {
-    // If exact path match (e.g., Dashboard)
     if (group.path && matchPath({ path: group.path, end: false }, location.pathname)) {
         return true;
     }
-    // If any child matches
     return group.items.some(item => matchPath({ path: item.path, end: false }, location.pathname));
   });
 
-  const showSecondary = activeGroup && activeGroup.items.length > 0 && isOpen;
+  // Show Secondary Sidebar if the active group has children
+  const showSecondary = activeGroup && activeGroup.items.length > 0;
 
   return (
-    <div style={{ display: 'flex', height: '100%', zIndex: 90 }}>
-      {/* Primary Sidebar (Icons) */}
+    <div style={{ display: 'flex', height: '100%', zIndex: 90, flexShrink: 0 }}>
+
+      {/* --- PANEL A: PRIMARY SIDEBAR (Wide or Narrow) --- */}
       <aside
         style={{
-          width: 72, // Fixed width for primary icons
-          backgroundColor: '#0f172a', // Dark slate (ImageKit style)
+          width: isOpen ? 240 : 72,
+          backgroundColor: '#0f172a', // Dark primary
           color: '#f1f5f9',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          paddingTop: 16,
+          transition: 'width 0.2s ease-in-out',
           flexShrink: 0,
+          borderRight: '1px solid #1e293b'
         }}
       >
-        <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+        {/* Logo / Brand Area */}
+        <div style={{
+            height: 64,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: isOpen ? 'flex-start' : 'center',
+            padding: isOpen ? '0 20px' : '0 0',
+            borderBottom: '1px solid #1e293b',
+            marginBottom: 16
+        }}>
+            <span style={{ fontSize: 24 }}>🦁</span>
+            {isOpen && <span style={{ marginLeft: 12, fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em' }}>TeamReel</span>}
+        </div>
+
+        {/* Primary Items */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px' }}>
             {visibleGroups.filter(g => !g.bottom).map(group => (
-                <PrimaryIcon
+                <PrimaryItem
                     key={group.id}
                     group={group}
                     isActive={activeGroup?.id === group.id}
+                    isOpen={isOpen}
                 />
             ))}
         </div>
 
-        {/* Bottom items */}
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, paddingBottom: 16 }}>
+        {/* Bottom Items (Help, etc) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px 12px' }}>
              {visibleGroups.filter(g => g.bottom).map(group => (
-                <PrimaryIcon
+                <PrimaryItem
                     key={group.id}
                     group={group}
                     isActive={activeGroup?.id === group.id}
+                    isOpen={isOpen}
                 />
             ))}
-        </div>
 
-        {/* Toggle (Collapse Secondary) - optional, repurposed */}
-        <div
-            onClick={toggle}
-            style={{
-                height: 40, width: '100%',
-                display: 'flex', justifyContent: 'center', alignItems: 'center',
-                cursor: 'pointer', borderTop: '1px solid rgba(255,255,255,0.1)'
-            }}
-        >
-             {isOpen ? '«' : '»'}
+            {/* Collapse Toggle */}
+            <button
+                onClick={toggle}
+                className="hover:bg-slate-800"
+                style={{
+                    height: 48,
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: isOpen ? 'flex-start' : 'center',
+                    border: 'none',
+                    background: 'transparent',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    borderRadius: 8,
+                    padding: isOpen ? '0 12px' : 0,
+                    marginTop: 8
+                }}
+            >
+                 <span style={{ fontSize: 20, minWidth: 24, textAlign: 'center' }}>{isOpen ? '«' : '»'}</span>
+                 {isOpen && <span style={{ marginLeft: 12, fontSize: 14 }}>Collapse</span>}
+            </button>
         </div>
       </aside>
 
-      {/* Secondary Sidebar (Context Menu) */}
+      {/* --- PANEL B: SECONDARY SIDEBAR (Contextual) --- */}
       {showSecondary && (
          <aside
             style={{
-                width: 240,
+                width: 260, // Fixed wide width
                 backgroundColor: 'var(--app-surface-1)',
                 borderRight: '1px solid var(--app-border)',
                 display: 'flex',
                 flexDirection: 'column',
-                overflowY: 'auto'
+                overflowY: 'auto',
+                flexShrink: 0,
             }}
          >
-             <div style={{ padding: '24px 16px 16px', fontWeight: 600, fontSize: '1.1rem' }}>
+             {/* Secondary Header */}
+             <div style={{
+                 height: 64,
+                 display: 'flex',
+                 alignItems: 'center',
+                 padding: '0 24px',
+                 borderBottom: '1px solid var(--app-border)',
+                 fontWeight: 600,
+                 fontSize: 16,
+                 color: 'var(--app-text)'
+             }}>
                  {activeGroup?.label}
              </div>
 
-             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '0 8px' }}>
+             {/* Secondary Items List */}
+             <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '16px' }}>
                  {activeGroup?.items.map(item => (
                      <NavLink
                         key={item.path}
                         to={item.path}
                         style={({ isActive }) => ({
+                            display: 'flex',
+                            alignItems: 'center',
                             padding: '10px 12px',
                             borderRadius: 6,
                             textDecoration: 'none',
                             color: isActive ? 'var(--app-primary)' : 'var(--app-text)',
                             backgroundColor: isActive ? 'var(--app-primary-subtle)' : 'transparent',
-                            fontSize: '0.9rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 10
+                            fontSize: 14,
+                            fontWeight: isActive ? 500 : 400,
                         })}
                      >
-                         <span style={{ fontSize: '1.1em' }} >{item.icon}</span>
-                         {item.label}
+                        {({ isActive }) => (
+                            <>
+                                <span style={{ fontSize: 18, marginRight: 12, opacity: isActive ? 1 : 0.7 }}>{item.icon}</span>
+                                {item.label}
+                            </>
+                        )}
                      </NavLink>
                  ))}
              </div>
@@ -227,32 +272,31 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
   );
 }
 
-function PrimaryIcon({ group, isActive }: { group: NavGroup, isActive: boolean }) {
-    // If group has path, use NavLink, else just a button that might need to trigger something
-    // Actually, usually primary icons link to the first child or the path
+// Component for Panel A items
+function PrimaryItem({ group, isActive, isOpen }: { group: NavGroup, isActive: boolean, isOpen: boolean }) {
+    // Navigate to group path OR first child
     const targetPath = group.path || (group.items.length > 0 ? group.items[0].path : '/');
 
     return (
         <NavLink
             to={targetPath}
-            title={group.label}
+            title={!isOpen ? group.label : undefined}
             style={{
-                width: 48,
-                height: 48,
-                borderRadius: 12,
                 display: 'flex',
-                justifyContent: 'center',
                 alignItems: 'center',
+                height: 48,
+                padding: isOpen ? '0 12px' : '0 0',
+                justifyContent: isOpen ? 'flex-start' : 'center',
+                borderRadius: 8,
                 textDecoration: 'none',
                 color: isActive ? '#fff' : '#94a3b8',
                 backgroundColor: isActive ? 'var(--app-primary)' : 'transparent',
                 transition: 'all 0.2s',
-                fontSize: 24
             }}
+            className={isActive ? 'bg-primary' : 'hover:bg-slate-800'}
         >
-            {group.icon}
+            <span style={{ fontSize: 20, minWidth: 24, textAlign: 'center' }}>{group.icon}</span>
+            {isOpen && <span style={{ marginLeft: 12, fontWeight: 500, fontSize: 14 }}>{group.label}</span>}
         </NavLink>
     );
 }
-
-// Old code omitted for cleanliness

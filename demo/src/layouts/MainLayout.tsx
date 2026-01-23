@@ -23,25 +23,27 @@ export default function MainLayout() {
   return (
     <div style={{
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'row', // Changed to row for Sidebar-first layout
       height: '100vh',
       backgroundColor: 'var(--app-bg)',
       color: 'var(--app-text)',
-      overflow: 'hidden' // MainLayout handles scrolling of content
+      overflow: 'hidden'
     }}>
-      {/* TopNavbar fixed at top */}
-      <div style={{ flexShrink: 0, zIndex: 100 }}>
-        <TopNavbar />
-      </div>
+      {/* Sidebar on the left, full height */}
+      <Sidebar isOpen={sidebarOpen} toggle={toggleSidebar} />
 
+      {/* Main Content Column (Navbar + Page) */}
       <div style={{
         display: 'flex',
+        flexDirection: 'column',
         flex: 1,
-        overflow: 'hidden', // Contain scrolling to content area
+        minWidth: 0,
         position: 'relative'
       }}>
-        {/* Sidebar on the left */}
-        <Sidebar isOpen={sidebarOpen} toggle={toggleSidebar} />
+        {/* TopNavbar */}
+        <div style={{ flexShrink: 0, zIndex: 100 }}>
+          <TopNavbar />
+        </div>
 
         {/* Main Content Area */}
         <main style={{
