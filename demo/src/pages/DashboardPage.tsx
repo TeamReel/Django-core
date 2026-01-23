@@ -1,7 +1,6 @@
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Link } from 'react-router-dom';
-import AppShell from '../components/AppShell';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { TransactionWidget } from '../components/TransactionWidget/TransactionWidget';
 import { useCreditBalance } from '../hooks/useCreditBalance';
@@ -35,7 +34,6 @@ export default function DashboardPage() {
     : { organisationId: context.organisation?.id?.toString() };
 
   return (
-    <AppShell>
       <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
         {lowBalanceAlert && (
           <div style={{
@@ -196,6 +194,5 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </AppShell>
   );
 }

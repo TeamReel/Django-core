@@ -54,53 +54,7 @@ interface NotificationResponse {
   }>;
 }
 
-const navGroups: NavGroup[] = [
-  {
-    id: 'directory',
-    label: 'Directory',
-    items: [
-      { path: '/directory', label: 'Directory', description: 'Central directory of all entities', icon: '📂' },
-      { path: '/directory?tab=federations', label: 'Federations', description: 'Land/federation organisations (e.g., KNVB)', icon: '🏢' },
-      { path: '/directory?tab=clubs', label: 'Clubs', description: 'Root projects (parent_project = null)', icon: '🏟️' },
-      { path: '/directory?tab=teams', label: 'Teams', description: 'Child projects (parent_project != null)', icon: '⚽' },
-      { path: '/directory?tab=seasons', label: 'Seasons', description: 'Team-scoped periods (parent_period = null)', icon: '🗓️' },
-      { path: '/directory?tab=competitions', label: 'Competitions', description: 'Child periods under seasons', icon: '🏆' },
-      { path: '/directory?tab=matches', label: 'Matches', description: 'Match activities (filter by team)', icon: '🎯' },
-      { path: '/directory?tab=users', label: 'Users', description: 'Directory of members/players/staff', icon: '👥' },
-    ],
-  },
-  {
-    id: 'content',
-    label: 'Content',
-    items: [
-      { path: '/content', label: 'Library', description: 'Generated content archive', icon: '🖼️' },
-      { path: '/studio/create', label: 'AI Studio', description: 'Create content from activities', icon: '✨' },
-      { path: '/notifications', label: 'Notifications', description: 'Updates and system messages', icon: '🔔' },
-    ],
-  },
-  {
-    id: 'admin',
-    label: 'Admin',
-    items: [
-      { path: '/permissions', label: 'Permissions', description: 'Role-based access control', icon: '🔐' },
-      { path: '/flags', label: 'Feature Flags', description: 'Feature toggles per organisation', icon: '🚩' },
-      { path: '/security', label: 'Security', description: 'Access logs and events', icon: '🔒' },
-      { path: '/audit', label: 'Audit Log', description: 'Audit trails and events', icon: '📋' },
-      { path: '/integration-status', label: 'Integration Status', description: 'Module health overview', icon: '🔄' },
-      { path: '/health', label: 'Health Check', description: 'System uptime and status', icon: '❤️' },
-      { path: '/observability', label: 'Metrics', description: 'Performance monitoring', icon: '📊' },
-      { path: '/usage-events', label: 'Usage Events', description: 'Analytics and tracking', icon: '📈' },
-      { path: '/demo/performance', label: 'Cache Performance', description: 'Redis metrics', icon: '⚡' },
-      { path: '/routing-logs', label: 'Notification Routing', description: 'Delivery decisions', icon: '🔀' },
-      { path: '/api-docs', label: 'API Documentation', description: 'OpenAPI/Swagger specs', icon: '🔌' },
-      { path: '/docs', label: 'Guides', description: 'Integration guides', icon: '📚' },
-      { path: '/design-system', label: 'Design System', description: 'UI components library', icon: '🎨' },
-      { path: '/theme', label: 'Theme Demo', description: 'Light/dark mode showcase', icon: '🎭' },
-      { path: '/constitution', label: 'Constitution', description: 'Core principles', icon: '📜' },
-      { path: '/deployment', label: 'Deployment', description: 'Release guides', icon: '🚀' },
-    ],
-  },
-];
+const navGroups: NavGroup[] = [];
 
 export default function TopNavbar() {
   const location = useLocation();

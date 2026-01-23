@@ -11,6 +11,10 @@
         ".kittify/scripts/bash/": true,
         ".kittify/scripts/ps/": true,
         "git commit": true,
-        "pnpm": true
+        "pnpm": true,
+        "/^powershell -NoProfile -Command \"Set-Location 'c:\\\\Users\\\\brian\\\\Documents\\\\django-core'; git add demo/src/pages/identity/UserEditModal\\.tsx; git commit -m 'Expand edit user modal with tabs and link actions'\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
     }
 }

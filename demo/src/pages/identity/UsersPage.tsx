@@ -5,7 +5,6 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { Button, Card, Badge } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import { PageHeader, BreadcrumbContextSwitcher, useBreadcrumbContextSwitcher } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 import UserEditModal from './UserEditModal';
 import UserDetailModal from './UserDetailModal';
 import InviteMemberModal from './InviteMemberModal';
@@ -1263,6 +1262,6 @@ export default function UsersPage() {
         onClose={() => setIsDetailModalOpen(false)}
         user={detailUser}
       />
-    </AppShell>
+    </div>
   );
 }

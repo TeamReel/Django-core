@@ -286,7 +286,7 @@ class TestMatchRBAC:
             {"title": "Nope"},
             format="json",
         )
-        assert resp.status_code == status.HTTP_403_FORBIDDEN
+        assert resp.status_code == status.HTTP_404_NOT_FOUND
 
         # Team Admin can edit
         resp = _auth(api_client, team_admin).patch(

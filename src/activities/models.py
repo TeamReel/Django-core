@@ -176,7 +176,19 @@ class Activity(models.Model):
 
         # Add date to reduce collisions and improve readability.
         if self.start_time:
-            base = f"{base}-{self.start_time.date().isoformat()}"
+            # Handle both datetime objects and strings (if populated directly or via serializers)
+            if hasattr(self.start_time, "date"):
+                date_str = self.start_time.date().isoformat()
+            else:
+                # Fallback for string/other
+                try:
+                    from dateutil.parser import parse
+
+                    date_str = parse(str(self.start_time)).date().isoformat()
+                except (ImportError, ValueError):
+                    date_str = str(self.start_time)[:10]
+
+            base = f"{base}-{date_str}"
 
         # Keep room for suffix.
         base = base[:230].strip("-")

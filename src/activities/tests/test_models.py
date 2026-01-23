@@ -128,14 +128,14 @@ class TestActivityModel:
             end_time=datetime(2023, 12, 15, 16, 30, tzinfo=timezone.utc),
             project=project,
             period=period,
-            data={
+            metadata={
                 "score_home": 3,
                 "score_away": 1,
                 "goals": [{"player": "John", "minute": 23}],
             },
         )
-        assert activity.data["score_home"] == 3
-        assert activity.data["goals"][0]["player"] == "John"
+        assert activity.metadata["score_home"] == 3
+        assert activity.metadata["goals"][0]["player"] == "John"
 
     def test_str_representation(self, project, period):
         """String representation shows title and datetime."""

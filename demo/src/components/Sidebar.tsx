@@ -1,263 +1,210 @@
-import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Card, Button } from '@django-core/design-system';
-import { useAuth } from '@django-core/auth-ui';
+import { useState, useMemo } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useUserRole } from './PermissionGuards';
+
+interface SidebarProps {
+  isOpen: boolean;
+  toggle: () => void;
+}
 
 interface NavGroup {
   id: string;
   label: string;
   items: NavItem[];
+  bottom?: boolean; // Pinned to bottom?
+  restricted?: boolean; // Staff only section?
 }
 
 interface NavItem {
   path: string;
   label: string;
-  icon?: string;
+  icon: string;
+  visibility: 'everyone' | 'org_admin' | 'staff';
 }
 
-const navGroups: NavGroup[] = [
+const NAV_CONFIG: NavGroup[] = [
   {
-    id: 'identity',
-    label: 'Identity & Context',
+    id: 'dashboard',
+    label: 'Dashboard',
     items: [
-      { path: '/organisations', label: 'Organisations', icon: '🏢' },
-      { path: '/users', label: 'Users', icon: '👥' },
-      { path: '/permissions', label: 'Permissions', icon: '🔐' },
-      { path: '/profile', label: 'Profile', icon: '👤' },
-    ],
+      { path: '/dashboard', label: 'Dashboard', icon: '🏠', visibility: 'everyone' },
+      { path: '/directory', label: 'Directory', icon: '📂', visibility: 'everyone' },
+    ]
   },
   {
-    id: 'config',
-    label: 'Configuration',
+    id: 'work',
+    label: 'Work',
     items: [
-      { path: '/preferences', label: 'Preferences', icon: '⚙️' },
-      { path: '/audit', label: 'Audit Log', icon: '📋' },
-      { path: '/flags', label: 'Feature Flags', icon: '🚩' },
-      { path: '/credits', label: 'Credits', icon: '💳' },
-    ],
+      { path: '/matches', label: 'Matches', icon: '⚽', visibility: 'everyone' },
+      { path: '/competitions', label: 'Competitions', icon: '🏆', visibility: 'everyone' },
+      { path: '/seasons', label: 'Seasons', icon: '📅', visibility: 'everyone' },
+      { path: '/clubs', label: 'Clubs', icon: '🏟️', visibility: 'everyone' },
+      { path: '/teams', label: 'Teams', icon: '👕', visibility: 'everyone' },
+    ]
+  },
+  {
+    id: 'content',
+    label: 'Content',
+    items: [
+      { path: '/content', label: 'Library', icon: '📚', visibility: 'everyone' },
+      { path: '/studio', label: 'AI Studio', icon: '✨', visibility: 'everyone' },
+    ]
+  },
+  {
+    id: 'organisation',
+    label: 'Organisation',
+    items: [
+      { path: '/users', label: 'Members', icon: '👥', visibility: 'org_admin' },
+      { path: '/permissions', label: 'Settings', icon: '⚙️', visibility: 'org_admin' },
+    ]
   },
   {
     id: 'platform',
-    label: 'Platform Status',
+    label: 'Platform',
+    restricted: true,
     items: [
-      { path: '/health', label: 'Health Status', icon: '❤️' },
-      { path: '/integration-status', label: 'Integration Status', icon: '🔄' },
-      { path: '/constitution', label: 'Constitution', icon: '📜' },
-      { path: '/security', label: 'Security', icon: '🔒' },
-      { path: '/observability', label: 'Observability', icon: '📊' },
-      { path: '/api-docs', label: 'API Docs', icon: '🔌' },
-      { path: '/demo/performance', label: 'Cache Performance', icon: '⚡' },
-      { path: '/demo/websockets', label: 'WebSocket Test', icon: '🔥' },
-    ],
+      { path: '/health', label: 'Health', icon: '❤️', visibility: 'staff' },
+      { path: '/flags', label: 'Feature Flags', icon: '🚩', visibility: 'staff' },
+      { path: '/integration-status', label: 'Integration', icon: '🔄', visibility: 'staff' },
+      { path: '/design-system', label: 'Design System', icon: '🎨', visibility: 'staff' },
+    ]
   },
   {
-    id: 'frontend',
-    label: 'Frontend Resources',
+    id: 'help',
+    label: 'Help',
+    bottom: true,
     items: [
-      { path: '/design-system', label: 'Design System', icon: '🎨' },
-      { path: '/auth-flows', label: 'Auth Flows', icon: '🔐' },
-      { path: '/context', label: 'Context Switcher', icon: '🔀' },
-      { path: '/demo/files', label: 'File Management Demo', icon: '📁' },
-      { path: '/resources', label: 'Resources', icon: '📊' },
-      { path: '/templates', label: 'Templates', icon: '📄' },
-      { path: '/theme', label: 'Theme Showcase', icon: '🎭' },
-      { path: '/integration', label: 'Integration Patterns', icon: '🔗' },
-    ],
-  },
-  {
-    id: 'docs',
-    label: 'Documentation',
-    items: [
-      { path: '/docs', label: 'Docs', icon: '📚' },
-      { path: '/tasks', label: 'Tasks', icon: '✓' },
-      { path: '/notifications', label: 'Notifications', icon: '🔔' },
-      { path: '/deployment', label: 'Deployment', icon: '🚀' },
-    ],
-  },
+      { path: '/docs', label: 'User Guide', icon: '📖', visibility: 'everyone' },
+      { path: '/constitution', label: 'Constitution', icon: '📜', visibility: 'everyone' },
+    ]
+  }
 ];
 
-/**
- * Sidebar using design-system primitives (Card, Button) with collapsible groups
- * - 5 groups: identity, config, platform, frontend, docs
- * - localStorage persistence of expanded groups
- * - Auto-expands group containing the active route
- */
-export default function Sidebar() {
+export default function Sidebar({ isOpen, toggle }: SidebarProps) {
+  const { isSystemAdmin, isOrgAdmin, isLandAdmin } = useUserRole();
   const location = useLocation();
-  const { user } = useAuth();
-  const { isSystemAdmin, isOrgAdmin, isCoach, hasOrgRole } = useUserRole();
-  const STORAGE_KEY = 'demo_sidebar_expanded_groups';
 
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const isStaff = isSystemAdmin || isLandAdmin; // Define strict staff role
 
-  // Filter navGroups based on permissions
-  const filteredNavGroups = navGroups.map(group => {
-    const items = group.items.filter(item => {
-      // Admin-only pages
-      if (['/integration-status', '/health', '/constitution', '/observability', '/api-docs', '/demo/performance', '/demo/websockets'].includes(item.path)) {
-        return isSystemAdmin;
-      }
+  const visibleGroups = useMemo(() => {
+    return NAV_CONFIG.map(group => {
+      // Filter items based on visibility
+      const textItems = group.items.filter(item => {
+        if (item.visibility === 'everyone') return true;
+        if (item.visibility === 'org_admin') return isOrgAdmin || isSystemAdmin;
+        if (item.visibility === 'staff') return isStaff;
+        return false;
+      });
 
-      // Org Admin+ pages (includes flags for tenant-aware management)
-      if (['/flags', '/credits', '/audit'].includes(item.path)) {
-        return isSystemAdmin || isOrgAdmin;
-      }
-
-      // Security: Admin or Org Admin/Coach
-      if (item.path === '/security') {
-        return isSystemAdmin || hasOrgRole;
-      }
-
-      // Frontend resources: Admin-only (demo/documentation pages)
-      if (group.id === 'frontend') {
-        return isSystemAdmin;
-      }
-
-      // Documentation: Admin-only (except user-relevant notifications)
-      if (group.id === 'docs') {
-        if (item.path === '/notifications') {
-          return true; // All users can see notifications
-        }
-        return isSystemAdmin;
-      }
-
-      // User-facing pages: everyone
-      return true;
-    });
-    return { ...group, items };
-  }).filter(group => group.items.length > 0);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setExpandedGroups(new Set(JSON.parse(stored)));
-      } catch {
-        // ignore malformed storage
-      }
-    }
-
-    for (const group of filteredNavGroups) {
-      const hasActive = group.items.some(item =>
-        location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
-      );
-      if (hasActive) {
-        setExpandedGroups(prev => new Set([...prev, group.id]));
-        break;
-      }
-    }
-  }, [location.pathname, user]); // Added user dependency
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(expandedGroups)));
-  }, [expandedGroups]);
-
-  const toggleGroup = (groupId: string) => {
-    setExpandedGroups(prev => {
-      const next = new Set(prev);
-      if (next.has(groupId)) {
-        next.delete(groupId);
-      } else {
-        next.add(groupId);
-      }
-      return next;
-    });
-  };
-
-  const isItemActive = (path: string): boolean => {
-    return location.pathname === path || location.pathname.startsWith(`${path}/`);
-  };
+      return { ...group, items: textItems };
+    }).filter(group => group.items.length > 0); // Remove empty groups
+  }, [isOrgAdmin, isStaff]);
 
   return (
-    <aside data-testid="sidebar" style={{
-      width: 280,
-      minHeight: '100vh',
-      backgroundColor: 'var(--app-surface)',
-      borderRight: '1px solid var(--app-border)'
-    }}>
-      <Card style={{
-        padding: 12,
+    <aside
+      style={{
+        width: isOpen ? 240 : 64,
+        transition: 'width 0.2s ease-in-out',
+        backgroundColor: 'var(--app-surface-1)',
+        borderRight: '1px solid var(--app-border)',
         display: 'flex',
         flexDirection: 'column',
-        gap: 8,
-        backgroundColor: 'transparent',
-        border: 'none',
-        boxShadow: 'none'
-      }}>
-        {filteredNavGroups.map(group => (
-          <Card key={group.id} data-testid={`nav-group-${group.id}`} style={{
-            padding: 8,
-            backgroundColor: 'var(--app-surface-secondary)',
-            border: '1px solid var(--app-border)'
-          }}>
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={() => toggleGroup(group.id)}
-              style={{ width: '100%' }}
-              data-testid={`accordion-toggle-${group.id}`}
-            >
-              <span style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                <span>{group.label}</span>
-                <span style={{ marginLeft: 'auto', fontSize: 12 }}>
-                  {expandedGroups.has(group.id) ? '▾' : '▸'}
-                </span>
-              </span>
-            </Button>
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        height: '100%',
+        zIndex: 90
+      }}
+    >
+      {/* Collapse Toggle */}
+      <div
+        onClick={toggle}
+        role="button"
+        style={{
+          height: 48,
+          borderBottom: '1px solid var(--app-border)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: isOpen ? 'flex-end' : 'center',
+          padding: isOpen ? '0 16px' : 0,
+          cursor: 'pointer',
+          color: 'var(--app-text-muted)'
+        }}
+      >
+        {isOpen ? '«' : '»'}
+      </div>
 
-            {expandedGroups.has(group.id) && (
-              <div data-testid={`accordion-content-${group.id}`} style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {group.items.map(item => {
-                  const active = isItemActive(item.path);
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      data-testid={`nav-link-${item.path}`}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '8px 10px',
-                        borderRadius: 6,
-                        textDecoration: 'none',
-                        backgroundColor: active ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                        color: active ? '#2563eb' : 'var(--app-text)',
-                        fontWeight: active ? 600 : 500,
-                      }}
-                    >
-                      {item.icon && <span aria-hidden="true">{item.icon}</span>}
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
+      <div style={{ flex: 1, padding: '12px 0' }}>
+        {visibleGroups.map(group => (
+          !group.bottom && (
+            <div key={group.id} style={{ marginBottom: 16 }}>
+              {isOpen && (
+                <div style={{
+                  padding: '0 16px 8px',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  color: group.restricted ? '#dc2626' : 'var(--app-text-muted)',
+                  letterSpacing: '0.05em'
+                }}>
+                  {group.label}
+                </div>
+              )}
+              {group.items.map(item => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  style={({ isActive }) => ({
+                    display: 'flex',
+                    alignItems: 'center',
+                    height: 40,
+                    padding: isOpen ? '0 16px' : '0',
+                    justifyContent: isOpen ? 'flex-start' : 'center',
+                    color: isActive ? 'var(--app-primary)' : 'var(--app-text)',
+                    backgroundColor: isActive ? 'var(--app-primary-subtle)' : 'transparent',
+                    textDecoration: 'none',
+                    fontSize: 14,
+                    borderLeft: isActive ? '3px solid var(--app-primary)' : '3px solid transparent'
+                  })}
+                  title={!isOpen ? item.label : undefined}
+                >
+                  <span style={{ fontSize: 18, minWidth: 24, textAlign: 'center' }}>{item.icon}</span>
+                  {isOpen && <span style={{ marginLeft: 12, whiteSpace: 'nowrap' }}>{item.label}</span>}
+                </NavLink>
+              ))}
+            </div>
+          )
         ))}
+      </div>
 
-        <Card style={{ padding: 8 }}>
-          <Link
-            to="/dashboard"
-            data-testid="nav-link-dashboard"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '8px 10px',
-              borderRadius: 6,
-              textDecoration: 'none',
-              backgroundColor: isItemActive('/dashboard') ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-              color: isItemActive('/dashboard') ? '#2563eb' : 'var(--app-text)',
-              fontWeight: isItemActive('/dashboard') ? 600 : 500,
-            }}
-          >
-            <span aria-hidden="true">🏠</span>
-            <span>Dashboard</span>
-          </Link>
-        </Card>
-      </Card>
+      {/* Bottom Section (Help, User, etc) */}
+      <div style={{ borderTop: '1px solid var(--app-border)', padding: '12px 0' }}>
+         {visibleGroups.filter(g => g.bottom).map(group => (
+            <div key={group.id}>
+              {group.items.map(item => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  style={({ isActive }) => ({
+                    display: 'flex',
+                    alignItems: 'center',
+                    height: 40,
+                    padding: isOpen ? '0 16px' : '0',
+                    justifyContent: isOpen ? 'flex-start' : 'center',
+                    color: isActive ? 'var(--app-primary)' : 'var(--app-text)',
+                    backgroundColor: isActive ? 'var(--app-primary-subtle)' : 'transparent',
+                    textDecoration: 'none',
+                    fontSize: 14,
+                    borderLeft: isActive ? '3px solid var(--app-primary)' : '3px solid transparent'
+                  })}
+                  title={!isOpen ? item.label : undefined}
+                >
+                   <span style={{ fontSize: 18, minWidth: 24, textAlign: 'center' }}>{item.icon}</span>
+                   {isOpen && <span style={{ marginLeft: 12, whiteSpace: 'nowrap' }}>{item.label}</span>}
+                </NavLink>
+              ))}
+            </div>
+         ))}
+      </div>
     </aside>
   );
 }

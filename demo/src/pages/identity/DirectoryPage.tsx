@@ -10,7 +10,6 @@ import {
   Tab,
   TabPanel,
 } from '@django-core/design-system';
-import AppShell from '../../components/AppShell';
 
 import { FederationsList } from './directory/FederationsList';
 import { ClubsList } from './directory/ClubsList';
@@ -88,6 +87,5 @@ export const DirectoryPage: React.FC = () => {
           </Tabs>
         </PageContent>
       </div>
-    </AppShell>
   );
 };

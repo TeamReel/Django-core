@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
+import MainLayout from './layouts/MainLayout';
 import { useAuth } from '@django-core/auth-ui';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -370,6 +371,7 @@ export default function App() {
       <Route path="/register" element={<RegisterPage />} />
 
       {/* Protected routes */}
+      <Route element={<MainLayout />}>
       <Route
         path="/dashboard"
         element={
@@ -1301,6 +1303,7 @@ export default function App() {
 
       {/* Catch-all: 404 for unknown routes */}
       <Route path="*" element={<NotFoundPage />} />
+      </Route>
     </Routes>
   );
 }

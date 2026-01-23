@@ -12,7 +12,6 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { useQueryParams } from '../../hooks/useQueryParams';
 import { Project, ListResponse } from '../../types';
-import AppShell from '../../components/AppShell';
 import { canCreateProject, canEditProject, canDeleteProject } from '../../utils/permissions';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
@@ -929,7 +928,7 @@ export const ProjectsPage: React.FC = () => {
         project={selectedProject}
         onSave={handleSaveProject}
       />
-    </AppShell>
+    </div>
   );
 };
 

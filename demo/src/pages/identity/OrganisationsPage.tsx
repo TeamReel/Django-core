@@ -17,7 +17,7 @@ import {
   Organisation,
   ListResponse,
 } from '../../types';
-import AppShell from '../../components/AppShell';
+
 import { canPerformAction } from '../../utils/permissions';
 import OrganisationDetailModal from './OrganisationDetailModal';
 import OrganisationEditModal from './OrganisationEditModal';
@@ -455,7 +455,7 @@ export const OrganisationsPage: React.FC = () => {
         }}
       />
       </div>
-    </AppShell>
+    </div>
   );
 };
 

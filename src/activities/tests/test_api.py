@@ -377,13 +377,13 @@ class TestActivityViewSet:
             project=project,
             period=period,
         )
-        data = {"data": {"score_home": 3, "score_away": 1}}
+        data = {"metadata": {"score_home": 3, "score_away": 1}}
         response = authenticated_client.patch(
             f"/api/v1/activities/{activity.id}/", data, format="json"
         )
         assert response.status_code == status.HTTP_200_OK
         activity.refresh_from_db()
-        assert activity.data["score_home"] == 3
+        assert activity.metadata["score_home"] == 3
 
 
 @pytest.mark.django_db
