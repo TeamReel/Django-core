@@ -469,6 +469,22 @@ export const PermissionsPage: React.FC = () => {
   const missingFromApi = expectedPermissionKeys.filter((k) => permissionApiKeys.size > 0 && !permissionApiKeys.has(k));
   const unexpectedInApi = Array.from(permissionApiKeys).filter((k) => !expectedKeySet.has(k));
 
+  const currentRoleKey = normalizeRoleKey(currentUserRole);
+
+  const permissionRows = permissionMatrix.flatMap((c) => c.permissions);
+  const grantedCountForRole = (roleKey: keyof PermissionMatrixRow) => {
+    return permissionRows.reduce((acc, row) => acc + (row[roleKey] ? 1 : 0), 0);
+  };
+
+  const roleHighlights: Record<string, string[]> = {
+    superadmin: ['Platform-wide access', 'Troubleshooting & ops', 'Not demo-critical (internal)'],
+    land_admin: ['Org settings + org credits', 'Can manage all clubs/teams', 'Can override flags at org level'],
+    club_admin: ['Manage club + all teams', 'Can delete matches', 'Can override flags at club/team level'],
+    team_admin: ['Manage matches + lineups', 'Edit all team content', 'Can override flags at team level'],
+    team_member: ['Create content', 'Edit own content only', 'Read-only matches'],
+    supporter: ['View matches only'],
+  };
+
   if (loading) {
     return (
       <div>
@@ -567,61 +583,136 @@ export const PermissionsPage: React.FC = () => {
         {/* Tab Content: Role Hierarchy */}
         {activeTab === 'hierarchy' && (
           <>
-            <Card className="mb-6">
-              <h3 className="text-lg font-semibold mb-4">TeamReel Role Hierarchy</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                The system uses a hierarchical role structure where higher roles inherit permissions from lower roles.
-              </p>
-              <div className="space-y-4">
+            <Card className="mb-6" style={{ padding: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>Role Hierarchy</h3>
+                  <p style={{ margin: '6px 0 0', fontSize: '0.9rem', color: 'var(--app-muted-text)' }}>
+                    Higher roles generally include all permissions of the roles below.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <Badge variant="info">{expectedPermissionKeys.length} permissions</Badge>
+                  {currentRoleKey ? <Badge variant="success">Current: {roleDescriptions[currentRoleKey]?.title ?? currentRoleKey}</Badge> : null}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gap: '12px',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                  marginTop: '16px',
+                }}
+              >
                 {Object.entries(roleDescriptions)
                   .sort(([, a], [, b]) => a.level - b.level)
-                  .map(([roleKey, roleInfo]) => (
-                    <div
-                      key={roleKey}
-                      className={`p-4 rounded-lg border-2 ${
-                        normalizeRoleKey(currentUserRole) === roleKey
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 bg-white'
-                      }`}
-                      data-testid={`role-hierarchy-${roleKey}`}
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-sm">
-                            {roleInfo.level}
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-lg">{roleInfo.title}</h4>
-                            <p className="text-xs text-gray-500">{roleInfo.scope}</p>
+                  .map(([roleKey, roleInfo]) => {
+                    const isCurrent = currentRoleKey === roleKey;
+                    const roleCol = roleColumns.find((c) => String(c.key) === roleKey);
+                    const grantedCount = roleCol ? grantedCountForRole(roleCol.key) : null;
+                    const total = expectedPermissionKeys.length;
+
+                    return (
+                      <div
+                        key={roleKey}
+                        data-testid={`role-hierarchy-${roleKey}`}
+                        style={{
+                          border: `1px solid ${isCurrent ? 'var(--app-focus-ring)' : 'var(--app-border)'}`,
+                          backgroundColor: isCurrent ? 'var(--app-surface-2)' : 'var(--app-surface)',
+                          borderRadius: '12px',
+                          padding: '14px',
+                          boxShadow: isCurrent ? '0 0 0 2px rgba(0,0,0,0)' : 'none',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                            <div
+                              style={{
+                                width: '34px',
+                                height: '34px',
+                                borderRadius: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: 800,
+                                backgroundColor: 'var(--app-table-header-bg)',
+                                border: '1px solid var(--app-border)',
+                              }}
+                              aria-label={`Role level ${roleInfo.level}`}
+                            >
+                              {roleInfo.level}
+                            </div>
+
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <div style={{ fontSize: '16px', fontWeight: 800 }}>{roleInfo.title}</div>
+                                {isCurrent ? <Badge variant="success">You</Badge> : null}
+                                {grantedCount != null ? <Badge variant="default">{grantedCount}/{total}</Badge> : null}
+                              </div>
+                              <div style={{ marginTop: '2px', fontSize: '0.8rem', color: 'var(--app-muted-text)' }}>{roleInfo.scope}</div>
+                            </div>
                           </div>
                         </div>
-                        {normalizeRoleKey(currentUserRole) === roleKey && (
-                          <Badge variant="success">Your Role</Badge>
-                        )}
+
+                        <div style={{ marginTop: '10px', fontSize: '0.9rem', color: 'var(--app-text)' }}>
+                          {roleInfo.description}
+                        </div>
+
+                        {roleHighlights[roleKey]?.length ? (
+                          <div style={{ marginTop: '10px', display: 'grid', gap: '6px' }}>
+                            {roleHighlights[roleKey].map((line) => (
+                              <div key={line} style={{ display: 'flex', gap: '8px', color: 'var(--app-muted-text)', fontSize: '0.85rem' }}>
+                                <span aria-hidden="true">•</span>
+                                <span>{line}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
                       </div>
-                      <p className="text-sm text-gray-700 ml-11">{roleInfo.description}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
               </div>
             </Card>
 
-            <Card>
-              <h3 className="text-lg font-semibold mb-4">Hierarchy Structure</h3>
-              <div className="bg-gray-50 p-4 rounded-lg font-mono text-sm">
-                <div className="space-y-1">
-                  <div>0. <strong>Superadmin</strong> (platform)</div>
-                  <div className="ml-4">└─ Internal: full access</div>
-                  <div>1. <strong>Land Admin</strong> (organisation)</div>
-                  <div className="ml-4">└─ Federation level</div>
-                  <div>2. <strong>Club Admin</strong> (club/root project)</div>
-                  <div className="ml-4">└─ Club + all teams</div>
-                  <div>3. <strong>Team Admin</strong> (team/child project)</div>
-                  <div className="ml-4">└─ Team content + matches + lineups</div>
-                  <div>4. <strong>Team Member</strong> (team)</div>
-                  <div className="ml-4">└─ Own profile + content create + own edits</div>
-                  <div>5. <strong>Supporter</strong> (club)</div>
-                  <div className="ml-4">└─ Matches view-only</div>
-                </div>
+            <Card style={{ padding: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>Hierarchy Ladder</h3>
+              <p style={{ margin: '6px 0 0', fontSize: '0.9rem', color: 'var(--app-muted-text)' }}>
+                Scopes flow from org → club → team, with increasing restrictions.
+              </p>
+
+              <div style={{ marginTop: '14px', padding: '14px', border: '1px solid var(--app-border)', borderRadius: '12px', backgroundColor: 'var(--app-surface)' }}>
+                {Object.entries(roleDescriptions)
+                  .sort(([, a], [, b]) => a.level - b.level)
+                  .map(([roleKey, roleInfo], idx, arr) => {
+                    const isCurrent = currentRoleKey === roleKey;
+                    const isLast = idx === arr.length - 1;
+                    return (
+                      <div key={roleKey} style={{ display: 'flex', gap: '12px' }}>
+                        <div style={{ width: '18px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <div
+                            style={{
+                              width: '10px',
+                              height: '10px',
+                              borderRadius: '999px',
+                              backgroundColor: isCurrent ? 'var(--app-focus-ring)' : 'var(--app-border)',
+                              marginTop: '4px',
+                            }}
+                          />
+                          {!isLast ? <div style={{ width: '2px', flex: 1, backgroundColor: 'var(--app-border)', opacity: 0.8 }} /> : null}
+                        </div>
+
+                        <div style={{ paddingBottom: isLast ? 0 : '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <div style={{ fontWeight: 800 }}>{roleInfo.title}</div>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--app-muted-text)' }}>({roleInfo.scope})</span>
+                            {isCurrent ? <Badge variant="success">You</Badge> : null}
+                          </div>
+                          <div style={{ marginTop: '4px', fontSize: '0.9rem', color: 'var(--app-muted-text)' }}>{roleInfo.description}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             </Card>
           </>
