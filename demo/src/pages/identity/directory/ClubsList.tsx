@@ -509,8 +509,21 @@ export const ClubsList: React.FC = () => {
             throw new Error(detail || 'Failed to create club');
           }
 
+          // Update UI immediately so the club appears without waiting on any refetch.
+          const payload: any = await res.json().catch(() => null);
+          const created: any = payload?.data?.data || payload?.data || payload;
+          if (created && typeof created === 'object') {
+            const createdKey = String(created?.slug || created?.id || '');
+            if (createdKey) {
+              setClubs((prev) => {
+                if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
+                return [created, ...prev];
+              });
+            }
+          }
+
+          // Prevent stale caches on any later navigations.
           invalidateFetchAllPagesCache();
-          setRefreshKey((k) => k + 1);
         }}
       />
     </div>

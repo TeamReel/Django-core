@@ -3894,8 +3894,32 @@ export const OrganisationDetailPage: React.FC = () => {
             throw new Error(detail || 'Failed to create club');
           }
 
-          await fetchClubsPage(1);
-          await fetchTeamsForOrg();
+          // Make the UX feel instant:
+          // - update local state immediately (so the club appears right away)
+          // - kick off any heavier refetch work in the background
+          const payload: any = await res.json().catch(() => null);
+          const created: any = payload?.data?.data || payload?.data || payload;
+
+          if (created && typeof created === 'object') {
+            const createdKey = String(created?.slug || created?.id || '');
+            if (createdKey) {
+              setClubsPage(1);
+              setClubs((prev) => {
+                if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
+                // Newest-first in UI; server refetch will normalize ordering if needed.
+                return [created, ...prev];
+              });
+              setClubsCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));
+              setAllClubsForTeams((prev) => {
+                if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
+                return [created, ...prev];
+              });
+            }
+          }
+
+          invalidateFetchAllPagesCache();
+          void fetchClubsPage(1);
+          void fetchTeamsForOrg({ force: true });
         }}
       />
 
