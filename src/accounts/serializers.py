@@ -184,42 +184,66 @@ class UserListSerializer(serializers.ModelSerializer):
             project_memberships = ProjectMembership.objects.filter(
                 user=obj, deleted_at__isnull=True
             ).select_related(
-                "project", "project__parent_project", "period", "period__parent_period"
+                "project",
+                "project__parent_project",
+                "period",
+                "period__parent_period",
             )
 
+            def _is_base(pm: "ProjectMembership") -> bool:
+                return pm.period_id is None
+
             for pm in project_memberships:
-                if pm.project:
-                    projects_data[pm.project.id] = {
-                        "id": str(pm.project.id),
-                        "name": pm.project.name,
-                        "slug": pm.project.slug,
-                        "role": pm.role,
-                        "parent": (
-                            str(pm.project.parent_project.id) if pm.project.parent_project else None
-                        ),
-                        "parent_name": (
-                            pm.project.parent_project.name if pm.project.parent_project else None
-                        ),
-                        "membership_id": str(pm.id),
-                        "period": (
-                            {
-                                "id": str(pm.period.id),
-                                "name": pm.period.name,
-                                "parent_id": (
-                                    str(pm.period.parent_period.id)
-                                    if getattr(pm.period, "parent_period", None)
-                                    else None
-                                ),
-                                "parent_name": (
-                                    pm.period.parent_period.name
-                                    if getattr(pm.period, "parent_period", None)
-                                    else None
-                                ),
-                            }
-                            if pm.period
-                            else None
-                        ),
-                    }
+                if not pm.project:
+                    continue
+
+                existing = projects_data.get(pm.project.id)
+
+                # If multiple memberships exist for the same project (e.g. season-scoped),
+                # prefer the base membership (no period) for the primary view.
+                if existing is not None:
+                    existing_period = (
+                        (existing.get("period") or {}).get("id")
+                        if isinstance(existing, dict)
+                        else None
+                    )
+                    existing_is_base = not bool(existing_period)
+                    if existing_is_base:
+                        continue
+                    if not _is_base(pm):
+                        continue
+
+                projects_data[pm.project.id] = {
+                    "id": str(pm.project.id),
+                    "name": pm.project.name,
+                    "slug": pm.project.slug,
+                    "role": pm.role,
+                    "parent": (
+                        str(pm.project.parent_project.id) if pm.project.parent_project else None
+                    ),
+                    "parent_name": (
+                        pm.project.parent_project.name if pm.project.parent_project else None
+                    ),
+                    "membership_id": str(pm.id),
+                    "period": (
+                        {
+                            "id": str(pm.period.id),
+                            "name": pm.period.name,
+                            "parent_id": (
+                                str(pm.period.parent_period.id)
+                                if getattr(pm.period, "parent_period", None)
+                                else None
+                            ),
+                            "parent_name": (
+                                pm.period.parent_period.name
+                                if getattr(pm.period, "parent_period", None)
+                                else None
+                            ),
+                        }
+                        if pm.period
+                        else None
+                    ),
+                }
         except ImportError:
             pass
 
