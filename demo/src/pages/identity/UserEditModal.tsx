@@ -339,7 +339,11 @@ export default function UserEditModal({
                  const raw = await r.json();
                  const members = (raw as any)?.data?.results || (raw as any)?.results || (raw as any)?.data || [];
                  const uid = String((user as any)?.id || '').trim();
-                 const matches = members.filter((m: any) => String(m?.user?.id ?? m?.user_id ?? '').trim() === uid);
+                 const matches = members.filter((m: any) => {
+                     // Robust ID extraction: handles expanded User object ({id: 1}), flat user ID (1), or snake_case user_id
+                     const mUid = m?.user?.id ?? m?.user_id ?? m?.user;
+                     return String(mUid || '').trim() === uid;
+                 });
                  found = matches.find((m: any) => !String(m?.period_id ?? m?.period ?? '')) || matches[0] || null;
              }
         }
