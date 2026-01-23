@@ -49,6 +49,15 @@ The Search module provides full-text search capabilities across organisations, p
 - **`indexes.py`**: PostgreSQL index definitions
 - **`utils.py`**: Search query parsing and highlighting helpers
 
+## Indexing Behavior (Demo/Go-Live)
+
+By default, the search index is updated **immediately** when you create/update/delete a registered model (e.g. `User`, `Organisation`, `Project`).
+
+- Implementation: `post_save`/`post_delete` signals call `PostgresSearchBackend.update_entry()` / `delete_entry()` on `transaction.on_commit`, so the object becomes searchable right after the request/transaction completes.
+- Optional async mode: set `SEARCH_INDEX_ASYNC=True` to also enqueue Celery tasks (best-effort) in addition to the synchronous update.
+
+This default is intentional for demo readiness: you don’t want newly created clubs/teams/users to “disappear” from search when Celery workers aren’t running.
+
 ## Public Interface
 
 **Safe to Import** (Stable API):
