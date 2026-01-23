@@ -645,7 +645,7 @@ export const PermissionsPage: React.FC = () => {
         {/* Tab Content: Permission Matrix */}
         {activeTab === 'permissions' && (
           <>
-            <Card className="mb-6">
+            <Card className="mb-6" style={{ overflow: 'visible' }}>
               <div className="mb-4">
                 <h3 className="text-lg font-semibold">Permissions (Feature Comparison)</h3>
                 <p className="text-sm text-gray-600">
@@ -653,7 +653,16 @@ export const PermissionsPage: React.FC = () => {
                 </p>
               </div>
 
-              <Table style={compactTableStyle}>
+              <div
+                style={{
+                  border: '1px solid var(--app-border)',
+                  borderRadius: '10px',
+                  overflow: 'auto',
+                  maxHeight: 'calc(100vh - 320px)',
+                  backgroundColor: 'var(--app-surface)',
+                }}
+              >
+              <Table style={compactTableStyle} responsive={false}>
                 <colgroup>
                   <col style={{ width: '360px' }} />
                   {roleColumns.map((col) => (
@@ -671,6 +680,7 @@ export const PermissionsPage: React.FC = () => {
                         left: 0,
                         zIndex: 4,
                         minWidth: 320,
+                        backgroundColor: 'var(--app-table-header-bg)',
                       }}
                     >
                       Feature
@@ -686,6 +696,7 @@ export const PermissionsPage: React.FC = () => {
                           textAlign: 'center',
                           fontSize: '0.75rem',
                           whiteSpace: 'nowrap',
+                          backgroundColor: 'var(--app-table-header-bg)',
                         }}
                       >
                         {col.label}
@@ -746,6 +757,7 @@ export const PermissionsPage: React.FC = () => {
                               borderRight: '1px solid var(--app-border)',
                               whiteSpace: 'normal',
                               wordBreak: 'break-word',
+                              backgroundColor: 'var(--app-table-row-bg)',
                             }}
                           >
                             <div style={{ fontWeight: 600 }}>{label}</div>
@@ -777,6 +789,7 @@ export const PermissionsPage: React.FC = () => {
                   })}
                 </tbody>
               </Table>
+              </div>
             </Card>
 
             {/* Legend */}
