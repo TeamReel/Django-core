@@ -552,6 +552,11 @@ export const UserDetailPage: React.FC = () => {
       throw new Error(text || 'Failed to update federation role');
     }
 
+    const data = await res.json().catch(() => ({}));
+    if (data?.data?.detail && String(data.data.detail).includes('Promotion requested')) {
+      alert('Role change requested. The user must accept the promotion before it takes effect.');
+    }
+
     await fetchUser();
   };
 
@@ -644,9 +649,15 @@ export const UserDetailPage: React.FC = () => {
       credentials: 'include',
       body: JSON.stringify({ role }),
     });
+
     if (!res.ok) {
       const text = await res.text().catch(() => '');
       throw new Error(text || 'Failed to update role');
+    }
+
+    const data = await res.json().catch(() => ({}));
+    if (data?.data?.detail && String(data.data.detail).includes('Promotion requested')) {
+      alert('Role change requested. The user must accept the promotion before it takes effect.');
     }
 
     // 202 may indicate promotion flow; still refresh.
