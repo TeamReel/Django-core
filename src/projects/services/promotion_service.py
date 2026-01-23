@@ -37,7 +37,9 @@ class PromotionService:
 
         # Check feature flag: project_access_control.require_promotion_approval
         require_approval = get_flag(
-            "project_access_control.require_promotion_approval", project_id=project.id, default=True
+            "project_access_control.require_promotion_approval",
+            project_id=project.id,
+            default=False,
         )
 
         # Check threshold setting: project_access_control.promotion_approval_threshold
