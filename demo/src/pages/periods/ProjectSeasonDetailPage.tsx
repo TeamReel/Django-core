@@ -2389,20 +2389,36 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               throw new Error(detail || 'Failed to create competition');
             }
 
+            // Update UI immediately; refresh list in background.
+            const raw: any = await res.json().catch(() => null);
+            const created: any = raw?.data?.data || raw?.data || raw;
+            if (created && typeof created === 'object') {
+              const createdId = String(created?.id || '').trim();
+              if (createdId) {
+                setCompetitions((prev) => {
+                  const list = Array.isArray(prev) ? prev : [];
+                  if (list.some((p: any) => String((p as any)?.id || '').trim() === createdId)) return list;
+                  return [created as any, ...list];
+                });
+              }
+            }
+
             // Reload competitions list (matches will be fetched on-demand).
             if (resolvedSeasonId) {
-              setCompetitionsLoading(true);
-              try {
-                const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(resolvedSeasonId)}&page_size=500`;
-                const competitionResults = await fetchAllPages<Period>(
-                  competitionsUrl,
-                  { credentials: 'include' },
-                  { ttlMs: 10_000, cacheKey: `periods:children:${resolvedSeasonId}` }
-                );
-                setCompetitions(competitionResults);
-              } finally {
-                setCompetitionsLoading(false);
-              }
+              void (async () => {
+                setCompetitionsLoading(true);
+                try {
+                  const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(resolvedSeasonId)}&page_size=500`;
+                  const competitionResults = await fetchAllPages<Period>(
+                    competitionsUrl,
+                    { credentials: 'include' },
+                    { ttlMs: 10_000, cacheKey: `periods:children:${resolvedSeasonId}` }
+                  );
+                  setCompetitions(competitionResults);
+                } finally {
+                  setCompetitionsLoading(false);
+                }
+              })();
             }
           }}
         />
@@ -2454,28 +2470,44 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               throw new Error(detail || 'Failed to create match');
             }
 
+            // Update UI immediately; refresh matches in background if currently visible.
+            const raw: any = await res.json().catch(() => null);
+            const created: any = raw?.data?.data || raw?.data || raw;
+            if (created && typeof created === 'object') {
+              const createdId = String(created?.id || '').trim();
+              if (createdId) {
+                setMatches((prev) => {
+                  const list = Array.isArray(prev) ? prev : [];
+                  if (list.some((m: any) => String(m?.id || '').trim() === createdId)) return list;
+                  return [created, ...list];
+                });
+              }
+            }
+
             // Refresh matches if currently visible.
             if (activeTab === 'hierarchy' || activeTab === 'matches' || activeTab === 'competitions') {
-              setMatchesLoading(true);
-              try {
-                const projectNumericId = String((project as any)?.id || '').trim();
-                const seasonUuid = String(resolvedSeasonId || '').trim();
-                if (projectNumericId && seasonUuid) {
-                  const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(
-                    projectNumericId
-                  )}&period_id=${encodeURIComponent(
-                    seasonUuid
-                  )}&include_descendants=true&activity_type=match&ordering=-start_time&page_size=250`;
-                  const seasonMatches = await fetchAllPages<any>(
-                    url,
-                    { credentials: 'include' },
-                    { ttlMs: 10_000, cacheKey: `matches:season:${projectNumericId}:${seasonUuid}`, maxItems: 250 }
-                  );
-                  setMatches(seasonMatches);
+              void (async () => {
+                setMatchesLoading(true);
+                try {
+                  const projectNumericId = String((project as any)?.id || '').trim();
+                  const seasonUuid = String(resolvedSeasonId || '').trim();
+                  if (projectNumericId && seasonUuid) {
+                    const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(
+                      projectNumericId
+                    )}&period_id=${encodeURIComponent(
+                      seasonUuid
+                    )}&include_descendants=true&activity_type=match&ordering=-start_time&page_size=250`;
+                    const seasonMatches = await fetchAllPages<any>(
+                      url,
+                      { credentials: 'include' },
+                      { ttlMs: 10_000, cacheKey: `matches:season:${projectNumericId}:${seasonUuid}`, maxItems: 250 }
+                    );
+                    setMatches(seasonMatches);
+                  }
+                } finally {
+                  setMatchesLoading(false);
                 }
-              } finally {
-                setMatchesLoading(false);
-              }
+              })();
             }
           }}
         />

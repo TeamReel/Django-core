@@ -911,8 +911,20 @@ export const MatchesList: React.FC = () => {
               throw new Error(detail || 'Failed to create match');
             }
 
+            const raw: any = await res.json().catch(() => null);
+            const created: any = raw?.data?.data || raw?.data || raw;
+            if (created && typeof created === 'object') {
+              const createdId = String(created?.id || '').trim();
+              if (createdId) {
+                setMatches((prev) => {
+                  const list = Array.isArray(prev) ? prev : [];
+                  if (list.some((m: any) => String(m?.id || '').trim() === createdId)) return list;
+                  return [created, ...list];
+                });
+              }
+            }
+
             invalidateFetchAllPagesCache();
-            setRefreshKey((k) => k + 1);
           }}
         />
     </div>

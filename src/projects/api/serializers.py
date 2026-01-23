@@ -315,16 +315,42 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        """Validate case-insensitive name uniqueness per organisation."""
+        """Validate case-insensitive name uniqueness.
+
+        TeamReel hierarchy:
+        - Root projects (clubs): unique within organisation
+        - Child projects (teams): unique only within the same parent club
+        """
         name = attrs.get("name")
         organisation = self.context.get("organisation")
 
         if not organisation:
             raise serializers.ValidationError({"organisation": "Organisation context is required."})
 
-        # Check for case-insensitive name uniqueness within the organisation
-        # Exclude the current instance if updating
-        queryset = Project.all_objects.filter(organisation=organisation, name__iexact=name)
+        parent_project_id = attrs.get("parent_project_id")
+        if parent_project_id:
+            parent = Project.all_objects.filter(
+                organisation=organisation,
+                id=parent_project_id,
+            ).first()
+            if not parent:
+                raise serializers.ValidationError(
+                    {"parent_project_id": "Parent project not found in this organisation."}
+                )
+
+        # Uniqueness scope depends on hierarchy.
+        if parent_project_id:
+            queryset = Project.all_objects.filter(
+                organisation=organisation,
+                parent_project_id=parent_project_id,
+                name__iexact=name,
+            )
+        else:
+            queryset = Project.all_objects.filter(
+                organisation=organisation,
+                parent_project__isnull=True,
+                name__iexact=name,
+            )
 
         if self.instance:
             queryset = queryset.exclude(pk=self.instance.pk)
@@ -333,19 +359,6 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"name": f"A project with this name already exists in {organisation.name}."}
             )
-
-        parent_project_id = attrs.get("parent_project_id")
-        if parent_project_id:
-            organisation = self.context.get("organisation")
-            if organisation:
-                parent = Project.all_objects.filter(
-                    organisation=organisation,
-                    id=parent_project_id,
-                ).first()
-                if not parent:
-                    raise serializers.ValidationError(
-                        {"parent_project_id": "Parent project not found in this organisation."}
-                    )
 
         return attrs
 
@@ -391,18 +404,31 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        """Validate case-insensitive name uniqueness per organisation."""
-        name = attrs.get("name")
+        """Validate case-insensitive name uniqueness.
 
+        Same rules as create:
+        - Root projects: unique within organisation
+        - Child projects: unique within the same parent
+        """
+        name = attrs.get("name")
         if not name:
             return attrs
 
         organisation = self.instance.organisation
+        parent_project_id = self.instance.parent_project_id
 
-        # Check for case-insensitive name uniqueness within the organisation
-        queryset = Project.all_objects.filter(organisation=organisation, name__iexact=name).exclude(
-            pk=self.instance.pk
-        )
+        if parent_project_id:
+            queryset = Project.all_objects.filter(
+                organisation=organisation,
+                parent_project_id=parent_project_id,
+                name__iexact=name,
+            ).exclude(pk=self.instance.pk)
+        else:
+            queryset = Project.all_objects.filter(
+                organisation=organisation,
+                parent_project__isnull=True,
+                name__iexact=name,
+            ).exclude(pk=self.instance.pk)
 
         if queryset.exists():
             raise serializers.ValidationError(

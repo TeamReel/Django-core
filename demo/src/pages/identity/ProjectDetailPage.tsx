@@ -22,7 +22,7 @@ import { Project, User, AuditEvent } from '../../types';
 import AppShell from '../../components/AppShell';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import { periodPathKey } from '../../utils/periodPath';
-import { fetchAllPages as fetchAllPagesCached } from '../../utils/fetchAllPages';
+import { fetchAllPages as fetchAllPagesCached, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import ProjectDetailModal from './ProjectDetailModal';
 import ProjectCreateModal from './ProjectCreateModal';
 import ProjectEditModal from './ProjectEditModal';
@@ -1635,10 +1635,12 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
          : (results as any[]);
 
        const filteredByParent = filteredByOrg.filter((p: any) => getParentProjectId(p) === parentId);
-       const finalResults = filteredByParent.length > 0 ? filteredByParent : filteredByOrg;
-       setChildProjects(finalResults as Project[]);
+       // IMPORTANT: If a club has no teams, we must show an empty list.
+       // Falling back to org-wide teams here causes confusing UX.
+       setChildProjects(filteredByParent as Project[]);
      } catch (e) {
        console.error('Failed to fetch child teams', e);
+       setChildProjects([]);
      } finally {
        setChildProjectsLoading(false);
      }
@@ -1662,8 +1664,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         ? (results as any[]).filter((p: any) => String(getOrganisationId(p) || '') === orgId)
         : (results as any[]);
       const filteredByParent = filteredByOrg.filter((p: any) => getParentProjectId(p) === parentId);
-      const finalResults = filteredByParent.length > 0 ? filteredByParent : filteredByOrg;
-      setClubTeamsForSwitcher(finalResults as Project[]);
+      setClubTeamsForSwitcher(filteredByParent as Project[]);
     } catch (e) {
       console.error('Failed to fetch club teams for switcher', e);
       setClubTeamsForSwitcher([]);
@@ -4987,7 +4988,21 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             throw new Error(detail || 'Failed to create team');
           }
 
-          await fetchChildTeams();
+          const payload: any = await res.json().catch(() => null);
+          const created: any = payload?.data?.data || payload?.data || payload;
+          if (created && typeof created === 'object') {
+            const createdKey = String(created?.slug || created?.id || '').trim();
+            if (createdKey) {
+              setChildProjects((prev) => {
+                const list = Array.isArray(prev) ? prev : [];
+                if (list.some((p: any) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
+                return [created, ...list];
+              });
+            }
+          }
+
+          invalidateFetchAllPagesCache();
+          void fetchChildTeams();
         }}
       />
 
@@ -5050,9 +5065,22 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             throw new Error(detail || 'Failed to create season');
           }
 
-          await fetchSeasons();
-          await fetchCompetitions();
-          await fetchAllMatches();
+          const raw: any = await res.json().catch(() => null);
+          const created: any = raw?.data?.data || raw?.data || raw;
+          if (created && typeof created === 'object') {
+            const createdId = String(created?.id || '').trim();
+            if (createdId) {
+              setSeasons((prev) => {
+                const list = Array.isArray(prev) ? prev : [];
+                if (list.some((p: any) => String(p?.id || '').trim() === createdId)) return list;
+                return [created, ...list];
+              });
+            }
+          }
+
+          invalidateFetchAllPagesCache();
+          void fetchSeasons();
+          void fetchCompetitions();
         }}
       />
 
@@ -5103,8 +5131,21 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             throw new Error(detail || 'Failed to create competition');
           }
 
-          await fetchCompetitions();
-          await fetchAllMatches();
+          const raw: any = await res.json().catch(() => null);
+          const created: any = raw?.data?.data || raw?.data || raw;
+          if (created && typeof created === 'object') {
+            const createdId = String(created?.id || '').trim();
+            if (createdId) {
+              setCompetitions((prev) => {
+                const list = Array.isArray(prev) ? prev : [];
+                if (list.some((p: any) => String(p?.id || '').trim() === createdId)) return list;
+                return [created, ...list];
+              });
+            }
+          }
+
+          invalidateFetchAllPagesCache();
+          void fetchCompetitions();
         }}
       />
 
@@ -5153,7 +5194,21 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
             throw new Error(detail || 'Failed to create match');
           }
 
-          await fetchAllMatches();
+          const raw: any = await res.json().catch(() => null);
+          const created: any = raw?.data?.data || raw?.data || raw;
+          if (created && typeof created === 'object') {
+            const createdId = String(created?.id || '').trim();
+            if (createdId) {
+              setAllMatches((prev) => {
+                const list = Array.isArray(prev) ? prev : [];
+                if (list.some((m: any) => String(m?.id || '').trim() === createdId)) return list;
+                return [created, ...list];
+              });
+            }
+          }
+
+          invalidateFetchAllPagesCache();
+          void fetchAllMatches();
         }}
       />
 

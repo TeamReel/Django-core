@@ -628,7 +628,13 @@ export default function TopNavbar() {
           const matches = await fetchAllPages<any>(
             `${apiBaseUrl}/api/v1/activities/?page_size=5&project_id=${encodeURIComponent(String(selectedTeam.id))}&period_id=${encodeURIComponent(String(selectedSeasonId))}&include_descendants=true&activity_type=match&ordering=-start_time`,
             { credentials: 'include' },
-            { ttlMs: 30_000, cacheKey: `GET:matches:season:${orgSlug}:${selectedTeam.id}:${selectedSeasonId}` }
+            {
+              ttlMs: 30_000,
+              cacheKey: `GET:matches:season:${orgSlug}:${selectedTeam.id}:${selectedSeasonId}`,
+              // We only need the first 5 matches for navigation; do not walk pagination.
+              maxPages: 1,
+              maxItems: 5,
+            }
           );
           const bestMatch = (matches || [])[0];
           if (bestMatch?.id) selectedMatchId = String(bestMatch.id);

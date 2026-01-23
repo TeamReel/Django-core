@@ -544,13 +544,21 @@ export const OrganisationDetailPage: React.FC = () => {
     try {
       const apiV1BaseUrl = getApiV1BaseUrl();
       const params = new URLSearchParams();
-      params.set('page_size', '100');
+      // Keep this bounded; some federations can have hundreds+ of matches.
+      params.set('page_size', '50');
       params.set('activity_type', 'match');
       params.set('organisation_id', organisationId);
+      params.set('ordering', '-start_time');
 
-      const all = await fetchAllPages<any>(`${apiV1BaseUrl}/activities/?${params.toString()}`, {
-        credentials: 'include',
-      });
+      const all = await fetchAllPages<any>(
+        `${apiV1BaseUrl}/activities/?${params.toString()}`,
+        { credentials: 'include' },
+        {
+          ttlMs: 30_000,
+          cacheKey: `GET:activities:federation:matches:${organisationId}`,
+          maxItems: 250,
+        }
+      );
 
       setFederationMatches(Array.isArray(all) ? all : []);
     } catch (e) {
@@ -1213,7 +1221,8 @@ export const OrganisationDetailPage: React.FC = () => {
       fetchTeamsForOrg();
     }
 
-    if (activeTab === 'matches' || activeTab === 'clubs' || activeTab === 'teams') {
+    // Matches list can be large; load only when the Matches tab is opened.
+    if (activeTab === 'matches') {
       const orgId = String(org?.id || currentOrgId || '');
       if (orgId) fetchFederationMatches(orgId);
     }
@@ -3958,7 +3967,24 @@ export const OrganisationDetailPage: React.FC = () => {
             throw new Error(detail || 'Failed to create team');
           }
 
-          await fetchTeamsForOrg();
+          // Make UX feel instant: update local lists immediately, then refresh in background.
+          const payload: any = await res.json().catch(() => null);
+          const created: any = payload?.data?.data || payload?.data || payload;
+
+          if (created && typeof created === 'object') {
+            const createdKey = String(created?.slug || created?.id || '').trim();
+            if (createdKey) {
+              setTeams((prev) => {
+                const list = Array.isArray(prev) ? prev : [];
+                if (list.some((p: any) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
+                return [created, ...list];
+              });
+              setTeamsCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));
+            }
+          }
+
+          invalidateFetchAllPagesCache();
+          void fetchTeamsForOrg({ force: true });
         }}
       />
 
@@ -4015,8 +4041,23 @@ export const OrganisationDetailPage: React.FC = () => {
             throw new Error(detail || 'Failed to create season');
           }
 
+          const raw: any = await res.json().catch(() => null);
+          const created: any = raw?.data?.data || raw?.data || raw;
+          if (created && typeof created === 'object') {
+            const createdId = String(created?.id || '').trim();
+            if (createdId) {
+              setOrgPeriods((prev) => {
+                const list = Array.isArray(prev) ? prev : [];
+                if (list.some((p: any) => String(p?.id || '').trim() === createdId)) return list;
+                const next = [created, ...list];
+                recomputePeriodCounts(next);
+                return next;
+              });
+            }
+          }
+
           invalidateFetchAllPagesCache();
-          await fetchFederationCounts(orgId);
+          void fetchFederationCounts(orgId);
         }}
       />
 
@@ -4067,8 +4108,23 @@ export const OrganisationDetailPage: React.FC = () => {
             throw new Error(detail || 'Failed to create competition');
           }
 
+          const raw: any = await res.json().catch(() => null);
+          const created: any = raw?.data?.data || raw?.data || raw;
+          if (created && typeof created === 'object') {
+            const createdId = String(created?.id || '').trim();
+            if (createdId) {
+              setOrgPeriods((prev) => {
+                const list = Array.isArray(prev) ? prev : [];
+                if (list.some((p: any) => String(p?.id || '').trim() === createdId)) return list;
+                const next = [created, ...list];
+                recomputePeriodCounts(next);
+                return next;
+              });
+            }
+          }
+
           invalidateFetchAllPagesCache();
-          await fetchFederationCounts(orgId);
+          void fetchFederationCounts(orgId);
         }}
       />
 
@@ -4120,10 +4176,24 @@ export const OrganisationDetailPage: React.FC = () => {
             throw new Error(detail || 'Failed to create match');
           }
 
+          // Make UX feel instant: insert created match locally and refresh counts in background.
+          const raw: any = await res.json().catch(() => null);
+          const created: any = raw?.data?.data || raw?.data || raw;
+          if (created && typeof created === 'object') {
+            const createdId = String(created?.id || '').trim();
+            if (createdId) {
+              setFederationMatches((prev) => {
+                const list = Array.isArray(prev) ? prev : [];
+                if (list.some((m: any) => String(m?.id || '').trim() === createdId)) return list;
+                return [created, ...list];
+              });
+              setMatchesCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));
+            }
+          }
+
           invalidateFetchAllPagesCache();
           if (orgIdToRefresh) {
-            await fetchFederationMatches(orgIdToRefresh);
-            await fetchFederationCounts(orgIdToRefresh);
+            void fetchFederationCounts(orgIdToRefresh);
           }
         }}
       />

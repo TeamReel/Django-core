@@ -589,8 +589,20 @@ export const TeamsList: React.FC = () => {
               throw new Error(detail || 'Failed to create team');
             }
 
+            const payload: any = await res.json().catch(() => null);
+            const created: any = payload?.data?.data || payload?.data || payload;
+            if (created && typeof created === 'object') {
+              const createdKey = String(created?.slug || created?.id || '').trim();
+              if (createdKey) {
+                setTeams((prev) => {
+                  const list = Array.isArray(prev) ? prev : [];
+                  if (list.some((p: any) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
+                  return [created, ...list];
+                });
+              }
+            }
+
             invalidateFetchAllPagesCache();
-            setRefreshKey((k) => k + 1);
           }}
         />
     </div>

@@ -1,6 +1,7 @@
 """Models for Projects & Workspaces Management."""
 
 from django.db import models
+from django.db.models import Q
 from django.db.models.functions import Lower
 from django.utils import timezone
 from django.utils.text import slugify
@@ -91,10 +92,20 @@ class Project(models.Model):
             models.UniqueConstraint(
                 fields=["organisation", "slug"], name="unique_project_slug_per_org"
             ),
+            # Root projects (clubs): name unique within organisation.
             models.UniqueConstraint(
                 Lower("name"),
                 "organisation",
-                name="unique_project_name_per_org_case_insensitive",
+                condition=Q(parent_project__isnull=True),
+                name="unique_root_project_name_per_org_ci",
+            ),
+            # Child projects (teams): name unique within the same parent (club) within organisation.
+            models.UniqueConstraint(
+                Lower("name"),
+                "organisation",
+                "parent_project",
+                condition=Q(parent_project__isnull=False),
+                name="unique_child_project_name_per_parent_ci",
             ),
         ]
         indexes = [
