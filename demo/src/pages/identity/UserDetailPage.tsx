@@ -1807,6 +1807,7 @@ export const UserDetailPage: React.FC = () => {
         user={user}
         onSave={handleSaveUser}
         onSaved={fetchUser}
+        organisationSlug={String(primaryOrgSlug || getPreferredOrganisationId() || '')}
       />
 
       <LinkUserModal

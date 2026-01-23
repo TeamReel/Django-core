@@ -24,6 +24,7 @@ interface UserEditModalProps {
 type ProjectChoice = {
   key: string;
   name: string;
+  isTeam?: boolean;
 };
 
 type OrgProjectChoice = {
@@ -97,13 +98,58 @@ export default function UserEditModal({
 
   const availableProjects = useMemo<ProjectChoice[]>(() => {
     const list = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+
+    // Create a map of org projects to look up hierarchy info (isTeam) if available.
+    // Note: orgProjects might be empty initially until loaded, so this enrichment improves as data loads.
+    const orgProjectMap = new Map<string, OrgProjectChoice>();
+    if (Array.isArray(orgProjects)) {
+      for (const op of orgProjects) {
+        if (op.key) orgProjectMap.set(op.key, op);
+      }
+    }
+
     return list
-      .map((p: any) => ({
-        key: String(p?.slug || p?.id || '').trim(),
-        name: String(p?.name || p?.title || p?.slug || p?.id || '').trim(),
-      }))
+      .map((p: any) => {
+        const key = String(p?.slug || p?.id || '').trim();
+        const name = String(p?.name || p?.title || p?.slug || p?.id || '').trim();
+
+        let isTeam = false;
+
+        // Strategy 1: Check if the project object itself hints at parent/team (unlikely in simple list, but possible)
+        if (p?.parent_id || p?.parent || p?.is_team || p?.isTeam) {
+            isTeam = true;
+        }
+
+        // Strategy 2: Check against loaded orgProjects (authoritative source for hierarchy)
+        if (!isTeam) {
+            const match = orgProjectMap.get(key);
+            if (match && match.isTeam) isTeam = true;
+        }
+
+        // Strategy 3: Naming heuristic (matches "Team", digits at end, or contains "-")
+        if (!isTeam) {
+             // If name matches "Team X" or "O19-1" or ends in digits like "Feyenoord 1" (and not just "Feyenoord")
+             // But "Feyenoord 1" implies team. "Feyenoord" implies club.
+             // Heuristic: If it has a dash OR explicitly says "Team" OR ends in a digit-based suffix (like "-1", " 1", " U19")
+             if (
+                 name.toLowerCase().includes('team') ||
+                 name.includes('-') ||
+                 /\s\d+$/.test(name) ||  // "Feyenoord 1"
+                 /\sO\d+/i.test(name) || // "Feyenoord O19"
+                 /\sU\d+/i.test(name)    // "Feyenoord U19"
+             ) {
+                 isTeam = true;
+             }
+        }
+
+        return {
+          key,
+          name,
+          isTeam
+        };
+      })
       .filter((p: any) => Boolean(p.key));
-  }, [user]);
+  }, [user, orgProjects]);
 
   const readFunctionalRolesFromMembership = (m: any): string[] => {
     const direct = (m as any)?.functional_roles ?? (m as any)?.functionalRoles;
@@ -697,12 +743,15 @@ export default function UserEditModal({
                     <div style={{ marginBottom: '10px' }}>
                       <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Choose a club</label>
                       <select
-                        value={selectedProjectKey}
-                        onChange={(e) => setSelectedProjectKey(e.target.value)}
+                        value={selectedProjectKey && !availableProjects.find(p => p.key === selectedProjectKey && p.isTeam)?.isTeam ? selectedProjectKey : ''}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val) setSelectedProjectKey(val);
+                        }}
                         style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
                       >
                         <option value="">(select)</option>
-                        {availableProjects.filter(p => !p.name.includes("-") && !p.key.includes("team")).map((p) => (
+                        {availableProjects.filter(p => !p.isTeam).map((p) => (
                           <option key={p.key} value={p.key}>
                             {p.name}
                           </option>
@@ -714,7 +763,7 @@ export default function UserEditModal({
                     </div>
                   )}
 
-                  {selectedProjectKey && !selectedProjectKey.includes("team") ? (
+                  {selectedProjectKey && !availableProjects.find(p => p.key === selectedProjectKey && p.isTeam)?.isTeam ? (
                     <div style={{ marginBottom: '12px' }}>
                         <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Access role</label>
                         <select
@@ -747,12 +796,15 @@ export default function UserEditModal({
                     <div style={{ marginBottom: '10px' }}>
                       <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Choose a team</label>
                       <select
-                        value={selectedProjectKey}
-                        onChange={(e) => setSelectedProjectKey(e.target.value)}
+                        value={selectedProjectKey && availableProjects.find(p => p.key === selectedProjectKey && p.isTeam)?.isTeam ? selectedProjectKey : ''}
+                        onChange={(e) => {
+                             const val = e.target.value;
+                             if (val) setSelectedProjectKey(val);
+                        }}
                         style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
                       >
                         <option value="">(select)</option>
-                        {availableProjects.filter(p => p.name.includes("-") || p.key.includes("team") || p.name.includes("Team") || p.name.match(/\d$/)).map((p) => (
+                        {availableProjects.filter(p => p.isTeam).map((p) => (
                           <option key={p.key} value={p.key}>
                             {p.name}
                           </option>
@@ -765,7 +817,7 @@ export default function UserEditModal({
                   )}
 
 
-                  {selectedProjectKey ? (
+                  {selectedProjectKey && availableProjects.find(p => p.key === selectedProjectKey && p.isTeam)?.isTeam ? (
                     <>
                       <div style={{ marginBottom: '12px' }}>
                         <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Access role</label>
