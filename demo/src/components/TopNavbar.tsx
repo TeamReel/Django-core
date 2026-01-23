@@ -30,6 +30,7 @@ import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { useUserRole } from './PermissionGuards';
 import ProfileAvatarDropdown from './ProfileAvatarDropdown';
 import { SearchBar } from './SearchBar';
+import Breadcrumbs from './Breadcrumbs';
 
 interface NavGroup {
   id: string;
@@ -515,6 +516,9 @@ export default function TopNavbar() {
             >
               <span style={{ fontSize: '16px' }}>{dashboardItem.icon}</span>
             </Link>
+
+            {/* Breadcrumbs for Hierarchy Context */}
+            <Breadcrumbs />
 
             {/* Group triggers */}
             {filteredNavGroups.map(group => {

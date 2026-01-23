@@ -15,43 +15,46 @@ interface NavItem {
   visibility: 'everyone' | 'org_admin' | 'staff';
 }
 
-interface NavGroup {
+interface NavSection {
   id: string;
-  label: string;
-  icon: string;
-  path?: string; // Default path if clicked
+  title?: string;
+  items: NavItem[];
   visibility: 'everyone' | 'org_admin' | 'staff';
-  items: NavItem[]; // Secondary items
   bottom?: boolean;
 }
 
-const NAV_CONFIG: NavGroup[] = [
+const NAV_CONFIG: NavSection[] = [
   {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: '🏠',
-    path: '/dashboard',
+    id: 'overview',
     visibility: 'everyone',
-    items: []
+    items: [
+      { path: '/dashboard', label: 'Dashboard', icon: '🏠', visibility: 'everyone' }
+    ]
   },
   {
     id: 'work',
-    label: 'Work',
-    icon: '⚽',
+    title: 'WORK HIERARCHY',
     visibility: 'everyone',
     items: [
       { path: '/directory', label: 'Federations', icon: '🌐', visibility: 'everyone' },
-      { path: '/matches', label: 'Matches', icon: '⏱️', visibility: 'everyone' },
-      { path: '/competitions', label: 'Competitions', icon: '🏆', visibility: 'everyone' },
-      { path: '/seasons', label: 'Seasons', icon: '📅', visibility: 'everyone' },
       { path: '/clubs', label: 'Clubs', icon: '🏟️', visibility: 'everyone' },
       { path: '/teams', label: 'Teams', icon: '👕', visibility: 'everyone' },
+      { path: '/seasons', label: 'Seasons', icon: '📅', visibility: 'everyone' },
+      { path: '/competitions', label: 'Competitions', icon: '🏆', visibility: 'everyone' },
+      { path: '/matches', label: 'Matches', icon: '⏱️', visibility: 'everyone' },
+    ]
+  },
+  {
+    id: 'people',
+    title: 'PEOPLE',
+    visibility: 'everyone',
+    items: [
+      { path: '/users', label: 'Users', icon: '👥', visibility: 'everyone' },
     ]
   },
   {
     id: 'content',
-    label: 'Content',
-    icon: '📚',
+    title: 'CONTENT',
     visibility: 'everyone',
     items: [
       { path: '/content', label: 'Library', icon: '📂', visibility: 'everyone' },
@@ -60,18 +63,15 @@ const NAV_CONFIG: NavGroup[] = [
   },
   {
     id: 'organisation',
-    label: 'Organisation',
-    icon: '🏢',
+    title: 'ORGANISATION',
     visibility: 'org_admin',
     items: [
-      { path: '/users', label: 'Members', icon: '👥', visibility: 'org_admin' },
       { path: '/permissions', label: 'Settings', icon: '⚙️', visibility: 'org_admin' },
     ]
   },
   {
     id: 'platform',
-    label: 'Platform',
-    icon: '🛠️',
+    title: 'PLATFORM',
     visibility: 'staff',
     items: [
       { path: '/health', label: 'Health', icon: '❤️', visibility: 'staff' },
@@ -84,8 +84,7 @@ const NAV_CONFIG: NavGroup[] = [
   },
   {
     id: 'help',
-    label: 'Help',
-    icon: '❓',
+    title: 'HELP',
     visibility: 'everyone',
     bottom: true,
     items: [
@@ -103,11 +102,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       orgSlug,
       clubSlugOrId, clubName,
       teamSlugOrId, teamName,
-      seasonSlugOrId, seasonName
+      seasonSlugOrId, seasonName,
+      competitionSlugOrId, // Add this
+      matchId // Add this
   } = useAppSelection();
 
   // Construct App Context Group dynamically
-  const appGroup: NavGroup | null = useMemo(() => {
+  const appGroup: NavSection | null = useMemo(() => {
     if (!orgSlug) return null;
 
     const items: NavItem[] = [];
@@ -139,12 +140,41 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         });
     }
 
+    // Members Item (Context Leaf) - Only if active
+    if (clubSlugOrId && teamSlugOrId && seasonSlugOrId && !competitionSlugOrId && location.pathname.includes('/members')) {
+        items.push({
+            label: 'Members',
+            path: location.pathname,
+            icon: '👥',
+            visibility: 'everyone'
+        });
+    }
+
+    // Competition Item (New)
+    if (clubSlugOrId && teamSlugOrId && seasonSlugOrId && competitionSlugOrId) {
+        items.push({
+            label: 'Competition', // Name resolution usually requires more complex fetching or is less critical here, hardcoded or use ID?
+            // Actually useAppSelection might have competitionName, let's just label it 'Competition' for now or update hook to return name
+            path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`,
+            icon: '🏆',
+            visibility: 'everyone'
+        });
+    }
+    // Match Item (New)
+    if (clubSlugOrId && teamSlugOrId && seasonSlugOrId && competitionSlugOrId && matchId) {
+        items.push({
+            label: 'Match',
+            path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`,
+            icon: '⏱️',
+            visibility: 'everyone'
+        });
+    }
+
     if (items.length === 0) return null;
 
     return {
         id: 'app-context',
-        label: 'Context', // Label often hidden in primary rail unless collapsed?
-        icon: '📍',
+        title: 'Context',
         visibility: 'everyone',
         items
     };
@@ -152,7 +182,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
 
   // Filter groups and items based on permissions
-  const visibleGroups = useMemo(() => {
+  const visibleSections = useMemo(() => {
     return NAV_CONFIG.map(group => {
       // 1. Check Primary Group Permission
       const isGroupVisible =
@@ -171,26 +201,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       });
 
       return { ...group, items: visibleItems };
-    }).filter((g): g is NavGroup => g !== null);
+    }).filter((g): g is NavSection => g !== null);
   }, [isOrgAdmin, isStaff, isSystemAdmin]);
-
-  // Determine ACTIVE Primary Group
-  // Logic: Is current path equal to Group Path OR does it match any Child Item path?
-  const activeGroup = visibleGroups.find(group => {
-    if (group.path && matchPath({ path: group.path, end: false }, location.pathname)) {
-        return true;
-    }
-    return group.items.some(item => matchPath({ path: item.path, end: false }, location.pathname));
-  });
-
-  // Check if active group is the App Group
-  const isAppGroupActive = appGroup?.items.some(item => matchPath({ path: item.path, end: false }, location.pathname));
-
-  // Show Secondary Sidebar if the active group has children
-  const showSecondary = (activeGroup && activeGroup.items.length > 0) || false; // Note: App Group doesn't trigger Secondary Panel in this design, or does it?
-  // User asked for "Panel A... categories". If App items are in Panel A, they are just items.
-  // If clicked, do they open a secondary panel?
-  // For now, let's assume App items are direct links in Panel A for quick access.
 
   return (
     <div style={{ display: 'flex', height: '100%', zIndex: 90, flexShrink: 0 }}>
@@ -223,9 +235,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         </div>
 
         {/* Primary Items */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px', overflowY: 'auto' }}>
 
-            {/* APP CONTEXT GROUP */}
+            {/* APP CONTEXT GROUP (Dynamic) */}
             {appGroup && appGroup.items.length > 0 && (
                 <>
                     {/* Render App Items directly in Panel A */}
@@ -237,12 +249,17 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                             className={({ isActive }) =>
                                 `flex items-center rounded-md transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`
                             }
-                            style={{
+                            style={({ isActive }) => ({
                                 height: 44,
                                 textDecoration: 'none',
                                 padding: isOpen ? '0 12px' : '0',
+                                display: 'flex',
+                                alignItems: 'center',
                                 justifyContent: isOpen ? 'flex-start' : 'center',
-                            }}
+                                borderRadius: 8,
+                                color: isActive ? '#fff' : '#94a3b8',
+                                backgroundColor: isActive ? '#4f46e5' : 'transparent',
+                            })}
                         >
                             <span style={{ fontSize: 20, minWidth: 24, display: 'flex', justifyContent: 'center' }}>{item.icon}</span>
                             {isOpen && (
@@ -253,29 +270,105 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         </NavLink>
                     ))}
                     {/* Divider */}
-                    <div style={{ height: 1, backgroundColor: '#334155', margin: '8px 0' }} />
+                    <div style={{ height: 1, backgroundColor: '#334155', margin: '8px 0', flexShrink: 0 }} />
                 </>
             )}
 
-            {visibleGroups.filter(g => !g.bottom).map(group => (
-                <PrimaryItem
-                    key={group.id}
-                    group={group}
-                    isActive={activeGroup?.id === group.id}
-                    isOpen={isOpen}
-                />
+            {/* Render Sections */}
+            {visibleSections.filter(g => !g.bottom).map(section => (
+                <div key={section.id} style={{ marginBottom: 16 }}>
+                    {/* Section Title */}
+                    {isOpen && section.title && (
+                        <div style={{
+                            padding: '0 12px',
+                            marginBottom: 8,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            color: '#64748b'
+                        }}>
+                            {section.title}
+                        </div>
+                    )}
+                    {/* Items */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {section.items.map(item => (
+                            <NavLink
+                                key={item.path}
+                                to={item.path}
+                                title={!isOpen ? item.label : undefined}
+                                style={({ isActive }) => ({
+                                    height: 40,
+                                    textDecoration: 'none',
+                                    padding: isOpen ? '0 12px' : '0',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: isOpen ? 'flex-start' : 'center',
+                                    borderRadius: 8,
+                                    color: isActive ? '#fff' : '#94a3b8',
+                                    backgroundColor: isActive ? '#334155' : 'transparent', // Darker highlight for nav
+                                    transition: 'background-color 0.15s'
+                                })}
+                            >
+                                <span style={{ fontSize: 18, minWidth: 24, display: 'flex', justifyContent: 'center' }}>{item.icon}</span>
+                                {isOpen && (
+                                    <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 500 }}>
+                                        {item.label}
+                                    </span>
+                                )}
+                            </NavLink>
+                        ))}
+                    </div>
+                </div>
             ))}
         </div>
 
         {/* Bottom Items (Help, etc) */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px 12px' }}>
-             {visibleGroups.filter(g => g.bottom).map(group => (
-                <PrimaryItem
-                    key={group.id}
-                    group={group}
-                    isActive={activeGroup?.id === group.id}
-                    isOpen={isOpen}
-                />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '12px', borderTop: '1px solid #1e293b' }}>
+             {visibleSections.filter(g => g.bottom).map(section => (
+                 <div key={section.id}>
+                    {isOpen && section.title && (
+                        <div style={{
+                            padding: '0 12px',
+                            marginBottom: 8,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            color: '#64748b'
+                        }}>
+                            {section.title}
+                        </div>
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {section.items.map(item => (
+                            <NavLink
+                                key={item.path}
+                                to={item.path}
+                                title={!isOpen ? item.label : undefined}
+                                style={({ isActive }) => ({
+                                    height: 40,
+                                    textDecoration: 'none',
+                                    padding: isOpen ? '0 12px' : '0',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: isOpen ? 'flex-start' : 'center',
+                                    borderRadius: 8,
+                                    color: isActive ? '#fff' : '#94a3b8',
+                                    backgroundColor: isActive ? '#334155' : 'transparent',
+                                })}
+                            >
+                                <span style={{ fontSize: 18, minWidth: 24, display: 'flex', justifyContent: 'center' }}>{item.icon}</span>
+                                {isOpen && (
+                                    <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 500 }}>
+                                        {item.label}
+                                    </span>
+                                )}
+                            </NavLink>
+                        ))}
+                    </div>
+                 </div>
             ))}
 
             {/* Collapse Toggle */}
@@ -283,7 +376,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 onClick={toggle}
                 className="hover:bg-slate-800"
                 style={{
-                    height: 48,
+                    height: 40,
                     width: '100%',
                     display: 'flex',
                     alignItems: 'center',
@@ -302,71 +395,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             </button>
         </div>
       </aside>
-
-      {/* --- PANEL B: SECONDARY SIDEBAR (Contextual) --- */}
-      {showSecondary && (
-         <aside
-            style={{
-                width: 260, // Fixed wide width
-                backgroundColor: 'var(--app-surface-1)',
-                borderRight: '1px solid var(--app-border)',
-                display: 'flex',
-                flexDirection: 'column',
-                overflowY: 'auto',
-                flexShrink: 0,
-            }}
-         >
-             {/* Secondary Header */}
-             <div style={{
-                 height: 64,
-                 display: 'flex',
-                 alignItems: 'center',
-                 padding: '0 24px',
-                 borderBottom: '1px solid var(--app-border)',
-                 fontWeight: 600,
-                 fontSize: 16,
-                 color: 'var(--app-text)'
-             }}>
-                 {activeGroup?.label}
-             </div>
-
-             {/* Secondary Items List */}
-             <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '16px' }}>
-                 {activeGroup?.items.map(item => (
-                     <NavLink
-                        key={item.path}
-                        to={item.path}
-                        style={({ isActive }) => ({
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '10px 12px',
-                            borderRadius: 6,
-                            textDecoration: 'none',
-                            color: isActive ? 'var(--app-primary)' : 'var(--app-text)',
-                            backgroundColor: isActive ? 'var(--app-primary-subtle)' : 'transparent',
-                            fontSize: 14,
-                            fontWeight: isActive ? 500 : 400,
-                        })}
-                     >
-                        {({ isActive }) => (
-                            <>
-                                <span style={{ fontSize: 18, marginRight: 12, opacity: isActive ? 1 : 0.7 }}>{item.icon}</span>
-                                {item.label}
-                            </>
-                        )}
-                     </NavLink>
-                 ))}
-             </div>
-         </aside>
-      )}
     </div>
   );
 }
+// Remove PrimaryItem and Secondary Sidebar code below here
 
-// Component for Panel A items
-function PrimaryItem({ group, isActive, isOpen }: { group: NavGroup, isActive: boolean, isOpen: boolean }) {
-    // Navigate to group path OR first child
-    const targetPath = group.path || (group.items.length > 0 ? group.items[0].path : '/');
 
     return (
         <NavLink
