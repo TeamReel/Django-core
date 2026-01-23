@@ -35,9 +35,8 @@ export const PermissionsPage: React.FC = () => {
     land_admin: boolean;
     club_admin: boolean;
     team_admin: boolean;
-    team_staff: boolean;
     team_member: boolean;
-    viewer: boolean;
+    supporter: boolean;
   };
 
   const roleColumns: Array<{ key: keyof PermissionMatrixRow; label: string }> = [
@@ -45,9 +44,8 @@ export const PermissionsPage: React.FC = () => {
     { key: 'land_admin', label: 'Land' },
     { key: 'club_admin', label: 'Club' },
     { key: 'team_admin', label: 'Team Admin' },
-    { key: 'team_staff', label: 'Staff' },
-    { key: 'team_member', label: 'Member' },
-    { key: 'viewer', label: 'Viewer' },
+    { key: 'team_member', label: 'Team Member' },
+    { key: 'supporter', label: 'Supporter' },
   ];
 
   useEffect(() => {
@@ -114,319 +112,377 @@ export const PermissionsPage: React.FC = () => {
     fetchPermissionsData();
   }, []);
 
-  // Permission descriptions for stakeholders
+  const expectedPermissionKeys = [
+    'org.view_all',
+    'org.manage_settings',
+    'org.manage_credits',
+    'project.view_all',
+    'project.edit_own',
+    'project.edit_children',
+    'project.manage_credits',
+    'match.create',
+    'match.edit_own_team',
+    'match.delete',
+    'match.view_all',
+    'content.create',
+    'content.edit_own',
+    'content.edit_all_team',
+    'content.approve',
+    'profile.edit_own',
+    'profile.edit_team',
+    'lineup.create',
+    'lineup.edit',
+    'featureflag.view',
+    'featureflag.override_team',
+    'featureflag.override_club',
+    'featureflag.override_org',
+  ];
+
   const permissionDescriptions: Record<string, string> = {
-    // Organisation
-    view_all_organisations: 'View and browse all organisations on the platform',
-    manage_organisation: 'Update organisation settings, memberships, and governance',
-    view_organisation: 'View organisation details and related entities',
-
-    // Clubs
-    view_all_clubs: 'View all clubs within the organisation',
-    create_club: 'Create a new club within the organisation',
-    manage_club: 'Manage club settings and club-level administration',
-
-    // Teams
-    view_team: 'View team details, members, and team content',
-    create_team: 'Create a new team under a club',
-    manage_team_settings: 'Manage team settings, structure, and configuration',
-    manage_team_matches: 'Manage match scheduling and match administration',
-
-    // Users
-    manage_all_users: 'Manage users across the organisation scope',
-    view_users: 'View user directory and user details',
-    edit_own_profile: 'Edit your own profile information',
-
-    // Content
-    view_content: 'View content and media',
-    create_content: 'Create or upload content and media',
-    approve_content: 'Review and approve content before publishing',
-
-    // Credits
-    view_credits: 'View credit balances and transactions',
-    manage_credits: 'Manage credit balances and credit-related actions',
+    'org.view_all': 'View all organisations/federations (cross-club visibility)',
+    'org.manage_settings': 'Manage organisation settings and metadata',
+    'org.manage_credits': 'Manage credit allocation at federation level',
+    'project.view_all': 'View all projects/clubs/teams (opponent selection)',
+    'project.edit_own': 'Edit own project/team settings',
+    'project.edit_children': 'Edit child projects (club → teams)',
+    'project.manage_credits': 'Manage credit transactions for project/team',
+    'match.create': 'Create new matches for team',
+    'match.edit_own_team': "Edit matches where the user's team is involved",
+    'match.delete': 'Delete matches',
+    'match.view_all': 'View all matches (read-only)',
+    'content.create': 'Create content (line-ups, posts, media)',
+    'content.edit_own': 'Edit own created content only',
+    'content.edit_all_team': 'Edit all content for team (not restricted to own)',
+    'content.approve': 'Approve content before publication',
+    'profile.edit_own': 'Edit own user profile',
+    'profile.edit_team': 'Edit profiles of team members',
+    'lineup.create': 'Create match lineups and formations',
+    'lineup.edit': 'Edit existing lineups',
+    'featureflag.view': 'View feature flags configuration and inheritance chain',
+    'featureflag.override_team': 'Override feature flags at team level (if not blocked)',
+    'featureflag.override_club': 'Override feature flags at club level (blocks teams below)',
+    'featureflag.override_org': 'Override feature flags at org level (blocks clubs/teams)',
   };
 
-  // TeamReel Role hierarchy descriptions
   const roleDescriptions: Record<string, { title: string; description: string; scope: string; level: number }> = {
     superadmin: {
       title: 'Superadmin',
-      description: 'Platform administrator with access to all organisations',
-      scope: 'Cross-organisation',
+      description: 'Platform administrator (internal) with access to everything.',
+      scope: 'Platform',
+      level: 0,
+    },
+    land_admin: {
+      title: 'Land Admin',
+      description: 'Federation director with full access to all clubs/teams in the organisation scope.',
+      scope: 'Organisation',
       level: 1,
     },
-    'land_admin': {
-      title: 'Land Admin',
-      description: 'Federation administrator (e.g., KNVB, DFB admin)',
-      scope: 'Organisation-wide',
+    club_admin: {
+      title: 'Club Admin',
+      description: 'Club director with full access to the club and all teams under it.',
+      scope: 'Club (root project)',
       level: 2,
     },
-    'club_admin': {
-      title: 'Club Admin',
-      description: 'Club administrator (e.g., Ajax club manager)',
-      scope: 'Club-wide',
+    team_admin: {
+      title: 'Team Admin',
+      description: 'Head coach with full access to team content, matches, and lineups for their team.',
+      scope: 'Team (child project)',
       level: 3,
     },
-    'team_admin': {
-      title: 'Team Admin',
-      description: 'Team administrator (e.g., Ajax 1 coach)',
-      scope: 'Team-specific',
+    team_member: {
+      title: 'Team Member',
+      description: 'Team member (Keeper/Speler/Assistent/Verzorger): read-mostly with content creation + own edits only.',
+      scope: 'Team (child project)',
       level: 4,
     },
-    'team_staff': {
-      title: 'Team Staff',
-      description: 'Team staff/editor (e.g., assistant coach)',
-      scope: 'Team-specific',
+    supporter: {
+      title: 'Supporter',
+      description: 'External viewer with passive read-only access (matches only).',
+      scope: 'Club (root project)',
       level: 5,
-    },
-    'team_member': {
-      title: 'Team Member',
-      description: 'Team player or member',
-      scope: 'User-specific',
-      level: 6,
-    },
-    viewer: {
-      title: 'Viewer',
-      description: 'Read-only access to team content',
-      scope: 'Limited',
-      level: 7,
-    },
-    user: {
-      title: 'User',
-      description: 'Default user with no memberships',
-      scope: 'None',
-      level: 8,
     },
   };
 
-  // TeamReel Permission matrix
   const permissionMatrix: Array<{ category: string; permissions: PermissionMatrixRow[] }> = [
     {
-      category: 'Core Access',
+      category: 'Organisation',
       permissions: [
         {
-          permission: 'view_organisation',
+          permission: 'org.view_all',
           superadmin: true,
           land_admin: true,
           club_admin: true,
           team_admin: true,
-          team_staff: true,
           team_member: true,
-          viewer: true,
-        },
-      ],
-    },
-    {
-      category: 'Organisation Administration',
-      permissions: [
-        {
-          permission: 'view_all_organisations',
-          superadmin: true,
-          land_admin: false,
-          club_admin: false,
-          team_admin: false,
-          team_staff: false,
-          team_member: false,
-          viewer: false,
+          supporter: false,
         },
         {
-          permission: 'manage_organisation',
-          superadmin: true,
-          land_admin: true,
-          club_admin: true,
-          team_admin: false,
-          team_staff: false,
-          team_member: false,
-          viewer: false,
-        },
-      ],
-    },
-    {
-      category: 'Clubs',
-      permissions: [
-        {
-          permission: 'view_all_clubs',
-          superadmin: true,
-          land_admin: true,
-          club_admin: true,
-          team_admin: true,
-          team_staff: false,
-          team_member: false,
-          viewer: false,
-        },
-        {
-          permission: 'create_club',
+          permission: 'org.manage_settings',
           superadmin: true,
           land_admin: true,
           club_admin: false,
           team_admin: false,
-          team_staff: false,
           team_member: false,
-          viewer: false,
+          supporter: false,
         },
         {
-          permission: 'manage_club',
+          permission: 'org.manage_credits',
+          superadmin: true,
+          land_admin: true,
+          club_admin: false,
+          team_admin: false,
+          team_member: false,
+          supporter: false,
+        },
+      ],
+    },
+    {
+      category: 'Projects',
+      permissions: [
+        {
+          permission: 'project.view_all',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_member: true,
+          supporter: false,
+        },
+        {
+          permission: 'project.edit_own',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_member: false,
+          supporter: false,
+        },
+        {
+          permission: 'project.edit_children',
           superadmin: true,
           land_admin: true,
           club_admin: true,
           team_admin: false,
-          team_staff: false,
           team_member: false,
-          viewer: false,
+          supporter: false,
         },
-      ],
-    },
-    {
-      category: 'Teams',
-      permissions: [
         {
-          permission: 'view_team',
+          permission: 'project.manage_credits',
           superadmin: true,
           land_admin: true,
           club_admin: true,
           team_admin: true,
-          team_staff: true,
-          team_member: true,
-          viewer: true,
+          team_member: false,
+          supporter: false,
+        },
+      ],
+    },
+    {
+      category: 'Matches',
+      permissions: [
+        {
+          permission: 'match.create',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_member: false,
+          supporter: false,
         },
         {
-          permission: 'create_team',
+          permission: 'match.edit_own_team',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_member: false,
+          supporter: false,
+        },
+        {
+          permission: 'match.delete',
           superadmin: true,
           land_admin: true,
           club_admin: true,
           team_admin: false,
-          team_staff: false,
           team_member: false,
-          viewer: false,
+          supporter: false,
         },
         {
-          permission: 'manage_team_settings',
+          permission: 'match.view_all',
           superadmin: true,
           land_admin: true,
           club_admin: true,
           team_admin: true,
-          team_staff: false,
-          team_member: false,
-          viewer: false,
-        },
-        {
-          permission: 'manage_team_matches',
-          superadmin: true,
-          land_admin: true,
-          club_admin: true,
-          team_admin: true,
-          team_staff: false,
-          team_member: false,
-          viewer: false,
+          team_member: true,
+          supporter: true,
         },
       ],
     },
     {
-      category: 'Users & Profiles',
+      category: 'Content',
       permissions: [
         {
-          permission: 'view_users',
+          permission: 'content.create',
           superadmin: true,
           land_admin: true,
           club_admin: true,
           team_admin: true,
-          team_staff: true,
           team_member: true,
-          viewer: false,
+          supporter: false,
         },
         {
-          permission: 'edit_own_profile',
+          permission: 'content.edit_own',
           superadmin: true,
           land_admin: true,
           club_admin: true,
           team_admin: true,
-          team_staff: true,
           team_member: true,
-          viewer: false,
+          supporter: false,
         },
         {
-          permission: 'manage_all_users',
+          permission: 'content.edit_all_team',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_member: false,
+          supporter: false,
+        },
+        {
+          permission: 'content.approve',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_member: false,
+          supporter: false,
+        },
+      ],
+    },
+    {
+      category: 'Profiles',
+      permissions: [
+        {
+          permission: 'profile.edit_own',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_member: true,
+          supporter: false,
+        },
+        {
+          permission: 'profile.edit_team',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_member: false,
+          supporter: false,
+        },
+      ],
+    },
+    {
+      category: 'Lineups',
+      permissions: [
+        {
+          permission: 'lineup.create',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_member: false,
+          supporter: false,
+        },
+        {
+          permission: 'lineup.edit',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_member: false,
+          supporter: false,
+        },
+      ],
+    },
+    {
+      category: 'Feature Flags',
+      permissions: [
+        {
+          permission: 'featureflag.view',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_member: true,
+          supporter: false,
+        },
+        {
+          permission: 'featureflag.override_team',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_member: false,
+          supporter: false,
+        },
+        {
+          permission: 'featureflag.override_club',
           superadmin: true,
           land_admin: true,
           club_admin: true,
           team_admin: false,
-          team_staff: false,
           team_member: false,
-          viewer: false,
-        },
-      ],
-    },
-    {
-      category: 'Content & Media',
-      permissions: [
-        {
-          permission: 'view_content',
-          superadmin: true,
-          land_admin: true,
-          club_admin: true,
-          team_admin: true,
-          team_staff: true,
-          team_member: true,
-          viewer: true,
+          supporter: false,
         },
         {
-          permission: 'create_content',
+          permission: 'featureflag.override_org',
           superadmin: true,
           land_admin: true,
-          club_admin: true,
-          team_admin: true,
-          team_staff: true,
-          team_member: true,
-          viewer: false,
-        },
-        {
-          permission: 'approve_content',
-          superadmin: true,
-          land_admin: true,
-          club_admin: true,
-          team_admin: true,
-          team_staff: false,
+          club_admin: false,
+          team_admin: false,
           team_member: false,
-          viewer: false,
-        },
-      ],
-    },
-    {
-      category: 'Credits & Billing',
-      permissions: [
-        {
-          permission: 'view_credits',
-          superadmin: true,
-          land_admin: true,
-          club_admin: true,
-          team_admin: true,
-          team_staff: true,
-          team_member: false,
-          viewer: false,
-        },
-        {
-          permission: 'manage_credits',
-          superadmin: true,
-          land_admin: true,
-          club_admin: true,
-          team_admin: true,
-          team_staff: false,
-          team_member: false,
-          viewer: false,
+          supporter: false,
         },
       ],
     },
   ];
 
   const formatPermissionLabel = (permissionKey: string) => {
-    return permissionKey
+    const [domain, action] = permissionKey.split('.', 2);
+    const humanDomain = (domain || permissionKey)
       .replace(/_/g, ' ')
       .replace(/\b\w/g, (c) => c.toUpperCase());
+    const humanAction = (action || '')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return action ? `${humanDomain}: ${humanAction}` : humanDomain;
   };
 
   const permissionDescriptionFor = (permissionKey: string) => {
     return permissionDescriptions[permissionKey] || '';
   };
+
+  const normalizeRoleKey = (raw: string | null | undefined) => {
+    const value = String(raw || '').trim().toLowerCase();
+    if (!value) return null;
+    if (value === 'land_admin' || value === 'land admin') return 'land_admin';
+    if (value === 'club_admin' || value === 'club admin') return 'club_admin';
+    if (value === 'team_admin' || value === 'team admin') return 'team_admin';
+    if (value === 'team_member' || value === 'team member') return 'team_member';
+    if (value === 'supporter') return 'supporter';
+    if (value === 'superadmin' || value === 'super') return 'superadmin';
+    return value;
+  };
+
+  const permissionApiKeys = new Set(
+    (Array.isArray(permissions) ? permissions : [])
+      .map((p: any) => String((p as any)?.key ?? (p as any)?.code ?? (p as any)?.name ?? p).trim())
+      .filter(Boolean),
+  );
+  const expectedKeySet = new Set(expectedPermissionKeys);
+  const missingFromApi = expectedPermissionKeys.filter((k) => permissionApiKeys.size > 0 && !permissionApiKeys.has(k));
+  const unexpectedInApi = Array.from(permissionApiKeys).filter((k) => !expectedKeySet.has(k));
 
   if (loading) {
     return (
@@ -468,6 +524,12 @@ export const PermissionsPage: React.FC = () => {
             Some permission data could not be loaded, but role hierarchy is available.
           </Alert>
         )}
+
+        {permissions.length > 0 && (missingFromApi.length > 0 || unexpectedInApi.length > 0) ? (
+          <Alert variant="info" className="mb-4" data-testid="permissions-config-mismatch">
+            RBAC config check: {missingFromApi.length} expected permissions missing, {unexpectedInApi.length} unexpected.
+          </Alert>
+        ) : null}
 
         {/* Tabs */}
         <div
@@ -532,7 +594,7 @@ export const PermissionsPage: React.FC = () => {
                     <div
                       key={roleKey}
                       className={`p-4 rounded-lg border-2 ${
-                        currentUserRole === roleKey
+                        normalizeRoleKey(currentUserRole) === roleKey
                           ? 'border-blue-500 bg-blue-50'
                           : 'border-gray-200 bg-white'
                       }`}
@@ -548,7 +610,7 @@ export const PermissionsPage: React.FC = () => {
                             <p className="text-xs text-gray-500">{roleInfo.scope}</p>
                           </div>
                         </div>
-                        {currentUserRole === roleKey && (
+                        {normalizeRoleKey(currentUserRole) === roleKey && (
                           <Badge variant="success">Your Role</Badge>
                         )}
                       </div>
@@ -562,18 +624,18 @@ export const PermissionsPage: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Hierarchy Structure</h3>
               <div className="bg-gray-50 p-4 rounded-lg font-mono text-sm">
                 <div className="space-y-1">
-                  <div>1. <strong>Superadmin</strong> (Django superuser)</div>
-                  <div className="ml-4">└─ Can manage ALL organisations</div>
-                  <div className="ml-2">2. <strong>Land Admin</strong> (Organisation admin)</div>
-                  <div className="ml-6">└─ KNVB/DFB administrator</div>
-                  <div className="ml-4">3. <strong>Club Admin</strong> (Project parent admin)</div>
-                  <div className="ml-8">└─ Ajax club manager</div>
-                  <div className="ml-6">4. <strong>Team Admin</strong> (Project child admin)</div>
-                  <div className="ml-10">└─ Ajax 1 coach</div>
-                  <div className="ml-8">5. <strong>Team Staff</strong> (Staff/Editor role)</div>
-                  <div className="ml-10">6. <strong>Team Member</strong> (Player role)</div>
-                  <div className="ml-10">7. <strong>Viewer</strong> (Read-only)</div>
-                  <div className="ml-10">8. <strong>User</strong> (No memberships)</div>
+                  <div>0. <strong>Superadmin</strong> (platform)</div>
+                  <div className="ml-4">└─ Internal: full access</div>
+                  <div>1. <strong>Land Admin</strong> (organisation)</div>
+                  <div className="ml-4">└─ Federation level</div>
+                  <div>2. <strong>Club Admin</strong> (club/root project)</div>
+                  <div className="ml-4">└─ Club + all teams</div>
+                  <div>3. <strong>Team Admin</strong> (team/child project)</div>
+                  <div className="ml-4">└─ Team content + matches + lineups</div>
+                  <div>4. <strong>Team Member</strong> (team)</div>
+                  <div className="ml-4">└─ Own profile + content create + own edits</div>
+                  <div>5. <strong>Supporter</strong> (club)</div>
+                  <div className="ml-4">└─ Matches view-only</div>
                 </div>
               </div>
             </Card>
@@ -605,8 +667,9 @@ export const PermissionsPage: React.FC = () => {
                       style={{
                         ...compactThStyle,
                         position: 'sticky',
+                        top: 0,
                         left: 0,
-                        zIndex: 2,
+                        zIndex: 4,
                         minWidth: 320,
                       }}
                     >
@@ -617,6 +680,9 @@ export const PermissionsPage: React.FC = () => {
                         key={String(col.key)}
                         style={{
                           ...compactThStyle,
+                          position: 'sticky',
+                          top: 0,
+                          zIndex: 3,
                           textAlign: 'center',
                           fontSize: '0.75rem',
                           whiteSpace: 'nowrap',
@@ -635,26 +701,30 @@ export const PermissionsPage: React.FC = () => {
                     rows.push(
                       <tr key={`cat-${category.category}`}>
                         <td colSpan={1 + roleColumns.length} style={{ ...compactTdStyle, paddingTop: '14px' }}>
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '12px',
-                            }}
-                          >
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            padding: '8px 10px',
+                            border: '1px solid var(--app-border)',
+                            borderRadius: '8px',
+                            backgroundColor: 'var(--app-surface-2)',
+                          }}>
                             <span
                               style={{
-                                fontSize: '0.75rem',
-                                fontWeight: 700,
+                                fontSize: '0.78rem',
+                                fontWeight: 800,
                                 letterSpacing: '0.06em',
                                 textTransform: 'uppercase',
-                                opacity: 0.85,
                                 whiteSpace: 'nowrap',
                               }}
                             >
                               {category.category}
                             </span>
-                            <span style={{ height: 1, backgroundColor: 'var(--app-border)', flex: 1 }} />
+                            <span style={{ height: 1, backgroundColor: 'var(--app-border)', flex: 1, opacity: 0.9 }} />
+                            <span style={{ fontSize: '0.75rem', opacity: 0.75, whiteSpace: 'nowrap' }}>
+                              {category.permissions.length} features
+                            </span>
                           </div>
                         </td>
                       </tr>,
