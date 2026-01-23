@@ -8,7 +8,6 @@ import {
   PageHeader,
   PageContent,
 } from '@django-core/page-templates';
-import { Table } from '../../shims/design-system';
 import { Permission, Role } from '../../types';
 import AppShell from '../../components/AppShell';
 
@@ -27,6 +26,27 @@ export const PermissionsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'hierarchy' | 'permissions'>('hierarchy');
+
+  type PermissionMatrixRow = {
+    permission: string;
+    superadmin: boolean;
+    land_admin: boolean;
+    club_admin: boolean;
+    team_admin: boolean;
+    team_staff: boolean;
+    team_member: boolean;
+    viewer: boolean;
+  };
+
+  const roleColumns: Array<{ key: keyof PermissionMatrixRow; label: string }> = [
+    { key: 'superadmin', label: 'Super' },
+    { key: 'land_admin', label: 'Land' },
+    { key: 'club_admin', label: 'Club' },
+    { key: 'team_admin', label: 'Team Admin' },
+    { key: 'team_staff', label: 'Staff' },
+    { key: 'team_member', label: 'Member' },
+    { key: 'viewer', label: 'Viewer' },
+  ];
 
   useEffect(() => {
     const fetchPermissionsData = async () => {
@@ -163,7 +183,7 @@ export const PermissionsPage: React.FC = () => {
   };
 
   // TeamReel Permission matrix
-  const permissionMatrix = [
+  const permissionMatrix: Array<{ category: string; permissions: PermissionMatrixRow[] }> = [
     {
       category: 'Organisation Management',
       permissions: [
@@ -376,6 +396,16 @@ export const PermissionsPage: React.FC = () => {
     },
   ];
 
+  const formatPermissionLabel = (permissionKey: string) => {
+    return permissionKey
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
+  const permissionDescriptionFor = (permissionKey: string) => {
+    return permissionDescriptions[permissionKey] || '';
+  };
+
   if (loading) {
     return (
       <div>
@@ -418,29 +448,51 @@ export const PermissionsPage: React.FC = () => {
         )}
 
         {/* Tabs */}
-        <div className="mb-6 border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('hierarchy')}
-              className={`${
-                activeTab === 'hierarchy'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-            >
-              Role Hierarchy
-            </button>
-            <button
-              onClick={() => setActiveTab('permissions')}
-              className={`${
-                activeTab === 'permissions'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-            >
-              Permission Matrix
-            </button>
-          </nav>
+        <div
+          style={{
+            display: 'flex',
+            gap: '6px',
+            borderBottom: '1px solid var(--app-border)',
+            marginBottom: '20px',
+            flexWrap: 'wrap',
+          }}
+          aria-label="Tabs"
+        >
+          <button
+            type="button"
+            onClick={() => setActiveTab('hierarchy')}
+            style={{
+              padding: '10px 14px',
+              borderRadius: '6px 6px 0 0',
+              border: '1px solid var(--app-border)',
+              borderBottom: activeTab === 'hierarchy' ? '1px solid var(--app-surface)' : '1px solid var(--app-border)',
+              backgroundColor: activeTab === 'hierarchy' ? 'var(--app-surface)' : 'var(--app-surface-2)',
+              color: 'var(--app-text)',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: activeTab === 'hierarchy' ? 600 : 500,
+            }}
+          >
+            Role Hierarchy
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('permissions')}
+            style={{
+              padding: '10px 14px',
+              borderRadius: '6px 6px 0 0',
+              border: '1px solid var(--app-border)',
+              borderBottom: activeTab === 'permissions' ? '1px solid var(--app-surface)' : '1px solid var(--app-border)',
+              backgroundColor: activeTab === 'permissions' ? 'var(--app-surface)' : 'var(--app-surface-2)',
+              color: 'var(--app-text)',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: activeTab === 'permissions' ? 600 : 500,
+            }}
+          >
+            Permissions
+          </button>
         </div>
 
         {/* Tab Content: Role Hierarchy */}
@@ -509,91 +561,76 @@ export const PermissionsPage: React.FC = () => {
         {/* Tab Content: Permission Matrix */}
         {activeTab === 'permissions' && (
           <>
-            {permissionMatrix.map((category) => (
-              <Card key={category.category} className="mb-6">
-                <h3 className="text-lg font-semibold mb-4">{category.category}</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2 px-4 font-semibold">Permission</th>
-                        <th className="text-center py-2 px-2 font-semibold text-xs">Super</th>
-                        <th className="text-center py-2 px-2 font-semibold text-xs">Land</th>
-                        <th className="text-center py-2 px-2 font-semibold text-xs">Club</th>
-                        <th className="text-center py-2 px-2 font-semibold text-xs">Team Admin</th>
-                        <th className="text-center py-2 px-2 font-semibold text-xs">Staff</th>
-                        <th className="text-center py-2 px-2 font-semibold text-xs">Member</th>
-                        <th className="text-center py-2 px-2 font-semibold text-xs">Viewer</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {category.permissions.map((row) => (
-                        <tr
-                          key={row.permission}
-                          className="border-b hover:bg-gray-50"
-                          data-testid={`permission-row-${row.permission}`}
+            <Card className="mb-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold">Permissions (Feature Comparison)</h3>
+                <p className="text-sm text-gray-600">
+                  Features are grouped by category. Columns show which role can perform an action.
+                </p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 font-semibold" style={{ minWidth: 280 }}>
+                        Feature
+                      </th>
+                      {roleColumns.map((col) => (
+                        <th
+                          key={String(col.key)}
+                          className="text-center py-3 px-2 font-semibold text-xs"
+                          style={{ minWidth: 86 }}
                         >
-                          <td className="py-3 px-4">
-                            <div className="font-medium capitalize">
-                              {row.permission.replace(/_/g, ' ')}
+                          {col.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {permissionMatrix.flatMap((category) => {
+                      const rows: Array<React.ReactNode> = [];
+
+                      rows.push(
+                        <tr key={`cat-${category.category}`} className="border-b">
+                          <td colSpan={1 + roleColumns.length} className="py-3 px-4 bg-gray-50">
+                            <div className="text-xs font-semibold text-gray-700 tracking-wide uppercase">
+                              {category.category}
                             </div>
                           </td>
-                          <td className="text-center py-3 px-2">
-                            {row.superadmin ? (
-                              <Badge variant="success">✓</Badge>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </td>
-                          <td className="text-center py-3 px-2">
-                            {row.land_admin ? (
-                              <Badge variant="success">✓</Badge>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </td>
-                          <td className="text-center py-3 px-2">
-                            {row.club_admin ? (
-                              <Badge variant="success">✓</Badge>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </td>
-                          <td className="text-center py-3 px-2">
-                            {row.team_admin ? (
-                              <Badge variant="success">✓</Badge>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </td>
-                          <td className="text-center py-3 px-2">
-                            {row.team_staff ? (
-                              <Badge variant="success">✓</Badge>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </td>
-                          <td className="text-center py-3 px-2">
-                            {row.team_member ? (
-                              <Badge variant="success">✓</Badge>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </td>
-                          <td className="text-center py-3 px-2">
-                            {row.viewer ? (
-                              <Badge variant="success">✓</Badge>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            ))}
+                        </tr>,
+                      );
+
+                      category.permissions.forEach((row) => {
+                        const label = formatPermissionLabel(row.permission);
+                        const desc = permissionDescriptionFor(row.permission);
+
+                        rows.push(
+                          <tr
+                            key={row.permission}
+                            className="border-b hover:bg-gray-50"
+                            data-testid={`permission-row-${row.permission}`}
+                          >
+                            <td className="py-3 px-4">
+                              <div className="font-medium">{label}</div>
+                              {desc ? <div className="text-xs text-gray-500 mt-0.5">{desc}</div> : null}
+                            </td>
+                            {roleColumns.map((col) => (
+                              <td key={String(col.key)} className="text-center py-3 px-2">
+                                {row[col.key] ? <Badge variant="success">✓</Badge> : <span className="text-gray-400">—</span>}
+                              </td>
+                            ))}
+                          </tr>,
+                        );
+                      });
+
+                      return rows;
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
 
             {/* Legend */}
             <Card>

@@ -79,27 +79,13 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: 'billing',
-    label: 'Billing',
-    items: [
-      { path: '/credits', label: 'Pricing & Credits', description: 'Balance and transactions', icon: '💳' },
-    ],
-  },
-  {
-    id: 'support',
-    label: 'Support',
-    items: [
-      { path: '/docs', label: 'Guides', description: 'How-to and integration guides', icon: '📚' },
-      { path: '/deployment', label: 'Deployment', description: 'Release and environment notes', icon: '🚀' },
-    ],
-  },
-  {
     id: 'admin',
     label: 'Admin',
     items: [
       { path: '/permissions', label: 'Permissions', description: 'Role-based access control', icon: '🔐' },
       { path: '/flags', label: 'Feature Flags', description: 'Feature toggles per organisation', icon: '🚩' },
       { path: '/security', label: 'Security', description: 'Access logs and events', icon: '🔒' },
+      { path: '/audit', label: 'Audit Log', description: 'Audit trails and events', icon: '📋' },
       { path: '/integration-status', label: 'Integration Status', description: 'Module health overview', icon: '🔄' },
       { path: '/health', label: 'Health Check', description: 'System uptime and status', icon: '❤️' },
       { path: '/observability', label: 'Metrics', description: 'Performance monitoring', icon: '📊' },
