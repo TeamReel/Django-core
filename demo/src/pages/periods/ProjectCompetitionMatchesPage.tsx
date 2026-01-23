@@ -200,7 +200,7 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
   }, [apiBaseUrl, orgSlugOrId, projectSlugOrId, effectiveSeasonId, effectiveCompetitionId]);
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
           title={competition ? `${competition.name} · Matches` : 'Matches'}
@@ -300,7 +300,7 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
           </Card>
         </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 };
 

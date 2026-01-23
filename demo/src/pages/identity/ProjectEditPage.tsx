@@ -163,7 +163,7 @@ export const ProjectEditPage: React.FC = () => {
 
   if (loading || context.isLoading) {
     return (
-      <AppShell>
+      <div className="p-6">
         <PageHeader
           title="Edit Project"
           breadcrumbs={[
@@ -177,7 +177,7 @@ export const ProjectEditPage: React.FC = () => {
             <div className="text-center py-8 text-gray-500">Loading...</div>
           </Card>
         </PageContent>
-      </AppShell>
+      </div>
     );
   }
 

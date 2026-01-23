@@ -1633,7 +1633,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   };
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
           title={competition ? competition.name : 'Competition'}
@@ -2042,7 +2042,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
           )}
         </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 };
 

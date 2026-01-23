@@ -1008,7 +1008,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   }, [activeTab, apiBaseUrl, project, resolvedSeasonId]);
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
           title={season ? season.name : 'Season'}
@@ -2581,7 +2581,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           }}
         />
       </div>
-    </AppShell>
+    </>
   );
 };
 

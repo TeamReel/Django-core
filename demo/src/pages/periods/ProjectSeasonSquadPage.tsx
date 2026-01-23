@@ -633,7 +633,7 @@ export default function ProjectSeasonSquadPage() {
   };
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
           title={title}
@@ -1013,6 +1013,6 @@ export default function ProjectSeasonSquadPage() {
           }}
         />
       </div>
-    </AppShell>
+    </>
   );
 }

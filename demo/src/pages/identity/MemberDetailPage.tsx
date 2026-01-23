@@ -79,9 +79,9 @@ export const MemberDetailPage: React.FC = () => {
   // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
   if (id && context.isLoading) {
     return (
-      <AppShell>
+      <div className="p-6">
         <LoadingState message="Loading organisation context..." />
-      </AppShell>
+      </div>
     );
   }
 

@@ -149,7 +149,7 @@ export const ProjectSeasonsPage: React.FC = () => {
   }, [apiBaseUrl, orgSlugOrId, projectSlugOrId]);
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
           title={project ? `${project.name} · Seasons` : 'Seasons'}
@@ -212,7 +212,7 @@ export const ProjectSeasonsPage: React.FC = () => {
           </Card>
         </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 };
 

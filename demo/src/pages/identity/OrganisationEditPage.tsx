@@ -138,7 +138,7 @@ export const OrganisationEditPage: React.FC = () => {
 
   if (loading) {
     return (
-      <AppShell>
+      <div className="p-6">
         <PageHeader
           title="Edit Organisation"
           breadcrumbs={[
@@ -149,7 +149,7 @@ export const OrganisationEditPage: React.FC = () => {
         <PageContent>
           <Card>Loading...</Card>
         </PageContent>
-      </AppShell>
+      </div>
     );
   }
 
