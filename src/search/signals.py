@@ -1,59 +1,88 @@
-from django.contrib.contenttypes.models import ContentType
 import logging
 
+from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
+
+from search.backend.postgres import PostgresSearchBackend
 from search.registry import search_registry
 from search.tasks import update_search_index, delete_search_index
 
 logger = logging.getLogger(__name__)
 
 
-def handle_save(sender, instance, **kwargs):
+def handle_save(sender, instance, **_kwargs):
     """
     Signal handler to trigger search index update on save.
 
     Gracefully handles Redis/Celery connection errors during bulk operations.
     """
-    try:
-        if sender not in search_registry.get_registered_models():
-            return
+    if sender not in search_registry.get_registered_models():
+        return
 
-        content_type = ContentType.objects.get_for_model(sender)
-        from django.db import transaction
+    # Default to synchronous indexing so newly created objects show up in search
+    # immediately, even when Celery workers are not running.
+    #
+    # If you want async-only behavior, set SEARCH_INDEX_ASYNC=True.
+    async_mode = bool(getattr(settings, "SEARCH_INDEX_ASYNC", False))
 
-        def schedule_update():
-            """Schedule search index update, ignoring connection errors."""
+    content_type = ContentType.objects.get_for_model(sender)
+
+    def on_commit_index():
+        backend = PostgresSearchBackend()
+        backend.update_entry(instance)
+
+        if async_mode:
             try:
                 update_search_index.delay(content_type.id, instance.pk)
             except (ConnectionError, ConnectionRefusedError) as e:
-                # Redis unavailable during seeding - log warning but don't crash
                 logger.warning(
-                    f"Redis unavailable, skipping search index for {sender.__name__} {instance.pk}: {e}"
+                    "Redis unavailable, skipping async search indexing for %s %s: %s",
+                    sender.__name__,
+                    instance.pk,
+                    e,
                 )
-            except Exception as e:
-                # Other unexpected errors
+            except (OSError, RuntimeError, TimeoutError, ValueError, TypeError) as e:
                 logger.error(
-                    f"Failed to schedule search index update for {sender.__name__} {instance.pk}: {e}"
+                    "Failed to schedule async search index update for %s %s: %s",
+                    sender.__name__,
+                    instance.pk,
+                    e,
                 )
 
-        transaction.on_commit(schedule_update)
-
-    except Exception as e:
-        logger.error(f"Error in search handle_save signal: {e}")
-        logger.error(f"Error in search handle_save signal: {e}")
+    transaction.on_commit(on_commit_index)
 
 
-def handle_delete(sender, instance, **kwargs):
+def handle_delete(sender, instance, **_kwargs):
     """
     Signal handler to trigger search index deletion on delete.
     """
-    try:
-        if sender in search_registry.get_registered_models():
-            content_type = ContentType.objects.get_for_model(sender)
-            # No need for on_commit for delete usually, but safer to be consistent
-            # Actually for delete, the record is gone, so we just need the ID.
-            delete_search_index.delay(content_type.id, instance.pk)
-    except Exception as e:
-        import logging
+    if sender not in search_registry.get_registered_models():
+        return
 
-        logger = logging.getLogger(__name__)
-        logger.error(f"Error in search handle_delete signal: {e}")
+    async_mode = bool(getattr(settings, "SEARCH_INDEX_ASYNC", False))
+    content_type = ContentType.objects.get_for_model(sender)
+
+    def on_commit_delete():
+        backend = PostgresSearchBackend()
+        backend.delete_entry(instance)
+
+        if async_mode:
+            try:
+                delete_search_index.delay(content_type.id, instance.pk)
+            except (ConnectionError, ConnectionRefusedError) as e:
+                logger.warning(
+                    "Redis unavailable, skipping async search delete for %s %s: %s",
+                    sender.__name__,
+                    instance.pk,
+                    e,
+                )
+            except (OSError, RuntimeError, TimeoutError, ValueError, TypeError) as e:
+                logger.error(
+                    "Failed to schedule async search index delete for %s %s: %s",
+                    sender.__name__,
+                    instance.pk,
+                    e,
+                )
+
+    transaction.on_commit(on_commit_delete)
