@@ -15,7 +15,7 @@ import {
   Input,
 } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
-import AppShell from '../../components/AppShell';
+// import AppShell from '../../components/AppShell';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 
@@ -357,7 +357,7 @@ export const UsageEventsPage: React.FC = () => {
   }
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="Usage Events"
         breadcrumbs={[
@@ -843,7 +843,7 @@ export const UsageEventsPage: React.FC = () => {
           </div>
         )}
         </PageContent>
-    </AppShell>
+    </>
   );
 };
 

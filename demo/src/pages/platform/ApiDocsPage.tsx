@@ -8,7 +8,7 @@ import {
   PageHeader,
   PageContent,
 } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
+// import AppShell from '../../components/AppShell';
 
 /**
  * T020 - API Docs Page
@@ -66,7 +66,7 @@ export const ApiDocsPage: React.FC = () => {
   }, [baseUrl]);
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
         title="API Documentation"
@@ -156,7 +156,7 @@ export const ApiDocsPage: React.FC = () => {
         </Card>
       </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 };
 

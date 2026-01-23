@@ -12,7 +12,7 @@ import {
 // Removed usePolling import - using direct useEffect instead
 import { ObservabilityCharts } from '../../components/ObservabilityCharts';
 import type { ObservabilityMetrics } from '../../types/chart';
-import AppShell from '../../components/AppShell';
+// import AppShell from '../../components/AppShell';
 
 /**
  * T019 - Observability Page
@@ -144,7 +144,7 @@ export const ObservabilityPage: React.FC = () => {
 
   if (error) {
     return (
-      <AppShell>
+      <>
         <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
           <PageHeader
             title="Observability"
@@ -172,7 +172,7 @@ export const ObservabilityPage: React.FC = () => {
             </Card>
           </PageContent>
         </div>
-      </AppShell>
+      </>
     );
   }
 
@@ -181,7 +181,7 @@ export const ObservabilityPage: React.FC = () => {
     : 'Never';
 
   return (
-    <AppShell>
+    <>
       <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
         <PageHeader
         title="Observability"
@@ -374,7 +374,7 @@ export const ObservabilityPage: React.FC = () => {
         )}
       </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 };
 

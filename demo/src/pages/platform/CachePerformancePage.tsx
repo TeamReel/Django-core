@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
+// import AppShell from '../../components/AppShell';
 import {
   LineChart,
   Line,
@@ -198,7 +198,7 @@ export const CachePerformancePage: React.FC = () => {
   };
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="Cache Performance"
         subtitle="Monitor Redis cache performance and manage cache operations. Note: Real-time stats show Redis native operations only. Use benchmark to verify caching works."
@@ -426,7 +426,7 @@ export const CachePerformancePage: React.FC = () => {
           </>
         )}
       </PageContent>
-    </AppShell>
+    </>
   );
 };
 

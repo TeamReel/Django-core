@@ -9,7 +9,7 @@ import {
   PageContent,
 } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
-import AppShell from '../../components/AppShell';
+// import AppShell from '../../components/AppShell';
 
 /**
  * T017 - Constitution Page
@@ -78,7 +78,7 @@ export const ConstitutionPage: React.FC = () => {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <div>
           <PageHeader
             title="Constitution"
@@ -96,13 +96,13 @@ export const ConstitutionPage: React.FC = () => {
             </Card>
           </PageContent>
         </div>
-      </AppShell>
+      </>
     );
   }
 
   if (error) {
     return (
-      <AppShell>
+      <>
         <div>
           <PageHeader
             title="Constitution"
@@ -118,7 +118,7 @@ export const ConstitutionPage: React.FC = () => {
             </Alert>
           </PageContent>
         </div>
-      </AppShell>
+      </>
     );
   }
 
@@ -126,7 +126,7 @@ export const ConstitutionPage: React.FC = () => {
   const totalRules = constitution?.rules?.length || 0;
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
         title="Constitution"
@@ -237,7 +237,7 @@ export const ConstitutionPage: React.FC = () => {
         )}
       </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 };
 

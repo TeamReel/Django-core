@@ -12,7 +12,7 @@ import {
 import { useTheme } from '@django-core/theme-system';
 import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import { useAuth } from "@django-core/auth-ui";
-import AppShell from '../../components/AppShell';
+// import AppShell from '../../components/AppShell';
 
 /**
  * T015 - Preferences Page
@@ -559,7 +559,7 @@ export const PreferencesPage: React.FC = () => {
 
   if (loading) {
     return (
-      <AppShell>
+      <div className="p-6">
         <PageHeader
           title="Preferences"
           breadcrumbs={[
@@ -575,12 +575,12 @@ export const PreferencesPage: React.FC = () => {
             </div>
           </Card>
         </PageContent>
-      </AppShell>
+      </div>
     );
   }
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="Preferences"
         breadcrumbs={[
@@ -922,7 +922,7 @@ export const PreferencesPage: React.FC = () => {
             </div>
           </div>
         </PageContent>
-    </AppShell>
+    </>
   );
 };
 

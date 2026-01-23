@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import AppShell from '../../components/AppShell';
+// import AppShell from '../../components/AppShell';
 
 interface DemoHealthResponse {
   timestamp: string;
@@ -101,18 +101,18 @@ export const HealthCheckPage: React.FC = () => {
 
   if (loading) {
     return (
-      <AppShell>
+      <>
         <div style={{ padding: '24px' }}>
           <h1 style={{ color: 'var(--app-text)' }}>System Health</h1>
           <p style={{ color: 'var(--app-text)' }}>Loading demo health check data...</p>
         </div>
-      </AppShell>
+      </>
     );
   }
 
   if (error) {
     return (
-      <AppShell>
+      <>
         <div style={{ padding: '24px' }}>
           <h1 style={{ color: 'var(--app-text)' }}>System Health</h1>
           <div style={{
@@ -126,14 +126,14 @@ export const HealthCheckPage: React.FC = () => {
             <strong>❌ Error:</strong> Unable to fetch health data ({error})
           </div>
         </div>
-      </AppShell>
+      </>
     );
   }
 
   if (!data) return null;
 
   return (
-    <AppShell>
+    <>
       <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <h1 style={{ margin: 0, color: 'var(--app-text)' }}>System Health</h1>
@@ -208,7 +208,7 @@ export const HealthCheckPage: React.FC = () => {
 
         </div>
       </div>
-    </AppShell>
+    </>
   );
 };
 

@@ -11,7 +11,7 @@ import {
   PageHeader,
   PageContent,
 } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
+// import AppShell from '../../components/AppShell';
 
 /**
  * T018 - Security Page
@@ -254,7 +254,7 @@ export const SecurityPage: React.FC = () => {
   const criticalEvents = security?.events?.filter(e => e.severity === 'critical' && !e.resolved).length || 0;
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
           title="Security"
@@ -419,7 +419,7 @@ export const SecurityPage: React.FC = () => {
         )}
       </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 };
 

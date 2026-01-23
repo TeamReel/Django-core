@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import AppShell from '../../components/AppShell';
+// import AppShell from '../../components/AppShell';
 import {
   Card,
   Badge,
@@ -328,7 +328,7 @@ export const FeatureFlagsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <AppShell>
+      <div className="p-6">
         <PageHeader
           title="Feature Flags"
           breadcrumbs={[
@@ -344,12 +344,12 @@ export const FeatureFlagsPage: React.FC = () => {
             </div>
           </Card>
         </PageContent>
-      </AppShell>
+      </div>
     );
   }
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="Feature Flags"
         breadcrumbs={[
@@ -740,6 +740,6 @@ export const FeatureFlagsPage: React.FC = () => {
           </Alert>
         )}
       </PageContent>
-    </AppShell>
+    </>
   );
 };

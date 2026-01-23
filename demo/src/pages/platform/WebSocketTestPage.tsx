@@ -10,7 +10,7 @@ import {
   PageHeader,
   PageContent,
 } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
+// import AppShell from '../../components/AppShell';
 
 interface LogMessage {
   timestamp: string;
@@ -130,7 +130,7 @@ export const WebSocketTestPage: React.FC = () => {
   }, []);
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="WebSocket Test"
         breadcrumbs={[
@@ -448,7 +448,7 @@ export const WebSocketTestPage: React.FC = () => {
         </div>
         )}
       </PageContent>
-    </AppShell>
+    </>
   );
 };
 

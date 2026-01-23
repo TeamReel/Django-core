@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import AppShell from '../../components/AppShell';
+// import AppShell from '../../components/AppShell';
 import {
   Card,
   Alert,
@@ -423,7 +423,7 @@ export const CreditsPage: React.FC = () => {
   };
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="Credits"
         subtitle="View your organisation's credit balance"
@@ -1040,7 +1040,7 @@ export const CreditsPage: React.FC = () => {
           </>
         )}
       </PageContent>
-    </AppShell>
+    </>
   );
 };
 
