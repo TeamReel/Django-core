@@ -272,33 +272,66 @@ export default function UserEditModal({
       }
 
       try {
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/members/?page_size=500`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'include',
-          }
+        let found = null;
+
+        // Strategy 1: Try to look up membership ID from the user object locally.
+        // This avoids pagination limits (500) on the list endpoint if the project is large.
+        const userProjects = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+        const localProject = userProjects.find((p: any) =>
+          String(p?.slug || p?.id || '').trim().toLowerCase() === String(projectKey).toLowerCase()
         );
-        if (!res.ok) {
-          const text = await res.text().catch(() => '');
-          throw new Error(text || `Failed to load project membership (${res.status})`);
+        const knownMembershipId = localProject?.membership_id ? String(localProject.membership_id).trim() : null;
+
+        if (knownMembershipId) {
+          try {
+            const directRes = await fetch(
+              `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/members/${encodeURIComponent(knownMembershipId)}/`,
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'include',
+              }
+            );
+            if (directRes.ok) {
+              found = await directRes.json();
+            }
+          } catch (err) {
+            console.warn('Direct membership fetch failed, falling back to list search:', err);
+          }
         }
 
-        const raw = await res.json().catch(() => null);
-        const members = (raw as any)?.data?.results || (raw as any)?.results || (raw as any)?.data || [];
-        const uid = String((user as any)?.id || '').trim();
-        const matches = Array.isArray(members)
-          ? members.filter((m: any) => String(m?.user?.id ?? m?.user_id ?? '').trim() === uid)
-          : [];
+        // Strategy 2: List search (fallback)
+        if (!found) {
+          const res = await fetch(
+            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/members/?page_size=500`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+              },
+              credentials: 'include',
+            }
+          );
+          if (!res.ok) {
+            const text = await res.text().catch(() => '');
+            throw new Error(text || `Failed to load project membership (${res.status})`);
+          }
 
-        // Prefer the base (non-period) membership when multiple exist.
-        const isBaseMembership = (m: any) => !String(m?.period_id ?? m?.period ?? '').trim();
-        const found = matches.find(isBaseMembership) || matches[0] || null;
+          const raw = await res.json().catch(() => null);
+          const members = (raw as any)?.data?.results || (raw as any)?.results || (raw as any)?.data || [];
+          const uid = String((user as any)?.id || '').trim();
+          const matches = Array.isArray(members)
+            ? members.filter((m: any) => String(m?.user?.id ?? m?.user_id ?? '').trim() === uid)
+            : [];
 
-        const membershipId = String(found?.id || '').trim();
+          // Prefer the base (non-period) membership when multiple exist.
+          const isBaseMembership = (m: any) => !String(m?.period_id ?? m?.period ?? '').trim();
+          found = matches.find(isBaseMembership) || matches[0] || null;
+        }
+
+        const membershipId = String(found?.id || knownMembershipId || '').trim();
         setProjectMembershipId(membershipId || null);
 
         const roleRaw = String(found?.role || 'viewer').trim().toLowerCase();
@@ -308,7 +341,7 @@ export default function UserEditModal({
           setProjectAccessRole('viewer');
         }
 
-        const fr = readFunctionalRolesFromMembership(found);
+        const fr = found ? readFunctionalRolesFromMembership(found) : [];
         setFunctionalRoles(fr);
         setInitialFunctionalRoles(fr);
       } catch (e) {
@@ -320,7 +353,7 @@ export default function UserEditModal({
       }
     };
 
-    run();
+    void run();
   }, [opened, user, selectedProjectKey, apiBaseUrl]);
 
   const updateOrgRoleIfNeeded = async (): Promise<void> => {
