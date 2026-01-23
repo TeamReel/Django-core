@@ -160,9 +160,13 @@ export default function UserEditModal({
         const raw = await res.json().catch(() => null);
         const members = (raw as any)?.data?.results || (raw as any)?.results || (raw as any)?.data || [];
         const uid = String((user as any)?.id || '').trim();
-        const found = Array.isArray(members)
-          ? members.find((m: any) => String(m?.user?.id ?? m?.user_id ?? '').trim() === uid)
-          : null;
+        const matches = Array.isArray(members)
+          ? members.filter((m: any) => String(m?.user?.id ?? m?.user_id ?? '').trim() === uid)
+          : [];
+
+        // Prefer the base (non-period) membership when multiple exist.
+        const isBaseMembership = (m: any) => !String(m?.period_id ?? m?.period ?? '').trim();
+        const found = matches.find(isBaseMembership) || matches[0] || null;
 
         const membershipId = String(found?.id || '').trim();
         setProjectMembershipId(membershipId || null);
