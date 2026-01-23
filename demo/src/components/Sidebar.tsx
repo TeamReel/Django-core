@@ -237,56 +237,79 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         {/* Primary Items */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px', overflowY: 'auto' }}>
 
-            {/* APP CONTEXT GROUP (Dynamic) */}
+            {/* APP CONTEXT GROUP (Dynamic) - Breadcrumb Style */}
             {appGroup && appGroup.items.length > 0 && (
-                <>
-                    {/* Render App Items directly in Panel A */}
-                    {appGroup.items.map(item => (
+                <div style={{ paddingBottom: 8, marginBottom: 8, borderBottom: '1px dashed #334155' }}>
+                    {appGroup.items.map((item, index) => (
                         <NavLink
                             key={item.path}
                             to={item.path}
                             title={!isOpen ? item.label : undefined}
                             className={({ isActive }) =>
-                                `flex items-center rounded-md transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`
+                                `flex items-center rounded-md transition-colors ${isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`
                             }
                             style={({ isActive }) => ({
-                                height: 44,
+                                height: 32, // Compact height
                                 textDecoration: 'none',
                                 padding: isOpen ? '0 12px' : '0',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: isOpen ? 'flex-start' : 'center',
-                                borderRadius: 8,
-                                color: isActive ? '#fff' : '#94a3b8',
-                                backgroundColor: isActive ? '#4f46e5' : 'transparent',
+                                borderRadius: 4,
+                                position: 'relative',
+                                background: isActive ? 'rgba(255,255,255,0.05)' : 'transparent',
                             })}
                         >
-                            <span style={{ fontSize: 20, minWidth: 24, display: 'flex', justifyContent: 'center' }}>{item.icon}</span>
+                            <span style={{
+                                fontSize: 14,
+                                minWidth: 24,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                opacity: 0.8
+                            }}>{item.icon}</span>
                             {isOpen && (
-                                <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                <span style={{
+                                    marginLeft: 12,
+                                    fontSize: 13, // Slightly smaller text
+                                    fontWeight: 500,
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    color: 'inherit'
+                                }}>
                                     {item.label}
                                 </span>
                             )}
+                            {/* Connector line simulation for breadcrumb feel (optional) */}
+                            {index < (appGroup.items.length - 1) && isOpen && (
+                                <div style={{
+                                    position: 'absolute',
+                                    left: 23,
+                                    top: 26, // Below icon
+                                    bottom: -10, // Extend down
+                                    width: 1,
+                                    backgroundColor: '#334155',
+                                    zIndex: 0
+                                }} />
+                            )}
                         </NavLink>
                     ))}
-                    {/* Divider */}
-                    <div style={{ height: 1, backgroundColor: '#334155', margin: '8px 0', flexShrink: 0 }} />
-                </>
+                </div>
             )}
 
             {/* Render Sections */}
             {visibleSections.filter(g => !g.bottom).map(section => (
-                <div key={section.id} style={{ marginBottom: 16 }}>
+                <div key={section.id} style={{ marginBottom: 24 }}> {/* Increased spacing */}
                     {/* Section Title */}
                     {isOpen && section.title && (
                         <div style={{
                             padding: '0 12px',
                             marginBottom: 8,
-                            fontSize: 11,
-                            fontWeight: 600,
+                            fontSize: 10, // Smaller
+                            fontWeight: 700,
                             textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            color: '#64748b'
+                            letterSpacing: '0.08em',
+                            color: '#475569', // Lighter Slate-600
                         }}>
                             {section.title}
                         </div>
@@ -327,16 +350,16 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         {/* Bottom Items (Help, etc) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '12px', borderTop: '1px solid #1e293b' }}>
              {visibleSections.filter(g => g.bottom).map(section => (
-                 <div key={section.id}>
+                 <div key={section.id} style={{ opacity: 0.8, transition: 'opacity 0.2s', marginBottom: 8 }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.8'}>
                     {isOpen && section.title && (
                         <div style={{
                             padding: '0 12px',
                             marginBottom: 8,
-                            fontSize: 11,
-                            fontWeight: 600,
+                            fontSize: 10,
+                            fontWeight: 700,
                             textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            color: '#64748b'
+                            letterSpacing: '0.08em',
+                            color: '#475569'
                         }}>
                             {section.title}
                         </div>
@@ -348,20 +371,20 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 to={item.path}
                                 title={!isOpen ? item.label : undefined}
                                 style={({ isActive }) => ({
-                                    height: 40,
+                                    height: 36, // Slightly compact
                                     textDecoration: 'none',
                                     padding: isOpen ? '0 12px' : '0',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: isOpen ? 'flex-start' : 'center',
-                                    borderRadius: 8,
-                                    color: isActive ? '#fff' : '#94a3b8',
-                                    backgroundColor: isActive ? '#334155' : 'transparent',
+                                    borderRadius: 6,
+                                    color: isActive ? '#fff' : '#64748b', // Muted text
+                                    backgroundColor: isActive ? 'rgba(255,255,255,0.05)' : 'transparent',
                                 })}
                             >
-                                <span style={{ fontSize: 18, minWidth: 24, display: 'flex', justifyContent: 'center' }}>{item.icon}</span>
+                                <span style={{ fontSize: 16, minWidth: 24, display: 'flex', justifyContent: 'center' }}>{item.icon}</span>
                                 {isOpen && (
-                                    <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 500 }}>
+                                    <span style={{ marginLeft: 12, fontSize: 13, fontWeight: 500 }}>
                                         {item.label}
                                     </span>
                                 )}

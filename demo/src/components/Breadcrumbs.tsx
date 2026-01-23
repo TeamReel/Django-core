@@ -31,7 +31,7 @@ export default function Breadcrumbs() {
   if (clubSlugOrId) {
     items.push({
         label: clubName || clubSlugOrId,
-        path: `/organisations/${orgSlug}/clubs/${clubSlugOrId}`
+        path: `/organisations/${orgSlug}/projects/${clubSlugOrId}`
     });
   }
 
@@ -39,7 +39,7 @@ export default function Breadcrumbs() {
   if (teamSlugOrId) {
     items.push({
         label: teamName || teamSlugOrId,
-        path: `/organisations/${orgSlug}/clubs/${clubSlugOrId}/teams/${teamSlugOrId}`
+        path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`
     });
   }
 
@@ -47,7 +47,7 @@ export default function Breadcrumbs() {
   if (seasonSlugOrId) {
     items.push({
         label: seasonName || seasonSlugOrId,
-        path: `/organisations/${orgSlug}/clubs/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+        path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
     });
   }
 
@@ -55,7 +55,7 @@ export default function Breadcrumbs() {
   if (competitionSlugOrId) {
     items.push({
         label: competitionName || competitionSlugOrId,
-        path: `/organisations/${orgSlug}/clubs/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`
+        path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`
     });
   }
 
@@ -63,11 +63,7 @@ export default function Breadcrumbs() {
   if (matchId) {
     items.push({
         label: `Match ${matchId}`, // Todo: fetch match name/details if possible
-        path: `/organisations/${orgSlug}/clubs/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`
-    });
-  }
-
-  // Handle "Members" leaf explicitly as requested
+        path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`
   // "Show 'Members' under Season context"
   if (seasonSlugOrId && location.pathname.endsWith('/members')) {
       items.push({
