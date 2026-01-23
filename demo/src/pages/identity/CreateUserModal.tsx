@@ -19,6 +19,7 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
     first_name: '',
     last_name: '',
     password: '',
+    password_confirm: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,17 +51,27 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
           'X-CSRFToken': csrfToken || '',
         },
         credentials: 'include',
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          // Backend expects password_confirm (DRF validation).
+          password_confirm: formData.password_confirm || formData.password,
+        }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.email?.[0] || data.detail || 'Failed to create user');
+        throw new Error(
+          data.email?.[0] ||
+            data.password?.[0] ||
+            data.password_confirm?.[0] ||
+            data.detail ||
+            'Failed to create user'
+        );
       }
 
       onSuccess();
       onClose();
-      setFormData({ email: '', first_name: '', last_name: '', password: '' });
+      setFormData({ email: '', first_name: '', last_name: '', password: '', password_confirm: '' });
     } catch (err) {
       console.error('Create user error:', err);
       setError(err instanceof Error ? err.message : 'Failed to create user');
@@ -145,7 +156,15 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
             <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>Password</label>
             <Input
               value={formData.password}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              onChange={(e) => {
+                const nextPassword = e.target.value;
+                setFormData({
+                  ...formData,
+                  password: nextPassword,
+                  // Keep confirm in sync by default (no extra field in UI).
+                  password_confirm: nextPassword,
+                });
+              }}
               placeholder="********"
               required
               type="password"

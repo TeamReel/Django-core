@@ -60,7 +60,14 @@ def _visible_project_ids_for_user(user) -> set[int] | None:
     from permissions.models import RoleAssignment, ScopeChoices
     from projects.models import Project, ProjectMembership
 
-    org_ids = set(Membership.objects.filter(user=user).values_list("organisation_id", flat=True))
+    # Only org *admins* get implicit visibility into all projects within an organisation.
+    # Regular org members should only see projects they have explicit access to (direct
+    # ProjectMembership / project-scoped RoleAssignment).
+    org_ids = set(
+        Membership.objects.filter(user=user, is_active=True, role="admin").values_list(
+            "organisation_id", flat=True
+        )
+    )
     org_ids |= set(
         RoleAssignment.objects.filter(user=user, scope=ScopeChoices.ORGANIZATION).values_list(
             "target_organization_id", flat=True
