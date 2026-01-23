@@ -526,6 +526,8 @@ class UserPagination(PageNumberPagination):
 def admin_user_list(request):
     """List all users with pagination and filters (admin only), or create a new user."""
 
+    org_check = None
+
     # Permission Check
     is_global_admin = request.user.is_superuser or request.user.groups.filter(name="admin").exists()
 
@@ -651,12 +653,44 @@ def admin_user_list(request):
         if serializer.is_valid():
             user = serializer.save()
 
+            # Audit log: user created (best-effort; never blocks)
+            try:
+                audit_log.record(
+                    "resource.created",
+                    user=request.user,
+                    organization=org_check,
+                    metadata={
+                        "resource_type": "user",
+                        "resource_id": str(user.id),
+                        "created_user_email": user.email,
+                    },
+                    request=request,
+                )
+            except Exception:
+                pass
+
             # If created by an Org Admin, automatically add the user to the organization
             if not is_global_admin and org_check:
                 from organisations.models import Membership
 
                 # Default role for new members created by Org Admin
                 Membership.objects.create(user=user, organisation=org_check, role="member")
+
+                # Audit log: organisation member added
+                try:
+                    audit_log.record(
+                        "organisation.membership.created",
+                        user=request.user,
+                        organization=org_check,
+                        metadata={
+                            "user_id": str(user.id),
+                            "role": "member",
+                            "email": user.email,
+                        },
+                        request=request,
+                    )
+                except Exception:
+                    pass
 
             # Return the created user using the list serializer format for consistency
             response_serializer = UserListSerializer(user)
@@ -1308,6 +1342,8 @@ def admin_user_activate(request, user_id):
     # Permission Check
     is_global_admin = request.user.is_superuser or request.user.groups.filter(name="admin").exists()
 
+    org_for_audit = None
+
     if not is_global_admin:
         # Check if requestor manages any org the user is in
         from permissions.models import RoleAssignment
@@ -1328,6 +1364,15 @@ def admin_user_activate(request, user_id):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # If there's exactly one shared org, include it for audit scoping.
+        if len(common_orgs) == 1:
+            try:
+                from organisations.models import Organisation
+
+                org_for_audit = Organisation.objects.filter(id=list(common_orgs)[0]).first()
+            except Exception:
+                org_for_audit = None
+
     if user.is_active:
         return Response(
             {"error": "bad_request", "message": "User is already active."},
@@ -1336,6 +1381,21 @@ def admin_user_activate(request, user_id):
 
     user.is_active = True
     user.save()
+
+    try:
+        audit_log.record(
+            "user.activated",
+            user=request.user,
+            organization=org_for_audit,
+            metadata={
+                "target_user_id": str(user.id),
+                "target_user_email": user.email,
+            },
+            request=request,
+        )
+    except Exception:
+        pass
+
     serializer = UserDetailSerializer(user)
     return Response(serializer.data)
 
@@ -1355,6 +1415,8 @@ def admin_user_deactivate(request, user_id):
     # Permission Check
     is_global_admin = request.user.is_superuser or request.user.groups.filter(name="admin").exists()
 
+    org_for_audit = None
+
     if not is_global_admin:
         # Check if requestor manages any org the user is in
         from permissions.models import RoleAssignment
@@ -1374,6 +1436,14 @@ def admin_user_deactivate(request, user_id):
                 {"detail": "You do not have permission to manage this user."},
                 status=status.HTTP_403_FORBIDDEN,
             )
+
+        if len(common_orgs) == 1:
+            try:
+                from organisations.models import Organisation
+
+                org_for_audit = Organisation.objects.filter(id=list(common_orgs)[0]).first()
+            except Exception:
+                org_for_audit = None
 
     # Prevent self-deactivation
     if user.id == request.user.id:
@@ -1401,6 +1471,21 @@ def admin_user_deactivate(request, user_id):
 
     user.is_active = False
     user.save()
+
+    try:
+        audit_log.record(
+            "user.deactivated",
+            user=request.user,
+            organization=org_for_audit,
+            metadata={
+                "target_user_id": str(user.id),
+                "target_user_email": user.email,
+            },
+            request=request,
+        )
+    except Exception:
+        pass
+
     serializer = UserDetailSerializer(user)
     return Response(serializer.data)
 
@@ -1465,6 +1550,19 @@ def admin_user_reset_password(request, user_id):
         html_message=html_message,
     )
 
+    try:
+        audit_log.record(
+            "user.password_reset_requested",
+            user=request.user,
+            metadata={
+                "target_user_id": str(user.id),
+                "target_user_email": user.email,
+            },
+            request=request,
+        )
+    except Exception:
+        pass
+
     return Response({"message": f"Password reset email sent to {user.email}."})
 
 
@@ -1502,6 +1600,11 @@ def admin_change_role(request, user_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     new_role = serializer.validated_data["role"]
+    old_role = (
+        "superadmin"
+        if user.is_superuser
+        else ("admin" if getattr(user, "is_admin", False) or user.is_staff else "user")
+    )
 
     # Permission check: admins can only assign 'user' role
     if not request.user.is_superuser and new_role in ["superadmin", "admin"]:
@@ -1536,5 +1639,21 @@ def admin_change_role(request, user_id):
         user.groups.add(user_group)
 
     user.save()
+
+    try:
+        audit_log.record(
+            "user.role_changed",
+            user=request.user,
+            metadata={
+                "target_user_id": str(user.id),
+                "target_user_email": user.email,
+                "old_role": old_role,
+                "new_role": new_role,
+            },
+            request=request,
+        )
+    except Exception:
+        pass
+
     serializer = UserDetailSerializer(user)
     return Response(serializer.data)

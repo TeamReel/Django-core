@@ -13,6 +13,13 @@ class OrganisationsConfig(AppConfig):
         from audit.registry import register_event_type
 
         register_event_type(
+            "organisation.membership.created",
+            "organisation",
+            "User added to organisation",
+            required_metadata_keys=["user_id", "role"],
+        )
+
+        register_event_type(
             "organisation.membership.deleted",
             "organisation",
             "User removed from organisation",
