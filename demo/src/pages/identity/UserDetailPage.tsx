@@ -32,7 +32,7 @@ function ProjectMembershipEditModal({
 }: {
   opened: boolean;
   onClose: () => void;
-  membership: { projectId: string; projectName: string; currentRole: string } | null;
+  membership: { projectId: string; projectName: string; currentRole: string; membershipId?: string } | null;
   onSave: (payload: { role: string }) => Promise<void>;
 }) {
   const [role, setRole] = useState('viewer');
@@ -204,7 +204,7 @@ export const UserDetailPage: React.FC = () => {
     []
   );
 
-  const [editingMembership, setEditingMembership] = useState<{ projectId: string; projectName: string; currentRole: string } | null>(null);
+  const [editingMembership, setEditingMembership] = useState<{ projectId: string; projectName: string; currentRole: string; membershipId?: string } | null>(null);
   const [isEditMembershipModalOpen, setIsEditMembershipModalOpen] = useState(false);
 
   const [clubsById, setClubsById] = useState<Map<string, any>>(new Map());
@@ -1323,7 +1323,7 @@ export const UserDetailPage: React.FC = () => {
                             disabled={!projectId}
                             onClick={() => {
                               if (!projectId) return;
-                              setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(direct?.role || 'viewer') });
+                              setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(direct?.role || 'viewer'), membershipId });
                               setIsEditMembershipModalOpen(true);
                             }}
                             style={{
@@ -1356,7 +1356,7 @@ export const UserDetailPage: React.FC = () => {
                             onClick={() => {
                               if (!projectId) return;
                               if (!direct) return;
-                              setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(direct?.role || 'viewer') });
+                              setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(direct?.role || 'viewer'), membershipId });
                               setIsEditMembershipModalOpen(true);
                             }}
                             disabled={!projectId || !direct}
@@ -1442,7 +1442,7 @@ export const UserDetailPage: React.FC = () => {
                           disabled={!projectId}
                           onClick={() => {
                             if (!projectId) return;
-                            setEditingMembership({ projectId, projectName: String(t?.name || 'Team'), currentRole: String(t?.role || 'viewer') });
+                            setEditingMembership({ projectId, projectName: String(t?.name || 'Team'), currentRole: String(t?.role || 'viewer'), membershipId });
                             setIsEditMembershipModalOpen(true);
                           }}
                           style={{
@@ -1469,7 +1469,7 @@ export const UserDetailPage: React.FC = () => {
                             className="app-action-button"
                             onClick={() => {
                               if (!projectId) return;
-                              setEditingMembership({ projectId, projectName: String(t?.name || 'Team'), currentRole: String(t?.role || 'viewer') });
+                              setEditingMembership({ projectId, projectName: String(t?.name || 'Team'), currentRole: String(t?.role || 'viewer'), membershipId });
                               setIsEditMembershipModalOpen(true);
                             }}
                             disabled={!projectId}
@@ -1834,8 +1834,13 @@ export const UserDetailPage: React.FC = () => {
         onSave={async ({ role }) => {
           if (!editingMembership) return;
           const projectId = editingMembership.projectId;
-          const project = userProjects.find((p: any) => String(p?.id) === String(projectId));
-          const membershipId = (project as any)?.membership_id;
+          let membershipId = editingMembership.membershipId;
+
+          if (!membershipId) {
+             const project = userProjects.find((p: any) => String(p?.id) === String(projectId));
+             membershipId = (project as any)?.membership_id;
+          }
+
           await updateProjectMembershipRole(projectId, membershipId, role);
         }}
       />
