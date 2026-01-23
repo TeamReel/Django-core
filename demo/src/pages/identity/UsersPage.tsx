@@ -507,9 +507,6 @@ export default function UsersPage() {
           if (!res.ok) {
               throw new Error('Failed to update user');
           }
-
-          // Refresh list
-          fetchUsers();
       } catch (e) {
           console.error(e);
           alert('Failed to save user changes');
@@ -1215,6 +1212,7 @@ export default function UsersPage() {
         onClose={() => setIsModalOpen(false)}
         user={editingUser}
         onSave={handleSaveUser}
+                onSaved={fetchUsers}
                 organisationSlug={String(orgIdParam || context.organisation?.slug || '')}
                 scopeProjectKey={String(selectedTeamKey || selectedClubKey || '')}
       />

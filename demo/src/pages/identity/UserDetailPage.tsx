@@ -433,32 +433,29 @@ export const UserDetailPage: React.FC = () => {
     return () => { isMounted = false; };
   }, [userId]);
 
-    const handleSaveUser = async (updatedUser: any) => {
-      try {
-          // Use userId from URL params instead of updatedUser.id (which may be undefined)
-        const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${encodeURIComponent(String(userId))}/`, {
-              method: 'PATCH',
-              headers: {
-                  'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-              },
-              body: JSON.stringify(updatedUser),
-              credentials: 'include',
-          });
+  const handleSaveUser = async (updatedUser: any) => {
+    try {
+      // Only patch base user fields here. Project/team roles are handled by the modal.
+      const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${encodeURIComponent(String(userId))}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify(updatedUser),
+        credentials: 'include',
+      });
 
-          if (res.ok) {
-              fetchUser();
-              setIsEditModalOpen(false);
-          } else {
-              const data = await res.json();
-              alert(data.message || 'Failed to update user');
-              throw new Error(data.message || 'Failed to update user');
-          }
-      } catch (e) {
-          console.error(e);
-          alert('Failed to save user changes');
-          throw e;
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        alert((data as any)?.message || 'Failed to update user');
+        throw new Error((data as any)?.message || 'Failed to update user');
       }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to save user changes');
+      throw e;
+    }
   };
 
   const handleDeleteUser = async () => {
@@ -1804,7 +1801,13 @@ export const UserDetailPage: React.FC = () => {
 
       <UserDetailModal opened={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} user={user} />
 
-      <UserEditModal opened={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} user={user} onSave={handleSaveUser} />
+      <UserEditModal
+        opened={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        user={user}
+        onSave={handleSaveUser}
+        onSaved={fetchUser}
+      />
 
       <LinkUserModal
         opened={isLinkModalOpen}

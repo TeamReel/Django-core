@@ -16,6 +16,7 @@ interface UserEditModalProps {
   onClose: () => void;
   user: User | null;
   onSave: (userData: Partial<User>) => Promise<void>;
+  onSaved?: () => Promise<void> | void;
   organisationSlug?: string;
   scopeProjectKey?: string;
 }
@@ -30,6 +31,7 @@ export default function UserEditModal({
   onClose,
   user,
   onSave,
+  onSaved,
   organisationSlug,
   scopeProjectKey,
 }: UserEditModalProps) {
@@ -314,6 +316,9 @@ export default function UserEditModal({
       if (String(selectedProjectKey || '').trim()) {
         await updateProjectRolesIfNeeded();
       }
+
+      // Refresh parent data only after *all* updates are done.
+      await onSaved?.();
 
       onClose();
     } catch (error) {
