@@ -1305,14 +1305,76 @@ def admin_user_detail(request, user_id):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
+            memberships_to_remove = list(
+                Membership.objects.filter(
+                    user=user, organisation_id__in=common_orgs
+                ).select_related("organisation")
+            )
             deleted_count, _ = Membership.objects.filter(
-                user=user, organisation_id__in=common_orgs
+                id__in=[m.id for m in memberships_to_remove]
             ).delete()
+
+            # Audit log: membership removed (best-effort)
+            for membership in memberships_to_remove:
+                try:
+                    audit_log.record(
+                        "organisation.membership.deleted",
+                        user=request.user,
+                        organization=membership.organisation,
+                        metadata={
+                            "user_id": str(user.id),
+                            "role": membership.role,
+                            "email": user.email,
+                        },
+                        request=request,
+                    )
+                except Exception:
+                    pass
 
             return Response(
                 {"message": f"User removed from {deleted_count} organization(s)."},
                 status=status.HTTP_204_NO_CONTENT,
             )
+
+        # Audit log: user deleted (best-effort). Also emit membership removals scoped
+        # to orgs so org admins can see the action in org-scoped audit views.
+        try:
+            audit_log.record(
+                "resource.deleted",
+                user=request.user,
+                metadata={
+                    "resource_type": "user",
+                    "resource_id": str(user.id),
+                    "email": user.email,
+                },
+                request=request,
+            )
+        except Exception:
+            pass
+
+        try:
+            from organisations.models import Membership
+
+            memberships_to_remove = list(
+                Membership.objects.filter(user=user).select_related("organisation")
+            )
+            for membership in memberships_to_remove:
+                try:
+                    audit_log.record(
+                        "organisation.membership.deleted",
+                        user=request.user,
+                        organization=membership.organisation,
+                        metadata={
+                            "user_id": str(user.id),
+                            "role": membership.role,
+                            "email": user.email,
+                        },
+                        request=request,
+                    )
+                except Exception:
+                    pass
+        except Exception:
+            pass
 
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
