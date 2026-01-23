@@ -259,11 +259,11 @@ export default function LegacyMatchRedirectPage() {
 
   if (status === 'loading') {
     return (
-      <AppShell>
+      <div className="p-6">
         <PageContent>
           <LoadingState message="Redirecting to match…" />
         </PageContent>
-      </AppShell>
+      </div>
     );
   }
 
@@ -272,16 +272,16 @@ export default function LegacyMatchRedirectPage() {
     return (
       <>
         {error ? (
-          <AppShell>
+          <div className="p-6">
             <PageContent>
               <Alert variant="error">{error}</Alert>
               <Button variant="secondary" onClick={() => navigate(-1)} className="mt-4">
                 Go Back
               </Button>
             </PageContent>
-          </AppShell>
+          </div>
         ) : (
-          <AppShell>
+          <div className="p-6">
             <PageContent>
               <Alert variant="info">
                 This match can’t be resolved into the TeamReel hierarchy route.
@@ -290,7 +290,7 @@ export default function LegacyMatchRedirectPage() {
                 Back to Matches
               </Button>
             </PageContent>
-          </AppShell>
+          </div>
         )}
       </>
     );

@@ -871,24 +871,24 @@ export default function HierarchyMatchDetailPage() {
 
   if (loading) {
     return (
-      <AppShell>
+      <div className="p-6">
         <PageContent>
           <div className="text-center py-8 text-gray-500">Loading match…</div>
         </PageContent>
-      </AppShell>
+      </div>
     );
   }
 
   if (error || !match) {
     return (
-      <AppShell>
+      <div className="p-6">
         <PageContent>
           <Alert variant="error">{error || 'Match not found'}</Alert>
           <Button variant="secondary" onClick={() => navigate(-1)} className="mt-4">
             Go Back
           </Button>
         </PageContent>
-      </AppShell>
+      </div>
     );
   }
 
@@ -1551,7 +1551,7 @@ export default function HierarchyMatchDetailPage() {
   ];
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
           title={match.title}
@@ -1944,6 +1944,6 @@ export default function HierarchyMatchDetailPage() {
           )}
         </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 }

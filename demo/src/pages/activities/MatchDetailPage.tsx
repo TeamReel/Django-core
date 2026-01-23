@@ -148,24 +148,24 @@ export const MatchDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <AppShell>
+      <div className="p-6">
         <PageContent>
           <div className="text-center py-8 text-gray-500">Loading match details...</div>
         </PageContent>
-      </AppShell>
+      </div>
     );
   }
 
   if (error || !match) {
     return (
-      <AppShell>
+      <div className="p-6">
          <PageContent>
             <Alert variant="error">{error || 'Match not found'}</Alert>
             <Button variant="secondary" onClick={() => navigate(-1)} className="mt-4">
               Go Back
             </Button>
          </PageContent>
-      </AppShell>
+      </div>
     );
   }
 
@@ -247,7 +247,7 @@ export const MatchDetailPage: React.FC = () => {
   };
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
           title={match.title}
@@ -377,7 +377,7 @@ export const MatchDetailPage: React.FC = () => {
 
         </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 };
 
