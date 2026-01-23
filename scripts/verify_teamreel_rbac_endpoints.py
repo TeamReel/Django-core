@@ -33,9 +33,45 @@ def _setup_django() -> None:
 def main() -> int:
     _setup_django()
 
+    from django.conf import settings
+    from django.db import connection
+    from django.db.utils import OperationalError, ProgrammingError
+
     from rest_framework.test import APIClient
 
     from projects.models import Project, ProjectMembership
+
+    def _guard_against_unmigrated_db() -> bool:
+        """Return True if DB looks compatible, else print hint and return False."""
+
+        # The team/club hierarchy checks rely on `Project.parent_project` being present
+        # in the database schema. When someone runs this script against an old local
+        # SQLite DB (no migrations), the first ORM query will crash with
+        # `no such column: projects_project.parent_project_id`.
+        try:
+            with connection.cursor() as cursor:
+                columns = {
+                    col.name
+                    for col in connection.introspection.get_table_description(cursor, "projects_project")
+                }
+        except (OperationalError, ProgrammingError):
+            # If the table itself doesn't exist (fresh DB), let the normal fixture
+            # selection print a friendly error.
+            return True
+
+        if "parent_project_id" in columns:
+            return True
+
+        db_name = connection.settings_dict.get("NAME")
+        vendor = connection.vendor
+        self_hint = (
+            "[rbac] DB schema mismatch: 'projects_project.parent_project_id' is missing.\n"
+            f"[rbac] Settings: DJANGO_SETTINGS_MODULE={getattr(settings, 'SETTINGS_MODULE', None) or os.environ.get('DJANGO_SETTINGS_MODULE')}\n"
+            f"[rbac] Database: vendor={vendor} name={db_name}\n"
+            "[rbac] Fix: run migrations for this DB, or run against Railway by setting DATABASE_URL (and usually DJANGO_SETTINGS_MODULE=config.settings.production)."
+        )
+        print(self_hint)
+        return False
 
     def pick_fixture():
         team = (
@@ -127,6 +163,9 @@ def main() -> int:
             "other_team_member_pm": other_team_member_pm,
         }
 
+    if not _guard_against_unmigrated_db():
+        return 2
+
     fx = pick_fixture()
     if not fx:
         return 2
@@ -155,10 +194,23 @@ def main() -> int:
     def req(user, method: str, path: str, data=None):
         client.force_authenticate(user=user)
         fn = getattr(client, method)
-        resp = fn(path, data=data, format="json") if data is not None else fn(path)
+
+        # Production settings typically enforce HTTPS via SECURE_SSL_REDIRECT, which
+        # would cause 301s in the Django test client unless we mark the request as
+        # secure. Also ensure a host that is allowed by default.
+        request_kwargs = {
+            "secure": True,
+            "HTTP_X_FORWARDED_PROTO": "https",
+            "HTTP_HOST": "localhost",
+        }
+
+        if data is not None:
+            resp = fn(path, data=data, format="json", **request_kwargs)
+        else:
+            resp = fn(path, **request_kwargs)
         try:
             body = resp.json()
-        except Exception:
+        except (ValueError, TypeError):
             body = (resp.content or b"")[:250].decode("utf-8", errors="ignore")
         summary = body
         if isinstance(body, dict):

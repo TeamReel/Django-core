@@ -91,10 +91,10 @@ export default function LoginPage() {
         <div style={{ display: 'grid', gap: '10px' }}>
           {[
             { label: '👑 Super Admin', email: 'admin@teamreel.demo', desc: 'Full System Access', pass: 'Basis123.' },
-            { label: '�🇱 League Admin', email: 'jan.de jong@knvb.demo', desc: 'Federation - KNVB', pass: 'Basis123.' },
-            { label: '👔 Club Director', email: 'directeur@ajax.demo', desc: 'Club - Ajax', pass: 'Basis123.' },
-            { label: '📋 Team Manager', email: 'coach@ajax1.demo', desc: 'Team - Ajax 1', pass: 'Basis123.' },
-            { label: '🏃 Team Player', email: 'player@ajax1.demo', desc: 'Squad - Ajax 1', pass: 'Basis123.' },
+            { label: '🌍 Land Admin', email: 'land-admin@knvb.demo', desc: 'Federation - KNVB', pass: 'Basis123.' },
+            { label: '👔 Club Admin', email: 'directeur@ajax.demo', desc: 'Club - Ajax', pass: 'Basis123.' },
+            { label: '📋 Team Admin', email: 'coach@ajax1.demo', desc: 'Team - Ajax 1', pass: 'Basis123.' },
+            { label: '🏃 Team Member', email: 'player@ajax1.demo', desc: 'Squad - Ajax 1', pass: 'Basis123.' },
             { label: '👀 Supporter', email: 'supporter1@ajax.demo', desc: 'Fan - Ajax', pass: 'Basis123.' },
           ].map((account) => (
             <button
