@@ -64,6 +64,10 @@ export default function Breadcrumbs() {
     items.push({
         label: `Match ${matchId}`, // Todo: fetch match name/details if possible
         path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`
+    });
+  }
+
+  // Handle "Members" leaf explicitly as requested
   // "Show 'Members' under Season context"
   if (seasonSlugOrId && location.pathname.endsWith('/members')) {
       items.push({
