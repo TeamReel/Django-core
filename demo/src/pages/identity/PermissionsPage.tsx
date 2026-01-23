@@ -508,7 +508,7 @@ export const PermissionsPage: React.FC = () => {
   }
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
         title="Permissions & Access Control"
@@ -883,7 +883,7 @@ export const PermissionsPage: React.FC = () => {
         )}
       </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 };
 

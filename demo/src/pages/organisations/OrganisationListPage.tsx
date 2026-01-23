@@ -64,7 +64,7 @@ export default function OrganisationListPage() {
   // Context will be set automatically by OrganisationDetailPage after navigation
 
   return (
-    <AppShell>
+    <>
       <div>
         <h1>Organisations</h1>
         <p style={{ color: '#666', marginBottom: '24px' }}>Select an organisation to view its projects and resources.</p>
@@ -181,6 +181,6 @@ export default function OrganisationListPage() {
           ))}
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

@@ -72,7 +72,7 @@ export const ProfilePage: React.FC = () => {
 
   if (loading) {
     return (
-      <AppShell>
+      <div className="p-6">
         <PageHeader
           title="My Profile"
           breadcrumbs={[
@@ -87,13 +87,13 @@ export const ProfilePage: React.FC = () => {
             </div>
           </Card>
         </PageContent>
-      </AppShell>
+      </div>
     );
   }
 
   if (error || !user) {
     return (
-      <AppShell>
+      <div className="p-6">
         <PageHeader
           title="My Profile"
           breadcrumbs={[
@@ -106,12 +106,12 @@ export const ProfilePage: React.FC = () => {
             {error || 'Could not load profile'}
           </Alert>
         </PageContent>
-      </AppShell>
+      </div>
     );
   }
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="My Profile"
         breadcrumbs={[
@@ -220,7 +220,7 @@ export const ProfilePage: React.FC = () => {
           </div>
         </Card>
       </PageContent>
-    </AppShell>
+    </>
   );
 };
 

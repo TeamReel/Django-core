@@ -8,7 +8,7 @@ import AppShell from '../../components/AppShell';
  */
 export const ProfilePage: React.FC = () => {
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
           title="My Profile"
@@ -30,7 +30,7 @@ export const ProfilePage: React.FC = () => {
           </Alert>
         </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 };
 
