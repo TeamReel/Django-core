@@ -4,6 +4,7 @@ import logging
 import uuid
 
 from django.db.models import OuterRef, Q, Subquery
+from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -27,14 +28,13 @@ from .permissions import IsProjectMemberOrOrgAdmin
 from .serializers import (
     AcceptInvitationSerializer,
     ProjectDetailSerializer,
-    ProjectInviteSerializer,
     ProjectFunctionalRoleAssignSerializer,
+    ProjectInviteSerializer,
     ProjectListSerializer,
     ProjectMembershipPromotionSerializer,
     ProjectMembershipSerializer,
     ProjectUpdateSerializer,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +108,80 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     permission_classes = [IsAuthenticated, IsProjectMemberOrOrgAdmin]
     pagination_class = ProjectCursorPagination
+
+    def get_object(self):
+        """Retrieve a Project by numeric ID or slug.
+
+        Slugs are not necessarily unique within an organisation for child projects (teams).
+        In ambiguous cases, callers must use the numeric project ID or the nested team endpoint.
+        """
+
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        raw_lookup = str(self.kwargs.get(lookup_url_kwarg, "") or "").strip()
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # Prefer numeric IDs when provided.
+        if raw_lookup.isdigit():
+            obj = get_object_or_404(queryset, pk=int(raw_lookup))
+            self.check_object_permissions(self.request, obj)
+            return obj
+
+        matches = queryset.filter(slug=raw_lookup)
+        match_count = matches.count()
+
+        if match_count == 0:
+            obj = get_object_or_404(queryset, slug=raw_lookup)
+            self.check_object_permissions(self.request, obj)
+            return obj
+
+        if match_count > 1:
+            raise ValidationError(
+                {
+                    "slug": [
+                        "Project slug is ambiguous within this scope. "
+                        "Use the numeric project id, or resolve a team via "
+                        "/api/v1/organisations/{org}/projects/{club}/teams/{team}/."
+                    ]
+                }
+            )
+
+        obj = matches.first()
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def retrieve_team_under_club(
+        self, request, organisation_id=None, club_slug=None, team_slug=None
+    ):
+        """Resolve a team project by (organisation, club, team) keys.
+
+        This endpoint is necessary because team slugs are only unique within a club.
+        Supports both slugs and numeric IDs for club/team.
+        """
+
+        from organisations.models import Organisation
+
+        organisation = get_object_or_404(Organisation, slug=str(organisation_id))
+
+        club_key = str(club_slug or "").strip()
+        team_key = str(team_slug or "").strip()
+
+        club_qs = Project.objects.filter(
+            organisation_id=organisation.id, parent_project__isnull=True
+        )
+        if club_key.isdigit():
+            club = get_object_or_404(club_qs, pk=int(club_key))
+        else:
+            club = get_object_or_404(club_qs, slug=club_key)
+
+        team_qs = Project.objects.filter(organisation_id=organisation.id, parent_project_id=club.id)
+        if team_key.isdigit():
+            team = get_object_or_404(team_qs, pk=int(team_key))
+        else:
+            team = get_object_or_404(team_qs, slug=team_key)
+
+        self.check_object_permissions(request, team)
+        serializer = self.get_serializer(team)
+        return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
     def members(self, request, slug=None, organisation_id=None):
@@ -426,6 +500,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if response.status_code == status.HTTP_201_CREATED:
             try:
                 from notifications.services import notify_project_created
+
                 from projects.models import Project
 
                 project_id = getattr(response, "data", {}).get("id")

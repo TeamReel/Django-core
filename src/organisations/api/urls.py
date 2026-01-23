@@ -25,6 +25,9 @@ projects_detail = ProjectViewSet.as_view(
 projects_archive = ProjectViewSet.as_view({"post": "archive"})
 projects_restore = ProjectViewSet.as_view({"post": "restore"})
 
+# Team (child project) resolution under a club: /organisations/{org}/projects/{club}/teams/{team}/
+project_team_detail = ProjectViewSet.as_view({"get": "retrieve_team_under_club"})
+
 urlpatterns = router.urls + [
     path(
         "<slug:organisation_pk>/members/",
@@ -56,5 +59,10 @@ urlpatterns = router.urls + [
         "<slug:organisation_id>/projects/<slug:slug>/restore/",
         projects_restore,
         name="organisation-projects-restore",
+    ),
+    path(
+        "<slug:organisation_id>/projects/<slug:club_slug>/teams/<slug:team_slug>/",
+        project_team_detail,
+        name="organisation-project-team-detail",
     ),
 ]

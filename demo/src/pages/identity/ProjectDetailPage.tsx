@@ -1295,10 +1295,34 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         // Fetch project details
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
+        const looksLikeIdentifier = (value: string) => {
+          const v = String(value || '').trim();
+          if (!v) return false;
+          if (/^\d+$/.test(v)) return true;
+          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)) return true;
+          return false;
+        };
+
         // Use nested route if we have org context, otherwise top-level
-        const endpoint = resolvedOrg
+        let endpoint = resolvedOrg
           ? `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/projects/${currentProjectSlug}/`
           : `${apiBaseUrl}/api/v1/projects/${currentProjectSlug}/`;
+
+        // Team slugs are only unique within a club. When we're on a team route
+        // and the URL provides the club segment, resolve via the club-scoped endpoint.
+        if (
+          resolvedOrg &&
+          isTeamRoute &&
+          clubSlugOrId &&
+          currentProjectSlug &&
+          !looksLikeIdentifier(currentProjectSlug)
+        ) {
+          endpoint = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(
+            resolvedOrg.slug
+          )}/projects/${encodeURIComponent(clubSlugOrId)}/teams/${encodeURIComponent(
+            currentProjectSlug
+          )}/`;
+        }
 
         const projectResponse = await fetch(endpoint, {
           headers: {

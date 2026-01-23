@@ -389,9 +389,27 @@ export default function ProjectSeasonSquadPage() {
           throw new Error('Missing route parameters');
         }
 
+        const looksLikeIdentifier = (value: string) => {
+          const v = String(value || '').trim();
+          if (!v) return false;
+          if (/^\d+$/.test(v)) return true;
+          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)) return true;
+          return false;
+        };
+
+        const teamScopedProjectUrl = (org: string, club: string, team: string) =>
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(org)}/projects/${encodeURIComponent(club)}/teams/${encodeURIComponent(team)}/`;
+
+        const defaultProjectUrl = (team: string) =>
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(team)}/`;
+
+        const projectUrl = isTeamRoute && clubSlugOrId && projectSlugOrId && !looksLikeIdentifier(projectSlugOrId)
+          ? teamScopedProjectUrl(orgSlugOrId, clubSlugOrId, projectSlugOrId)
+          : defaultProjectUrl(projectSlugOrId);
+
         const [orgRes, projectRes] = await Promise.all([
           fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectSlugOrId)}/`, { credentials: 'include' }),
+          fetch(projectUrl, { credentials: 'include' }),
         ]);
 
         if (!orgRes.ok) throw new Error('Failed to load organisation');
@@ -406,7 +424,10 @@ export default function ProjectSeasonSquadPage() {
         setProject(projectJson);
 
         if (isTeamRoute) {
-          const clubRes = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(clubSlugOrId)}/`, { credentials: 'include' });
+          const clubRes = await fetch(
+            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
+            { credentials: 'include' }
+          );
           if (clubRes.ok) {
             const clubJson = unwrap<Project>(await clubRes.json());
             if (!isCancelled) setClubProject(clubJson);

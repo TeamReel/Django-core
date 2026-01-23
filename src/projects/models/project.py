@@ -89,8 +89,17 @@ class Project(models.Model):
         db_table = "projects_project"
         ordering = ["-created_at"]
         constraints = [
+            # Root projects (clubs): slug unique within organisation.
             models.UniqueConstraint(
-                fields=["organisation", "slug"], name="unique_project_slug_per_org"
+                fields=["organisation", "slug"],
+                condition=Q(parent_project__isnull=True),
+                name="unique_root_project_slug_per_org",
+            ),
+            # Child projects (teams): slug unique within the same parent (club) within organisation.
+            models.UniqueConstraint(
+                fields=["organisation", "parent_project", "slug"],
+                condition=Q(parent_project__isnull=False),
+                name="unique_child_project_slug_per_parent",
             ),
             # Root projects (clubs): name unique within organisation.
             models.UniqueConstraint(
@@ -123,6 +132,18 @@ class Project(models.Model):
         """Return absolute URL for project detail."""
         from django.urls import reverse
 
+        # Teams are not slug-unique within an organisation, so their canonical URL
+        # must include the parent club slug segment.
+        if self.parent_project_id:
+            return reverse(
+                "api_v1:organisation-project-team-detail",
+                kwargs={
+                    "organisation_id": self.organisation.slug,
+                    "club_slug": self.parent_project.slug,
+                    "team_slug": self.slug,
+                },
+            )
+
         return reverse(
             "api_v1:organisation-projects-detail",
             kwargs={"organisation_id": self.organisation.slug, "slug": self.slug},
@@ -143,11 +164,17 @@ class Project(models.Model):
         max_attempts = 100
 
         while counter <= max_attempts:
-            exists = (
-                Project.all_objects.filter(organisation_id=self.organisation_id, slug=slug)
-                .exclude(pk=self.pk)
-                .exists()
+            qs = Project.all_objects.filter(organisation_id=self.organisation_id).exclude(
+                pk=self.pk
             )
+
+            # Root vs child scoping: slugs are unique within (org, parent_project).
+            if self.parent_project_id is None:
+                qs = qs.filter(parent_project__isnull=True)
+            else:
+                qs = qs.filter(parent_project_id=self.parent_project_id)
+
+            exists = qs.filter(slug=slug).exists()
 
             if not exists:
                 return slug
@@ -164,11 +191,15 @@ class Project(models.Model):
             self.slug = self._generate_unique_slug()
         else:
             # Slug provided - check if it collides and regenerate if needed
-            slug_exists = (
-                Project.all_objects.filter(organisation_id=self.organisation_id, slug=self.slug)
-                .exclude(pk=self.pk)
-                .exists()
+            qs = Project.all_objects.filter(organisation_id=self.organisation_id).exclude(
+                pk=self.pk
             )
+            if self.parent_project_id is None:
+                qs = qs.filter(parent_project__isnull=True)
+            else:
+                qs = qs.filter(parent_project_id=self.parent_project_id)
+
+            slug_exists = qs.filter(slug=self.slug).exists()
             if slug_exists:
                 # Collision - regenerate from provided slug
                 self.slug = self._generate_unique_slug(base_slug=self.slug)

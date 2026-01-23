@@ -17,7 +17,7 @@ The `projects` app provides workspace/project containers within organisations fo
 
 **Project Model**:
 - Fields: id, organisation (FK), creator (FK), name, slug, description, is_active, timestamps
-- Constraints: Unique (organisation, slug), case-insensitive unique (name, organisation)
+- Constraints: Slug unique (root per organisation; child per parent project), case-insensitive unique (name scoped similarly)
 - Indexes: organisation_id, slug, is_active
 - Managers: `objects` (active only), `all_objects` (all projects including archived)
 
