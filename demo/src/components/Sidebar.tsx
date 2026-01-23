@@ -421,29 +421,3 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     </div>
   );
 }
-// Remove PrimaryItem and Secondary Sidebar code below here
-
-
-    return (
-        <NavLink
-            to={targetPath}
-            title={!isOpen ? group.label : undefined}
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                height: 48,
-                padding: isOpen ? '0 12px' : '0 0',
-                justifyContent: isOpen ? 'flex-start' : 'center',
-                borderRadius: 8,
-                textDecoration: 'none',
-                color: isActive ? '#fff' : '#94a3b8',
-                backgroundColor: isActive ? 'var(--app-primary)' : 'transparent',
-                transition: 'all 0.2s',
-            }}
-            className={isActive ? 'bg-primary' : 'hover:bg-slate-800'}
-        >
-            <span style={{ fontSize: 20, minWidth: 24, textAlign: 'center' }}>{group.icon}</span>
-            {isOpen && <span style={{ marginLeft: 12, fontWeight: 500, fontSize: 14 }}>{group.label}</span>}
-        </NavLink>
-    );
-}
