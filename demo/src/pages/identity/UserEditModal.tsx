@@ -258,23 +258,28 @@ export default function UserEditModal({
 
         const raw = await res.json().catch(() => null);
         const list = (raw as any)?.data?.results || (raw as any)?.results || (raw as any)?.data || [];
-        const choices: OrgProjectChoice[] = (Array.isArray(list) ? list : [])
+        const rawItems = Array.isArray(list) ? list : [];
+
+        // Build ID -> Slug map for correct parent resolution
+        const idToSlug = new Map<string, string>();
+        for (const p of rawItems) {
+             const pid = String(p?.id || '').trim();
+             const pslug = String(p?.slug || '').trim();
+             if (pid && pslug) idToSlug.set(pid, pslug);
+        }
+
+        const choices: OrgProjectChoice[] = rawItems
           .map((p: any) => {
             const key = String(p?.slug || p?.id || '').trim();
             const name = String(p?.name || p?.title || p?.slug || p?.id || '').trim();
             const parentName = String(p?.parent_name || p?.parentName || '').trim() || null;
             const parentId = String(p?.parent_id || p?.parentId || '').trim();
-            // Try to resolve parentKey if parentId is not just an ID but maybe a slug?
-            // The API usually returns parent_id as UUID. But often consistent with key if using IDs.
-            // If the project key is a slug, parent_id might not match parentKey (slug).
-            // However, for filtering, we usually compare against IDs if keys are IDs.
-            // But here our keys are slugs usually...
-            // Let's assume parentId is the ID. Ideally we'd want parentSlug.
-            // If parentSlug is not available, we might struggle.
-            // But let's check validation.py or serializer.
-            // In Django REST, often Nested Parent is just ID.
-            // If we use Slugs for keys, we need Parent Slug.
-            const parentKey = String(p?.parent_slug || p?.parentSlug || parentId || '').trim() || undefined;
+
+            // Resolve parent key: Prefer slug, fallback to ID lookup, fallback to recursive lookup
+            let parentKey = String(p?.parent_slug || p?.parentSlug || parentId || '').trim() || undefined;
+            if (parentKey && idToSlug.has(parentKey)) {
+                parentKey = idToSlug.get(parentKey);
+            }
 
             return {
               key,
@@ -920,7 +925,7 @@ export default function UserEditModal({
 
             {activeTab === 'link' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ fontWeight: 800 }}>Add user to a club or team</div>
+                <div style={{ fontWeight: 800 }}>Add user to organisation</div>
                 {!organisationSlug ? (
                   <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>
                     Open this from a federation context so we can list clubs/teams.
@@ -933,8 +938,58 @@ export default function UserEditModal({
                   </div>
                 ) : null}
 
+                {/* 1. Federation Section */}
+                {!orgMembershipId ? (
+                    <div style={{ padding: '12px', border: '1px solid var(--app-border)', borderRadius: '8px', background: 'var(--app-surface-2)' }}>
+                        <div style={{marginBottom: '10px', fontWeight: 800}}>Add to Federation</div>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                             <div style={{ flex: '1 1 auto' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Role</label>
+                                <select
+                                value={inviteOrgRole}
+                                onChange={(e) => setInviteOrgRole(e.target.value as any)}
+                                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
+                                disabled={addingToOrg || saving}
+                                >
+                                <option value="member">member</option>
+                                <option value="admin">admin</option>
+                                </select>
+                             </div>
+                             <div style={{ flex: '0 0 auto', marginTop: '22px' }}>
+                                <button
+                                type="button"
+                                disabled={addingToOrg || saving}
+                                onClick={async () => {
+                                    try {
+                                    await linkToOrganisation();
+                                    } catch (e) {
+                                    setExtraError(e instanceof Error ? e.message : 'Failed to add to federation');
+                                    }
+                                }}
+                                style={{
+                                    padding: '10px 16px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #007bff',
+                                    backgroundColor: '#007bff',
+                                    color: '#fff',
+                                    cursor: addingToOrg || saving ? 'not-allowed' : 'pointer',
+                                    fontWeight: 800,
+                                }}
+                                >
+                                {addingToOrg ? 'Adding…' : 'Add to Federation'}
+                                </button>
+                             </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div style={{ padding: '10px', border: '1px solid var(--app-border)', borderRadius: '8px', background: 'rgba(40, 167, 69, 0.1)', color: 'var(--app-text)' }}>
+                         <div style={{ fontSize: '12px', fontWeight: 700 }}>✓ Member of {organisationSlug}</div>
+                    </div>
+                )}
+
+                {/* 2. Project Section */}
                 <div style={{ padding: '12px', border: '1px solid var(--app-border)', borderRadius: '8px', background: 'var(--app-surface-2)' }}>
-                   <div style={{marginBottom: '10px', fontWeight: 800}}>Select Scope</div>
+                   <div style={{marginBottom: '10px', fontWeight: 800}}>Add to Club / Team</div>
 
                    <div style={{marginBottom: '10px'}}>
                       <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>1. Select Club</label>
