@@ -1364,14 +1364,13 @@ def admin_user_activate(request, user_id):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # If there's exactly one shared org, include it for audit scoping.
-        if len(common_orgs) == 1:
-            try:
-                from organisations.models import Organisation
+        # Include an org for audit scoping so the event shows up in org-scoped audit views.
+        try:
+            from organisations.models import Organisation
 
-                org_for_audit = Organisation.objects.filter(id=list(common_orgs)[0]).first()
-            except Exception:
-                org_for_audit = None
+            org_for_audit = Organisation.objects.filter(id=sorted(common_orgs)[0]).first()
+        except Exception:
+            org_for_audit = None
 
     if user.is_active:
         return Response(
@@ -1437,13 +1436,12 @@ def admin_user_deactivate(request, user_id):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        if len(common_orgs) == 1:
-            try:
-                from organisations.models import Organisation
+        try:
+            from organisations.models import Organisation
 
-                org_for_audit = Organisation.objects.filter(id=list(common_orgs)[0]).first()
-            except Exception:
-                org_for_audit = None
+            org_for_audit = Organisation.objects.filter(id=sorted(common_orgs)[0]).first()
+        except Exception:
+            org_for_audit = None
 
     # Prevent self-deactivation
     if user.id == request.user.id:
