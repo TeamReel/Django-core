@@ -687,7 +687,7 @@ export default function UserEditModal({
                 </div>
 
                 <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '12px' }}>
-                  <div style={{ fontWeight: 800, marginBottom: '10px' }}>Club / Team settings</div>
+                  <div style={{ fontWeight: 800, marginBottom: '10px' }}>Club Settings</div>
 
                   {scopeProjectKey ? (
                     <div style={{ marginBottom: '10px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
@@ -695,24 +695,75 @@ export default function UserEditModal({
                     </div>
                   ) : (
                     <div style={{ marginBottom: '10px' }}>
-                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Choose a club/team</label>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Choose a club</label>
                       <select
                         value={selectedProjectKey}
                         onChange={(e) => setSelectedProjectKey(e.target.value)}
                         style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
                       >
                         <option value="">(select)</option>
-                        {availableProjects.map((p) => (
+                        {availableProjects.filter(p => !p.name.includes("-") && !p.key.includes("team")).map((p) => (
                           <option key={p.key} value={p.key}>
                             {p.name}
                           </option>
                         ))}
                       </select>
-                      <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                        Missing a club/team? Use the “Add to club/team” tab.
+                       <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                        Missing a club? Use the “Add to club/team” tab.
                       </div>
                     </div>
                   )}
+
+                  {selectedProjectKey && !selectedProjectKey.includes("team") ? (
+                    <div style={{ marginBottom: '12px' }}>
+                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Access role</label>
+                        <select
+                          value={projectAccessRole}
+                          onChange={(e) => setProjectAccessRole(e.target.value as any)}
+                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
+                        >
+                          <option value="viewer">viewer</option>
+                          <option value="editor">editor</option>
+                          <option value="admin">admin</option>
+                        </select>
+                        {!projectMembershipId ? (
+                          <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                            User is not (directly) a member of this club.
+                          </div>
+                        ) : null}
+                      </div>
+
+                  ) : null}
+                </div>
+
+                 <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '12px' }}>
+                  <div style={{ fontWeight: 800, marginBottom: '10px' }}>Team Settings</div>
+
+                   {scopeProjectKey ? (
+                    <div style={{ marginBottom: '10px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                      Scope: {String(scopeProjectKey)}
+                    </div>
+                  ) : (
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Choose a team</label>
+                      <select
+                        value={selectedProjectKey}
+                        onChange={(e) => setSelectedProjectKey(e.target.value)}
+                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
+                      >
+                        <option value="">(select)</option>
+                        {availableProjects.filter(p => p.name.includes("-") || p.key.includes("team") || p.name.includes("Team") || p.name.match(/\d$/)).map((p) => (
+                          <option key={p.key} value={p.key}>
+                            {p.name}
+                          </option>
+                        ))}
+                      </select>
+                       <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                        Missing a team? Use the “Add to club/team” tab.
+                      </div>
+                    </div>
+                  )}
+
 
                   {selectedProjectKey ? (
                     <>
@@ -729,7 +780,7 @@ export default function UserEditModal({
                         </select>
                         {!projectMembershipId ? (
                           <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                            User is not (directly) a member of this club/team.
+                            User is not (directly) a member of this team.
                           </div>
                         ) : null}
                       </div>
@@ -775,6 +826,7 @@ export default function UserEditModal({
                             );
                           })}
                         </div>
+
                         <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px', lineHeight: 1.35 }}>
                           Note: Team Admins automatically show as “Coach” in the API.
                         </div>
