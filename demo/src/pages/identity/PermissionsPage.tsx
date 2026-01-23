@@ -8,8 +8,10 @@ import {
   PageHeader,
   PageContent,
 } from '@django-core/page-templates';
+import { Table } from '../../shims/design-system';
 import { Permission, Role } from '../../types';
 import AppShell from '../../components/AppShell';
+import { compactTableStyle, compactThStyle, compactTdStyle } from './detail/detailStyles';
 
 /**
  * T010 - Permissions Dashboard
@@ -114,20 +116,35 @@ export const PermissionsPage: React.FC = () => {
 
   // Permission descriptions for stakeholders
   const permissionDescriptions: Record<string, string> = {
-    view_organisation: 'Can view organisation details and members',
-    create_project: 'Can create new projects',
-    edit_project: 'Can modify project settings and description',
-    delete_project: 'Can permanently delete projects',
-    view_members: 'Can view team members and roles',
-    invite_member: 'Can invite new team members',
-    remove_member: 'Can remove team members from organisation',
-    manage_roles: 'Can assign and modify member roles',
-    view_audit: 'Can access audit logs for compliance',
-    manage_permissions: 'Can modify organisation permissions (admin only)',
-    view_billing: 'Can access billing and credits information',
-    manage_billing: 'Can modify billing settings and payment methods',
-    view_settings: 'Can access organisation settings',
-    manage_settings: 'Can modify organisation configuration',
+    // Organisation
+    view_all_organisations: 'View and browse all organisations on the platform',
+    manage_organisation: 'Update organisation settings, memberships, and governance',
+    view_organisation: 'View organisation details and related entities',
+
+    // Clubs
+    view_all_clubs: 'View all clubs within the organisation',
+    create_club: 'Create a new club within the organisation',
+    manage_club: 'Manage club settings and club-level administration',
+
+    // Teams
+    view_team: 'View team details, members, and team content',
+    create_team: 'Create a new team under a club',
+    manage_team_settings: 'Manage team settings, structure, and configuration',
+    manage_team_matches: 'Manage match scheduling and match administration',
+
+    // Users
+    manage_all_users: 'Manage users across the organisation scope',
+    view_users: 'View user directory and user details',
+    edit_own_profile: 'Edit your own profile information',
+
+    // Content
+    view_content: 'View content and media',
+    create_content: 'Create or upload content and media',
+    approve_content: 'Review and approve content before publishing',
+
+    // Credits
+    view_credits: 'View credit balances and transactions',
+    manage_credits: 'Manage credit balances and credit-related actions',
   };
 
   // TeamReel Role hierarchy descriptions
@@ -185,7 +202,22 @@ export const PermissionsPage: React.FC = () => {
   // TeamReel Permission matrix
   const permissionMatrix: Array<{ category: string; permissions: PermissionMatrixRow[] }> = [
     {
-      category: 'Organisation Management',
+      category: 'Core Access',
+      permissions: [
+        {
+          permission: 'view_organisation',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: true,
+          team_member: true,
+          viewer: true,
+        },
+      ],
+    },
+    {
+      category: 'Organisation Administration',
       permissions: [
         {
           permission: 'view_all_organisations',
@@ -201,27 +233,27 @@ export const PermissionsPage: React.FC = () => {
           permission: 'manage_organisation',
           superadmin: true,
           land_admin: true,
-          club_admin: false,
+          club_admin: true,
           team_admin: false,
           team_staff: false,
           team_member: false,
           viewer: false,
         },
+      ],
+    },
+    {
+      category: 'Clubs',
+      permissions: [
         {
-          permission: 'view_organisation',
+          permission: 'view_all_clubs',
           superadmin: true,
           land_admin: true,
           club_admin: true,
           team_admin: true,
-          team_staff: true,
-          team_member: true,
-          viewer: true,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
         },
-      ],
-    },
-    {
-      category: 'Club Management',
-      permissions: [
         {
           permission: 'create_club',
           superadmin: true,
@@ -242,21 +274,21 @@ export const PermissionsPage: React.FC = () => {
           team_member: false,
           viewer: false,
         },
+      ],
+    },
+    {
+      category: 'Teams',
+      permissions: [
         {
-          permission: 'view_all_clubs',
+          permission: 'view_team',
           superadmin: true,
           land_admin: true,
           club_admin: true,
           team_admin: true,
-          team_staff: false,
-          team_member: false,
-          viewer: false,
+          team_staff: true,
+          team_member: true,
+          viewer: true,
         },
-      ],
-    },
-    {
-      category: 'Team Management',
-      permissions: [
         {
           permission: 'create_team',
           superadmin: true,
@@ -287,31 +319,11 @@ export const PermissionsPage: React.FC = () => {
           team_member: false,
           viewer: false,
         },
-        {
-          permission: 'view_team',
-          superadmin: true,
-          land_admin: true,
-          club_admin: true,
-          team_admin: true,
-          team_staff: true,
-          team_member: true,
-          viewer: true,
-        },
       ],
     },
     {
-      category: 'User & Profile',
+      category: 'Users & Profiles',
       permissions: [
-        {
-          permission: 'manage_all_users',
-          superadmin: true,
-          land_admin: true,
-          club_admin: true,
-          team_admin: false,
-          team_staff: false,
-          team_member: false,
-          viewer: false,
-        },
         {
           permission: 'view_users',
           superadmin: true,
@@ -332,11 +344,31 @@ export const PermissionsPage: React.FC = () => {
           team_member: true,
           viewer: false,
         },
+        {
+          permission: 'manage_all_users',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: false,
+          team_staff: false,
+          team_member: false,
+          viewer: false,
+        },
       ],
     },
     {
       category: 'Content & Media',
       permissions: [
+        {
+          permission: 'view_content',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: true,
+          team_member: true,
+          viewer: true,
+        },
         {
           permission: 'create_content',
           superadmin: true,
@@ -357,31 +389,11 @@ export const PermissionsPage: React.FC = () => {
           team_member: false,
           viewer: false,
         },
-        {
-          permission: 'view_content',
-          superadmin: true,
-          land_admin: true,
-          club_admin: true,
-          team_admin: true,
-          team_staff: true,
-          team_member: true,
-          viewer: true,
-        },
       ],
     },
     {
       category: 'Credits & Billing',
       permissions: [
-        {
-          permission: 'manage_credits',
-          superadmin: true,
-          land_admin: true,
-          club_admin: true,
-          team_admin: true,
-          team_staff: false,
-          team_member: false,
-          viewer: false,
-        },
         {
           permission: 'view_credits',
           superadmin: true,
@@ -389,6 +401,16 @@ export const PermissionsPage: React.FC = () => {
           club_admin: true,
           team_admin: true,
           team_staff: true,
+          team_member: false,
+          viewer: false,
+        },
+        {
+          permission: 'manage_credits',
+          superadmin: true,
+          land_admin: true,
+          club_admin: true,
+          team_admin: true,
+          team_staff: false,
           team_member: false,
           viewer: false,
         },
@@ -569,67 +591,122 @@ export const PermissionsPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-semibold" style={{ minWidth: 280 }}>
-                        Feature
-                      </th>
-                      {roleColumns.map((col) => (
-                        <th
-                          key={String(col.key)}
-                          className="text-center py-3 px-2 font-semibold text-xs"
-                          style={{ minWidth: 86 }}
-                        >
-                          {col.label}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
+              <Table style={compactTableStyle}>
+                <colgroup>
+                  <col style={{ width: '360px' }} />
+                  {roleColumns.map((col) => (
+                    <col key={String(col.key)} style={{ width: '100px' }} />
+                  ))}
+                </colgroup>
 
-                  <tbody>
-                    {permissionMatrix.flatMap((category) => {
-                      const rows: Array<React.ReactNode> = [];
+                <thead>
+                  <tr>
+                    <th
+                      style={{
+                        ...compactThStyle,
+                        position: 'sticky',
+                        left: 0,
+                        zIndex: 2,
+                        minWidth: 320,
+                      }}
+                    >
+                      Feature
+                    </th>
+                    {roleColumns.map((col) => (
+                      <th
+                        key={String(col.key)}
+                        style={{
+                          ...compactThStyle,
+                          textAlign: 'center',
+                          fontSize: '0.75rem',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {col.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {permissionMatrix.flatMap((category) => {
+                    const rows: Array<React.ReactNode> = [];
+
+                    rows.push(
+                      <tr key={`cat-${category.category}`}>
+                        <td colSpan={1 + roleColumns.length} style={{ ...compactTdStyle, paddingTop: '14px' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                letterSpacing: '0.06em',
+                                textTransform: 'uppercase',
+                                opacity: 0.85,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {category.category}
+                            </span>
+                            <span style={{ height: 1, backgroundColor: 'var(--app-border)', flex: 1 }} />
+                          </div>
+                        </td>
+                      </tr>,
+                    );
+
+                    category.permissions.forEach((row) => {
+                      const label = formatPermissionLabel(row.permission);
+                      const desc = permissionDescriptionFor(row.permission);
 
                       rows.push(
-                        <tr key={`cat-${category.category}`} className="border-b">
-                          <td colSpan={1 + roleColumns.length} className="py-3 px-4 bg-gray-50">
-                            <div className="text-xs font-semibold text-gray-700 tracking-wide uppercase">
-                              {category.category}
+                        <tr key={row.permission} data-testid={`permission-row-${row.permission}`}>
+                          <td
+                            style={{
+                              ...compactTdStyle,
+                              verticalAlign: 'top',
+                              position: 'sticky',
+                              left: 0,
+                              zIndex: 1,
+                              borderRight: '1px solid var(--app-border)',
+                              whiteSpace: 'normal',
+                              wordBreak: 'break-word',
+                            }}
+                          >
+                            <div style={{ fontWeight: 600 }}>{label}</div>
+                            {desc ? (
+                              <div style={{ fontSize: '0.78rem', opacity: 0.75, marginTop: 2 }}>{desc}</div>
+                            ) : null}
+                            <div style={{ fontSize: '0.72rem', opacity: 0.55, marginTop: 4, fontFamily: 'monospace' }}>
+                              {row.permission}
                             </div>
                           </td>
+                          {roleColumns.map((col) => (
+                            <td
+                              key={String(col.key)}
+                              style={{
+                                ...compactTdStyle,
+                                textAlign: 'center',
+                                fontWeight: row[col.key] ? 700 : 400,
+                                color: row[col.key] ? 'var(--app-text)' : 'var(--app-muted-text)',
+                              }}
+                            >
+                              {row[col.key] ? '✓' : '—'}
+                            </td>
+                          ))}
                         </tr>,
                       );
+                    });
 
-                      category.permissions.forEach((row) => {
-                        const label = formatPermissionLabel(row.permission);
-                        const desc = permissionDescriptionFor(row.permission);
-
-                        rows.push(
-                          <tr
-                            key={row.permission}
-                            className="border-b hover:bg-gray-50"
-                            data-testid={`permission-row-${row.permission}`}
-                          >
-                            <td className="py-3 px-4">
-                              <div className="font-medium">{label}</div>
-                              {desc ? <div className="text-xs text-gray-500 mt-0.5">{desc}</div> : null}
-                            </td>
-                            {roleColumns.map((col) => (
-                              <td key={String(col.key)} className="text-center py-3 px-2">
-                                {row[col.key] ? <Badge variant="success">✓</Badge> : <span className="text-gray-400">—</span>}
-                              </td>
-                            ))}
-                          </tr>,
-                        );
-                      });
-
-                      return rows;
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                    return rows;
+                  })}
+                </tbody>
+              </Table>
             </Card>
 
             {/* Legend */}
