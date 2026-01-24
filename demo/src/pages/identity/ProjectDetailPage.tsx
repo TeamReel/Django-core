@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   Button,
   Card,
@@ -100,8 +100,31 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   const [activeTab, setActiveTab] = useState('overview');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { context, organisations, projects: contextProjects } = useContextSwitcher();
   const { user } = useAuth();
+
+  const activeTabFromUrl = useMemo(() => {
+    const params = new URLSearchParams(location.search || '');
+    const tab = String(params.get('tab') || 'overview').trim().toLowerCase();
+    const allowed = new Set([
+      'overview',
+      'hierarchy',
+      'people',
+      'teams',
+      'seasons',
+      'competitions',
+      'matches',
+      'balance',
+      'transactions',
+    ]);
+    return allowed.has(tab) ? tab : 'overview';
+  }, [location.search]);
+
+  useEffect(() => {
+    if (activeTab !== activeTabFromUrl) setActiveTab(activeTabFromUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTabFromUrl]);
 
   const [project, setProject] = useState<Project | null>(null);
   const [members, setMembers] = useState<any[]>([]);

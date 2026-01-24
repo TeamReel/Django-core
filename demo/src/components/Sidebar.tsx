@@ -100,6 +100,25 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
   const panelBConfig = useMemo(() => {
     const path = location.pathname;
 
+        const makeTabUrl = (baseUrl: string, tab: string) => {
+            const t = String(tab || '').trim().toLowerCase();
+            if (!t || t === 'overview') return baseUrl;
+            return `${baseUrl}?tab=${encodeURIComponent(t)}`;
+        };
+
+        // Detect TeamReel vanity + /organisations routes so Panel B is driven by the actual page.
+        const teamDetailMatch =
+            matchPath({ path: '/organisations/:orgId/:clubId/:projectId', end: true }, path) ||
+            matchPath({ path: '/:orgId/:clubId/:projectId', end: true }, path);
+
+        const clubDetailMatch =
+            matchPath({ path: '/organisations/:orgId/:projectId', end: true }, path) ||
+            matchPath({ path: '/:orgId/:projectId', end: true }, path);
+
+        const orgDetailMatch =
+            matchPath({ path: '/organisations/:orgId', end: true }, path) ||
+            matchPath({ path: '/:orgId', end: true }, path);
+
     // 1. Determine Active Section
     let activeSection: 'work' | 'people' | 'content' | 'organisation' | 'platform' | 'help' = 'work';
     if (path.startsWith('/content') || path.startsWith('/studio')) activeSection = 'content';
@@ -114,6 +133,50 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
     switch (activeSection) {
         case 'work':
+            // Primary requirement: show the detail-page tabs in Panel B (instead of generic actions).
+            // ClubDetailPage / TeamDetailPage are implemented by ProjectDetailPage under the hood,
+            // which uses a querystring tab model (activeTab).
+            if (teamDetailMatch?.params?.orgId && teamDetailMatch?.params?.clubId && teamDetailMatch?.params?.projectId) {
+                const { orgId, clubId, projectId } = teamDetailMatch.params as any;
+                const baseUrl = path.startsWith('/organisations/')
+                  ? `/organisations/${orgId}/${clubId}/${projectId}`
+                  : `/${orgId}/${clubId}/${projectId}`;
+
+                title = 'Team';
+                items = [
+                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
+                    { label: 'People', path: makeTabUrl(baseUrl, 'people'), icon: Users },
+                    { label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays },
+                    { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
+                    { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
+                    { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
+                    { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                ];
+                break;
+            }
+
+            if (clubDetailMatch?.params?.orgId && clubDetailMatch?.params?.projectId && !('clubId' in (clubDetailMatch.params as any))) {
+                const { orgId, projectId } = clubDetailMatch.params as any;
+                const baseUrl = path.startsWith('/organisations/')
+                  ? `/organisations/${orgId}/${projectId}`
+                  : `/${orgId}/${projectId}`;
+
+                title = 'Club';
+                items = [
+                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
+                    { label: 'People', path: makeTabUrl(baseUrl, 'people'), icon: Users },
+                    { label: 'Teams', path: makeTabUrl(baseUrl, 'teams'), icon: Shirt },
+                    { label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays },
+                    { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
+                    { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
+                    { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
+                    { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                ];
+                break;
+            }
+
             // Hierarchy Context Logic
             if (matchId) {
                 title = 'Match Actions';
@@ -144,10 +207,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
                 items.push({ label: 'Teams', path: `${baseUrl}/teams`, icon: Shirt });
                 items.push({ label: 'Seasons', path: `${baseUrl}/seasons`, icon: CalendarDays });
-            } else if (orgSlug && location.pathname.startsWith(`/organisations/${orgSlug}`)) {
+            } else if ((orgSlug && location.pathname.startsWith(`/organisations/${orgSlug}`)) || orgDetailMatch?.params?.orgId) {
                 // Organisation Actions
+                const orgId = String(orgSlug || orgDetailMatch?.params?.orgId || '').trim();
                 title = 'Federation Actions';
-                const baseUrl = `/organisations/${orgSlug}`;
+                const baseUrl = location.pathname.startsWith('/organisations/') ? `/organisations/${orgId}` : `/${orgId}`;
                 items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
                 items.push({ label: 'Clubs', path: `${baseUrl}/clubs`, icon: Shield });
                 items.push({ label: 'Teams', path: `${baseUrl}/teams`, icon: Shirt });
@@ -368,8 +432,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         height: 48
                     }}
                 >
-                     <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
-                        <AppIcon icon={Command} size={24} />
+                    <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
+                            <AppIcon icon={Command} size={24} />
+                        </span>
+                        <span style={{ fontSize: 14, opacity: 0.7, lineHeight: 1 }}>»</span>
                     </span>
                 </button>
              )}
