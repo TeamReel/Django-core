@@ -75,12 +75,7 @@ const NAV_CONFIG: NavSection[] = [
     title: 'PLATFORM',
     visibility: 'staff',
     items: [
-      { path: '/health', label: 'Health', icon: Activity, visibility: 'staff' },
-      { path: '/flags', label: 'Feature Flags', icon: Flag, visibility: 'staff' },
-      { path: '/integration-status', label: 'Integration', icon: Puzzle, visibility: 'staff' },
-      { path: '/design-system', label: 'Design System', icon: Palette, visibility: 'staff' },
-      { path: '/observability', label: 'Observability', icon: LineChart, visibility: 'staff' },
-      { path: '/security', label: 'Security', icon: Lock, visibility: 'staff' },
+      { path: '/health', label: 'Platform', icon: Activity, visibility: 'staff' },
     ]
   },
   {
@@ -195,7 +190,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Health', path: '/health', icon: Activity },
                     { label: 'Features', path: '/flags', icon: Flag },
                     { label: 'Integration', path: '/integration-status', icon: Puzzle },
+                    { label: 'Design System', path: '/design-system', icon: Palette },
                     { label: 'Observability', path: '/observability', icon: LineChart },
+                    { label: 'Security', path: '/security', icon: Lock },
                 ];
             }
             break;

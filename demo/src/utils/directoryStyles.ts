@@ -37,34 +37,53 @@ export const compactActionsStyle: React.CSSProperties = {
   alignItems: 'center'
 };
 
-// Use 'primary' | 'secondary' etc to match design system variants conceptually
+// Use 'primary' | 'secondary' | 'danger' | 'warning' | 'neutral' to match design system variants conceptually
 export const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 'warning' | 'neutral'): React.CSSProperties => {
   const base: React.CSSProperties = {
-    padding: '4px 8px',
-    borderRadius: '4px',
-    backgroundColor: 'var(--app-surface)',
+    padding: '6px 12px',
+    borderRadius: '6px',
     cursor: 'pointer',
-    fontSize: '12px',
+    fontSize: '13px',
     lineHeight: 1.2,
     whiteSpace: 'nowrap',
     flexShrink: 0,
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontWeight: 500,
+    fontWeight: 600,
+    transition: 'all 0.2s ease',
   };
 
-  // Match Federations tab button tones
+  // View / Primary: Outline (Link Color)
   if (variant === 'primary') {
-    return { ...base, border: '1px solid var(--app-link)', color: 'var(--app-link)' };
+    return {
+      ...base,
+      backgroundColor: 'transparent',
+      color: 'var(--app-link)',
+      border: '1px solid var(--app-link)'
+    };
   }
+
+  // Edit / Warning: Outline (Warning Color)
   if (variant === 'warning') {
-    return { ...base, border: '1px solid var(--app-warning)', color: 'var(--app-warning)' };
+    return {
+      ...base,
+      backgroundColor: 'transparent',
+      color: 'var(--app-warning)',
+      border: '1px solid var(--app-warning)'
+    };
   }
+
+  // Delete / Danger: Outline (Error Color)
   if (variant === 'danger') {
-    return { ...base, border: '1px solid var(--app-error)', color: 'var(--app-error)' };
+    return {
+      ...base,
+      backgroundColor: 'transparent',
+      border: '1px solid var(--app-error)',
+      color: 'var(--app-error)'
+    };
   }
 
   // secondary / neutral
-  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
+  return { ...base, backgroundColor: '#f0f0f0', color: '#333', border: '1px solid #ccc' };
 };
