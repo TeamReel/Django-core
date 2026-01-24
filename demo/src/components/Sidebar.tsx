@@ -317,13 +317,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         style={{
             zIndex: 20, // Higher than Panel B
             width: isOpen ? 240 : 72,
-            backgroundColor: '#0f172a', // Dark primary
-            color: '#f1f5f9',
+            backgroundColor: 'var(--sidebar-a-bg)',
+            color: 'var(--sidebar-a-text)',
             display: 'flex',
             flexDirection: 'column',
             transition: 'width 0.2s ease-in-out',
             flexShrink: 0,
-            borderRight: '1px solid #1e293b'
+            borderRight: '1px solid var(--sidebar-a-border)'
         }}
       >
         {/* LOGO AREA */}
@@ -333,13 +333,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             alignItems: 'center',
             justifyContent: isOpen ? 'flex-start' : 'center',
             padding: isOpen ? '0 20px' : '0 0',
-            borderBottom: '1px solid #1e293b',
+            borderBottom: '1px solid var(--sidebar-a-border)',
             marginBottom: 16
         }}>
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24 }}>
-                <AppIcon icon={Command} size={24} className="text-blue-400" />
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
+                <AppIcon icon={Command} size={24} />
             </span>
-            {isOpen && <span style={{ marginLeft: 12, fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em' }}>TeamReel</span>}
+            {isOpen && <span style={{ marginLeft: 12, fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em', color: 'var(--sidebar-a-text)' }}>TeamReel</span>}
         </div>
 
 
@@ -348,15 +348,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
             {/* APP CONTEXT GROUP - "Where I am" (Restored) */}
             {appGroup && appGroup.items.length > 0 && (
-                <div style={{ paddingBottom: 8, marginBottom: 8, borderBottom: '1px dashed #334155' }}>
+                <div style={{ paddingBottom: 8, marginBottom: 8, borderBottom: '1px dashed var(--sidebar-a-border)' }}>
                     {appGroup.items.map((item, index) => (
                         <NavLink
                             key={item.path}
                             to={item.path}
                             title={!isOpen ? item.label : undefined}
-                            className={({ isActive }) =>
-                                `flex items-center rounded-md transition-colors ${isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`
-                            }
+                            className="flex items-center rounded-md transition-colors"
                             style={({ isActive }) => ({
                                 height: 32, // Compact
                                 textDecoration: 'none',
@@ -366,7 +364,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 justifyContent: isOpen ? 'flex-start' : 'center',
                                 borderRadius: 4,
                                 position: 'relative',
-                                background: isActive ? 'rgba(255,255,255,0.05)' : 'transparent',
+                                background: isActive ? 'var(--sidebar-a-active-bg)' : 'transparent',
+                                color: isActive ? 'var(--sidebar-a-active-text)' : 'var(--sidebar-a-text)',
                             })}
                         >
                             <span style={{ minWidth: 24, display: 'flex', justifyContent: 'center', opacity: 0.8 }}>
@@ -379,7 +378,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                             )}
                             {/* Connector line simulation */}
                             {index < (appGroup.items.length - 1) && isOpen && (
-                                <div style={{ position: 'absolute', left: 23, top: 26, bottom: -10, width: 1, backgroundColor: '#334155', zIndex: 0 }} />
+                                <div style={{ position: 'absolute', left: 23, top: 26, bottom: -10, width: 1, backgroundColor: 'var(--sidebar-a-border)', zIndex: 0 }} />
                             )}
                         </NavLink>
                     ))}
@@ -390,7 +389,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                <div key={section.id} style={{ marginBottom: section.bottom ? 0 : 16 }}>
                     {/* Section Label (Only if open) */}
                     {isOpen && section.title && !section.bottom && (
-                        <div style={{ padding: '0 12px', marginBottom: 6, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', opacity: 0.5 }}>
+                        <div style={{ padding: '0 12px', marginBottom: 6, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', opacity: 0.5, color: 'var(--sidebar-a-text)' }}>
                             {section.title}
                         </div>
                     )}
@@ -400,9 +399,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                             key={item.path}
                             to={item.path}
                             title={!isOpen ? item.label : undefined}
-                            className={({ isActive }) =>
-                                `flex items-center rounded-md transition-colors ${isActive ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'}`
-                            }
+                            className="flex items-center rounded-md transition-colors"
                             style={({ isActive }) => ({
                                 height: 40,
                                 textDecoration: 'none',
@@ -411,7 +408,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 alignItems: 'center',
                                 justifyContent: isOpen ? 'flex-start' : 'center',
                                 borderRadius: 8,
-                                background: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
+                                background: isActive ? 'var(--sidebar-a-active-bg)' : 'transparent',
+                                color: isActive ? 'var(--sidebar-a-active-text)' : 'var(--sidebar-a-text)',
                             })}
                         >
                             <span style={{ minWidth: 24, display: 'flex', justifyContent: 'center' }}>
@@ -425,10 +423,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         </div>
 
         {/* Collapse Toggle */}
-        <div style={{ padding: 12, borderTop: '1px solid #1e293b' }}>
+        <div style={{ padding: 12, borderTop: '1px solid var(--sidebar-a-border)' }}>
             <button
                 onClick={toggle}
-                className="hover:bg-slate-800"
+                className="hover:opacity-80"
                 style={{
                     height: 40,
                     width: '100%',
@@ -437,7 +435,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     justifyContent: isOpen ? 'flex-start' : 'center',
                     border: 'none',
                     background: 'transparent',
-                    color: '#94a3b8',
+                    color: 'var(--sidebar-a-text)',
                     cursor: 'pointer',
                     borderRadius: 8
                 }}
@@ -452,8 +450,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         <aside
             style={{
                 width: 220, // Fixed width for panel B
-                backgroundColor: '#f8fafc', // Light
-                borderRight: '1px solid #e2e8f0',
+                backgroundColor: 'var(--sidebar-b-bg)',
+                borderRight: '1px solid var(--sidebar-b-border)',
                 display: 'flex',
                 flexDirection: 'column',
                 flexShrink: 0,
@@ -466,10 +464,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 display: 'flex',
                 alignItems: 'center',
                 padding: '0 20px',
-                borderBottom: '1px solid #e2e8f0',
+                borderBottom: '1px solid var(--sidebar-b-border)',
                 fontWeight: 600,
                 fontSize: 14,
-                color: '#475569',
+                color: 'var(--sidebar-b-text)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em'
             }}>
@@ -489,8 +487,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                             borderRadius: 6,
                             textDecoration: 'none',
                             fontSize: 14,
-                            color: isActive ? '#0f172a' : '#64748b',
-                            backgroundColor: isActive ? '#e2e8f0' : 'transparent',
+                            color: isActive ? 'var(--sidebar-b-active-text)' : 'var(--sidebar-b-text)',
+                            backgroundColor: isActive ? 'var(--sidebar-b-active-bg)' : 'transparent',
                             fontWeight: isActive ? 600 : 400
                         })}
                     >

@@ -61,7 +61,40 @@
   /* Reset border for dark mode to be less aggressive than Teal if needed */
   --app-border: #2e4a6d;
 }
+/* --- SIDEBAR THEME VARIABLES --- */
+:root {
+  /* Light Mode Sidebars */
+  /* Panel A: The Primary Navigation strip */
+  --sidebar-a-bg: #ffffff;
+  --sidebar-a-text: #1C355E;
+  --sidebar-a-border: #e2e8f0;
+  --sidebar-a-active-bg: #EDF6FF;
+  --sidebar-a-active-text: #3B8EA5;
 
+  /* Panel B: The Context/Sub-navigation strip */
+  --sidebar-b-bg: #F8FAFC; /* Slightly darker than white */
+  --sidebar-b-text: #475569;
+  --sidebar-b-border: #e2e8f0;
+  --sidebar-b-active-bg: #e2e8f0;
+  --sidebar-b-active-text: #1C355E;
+}
+
+[data-theme="dark"] {
+  /* Dark Mode Sidebars */
+  /* Panel A: Deep Navy to match Brand Surface */
+  --sidebar-a-bg: #1C355E;
+  --sidebar-a-text: #94a3b8;
+  --sidebar-a-border: #2e4a6d;
+  --sidebar-a-active-bg: rgba(255, 255, 255, 0.1);
+  --sidebar-a-active-text: #EDF6FF;
+
+  /* Panel B: Distinct from A, but dark */
+  --sidebar-b-bg: #0f172a; /* Darker than A */
+  --sidebar-b-text: #94a3b8;
+  --sidebar-b-border: #1e293b;
+  --sidebar-b-active-bg: #1e293b;
+  --sidebar-b-active-text: #EDF6FF;
+}
 /* Global Accessibility: Ensure visible focus indicator for all interactive elements */
 :focus-visible {
   outline: 2px solid var(--app-focus-ring) !important;
