@@ -2,27 +2,28 @@
 
 /* Theme bridge: minimal app-level variables driven by data-theme */
 :root {
-  --app-bg: #f5f5f5;
-  --app-text: #1a1a1a;
-  --app-muted-text: #6b7280;
-  --app-surface: #ffffff;
-  --app-surface-2: #f9fafb;
+  /* Brand: Light Theme */
+  --app-bg: #EDF6FF;         /* Neutral Light (Ice White) */
+  --app-text: #1C355E;       /* Primary Dark (Deep Navy) */
+  --app-muted-text: #6b7280; /* Neutral gray (unchanged) */
+  --app-surface: #ffffff;    /* White standard for cards */
+  --app-surface-2: #F0F4F8;  /* Safe secondary surface */
   --app-surface-secondary: #f8f9fa;
   --app-border: #e5e5e5;
-  --app-link: #2563eb;
-  --app-table-header-bg: #f9fafb;
+  --app-link: #3B8EA5;       /* Primary Base (Ocean Teal) */
+  --app-table-header-bg: #ffffff;
   --app-table-row-bg: #ffffff;
-  --app-table-row-hover-bg: #f3f4f6;
+  --app-table-row-hover-bg: #EDF6FF; /* Use Ice White for hover */
   --app-input-bg: #ffffff;
-  --app-input-text: #1a1a1a;
+  --app-input-text: #1C355E;
   --app-input-border: #d1d5db;
-  --app-focus-ring: #3b82f6;
-  --app-success: #16a34a;
-  --app-warning: #fd7e14;
-  --app-error: #dc2626;
-  --app-info: #2563eb;
+  --app-focus-ring: #4CA1FF; /* Primary Light (Sky Blue) */
+  --app-success: #06D6A0;    /* Success (Team Green) */
+  --app-warning: #FFD166;    /* Warning (Focus Amber) */
+  --app-error: #E63946;      /* Error (Signal Red) */
+  --app-info: #3B8EA5;       /* Ocean Teal */
   --app-text-muted: #6b7280;
-  --app-surface-active: #eff6ff;
+  --app-surface-active: #D6EAFF; /* Stronger Ice White tint */
 
   /* Mapping for SearchBar and other components using design system tokens */
   --color-text-primary: var(--app-text);
@@ -34,27 +35,31 @@
 }
 
 [data-theme="dark"] {
-  --app-bg: #0f0f0f;
-  --app-text: #e5e5e5;
+  /* Brand: Dark Theme */
+  --app-bg: #0A192F;         /* Neutral Dark (Midnight Navy) */
+  --app-text: #EDF6FF;       /* Neutral Light (Ice White) for text */
   --app-muted-text: #9ca3af;
-  --app-surface: #1a1a1a;
-  --app-surface-2: #333333;
+  --app-surface: #1C355E;    /* Primary Dark (Deep Navy) as surface */
+  --app-surface-2: #243f6e;  /* Slightly lighter Navy */
   --app-surface-secondary: #2a2a2a;
-  --app-border: #404040;
-  --app-link: #60a5fa;
-  --app-table-header-bg: #262626;
-  --app-table-row-bg: #1a1a1a;
-  --app-table-row-hover-bg: #2a2a2a;
-  --app-input-bg: #262626;
-  --app-input-text: #e5e5e5;
-  --app-input-border: #404040;
-  --app-focus-ring: #60a5fa;
-  --app-success: #4ade80;
-  --app-warning: #fd7e14;
-  --app-error: #f87171;
-  --app-info: #60a5fa;
+  --app-border: #3B8EA5;     /* Ocean Teal as border (subtle) or dark gray #404040? Keeping border subtle. */
+  --app-link: #4CA1FF;       /* Sky Blue */
+  --app-table-header-bg: #1C355E;
+  --app-table-row-bg: #0A192F;
+  --app-table-row-hover-bg: #1C355E;
+  --app-input-bg: #1C355E;
+  --app-input-text: #EDF6FF;
+  --app-input-border: #3B8EA5;
+  --app-focus-ring: #FF8C42; /* Accent Warm (Amber Momentum) */
+  --app-success: #06D6A0;
+  --app-warning: #FFD166;
+  --app-error: #E63946;
+  --app-info: #4CA1FF;
   --app-text-muted: #9ca3af;
   --app-surface-active: #1e3a8a;
+
+  /* Reset border for dark mode to be less aggressive than Teal if needed */
+  --app-border: #2e4a6d;
 }
 
 /* Global Accessibility: Ensure visible focus indicator for all interactive elements */
