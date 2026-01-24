@@ -395,7 +395,7 @@ export default function App() {
         path="/matches"
         element={
           <ProtectedRoute>
-            <LegacyDirectoryRedirect tab="matches" />
+            <MatchesPage />
           </ProtectedRoute>
         }
       />
@@ -414,7 +414,7 @@ export default function App() {
         path="/clubs"
         element={
           <ProtectedRoute>
-            <LegacyDirectoryRedirect tab="clubs" />
+            <ClubsPage />
           </ProtectedRoute>
         }
       />
@@ -423,7 +423,7 @@ export default function App() {
         path="/teams"
         element={
           <ProtectedRoute>
-            <LegacyDirectoryRedirect tab="teams" />
+            <TeamsPage />
           </ProtectedRoute>
         }
       />
@@ -432,7 +432,7 @@ export default function App() {
         path="/seasons"
         element={
           <ProtectedRoute>
-            <LegacyDirectoryRedirect tab="seasons" />
+            <SeasonsPage />
           </ProtectedRoute>
         }
       />
@@ -441,7 +441,7 @@ export default function App() {
         path="/competitions"
         element={
           <ProtectedRoute>
-            <LegacyDirectoryRedirect tab="competitions" />
+            <CompetitionsPage />
           </ProtectedRoute>
         }
       />

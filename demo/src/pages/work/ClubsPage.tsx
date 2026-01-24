@@ -4,7 +4,6 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Alert, Card } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
@@ -172,7 +171,7 @@ export default function ClubsPage() {
   };
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="Clubs"
         breadcrumbs={breadcrumbs}
@@ -350,6 +349,6 @@ export default function ClubsPage() {
           project={detailProject}
         />
       </PageContent>
-    </AppShell>
+    </>
   );
 }

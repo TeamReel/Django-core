@@ -4,7 +4,6 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Alert, Card } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
@@ -178,7 +177,7 @@ export default function SeasonsPage() {
   ];
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="Seasons"
         subtitle={selectedTeamId ? `Showing seasons for ${teamName}` : 'Select a team to view seasons'}
@@ -279,6 +278,6 @@ export default function SeasonsPage() {
           </Card>
         )}
       </PageContent>
-    </AppShell>
+    </>
   );
 }
