@@ -20,7 +20,11 @@ import {
     actionButtonStyle
 } from '../../../utils/directoryStyles';
 
-export const ClubsList: React.FC = () => {
+interface ClubsListProps {
+  preselectedOrgId?: string;
+}
+
+export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -45,7 +49,7 @@ export const ClubsList: React.FC = () => {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const [selectedOrgId, setSelectedOrgId] = useState<string>('');
+  const [selectedOrgId, setSelectedOrgId] = useState<string>(preselectedOrgId || '');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
 
@@ -56,6 +60,12 @@ export const ClubsList: React.FC = () => {
     }),
     [context.organisation, isSuperAdmin]
   );
+
+  useEffect(() => {
+    if (preselectedOrgId) {
+      setSelectedOrgId(preselectedOrgId);
+    }
+  }, [preselectedOrgId]);
 
   const userCanEditProject = canEditProject(permissionContext);
   const userCanDeleteProject = canDeleteProject(permissionContext);

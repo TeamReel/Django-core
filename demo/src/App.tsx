@@ -15,9 +15,17 @@ import {
   OrgAdminRoute,
 } from './components/PermissionGuards';
 
+import { OrgClubsPage } from './pages/identity/org-context/OrgClubsPage';
+import { OrgTeamsPage } from './pages/identity/org-context/OrgTeamsPage';
+import { OrgSeasonsPage } from './pages/identity/org-context/OrgSeasonsPage';
+import { OrgCompetitionsPage } from './pages/identity/org-context/OrgCompetitionsPage';
+import { OrgMatchesPage } from './pages/identity/org-context/OrgMatchesPage';
+import { OrgUsersPage } from './pages/identity/org-context/OrgUsersPage';
+
 // Identity pages
 import {
   OrganisationsPage,
+
   OrganisationCreatePage,
   OrganisationEditPage,
   OrganisationDetailPage,
@@ -892,6 +900,55 @@ export default function App() {
         element={
           <ProtectedRoute>
             <OrganisationCreatePage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/organisations/:orgId/clubs"
+        element={
+          <ProtectedRoute>
+            <OrgClubsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/organisations/:orgId/teams"
+        element={
+          <ProtectedRoute>
+            <OrgTeamsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/organisations/:orgId/seasons"
+        element={
+          <ProtectedRoute>
+            <OrgSeasonsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/organisations/:orgId/competitions"
+        element={
+          <ProtectedRoute>
+            <OrgCompetitionsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/organisations/:orgId/matches"
+        element={
+          <ProtectedRoute>
+            <OrgMatchesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/organisations/:orgId/users"
+        element={
+          <ProtectedRoute>
+            <OrgUsersPage />
           </ProtectedRoute>
         }
       />

@@ -53,7 +53,11 @@ const chunkArray = <T,>(items: T[], chunkSize: number): T[][] => {
   return chunks;
 };
 
-export const SeasonsList: React.FC = () => {
+interface SeasonsListProps {
+  preselectedOrgId?: string;
+}
+
+export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -87,10 +91,12 @@ export const SeasonsList: React.FC = () => {
 
   // Initialize org filter
   useEffect(() => {
-    if (!isSuperAdmin && context.organisation?.id) {
+    if (preselectedOrgId) {
+      setSelectedOrgId(preselectedOrgId);
+    } else if (!isSuperAdmin && context.organisation?.id) {
       setSelectedOrgId(String(context.organisation.id));
     }
-  }, [context.organisation?.id, isSuperAdmin]);
+  }, [preselectedOrgId, context.organisation?.id, isSuperAdmin]);
 
   // Sync params from URL to state
   useEffect(() => {

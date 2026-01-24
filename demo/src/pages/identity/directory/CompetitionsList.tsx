@@ -96,7 +96,11 @@ const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
   return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
 };
 
-export const CompetitionsList: React.FC = () => {
+interface CompetitionsListProps {
+  preselectedOrgId?: string;
+}
+
+export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedOrgId }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -115,6 +119,12 @@ export const CompetitionsList: React.FC = () => {
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+
+  useEffect(() => {
+    if (preselectedOrgId) {
+      setSelectedOrgId(preselectedOrgId);
+    }
+  }, [preselectedOrgId]);
   const [selectedSeasonName, setSelectedSeasonName] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 

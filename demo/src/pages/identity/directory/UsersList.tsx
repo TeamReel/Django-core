@@ -117,7 +117,11 @@ const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
   return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
 };
 
-export const UsersList: React.FC = () => {
+interface UsersListProps {
+  preselectedOrgId?: string;
+}
+
+export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { context, organisations: myOrganisations } = useContextSwitcher();
@@ -177,6 +181,9 @@ export const UsersList: React.FC = () => {
 
     // Initial Filter Setup
     useEffect(() => {
+        if (preselectedOrgId) {
+            setSelectedOrgId(preselectedOrgId);
+        }
         const orgParam = searchParams.get('org_id');
         if (orgParam) {
             setSelectedOrgId(orgParam);

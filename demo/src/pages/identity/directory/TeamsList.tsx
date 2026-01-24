@@ -20,7 +20,11 @@ import {
     actionButtonStyle
 } from '../../../utils/directoryStyles';
 
-export const TeamsList: React.FC = () => {
+interface TeamsListProps {
+  preselectedOrgId?: string;
+}
+
+export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -45,13 +49,16 @@ export const TeamsList: React.FC = () => {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const [selectedOrgId, setSelectedOrgId] = useState<string>('');
+  const [selectedOrgId, setSelectedOrgId] = useState<string>(preselectedOrgId || '');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const permissionContext = useMemo(
-    () => ({
+  useEffect(() => {
+    if (preselectedOrgId) {
+      setSelectedOrgId(preselectedOrgId);
+    }
+  }, [preselectedOrgId]);
       currentOrganisation: context.organisation as any,
       isSuperAdmin,
     }),
