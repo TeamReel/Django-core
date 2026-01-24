@@ -50,6 +50,8 @@ const REGEX = {
   vanityMatch: /^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/,
   vanityCompetition: /^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/,
   vanitySeason: /^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/,
+  vanityTeam: /^\/([^/]+)\/([^/]+)\/([^/]+)$/,
+  vanityClub: /^\/([^/]+)\/([^/]+)$/,
   hierarchyMatchTeam: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)\/matches\/([^/]+)/,
   hierarchyMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)\/matches\/([^/]+)/,
   legacyMatch: /^\/matches\/([^/]+)/,
@@ -92,6 +94,21 @@ function parseAppPath(path: string) {
     clubSlugOrId: vanitySeason![2],
     teamSlugOrId: vanitySeason![3],
     seasonSlugOrId: vanitySeason![4],
+  };
+
+  const vanityTeam = path.match(REGEX.vanityTeam);
+  if (isVanity(vanityTeam)) return {
+    type: 'vanityTeam',
+    orgSlug: vanityTeam![1],
+    clubSlugOrId: vanityTeam![2],
+    teamSlugOrId: vanityTeam![3],
+  };
+
+  const vanityClub = path.match(REGEX.vanityClub);
+  if (isVanity(vanityClub)) return {
+    type: 'vanityClub',
+    orgSlug: vanityClub![1],
+    clubSlugOrId: vanityClub![2],
   };
 
   const hierarchyMatchTeam = path.match(REGEX.hierarchyMatchTeam);

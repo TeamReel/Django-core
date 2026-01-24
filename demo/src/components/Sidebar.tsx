@@ -1,7 +1,13 @@
 import { useMemo } from 'react';
 import { NavLink, useLocation, matchPath } from 'react-router-dom';
+import {
+  LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
+  Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
+  LineChart, Lock, BookOpen, Scroll, Command, LucideIcon
+} from 'lucide-react';
 import { useUserRole } from './PermissionGuards';
 import { useAppSelection } from '../hooks/useAppSelection';
+import { AppIcon } from './AppIcon';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,7 +17,7 @@ interface SidebarProps {
 interface NavItem {
   path: string;
   label: string;
-  icon: string;
+  icon: LucideIcon;
   visibility: 'everyone' | 'org_admin' | 'staff';
 }
 
@@ -28,7 +34,7 @@ const NAV_CONFIG: NavSection[] = [
     id: 'overview',
     visibility: 'everyone',
     items: [
-      { path: '/dashboard', label: 'Dashboard', icon: '🏠', visibility: 'everyone' }
+      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, visibility: 'everyone' }
     ]
   },
   {
@@ -36,12 +42,12 @@ const NAV_CONFIG: NavSection[] = [
     title: 'WORK HIERARCHY',
     visibility: 'everyone',
     items: [
-      { path: '/directory', label: 'Federations', icon: '🌐', visibility: 'everyone' },
-      { path: '/clubs', label: 'Clubs', icon: '🏟️', visibility: 'everyone' },
-      { path: '/teams', label: 'Teams', icon: '👕', visibility: 'everyone' },
-      { path: '/seasons', label: 'Seasons', icon: '📅', visibility: 'everyone' },
-      { path: '/competitions', label: 'Competitions', icon: '🏆', visibility: 'everyone' },
-      { path: '/matches', label: 'Matches', icon: '⏱️', visibility: 'everyone' },
+      { path: '/directory', label: 'Federations', icon: Globe, visibility: 'everyone' },
+      { path: '/clubs', label: 'Clubs', icon: Shield, visibility: 'everyone' },
+      { path: '/teams', label: 'Teams', icon: Shirt, visibility: 'everyone' },
+      { path: '/seasons', label: 'Seasons', icon: CalendarDays, visibility: 'everyone' },
+      { path: '/competitions', label: 'Competitions', icon: Trophy, visibility: 'everyone' },
+      { path: '/matches', label: 'Matches', icon: Timer, visibility: 'everyone' },
     ]
   },
   {
@@ -49,7 +55,7 @@ const NAV_CONFIG: NavSection[] = [
     title: 'PEOPLE',
     visibility: 'everyone',
     items: [
-      { path: '/users', label: 'Users', icon: '👥', visibility: 'everyone' },
+      { path: '/users', label: 'Users', icon: Users, visibility: 'everyone' },
     ]
   },
   {
@@ -57,8 +63,8 @@ const NAV_CONFIG: NavSection[] = [
     title: 'CONTENT',
     visibility: 'everyone',
     items: [
-      { path: '/content', label: 'Library', icon: '📂', visibility: 'everyone' },
-      { path: '/studio', label: 'AI Studio', icon: '✨', visibility: 'everyone' },
+      { path: '/content', label: 'Library', icon: Library, visibility: 'everyone' },
+      { path: '/studio', label: 'AI Studio', icon: Sparkles, visibility: 'everyone' },
     ]
   },
   {
@@ -66,7 +72,7 @@ const NAV_CONFIG: NavSection[] = [
     title: 'ORGANISATION',
     visibility: 'org_admin',
     items: [
-      { path: '/permissions', label: 'Settings', icon: '⚙️', visibility: 'org_admin' },
+      { path: '/permissions', label: 'Settings', icon: Settings, visibility: 'org_admin' },
     ]
   },
   {
@@ -74,12 +80,12 @@ const NAV_CONFIG: NavSection[] = [
     title: 'PLATFORM',
     visibility: 'staff',
     items: [
-      { path: '/health', label: 'Health', icon: '❤️', visibility: 'staff' },
-      { path: '/flags', label: 'Feature Flags', icon: '🚩', visibility: 'staff' },
-      { path: '/integration-status', label: 'Integration', icon: '🔄', visibility: 'staff' },
-      { path: '/design-system', label: 'Design System', icon: '🎨', visibility: 'staff' },
-      { path: '/observability', label: 'Observability', icon: '📊', visibility: 'staff' },
-      { path: '/security', label: 'Security', icon: '🛡️', visibility: 'staff' },
+      { path: '/health', label: 'Health', icon: Activity, visibility: 'staff' },
+      { path: '/flags', label: 'Feature Flags', icon: Flag, visibility: 'staff' },
+      { path: '/integration-status', label: 'Integration', icon: Puzzle, visibility: 'staff' },
+      { path: '/design-system', label: 'Design System', icon: Palette, visibility: 'staff' },
+      { path: '/observability', label: 'Observability', icon: LineChart, visibility: 'staff' },
+      { path: '/security', label: 'Security', icon: Lock, visibility: 'staff' },
     ]
   },
   {
@@ -88,8 +94,8 @@ const NAV_CONFIG: NavSection[] = [
     visibility: 'everyone',
     bottom: true,
     items: [
-      { path: '/docs', label: 'User Guide', icon: '📖', visibility: 'everyone' },
-      { path: '/constitution', label: 'Constitution', icon: '📜', visibility: 'everyone' },
+      { path: '/docs', label: 'User Guide', icon: BookOpen, visibility: 'everyone' },
+      { path: '/constitution', label: 'Constitution', icon: Scroll, visibility: 'everyone' },
     ]
   }
 ];
@@ -122,40 +128,40 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
     // 2. Build Items based on Section & Context
     let title = '';
-    let items: { label: string; path: string; icon?: string }[] = [];
+    let items: { label: string; path: string; icon?: LucideIcon }[] = [];
 
     switch (activeSection) {
         case 'work':
             // Hierarchy Context Logic
             if (matchId) {
                 title = 'Match Actions';
-                items.push({ label: 'Overview', path: location.pathname, icon: '📊' });
+                items.push({ label: 'Overview', path: location.pathname, icon: LayoutDashboard });
                 // Add relevant Match actions if available as routes
             } else if (competitionSlugOrId && seasonSlugOrId && teamSlugOrId && clubSlugOrId && orgSlug) {
                  title = 'Competition Actions';
                  const baseUrl = `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`;
-                 items.push({ label: 'Overview', path: baseUrl, icon: '📊' });
-                 items.push({ label: 'Matches', path: `${baseUrl}/matches`, icon: '⏱️' });
+                 items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
+                 items.push({ label: 'Matches', path: `${baseUrl}/matches`, icon: Timer });
             } else if (competitionSlugOrId && seasonSlugOrId && !teamSlugOrId && orgSlug) {
                  // Club/Project Competition Context
                  title = 'Competition Actions';
             } else if (seasonSlugOrId && teamSlugOrId && clubSlugOrId && orgSlug) {
                 title = 'Season Actions';
                 const baseUrl = `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`;
-                items.push({ label: 'Overview', path: baseUrl, icon: '📊' });
-                items.push({ label: 'Squad', path: `${baseUrl}/squad`, icon: '👥' });
+                items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
+                items.push({ label: 'Squad', path: `${baseUrl}/squad`, icon: Users });
             } else if (teamSlugOrId && clubSlugOrId && orgSlug) {
                 title = 'Team Actions';
                 const baseUrl = `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`;
-                items.push({ label: 'Overview', path: baseUrl, icon: '📊' });
-                items.push({ label: 'Seasons', path: `${baseUrl}/seasons`, icon: '📅' });
+                items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
+                items.push({ label: 'Seasons', path: `${baseUrl}/seasons`, icon: CalendarDays });
             } else {
                  // Browse Mode (Default) - Minimal shortcuts only
                  title = 'Browse';
                  // Panel A already has the full list. Show only most common shortcuts here.
                  items = [
-                    { label: 'Teams', path: '/teams', icon: '👕' },
-                    { label: 'Matches', path: '/matches', icon: '⏱️' },
+                    { label: 'Teams', path: '/teams', icon: Shirt },
+                    { label: 'Matches', path: '/matches', icon: Timer },
                  ];
             }
             break;
@@ -163,15 +169,15 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         case 'content':
             title = 'Content';
             items = [
-                { label: 'Library', path: '/content', icon: '📂' },
-                { label: 'AI Studio', path: '/studio', icon: '✨' },
+                { label: 'Library', path: '/content', icon: Library },
+                { label: 'AI Studio', path: '/studio', icon: Sparkles },
             ];
             break;
 
         case 'people':
              title = 'People';
              items = [
-                 { label: 'All Users', path: '/users', icon: '👥' },
+                 { label: 'All Users', path: '/users', icon: Users },
              ];
              break;
 
@@ -179,7 +185,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             if (isOrgAdmin || isSystemAdmin) {
                 title = 'Organisation';
                 items = [
-                    { label: 'Settings', path: '/permissions', icon: '⚙️' },
+                    { label: 'Settings', path: '/permissions', icon: Settings },
                 ];
             }
             break;
@@ -188,10 +194,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             if (isStaff) {
                 title = 'Platform';
                 items = [
-                    { label: 'Health', path: '/health', icon: '❤️' },
-                    { label: 'Features', path: '/flags', icon: '🚩' },
-                    { label: 'Integration', path: '/integration-status', icon: '🔄' },
-                    { label: 'Observability', path: '/observability', icon: '📊' },
+                    { label: 'Health', path: '/health', icon: Activity },
+                    { label: 'Features', path: '/flags', icon: Flag },
+                    { label: 'Integration', path: '/integration-status', icon: Puzzle },
+                    { label: 'Observability', path: '/observability', icon: LineChart },
                 ];
             }
             break;
@@ -201,8 +207,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             // We'll hide it for cleanliness if empty, or show minimal.
             title = 'Help';
             items = [
-                { label: 'User Guide', path: '/docs', icon: '📖' },
-                { label: 'Constitution', path: '/constitution', icon: '📜' }
+                { label: 'User Guide', path: '/docs', icon: BookOpen },
+                { label: 'Constitution', path: '/constitution', icon: Scroll }
             ];
             break;
     }
@@ -226,7 +232,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         items.push({
             label: clubName || 'Club',
             path: `/organisations/${orgSlug}/projects/${clubSlugOrId}`,
-            icon: '🏟️',
+            icon: Shield,
             visibility: 'everyone'
         });
     }
@@ -234,7 +240,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
          items.push({
             label: teamName || 'Team',
             path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`,
-            icon: '👕',
+            icon: Shirt,
             visibility: 'everyone'
         });
     }
@@ -242,7 +248,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         items.push({
             label: seasonName || 'Season',
             path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`,
-            icon: '📅',
+            icon: CalendarDays,
             visibility: 'everyone'
         });
     }
@@ -251,7 +257,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         items.push({
             label: competitionName || 'Competition',
             path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`,
-            icon: '🏆',
+            icon: Trophy,
             visibility: 'everyone'
         });
     }
@@ -259,7 +265,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         items.push({
             label: 'Match', // Match name?
             path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`,
-            icon: '⏱️',
+            icon: Timer,
             visibility: 'everyone'
         });
     }
@@ -330,7 +336,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             borderBottom: '1px solid #1e293b',
             marginBottom: 16
         }}>
-            <span style={{ fontSize: 24 }}>🦁</span>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24 }}>
+                <AppIcon icon={Command} size={24} className="text-blue-400" />
+            </span>
             {isOpen && <span style={{ marginLeft: 12, fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em' }}>TeamReel</span>}
         </div>
 
@@ -361,7 +369,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 background: isActive ? 'rgba(255,255,255,0.05)' : 'transparent',
                             })}
                         >
-                            <span style={{ fontSize: 14, minWidth: 24, display: 'flex', justifyContent: 'center', opacity: 0.8 }}>{item.icon}</span>
+                            <span style={{ minWidth: 24, display: 'flex', justifyContent: 'center', opacity: 0.8 }}>
+                                <AppIcon icon={item.icon} size={14} />
+                            </span>
                             {isOpen && (
                                 <span style={{ marginLeft: 12, fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {item.label}
@@ -404,7 +414,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 background: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
                             })}
                         >
-                            <span style={{ fontSize: 18, minWidth: 24, display: 'flex', justifyContent: 'center' }}>{item.icon}</span>
+                            <span style={{ minWidth: 24, display: 'flex', justifyContent: 'center' }}>
+                                <AppIcon icon={item.icon} size={18} />
+                            </span>
                             {isOpen && <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 500 }}>{item.label}</span>}
                         </NavLink>
                     ))}
@@ -482,7 +494,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                             fontWeight: isActive ? 600 : 400
                         })}
                     >
-                        <span style={{ marginRight: 10, fontSize: 16 }}>{item.icon}</span>
+                        {item.icon && (
+                            <span style={{ marginRight: 10, display: 'flex' }}>
+                                <AppIcon icon={item.icon} size={16} />
+                            </span>
+                        )}
                         {item.label}
                     </NavLink>
                 ))}

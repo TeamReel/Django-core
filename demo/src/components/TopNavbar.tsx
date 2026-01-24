@@ -26,6 +26,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth, useSignOut } from '@django-core/auth-ui';
 import { useTheme } from '@django-core/theme-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import {
+  Home, Menu, X, ChevronDown, ChevronUp, Sun, Moon,
+  Globe, Bell, Coins, LucideIcon
+} from 'lucide-react';
+import { AppIcon } from './AppIcon';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { useUserRole } from './PermissionGuards';
 import ProfileAvatarDropdown from './ProfileAvatarDropdown';
@@ -42,7 +47,7 @@ interface NavItem {
   path: string;
   label: string;
   description?: string;
-  icon?: string;
+  icon?: LucideIcon;
 }
 
 interface NotificationResponse {
@@ -387,7 +392,7 @@ export default function TopNavbar() {
   }).filter(group => group.items.length > 0);
 
   // Add Dashboard as a standalone item
-  const dashboardItem = { path: '/dashboard', label: 'Dashboard', icon: '🏠' };
+  const dashboardItem = { path: '/dashboard', label: 'Dashboard', icon: Home };
 
   const isItemActive = (path: string): boolean => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
@@ -483,7 +488,7 @@ export default function TopNavbar() {
             }}
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? '✕' : '☰'}
+            {mobileMenuOpen ? <AppIcon icon={X} size={24} /> : <AppIcon icon={Menu} size={24} />}
           </button>
 
           {/* Left side: Navigation items */}
@@ -514,7 +519,7 @@ export default function TopNavbar() {
                 gap: '6px',
               }}
             >
-              <span style={{ fontSize: '16px' }}>{dashboardItem.icon}</span>
+              <AppIcon icon={dashboardItem.icon} size={16} />
             </Link>
 
             {/* Breadcrumbs for Hierarchy Context */}
@@ -562,7 +567,7 @@ export default function TopNavbar() {
                     }}
                   >
                     <span>{group.label}</span>
-                    <span style={{ fontSize: '10px', transition: 'transform 0.2s' }}>{isOpen ? '▴' : '▾'}</span>
+                    <AppIcon icon={isOpen ? ChevronUp : ChevronDown} size={12} />
                   </button>
 
                   {/* Mega Menu Panel for this group */}
@@ -626,7 +631,7 @@ export default function TopNavbar() {
                               }
                             }}
                           >
-                            {item.icon && <span style={{ fontSize: '16px', flexShrink: 0, marginTop: '2px' }}>{item.icon}</span>}
+                            {item.icon && <span style={{ flexShrink: 0, marginTop: '2px' }}><AppIcon icon={item.icon} size={16} /></span>}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
                               <span style={{
                                 fontSize: '14px',
@@ -693,7 +698,7 @@ export default function TopNavbar() {
                 title={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
                 aria-label={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
               >
-                ◐
+                <AppIcon icon={currentThemeMode === 'light' ? Moon : Sun} size={20} />
               </button>
             )}
 
@@ -715,7 +720,7 @@ export default function TopNavbar() {
                 }}
                 aria-label="Select language"
               >
-                🌐 {language} <span style={{ fontSize: '10px' }}>{languageMenuOpen ? '▴' : '▾'}</span>
+                <AppIcon icon={Globe} size={16} /> {language} <AppIcon icon={languageMenuOpen ? ChevronUp : ChevronDown} size={10} />
               </button>
 
               {languageMenuOpen && (
@@ -782,7 +787,7 @@ export default function TopNavbar() {
               }}
               title="Notifications"
             >
-              🔔
+              <AppIcon icon={Bell} size={20} />
               {unreadCount > 0 && (
                 <span style={{
                   position: 'absolute',
@@ -822,7 +827,7 @@ export default function TopNavbar() {
                 title={creditsTooltip}
                 aria-label="My balance"
               >
-                🪙
+                <AppIcon icon={Coins} size={20} />
                 {formattedCredits != null && (
                   <span
                     style={{
@@ -967,7 +972,7 @@ export default function TopNavbar() {
               fontWeight: isItemActive(dashboardItem.path) ? 600 : 500,
             }}
           >
-            <span>{dashboardItem.icon}</span>
+            <AppIcon icon={dashboardItem.icon} size={16} />
             <span>{dashboardItem.label}</span>
           </Link>
 
@@ -1001,7 +1006,7 @@ export default function TopNavbar() {
                     fontSize: '14px',
                   }}
                 >
-                  {item.icon && <span>{item.icon}</span>}
+                  {item.icon && <AppIcon icon={item.icon} size={16} />}
                   <span>{item.label}</span>
                 </Link>
               ))}
