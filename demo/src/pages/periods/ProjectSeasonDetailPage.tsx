@@ -7,7 +7,6 @@ import {
   PageContent,
   PageHeader,
 } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';

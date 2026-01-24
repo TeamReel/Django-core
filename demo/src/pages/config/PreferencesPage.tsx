@@ -12,7 +12,6 @@ import {
 import { useTheme } from '@django-core/theme-system';
 import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import { useAuth } from "@django-core/auth-ui";
-// import AppShell from '../../components/AppShell';
 
 /**
  * T015 - Preferences Page

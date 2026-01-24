@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { usePermissions } from '@django-core/permissions';
-import AppShell from '../../components/AppShell';
 import { canEditProject, canDeleteProject } from '../../utils/permissions';
 import { AuditLogTable } from '../../components/AuditLog/AuditLogTable';
 import { ActivityFeed } from '../../components/ActivityFeed/ActivityFeed';
@@ -131,11 +130,11 @@ export default function ProjectDetailPage() {
     setDisplayLimit(10); // Reset limit when filter changes
   }, [members, memberFilter]);
 
-  if (isLoading) return <AppShell><p>Loading project...</p></AppShell>;
+  if (isLoading) return <p>Loading project...</p>;
 
   if (error) {
     return (
-      <AppShell>
+      <>
         <div style={{
           padding: '12px',
           backgroundColor: 'var(--app-surface-2)',
@@ -147,17 +146,17 @@ export default function ProjectDetailPage() {
           {error}
         </div>
         <Link to={`/organisations/${orgId}/projects`}>Back to Projects</Link>
-      </AppShell>
+      </>
     );
   }
 
-  if (!project) return <AppShell><p>Project not found</p></AppShell>;
+  if (!project) return <p>Project not found</p>;
 
   const isClub = !project.parent;
   const displayedMembers = filteredMembers.slice(0, displayLimit);
 
   return (
-    <AppShell>
+    <>
       <div>
         <nav style={{ marginBottom: '24px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
           <Link to="/federations">Federations</Link>
@@ -458,6 +457,6 @@ export default function ProjectDetailPage() {
           <AuditLogTable projectId={project.id} />
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

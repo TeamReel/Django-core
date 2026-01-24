@@ -11,7 +11,6 @@ import {
   useBreadcrumbContextSwitcher,
   type BreadcrumbSwitcherOption,
 } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 
@@ -199,7 +198,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
   };
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
           title="Notification Routing Logs"
@@ -386,7 +385,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
           )}
         </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 };
 

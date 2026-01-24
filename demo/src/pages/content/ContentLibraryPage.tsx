@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 
 export default function ContentLibraryPage() {
   const navigate = useNavigate();
 
   return (
-    <AppShell>
+    <>
       <div>
         <PageHeader
            title="Content Library"
@@ -39,6 +38,6 @@ export default function ContentLibraryPage() {
            </div>
         </PageContent>
       </div>
-    </AppShell>
+    </>
   );
 }

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DefaultEmpty } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 
 interface Organisation {
   id: string;

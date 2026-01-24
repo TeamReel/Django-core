@@ -10,7 +10,6 @@ import {
   PageHeader,
   PageContent,
 } from '../../shims/page-templates';
-import AppShell from '../../components/AppShell';
 
 /**
  * Organisation Create Page

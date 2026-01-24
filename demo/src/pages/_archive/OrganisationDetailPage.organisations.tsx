@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { canPerformAction, PermissionContext } from '../../utils/permissions';
-import AppShell from '../../components/AppShell';
 
 interface Organisation {
   id: string;
@@ -92,15 +91,13 @@ export default function OrganisationDetailPage() {
 
   if (isLoading) {
     return (
-      <AppShell>
-        <p>Loading organisation...</p>
-      </AppShell>
+      <p>Loading organisation...</p>
     );
   }
 
   if (error || !organisation) {
     return (
-      <AppShell>
+      <>
         <div style={{
           padding: '12px',
           backgroundColor: 'var(--app-surface-2)',
@@ -113,7 +110,7 @@ export default function OrganisationDetailPage() {
         <Link to="/federations" style={{ display: 'inline-block', marginTop: '16px' }}>
           ← Back to Organisations
         </Link>
-      </AppShell>
+      </>
     );
   }
 
@@ -184,7 +181,7 @@ export default function OrganisationDetailPage() {
   };
 
   return (
-    <AppShell>
+    <>
       <div>
         <nav style={{ marginBottom: '24px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
           <Link to="/federations">Federations</Link> / {organisation.name}
@@ -593,6 +590,6 @@ export default function OrganisationDetailPage() {
           </div>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

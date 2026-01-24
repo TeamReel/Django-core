@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 // import { useContextSwitcher } from '@django-core/context-switcher';
 import { DefaultEmpty } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 
 interface Project {
   id: string;
@@ -70,7 +69,7 @@ export default function ProjectListPage() {
   }, [orgId]);
 
   return (
-    <AppShell>
+    <>
       <div>
         <nav style={{ marginBottom: '24px', fontSize: '14px', color: '#666' }}>
           <Link to="/federations">Organisations</Link>
@@ -230,6 +229,6 @@ export default function ProjectListPage() {
           </div>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

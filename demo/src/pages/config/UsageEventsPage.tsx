@@ -15,7 +15,6 @@ import {
   Input,
 } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
-// import AppShell from '../../components/AppShell';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 

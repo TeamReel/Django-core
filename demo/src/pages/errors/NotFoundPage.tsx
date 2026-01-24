@@ -1,9 +1,8 @@
 import { Link } from 'react-router-dom';
-import AppShell from '../../components/AppShell';
 
 export default function NotFoundPage() {
   return (
-    <AppShell>
+    <>
       <div style={{
         maxWidth: '600px',
         margin: '0 auto',
@@ -73,6 +72,6 @@ export default function NotFoundPage() {
           </ul>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

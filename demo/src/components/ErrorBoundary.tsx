@@ -1,6 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import AppShell from './AppShell';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -70,7 +69,12 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
   render() {
     if (this.state.hasError) {
       return (
-        <AppShell>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+          backgroundColor: '#f8f9fa'
+        }}>
           <div style={{
             maxWidth: '800px',
             margin: '0 auto',
@@ -193,7 +197,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
               </ul>
             </div>
           </div>
-        </AppShell>
+        </div>
       );
     }
 

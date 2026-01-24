@@ -13,7 +13,6 @@ import {
   useBreadcrumbContextSwitcher,
 } from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
 
 export const MemberDetailPage: React.FC = () => {

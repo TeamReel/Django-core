@@ -39,6 +39,145 @@ type AppSelection = {
 
 const APP_LAST_CTX_KEY = 'demo_app_last_context_v1';
 
+// Pre-compiled Regexes
+const RESERVED_ROOT_SEGMENTS = new Set([
+  '', 'dashboard', 'login', 'register', 'directory', 'organisations',
+  'projects', 'matches', 'health', 'studio', 'content', 'notifications',
+  'usage-events', 'settings'
+]);
+
+const REGEX = {
+  vanityMatch: /^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/,
+  vanityCompetition: /^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/,
+  vanitySeason: /^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/,
+  hierarchyMatchTeam: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)\/matches\/([^/]+)/,
+  hierarchyMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)\/matches\/([^/]+)/,
+  legacyMatch: /^\/matches\/([^/]+)/,
+  competitionTeamMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)/,
+  competitionMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)/,
+  seasonTeamMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)/,
+  seasonMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)/,
+  teamMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)/,
+  clubMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)/,
+};
+
+function parseAppPath(path: string) {
+  const isVanity = (m: RegExpMatchArray | null) => Boolean(m && !RESERVED_ROOT_SEGMENTS.has(String(m[1] || '')));
+
+  const vanityMatch = path.match(REGEX.vanityMatch);
+  if (isVanity(vanityMatch)) return {
+    type: 'vanityMatch',
+    orgSlug: vanityMatch![1],
+    clubSlugOrId: vanityMatch![2],
+    teamSlugOrId: vanityMatch![3],
+    seasonSlugOrId: vanityMatch![4],
+    competitionSlugOrId: vanityMatch![5],
+    matchId: vanityMatch![6],
+  };
+
+  const vanityCompetition = path.match(REGEX.vanityCompetition);
+  if (isVanity(vanityCompetition)) return {
+    type: 'vanityCompetition',
+    orgSlug: vanityCompetition![1],
+    clubSlugOrId: vanityCompetition![2],
+    teamSlugOrId: vanityCompetition![3],
+    seasonSlugOrId: vanityCompetition![4],
+    competitionSlugOrId: vanityCompetition![5],
+  };
+
+  const vanitySeason = path.match(REGEX.vanitySeason);
+  if (isVanity(vanitySeason)) return {
+    type: 'vanitySeason',
+    orgSlug: vanitySeason![1],
+    clubSlugOrId: vanitySeason![2],
+    teamSlugOrId: vanitySeason![3],
+    seasonSlugOrId: vanitySeason![4],
+  };
+
+  const hierarchyMatchTeam = path.match(REGEX.hierarchyMatchTeam);
+  if (hierarchyMatchTeam) return {
+    type: 'hierarchyMatchTeam',
+    orgSlug: hierarchyMatchTeam[1],
+    clubSlugOrId: hierarchyMatchTeam[2],
+    teamSlugOrId: hierarchyMatchTeam[3],
+    seasonSlugOrId: hierarchyMatchTeam[4],
+    competitionSlugOrId: hierarchyMatchTeam[5],
+    matchId: hierarchyMatchTeam[6],
+  };
+
+  const hierarchyMatch = path.match(REGEX.hierarchyMatch);
+  if (hierarchyMatch) return {
+    type: 'hierarchyMatch',
+    orgSlug: hierarchyMatch[1],
+    teamSlugOrId: hierarchyMatch[2],
+    seasonSlugOrId: hierarchyMatch[3],
+    competitionSlugOrId: hierarchyMatch[4],
+    matchId: hierarchyMatch[5],
+  };
+
+  const competitionTeamMatch = path.match(REGEX.competitionTeamMatch);
+  if (competitionTeamMatch) return {
+    type: 'competitionTeamMatch',
+    orgSlug: competitionTeamMatch[1],
+    clubSlugOrId: competitionTeamMatch[2],
+    teamSlugOrId: competitionTeamMatch[3],
+    seasonSlugOrId: competitionTeamMatch[4],
+    competitionSlugOrId: competitionTeamMatch[5],
+  };
+
+  const competitionMatch = path.match(REGEX.competitionMatch);
+  if (competitionMatch) return {
+    type: 'competitionMatch',
+    orgSlug: competitionMatch[1],
+    teamSlugOrId: competitionMatch[2],
+    seasonSlugOrId: competitionMatch[3],
+    competitionSlugOrId: competitionMatch[4],
+  };
+
+  const legacyMatch = path.match(REGEX.legacyMatch);
+  if (legacyMatch) return {
+    type: 'legacyMatch',
+    matchId: legacyMatch[1],
+  };
+
+  const seasonTeamMatch = path.match(REGEX.seasonTeamMatch);
+  if (seasonTeamMatch) return {
+    type: 'seasonTeamMatch',
+    orgSlug: seasonTeamMatch[1],
+    clubSlugOrId: seasonTeamMatch[2],
+    teamSlugOrId: seasonTeamMatch[3],
+    seasonSlugOrId: seasonTeamMatch[4],
+  };
+
+  const seasonMatch = path.match(REGEX.seasonMatch);
+  if (seasonMatch) return {
+    type: 'seasonMatch',
+    orgSlug: seasonMatch[1],
+    // seasonMatch doesn't have club/teams specific in the same way? Check original code.
+    // Original code: /organisations/([^/]+)/projects/([^/]+)/seasons/([^/]+)
+    // Group 1: Org, Group 2: Project (Club), Group 3: Season
+    clubSlugOrId: seasonMatch[2],
+    seasonSlugOrId: seasonMatch[3],
+  };
+
+  const teamMatch = path.match(REGEX.teamMatch);
+  if (teamMatch) return {
+    type: 'teamMatch',
+    orgSlug: teamMatch[1],
+    clubSlugOrId: teamMatch[2],
+    teamSlugOrId: teamMatch[3],
+  };
+
+  const clubMatch = path.match(REGEX.clubMatch);
+  if (clubMatch) return {
+    type: 'clubMatch',
+    orgSlug: clubMatch[1],
+    clubSlugOrId: clubMatch[2],
+  };
+
+  return null;
+}
+
 export function useAppSelection() {
   const location = useLocation();
   const { context } = useContextSwitcher();
@@ -101,114 +240,20 @@ export function useAppSelection() {
     }
   };
 
+  // Memoize path parsing
+  const parsedPath = useMemo(() => parseAppPath(location.pathname), [location.pathname]);
+
+  // Stable context dependencies
+  const contextOrg = (context as any)?.organisation;
+  const contextOrgSlug = contextOrg?.slug;
+  const contextOrgId = contextOrg?.id;
+  const userEmail = user?.email;
+
   // Track last visited club/team/season context
   useEffect(() => {
-    const path = location.pathname;
+    if (!parsedPath) return;
 
-    const reservedRootSegments = new Set([
-      '', 'dashboard', 'login', 'register', 'directory', 'organisations',
-      'projects', 'matches', 'health', 'studio', 'content', 'notifications',
-      'usage-events', 'settings'
-    ]);
-
-    const vanityMatch = path.match(/^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/);
-    const vanityCompetition = path.match(/^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/);
-    const vanitySeason = path.match(/^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/);
-    const isVanity = (m: RegExpMatchArray | null) => Boolean(m && !reservedRootSegments.has(String(m[1] || '')));
-
-    const hierarchyMatchTeam = path.match(
-      /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)\/matches\/([^/]+)/
-    );
-    const hierarchyMatch = path.match(
-      /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)\/matches\/([^/]+)/
-    );
-    const legacyMatch = path.match(/^\/matches\/([^/]+)/);
-
-    const competitionTeamMatch = path.match(
-      /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)/
-    );
-    const competitionMatch = path.match(
-      /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)/
-    );
-
-    if (isVanity(vanityMatch)) {
-      writeLastAppContext({
-        orgSlug: vanityMatch![1],
-        clubSlugOrId: vanityMatch![2],
-        teamSlugOrId: vanityMatch![3],
-        seasonSlugOrId: vanityMatch![4],
-        competitionSlugOrId: vanityMatch![5],
-        matchId: vanityMatch![6],
-      });
-      return;
-    }
-
-    if (isVanity(vanityCompetition)) {
-      writeLastAppContext({
-        orgSlug: vanityCompetition![1],
-        clubSlugOrId: vanityCompetition![2],
-        teamSlugOrId: vanityCompetition![3],
-        seasonSlugOrId: vanityCompetition![4],
-        competitionSlugOrId: vanityCompetition![5],
-      });
-      return;
-    }
-
-    if (isVanity(vanitySeason)) {
-      writeLastAppContext({
-        orgSlug: vanitySeason![1],
-        clubSlugOrId: vanitySeason![2],
-        teamSlugOrId: vanitySeason![3],
-        seasonSlugOrId: vanitySeason![4],
-      });
-      return;
-    }
-
-    if (hierarchyMatchTeam) {
-      writeLastAppContext({
-        orgSlug: hierarchyMatchTeam[1],
-        clubSlugOrId: hierarchyMatchTeam[2],
-        teamSlugOrId: hierarchyMatchTeam[3],
-        seasonSlugOrId: hierarchyMatchTeam[4],
-        competitionSlugOrId: hierarchyMatchTeam[5],
-        matchId: hierarchyMatchTeam[6],
-      });
-      return;
-    }
-
-    if (hierarchyMatch) {
-        writeLastAppContext({
-          orgSlug: hierarchyMatch[1],
-          teamSlugOrId: hierarchyMatch[2],
-          seasonSlugOrId: hierarchyMatch[3],
-          competitionSlugOrId: hierarchyMatch[4],
-          matchId: hierarchyMatch[5],
-        });
-        return;
-      }
-
-      if (competitionTeamMatch) {
-        writeLastAppContext({
-          orgSlug: competitionTeamMatch[1],
-          clubSlugOrId: competitionTeamMatch[2],
-          teamSlugOrId: competitionTeamMatch[3],
-          seasonSlugOrId: competitionTeamMatch[4],
-          competitionSlugOrId: competitionTeamMatch[5],
-        });
-        return;
-      }
-
-      if (competitionMatch) {
-        writeLastAppContext({
-          orgSlug: competitionMatch[1],
-          teamSlugOrId: competitionMatch[2],
-          seasonSlugOrId: competitionMatch[3],
-          competitionSlugOrId: competitionMatch[4],
-        });
-        return;
-      }
-
-      if (legacyMatch) {
+    if (parsedPath.type === 'legacyMatch' && parsedPath.matchId) {
         const last = readLastAppContext();
         if (last?.orgSlug) {
           writeLastAppContext({
@@ -217,49 +262,36 @@ export function useAppSelection() {
             teamSlugOrId: last.teamSlugOrId,
             seasonSlugOrId: last.seasonSlugOrId,
             competitionSlugOrId: last.competitionSlugOrId,
-            matchId: legacyMatch[1],
+            matchId: parsedPath.matchId,
           });
         }
         return;
-      }
+    }
 
-      const seasonTeamMatch = path.match(
-        /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)/
-      );
-      const teamMatch = path.match(
-        /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)/
-      );
-      const clubMatch = path.match(
-        /^\/organisations\/([^/]+)\/projects\/([^/]+)/
-      );
-
-      if (seasonTeamMatch) {
+    // Common write for all other types that have orgSlug
+    if ('orgSlug' in parsedPath && parsedPath.orgSlug) {
+        // Construct the object dynamically based on what's available
         writeLastAppContext({
-          orgSlug: seasonTeamMatch[1],
-          clubSlugOrId: seasonTeamMatch[2],
-          teamSlugOrId: seasonTeamMatch[3],
-          seasonSlugOrId: seasonTeamMatch[4],
+            orgSlug: parsedPath.orgSlug,
+            clubSlugOrId: (parsedPath as any).clubSlugOrId,
+            teamSlugOrId: (parsedPath as any).teamSlugOrId,
+            seasonSlugOrId: (parsedPath as any).seasonSlugOrId,
+            competitionSlugOrId: (parsedPath as any).competitionSlugOrId,
+            matchId: (parsedPath as any).matchId,
         });
-        return;
-      }
-      if (teamMatch) {
-        writeLastAppContext({
-          orgSlug: teamMatch[1],
-          clubSlugOrId: teamMatch[2],
-          teamSlugOrId: teamMatch[3],
-        });
-        return;
-      }
-      if (clubMatch) {
-        writeLastAppContext({
-          orgSlug: clubMatch[1],
-          clubSlugOrId: clubMatch[2],
-        });
-      }
-    }, [location.pathname]);
+    }
+  }, [parsedPath]);
 
   // Compute best match
   useEffect(() => {
+    // Audit Instrumentation
+    const auditId = Math.random().toString(36).substring(7);
+    if (import.meta.env.DEV) {
+        console.group(`[AppSelection] Re-computing context (${auditId})`);
+        console.time(`[AppSelection] Computation ${auditId}`);
+        console.log('[AppSelection] Triggered by:', { path: location.pathname });
+    }
+
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
     const isUuid = (value: unknown) =>
@@ -300,37 +332,23 @@ export function useAppSelection() {
       const compute = async () => {
         if (!user) return;
 
-        const path = location.pathname;
-        const seasonTeamMatch = path.match(
-          /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)/
-        );
-        const seasonMatch = path.match(
-          /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)/
-        );
-        const teamMatch = path.match(
-          /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)/
-        );
-        const clubMatch = path.match(
-          /^\/organisations\/([^/]+)\/projects\/([^/]+)/
-        );
-
-        const orgFromPath = seasonTeamMatch?.[1] || seasonMatch?.[1] || teamMatch?.[1] || clubMatch?.[1] || null;
+        const orgFromPath = parsedPath && 'orgSlug' in parsedPath ? (parsedPath as any).orgSlug : null;
         const orgFromPathStr = String(orgFromPath || '');
 
-        const contextOrgSlug = String((context as any)?.organisation?.slug || '');
-        const contextOrgId = String((context as any)?.organisation?.id || '');
+        const ctxOrgSlugStr = String(contextOrgSlug || '');
+        const ctxOrgIdStr = String(contextOrgId || '');
 
         const orgSlug =
           (orgFromPathStr && !isNumericId(orgFromPathStr) && !isUuid(orgFromPathStr))
             ? orgFromPathStr
-            : (contextOrgSlug || orgFromPathStr || contextOrgId || '');
+            : (ctxOrgSlugStr || orgFromPathStr || ctxOrgIdStr || '');
 
         if (!orgSlug) return;
 
         // Determine target slugs from URL if present
-        const urlClubSlug = seasonTeamMatch?.[2] || teamMatch?.[2] || clubMatch?.[2] || null;
-        const urlTeamSlug = seasonTeamMatch?.[3] || teamMatch?.[3] || null;
-        const urlSeasonSlug = seasonTeamMatch?.[4] || null;
+        const urlClubSlug = parsedPath && 'clubSlugOrId' in parsedPath ? (parsedPath as any).clubSlugOrId : null;
+        const urlTeamSlug = parsedPath && 'teamSlugOrId' in parsedPath ? (parsedPath as any).teamSlugOrId : null;
+        const urlSeasonSlug = parsedPath && 'seasonSlugOrId' in parsedPath ? (parsedPath as any).seasonSlugOrId : null;
 
         const last = readLastAppContext();
 
@@ -494,10 +512,15 @@ export function useAppSelection() {
           competitionIdForApi: selectedCompetitionSlugOrId,
           matchId: selectedMatchId,
         });
+
+    if (import.meta.env.DEV) {
+        console.timeEnd(`[AppSelection] Computation ${auditId}`);
+        console.groupEnd();
+    }
       };
 
       compute();
-    }, [context, location.pathname, user]);
+    }, [parsedPath, contextOrgSlug, contextOrgId, userEmail]);
 
   return appSelection;
 }

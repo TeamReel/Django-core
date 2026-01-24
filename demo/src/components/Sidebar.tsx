@@ -103,16 +103,125 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       clubSlugOrId, clubName,
       teamSlugOrId, teamName,
       seasonSlugOrId, seasonName,
-      competitionSlugOrId, // Add this
-      matchId // Add this
+      competitionSlugOrId, competitionName,
+      matchId
   } = useAppSelection();
 
-  // Construct App Context Group dynamically
+  // --- PANEL B LOGIC (New) ---
+  const panelBConfig = useMemo(() => {
+    const path = location.pathname;
+
+    // 1. Determine Active Section
+    let activeSection: 'work' | 'people' | 'content' | 'organisation' | 'platform' | 'help' = 'work';
+    if (path.startsWith('/users')) activeSection = 'people';
+    else if (path.startsWith('/content') || path.startsWith('/studio')) activeSection = 'content';
+    else if (path.startsWith('/permissions') || path.startsWith('/settings')) activeSection = 'organisation';
+    else if (['/health', '/flags', '/integration', '/design', '/observability', '/security'].some(prefix => path.startsWith(prefix))) activeSection = 'platform';
+    else if (['/docs', '/constitution'].some(prefix => path.startsWith(prefix))) activeSection = 'help';
+
+
+    // 2. Build Items based on Section & Context
+    let title = '';
+    let items: { label: string; path: string; icon?: string }[] = [];
+
+    switch (activeSection) {
+        case 'work':
+            // Hierarchy Context Logic
+            if (matchId) {
+                title = 'Match Actions';
+                items.push({ label: 'Overview', path: location.pathname, icon: '📊' });
+                // Add relevant Match actions if available as routes
+            } else if (competitionSlugOrId && seasonSlugOrId && teamSlugOrId && clubSlugOrId && orgSlug) {
+                 title = 'Competition Actions';
+                 const baseUrl = `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`;
+                 items.push({ label: 'Overview', path: baseUrl, icon: '📊' });
+                 items.push({ label: 'Matches', path: `${baseUrl}/matches`, icon: '⏱️' });
+            } else if (competitionSlugOrId && seasonSlugOrId && !teamSlugOrId && orgSlug) {
+                 // Club/Project Competition Context
+                 title = 'Competition Actions';
+            } else if (seasonSlugOrId && teamSlugOrId && clubSlugOrId && orgSlug) {
+                title = 'Season Actions';
+                const baseUrl = `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`;
+                items.push({ label: 'Overview', path: baseUrl, icon: '📊' });
+                items.push({ label: 'Squad', path: `${baseUrl}/squad`, icon: '👥' });
+            } else if (teamSlugOrId && clubSlugOrId && orgSlug) {
+                title = 'Team Actions';
+                const baseUrl = `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`;
+                items.push({ label: 'Overview', path: baseUrl, icon: '📊' });
+                items.push({ label: 'Seasons', path: `${baseUrl}/seasons`, icon: '📅' });
+            } else {
+                 // Browse Mode (Default) - Minimal shortcuts only
+                 title = 'Browse';
+                 // Panel A already has the full list. Show only most common shortcuts here.
+                 items = [
+                    { label: 'Teams', path: '/teams', icon: '👕' },
+                    { label: 'Matches', path: '/matches', icon: '⏱️' },
+                 ];
+            }
+            break;
+
+        case 'content':
+            title = 'Content';
+            items = [
+                { label: 'Library', path: '/content', icon: '📂' },
+                { label: 'AI Studio', path: '/studio', icon: '✨' },
+            ];
+            break;
+
+        case 'people':
+             title = 'People';
+             items = [
+                 { label: 'All Users', path: '/users', icon: '👥' },
+             ];
+             break;
+
+        case 'organisation':
+            if (isOrgAdmin || isSystemAdmin) {
+                title = 'Organisation';
+                items = [
+                    { label: 'Settings', path: '/permissions', icon: '⚙️' },
+                ];
+            }
+            break;
+
+        case 'platform':
+            if (isStaff) {
+                title = 'Platform';
+                items = [
+                    { label: 'Health', path: '/health', icon: '❤️' },
+                    { label: 'Features', path: '/flags', icon: '🚩' },
+                    { label: 'Integration', path: '/integration-status', icon: '🔄' },
+                    { label: 'Observability', path: '/observability', icon: '📊' },
+                ];
+            }
+            break;
+
+        case 'help':
+            // Hidden specifically requested? "Hide or show 2-3 links".
+            // We'll hide it for cleanliness if empty, or show minimal.
+            title = 'Help';
+            items = [
+                { label: 'User Guide', path: '/docs', icon: '📖' },
+                { label: 'Constitution', path: '/constitution', icon: '📜' }
+            ];
+            break;
+    }
+
+    if (items.length === 0) return null;
+
+    return { title, items, isActive: true };
+  }, [location.pathname, orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId, competitionSlugOrId, matchId, teamName, seasonName, competitionName, isOrgAdmin, isSystemAdmin, isStaff]);
+
+
+
+
+  // Construct App Context Group dynamically for Panel A
   const appGroup: NavSection | null = useMemo(() => {
+    // Only show Context in Panel A if we have valid context
+    // This restores the "Where I am" block
     if (!orgSlug) return null;
 
     const items: NavItem[] = [];
-    // Club Item
     if (clubSlugOrId) {
         items.push({
             label: clubName || 'Club',
@@ -121,7 +230,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             visibility: 'everyone'
         });
     }
-    // Team Item
     if (clubSlugOrId && teamSlugOrId) {
          items.push({
             label: teamName || 'Team',
@@ -130,7 +238,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             visibility: 'everyone'
         });
     }
-    // Season Item
     if (clubSlugOrId && teamSlugOrId && seasonSlugOrId) {
         items.push({
             label: seasonName || 'Season',
@@ -139,31 +246,18 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             visibility: 'everyone'
         });
     }
-
-    // Members Item (Context Leaf) - Only if active
-    if (clubSlugOrId && teamSlugOrId && seasonSlugOrId && !competitionSlugOrId && location.pathname.includes('/members')) {
-        items.push({
-            label: 'Members',
-            path: location.pathname,
-            icon: '👥',
-            visibility: 'everyone'
-        });
-    }
-
-    // Competition Item (New)
+    // Hierarchy continues...
     if (clubSlugOrId && teamSlugOrId && seasonSlugOrId && competitionSlugOrId) {
         items.push({
-            label: 'Competition', // Name resolution usually requires more complex fetching or is less critical here, hardcoded or use ID?
-            // Actually useAppSelection might have competitionName, let's just label it 'Competition' for now or update hook to return name
+            label: competitionName || 'Competition',
             path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`,
             icon: '🏆',
             visibility: 'everyone'
         });
     }
-    // Match Item (New)
     if (clubSlugOrId && teamSlugOrId && seasonSlugOrId && competitionSlugOrId && matchId) {
         items.push({
-            label: 'Match',
+            label: 'Match', // Match name?
             path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`,
             icon: '⏱️',
             visibility: 'everyone'
@@ -178,7 +272,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         visibility: 'everyone',
         items
     };
-  }, [orgSlug, clubSlugOrId, clubName, teamSlugOrId, teamName, seasonSlugOrId, seasonName]);
+  }, [orgSlug, clubSlugOrId, clubName, teamSlugOrId, teamName, seasonSlugOrId, seasonName, competitionSlugOrId, competitionName, matchId]);
 
 
   // Filter groups and items based on permissions
@@ -204,23 +298,29 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     }).filter((g): g is NavSection => g !== null);
   }, [isOrgAdmin, isStaff, isSystemAdmin]);
 
+
   return (
     <div style={{ display: 'flex', height: '100%', zIndex: 90, flexShrink: 0 }}>
 
-      {/* --- PANEL A: PRIMARY SIDEBAR (Wide or Narrow) --- */}
+
+      {/* --- PANEL A: PRIMARY SIDEBAR (Narrow Only but Expandable) --- */}
+      {/* Note: We keep the existing width toggle for Panel A logic but Panel B sits next to it.
+          Use a simpler visual for Panel B: Light/Gray background. */}
+
       <aside
         style={{
-          width: isOpen ? 240 : 72,
-          backgroundColor: '#0f172a', // Dark primary
-          color: '#f1f5f9',
-          display: 'flex',
-          flexDirection: 'column',
-          transition: 'width 0.2s ease-in-out',
-          flexShrink: 0,
-          borderRight: '1px solid #1e293b'
+            zIndex: 20, // Higher than Panel B
+            width: isOpen ? 240 : 72,
+            backgroundColor: '#0f172a', // Dark primary
+            color: '#f1f5f9',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'width 0.2s ease-in-out',
+            flexShrink: 0,
+            borderRight: '1px solid #1e293b'
         }}
       >
-        {/* Logo / Brand Area */}
+        {/* LOGO AREA */}
         <div style={{
             height: 64,
             display: 'flex',
@@ -234,10 +334,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             {isOpen && <span style={{ marginLeft: 12, fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em' }}>TeamReel</span>}
         </div>
 
-        {/* Primary Items */}
+
+        {/* Global Navigation (Panel A) */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px', overflowY: 'auto' }}>
 
-            {/* APP CONTEXT GROUP (Dynamic) - Breadcrumb Style */}
+            {/* APP CONTEXT GROUP - "Where I am" (Restored) */}
             {appGroup && appGroup.items.length > 0 && (
                 <div style={{ paddingBottom: 8, marginBottom: 8, borderBottom: '1px dashed #334155' }}>
                     {appGroup.items.map((item, index) => (
@@ -249,7 +350,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 `flex items-center rounded-md transition-colors ${isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`
                             }
                             style={({ isActive }) => ({
-                                height: 32, // Compact height
+                                height: 32, // Compact
                                 textDecoration: 'none',
                                 padding: isOpen ? '0 12px' : '0',
                                 display: 'flex',
@@ -260,141 +361,59 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 background: isActive ? 'rgba(255,255,255,0.05)' : 'transparent',
                             })}
                         >
-                            <span style={{
-                                fontSize: 14,
-                                minWidth: 24,
-                                display: 'flex',
-                                justifyContent: 'center',
-                                opacity: 0.8
-                            }}>{item.icon}</span>
+                            <span style={{ fontSize: 14, minWidth: 24, display: 'flex', justifyContent: 'center', opacity: 0.8 }}>{item.icon}</span>
                             {isOpen && (
-                                <span style={{
-                                    marginLeft: 12,
-                                    fontSize: 13, // Slightly smaller text
-                                    fontWeight: 500,
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    color: 'inherit'
-                                }}>
+                                <span style={{ marginLeft: 12, fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {item.label}
                                 </span>
                             )}
-                            {/* Connector line simulation for breadcrumb feel (optional) */}
+                            {/* Connector line simulation */}
                             {index < (appGroup.items.length - 1) && isOpen && (
-                                <div style={{
-                                    position: 'absolute',
-                                    left: 23,
-                                    top: 26, // Below icon
-                                    bottom: -10, // Extend down
-                                    width: 1,
-                                    backgroundColor: '#334155',
-                                    zIndex: 0
-                                }} />
+                                <div style={{ position: 'absolute', left: 23, top: 26, bottom: -10, width: 1, backgroundColor: '#334155', zIndex: 0 }} />
                             )}
                         </NavLink>
                     ))}
                 </div>
             )}
 
-            {/* Render Sections */}
-            {visibleSections.filter(g => !g.bottom).map(section => (
-                <div key={section.id} style={{ marginBottom: 24 }}> {/* Increased spacing */}
-                    {/* Section Title */}
-                    {isOpen && section.title && (
-                        <div style={{
-                            padding: '0 12px',
-                            marginBottom: 8,
-                            fontSize: 10, // Smaller
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.08em',
-                            color: '#475569', // Lighter Slate-600
-                        }}>
+            {visibleSections.map(section => (
+               <div key={section.id} style={{ marginBottom: section.bottom ? 0 : 16 }}>
+                    {/* Section Label (Only if open) */}
+                    {isOpen && section.title && !section.bottom && (
+                        <div style={{ padding: '0 12px', marginBottom: 6, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', opacity: 0.5 }}>
                             {section.title}
                         </div>
                     )}
-                    {/* Items */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {section.items.map(item => (
-                            <NavLink
-                                key={item.path}
-                                to={item.path}
-                                title={!isOpen ? item.label : undefined}
-                                style={({ isActive }) => ({
-                                    height: 40,
-                                    textDecoration: 'none',
-                                    padding: isOpen ? '0 12px' : '0',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: isOpen ? 'flex-start' : 'center',
-                                    borderRadius: 8,
-                                    color: isActive ? '#fff' : '#94a3b8',
-                                    backgroundColor: isActive ? '#334155' : 'transparent', // Darker highlight for nav
-                                    transition: 'background-color 0.15s'
-                                })}
-                            >
-                                <span style={{ fontSize: 18, minWidth: 24, display: 'flex', justifyContent: 'center' }}>{item.icon}</span>
-                                {isOpen && (
-                                    <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 500 }}>
-                                        {item.label}
-                                    </span>
-                                )}
-                            </NavLink>
-                        ))}
-                    </div>
-                </div>
+
+                    {section.items.map(item => (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            title={!isOpen ? item.label : undefined}
+                            className={({ isActive }) =>
+                                `flex items-center rounded-md transition-colors ${isActive ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'}`
+                            }
+                            style={({ isActive }) => ({
+                                height: 40,
+                                textDecoration: 'none',
+                                padding: isOpen ? '0 12px' : '0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: isOpen ? 'flex-start' : 'center',
+                                borderRadius: 8,
+                                background: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
+                            })}
+                        >
+                            <span style={{ fontSize: 18, minWidth: 24, display: 'flex', justifyContent: 'center' }}>{item.icon}</span>
+                            {isOpen && <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 500 }}>{item.label}</span>}
+                        </NavLink>
+                    ))}
+               </div>
             ))}
         </div>
 
-        {/* Bottom Items (Help, etc) */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '12px', borderTop: '1px solid #1e293b' }}>
-             {visibleSections.filter(g => g.bottom).map(section => (
-                 <div key={section.id} style={{ opacity: 0.8, transition: 'opacity 0.2s', marginBottom: 8 }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.8'}>
-                    {isOpen && section.title && (
-                        <div style={{
-                            padding: '0 12px',
-                            marginBottom: 8,
-                            fontSize: 10,
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.08em',
-                            color: '#475569'
-                        }}>
-                            {section.title}
-                        </div>
-                    )}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {section.items.map(item => (
-                            <NavLink
-                                key={item.path}
-                                to={item.path}
-                                title={!isOpen ? item.label : undefined}
-                                style={({ isActive }) => ({
-                                    height: 36, // Slightly compact
-                                    textDecoration: 'none',
-                                    padding: isOpen ? '0 12px' : '0',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: isOpen ? 'flex-start' : 'center',
-                                    borderRadius: 6,
-                                    color: isActive ? '#fff' : '#64748b', // Muted text
-                                    backgroundColor: isActive ? 'rgba(255,255,255,0.05)' : 'transparent',
-                                })}
-                            >
-                                <span style={{ fontSize: 16, minWidth: 24, display: 'flex', justifyContent: 'center' }}>{item.icon}</span>
-                                {isOpen && (
-                                    <span style={{ marginLeft: 12, fontSize: 13, fontWeight: 500 }}>
-                                        {item.label}
-                                    </span>
-                                )}
-                            </NavLink>
-                        ))}
-                    </div>
-                 </div>
-            ))}
-
-            {/* Collapse Toggle */}
+        {/* Collapse Toggle */}
+        <div style={{ padding: 12, borderTop: '1px solid #1e293b' }}>
             <button
                 onClick={toggle}
                 className="hover:bg-slate-800"
@@ -408,16 +427,70 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     background: 'transparent',
                     color: '#94a3b8',
                     cursor: 'pointer',
-                    borderRadius: 8,
-                    padding: isOpen ? '0 12px' : 0,
-                    marginTop: 8
+                    borderRadius: 8
                 }}
             >
-                 <span style={{ fontSize: 20, minWidth: 24, textAlign: 'center' }}>{isOpen ? '«' : '»'}</span>
-                 {isOpen && <span style={{ marginLeft: 12, fontSize: 14 }}>Collapse</span>}
+                 <span style={{ fontSize: 20 }}>{isOpen ? '«' : '»'}</span>
             </button>
         </div>
       </aside>
+
+      {/* --- PANEL B: SECONDARY CONTEXT SIDEBAR --- */}
+      {panelBConfig && (
+        <aside
+            style={{
+                width: 220, // Fixed width for panel B
+                backgroundColor: '#f8fafc', // Light
+                borderRight: '1px solid #e2e8f0',
+                display: 'flex',
+                flexDirection: 'column',
+                flexShrink: 0,
+                zIndex: 10
+            }}
+        >
+            {/* Header */}
+            <div style={{
+                height: 64,
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 20px',
+                borderBottom: '1px solid #e2e8f0',
+                fontWeight: 600,
+                fontSize: 14,
+                color: '#475569',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+            }}>
+                {panelBConfig.title}
+            </div>
+
+            {/* Items */}
+            <div style={{ padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {panelBConfig.items.map(item => (
+                    <NavLink
+                        key={item.path}
+                        to={item.path}
+                        style={({ isActive }) => ({
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '8px 12px',
+                            borderRadius: 6,
+                            textDecoration: 'none',
+                            fontSize: 14,
+                            color: isActive ? '#0f172a' : '#64748b',
+                            backgroundColor: isActive ? '#e2e8f0' : 'transparent',
+                            fontWeight: isActive ? 600 : 400
+                        })}
+                    >
+                        <span style={{ marginRight: 10, fontSize: 16 }}>{item.icon}</span>
+                        {item.label}
+                    </NavLink>
+                ))}
+            </div>
+        </aside>
+      )}
+
+
     </div>
   );
 }
