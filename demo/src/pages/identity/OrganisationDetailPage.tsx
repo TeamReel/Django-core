@@ -460,6 +460,12 @@ export const OrganisationDetailPage: React.FC = () => {
     const name = String(p?.name || '').toLowerCase();
     if (name.startsWith('season') || name.startsWith('seizoen')) return true;
 
+    // Common real-world season naming (e.g. "2024/25", "2024-2025", "2024 / 2025").
+    // Only consider these at the root level.
+    const compact = name.replace(/\s+/g, '');
+    if (/^\d{4}([/-])\d{2,4}$/.test(compact)) return true;
+    if (/^\d{4}([/-])\d{4}$/.test(compact)) return true;
+
     // Some seeders store season info under metadata fields.
     const seasonKey = p?.data?.season ?? p?.metadata?.season;
     if (seasonKey) return true;
@@ -1441,41 +1447,6 @@ export const OrganisationDetailPage: React.FC = () => {
       />
 
       <PageContent>
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 6,
-            paddingBottom: 10,
-            marginBottom: 16,
-            borderBottom: '1px solid var(--app-border)',
-          }}
-        >
-          {visibleTabs.map((t) => {
-            const isActive = activeTab === t.id;
-            return (
-              <Link
-                key={t.id}
-                to={makeTabHref(t.id)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '6px 10px',
-                  borderRadius: 8,
-                  border: `1px solid ${isActive ? 'var(--app-border)' : 'transparent'}`,
-                  background: isActive ? 'var(--app-surface-2)' : 'transparent',
-                  color: isActive ? 'var(--app-text)' : 'var(--app-muted-text)',
-                  fontSize: 13,
-                  fontWeight: isActive ? 700 : 600,
-                  textDecoration: 'none',
-                }}
-              >
-                {t.label}
-              </Link>
-            );
-          })}
-        </div>
-
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Top Stats Row */}

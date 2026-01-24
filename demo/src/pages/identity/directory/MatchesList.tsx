@@ -59,6 +59,8 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
   const userRole = String((user as any)?.role || '').toLowerCase();
   const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
 
+  const orgLocked = Boolean(preselectedOrgId);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -99,6 +101,14 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
   }, [preselectedOrgId, context.organisation?.id, isSuperAdmin]);
 
   useEffect(() => {
+    if (preselectedOrgId) {
+      const clubId = searchParams.get('club_id');
+      const teamId = searchParams.get('team_id');
+      if (clubId) setSelectedClubId(String(clubId));
+      if (teamId) setSelectedTeamId(String(teamId));
+      return;
+    }
+
     const orgId = searchParams.get('org_id');
     const clubId = searchParams.get('club_id');
     const teamId = searchParams.get('team_id');
@@ -441,7 +451,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
   return (
     <div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
-        {isSuperAdmin && (
+        {isSuperAdmin && !orgLocked && (
           <select
             value={selectedOrgId}
             onChange={(e) => {

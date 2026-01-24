@@ -128,6 +128,13 @@ export default function App() {
     return <Navigate to={`/${encodeURIComponent(orgKey)}/${encodeURIComponent(s)}`} replace />;
   };
 
+  const OrgHierarchyRedirect = () => {
+    const { orgId } = useParams<{ orgId: string }>();
+    const orgKey = String(orgId || '').trim();
+    if (!orgKey) return <Navigate to="/directory?tab=federations" replace />;
+    return <Navigate to={`/${encodeURIComponent(orgKey)}?tab=hierarchy`} replace />;
+  };
+
   const OrgProjectsRedirect = () => {
     const { orgId } = useParams<{ orgId: string }>();
     return (
@@ -1006,6 +1013,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <OrgUsersPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/:orgId/hierarchy"
+        element={
+          <ProtectedRoute>
+            <OrgHierarchyRedirect />
           </ProtectedRoute>
         }
       />

@@ -116,6 +116,8 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
     const userRole = String((user as any)?.role || '').toLowerCase();
     const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
 
+    const orgLocked = Boolean(preselectedOrgId);
+
     const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
 
     const getCsrfToken = () =>
@@ -138,6 +140,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
     useEffect(() => {
         if (preselectedOrgId) {
             setSelectedOrgId(preselectedOrgId);
+            return;
         }
         const orgParam = searchParams.get('org_id');
         if (orgParam) {
@@ -151,7 +154,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
             setSelectedOrgId(String(context.organisation.id));
         }
 
-    }, [context.organisation?.id, isSuperAdmin, searchParams]);
+    }, [preselectedOrgId, context.organisation?.id, isSuperAdmin, searchParams]);
 
     // Fetch Orgs (SuperAdmin)
     useEffect(() => {
@@ -684,7 +687,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
     return (
         <div>
              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
-                {isSuperAdmin && (
+                {isSuperAdmin && !orgLocked && (
                     <select
                         value={selectedOrgId}
                         onChange={(e) => {
@@ -807,7 +810,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                              setSelectedTeamId('');
                              setStatusFilter('all');
                              setRoleFilter('');
-                             if (isSuperAdmin) {
+                             if (isSuperAdmin && !orgLocked) {
                                  setSelectedOrgId('');
                                  setSearchParams({});
                              }

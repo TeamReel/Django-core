@@ -178,6 +178,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 title = 'Federation';
                 items = [
                     { label: 'Overview', path: makeOrgSectionUrl(orgId, 'overview'), icon: LayoutDashboard },
+                    { label: 'Hierarchy', path: makeOrgSectionUrl(orgId, 'hierarchy'), icon: Globe },
                     { label: 'Clubs', path: makeOrgSectionUrl(orgId, 'clubs'), icon: Shield },
                     { label: 'Teams', path: makeOrgSectionUrl(orgId, 'teams'), icon: Shirt },
                     { label: 'Seasons', path: makeOrgSectionUrl(orgId, 'seasons'), icon: CalendarDays },
@@ -194,15 +195,20 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             if (orgDetailMatch && !clubDetailMatch && !teamDetailMatch) {
                 const orgId = String((orgDetailMatch?.params as any)?.orgId || (orgDetailMatch?.params as any)?.id || '').trim();
                 if (orgId) {
+                    const baseUrl = path.startsWith('/organisations/') ? `/organisations/${orgId}` : `/${orgId}`;
                     title = 'Federation';
                     items = [
-                        { label: 'Overview', path: makeOrgSectionUrl(orgId, 'overview'), icon: LayoutDashboard },
-                        { label: 'Clubs', path: makeOrgSectionUrl(orgId, 'clubs'), icon: Shield },
-                        { label: 'Teams', path: makeOrgSectionUrl(orgId, 'teams'), icon: Shirt },
-                        { label: 'Seasons', path: makeOrgSectionUrl(orgId, 'seasons'), icon: CalendarDays },
-                        { label: 'Competitions', path: makeOrgSectionUrl(orgId, 'competitions'), icon: Trophy },
-                        { label: 'Matches', path: makeOrgSectionUrl(orgId, 'matches'), icon: Timer },
-                        { label: 'Users', path: makeOrgSectionUrl(orgId, 'users'), icon: Users },
+                        { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                        { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
+                        { label: 'Clubs', path: makeTabUrl(baseUrl, 'clubs'), icon: Shield },
+                        { label: 'Teams', path: makeTabUrl(baseUrl, 'teams'), icon: Shirt },
+                        { label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays },
+                        { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
+                        { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
+                        { label: 'Users', path: makeTabUrl(baseUrl, 'users'), icon: Users },
+                        { label: 'Audit', path: makeTabUrl(baseUrl, 'audit'), icon: Scroll },
+                        { label: 'Governance', path: makeTabUrl(baseUrl, 'governance'), icon: BookOpen },
+                        { label: 'Operations', path: makeTabUrl(baseUrl, 'operations'), icon: Settings },
                     ];
                     break;
                 }
@@ -385,12 +391,44 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         // "most relevant" (current path → last visited → most recent), so we can build
         // stable detail URLs from it and use safe fallbacks when a level isn't available.
 
-        const orgId = String(orgSlug || '').trim();
-        const clubId = String(clubSlugOrId || '').trim();
-        const teamId = String(teamSlugOrId || '').trim();
-        const seasonId = String(seasonSlugOrId || '').trim();
-        const competitionId = String(competitionSlugOrId || '').trim();
-        const matchKey = String(matchId || '').trim();
+        const path = location.pathname;
+        const segs = String(path || '')
+            .split('/')
+            .map((s) => s.trim())
+            .filter(Boolean);
+
+        const reservedRoots = new Set([
+            'dashboard',
+            'directory',
+            'content',
+            'studio',
+            'permissions',
+            'settings',
+            'health',
+            'docs',
+            'constitution',
+            'search',
+            'login',
+            'logout',
+            'organisations',
+            'projects',
+            'matches',
+        ]);
+
+        const orgSections = new Set(['clubs', 'teams', 'seasons', 'competitions', 'matches', 'users', 'hierarchy']);
+
+        const routeOrg = segs[0] && !reservedRoots.has(segs[0]) ? segs[0] : '';
+        const routeSecond = segs[1] || '';
+        const isOrgLevelRoute = Boolean(routeOrg) && (!routeSecond || orgSections.has(routeSecond));
+
+        const orgId = String(routeOrg || orgSlug || '').trim();
+
+        // Avoid stale selection on org-level routes by clearing deeper levels.
+        const clubId = isOrgLevelRoute ? '' : String(clubSlugOrId || '').trim();
+        const teamId = isOrgLevelRoute ? '' : String(teamSlugOrId || '').trim();
+        const seasonId = isOrgLevelRoute ? '' : String(seasonSlugOrId || '').trim();
+        const competitionId = isOrgLevelRoute ? '' : String(competitionSlugOrId || '').trim();
+        const matchKey = isOrgLevelRoute ? '' : String(matchId || '').trim();
 
         const federationPath = orgId ? `/${orgId}` : '/dashboard';
         const clubPath = orgId && clubId ? `/${orgId}/${clubId}` : federationPath;
@@ -418,7 +456,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             { label: competitionLabel, path: competitionPath, icon: Trophy, visibility: 'everyone' },
             { label: matchLabel, path: matchPath, icon: Timer, visibility: 'everyone' },
         ];
-    }, [orgSlug, clubSlugOrId, clubName, teamSlugOrId, teamName, seasonSlugOrId, seasonName, competitionSlugOrId, competitionName, matchId]);
+    }, [location.pathname, orgSlug, clubSlugOrId, clubName, teamSlugOrId, teamName, seasonSlugOrId, seasonName, competitionSlugOrId, competitionName, matchId]);
 
     const panelASections = useMemo(() => {
         return visibleSections

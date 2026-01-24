@@ -66,6 +66,8 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId }) =>
   const userRole = String((user as any)?.role || '').toLowerCase();
   const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
 
+  const orgLocked = Boolean(preselectedOrgId);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,6 +91,17 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId }) =>
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  const isLikelySeasonRoot = (p: any): boolean => {
+    if (!p) return false;
+    const hasParent = Boolean(p?.parent_period_id || p?.parent_period);
+    if (hasParent) return false;
+    const name = String(p?.name || '').trim().toLowerCase();
+    if (!name) return false;
+    if (name.startsWith('season') || name.startsWith('seizoen')) return true;
+    const compact = name.replace(/\s+/g, '');
+    return /^\d{4}([/-])\d{2,4}$/.test(compact) || /^\d{4}([/-])\d{4}$/.test(compact);
+  };
+
   // Initialize org filter
   useEffect(() => {
     if (preselectedOrgId) {
@@ -100,6 +113,14 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId }) =>
 
   // Sync params from URL to state
   useEffect(() => {
+    if (preselectedOrgId) {
+      const clubId = searchParams.get('club_id');
+      const teamId = searchParams.get('team_id');
+      if (clubId) setSelectedClubId(String(clubId));
+      if (teamId) setSelectedTeamId(String(teamId));
+      return;
+    }
+
     const orgId = searchParams.get('org_id');
     const clubId = searchParams.get('club_id');
     const teamId = searchParams.get('team_id');
@@ -230,6 +251,33 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId }) =>
             { credentials: 'include' },
             { ttlMs: 120_000, bypass: refreshKey > 0 },
           );
+
+          // Backend filtering uses metadata__type (via ?type=season). Some legacy data doesn't
+          // set that, so we fall back to an untyped org-scoped fetch and infer seasons client-side.
+          if (
+            Array.isArray(results) &&
+            results.length === 0 &&
+            selectedOrgId &&
+            !selectedClubId &&
+            !selectedTeamId
+          ) {
+            const fallbackParams = new URLSearchParams(baseParams);
+            fallbackParams.delete('type');
+            // Keep org scoping; drop the explicit parent filter so we get everything.
+            fallbackParams.delete('parent_id');
+
+            const fallbackUrl = `${apiBaseUrl}/api/v1/periods/?${fallbackParams.toString()}`;
+            const fallback = await fetchAllPages<any>(
+              fallbackUrl,
+              { credentials: 'include' },
+              { ttlMs: 120_000, bypass: refreshKey > 0 },
+            );
+
+            const inferred = (Array.isArray(fallback) ? fallback : []).filter((p: any) => isLikelySeasonRoot(p));
+            const unique = [...new Map(inferred.map((p: any) => [String(p.id), p])).values()];
+            setSeasons(unique as any);
+            return;
+          }
 
           // Root periods represent seasons in the demo scenario.
           const filteredSeasons = results.filter((p: any) => (p?.parent_period_id == null && !p?.parent_period));
@@ -413,7 +461,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId }) =>
   return (
     <div>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
-        {isSuperAdmin && (
+        {isSuperAdmin && !orgLocked && (
           <select
             value={selectedOrgId}
             onChange={(e) => {
