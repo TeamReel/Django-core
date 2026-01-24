@@ -154,7 +154,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                  // Browse Mode (Default) - Standard shortcuts
                  title = 'Directory';
                  items = [
-                    { label: 'Federations', path: '/directory', icon: Globe },
+                    { label: 'Federations', path: '/federations', icon: Globe },
                     { label: 'Clubs', path: '/clubs', icon: Shield },
                     { label: 'Teams', path: '/teams', icon: Shirt },
                     { label: 'Seasons', path: '/seasons', icon: CalendarDays },

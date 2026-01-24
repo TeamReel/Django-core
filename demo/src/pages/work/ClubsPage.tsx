@@ -5,15 +5,9 @@ import { ClubsList } from '../identity/directory/ClubsList';
 export default function ClubsPage() {
   const navigate = useNavigate();
 
-  const breadcrumbs = [
-    { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-    { label: 'Directory', onClick: () => navigate('/directory') },
-    { label: 'Clubs', current: true },
-  ];
-
   return (
     <>
-      <PageHeader title="Clubs" breadcrumbs={breadcrumbs} />
+      <PageHeader title="Clubs" />
       <PageContent>
         <ClubsList />
       </PageContent>

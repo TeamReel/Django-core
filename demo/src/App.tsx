@@ -97,6 +97,7 @@ import ClubsPage from './pages/work/ClubsPage';
 import TeamsPage from './pages/work/TeamsPage';
 import SeasonsPage from './pages/work/SeasonsPage';
 import CompetitionsPage from './pages/work/CompetitionsPage';
+import FederationsPage from './pages/work/FederationsPage';
 import MatchesPage from './pages/work/MatchesPage';
 
 
@@ -405,6 +406,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <LegacyMatchRedirectPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/federations"
+        element={
+          <ProtectedRoute>
+            <FederationsPage />
           </ProtectedRoute>
         }
       />

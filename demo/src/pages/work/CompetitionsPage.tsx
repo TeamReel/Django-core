@@ -5,15 +5,9 @@ import { CompetitionsList } from '../identity/directory/CompetitionsList';
 export default function CompetitionsPage() {
   const navigate = useNavigate();
 
-  const breadcrumbs = [
-    { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-    { label: 'Directory', onClick: () => navigate('/directory') },
-    { label: 'Competitions', current: true },
-  ];
-
   return (
     <>
-      <PageHeader title="Competitions" breadcrumbs={breadcrumbs} />
+      <PageHeader title="Competitions" />
       <PageContent>
         <CompetitionsList />
       </PageContent>

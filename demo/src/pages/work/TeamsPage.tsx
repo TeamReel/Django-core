@@ -5,15 +5,9 @@ import { TeamsList } from '../identity/directory/TeamsList';
 export default function TeamsPage() {
   const navigate = useNavigate();
 
-  const breadcrumbs = [
-    { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-    { label: 'Directory', onClick: () => navigate('/directory') },
-    { label: 'Teams', current: true },
-  ];
-
   return (
     <>
-      <PageHeader title="Teams" breadcrumbs={breadcrumbs} />
+      <PageHeader title="Teams" />
       <PageContent>
         <TeamsList />
       </PageContent>
