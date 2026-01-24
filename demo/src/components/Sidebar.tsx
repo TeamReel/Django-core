@@ -629,45 +629,97 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             </div>
 
             {/* Items */}
-            <div style={{ padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {panelBConfig.items.map(item => {
-                    const [itemPathname, itemQuery = ''] = String(item.path || '').split('?');
-                    const itemSearch = itemQuery ? `?${itemQuery}` : '';
+            {(() => {
+                // Check if this is a tab-based navigation (items have ?tab= query params)
+                const hasTabItems = panelBConfig.items.some(item => String(item.path || '').includes('?tab='));
 
-                    const locationTab = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
-                    const itemTab = String(new URLSearchParams(itemSearch).get('tab') || '').trim().toLowerCase();
-                    const isTabItem = Boolean(itemTab);
-
-                    const isActive = isTabItem
-                      ? (location.pathname === itemPathname && locationTab === itemTab)
-                      : (location.pathname === itemPathname && (!locationTab || locationTab === 'overview'));
-
+                if (hasTabItems) {
+                    // Tab strip layout (like original OrganisationDetailPage tabs)
                     return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '8px 12px',
-                            borderRadius: 6,
-                            textDecoration: 'none',
-                            fontSize: 14,
-                            color: isActive ? 'var(--sidebar-b-active-text)' : 'var(--sidebar-b-text)',
-                            backgroundColor: isActive ? 'var(--sidebar-b-active-bg)' : 'transparent',
-                            fontWeight: isActive ? 600 : 400
-                        }}
-                      >
-                          {item.icon && (
-                              <span style={{ marginRight: 10, display: 'flex' }}>
-                                  <AppIcon icon={item.icon} size={16} />
-                              </span>
-                          )}
-                          {item.label}
-                      </Link>
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: 6,
+                                padding: '16px 12px 10px',
+                                marginBottom: 0,
+                                borderBottom: '1px solid var(--app-border)',
+                            }}
+                        >
+                            {panelBConfig.items.map(item => {
+                                const [itemPathname, itemQuery = ''] = String(item.path || '').split('?');
+                                const itemSearch = itemQuery ? `?${itemQuery}` : '';
+                                const locationTab = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
+                                const itemTab = String(new URLSearchParams(itemSearch).get('tab') || '').trim().toLowerCase();
+                                const isActive = (location.pathname === itemPathname && locationTab === itemTab) ||
+                                    (location.pathname === itemPathname && !locationTab && itemTab === 'overview');
+
+                                return (
+                                    <Link
+                                        key={item.path}
+                                        to={item.path}
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            padding: '6px 10px',
+                                            borderRadius: 8,
+                                            border: `1px solid ${isActive ? 'var(--app-border)' : 'transparent'}`,
+                                            background: isActive ? 'var(--app-surface-2)' : 'transparent',
+                                            color: isActive ? 'var(--app-text)' : 'var(--app-muted-text)',
+                                            fontSize: 13,
+                                            fontWeight: isActive ? 700 : 600,
+                                            textDecoration: 'none',
+                                        }}
+                                    >
+                                        {item.label}
+                                    </Link>
+                                );
+                            })}
+                        </div>
                     );
-                })}
-            </div>
+                } else {
+                    // Regular sidebar item list (for section links like federation overview/clubs/teams)
+                    return (
+                        <div style={{ padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            {panelBConfig.items.map(item => {
+                                const [itemPathname, itemQuery = ''] = String(item.path || '').split('?');
+                                const itemSearch = itemQuery ? `?${itemQuery}` : '';
+                                const locationTab = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
+                                const itemTab = String(new URLSearchParams(itemSearch).get('tab') || '').trim().toLowerCase();
+                                const isTabItem = Boolean(itemTab);
+                                const isActive = isTabItem
+                                    ? (location.pathname === itemPathname && locationTab === itemTab)
+                                    : (location.pathname === itemPathname && (!locationTab || locationTab === 'overview'));
+
+                                return (
+                                    <Link
+                                        key={item.path}
+                                        to={item.path}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            padding: '8px 12px',
+                                            borderRadius: 6,
+                                            textDecoration: 'none',
+                                            fontSize: 14,
+                                            color: isActive ? 'var(--sidebar-b-active-text)' : 'var(--sidebar-b-text)',
+                                            backgroundColor: isActive ? 'var(--sidebar-b-active-bg)' : 'transparent',
+                                            fontWeight: isActive ? 600 : 400
+                                        }}
+                                    >
+                                        {item.icon && (
+                                            <span style={{ marginRight: 10, display: 'flex' }}>
+                                                <AppIcon icon={item.icon} size={16} />
+                                            </span>
+                                        )}
+                                        {item.label}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    );
+                }
+            })()}
         </aside>
       )}
 
