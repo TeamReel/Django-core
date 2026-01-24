@@ -347,6 +347,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             {/* APP CONTEXT GROUP - "Where I am" (Restored) */}
             {appGroup && appGroup.items.length > 0 && (
                 <div style={{ paddingBottom: 8, marginBottom: 8, borderBottom: '1px dashed var(--sidebar-a-border)' }}>
+                     {isOpen && (
+                        <div style={{ padding: '0 12px', marginBottom: 6, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', opacity: 0.5, color: 'var(--sidebar-a-text)' }}>
+                            APP
+                        </div>
+                    )}
                     {appGroup.items.map((item, index) => (
                         <NavLink
                             key={item.path}
