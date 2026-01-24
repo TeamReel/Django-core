@@ -38,11 +38,16 @@ const NAV_CONFIG: NavSection[] = [
     ]
   },
   {
-    id: 'work',
-    // title: 'WORK HIERARCHY', // Removed as per request
+    id: 'app',
+    title: 'APP',
     visibility: 'everyone',
     items: [
-      { path: '/directory', label: 'Directory', icon: Folder, visibility: 'everyone' },
+      { path: '/federations', label: 'Federations', icon: Globe, visibility: 'everyone' },
+      { path: '/clubs', label: 'Clubs', icon: Shield, visibility: 'everyone' },
+      { path: '/teams', label: 'Teams', icon: Shirt, visibility: 'everyone' },
+      { path: '/seasons', label: 'Seasons', icon: CalendarDays, visibility: 'everyone' },
+      { path: '/competitions', label: 'Competitions', icon: Trophy, visibility: 'everyone' },
+      { path: '/matches', label: 'Matches', icon: Timer, visibility: 'everyone' },
     ]
   },
   {
