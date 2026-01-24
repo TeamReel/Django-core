@@ -59,6 +59,9 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
       setSelectedOrgId(preselectedOrgId);
     }
   }, [preselectedOrgId]);
+
+  const permissionContext = useMemo(
+    () => ({
       currentOrganisation: context.organisation as any,
       isSuperAdmin,
     }),

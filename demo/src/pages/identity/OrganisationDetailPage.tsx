@@ -106,19 +106,7 @@ export const OrganisationDetailPage: React.FC = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'member'>('member');
   const [inviteLoading, setInviteLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    'overview'
-    | 'hierarchy'
-    | 'clubs'
-    | 'teams'
-    | 'seasons'
-    | 'competitions'
-    | 'matches'
-    | 'users'
-    | 'audit'
-    | 'governance'
-    | 'operations'
-  >('overview');
+
   const [memberSearch, setMemberSearch] = useState('');
   const [userRoleFilter, setUserRoleFilter] = useState<string>('');
   const [userClubFilterId, setUserClubFilterId] = useState<string>('');
@@ -778,7 +766,6 @@ export const OrganisationDetailPage: React.FC = () => {
   const ensureOrgPeriodsLoaded = async () => {
     if (DEBUG_LOGS) {
       console.log('[OrganisationDetailPage] ensureOrgPeriodsLoaded called', {
-        activeTab,
         teamsCount: teams.length,
         orgPeriodsCount: orgPeriods.length,
         loading: orgPeriodsLoading,
@@ -1565,7 +1552,6 @@ export const OrganisationDetailPage: React.FC = () => {
               </div>
             </div>
           </div>
-        )}
 
       </PageContent>
 
