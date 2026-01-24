@@ -417,7 +417,8 @@ export function useAppSelection() {
         }
 
         // 3. Fallback to best guess
-        if (!selectedTeam && !urlClubSlug) { // Only fallback to team if we are NOT on a club-only route
+        if (!selectedTeam && !urlClubSlug && !urlTeamSlug && !parsedPath && !['directory', 'clubs', 'teams', 'seasons', 'competitions', 'matches'].some(x => location.pathname.startsWith(`/${x}`))) {
+          // Only fallback if NOT on a global listing page
           selectedTeam = pickBestByUpdatedOrName(teams || []);
         }
 
@@ -438,13 +439,17 @@ export function useAppSelection() {
 
         // 3. Last visited
         if (!selectedClub && last?.orgSlug && String(last.orgSlug) === String(orgSlug) && last.clubSlugOrId) {
-          selectedClub = clubsBySlug.get(String(last.clubSlugOrId)) || null;
+            // Only respect last visited club if we are NOT on a global listing page
+            const isGlobalListing = ['directory', 'clubs', 'teams', 'seasons', 'competitions', 'matches'].some(x => location.pathname.startsWith(`/${x}`));
+            if (!isGlobalListing) {
+                selectedClub = clubsBySlug.get(String(last.clubSlugOrId)) || null;
+            }
         }
 
         // 4. Fallback
-        if (!selectedClub) {
-          const clubsSorted = [...(clubs || [])].sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
-          selectedClub = clubsSorted[0] || null;
+        if (!selectedClub && !['directory', 'clubs', 'teams', 'seasons', 'competitions', 'matches'].some(x => location.pathname.startsWith(`/${x}`))) {
+            const clubsSorted = [...(clubs || [])].sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+            selectedClub = clubsSorted[0] || null;
         }
 
         // Resolve a best season for selected team.
