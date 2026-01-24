@@ -254,13 +254,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         const competitionId = String(competitionSlugOrId || '').trim();
         const matchKey = String(matchId || '').trim();
 
-        const directoryWithTab = (tab: string) => {
-            const qs = orgId ? `?tab=${encodeURIComponent(tab)}&org_id=${encodeURIComponent(orgId)}` : `?tab=${encodeURIComponent(tab)}`;
-            return `/directory${qs}`;
-        };
-
-        const federationPath = orgId ? `/${orgId}` : directoryWithTab('federations');
-        const clubPath = orgId && clubId ? `/${orgId}/${clubId}` : (orgId ? `/${orgId}` : directoryWithTab('clubs'));
+        const federationPath = orgId ? `/${orgId}` : '/dashboard';
+        const clubPath = orgId && clubId ? `/${orgId}/${clubId}` : federationPath;
         const teamPath = orgId && clubId && teamId ? `/${orgId}/${clubId}/${teamId}` : clubPath;
         const seasonPath = orgId && clubId && teamId && seasonId ? `/${orgId}/${clubId}/${teamId}/${seasonId}` : teamPath;
         const competitionPath = orgId && clubId && teamId && seasonId && competitionId
@@ -397,6 +392,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         <NavLink
                             key={item.path}
                             to={item.path}
+                            end={section.id === 'app'}
                             title={!isOpen ? item.label : undefined}
                             className="flex items-center rounded-md transition-colors"
                             style={({ isActive }) => ({

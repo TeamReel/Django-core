@@ -349,25 +349,31 @@ export function useAppSelection() {
       const compute = async () => {
         if (!user) return;
 
+          const searchParams = new URLSearchParams(location.search || '');
+          const orgFromQueryRaw = String(searchParams.get('org_id') || searchParams.get('orgId') || searchParams.get('org') || '').trim();
+
         const orgFromPath = parsedPath && 'orgSlug' in parsedPath ? (parsedPath as any).orgSlug : null;
         const orgFromPathStr = String(orgFromPath || '');
 
         const ctxOrgSlugStr = String(contextOrgSlug || '');
         const ctxOrgIdStr = String(contextOrgId || '');
 
+          const last = readLastAppContext();
+
+          const orgFromQuery = orgFromQueryRaw;
+          const orgFromLast = String(last?.orgSlug || '').trim();
+
         const orgSlug =
           (orgFromPathStr && !isNumericId(orgFromPathStr) && !isUuid(orgFromPathStr))
             ? orgFromPathStr
-            : (ctxOrgSlugStr || orgFromPathStr || ctxOrgIdStr || '');
+              : (orgFromQuery || ctxOrgSlugStr || orgFromPathStr || ctxOrgIdStr || orgFromLast || '');
 
-        if (!orgSlug) return;
+          if (!orgSlug) return;
 
         // Determine target slugs from URL if present
         const urlClubSlug = parsedPath && 'clubSlugOrId' in parsedPath ? (parsedPath as any).clubSlugOrId : null;
         const urlTeamSlug = parsedPath && 'teamSlugOrId' in parsedPath ? (parsedPath as any).teamSlugOrId : null;
         const urlSeasonSlug = parsedPath && 'seasonSlugOrId' in parsedPath ? (parsedPath as any).seasonSlugOrId : null;
-
-        const last = readLastAppContext();
 
         // Fetch accessible clubs + teams for this organisation.
         const [clubs, teams] = await Promise.all([
@@ -416,10 +422,14 @@ export function useAppSelection() {
           selectedTeam = (teams || []).find((t) => String(t.slug) === String(last.teamSlugOrId)) || null;
         }
 
-        // 3. Fallback to best guess
-        if (!selectedTeam && !urlClubSlug && !urlTeamSlug && !parsedPath && !['directory', 'clubs', 'teams', 'seasons', 'competitions', 'matches'].some(x => location.pathname.startsWith(`/${x}`))) {
-          // Only fallback if NOT on a global listing page
-          selectedTeam = pickBestByUpdatedOrName(teams || []);
+        // 3. Fallback to best guess (including listing pages):
+        // If user effectively has a single team, or no URL context, pick a stable default.
+        if (!selectedTeam) {
+          if ((teams || []).length === 1) {
+            selectedTeam = (teams || [])[0] || null;
+          } else if (!urlTeamSlug) {
+            selectedTeam = pickBestByUpdatedOrName(teams || []);
+          }
         }
 
         let selectedClub: AppProjectRow | null = null;
@@ -439,17 +449,24 @@ export function useAppSelection() {
 
         // 3. Last visited
         if (!selectedClub && last?.orgSlug && String(last.orgSlug) === String(orgSlug) && last.clubSlugOrId) {
-            // Only respect last visited club if we are NOT on a global listing page
-            const isGlobalListing = ['directory', 'clubs', 'teams', 'seasons', 'competitions', 'matches'].some(x => location.pathname.startsWith(`/${x}`));
-            if (!isGlobalListing) {
-                selectedClub = clubsBySlug.get(String(last.clubSlugOrId)) || null;
-            }
+            selectedClub = clubsBySlug.get(String(last.clubSlugOrId)) || null;
         }
 
-        // 4. Fallback
-        if (!selectedClub && !['directory', 'clubs', 'teams', 'seasons', 'competitions', 'matches'].some(x => location.pathname.startsWith(`/${x}`))) {
+        // 4. Fallback (including listing pages): prefer the only club, otherwise stable alphabetical.
+        if (!selectedClub) {
+          if ((clubs || []).length === 1) {
+            selectedClub = (clubs || [])[0] || null;
+          } else {
             const clubsSorted = [...(clubs || [])].sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
             selectedClub = clubsSorted[0] || null;
+          }
+        }
+
+        // If we picked a club but not a team, prefer the most-recent team under that club.
+        if (selectedClub && !selectedTeam) {
+          const clubTeams = (teams || []).filter((t) => String(t.parent_id || '') === String(selectedClub!.id));
+          if (clubTeams.length === 1) selectedTeam = clubTeams[0];
+          else if (clubTeams.length > 1) selectedTeam = pickBestByUpdatedOrName(clubTeams);
         }
 
         // Resolve a best season for selected team.
