@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   Button,
   Card,
@@ -53,6 +53,7 @@ const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOG
 export const OrganisationDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { organisations } = useContextSwitcher();
   const { user } = useAuth();
   const [org, setOrg] = useState<Organisation | null>(null);
@@ -189,6 +190,38 @@ export const OrganisationDetailPage: React.FC = () => {
   );
   const currentOrgSlug = resolvedOrg?.slug || id?.toLowerCase(); // Use slug for API calls
   const currentOrgId = resolvedOrg?.id; // Keep ID for headers if needed
+
+  // Organisation detail "tabs" are driven by Panel B via `?tab=`.
+  const activeTab = useMemo(() => {
+    const raw = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
+    if (!raw) return 'overview';
+    const allowed = new Set(['overview', 'clubs', 'teams', 'seasons', 'competitions', 'matches', 'users']);
+    return allowed.has(raw) ? raw : 'overview';
+  }, [location.search]);
+
+  useEffect(() => {
+    // Minimal UX: scroll to the relevant section on tab change.
+    // This avoids duplicating separate org-context pages while still giving tab navigation.
+    const idByTab: Record<string, string> = {
+      overview: 'org-tab-overview',
+      clubs: 'org-tab-clubs',
+      teams: 'org-tab-teams',
+      seasons: 'org-tab-seasons',
+      competitions: 'org-tab-competitions',
+      matches: 'org-tab-matches',
+      users: 'org-tab-users',
+    };
+
+    const anchorId = idByTab[activeTab] || idByTab.overview;
+    window.setTimeout(() => {
+      if (anchorId === idByTab.overview) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      const el = document.getElementById(anchorId);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }, [activeTab]);
 
   const createModalOrganisations = useMemo(() => {
     const orgIdStr = String(currentOrgId || org?.id || '').trim();
@@ -1355,25 +1388,34 @@ export const OrganisationDetailPage: React.FC = () => {
       />
 
       <PageContent>
-
-
-        {/* Overview */}
-          <div className="space-y-6">
+        <div className="space-y-6" id="org-tab-overview">
             {/* Top Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-               <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(`/organisations/${org?.id || id}/clubs`)}>
+               <Card
+                 style={{ padding: '16px', cursor: 'pointer' }}
+                 onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}?tab=clubs`)}
+               >
                   <div className="text-sm font-medium text-gray-500">Clubs</div>
                   <div className="text-2xl font-bold mt-1">{org.clubs_count || clubsCount || 0}</div>
                </Card>
-               <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(`/organisations/${org?.id || id}/teams`)}>
+               <Card
+                 style={{ padding: '16px', cursor: 'pointer' }}
+                 onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}?tab=teams`)}
+               >
                   <div className="text-sm font-medium text-gray-500">Teams</div>
                   <div className="text-2xl font-bold mt-1">{org.teams_count || teamsCount || 0}</div>
                </Card>
-               <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(`/organisations/${org?.id || id}/users`)}>
+               <Card
+                 style={{ padding: '16px', cursor: 'pointer' }}
+                 onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}?tab=users`)}
+               >
                   <div className="text-sm font-medium text-gray-500">Users</div>
                   <div className="text-2xl font-bold mt-1">{org.member_count || members.length || 0}</div>
                </Card>
-               <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(`/organisations/${org?.id || id}/matches`)}>
+               <Card
+                 style={{ padding: '16px', cursor: 'pointer' }}
+                 onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}?tab=matches`)}
+               >
                   <div className="text-sm font-medium text-gray-500">Active Matches</div>
                   <div className="text-2xl font-bold mt-1">{matchesCount ?? '—'}</div>
                </Card>
@@ -1409,7 +1451,7 @@ export const OrganisationDetailPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column: Recent Activity & Competitions (2/3) */}
               <div className="lg:col-span-2 space-y-6">
-                <Card>
+                 <Card id="org-tab-matches">
                   <div className="flex justify-between items-center mb-4">
                      <h3 className="text-lg font-semibold">Recent Results</h3>
                      <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${currentOrgSlug}/matches`)}>View All Matches</Button>
@@ -1459,7 +1501,7 @@ export const OrganisationDetailPage: React.FC = () => {
                   )}
                 </Card>
 
-                 <Card>
+                  <Card id="org-tab-competitions">
                   <div className="flex justify-between items-center mb-4">
                      <h3 className="text-lg font-semibold">Competitions</h3>
                      <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${currentOrgSlug}/competitions`)}>Manage Competitions</Button>
@@ -1479,7 +1521,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
               {/* Right Column: Scheduled & Quick Links (1/3) */}
               <div className="space-y-6">
-                 <Card>
+                  <Card id="org-tab-teams">
                     <h3 className="text-lg font-semibold mb-3">Scheduled Matches</h3>
                     {scheduledMatchesLoading ? (
                       <div className="text-sm text-gray-500 py-2">Loading...</div>
@@ -1512,10 +1554,15 @@ export const OrganisationDetailPage: React.FC = () => {
                     </div>
                  </Card>
 
-                 <Card>
+                 <Card id="org-tab-users">
                     <h3 className="text-lg font-semibold mb-3">Quick Actions</h3>
                     <div className="space-y-2">
-                       <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => navigate(`/organisations/${org?.id || id}/users`)}>
+                       <Button
+                         variant="secondary"
+                         size="sm"
+                         style={{ width: '100%', justifyContent: 'flex-start' }}
+                         onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}?tab=users`)}
+                       >
                          Manage Users
                        </Button>
                        <Button variant="secondary" size="sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => alert('Coming soon')}>
@@ -1528,6 +1575,133 @@ export const OrganisationDetailPage: React.FC = () => {
                  </Card>
               </div>
             </div>
+
+            {/* Lightweight placeholders for non-overview tabs. These keep navigation inside the
+                OrganisationDetailPage while deeper management routes remain available. */}
+            {activeTab !== 'overview' && (
+              <Card>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 700 }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</div>
+                    <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>
+                      This view is driven by Panel B tabs for this federation.
+                    </div>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      // Optional: open the dedicated org-context routes for full management.
+                      const orgKey = String(currentOrgSlug || id || '').trim();
+                      if (!orgKey) return;
+                      const map: Record<string, string> = {
+                        clubs: `/organisations/${orgKey}/clubs`,
+                        teams: `/organisations/${orgKey}/teams`,
+                        seasons: `/organisations/${orgKey}/seasons`,
+                        competitions: `/organisations/${orgKey}/competitions`,
+                        matches: `/organisations/${orgKey}/matches`,
+                        users: `/organisations/${orgKey}/users`,
+                      };
+                      const next = map[activeTab];
+                      if (next) navigate(next);
+                    }}
+                  >
+                    Open full page
+                  </Button>
+                </div>
+
+                {activeTab === 'clubs' && (
+                  <div id="org-tab-clubs" style={{ marginTop: 12 }}>
+                    <div style={{ color: 'var(--app-muted-text)', marginBottom: 8 }}>
+                      Loaded clubs: {clubsCount || clubs.length || 0}
+                    </div>
+                    {clubsLoading ? (
+                      <div className="text-sm text-gray-500 py-2">Loading...</div>
+                    ) : clubs.length === 0 ? (
+                      <div className="text-sm text-gray-500 py-2">No clubs found.</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {clubs.slice(0, 20).map((c: any) => {
+                          const clubKey = String(c?.slug || c?.id || '').trim();
+                          const orgKey = String(currentOrgSlug || id || '').trim();
+                          const href = orgKey && clubKey ? `/${orgKey}/${clubKey}` : undefined;
+                          return (
+                            <div key={String(c?.id || clubKey)} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                              <div style={{ fontWeight: 600 }}>{String(c?.name || clubKey || 'Club')}</div>
+                              {href ? (
+                                <button
+                                  className="text-xs text-blue-600 hover:underline bg-transparent border-0 p-0 cursor-pointer"
+                                  onClick={() => navigate(href)}
+                                >
+                                  Open →
+                                </button>
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'teams' && (
+                  <div id="org-tab-teams" style={{ marginTop: 12 }}>
+                    <div style={{ color: 'var(--app-muted-text)', marginBottom: 8 }}>
+                      Loaded teams: {teamsCount || teams.length || 0}
+                    </div>
+                    {teamsLoading ? (
+                      <div className="text-sm text-gray-500 py-2">Loading...</div>
+                    ) : teams.length === 0 ? (
+                      <div className="text-sm text-gray-500 py-2">No teams found.</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {teams.slice(0, 20).map((t: any) => {
+                          const orgKey = String(currentOrgSlug || id || '').trim();
+                          const teamKey = String(t?.slug || t?.id || '').trim();
+                          const clubKey = String(t?.parent_id || t?.parent_project_id || t?.parent?.id || '').trim();
+                          const href = orgKey && clubKey && teamKey ? `/${orgKey}/${clubKey}/${teamKey}` : undefined;
+                          return (
+                            <div key={String(t?.id || teamKey)} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                              <div style={{ fontWeight: 600 }}>{String(t?.name || teamKey || 'Team')}</div>
+                              {href ? (
+                                <button
+                                  className="text-xs text-blue-600 hover:underline bg-transparent border-0 p-0 cursor-pointer"
+                                  onClick={() => navigate(href)}
+                                >
+                                  Open →
+                                </button>
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'users' && (
+                  <div id="org-tab-users" style={{ marginTop: 12 }}>
+                    <div style={{ color: 'var(--app-muted-text)', marginBottom: 8 }}>
+                      Loaded users: {members.length || 0}
+                    </div>
+                    {membersLoading ? (
+                      <div className="text-sm text-gray-500 py-2">Loading...</div>
+                    ) : members.length === 0 ? (
+                      <div className="text-sm text-gray-500 py-2">No users found.</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {members.slice(0, 25).map((m: any) => (
+                          <div key={String(m?.id)} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                            <div style={{ fontWeight: 600 }}>{String(m?.full_name || m?.username || m?.email || `User ${m?.id}`)}</div>
+                            <div style={{ color: 'var(--app-muted-text)', fontSize: 12 }}>{String(m?.email || '').trim()}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Card>
+            )}
           </div>
 
       </PageContent>

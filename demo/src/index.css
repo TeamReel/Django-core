@@ -133,11 +133,18 @@ body {
 
 .org-detail-page .bg-gray-50 { background-color: var(--app-bg) !important; }
 .org-detail-page .bg-gray-100 { background-color: var(--app-surface-2) !important; }
+.org-detail-page .bg-gray-200 { background-color: var(--app-surface-2) !important; }
+.org-detail-page .bg-gray-300 { background-color: var(--app-surface-2) !important; }
+.org-detail-page .bg-gray-800 { background-color: var(--app-surface) !important; }
+.org-detail-page .bg-gray-900 { background-color: var(--app-surface) !important; }
 .org-detail-page .bg-white { background-color: var(--app-surface) !important; }
 
+.org-detail-page .border-gray-100 { border-color: var(--app-border) !important; }
 .org-detail-page .border-gray-200 { border-color: var(--app-border) !important; }
 .org-detail-page .border-gray-300 { border-color: var(--app-border) !important; }
 .org-detail-page .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--app-border) !important; }
+
+.org-detail-page .text-blue-600 { color: var(--app-link) !important; }
 
 #root {
   background-color: var(--app-bg);
