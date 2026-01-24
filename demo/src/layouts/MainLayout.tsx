@@ -42,7 +42,7 @@ export default function MainLayout() {
       }}>
         {/* TopNavbar */}
         <div style={{ flexShrink: 0, zIndex: 100 }}>
-          <TopNavbar />
+          <TopNavbar isSidebarOpen={sidebarOpen} onToggleSidebar={toggleSidebar} />
         </div>
 
         {/* Main Content Area */}

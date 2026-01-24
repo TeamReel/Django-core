@@ -20,6 +20,7 @@ export interface PageHeaderProps extends HTMLAttributes<HTMLDivElement> {
  * Displays title, subtitle, breadcrumbs, and optional action buttons
  */
 export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: PageHeaderProps) {
+  const renderBreadcrumbs = false;
   return (
     <div
       style={{
@@ -30,7 +31,7 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: 
       }}
       {...props}
     >
-      {breadcrumbs && breadcrumbs.length > 0 && (
+      {renderBreadcrumbs && breadcrumbs && breadcrumbs.length > 0 && (
         <div
           style={{
             display: 'flex',

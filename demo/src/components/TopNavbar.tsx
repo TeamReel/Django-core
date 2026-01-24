@@ -28,7 +28,7 @@ import { useTheme } from '@django-core/theme-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Home, Menu, X, ChevronDown, ChevronUp, Sun, Moon,
-  Globe, Bell, Coins, LucideIcon
+  Globe, Bell, Coins, LucideIcon, PanelLeftOpen, PanelLeftClose
 } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
@@ -60,7 +60,7 @@ interface NotificationResponse {
 
 const navGroups: NavGroup[] = [];
 
-export default function TopNavbar() {
+export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSidebarOpen?: boolean; onToggleSidebar?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -500,6 +500,28 @@ export default function TopNavbar() {
             flexWrap: 'nowrap',
             height: '100%',
           }} className="desktop-nav">
+            {/* Sidebar toggle (Panel A) */}
+            {onToggleSidebar && (
+              <button
+                type="button"
+                onClick={onToggleSidebar}
+                title={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+                aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: 'transparent',
+                  color: 'var(--app-text)',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <AppIcon icon={isSidebarOpen ? PanelLeftClose : PanelLeftOpen} size={18} />
+              </button>
+            )}
+
             {/* Dashboard link */}
             <Link
               to={dashboardItem.path}

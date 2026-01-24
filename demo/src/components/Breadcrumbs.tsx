@@ -1,10 +1,12 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation, useNavigate, matchPath } from 'react-router-dom';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { BreadcrumbContextSwitcher, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
 
 export default function Breadcrumbs() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { context } = useContextSwitcher();
   const {
     orgSlug,
@@ -15,16 +17,262 @@ export default function Breadcrumbs() {
     matchId
   } = useAppSelection();
 
-  // Build the context chain
-  const items = [];
+  const isOrganisationsRoute = location.pathname.startsWith('/organisations/');
 
-  // Root: Organisation
-  if (orgSlug) {
-    const orgName = context?.organisation?.name || orgSlug;
-    items.push({
-        label: orgName,
-        path: `/organisations/${orgSlug}`
-    });
+  const clubDetailMatch =
+    matchPath({ path: '/organisations/:orgId/:projectId', end: true }, location.pathname) ||
+    matchPath({ path: '/:orgId/:projectId', end: true }, location.pathname);
+
+  const teamDetailMatch =
+    matchPath({ path: '/organisations/:orgId/:clubId/:projectId', end: true }, location.pathname) ||
+    matchPath({ path: '/:orgId/:clubId/:projectId', end: true }, location.pathname);
+
+  const isClubDetail = Boolean(clubDetailMatch && !teamDetailMatch);
+  const isTeamDetail = Boolean(teamDetailMatch);
+
+  const [clubOptions, setClubOptions] = useState<BreadcrumbSwitcherOption[]>([]);
+  const [teamOptions, setTeamOptions] = useState<BreadcrumbSwitcherOption[]>([]);
+  const [loadingTeams, setLoadingTeams] = useState(false);
+
+  // For club/team detail pages: fetch switcher options (clubs under org; teams under club)
+  useEffect(() => {
+    const effectiveOrg = String(orgSlug || '').trim();
+    if (!effectiveOrg) return;
+
+    const fetchClubs = async () => {
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const res = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/?page_size=250&parent_project__isnull=true`,
+          { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' }
+        );
+        if (!res.ok) return;
+        const raw = await res.json();
+        const data = raw?.data || raw;
+        const results = data?.results || data?.data?.results || [];
+        setClubOptions(
+          (results || []).map((p: any) => ({
+            id: String(p.id),
+            label: String(p.name || p.slug || p.id),
+            slug: String(p.slug || p.id),
+          }))
+        );
+      } catch {
+        // ignore
+      }
+    };
+
+    fetchClubs();
+  }, [orgSlug]);
+
+  useEffect(() => {
+    const effectiveOrg = String(orgSlug || '').trim();
+    const effectiveClub = String(clubSlugOrId || '').trim();
+    if (!isTeamDetail) return;
+    if (!effectiveOrg || !effectiveClub) return;
+
+    const fetchTeams = async () => {
+      setLoadingTeams(true);
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        // Fetch child projects (teams) for this club.
+        const res = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/?page_size=500&parent_project=${encodeURIComponent(effectiveClub)}`,
+          { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' }
+        );
+        if (!res.ok) return;
+        const raw = await res.json();
+        const data = raw?.data || raw;
+        const results = data?.results || data?.data?.results || [];
+        setTeamOptions(
+          (results || []).map((p: any) => ({
+            id: String(p.id),
+            label: String(p.name || p.slug || p.id),
+            slug: String(p.slug || p.id),
+          }))
+        );
+      } catch {
+        // ignore
+      } finally {
+        setLoadingTeams(false);
+      }
+    };
+
+    fetchTeams();
+  }, [isTeamDetail, orgSlug, clubSlugOrId]);
+
+  // Build the context chain
+  const items: Array<{ label: React.ReactNode; path: string; isLeaf?: boolean }> = [];
+
+  const dash = { label: 'Dashboard', path: '/dashboard' };
+
+  const orgPath = orgSlug
+    ? (isOrganisationsRoute ? `/organisations/${orgSlug}` : `/${orgSlug}`)
+    : '/dashboard';
+
+  // Detail pages first: render a canonical breadcrumb trail matching the actual page.
+  if (isClubDetail || isTeamDetail) {
+    items.push(dash);
+
+    if (orgSlug) {
+      const orgName = context?.organisation?.name || orgSlug;
+      items.push({ label: orgName, path: orgPath });
+    }
+
+    if (isTeamDetail) {
+      // Club crumb (static link)
+      if (clubSlugOrId) {
+        const clubPath = isOrganisationsRoute
+          ? `/organisations/${orgSlug}/${clubSlugOrId}`
+          : `/${orgSlug}/${clubSlugOrId}`;
+        items.push({ label: clubName || clubSlugOrId, path: clubPath });
+      }
+
+      // Team crumb with switcher
+      const currentTeamId = String(teamSlugOrId || '').trim();
+      if (currentTeamId) {
+        const teamPath = isOrganisationsRoute
+          ? `/organisations/${orgSlug}/${clubSlugOrId}/${currentTeamId}`
+          : `/${orgSlug}/${clubSlugOrId}/${currentTeamId}`;
+
+        const options = [...teamOptions];
+        if (!options.some((o) => String(o.slug || o.id) === currentTeamId)) {
+          options.push({ id: currentTeamId, slug: currentTeamId, label: teamName || currentTeamId });
+        }
+
+        const handleTeamSwitch = (option: BreadcrumbSwitcherOption) => {
+          const next = String(option.slug || option.id);
+          navigate(isOrganisationsRoute ? `/organisations/${orgSlug}/${clubSlugOrId}/${next}` : `/${orgSlug}/${clubSlugOrId}/${next}`);
+        };
+
+        items.push({
+          label: (
+            <BreadcrumbContextSwitcher
+              currentId={currentTeamId}
+              options={options}
+              onSelect={handleTeamSwitch}
+              hasDropdown={!loadingTeams && options.length > 1}
+              type="project"
+              current
+            />
+          ),
+          path: teamPath,
+        });
+      }
+
+      return (
+        <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center' }}>
+          <ol
+            style={{
+              display: 'flex',
+              listStyle: 'none',
+              padding: 0,
+              margin: 0,
+              alignItems: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
+            {items.map((item, index) => {
+              const isLast = index === items.length - 1;
+              return (
+                <li key={`${index}:${item.path}`} style={{ display: 'flex', alignItems: 'center' }}>
+                  {index > 0 && (
+                    <span style={{ margin: '0 8px', color: 'var(--app-muted-text)', fontSize: '14px' }}>/</span>
+                  )}
+                  {typeof item.label === 'string' ? (
+                    <Link
+                      to={item.path}
+                      style={{
+                        color: isLast ? 'var(--app-text)' : 'var(--app-muted-text)',
+                        textDecoration: 'none',
+                        fontSize: '14px',
+                        whiteSpace: 'nowrap',
+                        fontWeight: isLast ? 600 : 400,
+                      }}
+                      aria-current={isLast ? 'page' : undefined}
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    item.label
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
+      );
+    }
+
+    // Club detail
+    const currentClubId = String(clubSlugOrId || '').trim();
+    if (currentClubId) {
+      const clubPath = isOrganisationsRoute ? `/organisations/${orgSlug}/${currentClubId}` : `/${orgSlug}/${currentClubId}`;
+      const options = [...clubOptions];
+      if (!options.some((o) => String(o.slug || o.id) === currentClubId)) {
+        options.push({ id: currentClubId, slug: currentClubId, label: clubName || currentClubId });
+      }
+      const handleClubSwitch = (option: BreadcrumbSwitcherOption) => {
+        const next = String(option.slug || option.id);
+        navigate(isOrganisationsRoute ? `/organisations/${orgSlug}/${next}` : `/${orgSlug}/${next}`);
+      };
+      items.push({
+        label: (
+          <BreadcrumbContextSwitcher
+            currentId={currentClubId}
+            options={options}
+            onSelect={handleClubSwitch}
+            hasDropdown={options.length > 1}
+            type="project"
+            current
+          />
+        ),
+        path: clubPath,
+      });
+    }
+
+    return (
+      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center' }}>
+        <ol
+          style={{
+            display: 'flex',
+            listStyle: 'none',
+            padding: 0,
+            margin: 0,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
+          {items.map((item, index) => {
+            const isLast = index === items.length - 1;
+            return (
+              <li key={`${index}:${item.path}`} style={{ display: 'flex', alignItems: 'center' }}>
+                {index > 0 && (
+                  <span style={{ margin: '0 8px', color: 'var(--app-muted-text)', fontSize: '14px' }}>/</span>
+                )}
+                {typeof item.label === 'string' ? (
+                  <Link
+                    to={item.path}
+                    style={{
+                      color: isLast ? 'var(--app-text)' : 'var(--app-muted-text)',
+                      textDecoration: 'none',
+                      fontSize: '14px',
+                      whiteSpace: 'nowrap',
+                      fontWeight: isLast ? 600 : 400,
+                    }}
+                    aria-current={isLast ? 'page' : undefined}
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  item.label
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
+    );
   }
 
   // Level 1: Club
