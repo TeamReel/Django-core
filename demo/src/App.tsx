@@ -120,6 +120,14 @@ export default function App() {
     return <Navigate to={`/directory${nextSearch ? `?${nextSearch}` : ''}`} replace />;
   };
 
+  const LegacyOrgContextRedirect = ({ section }: { section: string }) => {
+    const { orgId } = useParams<{ orgId: string }>();
+    const orgKey = String(orgId || '').trim();
+    const s = String(section || '').trim().toLowerCase();
+    if (!orgKey || !s) return <Navigate to="/directory?tab=federations" replace />;
+    return <Navigate to={`/${encodeURIComponent(orgKey)}/${encodeURIComponent(s)}`} replace />;
+  };
+
   const OrgProjectsRedirect = () => {
     const { orgId } = useParams<{ orgId: string }>();
     return (
@@ -908,7 +916,7 @@ export default function App() {
         path="/organisations/:orgId/clubs"
         element={
           <ProtectedRoute>
-            <OrgClubsPage />
+            <LegacyOrgContextRedirect section="clubs" />
           </ProtectedRoute>
         }
       />
@@ -916,7 +924,7 @@ export default function App() {
         path="/organisations/:orgId/teams"
         element={
           <ProtectedRoute>
-            <OrgTeamsPage />
+            <LegacyOrgContextRedirect section="teams" />
           </ProtectedRoute>
         }
       />
@@ -924,7 +932,7 @@ export default function App() {
         path="/organisations/:orgId/seasons"
         element={
           <ProtectedRoute>
-            <OrgSeasonsPage />
+            <LegacyOrgContextRedirect section="seasons" />
           </ProtectedRoute>
         }
       />
@@ -932,7 +940,7 @@ export default function App() {
         path="/organisations/:orgId/competitions"
         element={
           <ProtectedRoute>
-            <OrgCompetitionsPage />
+            <LegacyOrgContextRedirect section="competitions" />
           </ProtectedRoute>
         }
       />
@@ -940,12 +948,61 @@ export default function App() {
         path="/organisations/:orgId/matches"
         element={
           <ProtectedRoute>
-            <OrgMatchesPage />
+            <LegacyOrgContextRedirect section="matches" />
           </ProtectedRoute>
         }
       />
       <Route
         path="/organisations/:orgId/users"
+        element={
+          <ProtectedRoute>
+            <LegacyOrgContextRedirect section="users" />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/:orgId/clubs"
+        element={
+          <ProtectedRoute>
+            <OrgClubsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/teams"
+        element={
+          <ProtectedRoute>
+            <OrgTeamsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/seasons"
+        element={
+          <ProtectedRoute>
+            <OrgSeasonsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/competitions"
+        element={
+          <ProtectedRoute>
+            <OrgCompetitionsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/matches"
+        element={
+          <ProtectedRoute>
+            <OrgMatchesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:orgId/users"
         element={
           <ProtectedRoute>
             <OrgUsersPage />

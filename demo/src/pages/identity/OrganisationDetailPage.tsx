@@ -394,7 +394,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
   // Custom handler to navigate to the selected organisation's detail page
   const handleOrganisationSwitch = (option: { id: string; label: string; slug?: string }) => {
-    navigate(`/organisations/${option.slug || option.id}`);
+    navigate(`/${option.slug || option.id}`);
   };
 
   const tabs = useMemo(
@@ -1524,7 +1524,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 <Card>
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold">Recent Results</h3>
-                    <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${currentOrgSlug}/matches`)}>
+                    <Button variant="secondary" size="sm" onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}/matches`)}>
                       View All Matches
                     </Button>
                   </div>
@@ -1570,7 +1570,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 <Card>
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold">Competitions</h3>
-                    <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${currentOrgSlug}/competitions`)}>
+                    <Button variant="secondary" size="sm" onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}/competitions`)}>
                       Manage Competitions
                     </Button>
                   </div>
@@ -1621,7 +1621,7 @@ export const OrganisationDetailPage: React.FC = () => {
                     </div>
                   )}
                   <div className="mt-4 pt-3 border-t border-gray-100">
-                    <Button variant="secondary" size="sm" style={{ width: '100%' }} onClick={() => navigate(`/organisations/${currentOrgSlug}/matches`)}>
+                    <Button variant="secondary" size="sm" style={{ width: '100%' }} onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}/matches`)}>
                       View All Matches
                     </Button>
                   </div>
@@ -1800,7 +1800,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 size="sm"
                 onClick={() => {
                   const orgKey = String(currentOrgSlug || id || '').trim();
-                  if (orgKey) navigate(`/organisations/${orgKey}/clubs`);
+                  if (orgKey) navigate(`/${encodeURIComponent(orgKey)}/clubs`);
                 }}
               >
                 Open full page
@@ -1851,7 +1851,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 size="sm"
                 onClick={() => {
                   const orgKey = String(currentOrgSlug || id || '').trim();
-                  if (orgKey) navigate(`/organisations/${orgKey}/teams`);
+                  if (orgKey) navigate(`/${encodeURIComponent(orgKey)}/teams`);
                 }}
               >
                 Open full page
@@ -1903,7 +1903,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 size="sm"
                 onClick={() => {
                   const orgKey = String(currentOrgSlug || id || '').trim();
-                  if (orgKey) navigate(`/organisations/${orgKey}/seasons`);
+                  if (orgKey) navigate(`/${encodeURIComponent(orgKey)}/seasons`);
                 }}
               >
                 Open full page
@@ -1941,7 +1941,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 size="sm"
                 onClick={() => {
                   const orgKey = String(currentOrgSlug || id || '').trim();
-                  if (orgKey) navigate(`/organisations/${orgKey}/competitions`);
+                  if (orgKey) navigate(`/${encodeURIComponent(orgKey)}/competitions`);
                 }}
               >
                 Open full page
@@ -1971,7 +1971,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 <div style={{ fontSize: 16, fontWeight: 700 }}>Matches</div>
                 <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>Federation matches</div>
               </div>
-              <Button variant="secondary" size="sm" onClick={() => navigate(`/organisations/${currentOrgSlug}/matches`)}>
+              <Button variant="secondary" size="sm" onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}/matches`)}>
                 Open full page
               </Button>
             </div>
@@ -2013,7 +2013,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 size="sm"
                 onClick={() => {
                   const orgKey = String(currentOrgSlug || id || '').trim();
-                  if (orgKey) navigate(`/organisations/${orgKey}/users`);
+                  if (orgKey) navigate(`/${encodeURIComponent(orgKey)}/users`);
                 }}
               >
                 Open full page

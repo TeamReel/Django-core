@@ -110,19 +110,31 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             const orgKey = String(orgIdOrSlug || '').trim();
             if (!orgKey) return '/federations';
             const s = String(section || '').trim().toLowerCase();
-            if (!s || s === 'overview') return `/organisations/${encodeURIComponent(orgKey)}`;
-            return `/organisations/${encodeURIComponent(orgKey)}/${encodeURIComponent(s)}`;
+            if (!s || s === 'overview') return `/${encodeURIComponent(orgKey)}`;
+            return `/${encodeURIComponent(orgKey)}/${encodeURIComponent(s)}`;
         };
 
         // Org-context pages (federation subpages). These must be detected BEFORE
         // club/team vanity route matching, because e.g. `/organisations/:orgId/clubs`
         // would otherwise look like a club detail route with projectId="clubs".
-        const orgClubsMatch = matchPath({ path: '/organisations/:orgId/clubs', end: true }, path);
-        const orgTeamsMatch = matchPath({ path: '/organisations/:orgId/teams', end: true }, path);
-        const orgSeasonsMatch = matchPath({ path: '/organisations/:orgId/seasons', end: true }, path);
-        const orgCompetitionsMatch = matchPath({ path: '/organisations/:orgId/competitions', end: true }, path);
-        const orgMatchesMatch = matchPath({ path: '/organisations/:orgId/matches', end: true }, path);
-        const orgUsersMatch = matchPath({ path: '/organisations/:orgId/users', end: true }, path);
+        const orgClubsMatch =
+            matchPath({ path: '/organisations/:orgId/clubs', end: true }, path) ||
+            matchPath({ path: '/:orgId/clubs', end: true }, path);
+        const orgTeamsMatch =
+            matchPath({ path: '/organisations/:orgId/teams', end: true }, path) ||
+            matchPath({ path: '/:orgId/teams', end: true }, path);
+        const orgSeasonsMatch =
+            matchPath({ path: '/organisations/:orgId/seasons', end: true }, path) ||
+            matchPath({ path: '/:orgId/seasons', end: true }, path);
+        const orgCompetitionsMatch =
+            matchPath({ path: '/organisations/:orgId/competitions', end: true }, path) ||
+            matchPath({ path: '/:orgId/competitions', end: true }, path);
+        const orgMatchesMatch =
+            matchPath({ path: '/organisations/:orgId/matches', end: true }, path) ||
+            matchPath({ path: '/:orgId/matches', end: true }, path);
+        const orgUsersMatch =
+            matchPath({ path: '/organisations/:orgId/users', end: true }, path) ||
+            matchPath({ path: '/:orgId/users', end: true }, path);
 
         // Detect TeamReel vanity + /organisations routes so Panel B is driven by the actual page.
         const teamDetailMatch =
