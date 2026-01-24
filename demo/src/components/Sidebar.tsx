@@ -46,14 +46,6 @@ const NAV_CONFIG: NavSection[] = [
     ]
   },
   {
-    id: 'people',
-    title: 'PEOPLE',
-    visibility: 'everyone',
-    items: [
-      { path: '/users', label: 'Users', icon: Users, visibility: 'everyone' },
-    ]
-  },
-  {
     id: 'content',
     title: 'CONTENT',
     visibility: 'everyone',
@@ -109,8 +101,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
     // 1. Determine Active Section
     let activeSection: 'work' | 'people' | 'content' | 'organisation' | 'platform' | 'help' = 'work';
-    if (path.startsWith('/users')) activeSection = 'people';
-    else if (path.startsWith('/content') || path.startsWith('/studio')) activeSection = 'content';
+    if (path.startsWith('/content') || path.startsWith('/studio')) activeSection = 'content';
     else if (path.startsWith('/permissions') || path.startsWith('/settings')) activeSection = 'organisation';
     else if (['/health', '/flags', '/integration', '/design', '/observability', '/security'].some(prefix => path.startsWith(prefix))) activeSection = 'platform';
     else if (['/docs', '/constitution'].some(prefix => path.startsWith(prefix))) activeSection = 'help';
@@ -173,6 +164,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Seasons', path: '/seasons', icon: CalendarDays },
                     { label: 'Competitions', path: '/competitions', icon: Trophy },
                     { label: 'Matches', path: '/matches', icon: Timer },
+                    { label: 'Users', path: '/users', icon: Users },
                  ];
             }
             break;
@@ -184,13 +176,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 { label: 'AI Studio', path: '/studio', icon: Sparkles },
             ];
             break;
-
-        case 'people':
-             title = 'People';
-             items = [
-                 { label: 'All Users', path: '/users', icon: Users },
-             ];
-             break;
 
         case 'organisation':
             if (isOrgAdmin || isSystemAdmin) {
