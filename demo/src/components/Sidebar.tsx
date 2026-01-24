@@ -145,6 +145,24 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 const baseUrl = `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`;
                 items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
                 items.push({ label: 'Seasons', path: `${baseUrl}/seasons`, icon: CalendarDays });
+            } else if (clubSlugOrId && orgSlug) {
+                // Club Actions
+                title = 'Club Actions';
+                const baseUrl = `/organisations/${orgSlug}/projects/${clubSlugOrId}`;
+                items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
+                items.push({ label: 'Teams', path: `${baseUrl}/teams`, icon: Shirt });
+                items.push({ label: 'Seasons', path: `${baseUrl}/seasons`, icon: CalendarDays });
+            } else if (orgSlug && location.pathname.startsWith(`/organisations/${orgSlug}`)) {
+                // Organisation Actions
+                title = 'Federation Actions';
+                const baseUrl = `/organisations/${orgSlug}`;
+                items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
+                items.push({ label: 'Clubs', path: `${baseUrl}/clubs`, icon: Shield });
+                items.push({ label: 'Teams', path: `${baseUrl}/teams`, icon: Shirt });
+                items.push({ label: 'Seasons', path: `${baseUrl}/seasons`, icon: CalendarDays });
+                items.push({ label: 'Competitions', path: `${baseUrl}/competitions`, icon: Trophy });
+                items.push({ label: 'Matches', path: `${baseUrl}/matches`, icon: Timer });
+                items.push({ label: 'Users', path: `${baseUrl}/users`, icon: Users });
             } else {
                  // Browse Mode (Default) - Standard shortcuts
                  title = 'Directory';
@@ -269,7 +287,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
     return {
         id: 'app-context',
-        title: 'Context',
+        title: 'App',
         visibility: 'everyone',
         items
     };
