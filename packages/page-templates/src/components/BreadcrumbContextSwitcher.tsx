@@ -108,8 +108,8 @@ export function BreadcrumbContextSwitcher({
     setIsOpen(false);
   };
 
-  // If no dropdown or is current page, render as plain text
-  if (!hasDropdown || current) {
+  // If no dropdown, render as plain text
+  if (!hasDropdown) {
     return (
       <span
         style={{
@@ -144,7 +144,8 @@ export function BreadcrumbContextSwitcher({
           backgroundColor: isOpen ? 'var(--app-surface-secondary)' : 'transparent',
           border: '1px solid transparent',
           borderRadius: '4px',
-          color: 'var(--app-muted-text)',
+          color: current ? 'var(--app-text)' : 'var(--app-muted-text)',
+          fontWeight: current ? 600 : 400,
           fontSize: '12px',
           cursor: 'pointer',
           transition: 'all 0.2s',

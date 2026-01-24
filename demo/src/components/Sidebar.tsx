@@ -168,6 +168,26 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 break;
             }
 
+            // Federation detail route: Panel B must be driven by the *current route*.
+            // Without this guard, async `useAppSelection` hydration can set a prior club/team
+            // selection and cause Panel B to flip to "Team Actions" (Overview/Seasons) after load.
+            if (orgDetailMatch && !clubDetailMatch && !teamDetailMatch) {
+                const orgId = String((orgDetailMatch?.params as any)?.orgId || (orgDetailMatch?.params as any)?.id || '').trim();
+                if (orgId) {
+                    title = 'Federation';
+                    items = [
+                        { label: 'Overview', path: `/${orgId}`, icon: LayoutDashboard },
+                        { label: 'Clubs', path: `/organisations/${orgId}/clubs`, icon: Shield },
+                        { label: 'Teams', path: `/organisations/${orgId}/teams`, icon: Shirt },
+                        { label: 'Seasons', path: `/organisations/${orgId}/seasons`, icon: CalendarDays },
+                        { label: 'Competitions', path: `/organisations/${orgId}/competitions`, icon: Trophy },
+                        { label: 'Matches', path: `/organisations/${orgId}/matches`, icon: Timer },
+                        { label: 'Users', path: `/organisations/${orgId}/users`, icon: Users },
+                    ];
+                    break;
+                }
+            }
+
             // Primary requirement: show the detail-page tabs in Panel B (instead of generic actions).
             // ClubDetailPage / TeamDetailPage are implemented by ProjectDetailPage under the hood,
             // which uses a querystring tab model (activeTab).
@@ -217,25 +237,25 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 title = 'Match Actions';
                 items.push({ label: 'Overview', path: location.pathname, icon: LayoutDashboard });
                 // Add relevant Match actions if available as routes
-            } else if (competitionSlugOrId && seasonSlugOrId && teamSlugOrId && clubSlugOrId && orgSlug) {
+            } else if (!orgDetailMatch && competitionSlugOrId && seasonSlugOrId && teamSlugOrId && clubSlugOrId && orgSlug) {
                  title = 'Competition Actions';
                  const baseUrl = `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`;
                  items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
                  items.push({ label: 'Matches', path: `${baseUrl}/matches`, icon: Timer });
-            } else if (competitionSlugOrId && seasonSlugOrId && !teamSlugOrId && orgSlug) {
+            } else if (!orgDetailMatch && competitionSlugOrId && seasonSlugOrId && !teamSlugOrId && orgSlug) {
                  // Club/Project Competition Context
                  title = 'Competition Actions';
-            } else if (seasonSlugOrId && teamSlugOrId && clubSlugOrId && orgSlug) {
+            } else if (!orgDetailMatch && seasonSlugOrId && teamSlugOrId && clubSlugOrId && orgSlug) {
                 title = 'Season Actions';
                 const baseUrl = `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`;
                 items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
                 items.push({ label: 'Squad', path: `${baseUrl}/squad`, icon: Users });
-            } else if (teamSlugOrId && clubSlugOrId && orgSlug) {
+            } else if (!orgDetailMatch && teamSlugOrId && clubSlugOrId && orgSlug) {
                 title = 'Team Actions';
                 const baseUrl = `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`;
                 items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
                 items.push({ label: 'Seasons', path: `${baseUrl}/seasons`, icon: CalendarDays });
-            } else if (clubSlugOrId && orgSlug) {
+            } else if (!orgDetailMatch && clubSlugOrId && orgSlug) {
                 // Club Actions
                 title = 'Club Actions';
                 const baseUrl = `/organisations/${orgSlug}/projects/${clubSlugOrId}`;
