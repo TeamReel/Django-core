@@ -441,15 +441,20 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         const matchKey = isOrgLevelRoute ? '' : String(matchId || '').trim();
 
         const federationPath = orgId ? `/${orgId}` : '/dashboard';
-        const clubPath = orgId && clubId ? `/${orgId}/${clubId}` : federationPath;
-        const teamPath = orgId && clubId && teamId ? `/${orgId}/${clubId}/${teamId}` : clubPath;
-        const seasonPath = orgId && clubId && teamId && seasonId ? `/${orgId}/${clubId}/${teamId}/${seasonId}` : teamPath;
+
+        // When you're on a federation/org page, you might not have a club/team/etc selected.
+        // In that case, these links should NOT fall back to the federation path, otherwise
+        // multiple items in Panel A become active at once.
+        const directoryPath = '/directory';
+        const clubPath = orgId && clubId ? `/${orgId}/${clubId}` : directoryPath;
+        const teamPath = orgId && clubId && teamId ? `/${orgId}/${clubId}/${teamId}` : directoryPath;
+        const seasonPath = orgId && clubId && teamId && seasonId ? `/${orgId}/${clubId}/${teamId}/${seasonId}` : directoryPath;
         const competitionPath = orgId && clubId && teamId && seasonId && competitionId
             ? `/${orgId}/${clubId}/${teamId}/${seasonId}/${competitionId}`
-            : seasonPath;
+            : directoryPath;
         const matchPath = orgId && clubId && teamId && seasonId && competitionId && matchKey
             ? `/${orgId}/${clubId}/${teamId}/${seasonId}/${competitionId}/${matchKey}`
-            : '/matches';
+            : directoryPath;
 
         const federationLabel = `Federation${orgId ? `: ${orgId}` : ''}`;
         const clubLabel = `Club${clubName ? `: ${clubName}` : (clubId ? `: ${clubId}` : '')}`;
