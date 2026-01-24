@@ -34,7 +34,54 @@ export default function Breadcrumbs() {
 
   const isClubDetail = Boolean(clubDetailMatch && !teamDetailMatch);
   const isTeamDetail = Boolean(teamDetailMatch);
-  const isOrgDetail = Boolean(orgDetailMatch && !isClubDetail && !isTeamDetail);
+
+  const orgParam = String(
+    (orgDetailMatch?.params as any)?.orgId || (orgDetailMatch?.params as any)?.id || ''
+  ).trim();
+
+  const reservedTopLevel = useMemo(
+    () =>
+      new Set(
+        [
+          'dashboard',
+          'directory',
+          'search',
+          'matches',
+          'clubs',
+          'teams',
+          'seasons',
+          'competitions',
+          'federations',
+          'content',
+          'studio',
+          'docs',
+          'constitution',
+          'health',
+          'permissions',
+          'login',
+          'register',
+        ].map((s) => s.toLowerCase())
+      ),
+    []
+  );
+
+  const orgFromList = useMemo(() => {
+    const key = orgParam.toLowerCase();
+    if (!key) return undefined;
+    return (organisations || []).find((o: any) => {
+      const slug = String(o?.slug || '').toLowerCase();
+      const id = String(o?.id || '').toLowerCase();
+      return slug === key || id === key;
+    });
+  }, [organisations, orgParam]);
+
+  const isOrgDetail = Boolean(
+    orgDetailMatch &&
+      !isClubDetail &&
+      !isTeamDetail &&
+      orgParam &&
+      (!reservedTopLevel.has(orgParam.toLowerCase()) || Boolean(orgFromList))
+  );
 
   const [clubOptions, setClubOptions] = useState<BreadcrumbSwitcherOption[]>([]);
   const [teamOptions, setTeamOptions] = useState<BreadcrumbSwitcherOption[]>([]);
@@ -123,7 +170,9 @@ export default function Breadcrumbs() {
       slug: String(o.slug || o.id),
     }));
 
-    const currentId = String((context as any)?.organisation?.id || orgSlug || '').trim();
+    const resolvedCurrent = orgFromList || (organisations || []).find((o: any) => String(o?.id || '') === String((context as any)?.organisation?.id || ''));
+    const currentId = String(resolvedCurrent?.id || (context as any)?.organisation?.id || orgParam || orgSlug || '').trim();
+
     const handleOrgSwitch = (option: BreadcrumbSwitcherOption) => {
       const next = String(option.slug || option.id);
       navigate(isOrganisationsRoute ? `/organisations/${next}` : `/${next}`);
@@ -134,7 +183,7 @@ export default function Breadcrumbs() {
       {
         label: (
           <BreadcrumbContextSwitcher
-            currentId={currentId || String(orgSlug || '')}
+            currentId={currentId || String(orgParam || orgSlug || '')}
             options={options}
             onSelect={handleOrgSwitch}
             hasDropdown={options.length > 1}
@@ -142,7 +191,7 @@ export default function Breadcrumbs() {
             current
           />
         ),
-        path: orgPath,
+        path: isOrganisationsRoute ? `/organisations/${orgParam || orgSlug}` : `/${orgParam || orgSlug}`,
       },
     ];
 

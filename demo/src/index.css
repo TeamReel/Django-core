@@ -119,6 +119,26 @@ body {
   color: var(--app-text);
 }
 
+/* --- Organisation Detail Page: theme bridge for legacy gray utility classes --- */
+.org-detail-page {
+  color: var(--app-text);
+}
+
+.org-detail-page .text-gray-900 { color: var(--app-text) !important; }
+.org-detail-page .text-gray-800 { color: var(--app-text) !important; }
+.org-detail-page .text-gray-700 { color: var(--app-text) !important; }
+.org-detail-page .text-gray-600 { color: var(--app-muted-text) !important; }
+.org-detail-page .text-gray-500 { color: var(--app-muted-text) !important; }
+.org-detail-page .text-gray-400 { color: var(--app-muted-text) !important; }
+
+.org-detail-page .bg-gray-50 { background-color: var(--app-bg) !important; }
+.org-detail-page .bg-gray-100 { background-color: var(--app-surface-2) !important; }
+.org-detail-page .bg-white { background-color: var(--app-surface) !important; }
+
+.org-detail-page .border-gray-200 { border-color: var(--app-border) !important; }
+.org-detail-page .border-gray-300 { border-color: var(--app-border) !important; }
+.org-detail-page .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--app-border) !important; }
+
 #root {
   background-color: var(--app-bg);
   color: var(--app-text);

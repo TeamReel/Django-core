@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { NavLink, useLocation, matchPath } from 'react-router-dom';
+import { Link, NavLink, useLocation, matchPath } from 'react-router-dom';
 import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
@@ -106,6 +106,16 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             return `${baseUrl}?tab=${encodeURIComponent(t)}`;
         };
 
+        // Org-context pages (federation subpages). These must be detected BEFORE
+        // club/team vanity route matching, because e.g. `/organisations/:orgId/clubs`
+        // would otherwise look like a club detail route with projectId="clubs".
+        const orgClubsMatch = matchPath({ path: '/organisations/:orgId/clubs', end: true }, path);
+        const orgTeamsMatch = matchPath({ path: '/organisations/:orgId/teams', end: true }, path);
+        const orgSeasonsMatch = matchPath({ path: '/organisations/:orgId/seasons', end: true }, path);
+        const orgCompetitionsMatch = matchPath({ path: '/organisations/:orgId/competitions', end: true }, path);
+        const orgMatchesMatch = matchPath({ path: '/organisations/:orgId/matches', end: true }, path);
+        const orgUsersMatch = matchPath({ path: '/organisations/:orgId/users', end: true }, path);
+
         // Detect TeamReel vanity + /organisations routes so Panel B is driven by the actual page.
         const teamDetailMatch =
             matchPath({ path: '/organisations/:orgId/:clubId/:projectId', end: true }, path) ||
@@ -134,6 +144,30 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
     switch (activeSection) {
         case 'work':
+            // Federation subpages: keep Panel B on federation tabs.
+            if (
+              orgClubsMatch ||
+              orgTeamsMatch ||
+              orgSeasonsMatch ||
+              orgCompetitionsMatch ||
+              orgMatchesMatch ||
+              orgUsersMatch
+            ) {
+                const orgId = String((orgClubsMatch?.params as any)?.orgId || (orgTeamsMatch?.params as any)?.orgId || (orgSeasonsMatch?.params as any)?.orgId || (orgCompetitionsMatch?.params as any)?.orgId || (orgMatchesMatch?.params as any)?.orgId || (orgUsersMatch?.params as any)?.orgId || '').trim();
+
+                title = 'Federation';
+                items = [
+                    { label: 'Overview', path: `/${orgId}`, icon: LayoutDashboard },
+                    { label: 'Clubs', path: `/organisations/${orgId}/clubs`, icon: Shield },
+                    { label: 'Teams', path: `/organisations/${orgId}/teams`, icon: Shirt },
+                    { label: 'Seasons', path: `/organisations/${orgId}/seasons`, icon: CalendarDays },
+                    { label: 'Competitions', path: `/organisations/${orgId}/competitions`, icon: Trophy },
+                    { label: 'Matches', path: `/organisations/${orgId}/matches`, icon: Timer },
+                    { label: 'Users', path: `/organisations/${orgId}/users`, icon: Users },
+                ];
+                break;
+            }
+
             // Primary requirement: show the detail-page tabs in Panel B (instead of generic actions).
             // ClubDetailPage / TeamDetailPage are implemented by ProjectDetailPage under the hood,
             // which uses a querystring tab model (activeTab).
@@ -212,14 +246,15 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 // Organisation Actions
                 const orgId = String(orgSlug || (orgDetailMatch?.params as any)?.orgId || (orgDetailMatch?.params as any)?.id || '').trim();
                 title = 'Federation Actions';
-                const baseUrl = location.pathname.startsWith('/organisations/') ? `/organisations/${orgId}` : `/${orgId}`;
-                items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
-                items.push({ label: 'Clubs', path: `${baseUrl}/clubs`, icon: Shield });
-                items.push({ label: 'Teams', path: `${baseUrl}/teams`, icon: Shirt });
-                items.push({ label: 'Seasons', path: `${baseUrl}/seasons`, icon: CalendarDays });
-                items.push({ label: 'Competitions', path: `${baseUrl}/competitions`, icon: Trophy });
-                items.push({ label: 'Matches', path: `${baseUrl}/matches`, icon: Timer });
-                items.push({ label: 'Users', path: `${baseUrl}/users`, icon: Users });
+                // IMPORTANT: do not use vanity `/${orgId}/clubs` etc, because it collides with
+                // club detail route `/:orgId/:projectId`. Use dedicated org-context routes.
+                items.push({ label: 'Overview', path: `/${orgId}`, icon: LayoutDashboard });
+                items.push({ label: 'Clubs', path: `/organisations/${orgId}/clubs`, icon: Shield });
+                items.push({ label: 'Teams', path: `/organisations/${orgId}/teams`, icon: Shirt });
+                items.push({ label: 'Seasons', path: `/organisations/${orgId}/seasons`, icon: CalendarDays });
+                items.push({ label: 'Competitions', path: `/organisations/${orgId}/competitions`, icon: Trophy });
+                items.push({ label: 'Matches', path: `/organisations/${orgId}/matches`, icon: Timer });
+                items.push({ label: 'Users', path: `/organisations/${orgId}/users`, icon: Users });
             } else {
                  // Browse Mode (Default) - Standard shortcuts
                  title = 'Directory';
@@ -519,11 +554,23 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
             {/* Items */}
             <div style={{ padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {panelBConfig.items.map(item => (
-                    <NavLink
+                {panelBConfig.items.map(item => {
+                    const [itemPathname, itemQuery = ''] = String(item.path || '').split('?');
+                    const itemSearch = itemQuery ? `?${itemQuery}` : '';
+
+                    const locationTab = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
+                    const itemTab = String(new URLSearchParams(itemSearch).get('tab') || '').trim().toLowerCase();
+                    const isTabItem = Boolean(itemTab);
+
+                    const isActive = isTabItem
+                      ? (location.pathname === itemPathname && locationTab === itemTab)
+                      : (location.pathname === itemPathname && (!locationTab || locationTab === 'overview'));
+
+                    return (
+                      <Link
                         key={item.path}
                         to={item.path}
-                        style={({ isActive }) => ({
+                        style={{
                             display: 'flex',
                             alignItems: 'center',
                             padding: '8px 12px',
@@ -533,16 +580,17 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                             color: isActive ? 'var(--sidebar-b-active-text)' : 'var(--sidebar-b-text)',
                             backgroundColor: isActive ? 'var(--sidebar-b-active-bg)' : 'transparent',
                             fontWeight: isActive ? 600 : 400
-                        })}
-                    >
-                        {item.icon && (
-                            <span style={{ marginRight: 10, display: 'flex' }}>
-                                <AppIcon icon={item.icon} size={16} />
-                            </span>
-                        )}
-                        {item.label}
-                    </NavLink>
-                ))}
+                        }}
+                      >
+                          {item.icon && (
+                              <span style={{ marginRight: 10, display: 'flex' }}>
+                                  <AppIcon icon={item.icon} size={16} />
+                              </span>
+                          )}
+                          {item.label}
+                      </Link>
+                    );
+                })}
             </div>
         </aside>
       )}

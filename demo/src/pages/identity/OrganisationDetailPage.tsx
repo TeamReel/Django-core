@@ -1247,7 +1247,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="p-6 org-detail-page">
         <div>
           <PageHeader
             title="Organisation Details"
@@ -1266,7 +1266,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
   if (error || !org) {
     return (
-      <div className="p-6">
+      <div className="p-6 org-detail-page">
         <div>
           <PageHeader
             title="Organisation Details"
@@ -1286,7 +1286,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
   return (
     <>
-      <div>
+      <div className="org-detail-page">
         <PageHeader
         title={org.name}
         subtitle="Federation overview"
