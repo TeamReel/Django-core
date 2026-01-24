@@ -194,9 +194,7 @@ export default function Breadcrumbs() {
       navigate(`/${next}`);
     };
 
-    const sectionLabel = orgSubpage.section.charAt(0).toUpperCase() + orgSubpage.section.slice(1);
     const orgPath = `/${encodeURIComponent(orgSubpage.orgId)}`;
-    const sectionPath = `/${encodeURIComponent(orgSubpage.orgId)}/${encodeURIComponent(orgSubpage.section)}`;
 
     const crumbs: Array<{ label: React.ReactNode; path: string }> = [
       { label: 'Dashboard', path: '/dashboard' },
@@ -213,7 +211,6 @@ export default function Breadcrumbs() {
         ),
         path: orgPath,
       },
-      { label: sectionLabel, path: sectionPath },
     ];
 
     return (
@@ -255,6 +252,17 @@ export default function Breadcrumbs() {
       </nav>
     );
   }
+
+  const isOrgLevelRoute = Boolean(orgDetailMatch && !isClubDetail && !isTeamDetail);
+  const effectiveClubSlugOrId = isOrgLevelRoute ? '' : clubSlugOrId;
+  const effectiveClubName = isOrgLevelRoute ? '' : clubName;
+  const effectiveTeamSlugOrId = isOrgLevelRoute ? '' : teamSlugOrId;
+  const effectiveTeamName = isOrgLevelRoute ? '' : teamName;
+  const effectiveSeasonSlugOrId = isOrgLevelRoute ? '' : seasonSlugOrId;
+  const effectiveSeasonName = isOrgLevelRoute ? '' : seasonName;
+  const effectiveCompetitionSlugOrId = isOrgLevelRoute ? '' : competitionSlugOrId;
+  const effectiveCompetitionName = isOrgLevelRoute ? '' : competitionName;
+  const effectiveMatchId = isOrgLevelRoute ? '' : matchId;
 
   if (isOrgDetail) {
     const options: BreadcrumbSwitcherOption[] = (organisations || []).map((o: any) => ({
@@ -490,48 +498,48 @@ export default function Breadcrumbs() {
   }
 
   // Level 1: Club
-  if (clubSlugOrId) {
+  if (effectiveClubSlugOrId) {
     items.push({
-        label: clubName || clubSlugOrId,
-        path: `/${orgSlug}/${clubSlugOrId}`
+        label: effectiveClubName || effectiveClubSlugOrId,
+        path: `/${orgSlug}/${effectiveClubSlugOrId}`
     });
   }
 
   // Level 2: Team
-  if (teamSlugOrId) {
+  if (effectiveTeamSlugOrId) {
     items.push({
-        label: teamName || teamSlugOrId,
-        path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}`
+        label: effectiveTeamName || effectiveTeamSlugOrId,
+        path: `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}`
     });
   }
 
   // Level 3: Season
-  if (seasonSlugOrId) {
+  if (effectiveSeasonSlugOrId) {
     items.push({
-        label: seasonName || seasonSlugOrId,
-        path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`
+        label: effectiveSeasonName || effectiveSeasonSlugOrId,
+        path: `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}`
     });
   }
 
   // Level 4: Competition
-  if (competitionSlugOrId) {
+  if (effectiveCompetitionSlugOrId) {
     items.push({
-        label: competitionName || competitionSlugOrId,
-        path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${competitionSlugOrId}`
+        label: effectiveCompetitionName || effectiveCompetitionSlugOrId,
+        path: `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}/${effectiveCompetitionSlugOrId}`
     });
   }
 
   // Level 5: Match
-  if (matchId) {
+  if (effectiveMatchId) {
     items.push({
-        label: `Match ${matchId}`, // Todo: fetch match name/details if possible
-        path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`
+        label: `Match ${effectiveMatchId}`, // Todo: fetch match name/details if possible
+        path: `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${effectiveSeasonSlugOrId}/competitions/${effectiveCompetitionSlugOrId}/matches/${effectiveMatchId}`
     });
   }
 
   // Handle "Members" leaf explicitly as requested
   // "Show 'Members' under Season context"
-  if (seasonSlugOrId && location.pathname.endsWith('/members')) {
+    if (effectiveSeasonSlugOrId && location.pathname.endsWith('/members')) {
       items.push({
           label: 'Members',
           path: location.pathname, // Current page

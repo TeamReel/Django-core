@@ -49,6 +49,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  const orgLocked = Boolean(preselectedOrgId);
   const [selectedOrgId, setSelectedOrgId] = useState<string>(preselectedOrgId || '');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
@@ -77,17 +78,19 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
       ?.split('=')[1] || '';
 
   useEffect(() => {
+    if (orgLocked) return;
     if (!isSuperAdmin && context.organisation?.id) {
       setSelectedOrgId(String(context.organisation.id));
     }
-  }, [context.organisation?.id, isSuperAdmin]);
+  }, [context.organisation?.id, isSuperAdmin, orgLocked]);
 
   useEffect(() => {
     const orgId = searchParams.get('org_id');
+    if (orgLocked) return;
     if (orgId && isSuperAdmin) {
       setSelectedOrgId(String(orgId));
     }
-  }, [isSuperAdmin, searchParams]);
+  }, [isSuperAdmin, searchParams, orgLocked]);
 
   useEffect(() => {
     if (!isSuperAdmin) {
@@ -219,7 +222,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
   return (
     <div>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
-        {isSuperAdmin && (
+        {isSuperAdmin && !orgLocked && (
           <select
             value={selectedOrgId}
             onChange={(e) => {

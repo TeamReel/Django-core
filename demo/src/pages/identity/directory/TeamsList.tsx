@@ -49,6 +49,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  const orgLocked = Boolean(preselectedOrgId);
   const [selectedOrgId, setSelectedOrgId] = useState<string>(preselectedOrgId || '');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
@@ -79,20 +80,21 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
 
   // Initialize org filter
   useEffect(() => {
+    if (orgLocked) return;
     if (!isSuperAdmin && context.organisation?.id) {
       setSelectedOrgId(String(context.organisation.id));
     }
-  }, [context.organisation?.id, isSuperAdmin]);
+  }, [context.organisation?.id, isSuperAdmin, orgLocked]);
 
   useEffect(() => {
     const orgId = searchParams.get('org_id');
     const clubId = searchParams.get('club_id');
     const teamId = searchParams.get('team_id');
 
-    if (orgId && isSuperAdmin) setSelectedOrgId(String(orgId));
+    if (!orgLocked && orgId && isSuperAdmin) setSelectedOrgId(String(orgId));
     if (clubId) setSelectedClubId(String(clubId));
     if (teamId) setSelectedTeamId(String(teamId));
-  }, [isSuperAdmin, searchParams]);
+  }, [isSuperAdmin, searchParams, orgLocked]);
 
   useEffect(() => {
     if (!isSuperAdmin) {
@@ -250,7 +252,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
   return (
     <div>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
-        {isSuperAdmin && (
+        {isSuperAdmin && !orgLocked && (
           <select
             value={selectedOrgId}
             onChange={(e) => {

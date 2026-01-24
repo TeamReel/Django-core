@@ -39,6 +39,12 @@ import { AuditLogTable } from '../../components/AuditLog/AuditLogTable';
 import { PolicyList } from '../../components/Organisations/PolicyList';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import { periodPathKey } from '../../utils/periodPath';
+import { ClubsList } from './directory/ClubsList';
+import { TeamsList } from './directory/TeamsList';
+import { SeasonsList } from './directory/SeasonsList';
+import { CompetitionsList } from './directory/CompetitionsList';
+import { MatchesList } from './directory/MatchesList';
+import { UsersList } from './directory/UsersList';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -422,10 +428,9 @@ export const OrganisationDetailPage: React.FC = () => {
     });
   }, [tabs, isSuperAdmin, userCanEditOrg]);
 
-  const activeTabLabel = useMemo(() => {
-    const match = visibleTabs.find(t => t.id === (activeTab as any));
-    return match?.label || 'Overview';
-  }, [visibleTabs, activeTab]);
+  const orgIdForDirectoryLists = useMemo(() => {
+    return String(currentOrgId || org?.id || '').trim();
+  }, [currentOrgId, org?.id]);
 
   const makeTabHref = (tabId: string): string => {
     const params = new URLSearchParams(location.search);
@@ -1452,32 +1457,6 @@ export const OrganisationDetailPage: React.FC = () => {
       />
 
       <PageContent>
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 6,
-            paddingBottom: 10,
-            marginBottom: 16,
-            borderBottom: '1px solid var(--app-border)',
-          }}
-        >
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '6px 10px',
-              borderRadius: 8,
-              border: '1px solid var(--app-border)',
-              background: 'var(--app-surface-2)',
-              color: 'var(--app-text)',
-              fontSize: 13,
-              fontWeight: 700,
-            }}
-          >
-            {activeTabLabel}
-          </div>
-        </div>
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Top Stats Row */}
@@ -1809,253 +1788,28 @@ export const OrganisationDetailPage: React.FC = () => {
           </Card>
         )}
 
-        {activeTab === 'clubs' && (
-          <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>Clubs</div>
-                <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>Federation clubs</div>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  const orgKey = String(currentOrgSlug || id || '').trim();
-                  if (orgKey) navigate(`/${encodeURIComponent(orgKey)}/clubs`);
-                }}
-              >
-                Open full page
-              </Button>
-            </div>
-
-            <div style={{ color: 'var(--app-muted-text)', marginTop: 12, marginBottom: 8 }}>
-              Loaded clubs: {clubsCount || clubs.length || 0}
-            </div>
-            {clubsLoading ? (
-              <div className="text-sm text-gray-500 py-2">Loading...</div>
-            ) : clubs.length === 0 ? (
-              <div className="text-sm text-gray-500 py-2">No clubs found.</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {clubs.slice(0, 50).map((c: any) => {
-                  const clubKey = String(c?.slug || c?.id || '').trim();
-                  const orgKey = String(currentOrgSlug || id || '').trim();
-                  const href = orgKey && clubKey ? `/${orgKey}/${clubKey}` : undefined;
-                  return (
-                    <div key={String(c?.id || clubKey)} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                      <div style={{ fontWeight: 600 }}>{String(c?.name || clubKey || 'Club')}</div>
-                      {href ? (
-                        <button
-                          className="text-xs text-blue-600 hover:underline bg-transparent border-0 p-0 cursor-pointer"
-                          onClick={() => navigate(href)}
-                        >
-                          Open →
-                        </button>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
+        {activeTab === 'clubs' && orgIdForDirectoryLists && (
+          <ClubsList preselectedOrgId={orgIdForDirectoryLists} />
         )}
 
-        {activeTab === 'teams' && (
-          <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>Teams</div>
-                <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>Federation teams</div>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  const orgKey = String(currentOrgSlug || id || '').trim();
-                  if (orgKey) navigate(`/${encodeURIComponent(orgKey)}/teams`);
-                }}
-              >
-                Open full page
-              </Button>
-            </div>
-
-            <div style={{ color: 'var(--app-muted-text)', marginTop: 12, marginBottom: 8 }}>
-              Loaded teams: {teamsCount || teams.length || 0}
-            </div>
-            {teamsLoading ? (
-              <div className="text-sm text-gray-500 py-2">Loading...</div>
-            ) : teams.length === 0 ? (
-              <div className="text-sm text-gray-500 py-2">No teams found.</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {teams.slice(0, 50).map((t: any) => {
-                  const orgKey = String(currentOrgSlug || id || '').trim();
-                  const teamKey = String(t?.slug || t?.id || '').trim();
-                  const clubKey = String(t?.parent_id || t?.parent_project_id || t?.parent?.id || '').trim();
-                  const href = orgKey && clubKey && teamKey ? `/${orgKey}/${clubKey}/${teamKey}` : undefined;
-                  return (
-                    <div key={String(t?.id || teamKey)} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                      <div style={{ fontWeight: 600 }}>{String(t?.name || teamKey || 'Team')}</div>
-                      {href ? (
-                        <button
-                          className="text-xs text-blue-600 hover:underline bg-transparent border-0 p-0 cursor-pointer"
-                          onClick={() => navigate(href)}
-                        >
-                          Open →
-                        </button>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
+        {activeTab === 'teams' && orgIdForDirectoryLists && (
+          <TeamsList preselectedOrgId={orgIdForDirectoryLists} />
         )}
 
-        {activeTab === 'seasons' && (
-          <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>Seasons</div>
-                <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>Federation seasons</div>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  const orgKey = String(currentOrgSlug || id || '').trim();
-                  if (orgKey) navigate(`/${encodeURIComponent(orgKey)}/seasons`);
-                }}
-              >
-                Open full page
-              </Button>
-            </div>
-
-            <div style={{ color: 'var(--app-muted-text)', marginTop: 12, marginBottom: 8 }}>
-              Seasons: {seasonsCount ?? 0}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {(orgPeriods || [])
-                .filter((p: any) => isSeasonPeriod(p))
-                .slice(0, 50)
-                .map((p: any) => (
-                  <div key={String(p?.id)} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                    <div style={{ fontWeight: 600 }}>{String(p?.name || `Season ${p?.id}`)}</div>
-                    <div style={{ color: 'var(--app-muted-text)', fontSize: 12 }}>
-                      {String(p?.start_date || '')} {p?.end_date ? `→ ${String(p.end_date)}` : ''}
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </Card>
+        {activeTab === 'seasons' && orgIdForDirectoryLists && (
+          <SeasonsList preselectedOrgId={orgIdForDirectoryLists} />
         )}
 
-        {activeTab === 'competitions' && (
-          <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>Competitions</div>
-                <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>Federation competitions</div>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  const orgKey = String(currentOrgSlug || id || '').trim();
-                  if (orgKey) navigate(`/${encodeURIComponent(orgKey)}/competitions`);
-                }}
-              >
-                Open full page
-              </Button>
-            </div>
-            <div style={{ color: 'var(--app-muted-text)', marginTop: 12, marginBottom: 8 }}>
-              Competitions: {competitionsCount ?? 0}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {(orgPeriods || [])
-                .filter((p: any) => isCompetitionPeriod(p))
-                .slice(0, 50)
-                .map((p: any) => (
-                  <div key={String(p?.id)} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                    <div style={{ fontWeight: 600 }}>{String(p?.name || `Competition ${p?.id}`)}</div>
-                    <div style={{ color: 'var(--app-muted-text)', fontSize: 12 }}>{String(p?.start_date || '')}</div>
-                  </div>
-                ))}
-            </div>
-          </Card>
+        {activeTab === 'competitions' && orgIdForDirectoryLists && (
+          <CompetitionsList preselectedOrgId={orgIdForDirectoryLists} />
         )}
 
-        {activeTab === 'matches' && (
-          <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>Matches</div>
-                <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>Federation matches</div>
-              </div>
-              <Button variant="secondary" size="sm" onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}/matches`)}>
-                Open full page
-              </Button>
-            </div>
-            <div style={{ color: 'var(--app-muted-text)', marginTop: 12, marginBottom: 8 }}>
-              Matches: {matchesCount ?? 0}
-            </div>
-            {scheduledMatchesLoading ? (
-              <div className="text-sm text-gray-500 py-2">Loading...</div>
-            ) : scheduledMatches.length === 0 ? (
-              <div className="text-sm text-gray-500 py-2">No upcoming matches scheduled.</div>
-            ) : (
-              <div className="space-y-3">
-                {scheduledMatches.slice(0, 20).map((m: any) => (
-                  <div key={m.id} className="pb-3 border-b border-gray-100 last:border-0 last:pb-0">
-                    <div className="font-medium text-sm text-gray-900">{m.title || m.name || 'Match'}</div>
-                    <div className="text-xs text-gray-500 mt-1">{m.start_time ? new Date(m.start_time).toLocaleString() : 'TBA'}</div>
-                    <button
-                      className="text-xs text-blue-600 mt-1 hover:underline bg-transparent border-0 p-0 cursor-pointer"
-                      onClick={() => navigate(getBestMatchDetailPath(m))}
-                    >
-                      Open →
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+        {activeTab === 'matches' && orgIdForDirectoryLists && (
+          <MatchesList preselectedOrgId={orgIdForDirectoryLists} />
         )}
 
-        {activeTab === 'users' && (
-          <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>Users</div>
-                <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>Federation members</div>
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  const orgKey = String(currentOrgSlug || id || '').trim();
-                  if (orgKey) navigate(`/${encodeURIComponent(orgKey)}/users`);
-                }}
-              >
-                Open full page
-              </Button>
-            </div>
-            <div style={{ color: 'var(--app-muted-text)', marginTop: 12, marginBottom: 8 }}>Loaded users: {members.length || 0}</div>
-            {membersLoading ? (
-              <div className="text-sm text-gray-500 py-2">Loading...</div>
-            ) : members.length === 0 ? (
-              <div className="text-sm text-gray-500 py-2">No users found.</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {members.slice(0, 50).map((m: any) => (
-                  <div key={String(m?.id)} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                    <div style={{ fontWeight: 600 }}>{String(m?.full_name || m?.username || m?.email || `User ${m?.id}`)}</div>
-                    <div style={{ color: 'var(--app-muted-text)', fontSize: 12 }}>{String(m?.email || '').trim()}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+        {activeTab === 'users' && orgIdForDirectoryLists && (
+          <UsersList preselectedOrgId={orgIdForDirectoryLists} />
         )}
 
       </PageContent>
