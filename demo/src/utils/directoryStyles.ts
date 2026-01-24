@@ -40,17 +40,17 @@ export const compactActionsStyle: React.CSSProperties = {
 // Use 'primary' | 'secondary' | 'danger' | 'warning' | 'neutral' to match design system variants conceptually
 export const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 'warning' | 'neutral'): React.CSSProperties => {
   const base: React.CSSProperties = {
-    padding: '6px 12px',
-    borderRadius: '6px',
+    padding: '4px 8px',
+    borderRadius: '4px',
     cursor: 'pointer',
-    fontSize: '13px',
+    fontSize: '12px',
     lineHeight: 1.2,
     whiteSpace: 'nowrap',
     flexShrink: 0,
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontWeight: 600,
+    fontWeight: 500,
     transition: 'all 0.2s ease',
   };
 
