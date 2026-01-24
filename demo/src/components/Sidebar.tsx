@@ -388,9 +388,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         </div>
                     )}
 
-                    {section.items.map(item => (
+                    {section.items.map((item, index) => (
                         <NavLink
-                            key={item.path}
+                            key={`${section.id}:${index}:${item.label}`}
                             to={item.path}
                             end={section.id === 'app'}
                             title={!isOpen ? item.label : undefined}
