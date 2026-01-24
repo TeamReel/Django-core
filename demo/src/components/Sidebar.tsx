@@ -116,6 +116,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             matchPath({ path: '/:orgId/:projectId', end: true }, path);
 
         const orgDetailMatch =
+            matchPath({ path: '/organisations/:id', end: true }, path) ||
             matchPath({ path: '/organisations/:orgId', end: true }, path) ||
             matchPath({ path: '/:orgId', end: true }, path);
 
@@ -207,9 +208,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
                 items.push({ label: 'Teams', path: `${baseUrl}/teams`, icon: Shirt });
                 items.push({ label: 'Seasons', path: `${baseUrl}/seasons`, icon: CalendarDays });
-            } else if ((orgSlug && location.pathname.startsWith(`/organisations/${orgSlug}`)) || orgDetailMatch?.params?.orgId) {
+            } else if ((orgSlug && location.pathname.startsWith(`/organisations/${orgSlug}`)) || (orgDetailMatch?.params as any)?.orgId || (orgDetailMatch?.params as any)?.id) {
                 // Organisation Actions
-                const orgId = String(orgSlug || orgDetailMatch?.params?.orgId || '').trim();
+                const orgId = String(orgSlug || (orgDetailMatch?.params as any)?.orgId || (orgDetailMatch?.params as any)?.id || '').trim();
                 title = 'Federation Actions';
                 const baseUrl = location.pathname.startsWith('/organisations/') ? `/organisations/${orgId}` : `/${orgId}`;
                 items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });

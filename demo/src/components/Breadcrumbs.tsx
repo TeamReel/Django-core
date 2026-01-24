@@ -7,7 +7,7 @@ import { BreadcrumbContextSwitcher, type BreadcrumbSwitcherOption } from '@djang
 export default function Breadcrumbs() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { context } = useContextSwitcher();
+  const { context, organisations } = useContextSwitcher();
   const {
     orgSlug,
     clubSlugOrId, clubName,
@@ -27,8 +27,14 @@ export default function Breadcrumbs() {
     matchPath({ path: '/organisations/:orgId/:clubId/:projectId', end: true }, location.pathname) ||
     matchPath({ path: '/:orgId/:clubId/:projectId', end: true }, location.pathname);
 
+  const orgDetailMatch =
+    matchPath({ path: '/organisations/:id', end: true }, location.pathname) ||
+    matchPath({ path: '/organisations/:orgId', end: true }, location.pathname) ||
+    matchPath({ path: '/:orgId', end: true }, location.pathname);
+
   const isClubDetail = Boolean(clubDetailMatch && !teamDetailMatch);
   const isTeamDetail = Boolean(teamDetailMatch);
+  const isOrgDetail = Boolean(orgDetailMatch && !isClubDetail && !isTeamDetail);
 
   const [clubOptions, setClubOptions] = useState<BreadcrumbSwitcherOption[]>([]);
   const [teamOptions, setTeamOptions] = useState<BreadcrumbSwitcherOption[]>([]);
@@ -109,6 +115,76 @@ export default function Breadcrumbs() {
   const orgPath = orgSlug
     ? (isOrganisationsRoute ? `/organisations/${orgSlug}` : `/${orgSlug}`)
     : '/dashboard';
+
+  if (isOrgDetail) {
+    const options: BreadcrumbSwitcherOption[] = (organisations || []).map((o: any) => ({
+      id: String(o.id),
+      label: String(o.name || o.slug || o.id),
+      slug: String(o.slug || o.id),
+    }));
+
+    const currentId = String((context as any)?.organisation?.id || orgSlug || '').trim();
+    const handleOrgSwitch = (option: BreadcrumbSwitcherOption) => {
+      const next = String(option.slug || option.id);
+      navigate(isOrganisationsRoute ? `/organisations/${next}` : `/${next}`);
+    };
+
+    const crumbs: Array<{ label: React.ReactNode; path: string }> = [
+      { label: 'Dashboard', path: '/dashboard' },
+      {
+        label: (
+          <BreadcrumbContextSwitcher
+            currentId={currentId || String(orgSlug || '')}
+            options={options}
+            onSelect={handleOrgSwitch}
+            hasDropdown={options.length > 1}
+            type="organisation"
+            current
+          />
+        ),
+        path: orgPath,
+      },
+    ];
+
+    return (
+      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center' }}>
+        <ol
+          style={{
+            display: 'flex',
+            listStyle: 'none',
+            padding: 0,
+            margin: 0,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
+          {crumbs.map((item, index) => (
+            <li key={`${index}:${item.path}`} style={{ display: 'flex', alignItems: 'center' }}>
+              {index > 0 && (
+                <span style={{ margin: '0 8px', color: 'var(--app-muted-text)', fontSize: '14px' }}>/</span>
+              )}
+              {typeof item.label === 'string' ? (
+                <Link
+                  to={item.path}
+                  style={{
+                    color: index === crumbs.length - 1 ? 'var(--app-text)' : 'var(--app-muted-text)',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap',
+                    fontWeight: index === crumbs.length - 1 ? 600 : 400,
+                  }}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                item.label
+              )}
+            </li>
+          ))}
+        </ol>
+      </nav>
+    );
+  }
 
   // Detail pages first: render a canonical breadcrumb trail matching the actual page.
   if (isClubDetail || isTeamDetail) {

@@ -1251,10 +1251,6 @@ export const OrganisationDetailPage: React.FC = () => {
         <div>
           <PageHeader
             title="Organisation Details"
-            breadcrumbs={[
-              { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-              { label: 'Loading...', current: true },
-            ]}
           />
           <PageContent>
             <Card>
@@ -1274,10 +1270,6 @@ export const OrganisationDetailPage: React.FC = () => {
         <div>
           <PageHeader
             title="Organisation Details"
-            breadcrumbs={[
-              { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-              { label: 'Error', current: true },
-            ]}
           />
           <PageContent>
             <Alert variant="error" data-testid="org-detail-error">
@@ -1298,21 +1290,6 @@ export const OrganisationDetailPage: React.FC = () => {
         <PageHeader
         title={org.name}
         subtitle="Federation overview"
-        breadcrumbs={[
-          { label: 'Dashboard', onClick: () => navigate('/') },
-          {
-            label: (
-              <BreadcrumbContextSwitcher
-                currentId={String(resolvedOrg?.id || org.id || '')}
-                options={organisationOptions}
-                onSelect={handleOrganisationSwitch}
-                hasDropdown={organisationOptions.length > 1}
-                type="organisation"
-              />
-            ),
-            current: true,
-          },
-        ]}
         actions={
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button
