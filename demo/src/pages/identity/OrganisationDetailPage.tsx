@@ -195,7 +195,19 @@ export const OrganisationDetailPage: React.FC = () => {
   const activeTab = useMemo(() => {
     const raw = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
     if (!raw) return 'overview';
-    const allowed = new Set(['overview', 'clubs', 'teams', 'seasons', 'competitions', 'matches', 'users']);
+    const allowed = new Set([
+      'overview',
+      'hierarchy',
+      'clubs',
+      'teams',
+      'seasons',
+      'competitions',
+      'matches',
+      'users',
+      'audit',
+      'governance',
+      'operations',
+    ]);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
 
@@ -401,6 +413,23 @@ export const OrganisationDetailPage: React.FC = () => {
     ],
     []
   );
+
+  const visibleTabs = useMemo(() => {
+    return tabs.filter((t) => {
+      if (t.id === 'operations') return isSuperAdmin;
+      if (t.id === 'audit' || t.id === 'governance') return Boolean(isSuperAdmin || userCanEditOrg);
+      return true;
+    });
+  }, [tabs, isSuperAdmin, userCanEditOrg]);
+
+  const makeTabHref = (tabId: string): string => {
+    const params = new URLSearchParams(location.search);
+    const t = String(tabId || '').trim().toLowerCase();
+    if (!t || t === 'overview') params.delete('tab');
+    else params.set('tab', t);
+    const qs = params.toString();
+    return qs ? `${location.pathname}?${qs}` : location.pathname;
+  };
 
   const orgSlugOrId = String(org?.slug || org?.id || currentOrgSlug || '');
 
@@ -1240,6 +1269,15 @@ export const OrganisationDetailPage: React.FC = () => {
        }
   }, [org?.id, currentOrgId]);
 
+  useEffect(() => {
+    if (activeTab !== 'hierarchy') return;
+    const orgId = String(org?.id || currentOrgId || '').trim();
+    if (!orgId) return;
+    if (orgPeriodsLoading) return;
+    if (orgPeriods.length > 0) return;
+    void fetchFederationCounts(orgId);
+  }, [activeTab, org?.id, currentOrgId, orgPeriodsLoading, orgPeriods.length]);
+
   const saveProjectEdits = async (project: Project, patch: Partial<Project>) => {
     const apiV1BaseUrl = getApiV1BaseUrl();
     const projectSlugOrId = (project as any).slug || project.id;
@@ -1384,34 +1422,69 @@ export const OrganisationDetailPage: React.FC = () => {
       />
 
       <PageContent>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 6,
+            paddingBottom: 10,
+            marginBottom: 16,
+            borderBottom: '1px solid var(--app-border)',
+          }}
+        >
+          {visibleTabs.map((t) => {
+            const isActive = activeTab === t.id;
+            return (
+              <Link
+                key={t.id}
+                to={makeTabHref(t.id)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '6px 10px',
+                  borderRadius: 8,
+                  border: `1px solid ${isActive ? 'var(--app-border)' : 'transparent'}`,
+                  background: isActive ? 'var(--app-surface-2)' : 'transparent',
+                  color: isActive ? 'var(--app-text)' : 'var(--app-muted-text)',
+                  fontSize: 13,
+                  fontWeight: isActive ? 700 : 600,
+                  textDecoration: 'none',
+                }}
+              >
+                {t.label}
+              </Link>
+            );
+          })}
+        </div>
+
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Top Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card
                 style={{ padding: '16px', cursor: 'pointer' }}
-                onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}?tab=clubs`)}
+                onClick={() => navigate(makeTabHref('clubs'))}
               >
                 <div className="text-sm font-medium text-gray-500">Clubs</div>
                 <div className="text-2xl font-bold mt-1">{org.clubs_count || clubsCount || 0}</div>
               </Card>
               <Card
                 style={{ padding: '16px', cursor: 'pointer' }}
-                onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}?tab=teams`)}
+                onClick={() => navigate(makeTabHref('teams'))}
               >
                 <div className="text-sm font-medium text-gray-500">Teams</div>
                 <div className="text-2xl font-bold mt-1">{org.teams_count || teamsCount || 0}</div>
               </Card>
               <Card
                 style={{ padding: '16px', cursor: 'pointer' }}
-                onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}?tab=users`)}
+                onClick={() => navigate(makeTabHref('users'))}
               >
                 <div className="text-sm font-medium text-gray-500">Users</div>
                 <div className="text-2xl font-bold mt-1">{org.member_count || members.length || 0}</div>
               </Card>
               <Card
                 style={{ padding: '16px', cursor: 'pointer' }}
-                onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}?tab=matches`)}
+                onClick={() => navigate(makeTabHref('matches'))}
               >
                 <div className="text-sm font-medium text-gray-500">Active Matches</div>
                 <div className="text-2xl font-bold mt-1">{matchesCount ?? '—'}</div>
@@ -1561,7 +1634,7 @@ export const OrganisationDetailPage: React.FC = () => {
                       variant="secondary"
                       size="sm"
                       style={{ width: '100%', justifyContent: 'flex-start' }}
-                      onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}?tab=users`)}
+                      onClick={() => navigate(makeTabHref('users'))}
                     >
                       Manage Users
                     </Button>
@@ -1586,6 +1659,133 @@ export const OrganisationDetailPage: React.FC = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {activeTab === 'hierarchy' && (
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700 }}>Hierarchy</div>
+                <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>
+                  Seasons → competitions → matches (period tree)
+                </div>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  const orgIdToRefresh = String(org?.id || currentOrgId || '').trim();
+                  if (orgIdToRefresh) void fetchFederationCounts(orgIdToRefresh);
+                }}
+              >
+                Refresh
+              </Button>
+            </div>
+
+            {orgPeriodsLoading ? (
+              <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                Loading hierarchy...
+              </div>
+            ) : orgPeriods.length === 0 ? (
+              <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                No periods found yet.
+              </div>
+            ) : (
+              <div className="overflow-x-auto" style={{ marginTop: 12 }}>
+                <Table style={compactTableStyle}>
+                  <thead>
+                    <tr>
+                      <th style={compactThStyle}>Period</th>
+                      <th style={compactThStyle}>Type</th>
+                      <th style={compactThStyle}>Start</th>
+                      <th style={compactThStyle}>End</th>
+                      <th style={compactThStyle}>Matches</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      const rows: React.ReactNode[] = [];
+
+                      const sortPeriods = (a: any, b: any) => {
+                        const aDate = String(a?.start_date || '');
+                        const bDate = String(b?.start_date || '');
+                        if (aDate && bDate && aDate !== bDate) return aDate.localeCompare(bDate);
+                        return compareText(a?.name, b?.name);
+                      };
+
+                      const roots = (orgPeriods || [])
+                        .filter((p: any) => !getPeriodParentId(p))
+                        .sort(sortPeriods);
+
+                      const pushPeriod = (p: any, depth: number) => {
+                        const idKey = String(p?.id || periodPathKey(p) || Math.random());
+                        const name = String(p?.name || `Period ${idKey}`);
+                        const isSeason = isSeasonPeriod(p);
+                        const isCompetition = !isSeason && isCompetitionPeriod(p);
+                        const typeLabel = isSeason ? 'Season' : isCompetition ? 'Competition' : 'Period';
+                        const start = String(p?.start_date || '');
+                        const end = String(p?.end_date || '');
+                        const matchCount = getRecursiveMatchesCount(p);
+
+                        rows.push(
+                          <tr key={`${idKey}:${depth}`}>
+                            <td style={{ ...compactTextTdStyle, paddingLeft: 8 + depth * 16 }}>
+                              <div className="font-medium">{name}</div>
+                              {p?.project?.name ? (
+                                <div className="text-xs text-gray-500">{String(p.project.name)}</div>
+                              ) : null}
+                            </td>
+                            <td style={compactTextTdStyle}>{typeLabel}</td>
+                            <td style={compactTextTdStyle}>{start || '—'}</td>
+                            <td style={compactTextTdStyle}>{end || '—'}</td>
+                            <td style={compactTextTdStyle}>{Number.isFinite(matchCount) ? matchCount : '—'}</td>
+                          </tr>
+                        );
+
+                        const children = (periodChildrenMap.get(String(p?.id)) || []).slice().sort(sortPeriods);
+                        for (const child of children) pushPeriod(child, depth + 1);
+                      };
+
+                      for (const root of roots) pushPeriod(root, 0);
+                      return rows;
+                    })()}
+                  </tbody>
+                </Table>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {activeTab === 'audit' && (
+          <Card>
+            {isSuperAdmin || userCanEditOrg ? (
+              <AuditLogTable organisationId={String(currentOrgId || org?.id || '')} limit={50} />
+            ) : (
+              <Alert variant="error">You do not have access to the audit log for this organisation.</Alert>
+            )}
+          </Card>
+        )}
+
+        {activeTab === 'governance' && (
+          <Card>
+            {isSuperAdmin || userCanEditOrg ? (
+              <PolicyList organisationId={String(currentOrgId || org?.id || '')} />
+            ) : (
+              <Alert variant="error">You do not have access to governance policies for this organisation.</Alert>
+            )}
+          </Card>
+        )}
+
+        {activeTab === 'operations' && (
+          <Card>
+            {isSuperAdmin ? (
+              <div style={{ padding: 12, color: 'var(--app-muted-text)' }}>
+                Operations tooling is not wired yet for this demo.
+              </div>
+            ) : (
+              <Alert variant="error">You do not have access to operations for this organisation.</Alert>
+            )}
+          </Card>
         )}
 
         {activeTab === 'clubs' && (

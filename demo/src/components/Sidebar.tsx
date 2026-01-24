@@ -106,6 +106,14 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             return `${baseUrl}?tab=${encodeURIComponent(t)}`;
         };
 
+        const makeOrgSectionUrl = (orgIdOrSlug: string, section: string) => {
+            const orgKey = String(orgIdOrSlug || '').trim();
+            if (!orgKey) return '/federations';
+            const s = String(section || '').trim().toLowerCase();
+            if (!s || s === 'overview') return `/organisations/${encodeURIComponent(orgKey)}`;
+            return `/organisations/${encodeURIComponent(orgKey)}/${encodeURIComponent(s)}`;
+        };
+
         // Org-context pages (federation subpages). These must be detected BEFORE
         // club/team vanity route matching, because e.g. `/organisations/:orgId/clubs`
         // would otherwise look like a club detail route with projectId="clubs".
@@ -156,15 +164,14 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 const orgId = String((orgClubsMatch?.params as any)?.orgId || (orgTeamsMatch?.params as any)?.orgId || (orgSeasonsMatch?.params as any)?.orgId || (orgCompetitionsMatch?.params as any)?.orgId || (orgMatchesMatch?.params as any)?.orgId || (orgUsersMatch?.params as any)?.orgId || '').trim();
 
                 title = 'Federation';
-                const baseUrl = `/${orgId}`;
                 items = [
-                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
-                    { label: 'Clubs', path: makeTabUrl(baseUrl, 'clubs'), icon: Shield },
-                    { label: 'Teams', path: makeTabUrl(baseUrl, 'teams'), icon: Shirt },
-                    { label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays },
-                    { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
-                    { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
-                    { label: 'Users', path: makeTabUrl(baseUrl, 'users'), icon: Users },
+                    { label: 'Overview', path: makeOrgSectionUrl(orgId, 'overview'), icon: LayoutDashboard },
+                    { label: 'Clubs', path: makeOrgSectionUrl(orgId, 'clubs'), icon: Shield },
+                    { label: 'Teams', path: makeOrgSectionUrl(orgId, 'teams'), icon: Shirt },
+                    { label: 'Seasons', path: makeOrgSectionUrl(orgId, 'seasons'), icon: CalendarDays },
+                    { label: 'Competitions', path: makeOrgSectionUrl(orgId, 'competitions'), icon: Trophy },
+                    { label: 'Matches', path: makeOrgSectionUrl(orgId, 'matches'), icon: Timer },
+                    { label: 'Users', path: makeOrgSectionUrl(orgId, 'users'), icon: Users },
                 ];
                 break;
             }
@@ -176,15 +183,14 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 const orgId = String((orgDetailMatch?.params as any)?.orgId || (orgDetailMatch?.params as any)?.id || '').trim();
                 if (orgId) {
                     title = 'Federation';
-                    const baseUrl = `/${orgId}`;
                     items = [
-                        { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
-                        { label: 'Clubs', path: makeTabUrl(baseUrl, 'clubs'), icon: Shield },
-                        { label: 'Teams', path: makeTabUrl(baseUrl, 'teams'), icon: Shirt },
-                        { label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays },
-                        { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
-                        { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
-                        { label: 'Users', path: makeTabUrl(baseUrl, 'users'), icon: Users },
+                        { label: 'Overview', path: makeOrgSectionUrl(orgId, 'overview'), icon: LayoutDashboard },
+                        { label: 'Clubs', path: makeOrgSectionUrl(orgId, 'clubs'), icon: Shield },
+                        { label: 'Teams', path: makeOrgSectionUrl(orgId, 'teams'), icon: Shirt },
+                        { label: 'Seasons', path: makeOrgSectionUrl(orgId, 'seasons'), icon: CalendarDays },
+                        { label: 'Competitions', path: makeOrgSectionUrl(orgId, 'competitions'), icon: Trophy },
+                        { label: 'Matches', path: makeOrgSectionUrl(orgId, 'matches'), icon: Timer },
+                        { label: 'Users', path: makeOrgSectionUrl(orgId, 'users'), icon: Users },
                     ];
                     break;
                 }
@@ -268,14 +274,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 // Organisation Actions
                 const orgId = String(orgSlug || (orgDetailMatch?.params as any)?.orgId || (orgDetailMatch?.params as any)?.id || '').trim();
                 title = 'Federation Actions';
-                const baseUrl = `/${orgId}`;
-                items.push({ label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard });
-                items.push({ label: 'Clubs', path: makeTabUrl(baseUrl, 'clubs'), icon: Shield });
-                items.push({ label: 'Teams', path: makeTabUrl(baseUrl, 'teams'), icon: Shirt });
-                items.push({ label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays });
-                items.push({ label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy });
-                items.push({ label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer });
-                items.push({ label: 'Users', path: makeTabUrl(baseUrl, 'users'), icon: Users });
+                items.push({ label: 'Overview', path: makeOrgSectionUrl(orgId, 'overview'), icon: LayoutDashboard });
+                items.push({ label: 'Clubs', path: makeOrgSectionUrl(orgId, 'clubs'), icon: Shield });
+                items.push({ label: 'Teams', path: makeOrgSectionUrl(orgId, 'teams'), icon: Shirt });
+                items.push({ label: 'Seasons', path: makeOrgSectionUrl(orgId, 'seasons'), icon: CalendarDays });
+                items.push({ label: 'Competitions', path: makeOrgSectionUrl(orgId, 'competitions'), icon: Trophy });
+                items.push({ label: 'Matches', path: makeOrgSectionUrl(orgId, 'matches'), icon: Timer });
+                items.push({ label: 'Users', path: makeOrgSectionUrl(orgId, 'users'), icon: Users });
             } else {
                  // Browse Mode (Default) - Standard shortcuts
                  title = 'Directory';
