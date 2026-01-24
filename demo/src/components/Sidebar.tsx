@@ -3,7 +3,7 @@ import { NavLink, useLocation, matchPath } from 'react-router-dom';
 import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
-  LineChart, Lock, BookOpen, Scroll, Command, LucideIcon
+  LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder
 } from 'lucide-react';
 import { useUserRole } from './PermissionGuards';
 import { useAppSelection } from '../hooks/useAppSelection';
@@ -39,15 +39,10 @@ const NAV_CONFIG: NavSection[] = [
   },
   {
     id: 'work',
-    title: 'WORK HIERARCHY',
+    // title: 'WORK HIERARCHY', // Removed as per request
     visibility: 'everyone',
     items: [
-      { path: '/directory', label: 'Federations', icon: Globe, visibility: 'everyone' },
-      { path: '/clubs', label: 'Clubs', icon: Shield, visibility: 'everyone' },
-      { path: '/teams', label: 'Teams', icon: Shirt, visibility: 'everyone' },
-      { path: '/seasons', label: 'Seasons', icon: CalendarDays, visibility: 'everyone' },
-      { path: '/competitions', label: 'Competitions', icon: Trophy, visibility: 'everyone' },
-      { path: '/matches', label: 'Matches', icon: Timer, visibility: 'everyone' },
+      { path: '/directory', label: 'Directory', icon: Folder, visibility: 'everyone' },
     ]
   },
   {
@@ -156,11 +151,14 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
                 items.push({ label: 'Seasons', path: `${baseUrl}/seasons`, icon: CalendarDays });
             } else {
-                 // Browse Mode (Default) - Minimal shortcuts only
-                 title = 'Browse';
-                 // Panel A already has the full list. Show only most common shortcuts here.
+                 // Browse Mode (Default) - Standard shortcuts
+                 title = 'Directory';
                  items = [
+                    { label: 'Federations', path: '/directory', icon: Globe },
+                    { label: 'Clubs', path: '/clubs', icon: Shield },
                     { label: 'Teams', path: '/teams', icon: Shirt },
+                    { label: 'Seasons', path: '/seasons', icon: CalendarDays },
+                    { label: 'Competitions', path: '/competitions', icon: Trophy },
                     { label: 'Matches', path: '/matches', icon: Timer },
                  ];
             }
