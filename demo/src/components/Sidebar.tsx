@@ -329,15 +329,57 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             height: 64,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: isOpen ? 'flex-start' : 'center',
-            padding: isOpen ? '0 20px' : '0 0',
+            justifyContent: isOpen ? 'space-between' : 'center',
+            padding: isOpen ? '0 12px 0 20px' : '0',
             borderBottom: '1px solid var(--sidebar-a-border)',
             marginBottom: 16
         }}>
-            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
-                <AppIcon icon={Command} size={24} />
-            </span>
-            {isOpen && <span style={{ marginLeft: 12, fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em', color: 'var(--sidebar-a-text)' }}>TeamReel</span>}
+             {isOpen ? (
+                <>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                         <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
+                            <AppIcon icon={Command} size={24} />
+                        </span>
+                        <span style={{ marginLeft: 12, fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em', color: 'var(--sidebar-a-text)' }}>TeamReel</span>
+                    </div>
+                    <button
+                        onClick={toggle}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--sidebar-a-text)',
+                            padding: 4,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            opacity: 0.6
+                        }}
+                    >
+                        <span style={{ fontSize: 20 }}>«</span>
+                    </button>
+                </>
+             ) : (
+                <button
+                    onClick={toggle}
+                    title="Expand Sidebar"
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 48,
+                        height: 48
+                    }}
+                >
+                     <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
+                        <AppIcon icon={Command} size={24} />
+                    </span>
+                </button>
+             )}
         </div>
 
 
@@ -425,27 +467,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             ))}
         </div>
 
-        {/* Collapse Toggle */}
-        <div style={{ padding: 12, borderTop: '1px solid var(--sidebar-a-border)' }}>
-            <button
-                onClick={toggle}
-                className="hover:opacity-80"
-                style={{
-                    height: 40,
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: isOpen ? 'flex-start' : 'center',
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'var(--sidebar-a-text)',
-                    cursor: 'pointer',
-                    borderRadius: 8
-                }}
-            >
-                 <span style={{ fontSize: 20 }}>{isOpen ? '«' : '»'}</span>
-            </button>
-        </div>
+        {/* Collapse Toggle Removed */}
       </aside>
 
       {/* --- PANEL B: SECONDARY CONTEXT SIDEBAR --- */}
