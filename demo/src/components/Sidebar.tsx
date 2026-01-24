@@ -34,21 +34,17 @@ const NAV_CONFIG: NavSection[] = [
     id: 'overview',
     visibility: 'everyone',
     items: [
-      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, visibility: 'everyone' }
+            { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, visibility: 'everyone' },
+            { path: '/directory', label: 'Directory', icon: Folder, visibility: 'everyone' }
     ]
   },
   {
     id: 'app',
     title: 'APP',
     visibility: 'everyone',
-    items: [
-      { path: '/federations', label: 'Federations', icon: Globe, visibility: 'everyone' },
-      { path: '/clubs', label: 'Clubs', icon: Shield, visibility: 'everyone' },
-      { path: '/teams', label: 'Teams', icon: Shirt, visibility: 'everyone' },
-      { path: '/seasons', label: 'Seasons', icon: CalendarDays, visibility: 'everyone' },
-      { path: '/competitions', label: 'Competitions', icon: Trophy, visibility: 'everyone' },
-      { path: '/matches', label: 'Matches', icon: Timer, visibility: 'everyone' },
-    ]
+        // NOTE: Panel A should show detail/context links here (not table/list pages).
+        // Items are injected dynamically via `panelASections`.
+        items: []
   },
   {
     id: 'content',
@@ -221,69 +217,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     return { title, items, isActive: true };
   }, [location.pathname, orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId, competitionSlugOrId, matchId, teamName, seasonName, competitionName, isOrgAdmin, isSystemAdmin, isStaff]);
 
-
-
-
-  // Construct App Context Group dynamically for Panel A
-  const appGroup: NavSection | null = useMemo(() => {
-    // Only show Context in Panel A if we have valid context
-    // This restores the "Where I am" block
-    if (!orgSlug) return null;
-
-    const items: NavItem[] = [];
-    if (clubSlugOrId) {
-        items.push({
-            label: clubName || 'Club',
-            path: `/organisations/${orgSlug}/projects/${clubSlugOrId}`,
-            icon: Shield,
-            visibility: 'everyone'
-        });
-    }
-    if (clubSlugOrId && teamSlugOrId) {
-         items.push({
-            label: teamName || 'Team',
-            path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`,
-            icon: Shirt,
-            visibility: 'everyone'
-        });
-    }
-    if (clubSlugOrId && teamSlugOrId && seasonSlugOrId) {
-        items.push({
-            label: seasonName || 'Season',
-            path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`,
-            icon: CalendarDays,
-            visibility: 'everyone'
-        });
-    }
-    // Hierarchy continues...
-    if (clubSlugOrId && teamSlugOrId && seasonSlugOrId && competitionSlugOrId) {
-        items.push({
-            label: competitionName || 'Competition',
-            path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`,
-            icon: Trophy,
-            visibility: 'everyone'
-        });
-    }
-    if (clubSlugOrId && teamSlugOrId && seasonSlugOrId && competitionSlugOrId && matchId) {
-        items.push({
-            label: 'Match', // Match name?
-            path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}/matches/${matchId}`,
-            icon: Timer,
-            visibility: 'everyone'
-        });
-    }
-
-    if (items.length === 0) return null;
-
-    return {
-        id: 'app-context',
-        title: 'App',
-        visibility: 'everyone',
-        items
-    };
-  }, [orgSlug, clubSlugOrId, clubName, teamSlugOrId, teamName, seasonSlugOrId, seasonName, competitionSlugOrId, competitionName, matchId]);
-
-
   // Filter groups and items based on permissions
   const visibleSections = useMemo(() => {
     return NAV_CONFIG.map(group => {
@@ -306,6 +239,85 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       return { ...group, items: visibleItems };
     }).filter((g): g is NavSection => g !== null);
   }, [isOrgAdmin, isStaff, isSystemAdmin]);
+
+    // Panel A: show detail/context links under APP (not the table/list pages).
+    const appDetailItems = useMemo<NavItem[]>(() => {
+        const items: NavItem[] = [];
+
+        // Federation detail
+        if (orgSlug) {
+            items.push({
+                label: String(orgSlug || 'Federation'),
+                path: `/${orgSlug}`,
+                icon: Globe,
+                visibility: 'everyone',
+            });
+        }
+
+        // Club detail
+        if (orgSlug && clubSlugOrId) {
+            items.push({
+                label: clubName || 'Club',
+                path: `/${orgSlug}/${clubSlugOrId}`,
+                icon: Shield,
+                visibility: 'everyone',
+            });
+        }
+
+        // Team detail
+        if (orgSlug && clubSlugOrId && teamSlugOrId) {
+            items.push({
+                label: teamName || 'Team',
+                path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}`,
+                icon: Shirt,
+                visibility: 'everyone',
+            });
+        }
+
+        // Season detail
+        if (orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId) {
+            items.push({
+                label: seasonName || 'Season',
+                path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`,
+                icon: CalendarDays,
+                visibility: 'everyone',
+            });
+        }
+
+        // Competition detail
+        if (orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId && competitionSlugOrId) {
+            items.push({
+                label: competitionName || 'Competition',
+                path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${competitionSlugOrId}`,
+                icon: Trophy,
+                visibility: 'everyone',
+            });
+        }
+
+        // Match detail
+        if (orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId && competitionSlugOrId && matchId) {
+            items.push({
+                label: 'Match',
+                path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${competitionSlugOrId}/${matchId}`,
+                icon: Timer,
+                visibility: 'everyone',
+            });
+        }
+
+        return items;
+    }, [orgSlug, clubSlugOrId, clubName, teamSlugOrId, teamName, seasonSlugOrId, seasonName, competitionSlugOrId, competitionName, matchId]);
+
+    const panelASections = useMemo(() => {
+        return visibleSections
+            .map((section) => {
+                if (section.id !== 'app') return section;
+                return {
+                    ...section,
+                    items: appDetailItems,
+                };
+            })
+            .filter((section) => section.id !== 'app' || section.items.length > 0);
+    }, [visibleSections, appDetailItems]);
 
 
   return (
@@ -391,51 +403,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         {/* Global Navigation (Panel A) */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px', overflowY: 'auto' }}>
 
-            {/* APP CONTEXT GROUP - "Where I am" (Restored) */}
-            {appGroup && appGroup.items.length > 0 && (
-                <div style={{ paddingBottom: 8, marginBottom: 8, borderBottom: '1px dashed var(--sidebar-a-border)' }}>
-                     {isOpen && (
-                        <div style={{ padding: '0 12px', marginBottom: 6, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', opacity: 0.5, color: 'var(--sidebar-a-text)' }}>
-                            APP
-                        </div>
-                    )}
-                    {appGroup.items.map((item, index) => (
-                        <NavLink
-                            key={item.path}
-                            to={item.path}
-                            title={!isOpen ? item.label : undefined}
-                            className="flex items-center rounded-md transition-colors"
-                            style={({ isActive }) => ({
-                                height: 32, // Compact
-                                textDecoration: 'none',
-                                padding: isOpen ? '0 12px' : '0',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: isOpen ? 'flex-start' : 'center',
-                                borderRadius: 4,
-                                position: 'relative',
-                                background: isActive ? 'var(--sidebar-a-active-bg)' : 'transparent',
-                                color: isActive ? 'var(--sidebar-a-active-text)' : 'var(--sidebar-a-text)',
-                            })}
-                        >
-                            <span style={{ minWidth: 24, display: 'flex', justifyContent: 'center', opacity: 0.8 }}>
-                                <AppIcon icon={item.icon} size={14} />
-                            </span>
-                            {isOpen && (
-                                <span style={{ marginLeft: 12, fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {item.label}
-                                </span>
-                            )}
-                            {/* Connector line simulation */}
-                            {index < (appGroup.items.length - 1) && isOpen && (
-                                <div style={{ position: 'absolute', left: 23, top: 26, bottom: -10, width: 1, backgroundColor: 'var(--sidebar-a-border)', zIndex: 0 }} />
-                            )}
-                        </NavLink>
-                    ))}
-                </div>
-            )}
-
-            {visibleSections.map(section => (
+            {panelASections.map(section => (
                <div key={section.id} style={{ marginBottom: section.bottom ? 0 : 16 }}>
                     {/* Section Label (Only if open) */}
                     {isOpen && section.title && !section.bottom && (
