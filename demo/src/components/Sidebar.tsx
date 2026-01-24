@@ -242,69 +242,49 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
     // Panel A: show detail/context links under APP (not the table/list pages).
     const appDetailItems = useMemo<NavItem[]>(() => {
-        const items: NavItem[] = [];
+        // Requirement: always show all hierarchy levels.
+        // Linking strategy: current selection (from useAppSelection) is already computed as
+        // "most relevant" (current path → last visited → most recent), so we can build
+        // stable detail URLs from it and use safe fallbacks when a level isn't available.
 
-        // Federation detail
-        if (orgSlug) {
-            items.push({
-                label: String(orgSlug || 'Federation'),
-                path: `/${orgSlug}`,
-                icon: Globe,
-                visibility: 'everyone',
-            });
-        }
+        const orgId = String(orgSlug || '').trim();
+        const clubId = String(clubSlugOrId || '').trim();
+        const teamId = String(teamSlugOrId || '').trim();
+        const seasonId = String(seasonSlugOrId || '').trim();
+        const competitionId = String(competitionSlugOrId || '').trim();
+        const matchKey = String(matchId || '').trim();
 
-        // Club detail
-        if (orgSlug && clubSlugOrId) {
-            items.push({
-                label: clubName || 'Club',
-                path: `/${orgSlug}/${clubSlugOrId}`,
-                icon: Shield,
-                visibility: 'everyone',
-            });
-        }
+        const directoryWithTab = (tab: string) => {
+            const qs = orgId ? `?tab=${encodeURIComponent(tab)}&org_id=${encodeURIComponent(orgId)}` : `?tab=${encodeURIComponent(tab)}`;
+            return `/directory${qs}`;
+        };
 
-        // Team detail
-        if (orgSlug && clubSlugOrId && teamSlugOrId) {
-            items.push({
-                label: teamName || 'Team',
-                path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}`,
-                icon: Shirt,
-                visibility: 'everyone',
-            });
-        }
+        const federationPath = orgId ? `/${orgId}` : directoryWithTab('federations');
+        const clubPath = orgId && clubId ? `/${orgId}/${clubId}` : (orgId ? `/${orgId}` : directoryWithTab('clubs'));
+        const teamPath = orgId && clubId && teamId ? `/${orgId}/${clubId}/${teamId}` : clubPath;
+        const seasonPath = orgId && clubId && teamId && seasonId ? `/${orgId}/${clubId}/${teamId}/${seasonId}` : teamPath;
+        const competitionPath = orgId && clubId && teamId && seasonId && competitionId
+            ? `/${orgId}/${clubId}/${teamId}/${seasonId}/${competitionId}`
+            : seasonPath;
+        const matchPath = orgId && clubId && teamId && seasonId && competitionId && matchKey
+            ? `/${orgId}/${clubId}/${teamId}/${seasonId}/${competitionId}/${matchKey}`
+            : '/matches';
 
-        // Season detail
-        if (orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId) {
-            items.push({
-                label: seasonName || 'Season',
-                path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`,
-                icon: CalendarDays,
-                visibility: 'everyone',
-            });
-        }
+        const federationLabel = `Federation${orgId ? `: ${orgId}` : ''}`;
+        const clubLabel = `Club${clubName ? `: ${clubName}` : (clubId ? `: ${clubId}` : '')}`;
+        const teamLabel = `Team${teamName ? `: ${teamName}` : (teamId ? `: ${teamId}` : '')}`;
+        const seasonLabel = `Season${seasonName ? `: ${seasonName}` : (seasonId ? `: ${seasonId}` : '')}`;
+        const competitionLabel = `Competition${competitionName ? `: ${competitionName}` : (competitionId ? `: ${competitionId}` : '')}`;
+        const matchLabel = `Match${matchKey ? `: ${matchKey}` : ''}`;
 
-        // Competition detail
-        if (orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId && competitionSlugOrId) {
-            items.push({
-                label: competitionName || 'Competition',
-                path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${competitionSlugOrId}`,
-                icon: Trophy,
-                visibility: 'everyone',
-            });
-        }
-
-        // Match detail
-        if (orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId && competitionSlugOrId && matchId) {
-            items.push({
-                label: 'Match',
-                path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${competitionSlugOrId}/${matchId}`,
-                icon: Timer,
-                visibility: 'everyone',
-            });
-        }
-
-        return items;
+        return [
+            { label: federationLabel, path: federationPath, icon: Globe, visibility: 'everyone' },
+            { label: clubLabel, path: clubPath, icon: Shield, visibility: 'everyone' },
+            { label: teamLabel, path: teamPath, icon: Shirt, visibility: 'everyone' },
+            { label: seasonLabel, path: seasonPath, icon: CalendarDays, visibility: 'everyone' },
+            { label: competitionLabel, path: competitionPath, icon: Trophy, visibility: 'everyone' },
+            { label: matchLabel, path: matchPath, icon: Timer, visibility: 'everyone' },
+        ];
     }, [orgSlug, clubSlugOrId, clubName, teamSlugOrId, teamName, seasonSlugOrId, seasonName, competitionSlugOrId, competitionName, matchId]);
 
     const panelASections = useMemo(() => {
@@ -316,7 +296,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     items: appDetailItems,
                 };
             })
-            .filter((section) => section.id !== 'app' || section.items.length > 0);
+            // Always keep the APP section visible (it now contains stable hierarchy links).
+            ;
     }, [visibleSections, appDetailItems]);
 
 
