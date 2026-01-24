@@ -19,6 +19,10 @@ export default function Breadcrumbs() {
 
   const isOrganisationsRoute = location.pathname.startsWith('/organisations/');
 
+  const orgSubpageMatch =
+    matchPath({ path: '/organisations/:orgId/:section', end: true }, location.pathname) ||
+    matchPath({ path: '/:orgId/:section', end: true }, location.pathname);
+
   const clubDetailMatch =
     matchPath({ path: '/organisations/:orgId/:projectId', end: true }, location.pathname) ||
     matchPath({ path: '/:orgId/:projectId', end: true }, location.pathname);
@@ -34,6 +38,14 @@ export default function Breadcrumbs() {
 
   const isClubDetail = Boolean(clubDetailMatch && !teamDetailMatch);
   const isTeamDetail = Boolean(teamDetailMatch);
+
+  const orgSubpage = useMemo(() => {
+    const orgId = String((orgSubpageMatch?.params as any)?.orgId || '').trim();
+    const section = String((orgSubpageMatch?.params as any)?.section || '').trim().toLowerCase();
+    const allowed = new Set(['clubs', 'teams', 'seasons', 'competitions', 'matches', 'users']);
+    if (!orgId || !allowed.has(section)) return null;
+    return { orgId, section };
+  }, [orgSubpageMatch]);
 
   const orgParam = String(
     (orgDetailMatch?.params as any)?.orgId || (orgDetailMatch?.params as any)?.id || ''
@@ -160,8 +172,89 @@ export default function Breadcrumbs() {
   const dash = { label: 'Dashboard', path: '/dashboard' };
 
   const orgPath = orgSlug
-    ? (isOrganisationsRoute ? `/organisations/${orgSlug}` : `/${orgSlug}`)
+    ? `/${orgSlug}`
     : '/dashboard';
+
+  if (orgSubpage) {
+    const options: BreadcrumbSwitcherOption[] = (organisations || []).map((o: any) => ({
+      id: String(o.id),
+      label: String(o.name || o.slug || o.id),
+      slug: String(o.slug || o.id),
+    }));
+
+    const resolvedCurrent =
+      (organisations || []).find((o: any) => String(o?.slug || '').toLowerCase() === orgSubpage.orgId.toLowerCase()) ||
+      (organisations || []).find((o: any) => String(o?.id || '').toLowerCase() === orgSubpage.orgId.toLowerCase()) ||
+      (organisations || []).find((o: any) => String(o?.id || '') === String((context as any)?.organisation?.id || ''));
+
+    const currentId = String(resolvedCurrent?.id || (context as any)?.organisation?.id || orgSubpage.orgId || '').trim();
+
+    const handleOrgSwitch = (option: BreadcrumbSwitcherOption) => {
+      const next = String(option.slug || option.id);
+      navigate(`/${next}`);
+    };
+
+    const sectionLabel = orgSubpage.section.charAt(0).toUpperCase() + orgSubpage.section.slice(1);
+    const orgPath = `/${encodeURIComponent(orgSubpage.orgId)}`;
+    const sectionPath = `/${encodeURIComponent(orgSubpage.orgId)}/${encodeURIComponent(orgSubpage.section)}`;
+
+    const crumbs: Array<{ label: React.ReactNode; path: string }> = [
+      { label: 'Dashboard', path: '/dashboard' },
+      {
+        label: (
+          <BreadcrumbContextSwitcher
+            currentId={currentId || String(orgSubpage.orgId)}
+            options={options}
+            onSelect={handleOrgSwitch}
+            hasDropdown={options.length > 1}
+            type="organisation"
+            current
+          />
+        ),
+        path: orgPath,
+      },
+      { label: sectionLabel, path: sectionPath },
+    ];
+
+    return (
+      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center' }}>
+        <ol
+          style={{
+            display: 'flex',
+            listStyle: 'none',
+            padding: 0,
+            margin: 0,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
+          {crumbs.map((item, index) => (
+            <li key={`${index}:${item.path}`} style={{ display: 'flex', alignItems: 'center' }}>
+              {index > 0 && (
+                <span style={{ margin: '0 8px', color: 'var(--app-muted-text)', fontSize: '14px' }}>/</span>
+              )}
+              {typeof item.label === 'string' ? (
+                <Link
+                  to={item.path}
+                  style={{
+                    color: index === crumbs.length - 1 ? 'var(--app-text)' : 'var(--app-muted-text)',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap',
+                    fontWeight: index === crumbs.length - 1 ? 600 : 400,
+                  }}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                item.label
+              )}
+            </li>
+          ))}
+        </ol>
+      </nav>
+    );
+  }
 
   if (isOrgDetail) {
     const options: BreadcrumbSwitcherOption[] = (organisations || []).map((o: any) => ({
@@ -175,7 +268,7 @@ export default function Breadcrumbs() {
 
     const handleOrgSwitch = (option: BreadcrumbSwitcherOption) => {
       const next = String(option.slug || option.id);
-      navigate(isOrganisationsRoute ? `/organisations/${next}` : `/${next}`);
+      navigate(`/${next}`);
     };
 
     const crumbs: Array<{ label: React.ReactNode; path: string }> = [
@@ -191,7 +284,7 @@ export default function Breadcrumbs() {
             current
           />
         ),
-        path: isOrganisationsRoute ? `/organisations/${orgParam || orgSlug}` : `/${orgParam || orgSlug}`,
+        path: `/${orgParam || orgSlug}`,
       },
     ];
 
@@ -247,18 +340,14 @@ export default function Breadcrumbs() {
     if (isTeamDetail) {
       // Club crumb (static link)
       if (clubSlugOrId) {
-        const clubPath = isOrganisationsRoute
-          ? `/organisations/${orgSlug}/${clubSlugOrId}`
-          : `/${orgSlug}/${clubSlugOrId}`;
+        const clubPath = `/${orgSlug}/${clubSlugOrId}`;
         items.push({ label: clubName || clubSlugOrId, path: clubPath });
       }
 
       // Team crumb with switcher
       const currentTeamId = String(teamSlugOrId || '').trim();
       if (currentTeamId) {
-        const teamPath = isOrganisationsRoute
-          ? `/organisations/${orgSlug}/${clubSlugOrId}/${currentTeamId}`
-          : `/${orgSlug}/${clubSlugOrId}/${currentTeamId}`;
+        const teamPath = `/${orgSlug}/${clubSlugOrId}/${currentTeamId}`;
 
         const options = [...teamOptions];
         if (!options.some((o) => String(o.slug || o.id) === currentTeamId)) {
@@ -267,7 +356,7 @@ export default function Breadcrumbs() {
 
         const handleTeamSwitch = (option: BreadcrumbSwitcherOption) => {
           const next = String(option.slug || option.id);
-          navigate(isOrganisationsRoute ? `/organisations/${orgSlug}/${clubSlugOrId}/${next}` : `/${orgSlug}/${clubSlugOrId}/${next}`);
+          navigate(`/${orgSlug}/${clubSlugOrId}/${next}`);
         };
 
         items.push({
@@ -332,14 +421,14 @@ export default function Breadcrumbs() {
     // Club detail
     const currentClubId = String(clubSlugOrId || '').trim();
     if (currentClubId) {
-      const clubPath = isOrganisationsRoute ? `/organisations/${orgSlug}/${currentClubId}` : `/${orgSlug}/${currentClubId}`;
+      const clubPath = `/${orgSlug}/${currentClubId}`;
       const options = [...clubOptions];
       if (!options.some((o) => String(o.slug || o.id) === currentClubId)) {
         options.push({ id: currentClubId, slug: currentClubId, label: clubName || currentClubId });
       }
       const handleClubSwitch = (option: BreadcrumbSwitcherOption) => {
         const next = String(option.slug || option.id);
-        navigate(isOrganisationsRoute ? `/organisations/${orgSlug}/${next}` : `/${orgSlug}/${next}`);
+        navigate(`/${orgSlug}/${next}`);
       };
       items.push({
         label: (
@@ -404,7 +493,7 @@ export default function Breadcrumbs() {
   if (clubSlugOrId) {
     items.push({
         label: clubName || clubSlugOrId,
-        path: `/organisations/${orgSlug}/projects/${clubSlugOrId}`
+        path: `/${orgSlug}/${clubSlugOrId}`
     });
   }
 
@@ -412,7 +501,7 @@ export default function Breadcrumbs() {
   if (teamSlugOrId) {
     items.push({
         label: teamName || teamSlugOrId,
-        path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}`
+        path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}`
     });
   }
 
@@ -420,7 +509,7 @@ export default function Breadcrumbs() {
   if (seasonSlugOrId) {
     items.push({
         label: seasonName || seasonSlugOrId,
-        path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+        path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`
     });
   }
 
@@ -428,7 +517,7 @@ export default function Breadcrumbs() {
   if (competitionSlugOrId) {
     items.push({
         label: competitionName || competitionSlugOrId,
-        path: `/organisations/${orgSlug}/projects/${clubSlugOrId}/teams/${teamSlugOrId}/seasons/${seasonSlugOrId}/competitions/${competitionSlugOrId}`
+        path: `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}/${competitionSlugOrId}`
     });
   }
 

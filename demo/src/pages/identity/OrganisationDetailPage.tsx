@@ -832,7 +832,15 @@ export const OrganisationDetailPage: React.FC = () => {
     if (orgPeriodsFetchInFlightRef.current) return;
     if (orgPeriodsLoading) return;
     if (orgPeriods.length > 0) return;
-    if (!teams || teams.length === 0) return;
+
+    // If the backend doesn't support organisation-level period filtering, we fall back to
+    // fetching periods by team. That requires teams to be loaded.
+    if (!teams || teams.length === 0) {
+      if (!teamsLoading && currentOrgSlug) {
+        void fetchTeamsForOrg({ force: true });
+      }
+      return;
+    }
 
     orgPeriodsFetchInFlightRef.current = true;
     setOrgPeriodsLoading(true);
@@ -923,6 +931,9 @@ export const OrganisationDetailPage: React.FC = () => {
         setOrgPeriods(list);
         if (list.length > 0) {
           recomputePeriodCounts(list);
+        } else {
+          // Likely unsupported filter on backend; fall back to team-scoped loading.
+          void fetchTeamsForOrg({ force: true });
         }
       }
 
@@ -945,9 +956,17 @@ export const OrganisationDetailPage: React.FC = () => {
 
     // Fallback: if org-level period filtering isn't supported, load periods via team scope.
     if (!orgPeriodsLoading && orgPeriods.length === 0) {
-      ensureOrgPeriodsLoaded();
+      void ensureOrgPeriodsLoaded();
     }
   };
+
+  useEffect(() => {
+    const shouldEnsurePeriods = activeTab === 'hierarchy' || activeTab === 'seasons' || activeTab === 'competitions';
+    if (!shouldEnsurePeriods) return;
+    if (orgPeriodsLoading) return;
+    if (orgPeriods.length > 0) return;
+    void ensureOrgPeriodsLoaded();
+  }, [activeTab, orgPeriodsLoading, orgPeriods.length, teams.length, currentOrgSlug]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
