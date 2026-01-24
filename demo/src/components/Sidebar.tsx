@@ -164,6 +164,16 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
     switch (activeSection) {
         case 'work':
+            // Dashboard or Directory: show overview section in Panel B
+            if (path === '/dashboard' || path === '/directory') {
+                title = 'Overview';
+                items = [
+                    { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+                    { label: 'Directory', path: '/directory', icon: Folder },
+                ];
+                break;
+            }
+
             // Federation subpages: keep Panel B on federation tabs.
             if (
               orgClubsMatch ||
