@@ -422,6 +422,11 @@ export const OrganisationDetailPage: React.FC = () => {
     });
   }, [tabs, isSuperAdmin, userCanEditOrg]);
 
+  const activeTabLabel = useMemo(() => {
+    const match = visibleTabs.find(t => t.id === (activeTab as any));
+    return match?.label || 'Overview';
+  }, [visibleTabs, activeTab]);
+
   const makeTabHref = (tabId: string): string => {
     const params = new URLSearchParams(location.search);
     const t = String(tabId || '').trim().toLowerCase();
@@ -1447,6 +1452,32 @@ export const OrganisationDetailPage: React.FC = () => {
       />
 
       <PageContent>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 6,
+            paddingBottom: 10,
+            marginBottom: 16,
+            borderBottom: '1px solid var(--app-border)',
+          }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '6px 10px',
+              borderRadius: 8,
+              border: '1px solid var(--app-border)',
+              background: 'var(--app-surface-2)',
+              color: 'var(--app-text)',
+              fontSize: 13,
+              fontWeight: 700,
+            }}
+          >
+            {activeTabLabel}
+          </div>
+        </div>
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Top Stats Row */}

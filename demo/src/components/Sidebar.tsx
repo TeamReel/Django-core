@@ -644,14 +644,14 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 const hasTabItems = panelBConfig.items.some(item => String(item.path || '').includes('?tab='));
 
                 if (hasTabItems) {
-                    // Tab strip layout (like original OrganisationDetailPage tabs)
+                    // Tab list layout (stacked vertically in Panel B)
                     return (
                         <div
                             style={{
                                 display: 'flex',
-                                flexWrap: 'wrap',
+                                flexDirection: 'column',
                                 gap: 6,
-                                padding: '16px 12px 10px',
+                                padding: '16px 12px',
                                 marginBottom: 0,
                                 borderBottom: '1px solid var(--app-border)',
                             }}
@@ -661,8 +661,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 const itemSearch = itemQuery ? `?${itemQuery}` : '';
                                 const locationTab = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
                                 const itemTab = String(new URLSearchParams(itemSearch).get('tab') || '').trim().toLowerCase();
-                                const isActive = (location.pathname === itemPathname && locationTab === itemTab) ||
-                                    (location.pathname === itemPathname && !locationTab && itemTab === 'overview');
+                                const effectiveLocationTab = locationTab || 'overview';
+                                const effectiveItemTab = itemTab || 'overview';
+                                const isActive = location.pathname === itemPathname && effectiveLocationTab === effectiveItemTab;
 
                                 return (
                                     <Link
@@ -679,6 +680,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                             fontSize: 13,
                                             fontWeight: isActive ? 700 : 600,
                                             textDecoration: 'none',
+                                            width: '100%',
                                         }}
                                     >
                                         {item.label}
