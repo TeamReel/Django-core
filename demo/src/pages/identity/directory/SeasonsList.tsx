@@ -56,9 +56,10 @@ const chunkArray = <T,>(items: T[], chunkSize: number): T[][] => {
 interface SeasonsListProps {
   preselectedOrgId?: string;
   preselectedClubId?: string;
+  preselectedTeamId?: string;
 }
 
-export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, preselectedClubId }) => {
+export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, preselectedClubId, preselectedTeamId }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -69,6 +70,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
 
   const orgLocked = Boolean(preselectedOrgId);
   const clubLocked = Boolean(preselectedClubId);
+  const teamLocked = Boolean(preselectedTeamId);
 
   const isUuid = (value: unknown) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
@@ -92,7 +94,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
 
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>(preselectedClubId || '');
-  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+  const [selectedTeamId, setSelectedTeamId] = useState<string>(preselectedTeamId || '');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const [seasons, setSeasons] = useState<Period[]>([]);
@@ -132,13 +134,19 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
     }
   }, [preselectedClubId]);
 
+  useEffect(() => {
+    if (preselectedTeamId) {
+      setSelectedTeamId(preselectedTeamId);
+    }
+  }, [preselectedTeamId]);
+
   // Sync params from URL to state
   useEffect(() => {
     if (preselectedOrgId) {
       const clubId = searchParams.get('club_id');
       const teamId = searchParams.get('team_id');
       if (!clubLocked && clubId) setSelectedClubId(String(clubId));
-      if (teamId) setSelectedTeamId(String(teamId));
+      if (!teamLocked && teamId) setSelectedTeamId(String(teamId));
       return;
     }
 
@@ -148,7 +156,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
 
     if (orgId && isSuperAdmin) setSelectedOrgId(String(orgId));
     if (!clubLocked && clubId) setSelectedClubId(String(clubId));
-    if (teamId) setSelectedTeamId(String(teamId));
+    if (!teamLocked && teamId) setSelectedTeamId(String(teamId));
   }, [isSuperAdmin, searchParams, clubLocked, preselectedOrgId]);
 
   useEffect(() => {
@@ -539,7 +547,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
           onChange={(e) => {
             if (clubLocked) return;
             setSelectedClubId(e.target.value);
-            setSelectedTeamId('');
+            if (!teamLocked) setSelectedTeamId('');
           }}
           disabled={clubLocked}
           style={{
@@ -566,7 +574,11 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
         </select>
         <select
           value={selectedTeamId}
-          onChange={(e) => setSelectedTeamId(e.target.value)}
+          onChange={(e) => {
+            if (teamLocked) return;
+            setSelectedTeamId(e.target.value);
+          }}
+          disabled={teamLocked}
           style={{
             padding: '8px 12px',
             border: '1px solid var(--app-border)',
@@ -575,7 +587,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
             backgroundColor: 'var(--app-surface)',
           }}
         >
-          <option value="">Team: All</option>
+          {!teamLocked && <option value="">Team: All</option>}
           {teams
             .filter((t) => {
               if (!selectedClubId) return true;
@@ -610,7 +622,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
             size="md"
             onClick={() => {
               if (!clubLocked) setSelectedClubId('');
-              setSelectedTeamId('');
+              if (!teamLocked) setSelectedTeamId('');
               setStatusFilter('all');
               if (isSuperAdmin) setSelectedOrgId('');
             }}

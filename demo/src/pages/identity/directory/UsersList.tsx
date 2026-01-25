@@ -89,9 +89,10 @@ const badgeNoBorderStyle: React.CSSProperties = {
 interface UsersListProps {
   preselectedOrgId?: string;
     preselectedClubId?: string;
+    preselectedTeamId?: string;
 }
 
-export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselectedClubId }) => {
+export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselectedClubId, preselectedTeamId }) => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { context, organisations: myOrganisations } = useContextSwitcher();
@@ -116,7 +117,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
     // Filter State
     const [selectedOrgId, setSelectedOrgId] = useState<string>('');
     const [selectedClubId, setSelectedClubId] = useState<string>(preselectedClubId || ''); // For filtering logic
-    const [selectedTeamId, setSelectedTeamId] = useState<string>(''); // For filtering logic
+    const [selectedTeamId, setSelectedTeamId] = useState<string>(preselectedTeamId || ''); // For filtering logic
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [roleFilter, setRoleFilter] = useState<string>('');
 
@@ -133,6 +134,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
 
     const orgLocked = Boolean(preselectedOrgId);
     const clubLocked = Boolean(preselectedClubId);
+    const teamLocked = Boolean(preselectedTeamId);
 
     const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
 
@@ -158,6 +160,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
             setSelectedOrgId(preselectedOrgId);
             return;
         }
+
         const orgParam = searchParams.get('org_id');
         if (orgParam) {
             setSelectedOrgId(orgParam);
@@ -169,8 +172,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
         if (context.organisation?.id) {
             setSelectedOrgId(String(context.organisation.id));
         }
-
-    }, [preselectedOrgId, context.organisation?.id, isSuperAdmin, searchParams]);
+    }, [preselectedOrgId, context.organisation?.id, searchParams]);
 
     useEffect(() => {
         if (preselectedClubId) {
@@ -178,10 +180,16 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
         }
     }, [preselectedClubId]);
 
+    useEffect(() => {
+        if (preselectedTeamId) {
+            setSelectedTeamId(String(preselectedTeamId));
+        }
+    }, [preselectedTeamId]);
+
     // Fetch Orgs (SuperAdmin)
     useEffect(() => {
         if (!isSuperAdmin) {
-            setOrganisations(myOrganisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })));
+            setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: o.slug })));
             return;
         }
 
@@ -194,9 +202,12 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                     { ttlMs: 120_000, bypass: refreshKey > 0 },
                 );
                 setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         };
-        load();
+
+        void load();
     }, [isSuperAdmin, myOrganisations, refreshKey]);
 
     // Fetch Clubs/Teams options
@@ -830,7 +841,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                             const next = e.target.value;
                             setSelectedOrgId(next);
                             if (!clubLocked) setSelectedClubId('');
-                            setSelectedTeamId('');
+                            if (!teamLocked) setSelectedTeamId('');
 
                             if (next) {
                                 setSearchParams({ org_id: next });
@@ -858,7 +869,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                     onChange={(e) => {
                         if (clubLocked) return;
                         setSelectedClubId(e.target.value);
-                        setSelectedTeamId('');
+                        if (!teamLocked) setSelectedTeamId('');
                     }}
                     disabled={clubLocked}
                     style={{
@@ -879,7 +890,11 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
 
                 <select
                     value={selectedTeamId}
-                    onChange={(e) => setSelectedTeamId(e.target.value)}
+                    onChange={(e) => {
+                        if (teamLocked) return;
+                        setSelectedTeamId(e.target.value);
+                    }}
+                    disabled={teamLocked}
                     style={{
                         padding: '8px 12px',
                         border: '1px solid var(--app-border)',
@@ -888,7 +903,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                         backgroundColor: 'var(--app-surface)',
                     }}
                 >
-                    <option value="">Team: All</option>
+                    {!teamLocked && <option value="">Team: All</option>}
                     {teams
                         .filter(t => {
                             if (selectedClubId) {
@@ -944,7 +959,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                          size="md"
                          onClick={() => {
                              if (!clubLocked) setSelectedClubId('');
-                             setSelectedTeamId('');
+                             if (!teamLocked) setSelectedTeamId('');
                              setStatusFilter('all');
                              setRoleFilter('');
                              if (isSuperAdmin && !orgLocked) {

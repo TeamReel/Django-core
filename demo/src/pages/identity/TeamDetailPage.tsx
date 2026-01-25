@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
-import ProjectDetailPage from './ProjectDetailPage';
+import TeamOrganisationDetailPage from './TeamOrganisationDetailPage';
 
 type Project = {
   id: string;
@@ -94,6 +94,5 @@ export default function TeamDetailPage() {
   }
 
   // Wrapper so Club vs Team detail can diverge safely over time.
-  // Keep using the shared detail implementation, but force team-mode.
-  return <ProjectDetailPage forceMode="team" />;
+  return <TeamOrganisationDetailPage />;
 }

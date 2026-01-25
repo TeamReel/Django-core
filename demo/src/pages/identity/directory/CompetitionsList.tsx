@@ -57,9 +57,10 @@ const chunkArray = <T,>(items: T[], chunkSize: number): T[][] => {
 interface CompetitionsListProps {
   preselectedOrgId?: string;
   preselectedClubId?: string;
+  preselectedTeamId?: string;
 }
 
-export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedOrgId, preselectedClubId }) => {
+export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedOrgId, preselectedClubId, preselectedTeamId }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -70,6 +71,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
 
   const orgLocked = Boolean(preselectedOrgId);
   const clubLocked = Boolean(preselectedClubId);
+  const teamLocked = Boolean(preselectedTeamId);
 
   const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
   const isUuid = (value: unknown) =>
@@ -112,7 +114,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
 
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>(preselectedClubId || '');
-  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+  const [selectedTeamId, setSelectedTeamId] = useState<string>(preselectedTeamId || '');
 
   useEffect(() => {
     if (preselectedOrgId) {
@@ -125,6 +127,12 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
       setSelectedClubId(preselectedClubId);
     }
   }, [preselectedClubId]);
+
+  useEffect(() => {
+    if (preselectedTeamId) {
+      setSelectedTeamId(preselectedTeamId);
+    }
+  }, [preselectedTeamId]);
 
   useEffect(() => {
     if (!orgLocked) {
@@ -236,7 +244,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
       const seasonId = searchParams.get('season_id');
 
       if (!clubLocked && clubId) setSelectedClubId(String(clubId));
-      if (teamId) setSelectedTeamId(String(teamId));
+      if (!teamLocked && teamId) setSelectedTeamId(String(teamId));
       if (seasonId) setSelectedSeasonName(String(seasonId));
       return;
     }
@@ -248,7 +256,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
 
     if (orgId && isSuperAdmin) setSelectedOrgId(String(orgId));
     if (!clubLocked && clubId) setSelectedClubId(String(clubId));
-    if (teamId) setSelectedTeamId(String(teamId));
+    if (!teamLocked && teamId) setSelectedTeamId(String(teamId));
     if (seasonId) {
       // Best-effort: if URL provides an id, we'll set after seasons load.
       setSelectedSeasonName(String(seasonId));
@@ -812,7 +820,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
             onChange={(e) => {
               setSelectedOrgId(e.target.value);
               if (!clubLocked) setSelectedClubId('');
-              setSelectedTeamId('');
+              if (!teamLocked) setSelectedTeamId('');
             }}
             style={{
               padding: '8px 12px',
@@ -835,7 +843,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
           onChange={(e) => {
             if (clubLocked) return;
             setSelectedClubId(e.target.value);
-            setSelectedTeamId('');
+            if (!teamLocked) setSelectedTeamId('');
           }}
           disabled={clubLocked}
           style={{
@@ -862,7 +870,11 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
         </select>
         <select
           value={selectedTeamId}
-          onChange={(e) => setSelectedTeamId(e.target.value)}
+          onChange={(e) => {
+            if (teamLocked) return;
+            setSelectedTeamId(e.target.value);
+          }}
+          disabled={teamLocked}
           style={{
             padding: '8px 12px',
             border: '1px solid var(--app-border)',
@@ -871,7 +883,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
             backgroundColor: 'var(--app-surface)',
           }}
         >
-          <option value="">Team: All</option>
+          {!teamLocked && <option value="">Team: All</option>}
           {teams
             .filter((t) => {
               if (!selectedClubId) return true;
@@ -924,7 +936,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
             size="md"
             onClick={() => {
               if (!clubLocked) setSelectedClubId('');
-              setSelectedTeamId('');
+              if (!teamLocked) setSelectedTeamId('');
               setSelectedSeasonName('');
               setStatusFilter('all');
               if (isSuperAdmin) setSelectedOrgId('');

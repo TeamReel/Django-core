@@ -1383,241 +1383,121 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <h3 className="text-lg font-semibold mb-4">Hierarchy: Competitions & Matches (grouped by competition)</h3>
+                  <h3 className="text-lg font-semibold mb-4">Hierarchy: Competitions</h3>
                   {competitionsLoading ? (
                     <Alert variant="info">Loading competitions…</Alert>
                   ) : competitions.length === 0 ? (
                     <Alert variant="info">No competitions found in this season.</Alert>
                   ) : (
                     (() => {
-                      const matchesNotice = matchesLoading ? (
-                        <div style={{ marginBottom: '10px' }}>
-                          <Alert variant="info">Loading matches…</Alert>
-                        </div>
-                      ) : null;
-
                       const normalized = hierarchySearch.trim().toLowerCase();
                       const filteredCompetitions = !normalized
                         ? competitions
                         : competitions.filter((c) => {
                             const compName = String(c?.name || '').toLowerCase();
-                            if (compName.includes(normalized)) return true;
-                            const compId = String(c?.id || '');
-                            const compMatches = matches.filter((m: any) => String(m.period_id || m.period?.id || '') === compId);
-                            return compMatches.some((m: any) => String(m?.title || m?.name || '').toLowerCase().includes(normalized));
+                            return compName.includes(normalized);
                           });
 
                       return (
                         <>
-                          {matchesNotice}
-                          {filteredCompetitions.map((competition) => {
-                        const compId = String(competition.id);
-                        const compMatches = matches
-                          .filter((m: any) => String(m.period_id || m.period?.id || '') === compId)
-                          .slice(0, 10);
-
-                        return (
-                          <div key={compId} style={{ marginBottom: '2rem' }}>
-                            <div
-                              style={{
-                                backgroundColor: 'var(--app-surface-2)',
-                                padding: '12px 16px',
-                                borderRadius: '4px',
-                                marginBottom: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '12px',
-                              }}
-                            >
-                              <Link
-                                to={
-                                  isTeamRoute
-                                    ? `${seasonsBasePath}/${seasonPathKey}/${periodPathKey(competition) || competition.id}`
-                                    : `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`
-                                }
-                                className="text-blue-600 hover:underline"
-                                style={{
-                                  textDecoration: 'none',
-                                  backgroundColor: 'transparent',
-                                  margin: 0,
-                                  flex: 1,
-                                  fontSize: '16px',
-                                  fontWeight: 600,
-                                }}
-                              >
-                                {competition.name || `Competition ${compId}`}
-                              </Link>
-                              <Badge variant="default">{getMatchCountForCompetition(competition)} Matches</Badge>
-                              <button
-                                type="button"
-                                className="app-action-button"
-                                onClick={() => {
-                                  setSelectedDetailPeriod(competition);
-                                  setIsPeriodDetailModalOpen(true);
-                                }}
-                                style={actionButtonStyle('primary')}
-                              >
-                                View
-                              </button>
-                              {userCanEditProject && (
-                                <button
-                                  type="button"
-                                  className="app-action-button"
-                                  onClick={() => {
-                                    setSelectedEditPeriod(competition);
-                                    setIsPeriodEditModalOpen(true);
-                                  }}
-                                  style={actionButtonStyle('warning')}
-                                >
-                                  Edit
-                                </button>
-                              )}
-                              {userCanDeleteProject && (
-                                <button
-                                  type="button"
-                                  className="app-action-button"
-                                  onClick={async () => {
-                                    if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
-                                    try {
-                                      const res = await fetch(`${apiBaseUrl}/api/v1/periods/${competition.id}/`, {
-                                        method: 'DELETE',
-                                        headers: {
-                                          'Content-Type': 'application/json',
-                                          'X-CSRFToken': getCsrfToken(),
-                                        },
-                                        credentials: 'include',
-                                      });
-
-                                      if (res.ok) {
-                                        setCompetitions((prev) => prev.filter((c) => String(c.id) !== String(competition.id)));
-                                      } else {
-                                        alert('Error deleting competition');
-                                      }
-                                    } catch (e) {
-                                      console.error(e);
-                                      alert('Error deleting competition');
-                                    }
-                                  }}
-                                  style={actionButtonStyle('danger')}
-                                >
-                                  Delete
-                                </button>
-                              )}
+                          {matchesLoading ? (
+                            <div style={{ marginBottom: '10px' }}>
+                              <Alert variant="info">Loading match counts…</Alert>
                             </div>
+                          ) : null}
+                          {filteredCompetitions.map((competition) => {
+                            const compId = String(competition.id);
+                            return (
+                              <div key={compId} style={{ marginBottom: '2rem' }}>
+                                <div
+                                  style={{
+                                    backgroundColor: 'var(--app-surface-2)',
+                                    padding: '12px 16px',
+                                    borderRadius: '4px',
+                                    marginBottom: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                  }}
+                                >
+                                  <Link
+                                    to={
+                                      isTeamRoute
+                                        ? `${seasonsBasePath}/${seasonPathKey}/${periodPathKey(competition) || competition.id}`
+                                        : `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`
+                                    }
+                                    className="text-blue-600 hover:underline"
+                                    style={{
+                                      textDecoration: 'none',
+                                      backgroundColor: 'transparent',
+                                      margin: 0,
+                                      flex: 1,
+                                      fontSize: '16px',
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    {competition.name || `Competition ${compId}`}
+                                  </Link>
+                                  <Badge variant="default">{getMatchCountForCompetition(competition)} Matches</Badge>
+                                  <button
+                                    type="button"
+                                    className="app-action-button"
+                                    onClick={() => {
+                                      setSelectedDetailPeriod(competition);
+                                      setIsPeriodDetailModalOpen(true);
+                                    }}
+                                    style={actionButtonStyle('primary')}
+                                  >
+                                    View
+                                  </button>
+                                  {userCanEditProject && (
+                                    <button
+                                      type="button"
+                                      className="app-action-button"
+                                      onClick={() => {
+                                        setSelectedEditPeriod(competition);
+                                        setIsPeriodEditModalOpen(true);
+                                      }}
+                                      style={actionButtonStyle('warning')}
+                                    >
+                                      Edit
+                                    </button>
+                                  )}
+                                  {userCanDeleteProject && (
+                                    <button
+                                      type="button"
+                                      className="app-action-button"
+                                      onClick={async () => {
+                                        if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
+                                        try {
+                                          const res = await fetch(`${apiBaseUrl}/api/v1/periods/${competition.id}/`, {
+                                            method: 'DELETE',
+                                            headers: {
+                                              'Content-Type': 'application/json',
+                                              'X-CSRFToken': getCsrfToken(),
+                                            },
+                                            credentials: 'include',
+                                          });
 
-                            {matchesLoading ? (
-                              <div style={{ paddingLeft: '16px', color: 'var(--app-muted-text)', fontSize: '14px' }}>Loading matches…</div>
-                            ) : compMatches.length === 0 ? (
-                              <div style={{ paddingLeft: '16px', color: 'var(--app-muted-text)', fontSize: '14px' }}>No matches in this competition</div>
-                            ) : (
-                              <div style={{ overflowX: 'auto', marginLeft: '16px' }}>
-                                <Table style={compactTableStyle}>
-                                  <thead>
-                                    <tr>
-                                      <th style={compactThStyle}>Match</th>
-                                      <th style={compactThStyle}>Date</th>
-                                      <th style={compactThStyle} className="text-right"></th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {compMatches.map((match: any) => (
-                                      <tr key={match.id}>
-                                        <td style={compactTextTdStyle}>
-                                          {(() => {
-                                            const compKey = periodPathKey(competition as any) || String(competition?.id || '').trim();
-                                            const matchKey = String((match as any).slug || match.id || '').trim();
-
-                                            const matchPath = isTeamRoute
-                                              ? `${seasonsBasePath}/${seasonPathKey}/${compKey}/${matchKey}`
-                                              : matchKey
-                                                ? `/matches/${matchKey}`
-                                                : '';
-
-                                            return matchPath ? (
-                                              <Link
-                                                to={matchPath}
-                                                className="text-blue-600 hover:underline"
-                                                style={{ textDecoration: 'none' }}
-                                              >
-                                                {match.title || match.name || 'Match'}
-                                              </Link>
-                                            ) : (
-                                              <span style={{ color: 'var(--app-muted-text)' }}>{match.title || match.name || 'Match'}</span>
-                                            );
-                                          })()}
-                                        </td>
-                                        <td style={compactTextTdStyle}>{match.start_time ? new Date(match.start_time).toLocaleString() : '—'}</td>
-                                        <td style={compactTdStyle}>
-                                          <div style={compactActionsStyle}>
-                                            <button
-                                              type="button"
-                                              className="app-action-button"
-                                              onClick={() => {
-                                                setSelectedDetailMatch(match);
-                                                setIsMatchDetailModalOpen(true);
-                                              }}
-                                              style={actionButtonStyle('primary')}
-                                            >
-                                              View
-                                            </button>
-                                            {userCanEditProject && (
-                                              <button
-                                                type="button"
-                                                className="app-action-button"
-                                                onClick={() => {
-                                                  setSelectedEditMatch(match);
-                                                  setIsMatchEditModalOpen(true);
-                                                }}
-                                                style={actionButtonStyle('warning')}
-                                              >
-                                                Edit
-                                              </button>
-                                            )}
-                                            {userCanDeleteProject && (
-                                              <button
-                                                type="button"
-                                                className="app-action-button"
-                                                onClick={async () => {
-                                                  if (!window.confirm(`Are you sure you want to delete match ${match.title || match.name}?`)) return;
-                                                  try {
-                                                    const res = await fetch(
-                                                      `${apiBaseUrl}/api/v1/activities/${match.id}/`,
-                                                      {
-                                                        method: 'DELETE',
-                                                        headers: {
-                                                          'Content-Type': 'application/json',
-                                                          'X-CSRFToken': getCsrfToken(),
-                                                        },
-                                                        credentials: 'include',
-                                                      }
-                                                    );
-
-                                                    if (res.ok) {
-                                                      setMatches((prev) => prev.filter((m) => String(m.id) !== String(match.id)));
-                                                    } else {
-                                                      alert('Error deleting match');
-                                                    }
-                                                  } catch (e) {
-                                                    console.error(e);
-                                                    alert('Error deleting match');
-                                                  }
-                                                }}
-                                                style={actionButtonStyle('danger')}
-                                              >
-                                                Delete
-                                              </button>
-                                            )}
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </Table>
+                                          if (res.ok) {
+                                            setCompetitions((prev) => prev.filter((c) => String(c.id) !== String(competition.id)));
+                                          } else {
+                                            alert('Error deleting competition');
+                                          }
+                                        } catch (e) {
+                                          console.error(e);
+                                          alert('Error deleting competition');
+                                        }
+                                      }}
+                                      style={actionButtonStyle('danger')}
+                                    >
+                                      Delete
+                                    </button>
+                                  )}
+                                </div>
                               </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                            );
+                          })}
                         </>
                       );
                     })()
