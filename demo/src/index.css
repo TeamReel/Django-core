@@ -41,7 +41,7 @@
   --app-muted-text: #9ca3af;
   --app-surface: #1C355E;    /* Primary Dark (Deep Navy) as surface */
   --app-surface-2: #243f6e;  /* Slightly lighter Navy */
-  --app-surface-secondary: #2a2a2a;
+  --app-surface-secondary: #243f6e;
   --app-border: #3B8EA5;     /* Ocean Teal as border (subtle) or dark gray #404040? Keeping border subtle. */
   --app-link: #4CA1FF;       /* Sky Blue */
   --app-table-header-bg: #1C355E;

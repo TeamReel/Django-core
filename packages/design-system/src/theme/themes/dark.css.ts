@@ -4,44 +4,44 @@ import { themeVars } from '../../tokens/theme.css';
 export const darkTheme = createTheme(themeVars, {
   color: {
     text: {
-      primary: '#fafafa',
-      secondary: '#a3a3a3',
-      tertiary: '#737373',
-      disabled: '#525252',
-      inverse: '#1a1a1a',
-      link: '#60a5fa',
+      primary: '#EDF6FF',
+      secondary: '#94a3b8',
+      tertiary: '#64748b',
+      disabled: '#475569',
+      inverse: '#0A192F',
+      link: '#4CA1FF',
       error: '#f87171',
       success: '#4ade80',
       warning: '#fd7e14',
     },
     background: {
-      primary: '#1a1a1a', // Surface 1 (Cards, Modals) - Distinct from page bg #0f0f0f
-      secondary: '#333333', // Surface 2 (Filled Cards, Inputs) - Increased contrast
-      tertiary: '#404040', // Surface 3 (Hover states)
-      inverse: '#fafafa',
+      primary: '#1C355E', // Surface 1 (Cards, Modals)
+      secondary: '#243f6e', // Surface 2 (Filled Cards, Inputs)
+      tertiary: '#2e4a6d', // Surface 3 (Hover states)
+      inverse: '#EDF6FF',
       overlay: 'rgba(0, 0, 0, 0.75)',
       success: '#14532d',
       warning: '#422006',
       error: '#450a0a',
-      info: '#1e3a5f',
+      info: 'rgba(76, 161, 255, 0.22)',
     },
     border: {
-      primary: '#404040',
-      secondary: '#525252',
-      focus: '#60a5fa',
+      primary: '#2e4a6d',
+      secondary: 'rgba(148, 163, 184, 0.22)',
+      focus: '#4CA1FF',
       error: '#f87171',
     },
     interactive: {
       primary: '#3b82f6',
       primaryHover: '#60a5fa',
       primaryActive: '#2563eb',
-      secondary: '#404040',
-      secondaryHover: '#525252',
-      secondaryActive: '#737373',
+      secondary: '#243f6e',
+      secondaryHover: '#2e4a6d',
+      secondaryActive: '#37567c',
       destructive: '#ef4444',
       destructiveHover: '#f87171',
       destructiveActive: '#dc2626',
-      disabled: '#404040',
+      disabled: '#2e4a6d',
     },
     palette: {
       neutral: {

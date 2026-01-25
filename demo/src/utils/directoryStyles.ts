@@ -19,7 +19,7 @@ export const compactTdStyle: React.CSSProperties = {
   padding: '4px 8px',
   fontSize: '0.85rem',
   verticalAlign: 'middle',
-  borderBottom: '1px solid #eee'
+  borderBottom: '1px solid var(--app-border)'
 };
 
 export const compactTextTdStyle: React.CSSProperties = {
@@ -85,5 +85,5 @@ export const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 
   }
 
   // secondary / neutral
-  return { ...base, backgroundColor: '#f0f0f0', color: '#333', border: '1px solid #ccc' };
+  return { ...base, backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)', border: '1px solid var(--app-border)' };
 };

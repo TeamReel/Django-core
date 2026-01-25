@@ -83,6 +83,7 @@ export const OrganisationDetailPage: React.FC = () => {
   const [orgPeriodsLoading, setOrgPeriodsLoading] = useState(false);
   const [teamSeasonsCountById, setTeamSeasonsCountById] = useState<Record<string, number>>({});
   const [teamCompetitionsCountById, setTeamCompetitionsCountById] = useState<Record<string, number>>({});
+  const [teamMatchesCountById, setTeamMatchesCountById] = useState<Record<string, number>>({});
 
   const [seasonsCount, setSeasonsCount] = useState<number | null>(null);
   const [competitionsCount, setCompetitionsCount] = useState<number | null>(null);
@@ -592,15 +593,15 @@ export const OrganisationDetailPage: React.FC = () => {
       lineHeight: 1.2,
     };
     if (tone === 'primary') {
-      return { ...base, border: '1px solid #007bff', color: '#007bff' };
+      return { ...base, border: '1px solid var(--app-link)', color: 'var(--app-link)' };
     }
     if (tone === 'warning') {
-      return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
+      return { ...base, border: '1px solid var(--app-warning)', color: 'var(--app-warning)' };
     }
     if (tone === 'danger') {
-      return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
+      return { ...base, border: '1px solid var(--app-error)', color: 'var(--app-error)' };
     }
-    return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
+    return { ...base, border: '1px solid var(--app-border)', color: 'var(--app-muted-text)' };
   };
 
   const getCsrfToken = () =>
@@ -815,6 +816,30 @@ export const OrganisationDetailPage: React.FC = () => {
   const recomputePeriodCounts = (allPeriods: any[]) => {
     const seasonsByProjectId: Record<string, number> = {};
     const competitionsByProjectId: Record<string, number> = {};
+    const matchesByProjectId: Record<string, number> = {};
+
+    // Build a local parent->children map so we can compute recursive activity counts
+    // without relying on state that may not have updated yet.
+    const childrenMap = new Map<string, any[]>();
+    for (const p of allPeriods || []) {
+      const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
+      if (!parentId) continue;
+      const key = String(parentId);
+      const arr = childrenMap.get(key) || [];
+      arr.push(p);
+      childrenMap.set(key, arr);
+    }
+
+    const getRecursiveActivitiesCount = (p: any): number => {
+      let count = (p?.activities_count ?? 0);
+      const children = childrenMap.get(String(p?.id));
+      if (children) {
+        for (const child of children) {
+          count += getRecursiveActivitiesCount(child);
+        }
+      }
+      return count;
+    };
 
     const seasons = allPeriods.filter((p: any) => {
       const isSeason = isSeasonPeriod(p);
@@ -835,6 +860,9 @@ export const OrganisationDetailPage: React.FC = () => {
         if (projectId) {
           const key = String(projectId);
           competitionsByProjectId[key] = (competitionsByProjectId[key] || 0) + 1;
+
+          // Matches count derived from competition subtree activities_count.
+          matchesByProjectId[key] = (matchesByProjectId[key] || 0) + getRecursiveActivitiesCount(p);
         }
       }
       return isCompetition;
@@ -844,6 +872,7 @@ export const OrganisationDetailPage: React.FC = () => {
     setCompetitionsCount(competitions.length);
     setTeamSeasonsCountById(seasonsByProjectId);
     setTeamCompetitionsCountById(competitionsByProjectId);
+    setTeamMatchesCountById(matchesByProjectId);
   };
 
   const ensureOrgPeriodsLoaded = async () => {
@@ -986,7 +1015,7 @@ export const OrganisationDetailPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const shouldEnsurePeriods = activeTab === 'seasons' || activeTab === 'competitions';
+    const shouldEnsurePeriods = activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'hierarchy';
     if (!shouldEnsurePeriods) return;
     if (orgPeriodsLoading) return;
     if (orgPeriods.length > 0) return;
@@ -1005,6 +1034,10 @@ export const OrganisationDetailPage: React.FC = () => {
 
     const clubUsersCountById = membershipUserCounts?.clubUsersCountById || {};
     const teamUsersCountById = membershipUserCounts?.teamUsersCountById || {};
+
+    const teamSeasons = teamSeasonsCountById || {};
+    const teamCompetitions = teamCompetitionsCountById || {};
+    const teamMatches = teamMatchesCountById || {};
 
     const teamsByClubId = new Map<string, Project[]>();
     for (const t of teams || []) {
@@ -1030,11 +1063,17 @@ export const OrganisationDetailPage: React.FC = () => {
           teamName: toName(t) || '—',
           teamSlugOrId: toSlugOrId(t),
           memberCount: teamId ? (teamUsersCountById[teamId] ?? 0) : 0,
+          seasonsCount: teamId ? (teamSeasons[teamId] ?? 0) : 0,
+          competitionsCount: teamId ? (teamCompetitions[teamId] ?? 0) : 0,
+          matchesCount: teamId ? (teamMatches[teamId] ?? 0) : 0,
         };
       });
 
       const clubMemberCount = clubId ? (clubUsersCountById[clubId] ?? 0) : 0;
       const teamCount = mappedTeams.length;
+      const clubSeasonsCount = mappedTeams.reduce((sum, t) => sum + (t.seasonsCount ?? 0), 0);
+      const clubCompetitionsCount = mappedTeams.reduce((sum, t) => sum + (t.competitionsCount ?? 0), 0);
+      const clubMatchesCount = mappedTeams.reduce((sum, t) => sum + (t.matchesCount ?? 0), 0);
 
       if (q) {
         const clubMatch = clubName.toLowerCase().includes(q);
@@ -1048,6 +1087,9 @@ export const OrganisationDetailPage: React.FC = () => {
           clubSlugOrId,
           memberCount: clubMemberCount,
           teamCount: filteredTeams.length,
+          seasonsCount: clubSeasonsCount,
+          competitionsCount: clubCompetitionsCount,
+          matchesCount: clubMatchesCount,
           teams: filteredTeams,
         };
       }
@@ -1058,6 +1100,9 @@ export const OrganisationDetailPage: React.FC = () => {
         clubSlugOrId,
         memberCount: clubMemberCount,
         teamCount,
+        seasonsCount: clubSeasonsCount,
+        competitionsCount: clubCompetitionsCount,
+        matchesCount: clubMatchesCount,
         teams: mappedTeams,
       };
     }).filter(Boolean) as Array<{
@@ -1066,12 +1111,15 @@ export const OrganisationDetailPage: React.FC = () => {
       clubSlugOrId: string;
       memberCount: number;
       teamCount: number;
-      teams: Array<{ teamId: string; teamName: string; teamSlugOrId: string; memberCount: number }>;
+      seasonsCount: number;
+      competitionsCount: number;
+      matchesCount: number;
+      teams: Array<{ teamId: string; teamName: string; teamSlugOrId: string; memberCount: number; seasonsCount: number; competitionsCount: number; matchesCount: number }>;
     }>;
 
     clubRows.sort((a, b) => a.clubName.localeCompare(b.clubName, undefined, { sensitivity: 'base' }));
     return clubRows;
-  }, [teams, clubsForHierarchy, hierarchySearch, membershipUserCounts]);
+  }, [teams, clubsForHierarchy, hierarchySearch, membershipUserCounts, teamSeasonsCountById, teamCompetitionsCountById, teamMatchesCountById]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1835,6 +1883,9 @@ export const OrganisationDetailPage: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                           <span style={pillStyle}>Teams: {club.teamCount}</span>
                           <span style={pillStyle}>Members: {club.memberCount}</span>
+                          <span style={pillStyle}>Seasons: {club.seasonsCount ?? 0}</span>
+                          <span style={pillStyle}>Competitions: {club.competitionsCount ?? 0}</span>
+                          <span style={pillStyle}>Matches: {club.matchesCount ?? 0}</span>
                           {clubPath ? (
                             <button type="button" className="app-action-button" onClick={() => navigate(clubPath)} style={actionButtonStyle('primary')}>
                               View Club
@@ -1884,6 +1935,9 @@ export const OrganisationDetailPage: React.FC = () => {
 
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                                     <span style={pillStyle}>Members: {t.memberCount}</span>
+                                    <span style={pillStyle}>Seasons: {t.seasonsCount ?? 0}</span>
+                                    <span style={pillStyle}>Competitions: {t.competitionsCount ?? 0}</span>
+                                    <span style={pillStyle}>Matches: {t.matchesCount ?? 0}</span>
                                     {teamPath ? (
                                       <button type="button" className="app-action-button" onClick={() => navigate(teamPath)} style={actionButtonStyle('primary')}>
                                         View Team
