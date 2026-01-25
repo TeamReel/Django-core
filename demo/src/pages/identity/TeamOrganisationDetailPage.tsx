@@ -69,24 +69,18 @@ const getParentProjectId = (p: any): string => {
 };
 
 const isSeasonPeriod = (p: any): boolean => {
+  // TeamReel hierarchy: Season is a root Period (no parent_period).
+  // Do NOT infer by name; rely on parent/type.
+  const parentId = getParentPeriodId(p);
+  if (parentId) return false;
+
   const type = getPeriodType(p);
   if (type === 'season') return true;
 
-  const seasonKey = p?.data?.season ?? p?.metadata?.season;
-  if (seasonKey) return true;
+  // Guard against misconfigured root competitions.
+  if (['competition', 'league', 'cup', 'friendly', 'tournament', 'round'].includes(type)) return false;
 
-  const name = String(p?.name || '').toLowerCase();
-  if (name.startsWith('season') || name.startsWith('seizoen')) return true;
-
-  const compact = name.replace(/\s+/g, '');
-  if (/^\d{4}([/-])\d{2,4}$/.test(compact)) return true;
-  if (/^\d{4}([/-])\d{4}$/.test(compact)) return true;
-  if (/^\d{2}([/-])\d{2}$/.test(compact)) return true;
-
-  const parentId = getParentPeriodId(p);
-  if (!parentId) return true;
-
-  return false;
+  return true;
 };
 
 const mergeUniqueById = <T extends { id: any }>(items: T[]): T[] => {

@@ -111,22 +111,15 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
   const isLikelySeasonRoot = (p: any): boolean => {
     if (!p) return false;
 
+    // TeamReel hierarchy: Season is a root Period (no parent_period).
+    // Do NOT infer by name; rely on parent/type.
+    const hasParent = Boolean(p?.parent_period_id ?? p?.parent_period?.id ?? p?.parent_period);
+    if (hasParent) return false;
+
     const type = String(p?.type ?? p?.data?.type ?? p?.metadata?.type ?? '').toLowerCase();
-    if (type === 'season') return true;
+    if (['competition', 'league', 'cup', 'friendly', 'tournament', 'round'].includes(type)) return false;
 
-    const seasonKey = p?.data?.season ?? p?.metadata?.season;
-    if (seasonKey) return true;
-
-    const name = String(p?.name || '').trim().toLowerCase();
-    if (!name) return false;
-    if (name.startsWith('season') || name.startsWith('seizoen')) return true;
-    const compact = name.replace(/\s+/g, '');
-    // Support both long and short season labels (e.g. "2024/25", "2024-2025", "25/26").
-    return (
-      /^\d{4}([/-])\d{2,4}$/.test(compact) ||
-      /^\d{4}([/-])\d{4}$/.test(compact) ||
-      /^\d{2}([/-])\d{2}$/.test(compact)
-    );
+    return true;
   };
 
   // Initialize org filter
