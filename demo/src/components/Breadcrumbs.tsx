@@ -138,19 +138,41 @@ export default function Breadcrumbs() {
 
     const fetchTeams = async () => {
       setLoadingTeams(true);
+      setTeamOptions([]);
       try {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+        // clubSlugOrId can be a slug; this endpoint filter expects an id.
+        const resolvedClub = (clubOptions || []).find((o) => {
+          const slug = String(o?.slug || '').trim();
+          const id = String(o?.id || '').trim();
+          return slug === effectiveClub || id === effectiveClub;
+        });
+        const clubIdForQuery = String(resolvedClub?.id || effectiveClub).trim();
+
         // Fetch child projects (teams) for this club.
         const res = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/?page_size=500&parent_project=${encodeURIComponent(effectiveClub)}`,
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/?page_size=1000&parent_project=${encodeURIComponent(clubIdForQuery)}`,
           { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' }
         );
         if (!res.ok) return;
         const raw = await res.json();
         const data = raw?.data || raw;
         const results = data?.results || data?.data?.results || [];
+
+        // Defensive filtering: some backends ignore unknown parent_project filters (e.g. when passed a slug).
+        const onlyThisClub = (Array.isArray(results) ? results : []).filter((p: any) => {
+          const parent =
+            p?.parent_id ??
+            p?.parent_project_id ??
+            (typeof p?.parent_project === 'object' ? p?.parent_project?.id : p?.parent_project) ??
+            (typeof p?.parent === 'object' ? p?.parent?.id : p?.parent);
+          const parentId = parent == null ? '' : String(typeof parent === 'object' ? parent.id : parent);
+          return parentId && parentId === clubIdForQuery;
+        });
+
         setTeamOptions(
-          (results || []).map((p: any) => ({
+          (onlyThisClub || []).map((p: any) => ({
             id: String(p.id),
             label: String(p.name || p.slug || p.id),
             slug: String(p.slug || p.id),
@@ -164,7 +186,7 @@ export default function Breadcrumbs() {
     };
 
     fetchTeams();
-  }, [isTeamDetail, orgSlug, clubSlugOrId]);
+  }, [isTeamDetail, orgSlug, clubSlugOrId, clubOptions]);
 
   // Build the context chain
   const items: Array<{ label: React.ReactNode; path: string; isLeaf?: boolean }> = [];

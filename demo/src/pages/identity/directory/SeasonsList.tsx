@@ -235,9 +235,10 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
           };
 
           const baseParams = new URLSearchParams();
-          baseParams.set('page_size', '1000');
-          baseParams.set('parent_id', 'null');
+          baseParams.set('page_size', '2000');
           // Push season filtering to the API (backend supports ?type=season).
+          // NOTE: We do NOT rely on server-side "parent is null" filters here.
+          // We always classify seasons client-side based on hierarchy (root period).
           baseParams.set('type', 'season');
 
           // Always fetch based on selection, or all if nothing selected
@@ -252,7 +253,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
 
             const untypedParams = new URLSearchParams(baseParams);
             untypedParams.delete('type');
-            const untyped = typed.length ? [] : await fetchPeriods(untypedParams);
+            const untyped = await fetchPeriods(untypedParams);
 
             // Extra fallback: competitions almost always point at their season via parent_period.
             const competitionsParams = new URLSearchParams();
@@ -363,8 +364,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
           ) {
             const fallbackParams = new URLSearchParams(baseParams);
             fallbackParams.delete('type');
-            // Keep org scoping; drop the explicit parent filter so we get everything.
-            fallbackParams.delete('parent_id');
+            // Keep org scoping; fetch everything.
 
             const fallbackUrl = `${apiBaseUrl}/api/v1/periods/?${fallbackParams.toString()}`;
             const fallback = await fetchAllPages<any>(
