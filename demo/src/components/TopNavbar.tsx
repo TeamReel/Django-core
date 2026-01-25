@@ -474,12 +474,11 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
         }}>
           {/* Mobile Menu Button */}
           <button
-            className="mobile-menu-button"
+            className="mobile-menu-button nav-icon-button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{
               display: 'none',
-              background: 'none',
-              border: 'none',
+              background: 'transparent',
               fontSize: '24px',
               cursor: 'pointer',
               color: 'var(--app-text)',
@@ -521,9 +520,9 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
               to={dashboardItem.path}
               title={dashboardItem.label}
               aria-label={dashboardItem.label}
+              className="nav-icon-button"
               style={{
                 padding: '8px 12px',
-                borderRadius: '4px',
                 textDecoration: 'none',
                 color: isItemActive(dashboardItem.path) ? '#2563eb' : 'var(--app-text)',
                 backgroundColor: isItemActive(dashboardItem.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
@@ -899,7 +898,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          border: 1px solid var(--app-border);
+          border: 1px solid var(--nav-icon-border);
           background: transparent;
           color: var(--app-text);
           border-radius: 6px;
@@ -907,7 +906,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
           line-height: 1;
         }
         .nav-icon-button:hover {
-          background: var(--app-surface-2);
+          background: var(--nav-icon-hover-bg);
         }
         .nav-icon-button:active {
           transform: translateY(0.5px);

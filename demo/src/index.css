@@ -75,8 +75,12 @@
   --sidebar-b-bg: #F8FAFC; /* Slightly darker than white */
   --sidebar-b-text: #475569;
   --sidebar-b-border: #e2e8f0;
-  --sidebar-b-active-bg: #e2e8f0;
+  --sidebar-b-active-bg: #EDF6FF;
   --sidebar-b-active-text: #1C355E;
+
+  /* Top navbar icon buttons (GitHub-like) */
+  --nav-icon-border: rgba(0, 0, 0, 0.14);
+  --nav-icon-hover-bg: rgba(0, 0, 0, 0.04);
 }
 
 [data-theme="dark"] {
@@ -89,11 +93,15 @@
   --sidebar-a-active-text: #EDF6FF;
 
   /* Panel B: Distinct from A, but dark */
-  --sidebar-b-bg: #0f172a; /* Darker than A */
+  --sidebar-b-bg: #0b1d35; /* Brand navy (not gray) */
   --sidebar-b-text: #94a3b8;
-  --sidebar-b-border: #1e293b;
-  --sidebar-b-active-bg: #1e293b;
+  --sidebar-b-border: rgba(148, 163, 184, 0.22);
+  --sidebar-b-active-bg: rgba(59, 142, 165, 0.22); /* teal accent wash */
   --sidebar-b-active-text: #EDF6FF;
+
+  /* Top navbar icon buttons (GitHub-like) */
+  --nav-icon-border: rgba(255, 255, 255, 0.18);
+  --nav-icon-hover-bg: rgba(255, 255, 255, 0.06);
 }
 /* Global Accessibility: Ensure visible focus indicator for all interactive elements */
 :focus-visible {

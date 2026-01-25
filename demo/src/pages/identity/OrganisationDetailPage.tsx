@@ -503,7 +503,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
   const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse' };
   const compactThStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.8rem', textAlign: 'left', borderBottom: '2px solid var(--app-border)' };
-  const compactTdStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.85rem', verticalAlign: 'middle', borderBottom: '1px solid #eee' };
+  const compactTdStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.85rem', verticalAlign: 'middle', borderBottom: '1px solid var(--app-border)' };
   const compactTextTdStyle: React.CSSProperties = {
     ...compactTdStyle,
     overflow: 'hidden',
@@ -998,75 +998,80 @@ export const OrganisationDetailPage: React.FC = () => {
     return Array.isArray(list) ? list : [];
   }, [allClubsForTeams, clubs]);
 
-  const hierarchyRows = useMemo(() => {
+  const hierarchyGroups = useMemo(() => {
     const q = String(hierarchySearch || '').trim().toLowerCase();
-    const clubById = new Map<string, Project>();
-    for (const c of clubsForHierarchy) {
-      clubById.set(String((c as any)?.id), c);
-    }
-
-    const rows: Array<{
-      clubId: string;
-      clubName: string;
-      clubSlugOrId: string;
-      teamId: string;
-      teamName: string;
-      teamSlugOrId: string;
-    }> = [];
-
     const toSlugOrId = (p: any) => String(p?.slug || p?.id || '').trim();
     const toName = (p: any) => String(p?.name || p?.title || p?.slug || p?.id || '').trim();
 
+    const clubUsersCountById = membershipUserCounts?.clubUsersCountById || {};
+    const teamUsersCountById = membershipUserCounts?.teamUsersCountById || {};
+
+    const teamsByClubId = new Map<string, Project[]>();
     for (const t of teams || []) {
       const parent = (t as any)?.parent_id ?? (t as any)?.parent ?? (t as any)?.parent_project_id ?? (t as any)?.parent_project?.id ?? null;
       const clubId = parent != null ? String(parent) : '';
-      const clubObj = clubId ? clubById.get(clubId) : null;
+      if (!clubId) continue;
+      if (!teamsByClubId.has(clubId)) teamsByClubId.set(clubId, []);
+      teamsByClubId.get(clubId)!.push(t as any);
+    }
 
-      const clubSlugOrId = clubObj ? toSlugOrId(clubObj) : '';
-      const clubName = clubObj ? toName(clubObj) : '-';
+    const clubRows = (clubsForHierarchy || []).map((c) => {
+      const clubId = String((c as any)?.id || '').trim();
+      const clubName = toName(c) || '—';
+      const clubSlugOrId = toSlugOrId(c);
 
-      const teamSlugOrId = toSlugOrId(t);
-      const teamName = toName(t) || '-';
+      const clubTeams = (teamsByClubId.get(clubId) || []).slice();
+      clubTeams.sort((a: any, b: any) => toName(a).localeCompare(toName(b), undefined, { sensitivity: 'base' }));
 
-      const haystack = `${clubName} ${teamName}`.toLowerCase();
-      if (q && !haystack.includes(q)) continue;
+      const mappedTeams = clubTeams.map((t: any) => {
+        const teamId = String(t?.id || '').trim();
+        return {
+          teamId,
+          teamName: toName(t) || '—',
+          teamSlugOrId: toSlugOrId(t),
+          memberCount: teamId ? (teamUsersCountById[teamId] ?? 0) : 0,
+        };
+      });
 
-      rows.push({
+      const clubMemberCount = clubId ? (clubUsersCountById[clubId] ?? 0) : 0;
+      const teamCount = mappedTeams.length;
+
+      if (q) {
+        const clubMatch = clubName.toLowerCase().includes(q);
+        const teamsMatch = mappedTeams.some((t) => t.teamName.toLowerCase().includes(q));
+        if (!clubMatch && !teamsMatch) return null;
+        // If the query matches only some teams, filter to those teams.
+        const filteredTeams = clubMatch ? mappedTeams : mappedTeams.filter((t) => t.teamName.toLowerCase().includes(q));
+        return {
+          clubId,
+          clubName,
+          clubSlugOrId,
+          memberCount: clubMemberCount,
+          teamCount: filteredTeams.length,
+          teams: filteredTeams,
+        };
+      }
+
+      return {
         clubId,
         clubName,
         clubSlugOrId,
-        teamId: String((t as any)?.id || ''),
-        teamName,
-        teamSlugOrId,
-      });
-    }
+        memberCount: clubMemberCount,
+        teamCount,
+        teams: mappedTeams,
+      };
+    }).filter(Boolean) as Array<{
+      clubId: string;
+      clubName: string;
+      clubSlugOrId: string;
+      memberCount: number;
+      teamCount: number;
+      teams: Array<{ teamId: string; teamName: string; teamSlugOrId: string; memberCount: number }>;
+    }>;
 
-    // Show clubs without teams when no search is active.
-    if (!q) {
-      const hasTeamByClubId = new Set(rows.map((r) => String(r.clubId)));
-      for (const c of clubsForHierarchy) {
-        const clubId = String((c as any)?.id || '').trim();
-        if (!clubId) continue;
-        if (hasTeamByClubId.has(clubId)) continue;
-        rows.push({
-          clubId,
-          clubName: toName(c) || '-',
-          clubSlugOrId: toSlugOrId(c),
-          teamId: '',
-          teamName: '—',
-          teamSlugOrId: '',
-        });
-      }
-    }
-
-    rows.sort((a, b) => {
-      const byClub = a.clubName.localeCompare(b.clubName, undefined, { sensitivity: 'base' });
-      if (byClub !== 0) return byClub;
-      return a.teamName.localeCompare(b.teamName, undefined, { sensitivity: 'base' });
-    });
-
-    return rows;
-  }, [teams, clubsForHierarchy, hierarchySearch]);
+    clubRows.sort((a, b) => a.clubName.localeCompare(b.clubName, undefined, { sensitivity: 'base' }));
+    return clubRows;
+  }, [teams, clubsForHierarchy, hierarchySearch, membershipUserCounts]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1761,87 +1766,139 @@ export const OrganisationDetailPage: React.FC = () => {
               />
             </div>
 
-            {teamsLoading && hierarchyRows.length === 0 ? (
+            {teamsLoading && hierarchyGroups.length === 0 ? (
               <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
                 Loading hierarchy...
               </div>
-            ) : hierarchyRows.length === 0 ? (
+            ) : hierarchyGroups.length === 0 ? (
               <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
                 No clubs/teams found.
               </div>
             ) : (
-              <div className="overflow-x-auto" style={{ marginTop: 12 }}>
-                <Table style={compactTableStyle}>
-                  <thead>
-                    <tr>
-                      <th style={compactThStyle}>Club</th>
-                      <th style={compactThStyle}>Team</th>
-                      <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {hierarchyRows.map((r) => {
-                      const orgKey = String(orgSlugOrId || currentOrgSlug || id || '').trim();
-                      const clubPath = orgKey && r.clubSlugOrId ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(r.clubSlugOrId)}` : '';
-                      const teamPath = orgKey && r.clubSlugOrId && r.teamSlugOrId
-                        ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(r.clubSlugOrId)}/${encodeURIComponent(r.teamSlugOrId)}`
-                        : '';
+              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {hierarchyGroups.map((club) => {
+                  const orgKey = String(orgSlugOrId || currentOrgSlug || id || '').trim();
+                  const clubPath = orgKey && club.clubSlugOrId ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(club.clubSlugOrId)}` : '';
 
-                      return (
-                        <tr key={`${r.clubId}::${r.teamId || 'club'}`}>
-                          <td style={compactTextTdStyle}>
-                            {clubPath ? (
-                              <button
-                                type="button"
-                                className="app-unstyled-button text-blue-600 hover:underline"
-                                onClick={() => navigate(clubPath)}
-                              >
-                                {r.clubName}
-                              </button>
-                            ) : (
-                              r.clubName
-                            )}
-                          </td>
-                          <td style={compactTextTdStyle}>
-                            {teamPath ? (
-                              <button
-                                type="button"
-                                className="app-unstyled-button text-blue-600 hover:underline"
-                                onClick={() => navigate(teamPath)}
-                              >
-                                {r.teamName}
-                              </button>
-                            ) : (
-                              r.teamName
-                            )}
-                          </td>
-                          <td style={compactTdStyle}>
-                            <div style={compactActionsStyle}>
-                              {clubPath ? (
-                                <button type="button" className="app-action-button" onClick={() => navigate(clubPath)} style={actionButtonStyle('primary')}>
-                                  View Club
-                                </button>
-                              ) : (
-                                <button type="button" className="app-action-button" disabled style={{ ...actionButtonStyle('primary'), opacity: 0.5, cursor: 'not-allowed' }}>
-                                  View Club
-                                </button>
-                              )}
-                              {teamPath ? (
-                                <button type="button" className="app-action-button" onClick={() => navigate(teamPath)} style={actionButtonStyle('primary')}>
-                                  View Team
-                                </button>
-                              ) : (
-                                <button type="button" className="app-action-button" disabled style={{ ...actionButtonStyle('primary'), opacity: 0.5, cursor: 'not-allowed' }}>
-                                  View Team
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </Table>
+                  const pillStyle: React.CSSProperties = {
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '2px 8px',
+                    borderRadius: 999,
+                    border: '1px solid var(--app-border)',
+                    background: 'var(--app-surface-2)',
+                    fontSize: 12,
+                    color: 'var(--app-muted-text)',
+                    fontWeight: 600,
+                  };
+
+                  return (
+                    <div
+                      key={club.clubId || club.clubSlugOrId}
+                      style={{
+                        border: '1px solid var(--app-border)',
+                        borderRadius: 10,
+                        background: 'var(--app-surface)',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '10px 12px',
+                          borderBottom: '1px solid var(--app-border)',
+                          background: 'var(--app-surface-2)',
+                          gap: 12,
+                        }}
+                      >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                          {clubPath ? (
+                            <button
+                              type="button"
+                              className="app-unstyled-button text-blue-600 hover:underline"
+                              onClick={() => navigate(clubPath)}
+                              style={{ textAlign: 'left', fontWeight: 800, fontSize: 14 }}
+                            >
+                              {club.clubName}
+                            </button>
+                          ) : (
+                            <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--app-text)' }}>{club.clubName}</div>
+                          )}
+                          <div style={{ color: 'var(--app-muted-text)', fontSize: 12 }}>
+                            Club
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                          <span style={pillStyle}>Teams: {club.teamCount}</span>
+                          <span style={pillStyle}>Members: {club.memberCount}</span>
+                          {clubPath ? (
+                            <button type="button" className="app-action-button" onClick={() => navigate(clubPath)} style={actionButtonStyle('primary')}>
+                              View Club
+                            </button>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div style={{ padding: '10px 12px' }}>
+                        {club.teams.length === 0 ? (
+                          <div className="text-sm text-gray-500 py-2">No teams.</div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {club.teams.map((t) => {
+                              const teamPath = orgKey && club.clubSlugOrId && t.teamSlugOrId
+                                ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(club.clubSlugOrId)}/${encodeURIComponent(t.teamSlugOrId)}`
+                                : '';
+                              return (
+                                <div
+                                  key={t.teamId || t.teamSlugOrId}
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    gap: 12,
+                                    padding: '8px 10px',
+                                    border: '1px solid var(--app-border)',
+                                    borderRadius: 8,
+                                    background: 'var(--app-surface)',
+                                  }}
+                                >
+                                  <div style={{ minWidth: 0 }}>
+                                    {teamPath ? (
+                                      <button
+                                        type="button"
+                                        className="app-unstyled-button text-blue-600 hover:underline"
+                                        onClick={() => navigate(teamPath)}
+                                        style={{ textAlign: 'left', fontWeight: 700, fontSize: 13 }}
+                                      >
+                                        {t.teamName}
+                                      </button>
+                                    ) : (
+                                      <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--app-text)' }}>{t.teamName}</div>
+                                    )}
+                                    <div style={{ color: 'var(--app-muted-text)', fontSize: 12 }}>Team</div>
+                                  </div>
+
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                    <span style={pillStyle}>Members: {t.memberCount}</span>
+                                    {teamPath ? (
+                                      <button type="button" className="app-action-button" onClick={() => navigate(teamPath)} style={actionButtonStyle('primary')}>
+                                        View Team
+                                      </button>
+                                    ) : null}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </Card>
