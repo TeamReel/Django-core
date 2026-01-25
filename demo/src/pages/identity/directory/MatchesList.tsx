@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -68,7 +68,13 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
   const [clubs, setClubs] = useState<ProjectOption[]>([]);
   const [teams, setTeams] = useState<ProjectOption[]>([]);
 
-  const [selectedOrgId, setSelectedOrgId] = useState<string>('');
+  // When org-locked, we receive an org UUID (not a slug). Some endpoints use org slug.
+  // Resolve and pin the slug so we never fall back to context org or global project lists.
+  const [lockedOrgSlug, setLockedOrgSlug] = useState<string>('');
+
+  const [selectedOrgId, setSelectedOrgId] = useState<string>(() =>
+    preselectedOrgId ? String(preselectedOrgId) : '',
+  );
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedSeasonName, setSelectedSeasonName] = useState<string>('');
@@ -101,10 +107,66 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
       String(value || ''),
     );
 
+  useEffect(() => {
+    if (!orgLocked) {
+      if (lockedOrgSlug) setLockedOrgSlug('');
+      return;
+    }
+
+    const rawLockedId = String(preselectedOrgId || '').trim();
+    if (!rawLockedId) return;
+
+    // If the lock key is already a slug, keep it.
+    if (!isNumericId(rawLockedId) && !isUuid(rawLockedId)) {
+      setLockedOrgSlug(rawLockedId);
+      return;
+    }
+
+    // Prefer already-known org options.
+    const fromList = organisations.find((o) => String(o.id) === String(rawLockedId))?.slug;
+    if (fromList) {
+      setLockedOrgSlug(String(fromList));
+      return;
+    }
+
+    // Fallback: fetch org detail by UUID to get slug.
+    let cancelled = false;
+    const loadSlug = async () => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      try {
+        const res = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(rawLockedId)}/`,
+          { credentials: 'include' },
+        );
+        if (!res.ok) return;
+        const data: any = await res.json();
+        const slug = String(data?.slug || '').trim();
+        if (!cancelled && slug) setLockedOrgSlug(slug);
+      } catch {
+        // ignore
+      }
+    };
+
+    void loadSlug();
+    return () => {
+      cancelled = true;
+    };
+  }, [orgLocked, preselectedOrgId, organisations]);
+
   const getSelectedOrgSlugForApi = () => {
     const selectedOrg = selectedOrgId
       ? organisations.find((o) => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
       : null;
+
+    if (orgLocked) {
+      return (
+        (selectedOrg as any)?.slug ||
+        lockedOrgSlug ||
+        (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
+        ''
+      );
+    }
+
     return (
       (selectedOrg as any)?.slug ||
       (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
@@ -122,6 +184,8 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
     if (selectedOrgId && isUuid(selectedOrgId)) return String(selectedOrgId);
     return '';
   };
+
+  const loadMatchesSeqRef = useRef(0);
 
   // Initialize org filter
   useEffect(() => {
@@ -221,6 +285,14 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
 
       try {
         const orgSlugForApi = getSelectedOrgSlugForApi();
+        // If federation is locked but slug isn't resolved yet, wait.
+        // Never fall back to global projects here (would leak cross-federation mapping).
+        if (orgLocked && !orgSlugForApi) {
+          setClubs([]);
+          setTeams([]);
+          return;
+        }
+
         if (orgSlugForApi) {
           const [allClubs, allTeams] = await Promise.all([
             fetchAllPages<ProjectOption>(
@@ -236,7 +308,10 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
           ]);
           setClubs(allClubs);
           setTeams(allTeams);
-        } else {
+          return;
+        }
+
+        if (!orgLocked) {
           const [allClubs, allTeams] = await Promise.all([
             fetchAllPages<ProjectOption>(
               `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
@@ -260,7 +335,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
     };
 
     load();
-  }, [context.organisation?.slug, organisations, refreshKey, selectedOrgId]);
+  }, [context.organisation?.slug, organisations, refreshKey, selectedOrgId, orgLocked, lockedOrgSlug]);
 
   const filteredMatches = useMemo(() => {
     if (statusFilter === 'all') return matches;
@@ -492,10 +567,17 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
   // Fetch matches
   useEffect(() => {
     const loadMatches = async () => {
+      const seq = (loadMatchesSeqRef.current += 1);
       setMatchesLoading(true);
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
       try {
+        // On org-locked pages, do not run an initial unscoped query before selectedOrgId is set.
+        if (orgLocked && !selectedOrgId) {
+          setMatches([]);
+          return;
+        }
+
         const orgIdForApi = getSelectedOrgIdForApi();
 
         // If a federation is selected but we can't resolve its UUID yet (e.g. org list
@@ -544,21 +626,49 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
           },
         );
 
+        // Avoid stale late-arriving requests overwriting the newest selection.
+        if (seq !== loadMatchesSeqRef.current) return;
+
+        // Strict org guard based on serializer-provided organisation.
+        // This protects against any accidental unscoped fetches / caching races.
+        const guardedByOrg = orgIdForApi
+          ? all.filter((m) => String((m as any)?.organisation?.id || '') === String(orgIdForApi))
+          : all;
+
+        // Final safety guard: when org-locked, only show matches for teams that belong
+        // to the locked org (prevents UI leaks if any upstream filter/mapping fails).
+        const guarded = (() => {
+          if (!orgLocked) return guardedByOrg;
+          if (teams.length === 0) return [];
+
+          const allowedTeamIds = new Set(
+            selectedTeamId
+              ? [String(selectedTeamId)]
+              : selectedClubId
+                ? teams
+                    .filter((t) => getTeamParentId(t) === String(selectedClubId))
+                    .map((t) => String((t as any).id))
+                : teams.map((t) => String((t as any).id)),
+          );
+
+          return guardedByOrg.filter((m) => allowedTeamIds.has(String((m as any)?.project?.id || '')));
+        })();
+
         // If season selection maps to multiple season ids (duplicate season names across teams),
         // apply the season filter client-side to keep dropdown unique by name.
         if (selectedSeasonIds.length > 1 && selectedSeasonName) {
-          const filtered = all.filter((m) => {
+          const filtered = guarded.filter((m) => {
             const seasonName = (m as any)?.period?.parent_period?.name;
             return String(seasonName || '').trim() === selectedSeasonName;
           });
           setMatches(filtered);
         } else {
-          setMatches(all);
+          setMatches(guarded);
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load matches');
       } finally {
-        setMatchesLoading(false);
+        if (seq === loadMatchesSeqRef.current) setMatchesLoading(false);
       }
     };
 

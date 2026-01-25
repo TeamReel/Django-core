@@ -410,7 +410,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
   // Custom handler to navigate to the selected organisation's detail page
   const handleOrganisationSwitch = (option: { id: string; label: string; slug?: string }) => {
-    navigate(`/${option.slug || option.id}`);
+    navigate(`/${option.slug || option.id}${location.search || ''}`);
   };
 
   const tabs = useMemo(

@@ -191,7 +191,7 @@ export default function Breadcrumbs() {
 
     const handleOrgSwitch = (option: BreadcrumbSwitcherOption) => {
       const next = String(option.slug || option.id);
-      navigate(`/${next}`);
+      navigate(`/${next}${location.search || ''}`);
     };
 
     const orgPath = `/${encodeURIComponent(orgSubpage.orgId)}`;
@@ -276,7 +276,7 @@ export default function Breadcrumbs() {
 
     const handleOrgSwitch = (option: BreadcrumbSwitcherOption) => {
       const next = String(option.slug || option.id);
-      navigate(`/${next}`);
+      navigate(`/${next}${location.search || ''}`);
     };
 
     const crumbs: Array<{ label: React.ReactNode; path: string }> = [

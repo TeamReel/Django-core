@@ -860,7 +860,8 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                     <th style={{ ...compactThStyle, width: '10%' }}>Season</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Competition</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Match</th>
-                                    <th style={{ ...compactThStyle, width: '16%' }}>Users</th>
+                                                                        <th style={{ ...compactThStyle, width: '12%' }}>User</th>
+                                                                        <th style={{ ...compactThStyle, width: '14%' }}>Email</th>
                                     <th style={{ ...compactThStyle, width: '8%' }}>Role</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
                                     <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
@@ -930,7 +931,9 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                             ) : (
                                                 userLabel
                                             )}
-                                            <div className="text-xs text-gray-500">{u.email}</div>
+                                        </td>
+                                        <td style={compactTextTdStyle} title={String(u.email || '')}>
+                                            {u.email}
                                         </td>
                                         <td style={compactTdStyle} title={roleDisplay.title}>
                                             <Badge variant="default">{roleDisplay.label}</Badge>
