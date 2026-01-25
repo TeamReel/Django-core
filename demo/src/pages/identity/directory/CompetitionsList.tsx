@@ -142,6 +142,27 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
+  const isUuid = (value: unknown) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      String(value || ''),
+    );
+
+  const getSelectedOrgSlugForApi = () => {
+    const selectedOrg = selectedOrgId
+      ? organisations.find(
+          (o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId),
+        )
+      : null;
+
+    return (
+      selectedOrg?.slug ||
+      (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
+      context.organisation?.slug ||
+      ''
+    );
+  };
+
   const parseDateOnlyUtc = (value?: string | null): Date | null => {
     const raw = String(value || '').trim();
     if (!raw) return null;
@@ -267,17 +288,37 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
       try {
+        const orgSlugForApi = getSelectedOrgSlugForApi();
+        if (orgSlugForApi) {
+          const [allClubs, allTeams] = await Promise.all([
+            fetchAllPages<ProjectOption>(
+              `${apiBaseUrl}/api/v1/organisations/${orgSlugForApi}/projects/?page_size=500&include_archived=true&parent_project__isnull=true`,
+              { credentials: 'include' },
+              { ttlMs: 120_000, bypass: refreshKey > 0 },
+            ),
+            fetchAllPages<ProjectOption>(
+              `${apiBaseUrl}/api/v1/organisations/${orgSlugForApi}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`,
+              { credentials: 'include' },
+              { ttlMs: 120_000, bypass: refreshKey > 0 },
+            ),
+          ]);
+          setClubs(allClubs);
+          setTeams(allTeams);
+          return;
+        }
+
+        // Fallback: global project list (less accurate for very large orgs)
         const [allClubs, allTeams] = await Promise.all([
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
+          fetchAllPages<ProjectOption>(
+            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+            { credentials: 'include' },
+            { ttlMs: 120_000, bypass: refreshKey > 0 },
+          ),
+          fetchAllPages<ProjectOption>(
+            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+            { credentials: 'include' },
+            { ttlMs: 120_000, bypass: refreshKey > 0 },
+          ),
         ]);
         setClubs(allClubs);
         setTeams(allTeams);
@@ -289,7 +330,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
     };
 
     load();
-  }, []);
+  }, [context.organisation?.slug, organisations, refreshKey, selectedOrgId]);
 
   // Fetch Seasons for Filter
   useEffect(() => {
@@ -338,6 +379,32 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
           setSeasons(unique);
           return;
         } else if (selectedOrgId) {
+          // NOTE: in production, periods are typically team-scoped (project_id set) and
+          // may not have organisation_id populated. Prefer scoping by teams.
+          if (teams.length > 0) {
+            const teamIds = teams.map((t) => String((t as any).id)).filter(Boolean);
+            const chunks = chunkArray(teamIds, 25);
+            const results = (
+              await Promise.all(
+                chunks.map(async (ids) => {
+                  const params = new URLSearchParams(baseParams);
+                  params.set('project_id__in', ids.join(','));
+                  return await fetchAllPages<any>(
+                    `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+                    { credentials: 'include' },
+                    { ttlMs: 120_000, bypass: refreshKey > 0 },
+                  );
+                }),
+              )
+            ).flat();
+            const unique = [
+              ...new Map((Array.isArray(results) ? results : []).map((p: any) => [String(p.id), p])).values(),
+            ];
+            setSeasons(unique);
+            return;
+          }
+
+          // Fallback if teams aren't loaded yet
           baseParams.set('organisation_id', selectedOrgId);
         }
 
@@ -356,7 +423,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
     };
 
     loadSeasons();
-  }, [selectedTeamId, selectedClubId, selectedOrgId, teams]);
+  }, [selectedTeamId, selectedClubId, selectedOrgId, teams, refreshKey]);
 
   // Fetch Competitions (child periods)
   useEffect(() => {
@@ -398,16 +465,57 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
           }
 
           if (selectedOrgId && !selectedClubId && !selectedTeamId) {
-            params.set('organisation_id', selectedOrgId);
+            // Prefer team-scoped filtering (project_id__in) over organisation_id.
+            // organisation_id may be null on team-scoped periods.
+            if (teams.length > 0) {
+              params.set(
+                'project_id__in',
+                teams
+                  .map((t) => String((t as any).id))
+                  .filter(Boolean)
+                  .join(','),
+              );
+            } else {
+              params.set('organisation_id', selectedOrgId);
+            }
           }
 
           return params;
         };
 
-        if (selectedSeasonIds.length > 1) {
+        const teamIdsForOrg =
+          selectedOrgId && !selectedClubId && !selectedTeamId
+            ? teams.map((t) => String((t as any).id)).filter(Boolean)
+            : null;
+
+        const fetchWithTeamChunks = async (baseParams: URLSearchParams, teamIds: string[]) => {
+          const chunks = chunkArray(teamIds, 25);
+          const results = (
+            await Promise.all(
+              chunks.map(async (ids) => {
+                const params = new URLSearchParams(baseParams);
+                params.set('project_id__in', ids.join(','));
+                return await fetchAllPages<any>(
+                  `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+                  { credentials: 'include' },
+                  { ttlMs: 120_000, bypass: refreshKey > 0 },
+                );
+              }),
+            )
+          ).flat();
+          return [...new Map(results.map((c: any) => [String(c.id), c])).values()];
+        };
+
+        if (selectedSeasonIds.length > 0) {
+          // Season filter: fetch comps under each season id (can be multiple ids due to
+          // same season name repeated per-team).
           const requests = selectedSeasonIds.map(async (sid) => {
+            const params = buildParams(sid);
+            if (teamIdsForOrg && teamIdsForOrg.length > 0) {
+              return await fetchWithTeamChunks(params, teamIdsForOrg);
+            }
             return await fetchAllPages<any>(
-              `${apiBaseUrl}/api/v1/periods/?${buildParams(sid).toString()}`,
+              `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
               { credentials: 'include' },
               { ttlMs: 120_000, bypass: refreshKey > 0 },
             );
@@ -419,14 +527,20 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
           return;
         }
 
-        const seasonId = selectedSeasonIds.length === 1 ? selectedSeasonIds[0] : undefined;
+        // No season filter: fetch all org competitions.
+        const params = buildParams(undefined);
+        if (teamIdsForOrg && teamIdsForOrg.length > 0) {
+          const all = await fetchWithTeamChunks(params, teamIdsForOrg);
+          setCompetitions(all as any);
+          return;
+        }
+
         const results = await fetchAllPages<any>(
-          `${apiBaseUrl}/api/v1/periods/?${buildParams(seasonId).toString()}`,
+          `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
           { credentials: 'include' },
           { ttlMs: 120_000, bypass: refreshKey > 0 },
         );
-        const all = Array.isArray(results) ? results : [];
-        setCompetitions(all);
+        setCompetitions(Array.isArray(results) ? results : []);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load competitions');
       } finally {

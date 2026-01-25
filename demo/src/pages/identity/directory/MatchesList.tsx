@@ -91,6 +91,24 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
+  const isUuid = (value: unknown) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      String(value || ''),
+    );
+
+  const getSelectedOrgSlugForApi = () => {
+    const selectedOrg = selectedOrgId
+      ? organisations.find((o) => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
+      : null;
+    return (
+      (selectedOrg as any)?.slug ||
+      (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
+      context.organisation?.slug ||
+      ''
+    );
+  };
+
   // Initialize org filter
   useEffect(() => {
     if (preselectedOrgId) {
@@ -182,20 +200,38 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
       try {
-        const [allClubs, allTeams] = await Promise.all([
-          fetchAllPages<ProjectOption>(
-            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
-            { credentials: 'include' },
-            { ttlMs: 120_000, bypass: refreshKey > 0 },
-          ),
-          fetchAllPages<ProjectOption>(
-            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
-            { credentials: 'include' },
-            { ttlMs: 120_000, bypass: refreshKey > 0 },
-          ),
-        ]);
-        setClubs(allClubs);
-        setTeams(allTeams);
+        const orgSlugForApi = getSelectedOrgSlugForApi();
+        if (orgSlugForApi) {
+          const [allClubs, allTeams] = await Promise.all([
+            fetchAllPages<ProjectOption>(
+              `${apiBaseUrl}/api/v1/organisations/${orgSlugForApi}/projects/?page_size=500&include_archived=true&parent_project__isnull=true`,
+              { credentials: 'include' },
+              { ttlMs: 120_000, bypass: refreshKey > 0 },
+            ),
+            fetchAllPages<ProjectOption>(
+              `${apiBaseUrl}/api/v1/organisations/${orgSlugForApi}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`,
+              { credentials: 'include' },
+              { ttlMs: 120_000, bypass: refreshKey > 0 },
+            ),
+          ]);
+          setClubs(allClubs);
+          setTeams(allTeams);
+        } else {
+          const [allClubs, allTeams] = await Promise.all([
+            fetchAllPages<ProjectOption>(
+              `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+              { credentials: 'include' },
+              { ttlMs: 120_000, bypass: refreshKey > 0 },
+            ),
+            fetchAllPages<ProjectOption>(
+              `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+              { credentials: 'include' },
+              { ttlMs: 120_000, bypass: refreshKey > 0 },
+            ),
+          ]);
+          setClubs(allClubs);
+          setTeams(allTeams);
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load options');
       } finally {
@@ -204,7 +240,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
     };
 
     load();
-  }, [refreshKey]);
+  }, [context.organisation?.slug, organisations, refreshKey, selectedOrgId]);
 
   const filteredMatches = useMemo(() => {
     if (statusFilter === 'all') return matches;
@@ -311,7 +347,34 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
             return;
           }
         } else if (selectedOrgId) {
-            baseParams.set('organisation_id', selectedOrgId);
+          // Periods are often team-scoped (project_id set) and may not have organisation_id
+          // populated. Prefer scoping by all teams in the selected org.
+          if (teams.length > 0) {
+            const teamIds = teams.map((t) => String(t.id)).filter(Boolean);
+            const chunks = chunkArray(teamIds, 25);
+            const results = (
+              await Promise.all(
+                chunks.map(async (ids) => {
+                  const params = new URLSearchParams(baseParams);
+                  params.set('project_id__in', ids.join(','));
+                  return await fetchAllPages<any>(
+                    `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+                    { credentials: 'include' },
+                    { ttlMs: 120_000, bypass: refreshKey > 0 },
+                  );
+                }),
+              )
+            ).flat();
+
+            const roots = (Array.isArray(results) ? results : []).filter(
+              (p: any) => p?.parent_period_id == null && !p?.parent_period,
+            );
+            setSeasons([...new Map(roots.map((p: any) => [String(p.id), p])).values()]);
+            return;
+          }
+
+          // Fallback if teams not loaded
+          baseParams.set('organisation_id', selectedOrgId);
         }
 
         const results = await fetchAllPages<any>(
@@ -346,6 +409,29 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
                return;
              }
 
+              const teamIdsForOrg =
+                selectedOrgId && !selectedClubId && !selectedTeamId
+                  ? teams.map((t) => String(t.id)).filter(Boolean)
+                  : null;
+
+              const fetchWithTeamChunks = async (baseParams: URLSearchParams, teamIds: string[]) => {
+                const chunks = chunkArray(teamIds, 25);
+                const results = (
+                  await Promise.all(
+                    chunks.map(async (ids) => {
+                      const params = new URLSearchParams(baseParams);
+                      params.set('project_id__in', ids.join(','));
+                      return await fetchAllPages<any>(
+                        `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+                        { credentials: 'include' },
+                        { ttlMs: 120_000, bypass: refreshKey > 0 },
+                      );
+                    }),
+                  )
+                ).flat();
+                return [...new Map(results.map((c: any) => [String(c.id), c])).values()];
+              };
+
              const requests = seasonIds.map(async (seasonId) => {
                const params = new URLSearchParams();
                  params.set('page_size', '300');
@@ -358,8 +444,11 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
                  if (clubTeams.length > 0) {
                    params.set('project_id__in', clubTeams.map((t) => String(t.id)).join(','));
                  }
-               } else if (selectedOrgId) {
-                 params.set('organisation_id', String(selectedOrgId));
+              } else if (teamIdsForOrg && teamIdsForOrg.length > 0) {
+                // Prefer team-scoped filtering over organisation_id.
+                return await fetchWithTeamChunks(params, teamIdsForOrg);
+              } else if (selectedOrgId) {
+                params.set('organisation_id', String(selectedOrgId));
                }
 
                   return await fetchAllPages<any>(
@@ -415,9 +504,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
         const all = await fetchAllPages<Activity>(
           `${apiBaseUrl}/api/v1/activities/?${params.toString()}`,
           { credentials: 'include' },
-          // Matches can be a very large dataset (hundreds+). For the directory view,
-          // avoid fetching every page on tab open.
-          { ttlMs: 20_000, bypass: refreshKey > 0, maxPages: 1, maxItems: 250 },
+          { ttlMs: 20_000, bypass: refreshKey > 0 },
         );
 
         // If season selection maps to multiple season ids (duplicate season names across teams),

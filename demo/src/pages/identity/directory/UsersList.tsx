@@ -742,7 +742,6 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                 <select
                     value={selectedTeamId}
                     onChange={(e) => setSelectedTeamId(e.target.value)}
-                    disabled={!selectedClubId && users.length > 500}
                     style={{
                         padding: '8px 12px',
                         border: '1px solid var(--app-border)',
