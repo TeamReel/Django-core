@@ -301,8 +301,7 @@ export default function TeamOrganisationDetailPage() {
       try {
         // 1) Seasons for this team (typed query first; fallback to untyped + competition parent seasons)
         const baseSeasonParams = new URLSearchParams();
-        baseSeasonParams.set('page_size', '1000');
-        baseSeasonParams.set('parent_id', 'null');
+        baseSeasonParams.set('page_size', '2000');
 
         // Some datasets store seasons at club level (project_id=club). Include both.
         const seasonProjectIds = [teamIdForDirectoryLists, clubIdForDirectoryLists].filter(Boolean);
@@ -319,9 +318,7 @@ export default function TeamOrganisationDetailPage() {
         const typedList: any[] = await fetchAllPages<any>(typedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
 
         const untypedUrl = `${apiBaseUrl}/api/v1/periods/?${baseSeasonParams.toString()}`;
-        const untypedList: any[] = typedList.length
-          ? []
-          : await fetchAllPages<any>(untypedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+        const untypedList: any[] = await fetchAllPages<any>(untypedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
 
         // Pull season parents from competitions as a last-resort source of truth.
         const competitionsParams = new URLSearchParams();
@@ -338,9 +335,8 @@ export default function TeamOrganisationDetailPage() {
           .map((c: any) => c?.parent_period)
           .filter((p: any) => p && (p?.id || p?.slug));
 
-        const seasonsRaw = typedList.length ? typedList : untypedList;
         const seasons = mergeUniqueById(
-          [...(seasonsRaw || []), ...parentSeasonsFromCompetitions]
+          [...(typedList || []), ...(untypedList || []), ...parentSeasonsFromCompetitions]
             .filter(isSeasonPeriod)
             .filter((p: any) => !getParentPeriodId(p)),
         );

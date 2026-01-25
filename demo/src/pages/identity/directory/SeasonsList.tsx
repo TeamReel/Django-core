@@ -724,7 +724,11 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                     const project = season.project;
                     const orgName = typeof org === 'string' ? org : org?.name || '-';
                     const teamName = typeof project === 'string' ? project : project?.name || '-';
-                    const teamId = typeof project === 'string' ? project : project?.id;
+                    const teamId =
+                      (typeof project === 'string' ? project : project?.id) ??
+                      (season as any)?.project_id ??
+                      (season as any)?.project?.id ??
+                      '';
 
                     // Find the team in teams list to get parent club info
                     const teamObj = teams.find(t => String(t.id) === String(teamId));
@@ -732,12 +736,16 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                     const clubObj = clubs.find(c => String(c.id) === String(clubId));
                     const clubName = clubObj?.name || '-';
 
-                    const orgId = typeof org === 'string' ? org : org?.id;
+                    const orgId =
+                      (typeof org === 'string' ? org : org?.id) ??
+                      (season as any)?.organisation_id ??
+                      (season as any)?.organisation?.id ??
+                      '';
                     const orgFromList = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
                     const orgSlugOrId = orgFromList?.slug || (org as any)?.slug || orgId;
 
                     const clubSlugOrId = (clubObj as any)?.slug || clubId;
-                    const teamSlugOrId = (teamObj as any)?.slug || teamId;
+                    const teamSlugOrId = (teamObj as any)?.slug || String(teamId || '').trim();
                     const seasonSlugOrId = periodPathKey(season) || season.slug || season.id;
 
                     const teamDetailPath = (orgSlugOrId && clubSlugOrId && teamSlugOrId)
@@ -746,11 +754,9 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                         ? `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}`
                         : null;
 
-                    const seasonDetailPath = (orgSlugOrId && clubSlugOrId && teamSlugOrId && seasonSlugOrId)
-                      ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`
-                      : (orgSlugOrId && teamSlugOrId && seasonSlugOrId)
-                        ? `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
-                        : null;
+                    const seasonDetailPath = (orgSlugOrId && teamSlugOrId && seasonSlugOrId)
+                      ? `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+                      : null;
 
                     // Use activities_count for matches if available, else 0
                     const matchesCount = (season as any).matches_count ?? season.activities_count ?? 0;
