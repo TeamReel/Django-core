@@ -645,7 +645,9 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
               <Table style={compactTableStyle}>
                 <thead>
                   <tr>
-                    <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
+                    {!orgLocked && (
+                      <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
+                    )}
                     <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Team</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Season</th>
@@ -697,20 +699,22 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
 
                     return (
                         <tr key={m.id}>
-                        <td style={compactTextTdStyle}>
-                          {orgId ? (
-                            <a
-                              href={`/organisations/${orgTarget}`}
-                              className="text-blue-600 hover:underline"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                navigate(`/organisations/${orgTarget}`);
-                              }}
-                            >
-                              {orgName}
-                            </a>
-                          ) : orgName}
-                        </td>
+                        {!orgLocked && (
+                          <td style={compactTextTdStyle}>
+                            {orgId ? (
+                              <a
+                                href={`/organisations/${orgTarget}`}
+                                className="text-blue-600 hover:underline"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  navigate(`/organisations/${orgTarget}`);
+                                }}
+                              >
+                                {orgName}
+                              </a>
+                            ) : orgName}
+                          </td>
+                        )}
                         <td style={compactTextTdStyle}>
                             {clubId ? (
                                 <a

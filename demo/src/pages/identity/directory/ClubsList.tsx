@@ -298,7 +298,9 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
             <Table style={compactTableStyle}>
               <thead>
                 <tr>
-                  <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
+                  {!orgLocked && (
+                    <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
+                  )}
                   <th style={{ ...compactThStyle, width: '20%' }}>Club</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Team</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
@@ -337,22 +339,24 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
 
                   return (
                     <tr key={club.id}>
-                      <td style={compactTextTdStyle}>
-                        {orgSlugOrId ? (
-                          <a
-                            href={`/organisations/${orgSlugOrId}`}
-                            className="text-blue-600 hover:underline"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              navigate(`/organisations/${orgSlugOrId}`);
-                            }}
-                          >
-                            {club.organisation?.name || 'Federation'}
-                          </a>
-                        ) : (
-                          club.organisation?.name || '-'
-                        )}
-                      </td>
+                      {!orgLocked && (
+                        <td style={compactTextTdStyle}>
+                          {orgSlugOrId ? (
+                            <a
+                              href={`/organisations/${orgSlugOrId}`}
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/organisations/${orgSlugOrId}`);
+                              }}
+                            >
+                              {club.organisation?.name || 'Federation'}
+                            </a>
+                          ) : (
+                            club.organisation?.name || '-'
+                          )}
+                        </td>
+                      )}
                       <td style={compactTextTdStyle}>
                         <a
                           href={`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`}

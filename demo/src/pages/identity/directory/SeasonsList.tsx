@@ -593,7 +593,9 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId }) =>
             <Table style={compactTableStyle}>
               <thead>
                 <tr>
-                    <th style={{ ...compactThStyle, width: '140px' }}>Federation</th>
+                    {!orgLocked && (
+                      <th style={{ ...compactThStyle, width: '140px' }}>Federation</th>
+                    )}
                     <th style={{ ...compactThStyle, width: '140px' }}>Club</th>
                     <th style={{ ...compactThStyle, width: '140px' }}>Team</th>
                     <th style={{ ...compactThStyle, width: '260px' }}>Season</th>
@@ -643,22 +645,24 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId }) =>
 
                     return (
                     <tr key={season.id}>
-                        <td style={compactTextTdStyle}>
-                          {orgSlugOrId ? (
-                            <a
-                              href={`/organisations/${orgSlugOrId}`}
-                              className="text-blue-600 hover:underline"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                navigate(`/organisations/${orgSlugOrId}`);
-                              }}
-                            >
-                              {orgName}
-                            </a>
-                          ) : (
-                            orgName
-                          )}
-                        </td>
+                        {!orgLocked && (
+                          <td style={compactTextTdStyle}>
+                            {orgSlugOrId ? (
+                              <a
+                                href={`/organisations/${orgSlugOrId}`}
+                                className="text-blue-600 hover:underline"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  navigate(`/organisations/${orgSlugOrId}`);
+                                }}
+                              >
+                                {orgName}
+                              </a>
+                            ) : (
+                              orgName
+                            )}
+                          </td>
+                        )}
                         <td style={compactTextTdStyle}>
                           {clubSlugOrId && orgSlugOrId ? (
                             <a

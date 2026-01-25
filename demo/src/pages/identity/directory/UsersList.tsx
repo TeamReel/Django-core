@@ -853,7 +853,9 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                         <Table style={compactTableStyle}>
                             <thead>
                                 <tr>
-                                    <th style={{ ...compactThStyle, width: '14%' }}>Federation</th>
+                                    {!orgLocked && (
+                                      <th style={{ ...compactThStyle, width: '14%' }}>Federation</th>
+                                    )}
                                     <th style={{ ...compactThStyle, width: '14%' }}>Club</th>
                                     <th style={{ ...compactThStyle, width: '14%' }}>Team</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Season</th>
@@ -882,15 +884,17 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
 
                                     return (
                                     <tr key={u.id}>
-                                        <td style={compactTextTdStyle} title={orgName}>
-                                            {orgHref && orgName !== '-' ? (
-                                                <button style={linkButtonStyle} onClick={() => navigate(orgHref)}>
-                                                    {orgName}
-                                                </button>
-                                            ) : (
-                                                orgName
-                                            )}
-                                        </td>
+                                        {!orgLocked && (
+                                          <td style={compactTextTdStyle} title={orgName}>
+                                              {orgHref && orgName !== '-' ? (
+                                                  <button style={linkButtonStyle} onClick={() => navigate(orgHref)}>
+                                                      {orgName}
+                                                  </button>
+                                              ) : (
+                                                  orgName
+                                              )}
+                                          </td>
+                                        )}
                                         <td style={compactTextTdStyle} title={scoped.club.title}>
                                             {clubHref && scoped.club.label !== '-' ? (
                                                 <button style={linkButtonStyle} onClick={() => navigate(clubHref)}>
