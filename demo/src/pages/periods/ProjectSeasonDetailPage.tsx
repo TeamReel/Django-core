@@ -1378,11 +1378,26 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   ) : (
                     (() => {
                       const normalized = hierarchySearch.trim().toLowerCase();
+                      const getMatchesForCompetition = (competition: any) => {
+                        const competitionId = String((competition as any)?.id || '').trim();
+                        if (!competitionId) return [];
+                        return matches.filter((m: any) => {
+                          const periodId = String(m.period_id || m.period?.id || '');
+                          return periodId === competitionId;
+                        });
+                      };
+
                       const filteredCompetitions = !normalized
                         ? competitions
                         : competitions.filter((c) => {
                             const compName = String(c?.name || '').toLowerCase();
-                            return compName.includes(normalized);
+                            if (compName.includes(normalized)) return true;
+                            const compMatches = getMatchesForCompetition(c);
+                            return compMatches.some((m: any) => {
+                              const title = String(m?.title || m?.name || '').toLowerCase();
+                              const startTime = String(m?.start_time || '').toLowerCase();
+                              return title.includes(normalized) || startTime.includes(normalized);
+                            });
                           });
 
                       return (
@@ -1394,6 +1409,17 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           ) : null}
                           {filteredCompetitions.map((competition) => {
                             const compId = String(competition.id);
+                            const competitionKey = periodPathKey(competition) || compId;
+
+                            const compMatches = getMatchesForCompetition(competition);
+                            const visibleMatches = !normalized
+                              ? compMatches
+                              : compMatches.filter((m: any) => {
+                                  const title = String(m?.title || m?.name || '').toLowerCase();
+                                  const startTime = String(m?.start_time || '').toLowerCase();
+                                  return title.includes(normalized) || startTime.includes(normalized);
+                                });
+
                             return (
                               <div key={compId} style={{ marginBottom: '2rem' }}>
                                 <div
@@ -1480,6 +1506,118 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     >
                                       Delete
                                     </button>
+                                  )}
+                                </div>
+
+                                <div style={{ paddingLeft: '8px' }}>
+                                  {matchesLoading ? (
+                                    <Alert variant="info">Loading matches…</Alert>
+                                  ) : visibleMatches.length === 0 ? (
+                                    <div style={{ color: 'var(--app-text-secondary)', fontSize: '13px', padding: '8px 4px' }}>
+                                      No matches for this competition.
+                                    </div>
+                                  ) : (
+                                    <div className="overflow-x-auto">
+                                      <Table style={compactTableStyle}>
+                                        <thead>
+                                          <tr>
+                                            <th style={compactThStyle}>Match</th>
+                                            <th style={compactThStyle}>Date</th>
+                                            <th style={compactThStyle}>Participants</th>
+                                            <th style={compactThStyle} className="text-right">Actions</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {visibleMatches.map((match: any) => {
+                                            const matchKey = (match as any).slug || match.id;
+                                            const matchPath = isTeamRoute
+                                              ? `${seasonsBasePath}/${seasonPathKey}/${competitionKey}/${String(matchKey)}`
+                                              : `/matches/${String(matchKey)}`;
+                                            return (
+                                              <tr key={match.id}>
+                                                <td style={compactTextTdStyle}>
+                                                  <Link
+                                                    to={matchPath}
+                                                    className="text-blue-600 hover:underline"
+                                                    style={{ textDecoration: 'none' }}
+                                                  >
+                                                    {match.title || match.name}
+                                                  </Link>
+                                                </td>
+                                                <td style={compactTextTdStyle}>
+                                                  {match.start_time ? new Date(match.start_time).toLocaleString() : '—'}
+                                                </td>
+                                                <td style={compactTdStyle}>
+                                                  <Badge variant="default">{getMatchParticipantsCount(match)}</Badge>
+                                                </td>
+                                                <td style={compactTdStyle}>
+                                                  <div style={compactActionsStyle}>
+                                                    <button
+                                                      type="button"
+                                                      className="app-action-button"
+                                                      onClick={() => {
+                                                        setSelectedDetailMatch(match);
+                                                        setIsMatchDetailModalOpen(true);
+                                                      }}
+                                                      style={tableActionButtonStyle('primary')}
+                                                    >
+                                                      View
+                                                    </button>
+                                                    {userCanEditProject && (
+                                                      <button
+                                                        type="button"
+                                                        className="app-action-button"
+                                                        onClick={() => {
+                                                          setSelectedEditMatch(match);
+                                                          setIsMatchEditModalOpen(true);
+                                                        }}
+                                                        style={tableActionButtonStyle('warning')}
+                                                      >
+                                                        Edit
+                                                      </button>
+                                                    )}
+                                                    {userCanDeleteProject && (
+                                                      <button
+                                                        type="button"
+                                                        className="app-action-button"
+                                                        onClick={async () => {
+                                                          if (!window.confirm(`Are you sure you want to delete match ${match.title || match.name}?`)) return;
+                                                          try {
+                                                            const res = await fetch(
+                                                              `${apiBaseUrl}/api/v1/activities/${match.id}/`,
+                                                              {
+                                                                method: 'DELETE',
+                                                                headers: {
+                                                                  'Content-Type': 'application/json',
+                                                                  'X-CSRFToken': getCsrfToken(),
+                                                                },
+                                                                credentials: 'include',
+                                                              }
+                                                            );
+
+                                                            if (res.ok) {
+                                                              setMatches((prev) => prev.filter((m: any) => String(m.id) !== String(match.id)));
+                                                            } else {
+                                                              alert('Error deleting match');
+                                                            }
+                                                          } catch (e) {
+                                                            console.error(e);
+                                                            alert('Error deleting match');
+                                                          }
+                                                        }}
+                                                        style={tableActionButtonStyle('danger')}
+                                                      >
+                                                        Delete
+                                                      </button>
+                                                    )}
+                                                  </div>
+                                                </td>
+                                              </tr>
+                                            );
+                                          })}
+                                        </tbody>
+                                      </Table>
+                                    </div>
                                   )}
                                 </div>
                               </div>

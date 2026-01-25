@@ -159,6 +159,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             matchPath({ path: '/organisations/:orgId/:clubId/:projectId/:seasonId', end: true }, path) ||
             matchPath({ path: '/:orgId/:clubId/:projectId/:seasonId', end: true }, path);
 
+        // Canonical TeamReel hierarchy competition routes (no /projects/.../competitions segments)
+        const competitionDetailVanityTeamMatch =
+            matchPath({ path: '/organisations/:orgId/:clubId/:projectId/:seasonId/:competitionId', end: true }, path) ||
+            matchPath({ path: '/:orgId/:clubId/:projectId/:seasonId/:competitionId', end: true }, path);
+
         const orgDetailMatch =
             matchPath({ path: '/organisations/:id', end: true }, path) ||
             matchPath({ path: '/organisations/:orgId', end: true }, path) ||
@@ -299,6 +304,29 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 ];
                 break;
             }
+
+                        if (
+                            competitionDetailVanityTeamMatch?.params?.orgId &&
+                            competitionDetailVanityTeamMatch?.params?.clubId &&
+                            competitionDetailVanityTeamMatch?.params?.projectId &&
+                            competitionDetailVanityTeamMatch?.params?.seasonId &&
+                            competitionDetailVanityTeamMatch?.params?.competitionId
+                        ) {
+                                const { orgId, clubId, projectId, seasonId, competitionId } = competitionDetailVanityTeamMatch.params as any;
+                                const baseUrl = path.startsWith('/organisations/')
+                                    ? `/organisations/${orgId}/${clubId}/${projectId}/${seasonId}/${competitionId}`
+                                    : `/${orgId}/${clubId}/${projectId}/${seasonId}/${competitionId}`;
+
+                                title = 'Competition';
+                                items = [
+                                        { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                                        { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
+                                        { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
+                                        { label: 'Users', path: makeTabUrl(baseUrl, 'users'), icon: Users },
+                                        { label: 'Audit', path: makeTabUrl(baseUrl, 'audit'), icon: Scroll },
+                                ];
+                                break;
+                        }
 
             if (seasonDetailVanityTeamMatch?.params?.orgId && seasonDetailVanityTeamMatch?.params?.clubId && seasonDetailVanityTeamMatch?.params?.projectId && seasonDetailVanityTeamMatch?.params?.seasonId) {
                 const { orgId, clubId, projectId, seasonId } = seasonDetailVanityTeamMatch.params as any;
