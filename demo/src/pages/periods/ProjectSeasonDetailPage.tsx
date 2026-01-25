@@ -82,21 +82,18 @@ const getPeriodParentId = (p: any): string => {
 };
 
 const isSeasonPeriod = (p: any): boolean => {
-  // A season must be a root period (no parent)
+  // TeamReel hierarchy: Season is a root Period (no parent_period).
+  // Do NOT infer by name; rely on parent/type.
   const parentId = getPeriodParentId(p);
   if (parentId) return false;
 
   const type = getPeriodType(p);
   if (type === 'season') return true;
 
-  // Fallback for seeders without explicit metadata.type
-  const name = String(p?.name || '').toLowerCase();
-  if (name.startsWith('season') || name.startsWith('seizoen')) return true;
+  // Guard against misconfigured root competitions.
+  if (['competition', 'league', 'cup', 'friendly', 'tournament', 'round'].includes(type)) return false;
 
-  const seasonKey = p?.data?.season ?? p?.metadata?.season;
-  if (seasonKey) return true;
-
-  return false;
+  return true;
 };
 
 export const ProjectSeasonDetailPage: React.FC = () => {
@@ -267,6 +264,62 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
     navigate(`${seasonsBasePath}/${seasonKeyOrId}?tab=${encodeURIComponent(tabId)}`);
   };
+
+  const SeasonTabsPanel = (
+    <Card>
+      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 10 }}>Tabs</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <Button
+          variant={activeTab === 'overview' ? 'primary' : 'secondary'}
+          size="sm"
+          style={{ width: '100%', justifyContent: 'flex-start' }}
+          onClick={() => navigateToTab('overview')}
+        >
+          Overview
+        </Button>
+        <Button
+          variant={activeTab === 'hierarchy' ? 'primary' : 'secondary'}
+          size="sm"
+          style={{ width: '100%', justifyContent: 'flex-start' }}
+          onClick={() => navigateToTab('hierarchy')}
+        >
+          Hierarchy
+        </Button>
+        <Button
+          variant={activeTab === 'competitions' ? 'primary' : 'secondary'}
+          size="sm"
+          style={{ width: '100%', justifyContent: 'flex-start' }}
+          onClick={() => navigateToTab('competitions')}
+        >
+          Competitions
+        </Button>
+        <Button
+          variant={activeTab === 'matches' ? 'primary' : 'secondary'}
+          size="sm"
+          style={{ width: '100%', justifyContent: 'flex-start' }}
+          onClick={() => navigateToTab('matches')}
+        >
+          Matches
+        </Button>
+        <Button
+          variant={activeTab === 'squad' ? 'primary' : 'secondary'}
+          size="sm"
+          style={{ width: '100%', justifyContent: 'flex-start' }}
+          onClick={() => navigateToTab('squad')}
+        >
+          Squad
+        </Button>
+        <Button
+          variant={activeTab === 'transactions' ? 'primary' : 'secondary'}
+          size="sm"
+          style={{ width: '100%', justifyContent: 'flex-start' }}
+          onClick={() => navigateToTab('transactions')}
+        >
+          Transactions
+        </Button>
+      </div>
+    </Card>
+  );
 
   const handleSeasonSwitch = (option: BreadcrumbSwitcherOption) => {
     const suffix = location.search ? location.search : '';
@@ -1262,6 +1315,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                     {/* Right Column: Quick Actions */}
                     <div className="space-y-6">
+                      {SeasonTabsPanel}
                       <Card>
                         <h3 className="text-lg font-semibold mb-3">Quick Actions</h3>
                         <div className="space-y-2">
@@ -1297,7 +1351,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               )}
 
               {activeTab === 'hierarchy' && (
-                <Card>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <Card>
                   <div
                     style={{
                       display: 'flex',
@@ -1463,11 +1519,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       );
                     })()
                   )}
-                </Card>
+                    </Card>
+                  </div>
+                  <div className="space-y-6">{SeasonTabsPanel}</div>
+                </div>
               )}
 
               {activeTab === 'squad' && (
-                <Card>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <Card>
                   <div style={{ padding: '16px 16px 0 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                       <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Players & Staff</h3>
@@ -1840,11 +1901,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       </>
                     )}
                   </div>
-                </Card>
+                    </Card>
+                  </div>
+                  <div className="space-y-6">{SeasonTabsPanel}</div>
+                </div>
               )}
 
               {activeTab === 'competitions' && (
-                <Card>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <Card>
                   <div style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
                       <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Competitions</h3>
@@ -1968,11 +2034,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       </Table>
                     )}
                   </div>
-                </Card>
+                    </Card>
+                  </div>
+                  <div className="space-y-6">{SeasonTabsPanel}</div>
+                </div>
               )}
 
               {activeTab === 'matches' && (
-                <Card>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <Card>
                   <div style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
                       <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Matches</h3>
@@ -2117,23 +2188,31 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       </Table>
                     )}
                   </div>
-                </Card>
+                    </Card>
+                  </div>
+                  <div className="space-y-6">{SeasonTabsPanel}</div>
+                </div>
               )}
 
             </>
           )}
 
           {activeTab === 'transactions' && (
-            <div style={{ display: 'grid', gap: '12px' }}>
-              <TransactionsPanel
-                title="Transactions"
-                description="Season-scoped transactions (usage_event.metadata.season_id)"
-                filters={{
-                  organization_id: String(org?.id || ''),
-                  project_id: String(project?.id || ''),
-                  season_id: String(resolvedSeasonId || effectiveSeasonId || ''),
-                }}
-              />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  <TransactionsPanel
+                    title="Transactions"
+                    description="Season-scoped transactions (usage_event.metadata.season_id)"
+                    filters={{
+                      organization_id: String(org?.id || ''),
+                      project_id: String(project?.id || ''),
+                      season_id: String(resolvedSeasonId || effectiveSeasonId || ''),
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="space-y-6">{SeasonTabsPanel}</div>
             </div>
           )}
         </PageContent>

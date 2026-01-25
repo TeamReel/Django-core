@@ -399,6 +399,12 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
     ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
     : null;
   const orgSlugOrId = selectedOrg?.slug || selectedOrg?.id || selectedOrgId;
+  const orgKeyForRoutes = String(
+    orgSlugOrId ||
+      (context as any)?.organisation?.slug ||
+      (context as any)?.organisation?.id ||
+      ''
+  ).trim();
 
   const selectedTeam = selectedTeamId ? teams.find((t) => String(t.id) === String(selectedTeamId)) : null;
   const teamSlugOrId = (selectedTeam as any)?.slug || (selectedTeam as any)?.id || selectedTeamId;
@@ -742,20 +748,21 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                       (season as any)?.organisation?.id ??
                       '';
                     const orgFromList = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
-                    const orgSlugOrId = orgFromList?.slug || (org as any)?.slug || orgId;
+                    const rowOrgSlugOrId = String(orgFromList?.slug || (org as any)?.slug || orgId || '').trim();
+                    const orgForRowRoutes = rowOrgSlugOrId || orgKeyForRoutes;
 
                     const clubSlugOrId = (clubObj as any)?.slug || clubId;
                     const teamSlugOrId = (teamObj as any)?.slug || String(teamId || '').trim();
                     const seasonSlugOrId = periodPathKey(season) || season.slug || season.id;
 
-                    const teamDetailPath = (orgSlugOrId && clubSlugOrId && teamSlugOrId)
-                      ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`
-                      : (orgSlugOrId && teamSlugOrId)
-                        ? `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}`
+                    const teamDetailPath = (orgForRowRoutes && clubSlugOrId && teamSlugOrId)
+                      ? `/${orgForRowRoutes}/${clubSlugOrId}/${teamSlugOrId}`
+                      : (orgForRowRoutes && teamSlugOrId)
+                        ? `/organisations/${orgForRowRoutes}/projects/${teamSlugOrId}`
                         : null;
 
-                    const seasonDetailPath = (orgSlugOrId && teamSlugOrId && seasonSlugOrId)
-                      ? `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+                    const seasonDetailPath = (orgForRowRoutes && teamSlugOrId && seasonSlugOrId)
+                      ? `/organisations/${orgForRowRoutes}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
                       : null;
 
                     // Use activities_count for matches if available, else 0
@@ -765,13 +772,13 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                     <tr key={season.id}>
                         {!orgLocked && (
                           <td style={compactTextTdStyle}>
-                            {orgSlugOrId ? (
+                            {orgForRowRoutes ? (
                               <a
-                                href={`/organisations/${orgSlugOrId}`}
+                                href={`/organisations/${orgForRowRoutes}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/organisations/${orgSlugOrId}`);
+                                  navigate(`/organisations/${orgForRowRoutes}`);
                                 }}
                               >
                                 {orgName}
@@ -783,13 +790,13 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                         )}
                         {!clubLocked && (
                           <td style={compactTextTdStyle}>
-                            {clubSlugOrId && orgSlugOrId ? (
+                            {clubSlugOrId && orgForRowRoutes ? (
                               <a
-                                href={`/${orgSlugOrId}/${clubSlugOrId}`}
+                                href={`/${orgForRowRoutes}/${clubSlugOrId}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/${orgSlugOrId}/${clubSlugOrId}`);
+                                  navigate(`/${orgForRowRoutes}/${clubSlugOrId}`);
                                 }}
                               >
                                 {clubName}
@@ -830,7 +837,25 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                               {season.name}
                             </a>
                           ) : (
-                            season.name
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDetailSeason(season as any);
+                                setIsDetailModalOpen(true);
+                              }}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                padding: 0,
+                                margin: 0,
+                                color: 'var(--app-link, #2563eb)',
+                                cursor: 'pointer',
+                                textDecoration: 'underline',
+                                font: 'inherit',
+                              }}
+                            >
+                              {season.name}
+                            </button>
                           )}
                         </td>
                         <td style={compactTdStyle}>
