@@ -1616,7 +1616,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 style={{ padding: '16px', cursor: 'pointer' }}
                 onClick={() => navigate(makeTabHref('users'))}
               >
-                <div className="text-sm font-medium text-gray-500">Users</div>
+                <div className="text-sm font-medium text-gray-500">Members</div>
                 <div className="text-2xl font-bold mt-1">{org.member_count || members.length || 0}</div>
               </Card>
               <Card
@@ -1773,7 +1773,7 @@ export const OrganisationDetailPage: React.FC = () => {
                       style={{ width: '100%', justifyContent: 'flex-start' }}
                       onClick={() => navigate(makeTabHref('users'))}
                     >
-                      Manage Users
+                      Manage Members
                     </Button>
                     <Button
                       variant="secondary"

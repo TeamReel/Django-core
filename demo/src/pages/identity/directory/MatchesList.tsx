@@ -224,7 +224,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
       const clubId = searchParams.get('club_id');
       const teamId = searchParams.get('team_id');
       if (!clubLocked && clubId) setSelectedClubId(String(clubId));
-      if (!teamLocked && teamId) setSelectedTeamId(String(teamId));
+      if (!teamLocked && !clubLocked && teamId) setSelectedTeamId(String(teamId));
       return;
     }
 
@@ -234,7 +234,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
 
     if (orgId && isSuperAdmin) setSelectedOrgId(String(orgId));
     if (!clubLocked && clubId) setSelectedClubId(String(clubId));
-    if (!teamLocked && teamId) setSelectedTeamId(String(teamId));
+    if (!teamLocked && !clubLocked && teamId) setSelectedTeamId(String(teamId));
   }, [isSuperAdmin, searchParams, preselectedOrgId, clubLocked]);
 
   const getTeamParentId = (t: any): string | null => {
@@ -738,70 +738,74 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
             ))}
           </select>
         )}
-        <select
-          value={selectedClubId}
-          onChange={(e) => {
-            if (clubLocked) return;
-            setSelectedClubId(e.target.value);
-            if (!teamLocked) setSelectedTeamId('');
-            setSelectedSeasonName('');
-            setSelectedCompetitionId('');
-          }}
-          disabled={clubLocked}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: 'var(--app-surface)',
-          }}
-        >
-          {!clubLocked && <option value="">Club: All</option>}
-          {clubs
-            .filter((c) => {
-              if (!selectedOrgId) return true;
-              const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
-              return String(cOrg) === String(selectedOrgId);
-            })
-            .slice()
-            .sort((a, b) => String(a.name).localeCompare(String(b.name)))
-            .map((c) => (
-              <option key={c.id} value={String(c.id)}>
-                {c.name}
-              </option>
-            ))}
-        </select>
-        <select
-          value={selectedTeamId}
-          onChange={(e) => {
-            if (teamLocked) return;
-            setSelectedTeamId(e.target.value);
-            setSelectedSeasonName('');
-            setSelectedCompetitionId('');
-          }}
-          disabled={teamLocked}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: 'var(--app-surface)',
-          }}
-        >
-          {!teamLocked && <option value="">Team: All</option>}
-          {teams
-            .filter((t) => {
-              if (!selectedClubId) return true;
-              return getTeamParentId(t) === String(selectedClubId);
-            })
-            .slice()
-            .sort((a, b) => String(a.name).localeCompare(String(b.name)))
-            .map((t) => (
-              <option key={t.id} value={String(t.id)}>
-                {t.name}
-              </option>
-            ))}
-        </select>
+        {!clubLocked && (
+          <select
+            value={selectedClubId}
+            onChange={(e) => {
+              if (clubLocked) return;
+              setSelectedClubId(e.target.value);
+              if (!teamLocked) setSelectedTeamId('');
+              setSelectedSeasonName('');
+              setSelectedCompetitionId('');
+            }}
+            disabled={clubLocked}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid var(--app-border)',
+              borderRadius: '4px',
+              fontSize: '14px',
+              backgroundColor: 'var(--app-surface)',
+            }}
+          >
+            {!clubLocked && <option value="">Club: All</option>}
+            {clubs
+              .filter((c) => {
+                if (!selectedOrgId) return true;
+                const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
+                return String(cOrg) === String(selectedOrgId);
+              })
+              .slice()
+              .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+              .map((c) => (
+                <option key={c.id} value={String(c.id)}>
+                  {c.name}
+                </option>
+              ))}
+          </select>
+        )}
+        {!teamLocked && (
+          <select
+            value={selectedTeamId}
+            onChange={(e) => {
+              if (teamLocked) return;
+              setSelectedTeamId(e.target.value);
+              setSelectedSeasonName('');
+              setSelectedCompetitionId('');
+            }}
+            disabled={teamLocked}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid var(--app-border)',
+              borderRadius: '4px',
+              fontSize: '14px',
+              backgroundColor: 'var(--app-surface)',
+            }}
+          >
+            {!teamLocked && <option value="">Team: All</option>}
+            {teams
+              .filter((t) => {
+                if (!selectedClubId) return true;
+                return getTeamParentId(t) === String(selectedClubId);
+              })
+              .slice()
+              .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+              .map((t) => (
+                <option key={t.id} value={String(t.id)}>
+                  {t.name}
+                </option>
+              ))}
+          </select>
+        )}
 
         <select
           value={selectedSeasonName}

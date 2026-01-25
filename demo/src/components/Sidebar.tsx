@@ -145,6 +145,15 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             matchPath({ path: '/organisations/:orgId/:projectId', end: true }, path) ||
             matchPath({ path: '/:orgId/:projectId', end: true }, path);
 
+        // Season detail routes (tabs should render in Panel B, not on the page).
+        const seasonDetailTeamMatch =
+            matchPath({ path: '/organisations/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId', end: true }, path) ||
+            matchPath({ path: '/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId', end: true }, path);
+
+        const seasonDetailProjectMatch =
+            matchPath({ path: '/organisations/:orgId/projects/:projectId/seasons/:seasonId', end: true }, path) ||
+            matchPath({ path: '/:orgId/projects/:projectId/seasons/:seasonId', end: true }, path);
+
         const orgDetailMatch =
             matchPath({ path: '/organisations/:id', end: true }, path) ||
             matchPath({ path: '/organisations/:orgId', end: true }, path) ||
@@ -194,7 +203,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Seasons', path: makeOrgSectionUrl(orgId, 'seasons'), icon: CalendarDays },
                     { label: 'Competitions', path: makeOrgSectionUrl(orgId, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeOrgSectionUrl(orgId, 'matches'), icon: Timer },
-                    { label: 'Users', path: makeOrgSectionUrl(orgId, 'users'), icon: Users },
+                    { label: 'Members', path: makeOrgSectionUrl(orgId, 'users'), icon: Users },
                 ];
                 break;
             }
@@ -215,7 +224,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         { label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays },
                         { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                         { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
-                        { label: 'Users', path: makeTabUrl(baseUrl, 'users'), icon: Users },
+                        { label: 'Members', path: makeTabUrl(baseUrl, 'users'), icon: Users },
                         { label: 'Audit', path: makeTabUrl(baseUrl, 'audit'), icon: Scroll },
                         { label: 'Governance', path: makeTabUrl(baseUrl, 'governance'), icon: BookOpen },
                         { label: 'Operations', path: makeTabUrl(baseUrl, 'operations'), icon: Settings },
@@ -268,6 +277,42 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 break;
             }
 
+            if (seasonDetailTeamMatch?.params?.orgId && seasonDetailTeamMatch?.params?.clubId && seasonDetailTeamMatch?.params?.projectId && seasonDetailTeamMatch?.params?.seasonId) {
+                const { orgId, clubId, projectId, seasonId } = seasonDetailTeamMatch.params as any;
+                const baseUrl = path.startsWith('/organisations/')
+                  ? `/organisations/${orgId}/projects/${clubId}/teams/${projectId}/seasons/${seasonId}`
+                  : `/${orgId}/projects/${clubId}/teams/${projectId}/seasons/${seasonId}`;
+
+                title = 'Season';
+                items = [
+                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
+                    { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
+                    { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
+                    { label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users },
+                    { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                ];
+                break;
+            }
+
+            if (seasonDetailProjectMatch?.params?.orgId && seasonDetailProjectMatch?.params?.projectId && seasonDetailProjectMatch?.params?.seasonId) {
+                const { orgId, projectId, seasonId } = seasonDetailProjectMatch.params as any;
+                const baseUrl = path.startsWith('/organisations/')
+                  ? `/organisations/${orgId}/projects/${projectId}/seasons/${seasonId}`
+                  : `/${orgId}/projects/${projectId}/seasons/${seasonId}`;
+
+                title = 'Season';
+                items = [
+                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
+                    { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
+                    { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
+                    { label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users },
+                    { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                ];
+                break;
+            }
+
             // Hierarchy Context Logic
             if (matchId) {
                 title = 'Match Actions';
@@ -308,7 +353,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 items.push({ label: 'Seasons', path: makeOrgSectionUrl(orgId, 'seasons'), icon: CalendarDays });
                 items.push({ label: 'Competitions', path: makeOrgSectionUrl(orgId, 'competitions'), icon: Trophy });
                 items.push({ label: 'Matches', path: makeOrgSectionUrl(orgId, 'matches'), icon: Timer });
-                items.push({ label: 'Users', path: makeOrgSectionUrl(orgId, 'users'), icon: Users });
+                items.push({ label: 'Members', path: makeOrgSectionUrl(orgId, 'users'), icon: Users });
             } else {
                  // Browse Mode (Default) - Standard shortcuts
                  title = 'Directory';
@@ -319,7 +364,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Seasons', path: '/seasons', icon: CalendarDays },
                     { label: 'Competitions', path: '/competitions', icon: Trophy },
                     { label: 'Matches', path: '/matches', icon: Timer },
-                    { label: 'Users', path: '/users', icon: Users },
+                    { label: 'Members', path: '/users', icon: Users },
                  ];
             }
             break;

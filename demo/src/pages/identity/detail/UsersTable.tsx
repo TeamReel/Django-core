@@ -46,7 +46,12 @@ export default function UsersTable({
   onEditMembership,
   onRemoveMembership,
 }: Props) {
-  const noBorderBadgeStyle: React.CSSProperties = { border: 'none', boxShadow: 'none', outline: 'none' };
+  const noBorderBadgeStyle: React.CSSProperties = {
+    border: 'none',
+    borderColor: 'transparent',
+    boxShadow: 'none',
+    outline: 'none',
+  };
 
   const looksLikeUuid = (value: string): boolean => {
     const v = String(value || '').trim();

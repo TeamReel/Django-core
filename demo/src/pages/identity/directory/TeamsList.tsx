@@ -284,36 +284,38 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
             ))}
           </select>
         )}
-        <select
-          value={selectedClubId}
-          onChange={(e) => {
-            if (clubLocked) return;
-            setSelectedClubId(e.target.value);
-            setSelectedTeamId('');
-          }}
-          disabled={clubLocked}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: 'var(--app-surface)',
-          }}
-        >
-          {!clubLocked && <option value="">Club: All</option>}
-          {clubs
-            .filter((c) => {
-              if (!selectedOrgId) return true;
-              const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
-              return String(cOrg) === String(selectedOrgId);
-            })
-            .sort((a, b) => String(a.name).localeCompare(String(b.name)))
-            .map((c) => (
-              <option key={c.id} value={String(c.id)}>
-                {c.name}
-              </option>
-            ))}
-        </select>
+          {!clubLocked && (
+            <select
+              value={selectedClubId}
+              onChange={(e) => {
+                if (clubLocked) return;
+                setSelectedClubId(e.target.value);
+                setSelectedTeamId('');
+              }}
+              disabled={clubLocked}
+              style={{
+                padding: '8px 12px',
+                border: '1px solid var(--app-border)',
+                borderRadius: '4px',
+                fontSize: '14px',
+                backgroundColor: 'var(--app-surface)',
+              }}
+            >
+              {!clubLocked && <option value="">Club: All</option>}
+              {clubs
+                .filter((c) => {
+                  if (!selectedOrgId) return true;
+                  const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
+                  return String(cOrg) === String(selectedOrgId);
+                })
+                .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+                .map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.name}
+                  </option>
+                ))}
+            </select>
+          )}
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}

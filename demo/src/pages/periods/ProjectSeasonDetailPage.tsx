@@ -320,14 +320,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     ]
   );
 
-  const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'hierarchy', label: 'Hierarchy' },
-    { id: 'competitions', label: 'Competitions' },
-    { id: 'matches', label: 'Matches' },
-    { id: 'squad', label: 'Squad' },
-  ];
-
   const savePeriodEdits = async (periodToEdit: any, patch: any) => {
     const periodId = String(periodToEdit?.id || '').trim();
     if (!periodId) throw new Error('Missing period id');
@@ -1118,37 +1110,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             <Card><div style={{ padding: '16px' }}>Loading...</div></Card>
           ) : (
             <>
-              {/* Tabs (match TeamDetail/ProjectDetail) */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '6px',
-                  borderBottom: '1px solid var(--app-border)',
-                  marginBottom: '20px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => navigateToTab(tab.id)}
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: '6px 6px 0 0',
-                      border: '1px solid var(--app-border)',
-                      borderBottom: activeTab === tab.id ? '1px solid var(--app-surface)' : '1px solid var(--app-border)',
-                      backgroundColor: activeTab === tab.id ? 'var(--app-surface)' : 'var(--app-surface-2)',
-                      color: 'var(--app-text)',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                      fontWeight: activeTab === tab.id ? 600 : 500,
-                    }}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
               {activeTab === 'overview' && (
                 <>
                   {/* Top Stats Row */}

@@ -251,9 +251,11 @@ export default function ClubOrganisationDetailPage() {
       setHierarchyError(null);
 
       try {
-        // 1) Fetch teams under this club (direct children)
+        // 1) Fetch all teams for this federation and filter to this club.
+        // We do this (instead of relying on `parent_project=...`) because the API response shape
+        // differs between endpoints and older servers may ignore unknown query params.
         const teamsRes = await fetch(
-          `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(clubIdForDirectoryLists)}&page_size=250`,
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`,
           { credentials: 'include' },
         );
 
@@ -268,9 +270,9 @@ export default function ClubOrganisationDetailPage() {
             if (oid && oid !== String(orgIdForDirectoryLists)) return false;
 
             const parent =
-              (t as any)?.parent_project_id ??
-              (t as any)?.parent_project?.id ??
               (t as any)?.parent_id ??
+              (t as any)?.parent_project_id ??
+              (typeof (t as any)?.parent_project === 'object' ? (t as any)?.parent_project?.id : (t as any)?.parent_project) ??
               (typeof (t as any)?.parent === 'object' ? (t as any)?.parent?.id : (t as any)?.parent);
             if (parent == null) return false;
             return String(typeof parent === 'object' ? parent.id : parent) === String(clubIdForDirectoryLists);
@@ -303,7 +305,6 @@ export default function ClubOrganisationDetailPage() {
             const params = new URLSearchParams();
             params.set('project_id__in', chunk.join(','));
             params.set('type', 'season');
-            params.set('parent_id', 'null');
             params.set('page_size', '500');
             const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
             if (!res.ok) throw new Error(`Failed to load seasons (${res.status})`);
@@ -315,7 +316,11 @@ export default function ClubOrganisationDetailPage() {
           }),
         );
 
-        const mergedSeasons = mergeUniqueById((seasonsChunks.flat() as any[]).filter(isSeasonPeriod));
+        const mergedSeasons = mergeUniqueById(
+          (seasonsChunks.flat() as any[])
+            .filter(isSeasonPeriod)
+            .filter((p: any) => getParentPeriodId(p) == null),
+        );
 
         const byTeam: Record<string, Period[]> = {};
         for (const season of mergedSeasons) {

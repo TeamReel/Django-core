@@ -84,6 +84,7 @@ const badgeButtonStyle: React.CSSProperties = {
 
 const badgeNoBorderStyle: React.CSSProperties = {
     border: 'none',
+    borderColor: 'transparent',
     boxShadow: 'none',
     outline: 'none',
 };
@@ -137,6 +138,8 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
     const orgLocked = Boolean(preselectedOrgId);
     const clubLocked = Boolean(preselectedClubId);
     const teamLocked = Boolean(preselectedTeamId);
+
+    const scopedLocked = orgLocked || clubLocked || teamLocked;
 
     const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
 
@@ -866,59 +869,63 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                     </select>
                 )}
 
-                <select
-                    value={selectedClubId}
-                    onChange={(e) => {
-                        if (clubLocked) return;
-                        setSelectedClubId(e.target.value);
-                        if (!teamLocked) setSelectedTeamId('');
-                    }}
-                    disabled={clubLocked}
-                    style={{
-                        padding: '8px 12px',
-                        border: '1px solid var(--app-border)',
-                        borderRadius: '4px',
-                        fontSize: '14px',
-                        backgroundColor: 'var(--app-surface)',
-                    }}
-                >
-                    {!clubLocked && <option value="">Club: All</option>}
-                    {clubs
-                                                                                        .sort((a, b) => String(a.name).localeCompare(String(b.name)))
-                      .map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                </select>
+                {!clubLocked && (
+                    <select
+                        value={selectedClubId}
+                        onChange={(e) => {
+                            if (clubLocked) return;
+                            setSelectedClubId(e.target.value);
+                            if (!teamLocked) setSelectedTeamId('');
+                        }}
+                        disabled={clubLocked}
+                        style={{
+                            padding: '8px 12px',
+                            border: '1px solid var(--app-border)',
+                            borderRadius: '4px',
+                            fontSize: '14px',
+                            backgroundColor: 'var(--app-surface)',
+                        }}
+                    >
+                        {!clubLocked && <option value="">Club: All</option>}
+                        {clubs
+                                                                                            .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+                          .map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                    </select>
+                )}
 
-                <select
-                    value={selectedTeamId}
-                    onChange={(e) => {
-                        if (teamLocked) return;
-                        setSelectedTeamId(e.target.value);
-                    }}
-                    disabled={teamLocked}
-                    style={{
-                        padding: '8px 12px',
-                        border: '1px solid var(--app-border)',
-                        borderRadius: '4px',
-                        fontSize: '14px',
-                        backgroundColor: 'var(--app-surface)',
-                    }}
-                >
-                    {!teamLocked && <option value="">Team: All</option>}
-                    {teams
-                        .filter(t => {
-                            if (selectedClubId) {
-                                 const parent = t.parent_id || (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
-                                 return String(parent) === String(selectedClubId);
-                            }
-                            return true;
-                        })
-                        .sort((a, b) => String(a.name).localeCompare(String(b.name)))
-                        .map(t => (
-                        <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                </select>
+                {!teamLocked && (
+                    <select
+                        value={selectedTeamId}
+                        onChange={(e) => {
+                            if (teamLocked) return;
+                            setSelectedTeamId(e.target.value);
+                        }}
+                        disabled={teamLocked}
+                        style={{
+                            padding: '8px 12px',
+                            border: '1px solid var(--app-border)',
+                            borderRadius: '4px',
+                            fontSize: '14px',
+                            backgroundColor: 'var(--app-surface)',
+                        }}
+                    >
+                        {!teamLocked && <option value="">Team: All</option>}
+                        {teams
+                            .filter(t => {
+                                if (selectedClubId) {
+                                     const parent = t.parent_id || (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
+                                     return String(parent) === String(selectedClubId);
+                                }
+                                return true;
+                            })
+                            .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+                            .map(t => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                    </select>
+                )}
 
                 <select
                     value={statusFilter}
@@ -1086,7 +1093,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                     if (href) navigate(href);
                                                 }}
                                             >
-                                                <Badge variant="default" style={orgLocked ? badgeNoBorderStyle : undefined}>
+                                                <Badge variant="default" style={scopedLocked ? badgeNoBorderStyle : undefined}>
                                                     {counts.seasonsCount}
                                                 </Badge>
                                             </button>
@@ -1101,7 +1108,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                     if (href) navigate(href);
                                                 }}
                                             >
-                                                <Badge variant="default" style={orgLocked ? badgeNoBorderStyle : undefined}>
+                                                <Badge variant="default" style={scopedLocked ? badgeNoBorderStyle : undefined}>
                                                     {counts.competitionsCount}
                                                 </Badge>
                                             </button>
@@ -1116,7 +1123,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                     if (href) navigate(href);
                                                 }}
                                             >
-                                                <Badge variant="default" style={orgLocked ? badgeNoBorderStyle : undefined}>
+                                                <Badge variant="default" style={scopedLocked ? badgeNoBorderStyle : undefined}>
                                                     {counts.matchesCount}
                                                 </Badge>
                                             </button>
@@ -1141,12 +1148,12 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                             {u.email}
                                         </td>
                                         <td style={compactTdStyle} title={roleDisplay.title}>
-                                            <Badge variant="default" style={orgLocked ? badgeNoBorderStyle : undefined}>
+                                            <Badge variant="default" style={scopedLocked ? badgeNoBorderStyle : undefined}>
                                                 {roleDisplay.label}
                                             </Badge>
                                         </td>
                                         <td style={compactTdStyle}>
-                                            <Badge variant={u.is_active ? 'success' : 'warning'} style={orgLocked ? badgeNoBorderStyle : undefined}>
+                                            <Badge variant={u.is_active ? 'success' : 'warning'} style={scopedLocked ? badgeNoBorderStyle : undefined}>
                                                 {u.is_active ? 'Active' : 'Inactive'}
                                             </Badge>
                                         </td>
