@@ -484,6 +484,8 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
       try {
+        const explicitTeamScope = selectedTeamId ? [String(selectedTeamId)] : null;
+
         let clubTeamIds: string[] | null = null;
         if (!selectedTeamId && selectedClubId) {
           if (teams.length === 0) {
@@ -546,6 +548,11 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
             ? teams.map((t) => String((t as any).id)).filter(Boolean)
             : null;
 
+        const scopedTeamIds =
+          explicitTeamScope ||
+          (clubTeamIds && clubTeamIds.length > 0 ? clubTeamIds : null) ||
+          (teamIdsForOrg && teamIdsForOrg.length > 0 ? teamIdsForOrg : null);
+
         // When scoped to a federation and periods are team-scoped, we must have the org teams
         // loaded to avoid falling back to organisation_id (which is often null on periods).
         if (selectedOrgId && !selectedClubId && !selectedTeamId && (!teamIdsForOrg || teamIdsForOrg.length === 0)) {
@@ -591,7 +598,6 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
           // same season name repeated per-team).
           const requests = selectedSeasonIds.map(async (sid) => {
             const params = buildParams(sid);
-            const scopedTeamIds = (clubTeamIds && clubTeamIds.length > 0 ? clubTeamIds : null) || (teamIdsForOrg && teamIdsForOrg.length > 0 ? teamIdsForOrg : null);
             if (scopedTeamIds && scopedTeamIds.length > 0) {
               const typed = await fetchWithTeamChunks(params, scopedTeamIds);
               const fallback = await maybeFallbackUntyped(params, scopedTeamIds);
@@ -618,7 +624,6 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
         // Some backends might not return `type=competition` for all items.
         // But if we use buildParams(undefined), it sets type=competition.
 
-        const scopedTeamIds = (clubTeamIds && clubTeamIds.length > 0 ? clubTeamIds : null) || (teamIdsForOrg && teamIdsForOrg.length > 0 ? teamIdsForOrg : null);
         if (scopedTeamIds && scopedTeamIds.length > 0) {
           const typed = await fetchWithTeamChunks(params, scopedTeamIds);
           const fallback = await maybeFallbackUntyped(params, scopedTeamIds);
