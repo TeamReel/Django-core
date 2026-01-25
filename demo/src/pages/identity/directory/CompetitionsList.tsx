@@ -559,6 +559,9 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
             await Promise.all(
               chunks.map(async (ids) => {
                 const params = new URLSearchParams(baseParams);
+                // Ensure we only use chunked `project_id__in` scoping.
+                params.delete('project_id');
+                params.delete('project_id__in');
                 params.set('project_id__in', ids.join(','));
                 return await fetchAllPages<any>(
                   `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
@@ -588,8 +591,11 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
           // same season name repeated per-team).
           const requests = selectedSeasonIds.map(async (sid) => {
             const params = buildParams(sid);
-            if (teamIdsForOrg && teamIdsForOrg.length > 0) {
-              return await fetchWithTeamChunks(params, teamIdsForOrg);
+            const scopedTeamIds = (clubTeamIds && clubTeamIds.length > 0 ? clubTeamIds : null) || (teamIdsForOrg && teamIdsForOrg.length > 0 ? teamIdsForOrg : null);
+            if (scopedTeamIds && scopedTeamIds.length > 0) {
+              const typed = await fetchWithTeamChunks(params, scopedTeamIds);
+              const fallback = await maybeFallbackUntyped(params, scopedTeamIds);
+              return [...typed, ...fallback];
             }
             return await fetchAllPages<any>(
               `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
@@ -600,20 +606,6 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
 
           const all = (await Promise.all(requests)).flat();
           const unique = [...new Map(all.map((c: any) => [String(c.id), c])).values()];
-
-          // If we only get a handful back, it's likely legacy data missing metadata.type.
-          if (teamIdsForOrg && unique.length <= 2) {
-            const fallbackRequests = selectedSeasonIds.map(async (sid) => {
-              const base = buildParams(sid);
-              return await maybeFallbackUntyped(base, teamIdsForOrg);
-            });
-            const fallbackAll = (await Promise.all(fallbackRequests)).flat();
-            const fallbackUnique = [
-              ...new Map(fallbackAll.map((c: any) => [String(c.id), c])).values(),
-            ];
-            setCompetitions(fallbackUnique as any);
-            return;
-          }
 
           setCompetitions(unique as any);
           return;
@@ -626,11 +618,11 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
         // Some backends might not return `type=competition` for all items.
         // But if we use buildParams(undefined), it sets type=competition.
 
-        if (teamIdsForOrg && teamIdsForOrg.length > 0) {
-          const all = await fetchWithTeamChunks(params, teamIdsForOrg);
-
-          const fallback = await maybeFallbackUntyped(params, teamIdsForOrg);
-          const merged = [...all, ...fallback];
+        const scopedTeamIds = (clubTeamIds && clubTeamIds.length > 0 ? clubTeamIds : null) || (teamIdsForOrg && teamIdsForOrg.length > 0 ? teamIdsForOrg : null);
+        if (scopedTeamIds && scopedTeamIds.length > 0) {
+          const typed = await fetchWithTeamChunks(params, scopedTeamIds);
+          const fallback = await maybeFallbackUntyped(params, scopedTeamIds);
+          const merged = [...typed, ...fallback];
           const unique = [...new Map(merged.map((c: any) => [String(c.id), c])).values()];
           setCompetitions(unique as any);
           return;

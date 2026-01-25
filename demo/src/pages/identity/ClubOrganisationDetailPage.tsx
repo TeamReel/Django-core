@@ -210,11 +210,6 @@ export default function ClubOrganisationDetailPage() {
     const seasonKey = p?.data?.season ?? p?.metadata?.season;
     if (seasonKey) return true;
 
-    // Finally, fallback check: if it has no parent, treat as root/season?
-    // (Relaxed check: removed strict parent_id==null requirement because some team seasons might have parents).
-    const parentId = getParentPeriodId(p);
-    if (!parentId) return true;
-
     return false;
   };
 
@@ -337,23 +332,37 @@ export default function ClubOrganisationDetailPage() {
           chunks.map(async (chunk) => {
             const params = new URLSearchParams();
             params.set('project_id__in', chunk.join(','));
-            params.set('type', 'season');
             params.set('page_size', '500');
-            const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
-            if (!res.ok) throw new Error(`Failed to load seasons (${res.status})`);
-            const json = await res.json().catch(() => null);
-            const raw = unwrapEnvelope<any>(json);
-            if (Array.isArray(raw?.results)) return raw.results;
-            if (Array.isArray(raw)) return raw;
-            return [];
+
+            // First try: strict typed seasons.
+            const typed = new URLSearchParams(params);
+            typed.set('type', 'season');
+            const typedRes = await fetch(`${apiBaseUrl}/api/v1/periods/?${typed.toString()}`, { credentials: 'include' });
+            if (!typedRes.ok) throw new Error(`Failed to load seasons (${typedRes.status})`);
+            const typedJson = await typedRes.json().catch(() => null);
+            const typedRaw = unwrapEnvelope<any>(typedJson);
+            const typedList: any[] = Array.isArray(typedRaw?.results)
+              ? typedRaw.results
+              : Array.isArray(typedRaw)
+                ? typedRaw
+                : [];
+            if (typedList.length > 0) return typedList;
+
+            // Fallback: some data stores season type in metadata/data or naming, not in `type`.
+            const untypedRes = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
+            if (!untypedRes.ok) throw new Error(`Failed to load seasons (${untypedRes.status})`);
+            const untypedJson = await untypedRes.json().catch(() => null);
+            const untypedRaw = unwrapEnvelope<any>(untypedJson);
+            const untypedList: any[] = Array.isArray(untypedRaw?.results)
+              ? untypedRaw.results
+              : Array.isArray(untypedRaw)
+                ? untypedRaw
+                : [];
+            return untypedList.filter(isSeasonPeriod);
           }),
         );
 
-        const mergedSeasons = mergeUniqueById(
-            (seasonsChunks.flat() as any[])
-              // Allow all periods returned by the API (which requested type=season).
-              // Do NOT filter by isSeasonPeriod client-side, in case helper logic is too strict.
-        );
+        const mergedSeasons = mergeUniqueById(seasonsChunks.flat() as any[]);
 
         const byTeam: Record<string, Period[]> = {};
         for (const season of mergedSeasons) {
