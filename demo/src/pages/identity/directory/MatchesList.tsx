@@ -83,6 +83,10 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Loading *all* matches for large federations can be expensive.
+  // Default to a sane limit; allow the user to load more or all.
+  const [matchesMaxItems, setMatchesMaxItems] = useState<number | null>(500);
+
   // Modal state
   const [detailMatch, setDetailMatch] = useState<Activity | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -127,6 +131,12 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
       setSelectedOrgId(String(context.organisation.id));
     }
   }, [preselectedOrgId, context.organisation?.id, isSuperAdmin]);
+
+  // When the federation changes, reset match list + limit to avoid showing stale data.
+  useEffect(() => {
+    setMatches([]);
+    setMatchesMaxItems(500);
+  }, [selectedOrgId]);
 
   useEffect(() => {
     if (preselectedOrgId) {
@@ -488,31 +498,17 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
       try {
         const orgIdForApi = getSelectedOrgIdForApi();
 
+        // If a federation is selected but we can't resolve its UUID yet (e.g. org list
+        // still loading), don't run an unscoped query.
+        if (selectedOrgId && !orgIdForApi) {
+          setMatches([]);
+          return;
+        }
+
         const params = new URLSearchParams();
         params.set('page_size', '250');
         params.set('activity_type', 'match');
         params.set('ordering', '-start_time');
-
-        const baseParams = new URLSearchParams(params);
-
-        const fetchChunk = async (projectIds: string[]) => {
-          const p = new URLSearchParams(baseParams);
-          p.set('project_id__in', projectIds.join(','));
-          if (orgIdForApi) p.set('organisation_id', orgIdForApi);
-
-          if (selectedCompetitionId) {
-            p.set('period_id', selectedCompetitionId);
-          } else if (selectedSeasonIds.length === 1) {
-            p.set('period_id', selectedSeasonIds[0]);
-            p.set('include_descendants', 'true');
-          }
-
-          return await fetchAllPages<Activity>(
-            `${apiBaseUrl}/api/v1/activities/?${p.toString()}`,
-            { credentials: 'include' },
-            { ttlMs: 20_000, bypass: refreshKey > 0 },
-          );
-        };
 
         if (selectedTeamId) {
           params.set('project_id', String(selectedTeamId));
@@ -523,31 +519,9 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
             return;
           }
           params.set('project_id__in', clubTeams.map((t) => String(t.id)).join(','));
-        } else if (selectedOrgId && teams.length > 0) {
-          // Federation scoped view: enforce org scoping via project ids (team-scoped matches)
-          // to avoid leakage when selectedOrgId is a slug.
-          const teamIds = teams.map((t) => String(t.id)).filter(Boolean);
-          if (teamIds.length === 0) {
-            setMatches([]);
-            return;
-          }
-
-          const chunks = chunkArray(teamIds, 25);
-          const all = (await Promise.all(chunks.map((ids) => fetchChunk(ids)))).flat();
-          const unique = [...new Map(all.map((m) => [String(m.id), m])).values()];
-
-          if (selectedSeasonIds.length > 1 && selectedSeasonName) {
-            const filtered = unique.filter((m) => {
-              const seasonName = (m as any)?.period?.parent_period?.name;
-              return String(seasonName || '').trim() === selectedSeasonName;
-            });
-            setMatches(filtered);
-          } else {
-            setMatches(unique);
-          }
-          return;
         }
 
+        // Federation scoping: ActivityViewSet filters organisation_id indirectly via project.
         if (orgIdForApi) params.set('organisation_id', orgIdForApi);
 
         // Filter by Season or Competition
@@ -562,7 +536,12 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
         const all = await fetchAllPages<Activity>(
           `${apiBaseUrl}/api/v1/activities/?${params.toString()}`,
           { credentials: 'include' },
-          { ttlMs: 20_000, bypass: refreshKey > 0 },
+          {
+            ttlMs: 20_000,
+            bypass: refreshKey > 0,
+            cacheKey: `matches:${params.toString()}:max:${matchesMaxItems ?? 'all'}`,
+            maxItems: matchesMaxItems ?? undefined,
+          },
         );
 
         // If season selection maps to multiple season ids (duplicate season names across teams),
@@ -584,7 +563,17 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
     };
 
     loadMatches();
-  }, [selectedTeamId, selectedClubId, selectedOrgId, selectedSeasonName, selectedSeasonIds, selectedCompetitionId, teams, refreshKey]);
+  }, [
+    selectedTeamId,
+    selectedClubId,
+    selectedOrgId,
+    selectedSeasonName,
+    selectedSeasonIds,
+    selectedCompetitionId,
+    teams,
+    refreshKey,
+    matchesMaxItems,
+  ]);
 
   const getCsrfToken = () =>
     document.cookie
@@ -745,6 +734,28 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
           <option value="active">Status: Active</option>
           <option value="inactive">Status: Inactive</option>
         </select>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+            Showing {matchesMaxItems ?? 'all'}
+          </span>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setMatchesMaxItems((v) => (v == null ? null : Math.min(10_000, v + 500)))}
+            disabled={matchesMaxItems == null}
+          >
+            Load more
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setMatchesMaxItems(null)}
+            disabled={matchesMaxItems == null}
+          >
+            Load all
+          </Button>
+        </div>
 
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <Button

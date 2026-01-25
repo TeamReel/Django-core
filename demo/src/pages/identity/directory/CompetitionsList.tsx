@@ -502,6 +502,13 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
             ? teams.map((t) => String((t as any).id)).filter(Boolean)
             : null;
 
+        // When scoped to a federation and periods are team-scoped, we must have the org teams
+        // loaded to avoid falling back to organisation_id (which is often null on periods).
+        if (selectedOrgId && !selectedClubId && !selectedTeamId && (!teamIdsForOrg || teamIdsForOrg.length === 0)) {
+          setCompetitions([]);
+          return;
+        }
+
         const fetchWithTeamChunks = async (baseParams: URLSearchParams, teamIds: string[]) => {
           const chunks = chunkArray(teamIds, 25);
           const results = (
@@ -518,6 +525,18 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
             )
           ).flat();
           return [...new Map(results.map((c: any) => [String(c.id), c])).values()];
+        };
+
+        const inferCompetitions = (items: any[]) =>
+          (Array.isArray(items) ? items : []).filter(
+            (p: any) => (p?.parent_period_id != null || p?.parent_period) && p?.metadata?.type !== 'season',
+          );
+
+        const maybeFallbackUntyped = async (baseParams: URLSearchParams, teamIds: string[]) => {
+          const untyped = new URLSearchParams(baseParams);
+          untyped.delete('type');
+          const all = await fetchWithTeamChunks(untyped, teamIds);
+          return inferCompetitions(all);
         };
 
         if (selectedSeasonIds.length > 0) {
@@ -537,6 +556,21 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
 
           const all = (await Promise.all(requests)).flat();
           const unique = [...new Map(all.map((c: any) => [String(c.id), c])).values()];
+
+          // If we only get a handful back, it's likely legacy data missing metadata.type.
+          if (teamIdsForOrg && unique.length <= 2) {
+            const fallbackRequests = selectedSeasonIds.map(async (sid) => {
+              const base = buildParams(sid);
+              return await maybeFallbackUntyped(base, teamIdsForOrg);
+            });
+            const fallbackAll = (await Promise.all(fallbackRequests)).flat();
+            const fallbackUnique = [
+              ...new Map(fallbackAll.map((c: any) => [String(c.id), c])).values(),
+            ];
+            setCompetitions(fallbackUnique as any);
+            return;
+          }
+
           setCompetitions(unique as any);
           return;
         }
@@ -545,6 +579,13 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
         const params = buildParams(undefined);
         if (teamIdsForOrg && teamIdsForOrg.length > 0) {
           const all = await fetchWithTeamChunks(params, teamIdsForOrg);
+          if (all.length <= 2) {
+            const fallback = await maybeFallbackUntyped(params, teamIdsForOrg);
+            const fallbackUnique = [...new Map(fallback.map((c: any) => [String(c.id), c])).values()];
+            setCompetitions(fallbackUnique as any);
+            return;
+          }
+
           setCompetitions(all as any);
           return;
         }
