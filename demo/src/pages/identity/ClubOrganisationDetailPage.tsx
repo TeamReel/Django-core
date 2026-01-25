@@ -306,11 +306,20 @@ export default function ClubOrganisationDetailPage() {
     const type = getPeriodType(p);
     if (type === 'season') return true;
 
+    const seasonKey = p?.data?.season ?? p?.metadata?.season;
+    if (seasonKey) return true;
+
     const name = String(p?.name || '').toLowerCase();
     if (name.startsWith('season') || name.startsWith('seizoen')) return true;
 
-    const seasonKey = p?.data?.season ?? p?.metadata?.season;
-    if (seasonKey) return true;
+    const compact = name.replace(/\s+/g, '');
+    if (/^\d{4}([/-])\d{2,4}$/.test(compact)) return true;
+    if (/^\d{4}([/-])\d{4}$/.test(compact)) return true;
+    if (/^\d{2}([/-])\d{2}$/.test(compact)) return true;
+
+    // As a last resort, many datasets treat root periods as seasons.
+    const parentId = getParentPeriodId(p);
+    if (!parentId) return true;
 
     return false;
   };

@@ -110,13 +110,23 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
 
   const isLikelySeasonRoot = (p: any): boolean => {
     if (!p) return false;
-    const hasParent = Boolean(p?.parent_period_id || p?.parent_period);
-    if (hasParent) return false;
+
+    const type = String(p?.type ?? p?.data?.type ?? p?.metadata?.type ?? '').toLowerCase();
+    if (type === 'season') return true;
+
+    const seasonKey = p?.data?.season ?? p?.metadata?.season;
+    if (seasonKey) return true;
+
     const name = String(p?.name || '').trim().toLowerCase();
     if (!name) return false;
     if (name.startsWith('season') || name.startsWith('seizoen')) return true;
     const compact = name.replace(/\s+/g, '');
-    return /^\d{4}([/-])\d{2,4}$/.test(compact) || /^\d{4}([/-])\d{4}$/.test(compact);
+    // Support both long and short season labels (e.g. "2024/25", "2024-2025", "25/26").
+    return (
+      /^\d{4}([/-])\d{2,4}$/.test(compact) ||
+      /^\d{4}([/-])\d{4}$/.test(compact) ||
+      /^\d{2}([/-])\d{2}$/.test(compact)
+    );
   };
 
   // Initialize org filter
@@ -261,9 +271,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
               .map((c: any) => c?.parent_period)
               .filter((p: any) => p && (p?.id || p?.slug));
 
-            const merged = [...typed, ...untyped, ...parentSeasons].filter(
-              (p: any) => (p?.parent_period_id == null && !p?.parent_period) && isLikelySeasonRoot(p),
-            );
+            const merged = [...typed, ...untyped, ...parentSeasons].filter((p: any) => isLikelySeasonRoot(p));
             const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
             setSeasons(unique as any);
             return;
@@ -303,9 +311,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                 }),
               );
 
-              const merged = [...typedChunks.flat(), ...untypedChunks.flat()].filter(
-                (p: any) => (p?.parent_period_id == null && !p?.parent_period) && isLikelySeasonRoot(p),
-              );
+              const merged = [...typedChunks.flat(), ...untypedChunks.flat()].filter((p: any) => isLikelySeasonRoot(p));
               const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
               setSeasons(unique as any);
               return;
@@ -334,9 +340,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                 }),
               );
 
-              const merged = [...typedChunks.flat(), ...untypedChunks.flat()].filter(
-                (p: any) => (p?.parent_period_id == null && !p?.parent_period) && isLikelySeasonRoot(p),
-              );
+              const merged = [...typedChunks.flat(), ...untypedChunks.flat()].filter((p: any) => isLikelySeasonRoot(p));
               const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
               setSeasons(unique as any);
               return;
@@ -382,8 +386,8 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
             return;
           }
 
-          // Root periods represent seasons in the demo scenario.
-          const filteredSeasons = results.filter((p: any) => (p?.parent_period_id == null && !p?.parent_period));
+          // Prefer the backend's ?type=season, but tolerate legacy/untyped data.
+          const filteredSeasons = results.filter((p: any) => isLikelySeasonRoot(p));
 
           const unique = [...new Map((Array.isArray(filteredSeasons) ? filteredSeasons : []).map((p: any) => [String(p.id), p])).values()];
           setSeasons(unique as any);
