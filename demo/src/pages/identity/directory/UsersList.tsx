@@ -523,6 +523,66 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
         return map;
     }, [teams]);
 
+    const teamIdsByClubId = useMemo(() => {
+        const map = new Map<string, string[]>();
+        for (const t of teams) {
+            const teamId = String(t?.id ?? '').trim();
+            if (!teamId) continue;
+            const clubId = String((t as any)?.parent_id ?? (t as any)?.parent_project?.id ?? (t as any)?.parent_project_id ?? '').trim();
+            if (!clubId) continue;
+            const existing = map.get(clubId);
+            if (existing) {
+                if (!existing.includes(teamId)) existing.push(teamId);
+            } else {
+                map.set(clubId, [teamId]);
+            }
+        }
+        return map;
+    }, [teams]);
+
+    const getUserSeasonCompetitionMatchCounts = (u: any) => {
+        const allowedTeamIds = new Set<string>();
+
+        // Respect active filters first.
+        if (selectedTeamId) {
+            allowedTeamIds.add(String(selectedTeamId));
+        } else if (selectedClubId) {
+            for (const tid of teamIdsByClubId.get(String(selectedClubId)) || []) {
+                allowedTeamIds.add(String(tid));
+            }
+        }
+
+        // Otherwise, derive scope from memberships.
+        if (allowedTeamIds.size === 0) {
+            const memberships = Array.isArray(u?.project_memberships) ? u.project_memberships : [];
+            for (const m of memberships) {
+                const projectId = String(m?.project_id ?? m?.project?.id ?? '').trim();
+                if (!projectId) continue;
+                if (teamsById.has(projectId)) {
+                    allowedTeamIds.add(projectId);
+                    continue;
+                }
+                if (clubsById.has(projectId)) {
+                    for (const tid of teamIdsByClubId.get(projectId) || []) {
+                        allowedTeamIds.add(String(tid));
+                    }
+                }
+            }
+        }
+
+        let seasonsCount = 0;
+        let competitionsCount = 0;
+        let matchesCount = 0;
+        for (const teamId of allowedTeamIds) {
+            const t = teamsById.get(String(teamId));
+            seasonsCount += Number((t as any)?.seasons_count ?? 0) || 0;
+            competitionsCount += Number((t as any)?.competitions_count ?? 0) || 0;
+            matchesCount += Number((t as any)?.matches_count ?? 0) || 0;
+        }
+
+        return { seasonsCount, competitionsCount, matchesCount };
+    };
+
     const getFederationNameForRow = (u: any) => {
         // Prefer per-row membership organisation (from /organisations/:slug/members/)
         if (u?.membership?.organisation?.name) return String(u.membership.organisation.name);
@@ -884,6 +944,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                                                             `${u.first_name || ''} ${u.last_name || ''}`.trim() ||
                                                                             (String(u.email || '').includes('@') ? String(u.email || '').split('@')[0] : String(u.email || ''));
                                     const roleDisplay = getUserRoleDisplay(u);
+                                                                        const counts = getUserSeasonCompetitionMatchCounts(u);
 
                                     return (
                                     <tr key={u.id}>
@@ -916,9 +977,15 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                                 scoped.team.label
                                             )}
                                         </td>
-                                        <td style={compactTdStyle}>-</td>
-                                        <td style={compactTdStyle}>-</td>
-                                        <td style={compactTdStyle}>-</td>
+                                        <td style={compactTdStyle}>
+                                            <Badge variant="default">{counts.seasonsCount}</Badge>
+                                        </td>
+                                        <td style={compactTdStyle}>
+                                            <Badge variant="default">{counts.competitionsCount}</Badge>
+                                        </td>
+                                        <td style={compactTdStyle}>
+                                            <Badge variant="default">{counts.matchesCount}</Badge>
+                                        </td>
                                         <td style={compactTextTdStyle} className="font-medium">
                                             {u?.id ? (
                                                 <button
