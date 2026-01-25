@@ -300,10 +300,18 @@ export default function TeamOrganisationDetailPage() {
       setHierarchyError(null);
 
       try {
-        // 1) Seasons for this team (typed query first; fallback to untyped filter like clubdetail)
+        // 1) Seasons for this team (typed query first; fallback to untyped + competition parent seasons)
         const baseSeasonParams = new URLSearchParams();
-        baseSeasonParams.set('project_id', teamIdForDirectoryLists);
-        baseSeasonParams.set('page_size', '500');
+        baseSeasonParams.set('page_size', '1000');
+        baseSeasonParams.set('parent_id', 'null');
+
+        // Some datasets store seasons at club level (project_id=club). Include both.
+        const seasonProjectIds = [teamIdForDirectoryLists, clubIdForDirectoryLists].filter(Boolean);
+        if (seasonProjectIds.length === 1) {
+          baseSeasonParams.set('project_id', seasonProjectIds[0]);
+        } else if (seasonProjectIds.length > 1) {
+          baseSeasonParams.set('project_id__in', seasonProjectIds.join(','));
+        }
 
         const typedParams = new URLSearchParams(baseSeasonParams);
         typedParams.set('type', 'season');
@@ -316,8 +324,27 @@ export default function TeamOrganisationDetailPage() {
           ? []
           : await fetchAllPages<any>(untypedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
 
+        // Pull season parents from competitions as a last-resort source of truth.
+        const competitionsParams = new URLSearchParams();
+        competitionsParams.set('project_id', teamIdForDirectoryLists);
+        competitionsParams.set('page_size', '2000');
+        competitionsParams.set('type', 'competition');
+        const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?${competitionsParams.toString()}`;
+        const competitionsList: any[] = await fetchAllPages<any>(
+          competitionsUrl,
+          { credentials: 'include' },
+          { bypass: true, maxItems: 5000 },
+        );
+        const parentSeasonsFromCompetitions = (competitionsList || [])
+          .map((c: any) => c?.parent_period)
+          .filter((p: any) => p && (p?.id || p?.slug));
+
         const seasonsRaw = typedList.length ? typedList : untypedList;
-        const seasons = mergeUniqueById((seasonsRaw || []).filter(isSeasonPeriod));
+        const seasons = mergeUniqueById(
+          [...(seasonsRaw || []), ...parentSeasonsFromCompetitions]
+            .filter(isSeasonPeriod)
+            .filter((p: any) => !getParentPeriodId(p)),
+        );
         seasons.sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
 
         if (cancelled) return;
@@ -420,25 +447,20 @@ export default function TeamOrganisationDetailPage() {
       if (!clubIdForDirectoryLists) return;
 
       setClubTeamsForSwitcherLoading(true);
+      setClubTeamsForSwitcher([]);
       try {
         const orgKey = String(org?.slug || resolvedOrgSlug || '').trim();
 
-        const clubKeyCandidates = new Set(
-          [
-            String(clubIdForDirectoryLists),
-            String((club as any)?.id ?? ''),
-            String((club as any)?.slug ?? ''),
-            String(clubKeyForRoutes || ''),
-            String(clubSlugOrId || ''),
-          ]
-            .map((v) => String(v || '').trim())
-            .filter(Boolean),
-        );
+        const clubIdForFilter = String(getParentProjectId(team) || clubIdForDirectoryLists || '').trim();
+        if (!clubIdForFilter) {
+          if (!cancelled) setClubTeamsForSwitcher([]);
+          return;
+        }
 
         const isTeamUnderThisClub = (t: any): boolean => {
           const parentId = String(getParentProjectId(t) || '').trim();
           if (!parentId) return false;
-          return clubKeyCandidates.has(parentId);
+          return parentId === clubIdForFilter;
         };
 
         // Strategy:
