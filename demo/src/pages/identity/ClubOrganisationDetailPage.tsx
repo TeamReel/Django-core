@@ -38,6 +38,16 @@ type Period = {
 
 const unwrapEnvelope = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
+const extractList = (raw: any): any[] => {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw?.results)) return raw.results;
+  if (Array.isArray(raw?.data)) return raw.data;
+  if (Array.isArray(raw?.data?.data)) return raw.data.data;
+  if (Array.isArray(raw?.data?.results)) return raw.data.results;
+  return [];
+};
+
 const looksLikeIdentifier = (value: string) => {
   const v = String(value || '').trim();
   if (!v) return false;
@@ -341,11 +351,7 @@ export default function ClubOrganisationDetailPage() {
             if (!typedRes.ok) throw new Error(`Failed to load seasons (${typedRes.status})`);
             const typedJson = await typedRes.json().catch(() => null);
             const typedRaw = unwrapEnvelope<any>(typedJson);
-            const typedList: any[] = Array.isArray(typedRaw?.results)
-              ? typedRaw.results
-              : Array.isArray(typedRaw)
-                ? typedRaw
-                : [];
+            const typedList: any[] = extractList(typedRaw);
             if (typedList.length > 0) return typedList;
 
             // Fallback: some data stores season type in metadata/data or naming, not in `type`.
@@ -353,11 +359,7 @@ export default function ClubOrganisationDetailPage() {
             if (!untypedRes.ok) throw new Error(`Failed to load seasons (${untypedRes.status})`);
             const untypedJson = await untypedRes.json().catch(() => null);
             const untypedRaw = unwrapEnvelope<any>(untypedJson);
-            const untypedList: any[] = Array.isArray(untypedRaw?.results)
-              ? untypedRaw.results
-              : Array.isArray(untypedRaw)
-                ? untypedRaw
-                : [];
+            const untypedList: any[] = extractList(untypedRaw);
             return untypedList.filter(isSeasonPeriod);
           }),
         );
