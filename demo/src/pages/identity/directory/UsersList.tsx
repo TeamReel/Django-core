@@ -72,6 +72,16 @@ const linkButtonStyle: React.CSSProperties = {
     textDecoration: 'underline',
 };
 
+const badgeButtonStyle: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    margin: 0,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+};
+
 interface UsersListProps {
   preselectedOrgId?: string;
 }
@@ -583,6 +593,60 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
         return { seasonsCount, competitionsCount, matchesCount };
     };
 
+    const getPreferredScopeIdsForRow = (u: any): { clubId: string; teamId: string } => {
+        // Respect active filters first.
+        if (selectedTeamId) {
+            const team = teamsById.get(String(selectedTeamId));
+            const clubId = String((team as any)?.parent_id ?? (team as any)?.parent_project?.id ?? (team as any)?.parent_project_id ?? '').trim();
+            return { clubId, teamId: String(selectedTeamId) };
+        }
+
+        if (selectedClubId) {
+            return { clubId: String(selectedClubId), teamId: '' };
+        }
+
+        // Otherwise derive from memberships.
+        const memberships = Array.isArray(u?.project_memberships) ? u.project_memberships : [];
+        const teamIds: string[] = [];
+        const clubIds: string[] = [];
+
+        for (const m of memberships) {
+            const projectId = String(m?.project_id ?? m?.project?.id ?? '').trim();
+            if (!projectId) continue;
+            if (teamsById.has(projectId)) {
+                teamIds.push(projectId);
+                continue;
+            }
+            if (clubsById.has(projectId)) {
+                clubIds.push(projectId);
+            }
+        }
+
+        // Prefer a team id if we have one.
+        const pickedTeamId = teamIds.find(Boolean) || '';
+        if (pickedTeamId) {
+            const team = teamsById.get(String(pickedTeamId));
+            const clubId = String((team as any)?.parent_id ?? (team as any)?.parent_project?.id ?? (team as any)?.parent_project_id ?? '').trim();
+            return { clubId, teamId: pickedTeamId };
+        }
+
+        // Else fall back to a club id.
+        const pickedClubId = clubIds.find(Boolean) || '';
+        return { clubId: pickedClubId, teamId: '' };
+    };
+
+    const buildOrgScopedDirectoryHref = (section: 'seasons' | 'competitions' | 'matches', u: any): string | null => {
+        const orgSlug = String(getSelectedOrgSlug() || '').trim();
+        if (!orgSlug) return null;
+
+        const { clubId, teamId } = getPreferredScopeIdsForRow(u);
+        const params = new URLSearchParams();
+        if (clubId) params.set('club_id', String(clubId));
+        if (teamId) params.set('team_id', String(teamId));
+        const qs = params.toString();
+        return qs ? `/${orgSlug}/${section}?${qs}` : `/${orgSlug}/${section}`;
+    };
+
     const getFederationNameForRow = (u: any) => {
         // Prefer per-row membership organisation (from /organisations/:slug/members/)
         if (u?.membership?.organisation?.name) return String(u.membership.organisation.name);
@@ -978,13 +1042,43 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                             )}
                                         </td>
                                         <td style={compactTdStyle}>
-                                            <Badge variant="default">{counts.seasonsCount}</Badge>
+                                            <button
+                                                type="button"
+                                                style={badgeButtonStyle}
+                                                title="View seasons"
+                                                onClick={() => {
+                                                    const href = buildOrgScopedDirectoryHref('seasons', u);
+                                                    if (href) navigate(href);
+                                                }}
+                                            >
+                                                <Badge variant="default">{counts.seasonsCount}</Badge>
+                                            </button>
                                         </td>
                                         <td style={compactTdStyle}>
-                                            <Badge variant="default">{counts.competitionsCount}</Badge>
+                                            <button
+                                                type="button"
+                                                style={badgeButtonStyle}
+                                                title="View competitions"
+                                                onClick={() => {
+                                                    const href = buildOrgScopedDirectoryHref('competitions', u);
+                                                    if (href) navigate(href);
+                                                }}
+                                            >
+                                                <Badge variant="default">{counts.competitionsCount}</Badge>
+                                            </button>
                                         </td>
                                         <td style={compactTdStyle}>
-                                            <Badge variant="default">{counts.matchesCount}</Badge>
+                                            <button
+                                                type="button"
+                                                style={badgeButtonStyle}
+                                                title="View matches"
+                                                onClick={() => {
+                                                    const href = buildOrgScopedDirectoryHref('matches', u);
+                                                    if (href) navigate(href);
+                                                }}
+                                            >
+                                                <Badge variant="default">{counts.matchesCount}</Badge>
+                                            </button>
                                         </td>
                                         <td style={compactTextTdStyle} className="font-medium">
                                             {u?.id ? (
