@@ -699,17 +699,12 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
             {(isSystemAdmin ? themeToggleGlobalEnabled : themeToggleEnabled) && (
               <button
                 onClick={toggleTheme}
+                className="nav-icon-button"
                 style={{
                   padding: '8px',
-                  backgroundColor: 'transparent',
-                  border: '1px solid var(--app-text)',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '20px',
                   position: 'relative',
                   zIndex: 1000,
                   pointerEvents: 'auto',
-                  color: 'var(--app-text)',
                 }}
                 title={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
                 aria-label={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
