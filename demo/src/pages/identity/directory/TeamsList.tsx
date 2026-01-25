@@ -57,11 +57,67 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
+  const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
+  const isUuid = (value: unknown) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      String(value || ''),
+    );
+
+  // When org-locked, we receive an org UUID or Slug.
+  // Resolve and pin the slug to ensure accurate API calls.
+  const [lockedOrgSlug, setLockedOrgSlug] = useState<string>('');
+
   useEffect(() => {
     if (preselectedOrgId) {
       setSelectedOrgId(preselectedOrgId);
     }
   }, [preselectedOrgId]);
+
+  useEffect(() => {
+    if (!orgLocked) {
+      if (lockedOrgSlug) setLockedOrgSlug('');
+      return;
+    }
+
+    const rawLockedId = String(preselectedOrgId || '').trim();
+    if (!rawLockedId) return;
+
+    // If the lock key is already a slug, keep it.
+    if (!isNumericId(rawLockedId) && !isUuid(rawLockedId)) {
+      setLockedOrgSlug(rawLockedId);
+      return;
+    }
+
+    // Prefer already-known org options.
+    const fromList = organisations.find((o) => String(o.id) === String(rawLockedId))?.slug;
+    if (fromList) {
+      setLockedOrgSlug(String(fromList));
+      return;
+    }
+
+    // Fallback: resolve UUID -> slug via organisations list.
+    let cancelled = false;
+    const loadSlug = async () => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=250`, { credentials: 'include' });
+        if (!res.ok) return;
+        const raw: any = await res.json().catch(() => null);
+        const data: any = raw?.data ?? raw;
+        const list: any[] = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+        const match = list.find((o: any) => String(o?.id || '') === String(rawLockedId));
+        const slug = String(match?.slug || '').trim();
+        if (!cancelled && slug) setLockedOrgSlug(slug);
+      } catch {
+        // ignore
+      }
+    };
+
+    void loadSlug();
+    return () => {
+      cancelled = true;
+    };
+  }, [orgLocked, preselectedOrgId, organisations]);
 
   useEffect(() => {
     if (preselectedClubId) {
@@ -134,24 +190,72 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
       setError(null);
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
-      try {
-        // Use fetchAllPages to get ALL teams across all pages
-        const [clubsData, teamsData] = await Promise.all([
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&include_archived=true&parent_project__isnull=true`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&include_archived=true&parent_project__isnull=false`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
+      const getSelectedOrgSlugForApi = () => {
+        const selectedOrg = selectedOrgId
+          ? organisations.find(
+              (o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId),
             )
-        ]);
+          : null;
 
-        setClubs(clubsData);
-        setTeams(teamsData);
+        if (orgLocked) {
+          return (
+            selectedOrg?.slug ||
+            lockedOrgSlug ||
+            (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
+            ''
+          );
+        }
+        return (
+          selectedOrg?.slug ||
+          (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
+          context.organisation?.slug ||
+          ''
+        );
+      };
 
+      try {
+        const orgSlugForApi = getSelectedOrgSlugForApi();
+
+        if (orgLocked && !orgSlugForApi) {
+             setClubs([]);
+             setTeams([]);
+             setIsLoading(false);
+             return;
+        }
+
+        if (orgSlugForApi) {
+             // Scoped fetch
+            const [clubsData, teamsData] = await Promise.all([
+                fetchAllPages<ProjectOption>(
+                  `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=500&include_archived=true&parent_project__isnull=true`,
+                  { credentials: 'include' },
+                  { ttlMs: 120_000, bypass: refreshKey > 0 },
+                ),
+                fetchAllPages<ProjectOption>(
+                  `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`,
+                  { credentials: 'include' },
+                  { ttlMs: 120_000, bypass: refreshKey > 0 },
+                )
+            ]);
+            setClubs(clubsData || []);
+            setTeams(teamsData || []);
+        } else {
+            // Global fetch
+            const [clubsData, teamsData] = await Promise.all([
+                fetchAllPages<ProjectOption>(
+                  `${apiBaseUrl}/api/v1/projects/?page_size=200&include_archived=true&parent_project__isnull=true`,
+                  { credentials: 'include' },
+                  { ttlMs: 120_000, bypass: refreshKey > 0 },
+                ),
+                fetchAllPages<ProjectOption>(
+                  `${apiBaseUrl}/api/v1/projects/?page_size=200&include_archived=true&parent_project__isnull=false`,
+                  { credentials: 'include' },
+                  { ttlMs: 120_000, bypass: refreshKey > 0 },
+                )
+            ]);
+            setClubs(clubsData || []);
+            setTeams(teamsData || []);
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load teams');
       } finally {
@@ -160,7 +264,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
     };
 
     load();
-  }, [refreshKey]);
+  }, [refreshKey, orgLocked, lockedOrgSlug, preselectedOrgId, selectedOrgId, context.organisation, organisations]);
 
   const filteredTeams = useMemo(() => {
       let list = [...teams];
@@ -393,15 +497,15 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
                     const orgFromList = orgIdFromProject
                       ? organisations.find((o) => String(o.id) === String(orgIdFromProject))
                       : undefined;
-                    const selectedOrg = selectedOrgId
-                      ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
-                      : undefined;
+
+                    // Priority: Explicit slug > List slug > Locked/Context slug > ID
+                    const contextSlug = lockedOrgSlug || (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : undefined);
+
                     const orgSlugOrId =
                       orgSlugFromProject ||
                       orgFromList?.slug ||
-                      selectedOrg?.slug ||
+                      (orgLocked ? contextSlug : undefined) ||
                       orgIdFromProject ||
-                      selectedOrg?.id ||
                       selectedOrgId;
 
                     const parent = team.parent_project || team.parent_id || team.parent_project_id;

@@ -869,6 +869,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
             {!clubLocked && <option value="">Club: All</option>}
             {clubs
               .filter((c) => {
+                if (orgLocked) return true;
                 if (!selectedOrgId) return true;
                 const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
                 return String(cOrg) === String(selectedOrgId);
@@ -1034,7 +1035,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                     const matchesCount = comp.matches_count || 0;
 
                     // Link URL logic
-                    const orgSlugOrId = orgSlug || orgId;
+                    const orgSlugOrId = lockedOrgSlug || orgSlug || (selectedOrgId && !isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : undefined) || orgId;
                     const clubSlugOrId = (club as any)?.slug || clubId;
                     const teamSlugOrId = teamSlug || teamId;
                     const seasonSlugOrId = seasonSlug || seasonId;

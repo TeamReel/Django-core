@@ -979,7 +979,8 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                     })();
 
                     // Link Targets
-                    const orgTarget = orgSlug || orgId;
+                    // Prefer locked/context slug if available and safe.
+                    const orgTarget = lockedOrgSlug || orgSlug || (selectedOrgId && !isUuid(selectedOrgId) ? selectedOrgId : undefined) || orgId || selectedOrgId;
                     const clubTarget = (club as any)?.slug || clubId;
                     const teamTarget = (teamObj as any)?.slug || teamId;
                     const seasonTarget = season?.slug || season?.id;
