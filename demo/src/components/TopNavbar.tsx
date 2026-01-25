@@ -716,11 +716,11 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
             <div className="language-menu-container" style={{ position: 'relative' }}>
               <button
                 onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
+                className="nav-icon-button"
                 style={{
                   padding: '8px 12px',
                   backgroundColor: 'transparent',
-                  border: '1px solid var(--app-border)',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   cursor: 'pointer',
                   fontSize: '14px',
                   color: 'var(--app-text)',

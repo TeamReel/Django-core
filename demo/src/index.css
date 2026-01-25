@@ -186,8 +186,10 @@ button {
   border: 1px solid transparent;
 }
 
-/* Exclude navbar buttons from border styling */
-nav button, nav [class*="Button"] {
+/* Navbar defaults: keep chrome off by default,
+   but allow opt-in bordered controls via .nav-icon-button / .nav-keep-border. */
+nav button:not(.nav-icon-button):not(.nav-keep-border),
+nav [class*="Button"]:not(.nav-icon-button):not(.nav-keep-border) {
   border: none !important;
   box-shadow: none !important;
 }

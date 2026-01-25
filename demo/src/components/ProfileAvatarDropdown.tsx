@@ -119,6 +119,7 @@ export default function ProfileAvatarDropdown({ onLogout }: ProfileAvatarDropdow
         onKeyDown={handleButtonKeyDown}
         aria-haspopup="menu"
         aria-expanded={isOpen}
+        className="nav-keep-border"
         style={{
           width: '36px',
           height: '36px',
