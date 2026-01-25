@@ -286,7 +286,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   const handleSeasonSwitch = (option: BreadcrumbSwitcherOption) => {
     const suffix = location.search ? location.search : '';
-    navigate(`${seasonsBasePath}/${option.slug || option.id}${suffix}`);
+    // Vanity routes use a slug-like segment (periodPathKey). /organisations/.../projects/... routes
+    // use the numeric period id for stable routing.
+    const next = isTeamRoute ? String(option.slug || option.id) : String(option.id);
+    navigate(`${seasonsBasePath}/${encodeURIComponent(next)}${suffix}`);
   };
 
   const seasonPathKey = periodPathKey(season) || effectiveSeasonId;
@@ -307,7 +310,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       {
         label: (
           <BreadcrumbContextSwitcher
-            currentId={String(resolvedSeasonId || (season as any)?.id || '')}
+            currentId={String(seasonId || periodPathKey(season as any) || resolvedSeasonId || (season as any)?.id || '')}
             options={seasonsForSwitcher.map((s) => ({
               id: String(s.id),
               label: String(s.name || s.slug || s.id),
