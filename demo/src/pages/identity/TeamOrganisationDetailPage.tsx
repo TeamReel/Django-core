@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Alert, Button, Card } from '@django-core/design-system';
+import { Alert, Button, Card, Input } from '@django-core/design-system';
 import { BreadcrumbContextSwitcher, PageContent, PageHeader, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
+
+import { fetchAllPages } from '../../utils/fetchAllPages';
 
 import { SeasonsList } from './directory/SeasonsList';
 import { CompetitionsList } from './directory/CompetitionsList';
@@ -113,8 +115,11 @@ export default function TeamOrganisationDetailPage() {
 
   const [hierarchySeasons, setHierarchySeasons] = useState<Period[]>([]);
   const [hierarchyCompetitionsBySeasonId, setHierarchyCompetitionsBySeasonId] = useState<Record<string, Period[]>>({});
+  const [hierarchyMatchesCountBySeasonId, setHierarchyMatchesCountBySeasonId] = useState<Record<string, number>>({});
+  const [hierarchyMatchesCountByCompetitionId, setHierarchyMatchesCountByCompetitionId] = useState<Record<string, number>>({});
   const [hierarchyLoading, setHierarchyLoading] = useState(false);
   const [hierarchyError, setHierarchyError] = useState<string | null>(null);
+  const [hierarchySearch, setHierarchySearch] = useState('');
 
   const [clubTeamsForSwitcher, setClubTeamsForSwitcher] = useState<Project[]>([]);
   const [clubTeamsForSwitcherLoading, setClubTeamsForSwitcherLoading] = useState(false);
@@ -312,15 +317,8 @@ export default function TeamOrganisationDetailPage() {
         periodsParams.set('project_id', teamIdForDirectoryLists);
         periodsParams.set('page_size', '1000');
 
-        const periodsRes = await fetch(`${apiBaseUrl}/api/v1/periods/?${periodsParams.toString()}`, { credentials: 'include' });
-        if (!periodsRes.ok) throw new Error(`Failed to load competitions (${periodsRes.status})`);
-        const periodsJson = await periodsRes.json().catch(() => null);
-        const periodsRaw = unwrapEnvelope<any>(periodsJson);
-        const periodsList: any[] = Array.isArray(periodsRaw?.results)
-          ? periodsRaw.results
-          : Array.isArray(periodsRaw)
-            ? periodsRaw
-            : [];
+        const periodsUrl = `${apiBaseUrl}/api/v1/periods/?${periodsParams.toString()}`;
+        const periodsList: any[] = await fetchAllPages<any>(periodsUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
 
         const seasonIds = new Set(seasons.map((s) => String(s.id)));
         const competitions = (periodsList || []).filter((p: any) => {
@@ -340,13 +338,59 @@ export default function TeamOrganisationDetailPage() {
           bySeason[key] = mergeUniqueById(bySeason[key]).sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
         }
 
+        // Build children map for recursive activity counts.
+        const childrenMap = new Map<string, any[]>();
+        for (const p of periodsList || []) {
+          const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
+          if (!parentId) continue;
+          const key = String(parentId);
+          const arr = childrenMap.get(key) || [];
+          arr.push(p);
+          childrenMap.set(key, arr);
+        }
+
+        const getRecursiveActivitiesCount = (p: any): number => {
+          let count = (p?.activities_count ?? 0);
+          const children = childrenMap.get(String(p?.id));
+          if (children) {
+            for (const child of children) {
+              count += getRecursiveActivitiesCount(child);
+            }
+          }
+          return count;
+        };
+
+        const matchesCountByCompetitionId: Record<string, number> = {};
+        for (const list of Object.values(bySeason)) {
+          for (const c of list || []) {
+            const cid = String((c as any)?.id ?? '').trim();
+            if (!cid) continue;
+            matchesCountByCompetitionId[cid] = getRecursiveActivitiesCount(c);
+          }
+        }
+
+        const matchesCountBySeasonId: Record<string, number> = {};
+        for (const season of seasons) {
+          const sid = String((season as any)?.id ?? '').trim();
+          if (!sid) continue;
+          const comps = bySeason[sid] || [];
+          matchesCountBySeasonId[sid] = comps.reduce((sum, c) => {
+            const cid = String((c as any)?.id ?? '').trim();
+            return sum + (matchesCountByCompetitionId[cid] ?? 0);
+          }, 0);
+        }
+
         if (cancelled) return;
         setHierarchyCompetitionsBySeasonId(bySeason);
+        setHierarchyMatchesCountByCompetitionId(matchesCountByCompetitionId);
+        setHierarchyMatchesCountBySeasonId(matchesCountBySeasonId);
       } catch (e) {
         if (cancelled) return;
         setHierarchyError(e instanceof Error ? e.message : 'Failed to load hierarchy');
         setHierarchySeasons([]);
         setHierarchyCompetitionsBySeasonId({});
+        setHierarchyMatchesCountBySeasonId({});
+        setHierarchyMatchesCountByCompetitionId({});
       } finally {
         if (!cancelled) setHierarchyLoading(false);
       }
@@ -511,20 +555,20 @@ export default function TeamOrganisationDetailPage() {
           {activeTabFromUrl === 'overview' && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card style={{ padding: 16, cursor: 'pointer' }} onClick={() => navigate(makeTabHref('seasons'))}>
+                <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('seasons'))}>
                   <div className="text-sm font-medium text-gray-500">Seasons</div>
                   <div className="text-2xl font-bold mt-1">—</div>
                 </Card>
-                <Card style={{ padding: 16, cursor: 'pointer' }} onClick={() => navigate(makeTabHref('competitions'))}>
+                <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('competitions'))}>
                   <div className="text-sm font-medium text-gray-500">Competitions</div>
                   <div className="text-2xl font-bold mt-1">—</div>
                 </Card>
-                <Card style={{ padding: 16, cursor: 'pointer' }} onClick={() => navigate(makeTabHref('members'))}>
+                <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('members'))}>
                   <div className="text-sm font-medium text-gray-500">Members</div>
                   <div className="text-2xl font-bold mt-1">—</div>
                 </Card>
-                <Card style={{ padding: 16, cursor: 'pointer' }} onClick={() => navigate(makeTabHref('matches'))}>
-                  <div className="text-sm font-medium text-gray-500">Matches</div>
+                <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('matches'))}>
+                  <div className="text-sm font-medium text-gray-500">Active Matches</div>
                   <div className="text-2xl font-bold mt-1">—</div>
                 </Card>
               </div>
@@ -546,156 +590,182 @@ export default function TeamOrganisationDetailPage() {
                     <div className="text-sm font-medium text-gray-500">Federation</div>
                     <div className="text-base text-gray-900 mt-1">{org?.name || '—'}</div>
                   </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-500">Slug</div>
+                    <div className="text-base text-gray-900 mt-1">{String((team as any)?.slug || '—')}</div>
+                  </div>
                 </div>
               </Card>
             </div>
           )}
 
           {activeTabFromUrl === 'hierarchy' && teamIdForDirectoryLists && (
-            <div className="space-y-4">
-              {hierarchyError && <Alert variant="error">{hierarchyError}</Alert>}
+            <Card>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 700 }}>Hierarchy</div>
+                  <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>Seasons → competitions</div>
+                </div>
+                <Input
+                  value={hierarchySearch}
+                  onChange={(e) => setHierarchySearch((e.target as any).value)}
+                  placeholder="Search seasons / competitions…"
+                />
+              </div>
 
-              {hierarchyLoading ? (
-                <Card>
-                  <div className="text-sm text-gray-500" style={{ padding: 16 }}>
-                    Loading hierarchy...
-                  </div>
-                </Card>
+              {hierarchyError && (
+                <div style={{ marginTop: 12 }}>
+                  <Alert variant="error">{hierarchyError}</Alert>
+                </div>
+              )}
+
+              {hierarchyLoading && hierarchySeasons.length === 0 ? (
+                <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                  Loading hierarchy...
+                </div>
               ) : hierarchySeasons.length === 0 ? (
-                <Card>
-                  <div className="text-sm text-gray-500" style={{ padding: 16 }}>
-                    No seasons found.
-                  </div>
-                </Card>
+                <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                  No seasons found.
+                </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {hierarchySeasons.map((season) => {
+                <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {(() => {
+                    const pillStyle: React.CSSProperties = {
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '2px 8px',
+                      borderRadius: 999,
+                      border: '1px solid var(--app-border)',
+                      background: 'var(--app-surface-2)',
+                      fontSize: 12,
+                      color: 'var(--app-muted-text)',
+                      fontWeight: 600,
+                    };
+
+                    const seasonRowStyle: React.CSSProperties = {
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '8px 10px',
+                      border: '1px solid var(--app-border)',
+                      borderRadius: 8,
+                      background: 'var(--app-surface)',
+                    };
+
+                    const competitionRowStyle: React.CSSProperties = {
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '8px 10px',
+                      border: '1px solid var(--app-border)',
+                      borderRadius: 8,
+                      background: 'var(--app-surface)',
+                    };
+
+                    const q = String(hierarchySearch || '').trim().toLowerCase();
+                    const visibleSeasons = !q
+                      ? hierarchySeasons
+                      : (hierarchySeasons || []).filter((s) => {
+                          const seasonName = String((s as any)?.name || '').toLowerCase();
+                          if (seasonName.includes(q)) return true;
+                          const comps = hierarchyCompetitionsBySeasonId[String((s as any)?.id)] || [];
+                          return (comps || []).some((c) => String((c as any)?.name || '').toLowerCase().includes(q));
+                        });
+
+                    return (
+                      <>
+                        {visibleSeasons.map((season) => {
                     const seasonKey = String((season as any)?.slug || (season as any)?.id || '').trim();
                     const seasonPath =
                       orgKeyForRoutes && clubKeyForRoutes && teamKeyForRoutes && seasonKey
                         ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKeyForRoutes)}/${encodeURIComponent(seasonKey)}`
                         : '';
 
-                    const competitions = hierarchyCompetitionsBySeasonId[String(season.id)] || [];
+                    const competitionsAll = hierarchyCompetitionsBySeasonId[String(season.id)] || [];
+                    const competitions = !q
+                      ? competitionsAll
+                      : (competitionsAll || []).filter((c) => String((c as any)?.name || '').toLowerCase().includes(q));
+
+                    const seasonId = String((season as any)?.id ?? '').trim();
+                    const seasonMatches = hierarchyMatchesCountBySeasonId[seasonId] ?? 0;
 
                     return (
-                      <div
-                        key={String(season.id)}
-                        style={{
-                          border: '1px solid var(--app-border)',
-                          borderRadius: 10,
-                          background: 'var(--app-surface)',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: '10px 12px',
-                            borderBottom: '1px solid var(--app-border)',
-                            background: 'var(--app-surface-2)',
-                            gap: 12,
-                          }}
-                        >
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                      <div key={String(season.id)} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div style={seasonRowStyle}>
+                          <div style={{ minWidth: 0 }}>
                             {seasonPath ? (
                               <button
                                 type="button"
                                 className="app-unstyled-button text-blue-600 hover:underline"
                                 onClick={() => navigate(seasonPath)}
-                                style={{ textAlign: 'left', fontWeight: 800, fontSize: 14 }}
+                                style={{ textAlign: 'left', fontWeight: 700, fontSize: 13 }}
                               >
                                 {String((season as any)?.name || 'Season')}
                               </button>
                             ) : (
-                              <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--app-text)' }}>
-                                {String((season as any)?.name || 'Season')}
-                              </div>
+                              <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--app-text)' }}>{String((season as any)?.name || 'Season')}</div>
                             )}
-                            <div style={{ color: 'var(--app-muted-text)', fontSize: 12 }}>Season</div>
                           </div>
 
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                            <span
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 6,
-                                padding: '2px 8px',
-                                borderRadius: 999,
-                                border: '1px solid var(--app-border)',
-                                background: 'var(--app-surface-2)',
-                                fontSize: 12,
-                                color: 'var(--app-muted-text)',
-                                fontWeight: 600,
-                              }}
-                            >
-                              Competitions: {competitions.length}
-                            </span>
+                            <span style={pillStyle}>Competitions: {competitionsAll.length}</span>
+                            <span style={pillStyle}>Matches: {seasonMatches}</span>
                           </div>
                         </div>
 
-                        <div style={{ padding: '10px 12px' }}>
-                          {competitions.length === 0 ? (
-                            <div className="text-sm" style={{ color: 'var(--app-muted-text)' }}>
-                              No competitions.
-                            </div>
-                          ) : (
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                              {competitions.map((c) => {
-                                const competitionKey = String((c as any)?.slug || (c as any)?.id || '').trim();
-                                const competitionPath =
-                                  orgKeyForRoutes && clubKeyForRoutes && teamKeyForRoutes && seasonKey && competitionKey
-                                    ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKeyForRoutes)}/${encodeURIComponent(seasonKey)}/${encodeURIComponent(competitionKey)}`
-                                    : '';
+                        {competitions.length === 0 ? (
+                          <div className="text-sm text-gray-500 py-1" style={{ marginLeft: 16 }}>
+                            No competitions.
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 16 }}>
+                            {competitions.map((c) => {
+                              const competitionKey = String((c as any)?.slug || (c as any)?.id || '').trim();
+                              const competitionPath =
+                                orgKeyForRoutes && clubKeyForRoutes && teamKeyForRoutes && seasonKey && competitionKey
+                                  ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKeyForRoutes)}/${encodeURIComponent(seasonKey)}/${encodeURIComponent(competitionKey)}`
+                                  : '';
 
-                                return competitionPath ? (
-                                  <button
-                                    key={String((c as any)?.id)}
-                                    type="button"
-                                    className="app-unstyled-button"
-                                    onClick={() => navigate(competitionPath)}
-                                    style={{
-                                      padding: '4px 10px',
-                                      borderRadius: 999,
-                                      border: '1px solid var(--app-border)',
-                                      background: 'var(--app-surface-2)',
-                                      fontSize: 12,
-                                      color: 'var(--app-text)',
-                                      fontWeight: 600,
-                                      cursor: 'pointer',
-                                    }}
-                                  >
-                                    {String((c as any)?.name || 'Competition')}
-                                  </button>
-                                ) : (
-                                  <span
-                                    key={String((c as any)?.id)}
-                                    style={{
-                                      padding: '4px 10px',
-                                      borderRadius: 999,
-                                      border: '1px solid var(--app-border)',
-                                      background: 'var(--app-surface-2)',
-                                      fontSize: 12,
-                                      color: 'var(--app-text)',
-                                      fontWeight: 600,
-                                    }}
-                                  >
-                                    {String((c as any)?.name || 'Competition')}
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
+                              const competitionId = String((c as any)?.id ?? '').trim();
+                              const competitionMatches = hierarchyMatchesCountByCompetitionId[competitionId] ?? (c as any)?.activities_count ?? 0;
+
+                              return (
+                                <div key={String((c as any)?.id)} style={competitionRowStyle}>
+                                  <div style={{ minWidth: 0 }}>
+                                    {competitionPath ? (
+                                      <button
+                                        type="button"
+                                        className="app-unstyled-button text-blue-600 hover:underline"
+                                        onClick={() => navigate(competitionPath)}
+                                        style={{ textAlign: 'left', fontWeight: 700, fontSize: 13 }}
+                                      >
+                                        {String((c as any)?.name || 'Competition')}
+                                      </button>
+                                    ) : (
+                                      <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--app-text)' }}>{String((c as any)?.name || 'Competition')}</div>
+                                    )}
+                                  </div>
+
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                    <span style={pillStyle}>Matches: {competitionMatches}</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     );
-                  })}
+                        })}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
-            </div>
+            </Card>
           )}
 
           {activeTabFromUrl === 'seasons' && orgSlugForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (

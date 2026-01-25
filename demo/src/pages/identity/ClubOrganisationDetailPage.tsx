@@ -867,6 +867,17 @@ export default function ClubOrganisationDetailPage() {
                       background: 'var(--app-surface)',
                     };
 
+                    const teamRowStyle: React.CSSProperties = {
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '8px 10px',
+                      border: '1px solid var(--app-border)',
+                      borderRadius: 8,
+                      background: 'var(--app-surface)',
+                    };
+
                     return (
                       <>
                         <div
@@ -920,38 +931,20 @@ export default function ClubOrganisationDetailPage() {
                           const matchesCount = hierarchyMatchesCountByTeamId[String(team.id)] ?? 0;
 
                           return (
-                            <div
-                              key={team.id}
-                              style={{
-                                border: '1px solid var(--app-border)',
-                                borderRadius: 10,
-                                background: 'var(--app-surface)',
-                                overflow: 'hidden',
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  padding: '10px 12px',
-                                  borderBottom: '1px solid var(--app-border)',
-                                  background: 'var(--app-surface-2)',
-                                  gap: 12,
-                                }}
-                              >
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                            <div key={team.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                              <div style={teamRowStyle}>
+                                <div style={{ minWidth: 0 }}>
                                   {teamPath ? (
                                     <button
                                       type="button"
                                       className="app-unstyled-button text-blue-600 hover:underline"
                                       onClick={() => navigate(teamPath)}
-                                      style={{ textAlign: 'left', fontWeight: 800, fontSize: 14 }}
+                                      style={{ textAlign: 'left', fontWeight: 700, fontSize: 13 }}
                                     >
                                       {team.name}
                                     </button>
                                   ) : (
-                                    <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--app-text)' }}>{team.name}</div>
+                                    <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--app-text)' }}>{team.name}</div>
                                   )}
                                 </div>
 
@@ -961,24 +954,20 @@ export default function ClubOrganisationDetailPage() {
                                   <span style={pillStyle}>Competitions: {competitionsCount}</span>
                                   <span style={pillStyle}>Matches: {matchesCount}</span>
                                   {teamPath ? (
-                                    <button
-                                      type="button"
-                                      className="app-action-button"
-                                      onClick={() => navigate(teamPath)}
-                                      style={actionButtonStyle('primary')}
-                                    >
+                                    <button type="button" className="app-action-button" onClick={() => navigate(teamPath)} style={actionButtonStyle('primary')}>
                                       View Team
                                     </button>
                                   ) : null}
                                 </div>
                               </div>
 
-                              <div style={{ padding: '10px 12px' }}>
-                                {seasons.length === 0 ? (
-                                  <div className="text-sm text-gray-500 py-2">No seasons.</div>
-                                ) : (
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                    {seasons.map((s) => {
+                              {seasons.length === 0 ? (
+                                <div className="text-sm text-gray-500 py-1" style={{ marginLeft: 16 }}>
+                                  No seasons.
+                                </div>
+                              ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 16 }}>
+                                  {seasons.map((s) => {
                                       const seasonKey = String((s as any)?.slug || (s as any)?.id || '').trim();
                                       const seasonPath =
                                         teamPath && seasonKey
@@ -1014,10 +1003,9 @@ export default function ClubOrganisationDetailPage() {
                                           </div>
                                         </div>
                                       );
-                                    })}
-                                  </div>
-                                )}
-                              </div>
+                                  })}
+                                </div>
+                              )}
                             </div>
                           );
                         })}
