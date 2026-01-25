@@ -24,6 +24,7 @@ import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import {
   actionButtonStyle,
+  type ActionTone,
   compactActionsStyle,
   compactTableStyle,
   compactTdStyle,
@@ -105,6 +106,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
+  const tableActionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => ({
+    ...actionButtonStyle(tone),
+    padding: '6px 12px',
+    fontWeight: 500,
+  });
+
   const [org, setOrg] = useState<Organisation | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [club, setClub] = useState<Project | null>(null);
@@ -124,6 +131,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [teamRosterReloadToken, setTeamRosterReloadToken] = useState(0);
 
   const [eligibleSearch, setEligibleSearch] = useState('');
+  const [squadSearch, setSquadSearch] = useState('');
   const [selectedEligibleUserIds, setSelectedEligibleUserIds] = useState<Set<string>>(new Set());
   const [selectedSquadMembershipIds, setSelectedSquadMembershipIds] = useState<Set<string>>(new Set());
   const [bulkSubmitting, setBulkSubmitting] = useState(false);
@@ -681,6 +689,25 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     });
   }, [eligibleSearch, squadUserIdSet, teamRoster]);
 
+  const visibleSquadMembers = useMemo(() => {
+    const q = String(squadSearch || '').trim().toLowerCase();
+    if (!q) return members;
+    return (members || []).filter((m: any) => {
+      const memberUser = m.user || m;
+      const name = String(
+        memberUser.name ||
+          `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
+          memberUser.email ||
+          ''
+      ).toLowerCase();
+      const email = String(memberUser.email || '').toLowerCase();
+      const position = String(m?.metadata?.position || '').toLowerCase();
+      const shirt = String(m?.metadata?.shirt_number ?? '').toLowerCase();
+      const role = String(m?.role || '').toLowerCase();
+      return name.includes(q) || email.includes(q) || position.includes(q) || shirt.includes(q) || role.includes(q);
+    });
+  }, [members, squadSearch]);
+
   const toggleEligibleUser = (userId: string) => {
     setSelectedEligibleUserIds((prev) => {
       const next = new Set(prev);
@@ -1184,7 +1211,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             setSelectedDetailPeriod(competition);
                                             setIsPeriodDetailModalOpen(true);
                                           }}
-                                          style={actionButtonStyle('primary')}
+                                          style={tableActionButtonStyle('primary')}
                                         >
                                           View
                                         </button>
@@ -1196,7 +1223,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                               setSelectedEditPeriod(competition);
                                               setIsPeriodEditModalOpen(true);
                                             }}
-                                            style={actionButtonStyle('warning')}
+                                            style={tableActionButtonStyle('warning')}
                                           >
                                             Edit
                                           </button>
@@ -1227,7 +1254,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                                 alert('Error deleting competition');
                                               }
                                             }}
-                                            style={actionButtonStyle('danger')}
+                                            style={tableActionButtonStyle('danger')}
                                           >
                                             Delete
                                           </button>
@@ -1505,7 +1532,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     {teamRosterError && <Alert variant="error">{teamRosterError}</Alert>}
 
                     {userCanEditProject ? (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', alignItems: 'start' }}>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
                             <div style={{ display: 'grid', gap: 2 }}>
@@ -1522,7 +1549,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 const userIds = Array.from(selectedEligibleUserIds.values()).filter(Boolean);
                                 await assignUsersToSeasonSquad(userIds);
                               }}
-                              style={{ ...actionButtonStyle('success'), padding: '8px 14px', fontSize: '14px', minWidth: '160px', fontWeight: 500 }}
+                              style={{ ...tableActionButtonStyle('success'), padding: '8px 16px', fontSize: '14px', minWidth: '160px' }}
                               title="Assign selected users to the squad"
                             >
                               Assign ({selectedEligibleUserIds.size})
@@ -1610,19 +1637,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                           )}
                                         </td>
                                         <td style={compactTdStyle} className="text-right">
-                                          <button
-                                            type="button"
-                                            className="app-action-button"
-                                            disabled={!userId || bulkSubmitting}
-                                            onClick={async () => {
-                                              if (!userId) return;
-                                              await assignUsersToSeasonSquad([userId]);
-                                            }}
-                                            style={{ ...actionButtonStyle('success'), padding: '6px 10px', fontSize: '13px' }}
-                                            title="Assign this user to the season squad"
-                                          >
-                                            Assign
-                                          </button>
+                                          <div style={compactActionsStyle}>
+                                            <button
+                                              type="button"
+                                              className="app-action-button"
+                                              disabled={!userId || bulkSubmitting}
+                                              onClick={async () => {
+                                                if (!userId) return;
+                                                await assignUsersToSeasonSquad([userId]);
+                                              }}
+                                              style={tableActionButtonStyle('success')}
+                                              title="Assign this user to the season squad"
+                                            >
+                                              Assign
+                                            </button>
+                                          </div>
                                         </td>
                                       </tr>
                                     );
@@ -1642,6 +1671,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               </div>
                             </div>
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                              <Input
+                                value={squadSearch}
+                                onChange={(e) => setSquadSearch(e.target.value)}
+                                placeholder="Search squad"
+                                style={{ width: '220px' }}
+                              />
                               <Button
                                 variant="secondary"
                                 size="sm"
@@ -1673,7 +1708,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   const ids = Array.from(selectedSquadMembershipIds.values()).filter(Boolean);
                                   await unassignMembershipsFromSeasonSquad(ids);
                                 }}
-                                style={{ ...actionButtonStyle('danger'), padding: '8px 14px', fontSize: '14px', minWidth: '170px', fontWeight: 500 }}
+                                style={{ ...tableActionButtonStyle('danger'), padding: '8px 16px', fontSize: '14px', minWidth: '170px' }}
                                 title="Unassign selected users from the squad"
                               >
                                 Unassign ({selectedSquadMembershipIds.size})
@@ -1701,7 +1736,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {members.map((m: any) => {
+                                  {visibleSquadMembers.map((m: any) => {
                                     const memberUser = m.user || m;
                                     const name =
                                       memberUser.name ||
@@ -1753,19 +1788,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         <td style={compactTextTdStyle}>{position}</td>
                                         <td style={compactTdStyle}>{shirtNumber || '—'}</td>
                                         <td style={compactTdStyle} className="text-right">
-                                          <button
-                                            type="button"
-                                            className="app-action-button"
-                                            disabled={!membershipId || bulkSubmitting}
-                                            onClick={async () => {
-                                              if (!membershipId) return;
-                                              await unassignMembershipsFromSeasonSquad([membershipId]);
-                                            }}
-                                            style={{ ...actionButtonStyle('danger'), padding: '6px 10px', fontSize: '13px' }}
-                                            title="Unassign this user from the season squad"
-                                          >
-                                            Unassign
-                                          </button>
+                                          <div style={compactActionsStyle}>
+                                            <button
+                                              type="button"
+                                              className="app-action-button"
+                                              disabled={!membershipId || bulkSubmitting}
+                                              onClick={async () => {
+                                                if (!membershipId) return;
+                                                await unassignMembershipsFromSeasonSquad([membershipId]);
+                                              }}
+                                              style={tableActionButtonStyle('danger')}
+                                              title="Unassign this user from the season squad"
+                                            >
+                                              Unassign
+                                            </button>
+                                          </div>
                                         </td>
                                       </tr>
                                     );
@@ -1916,7 +1953,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       setSelectedDetailPeriod(competition);
                                       setIsPeriodDetailModalOpen(true);
                                     }}
-                                    style={actionButtonStyle('primary')}
+                                    style={tableActionButtonStyle('primary')}
                                   >
                                     View
                                   </button>
@@ -1928,7 +1965,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         setSelectedEditPeriod(competition);
                                         setIsPeriodEditModalOpen(true);
                                       }}
-                                            style={actionButtonStyle('warning')}
+                                      style={tableActionButtonStyle('warning')}
                                     >
                                       Edit
                                     </button>
@@ -1962,7 +1999,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                           alert('Error deleting competition');
                                         }
                                       }}
-                                      style={actionButtonStyle('danger')}
+                                      style={tableActionButtonStyle('danger')}
                                     >
                                       Delete
                                     </button>
@@ -2069,7 +2106,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       setSelectedDetailMatch(match);
                                       setIsMatchDetailModalOpen(true);
                                     }}
-                                    style={actionButtonStyle('primary')}
+                                    style={tableActionButtonStyle('primary')}
                                   >
                                     View
                                   </button>
@@ -2081,7 +2118,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         setSelectedEditMatch(match);
                                         setIsMatchEditModalOpen(true);
                                       }}
-                                      style={actionButtonStyle('warning')}
+                                      style={tableActionButtonStyle('warning')}
                                     >
                                       Edit
                                     </button>
@@ -2115,7 +2152,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                           alert('Error deleting match');
                                         }
                                       }}
-                                      style={actionButtonStyle('danger')}
+                                      style={tableActionButtonStyle('danger')}
                                     >
                                       Delete
                                     </button>
