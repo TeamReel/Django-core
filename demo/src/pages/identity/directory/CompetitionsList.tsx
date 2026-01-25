@@ -111,12 +111,44 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
 
   const orgLocked = Boolean(preselectedOrgId);
 
+  const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
+  const isUuid = (value: unknown) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      String(value || ''),
+    );
+
+  const parseDateOnlyUtc = (value?: string | null): Date | null => {
+    const raw = String(value || '').trim();
+    if (!raw) return null;
+    const ymd = raw.slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return null;
+    const dt = new Date(`${ymd}T00:00:00.000Z`);
+    return Number.isNaN(dt.getTime()) ? null : dt;
+  };
+
+  const isPeriodActive = (p: any): boolean => {
+    const start = parseDateOnlyUtc(p?.start_date) ?? parseDateOnlyUtc(p?.parent_period?.start_date);
+    const end = parseDateOnlyUtc(p?.end_date) ?? parseDateOnlyUtc(p?.parent_period?.end_date);
+
+    // Open-ended ranges: missing start means "always started"; missing end means "never ends".
+    if (!start && !end) return false;
+
+    const today = parseDateOnlyUtc(new Date().toISOString())!;
+    const afterStart = !start || today.getTime() >= start.getTime();
+    const beforeEnd = !end || today.getTime() <= end.getTime();
+    return afterStart && beforeEnd;
+  };
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
   const [clubs, setClubs] = useState<ProjectOption[]>([]);
   const [teams, setTeams] = useState<ProjectOption[]>([]);
+
+  // When the page is org-locked, we receive an org UUID (not a slug). Many endpoints use org slug.
+  // Resolve and pin the slug so we never fall back to global (unscoped) project lists.
+  const [lockedOrgSlug, setLockedOrgSlug] = useState<string>('');
 
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
@@ -127,6 +159,51 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
       setSelectedOrgId(preselectedOrgId);
     }
   }, [preselectedOrgId]);
+
+  useEffect(() => {
+    if (!orgLocked) {
+      if (lockedOrgSlug) setLockedOrgSlug('');
+      return;
+    }
+
+    const rawLockedId = String(preselectedOrgId || '').trim();
+    if (!rawLockedId) return;
+
+    // If the lock key is already a slug, keep it.
+    if (!isNumericId(rawLockedId) && !isUuid(rawLockedId)) {
+      setLockedOrgSlug(rawLockedId);
+      return;
+    }
+
+    // Prefer already-known org options.
+    const fromList = organisations.find((o) => String(o.id) === String(rawLockedId))?.slug;
+    if (fromList) {
+      setLockedOrgSlug(String(fromList));
+      return;
+    }
+
+    // Fallback: fetch org detail by UUID to get slug.
+    let cancelled = false;
+    const loadSlug = async () => {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(rawLockedId)}/`, {
+          credentials: 'include',
+        });
+        if (!res.ok) return;
+        const data: any = await res.json();
+        const slug = String(data?.slug || '').trim();
+        if (!cancelled && slug) setLockedOrgSlug(slug);
+      } catch {
+        // ignore
+      }
+    };
+
+    void loadSlug();
+    return () => {
+      cancelled = true;
+    };
+  }, [orgLocked, preselectedOrgId, organisations]);
   const [selectedSeasonName, setSelectedSeasonName] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -142,18 +219,23 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
-  const isUuid = (value: unknown) =>
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-      String(value || ''),
-    );
-
   const getSelectedOrgSlugForApi = () => {
     const selectedOrg = selectedOrgId
       ? organisations.find(
           (o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId),
         )
       : null;
+
+    // On org-locked pages, do not fall back to context organisation.
+    // Context can change asynchronously and would cause cross-org reloads.
+    if (orgLocked) {
+      return (
+        selectedOrg?.slug ||
+        lockedOrgSlug ||
+        (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
+        ''
+      );
+    }
 
     return (
       selectedOrg?.slug ||
@@ -174,40 +256,6 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
     if (selectedOrgId && isUuid(selectedOrgId)) return String(selectedOrgId);
     return '';
   };
-
-  const parseDateOnlyUtc = (value?: string | null): Date | null => {
-    const raw = String(value || '').trim();
-    if (!raw) return null;
-    const ymd = raw.slice(0, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return null;
-    const dt = new Date(`${ymd}T00:00:00.000Z`);
-    return Number.isNaN(dt.getTime()) ? null : dt;
-  };
-
-  const getEffectiveRange = (
-    p: Pick<Period, 'start_date' | 'end_date'> & { parent_period?: any },
-  ): { start: Date | null; end: Date | null } => {
-    // Prefer the period's own range when present; otherwise fall back to its parent (Season).
-    const ownStart = parseDateOnlyUtc(p.start_date);
-    const ownEnd = parseDateOnlyUtc(p.end_date);
-    if (ownStart || ownEnd) return { start: ownStart, end: ownEnd };
-
-    const parentStart = parseDateOnlyUtc(p.parent_period?.start_date);
-    const parentEnd = parseDateOnlyUtc(p.parent_period?.end_date);
-    return { start: parentStart, end: parentEnd };
-  };
-
-  const isPeriodActive = (p: Pick<Period, 'start_date' | 'end_date'> & { parent_period?: any }): boolean => {
-    const { start, end } = getEffectiveRange(p);
-    // Open-ended ranges: missing start means "always started"; missing end means "never ends".
-    if (!start && !end) return false;
-
-    const today = parseDateOnlyUtc(new Date().toISOString())!;
-    const afterStart = !start || today.getTime() >= start.getTime();
-    const beforeEnd = !end || today.getTime() <= end.getTime();
-    return afterStart && beforeEnd;
-  };
-
   // Initialize org filter
   useEffect(() => {
     if (!isSuperAdmin && context.organisation?.id) {
@@ -239,7 +287,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
       // Best-effort: if URL provides an id, we'll set after seasons load.
       setSelectedSeasonName(String(seasonId));
     }
-  }, [isSuperAdmin, searchParams]);
+  }, [isSuperAdmin, preselectedOrgId, searchParams]);
 
   const seasonOptions = useMemo(() => {
     const byName = new Map<string, { name: string; ids: string[] }>();
@@ -301,6 +349,15 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
 
       try {
         const orgSlugForApi = getSelectedOrgSlugForApi();
+
+        // If federation is locked but slug isn't resolved yet, wait.
+        // Never fall back to global projects here (would leak cross-federation data).
+        if (orgLocked && !orgSlugForApi) {
+          setClubs([]);
+          setTeams([]);
+          return;
+        }
+
         if (orgSlugForApi) {
           const [allClubs, allTeams] = await Promise.all([
             fetchAllPages<ProjectOption>(
@@ -319,21 +376,23 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
           return;
         }
 
-        // Fallback: global project list (less accurate for very large orgs)
-        const [allClubs, allTeams] = await Promise.all([
-          fetchAllPages<ProjectOption>(
-            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
-            { credentials: 'include' },
-            { ttlMs: 120_000, bypass: refreshKey > 0 },
-          ),
-          fetchAllPages<ProjectOption>(
-            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
-            { credentials: 'include' },
-            { ttlMs: 120_000, bypass: refreshKey > 0 },
-          ),
-        ]);
-        setClubs(allClubs);
-        setTeams(allTeams);
+        // Non-locked pages: fallback to global project list (less accurate for very large orgs)
+        if (!orgLocked) {
+          const [allClubs, allTeams] = await Promise.all([
+            fetchAllPages<ProjectOption>(
+              `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+              { credentials: 'include' },
+              { ttlMs: 120_000, bypass: refreshKey > 0 },
+            ),
+            fetchAllPages<ProjectOption>(
+              `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+              { credentials: 'include' },
+              { ttlMs: 120_000, bypass: refreshKey > 0 },
+            ),
+          ]);
+          setClubs(allClubs);
+          setTeams(allTeams);
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load options');
       } finally {
@@ -342,7 +401,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
     };
 
     load();
-  }, [context.organisation?.slug, organisations, refreshKey, selectedOrgId]);
+  }, [context.organisation?.slug, organisations, refreshKey, selectedOrgId, orgLocked, lockedOrgSlug]);
 
   // Fetch Seasons for Filter
   useEffect(() => {
