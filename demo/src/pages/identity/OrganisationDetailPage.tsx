@@ -151,6 +151,9 @@ export const OrganisationDetailPage: React.FC = () => {
   const [recentPlayedMatches, setRecentPlayedMatches] = useState<any[]>([]);
   const [recentPlayedMatchesLoading, setRecentPlayedMatchesLoading] = useState(false);
 
+  // Hierarchy tab (club -> team)
+  const [hierarchySearch, setHierarchySearch] = useState('');
+
   // Inline edit state for Overview
   const [isEditMode, setIsEditMode] = useState(false);
   const [editName, setEditName] = useState('');
@@ -228,6 +231,12 @@ export const OrganisationDetailPage: React.FC = () => {
 
     if (activeTab === 'teams') {
       if (!teamsLoading && teams.length === 0) {
+        void fetchTeamsForOrg({ force: true });
+      }
+    }
+
+    if (activeTab === 'hierarchy') {
+      if (!teamsLoading && (teams.length === 0 || allClubsForTeams.length === 0)) {
         void fetchTeamsForOrg({ force: true });
       }
     }
@@ -977,12 +986,87 @@ export const OrganisationDetailPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const shouldEnsurePeriods = activeTab === 'hierarchy' || activeTab === 'seasons' || activeTab === 'competitions';
+    const shouldEnsurePeriods = activeTab === 'seasons' || activeTab === 'competitions';
     if (!shouldEnsurePeriods) return;
     if (orgPeriodsLoading) return;
     if (orgPeriods.length > 0) return;
     void ensureOrgPeriodsLoaded();
   }, [activeTab, orgPeriodsLoading, orgPeriods.length, teams.length, currentOrgSlug]);
+
+  const clubsForHierarchy = useMemo(() => {
+    const list = (allClubsForTeams && allClubsForTeams.length > 0) ? allClubsForTeams : clubs;
+    return Array.isArray(list) ? list : [];
+  }, [allClubsForTeams, clubs]);
+
+  const hierarchyRows = useMemo(() => {
+    const q = String(hierarchySearch || '').trim().toLowerCase();
+    const clubById = new Map<string, Project>();
+    for (const c of clubsForHierarchy) {
+      clubById.set(String((c as any)?.id), c);
+    }
+
+    const rows: Array<{
+      clubId: string;
+      clubName: string;
+      clubSlugOrId: string;
+      teamId: string;
+      teamName: string;
+      teamSlugOrId: string;
+    }> = [];
+
+    const toSlugOrId = (p: any) => String(p?.slug || p?.id || '').trim();
+    const toName = (p: any) => String(p?.name || p?.title || p?.slug || p?.id || '').trim();
+
+    for (const t of teams || []) {
+      const parent = (t as any)?.parent_id ?? (t as any)?.parent ?? (t as any)?.parent_project_id ?? (t as any)?.parent_project?.id ?? null;
+      const clubId = parent != null ? String(parent) : '';
+      const clubObj = clubId ? clubById.get(clubId) : null;
+
+      const clubSlugOrId = clubObj ? toSlugOrId(clubObj) : '';
+      const clubName = clubObj ? toName(clubObj) : '-';
+
+      const teamSlugOrId = toSlugOrId(t);
+      const teamName = toName(t) || '-';
+
+      const haystack = `${clubName} ${teamName}`.toLowerCase();
+      if (q && !haystack.includes(q)) continue;
+
+      rows.push({
+        clubId,
+        clubName,
+        clubSlugOrId,
+        teamId: String((t as any)?.id || ''),
+        teamName,
+        teamSlugOrId,
+      });
+    }
+
+    // Show clubs without teams when no search is active.
+    if (!q) {
+      const hasTeamByClubId = new Set(rows.map((r) => String(r.clubId)));
+      for (const c of clubsForHierarchy) {
+        const clubId = String((c as any)?.id || '').trim();
+        if (!clubId) continue;
+        if (hasTeamByClubId.has(clubId)) continue;
+        rows.push({
+          clubId,
+          clubName: toName(c) || '-',
+          clubSlugOrId: toSlugOrId(c),
+          teamId: '',
+          teamName: '—',
+          teamSlugOrId: '',
+        });
+      }
+    }
+
+    rows.sort((a, b) => {
+      const byClub = a.clubName.localeCompare(b.clubName, undefined, { sensitivity: 'base' });
+      if (byClub !== 0) return byClub;
+      return a.teamName.localeCompare(b.teamName, undefined, { sensitivity: 'base' });
+    });
+
+    return rows;
+  }, [teams, clubsForHierarchy, hierarchySearch]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1667,88 +1751,95 @@ export const OrganisationDetailPage: React.FC = () => {
               <div>
                 <div style={{ fontSize: 16, fontWeight: 700 }}>Hierarchy</div>
                 <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>
-                  Seasons → competitions → matches (period tree)
+                  Clubs → teams
                 </div>
               </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  const orgIdToRefresh = String(org?.id || currentOrgId || '').trim();
-                  if (orgIdToRefresh) void fetchFederationCounts(orgIdToRefresh);
-                }}
-              >
-                Refresh
-              </Button>
+              <Input
+                value={hierarchySearch}
+                onChange={(e) => setHierarchySearch((e.target as any).value)}
+                placeholder="Search clubs / teams…"
+              />
             </div>
 
-            {orgPeriodsLoading ? (
+            {teamsLoading && hierarchyRows.length === 0 ? (
               <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
                 Loading hierarchy...
               </div>
-            ) : orgPeriods.length === 0 ? (
+            ) : hierarchyRows.length === 0 ? (
               <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
-                No periods found yet.
+                No clubs/teams found.
               </div>
             ) : (
               <div className="overflow-x-auto" style={{ marginTop: 12 }}>
                 <Table style={compactTableStyle}>
                   <thead>
                     <tr>
-                      <th style={compactThStyle}>Period</th>
-                      <th style={compactThStyle}>Type</th>
-                      <th style={compactThStyle}>Start</th>
-                      <th style={compactThStyle}>End</th>
-                      <th style={compactThStyle}>Matches</th>
+                      <th style={compactThStyle}>Club</th>
+                      <th style={compactThStyle}>Team</th>
+                      <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {(() => {
-                      const rows: React.ReactNode[] = [];
+                    {hierarchyRows.map((r) => {
+                      const orgKey = String(orgSlugOrId || currentOrgSlug || id || '').trim();
+                      const clubPath = orgKey && r.clubSlugOrId ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(r.clubSlugOrId)}` : '';
+                      const teamPath = orgKey && r.clubSlugOrId && r.teamSlugOrId
+                        ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(r.clubSlugOrId)}/${encodeURIComponent(r.teamSlugOrId)}`
+                        : '';
 
-                      const sortPeriods = (a: any, b: any) => {
-                        const aDate = String(a?.start_date || '');
-                        const bDate = String(b?.start_date || '');
-                        if (aDate && bDate && aDate !== bDate) return aDate.localeCompare(bDate);
-                        return compareText(a?.name, b?.name);
-                      };
-
-                      const roots = (orgPeriods || [])
-                        .filter((p: any) => !getPeriodParentId(p))
-                        .sort(sortPeriods);
-
-                      const pushPeriod = (p: any, depth: number) => {
-                        const idKey = String(p?.id || periodPathKey(p) || Math.random());
-                        const name = String(p?.name || `Period ${idKey}`);
-                        const isSeason = isSeasonPeriod(p);
-                        const isCompetition = !isSeason && isCompetitionPeriod(p);
-                        const typeLabel = isSeason ? 'Season' : isCompetition ? 'Competition' : 'Period';
-                        const start = String(p?.start_date || '');
-                        const end = String(p?.end_date || '');
-                        const matchCount = getRecursiveMatchesCount(p);
-
-                        rows.push(
-                          <tr key={`${idKey}:${depth}`}>
-                            <td style={{ ...compactTextTdStyle, paddingLeft: 8 + depth * 16 }}>
-                              <div className="font-medium">{name}</div>
-                              {p?.project?.name ? (
-                                <div className="text-xs text-gray-500">{String(p.project.name)}</div>
-                              ) : null}
-                            </td>
-                            <td style={compactTextTdStyle}>{typeLabel}</td>
-                            <td style={compactTextTdStyle}>{start || '—'}</td>
-                            <td style={compactTextTdStyle}>{end || '—'}</td>
-                            <td style={compactTextTdStyle}>{Number.isFinite(matchCount) ? matchCount : '—'}</td>
-                          </tr>
-                        );
-
-                        const children = (periodChildrenMap.get(String(p?.id)) || []).slice().sort(sortPeriods);
-                        for (const child of children) pushPeriod(child, depth + 1);
-                      };
-
-                      for (const root of roots) pushPeriod(root, 0);
-                      return rows;
-                    })()}
+                      return (
+                        <tr key={`${r.clubId}::${r.teamId || 'club'}`}>
+                          <td style={compactTextTdStyle}>
+                            {clubPath ? (
+                              <button
+                                type="button"
+                                className="app-unstyled-button text-blue-600 hover:underline"
+                                onClick={() => navigate(clubPath)}
+                              >
+                                {r.clubName}
+                              </button>
+                            ) : (
+                              r.clubName
+                            )}
+                          </td>
+                          <td style={compactTextTdStyle}>
+                            {teamPath ? (
+                              <button
+                                type="button"
+                                className="app-unstyled-button text-blue-600 hover:underline"
+                                onClick={() => navigate(teamPath)}
+                              >
+                                {r.teamName}
+                              </button>
+                            ) : (
+                              r.teamName
+                            )}
+                          </td>
+                          <td style={compactTdStyle}>
+                            <div style={compactActionsStyle}>
+                              {clubPath ? (
+                                <button type="button" className="app-action-button" onClick={() => navigate(clubPath)} style={actionButtonStyle('primary')}>
+                                  View Club
+                                </button>
+                              ) : (
+                                <button type="button" className="app-action-button" disabled style={{ ...actionButtonStyle('primary'), opacity: 0.5, cursor: 'not-allowed' }}>
+                                  View Club
+                                </button>
+                              )}
+                              {teamPath ? (
+                                <button type="button" className="app-action-button" onClick={() => navigate(teamPath)} style={actionButtonStyle('primary')}>
+                                  View Team
+                                </button>
+                              ) : (
+                                <button type="button" className="app-action-button" disabled style={{ ...actionButtonStyle('primary'), opacity: 0.5, cursor: 'not-allowed' }}>
+                                  View Team
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </Table>
               </div>

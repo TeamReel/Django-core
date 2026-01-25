@@ -507,15 +507,9 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
                 onClick={onToggleSidebar}
                 title={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
                 aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+                className="nav-icon-button"
                 style={{
                   padding: '8px 10px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: 'transparent',
-                  color: 'var(--app-text)',
-                  display: 'flex',
-                  alignItems: 'center',
                 }}
               >
                 <AppIcon icon={isSidebarOpen ? PanelLeftClose : PanelLeftOpen} size={18} />
@@ -796,13 +790,13 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
             {/* Notification Icon */}
             <button
               onClick={() => navigate('/notifications')}
-              className="nav-right-fixed"
+              className="nav-right-fixed nav-icon-button"
+              aria-label="Notifications"
               style={{
                 position: 'relative',
                 padding: '8px',
                 backgroundColor: 'transparent',
-                border: 'none',
-                borderRadius: '4px',
+                borderRadius: '6px',
                 cursor: 'pointer',
                 fontSize: '20px',
                 flexShrink: 0,
@@ -830,7 +824,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
             {/* Credits / Transactions Icon */}
             {user ? (
               <button
-                className="nav-credits-button"
+                className="nav-credits-button nav-icon-button"
                 onClick={() => {
                   const id = Number(currentUserId);
                   if (!Number.isFinite(id)) return;
@@ -840,8 +834,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
                   position: 'relative',
                   padding: '8px',
                   backgroundColor: 'transparent',
-                  border: 'none',
-                  borderRadius: '4px',
+                  borderRadius: '6px',
                   cursor: 'pointer',
                   fontSize: '20px',
                   color: 'var(--app-text)',
@@ -907,6 +900,34 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
       </div>
 
       <style>{`
+        .nav-icon-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid var(--app-border);
+          background: transparent;
+          color: var(--app-text);
+          border-radius: 6px;
+          cursor: pointer;
+          line-height: 1;
+        }
+        .nav-icon-button:hover {
+          background: var(--app-surface-2);
+        }
+        .nav-icon-button:active {
+          transform: translateY(0.5px);
+        }
+        .nav-icon-button:focus-visible {
+          outline: 2px solid rgba(37, 99, 235, 0.45);
+          outline-offset: 2px;
+        }
+
+        /* Apply the same icon-button styling to fixed right-side icon buttons */
+        .nav-right-fixed.nav-icon-button,
+        .nav-credits-button.nav-icon-button {
+          border-radius: 6px;
+        }
+
         .nav-search-container {
           transition: max-width 160ms ease, flex-basis 160ms ease;
         }
