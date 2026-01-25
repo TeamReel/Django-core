@@ -57,9 +57,6 @@ const getParentPeriodId = (p: any): string => {
 };
 
 const isSeasonPeriod = (p: any): boolean => {
-  const parentId = getParentPeriodId(p);
-  if (parentId) return false;
-
   const type = getPeriodType(p);
   if (type === 'season') return true;
 
@@ -68,6 +65,9 @@ const isSeasonPeriod = (p: any): boolean => {
 
   const seasonKey = p?.data?.season ?? p?.metadata?.season;
   if (seasonKey) return true;
+
+  const parentId = getParentPeriodId(p);
+  if (!parentId) return true;
 
   return false;
 };

@@ -201,10 +201,6 @@ export default function ClubOrganisationDetailPage() {
   };
 
   const isSeasonPeriod = (p: any): boolean => {
-    // Must be a root period.
-    const parentId = getParentPeriodId(p);
-    if (parentId) return false;
-
     const type = getPeriodType(p);
     if (type === 'season') return true;
 
@@ -213,6 +209,11 @@ export default function ClubOrganisationDetailPage() {
 
     const seasonKey = p?.data?.season ?? p?.metadata?.season;
     if (seasonKey) return true;
+
+    // Finally, fallback check: if it has no parent, treat as root/season?
+    // (Relaxed check: removed strict parent_id==null requirement because some team seasons might have parents).
+    const parentId = getParentPeriodId(p);
+    if (!parentId) return true;
 
     return false;
   };
