@@ -106,7 +106,9 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
 
   const activeTabFromUrl = useMemo(() => {
     const params = new URLSearchParams(location.search || '');
-    const tab = String(params.get('tab') || 'overview').trim().toLowerCase();
+    const rawTab = String(params.get('tab') || 'overview').trim().toLowerCase();
+    // Back-compat: allow newer URLs to use `members` while this page still uses `people` internally.
+    const tab = rawTab === 'members' ? 'people' : rawTab;
     const allowed = new Set([
       'overview',
       'hierarchy',
@@ -1842,9 +1844,12 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         const merged = mergeUniqueById(competitionsChunks.flat()).filter(isCompetitionPeriod);
         setCompetitions(merged);
       } else {
-        // Clubs: fetch periods only for teams under this club and filter to competitions
-        const teams = await fetchOrgTeamsForPeriodFiltering();
-        const teamIdsUnderClub = getDescendantTeamIdsUnderClub(teams, String(project.id));
+        // Clubs: fetch competitions scoped to direct teams under this club.
+        // Using direct children is more reliable than org-wide ancestry scans (parent may serialize as slug).
+        const teams = await fetchClubTeamsForPeriodScope();
+        const teamIdsUnderClub = new Set(
+          (teams || []).map((t: any) => String(t?.id || '')).filter(Boolean)
+        );
         if (!teamIdsUnderClub.size) {
           setCompetitions([]);
           return;

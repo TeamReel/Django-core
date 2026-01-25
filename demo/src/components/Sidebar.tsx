@@ -237,10 +237,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 items = [
                     { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
-                    { label: 'People', path: makeTabUrl(baseUrl, 'people'), icon: Users },
                     { label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays },
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
+                    { label: 'Members', path: makeTabUrl(baseUrl, 'members'), icon: Users },
                     { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                 ];
@@ -257,11 +257,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 items = [
                     { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
-                    { label: 'People', path: makeTabUrl(baseUrl, 'people'), icon: Users },
                     { label: 'Teams', path: makeTabUrl(baseUrl, 'teams'), icon: Shirt },
                     { label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays },
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
+                    { label: 'Members', path: makeTabUrl(baseUrl, 'members'), icon: Users },
                     { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                 ];
