@@ -58,6 +58,16 @@ const getParentPeriodId = (p: any): string => {
   return parentId != null ? String(parentId) : '';
 };
 
+const getParentProjectId = (p: any): string => {
+  const parent =
+    p?.parent_id ??
+    p?.parent_project_id ??
+    (typeof p?.parent_project === 'object' ? p?.parent_project?.id : p?.parent_project) ??
+    (typeof p?.parent === 'object' ? p?.parent?.id : p?.parent) ??
+    null;
+  return parent != null ? String(typeof parent === 'object' ? parent.id : parent) : '';
+};
+
 const isSeasonPeriod = (p: any): boolean => {
   const type = getPeriodType(p);
   if (type === 'season') return true;
@@ -290,23 +300,24 @@ export default function TeamOrganisationDetailPage() {
       setHierarchyError(null);
 
       try {
-        // 1) Seasons for this team
-        const seasonParams = new URLSearchParams();
-        seasonParams.set('project_id', teamIdForDirectoryLists);
-        seasonParams.set('type', 'season');
-        seasonParams.set('page_size', '500');
+        // 1) Seasons for this team (typed query first; fallback to untyped filter like clubdetail)
+        const baseSeasonParams = new URLSearchParams();
+        baseSeasonParams.set('project_id', teamIdForDirectoryLists);
+        baseSeasonParams.set('page_size', '500');
 
-        const seasonsRes = await fetch(`${apiBaseUrl}/api/v1/periods/?${seasonParams.toString()}`, { credentials: 'include' });
-        if (!seasonsRes.ok) throw new Error(`Failed to load seasons (${seasonsRes.status})`);
-        const seasonsJson = await seasonsRes.json().catch(() => null);
-        const seasonsRaw = unwrapEnvelope<any>(seasonsJson);
-        const seasonsList: any[] = Array.isArray(seasonsRaw?.results)
-          ? seasonsRaw.results
-          : Array.isArray(seasonsRaw)
-            ? seasonsRaw
-            : [];
+        const typedParams = new URLSearchParams(baseSeasonParams);
+        typedParams.set('type', 'season');
 
-        const seasons = mergeUniqueById((seasonsList || []).filter(isSeasonPeriod));
+        const typedUrl = `${apiBaseUrl}/api/v1/periods/?${typedParams.toString()}`;
+        const typedList: any[] = await fetchAllPages<any>(typedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+
+        const untypedUrl = `${apiBaseUrl}/api/v1/periods/?${baseSeasonParams.toString()}`;
+        const untypedList: any[] = typedList.length
+          ? []
+          : await fetchAllPages<any>(untypedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+
+        const seasonsRaw = typedList.length ? typedList : untypedList;
+        const seasons = mergeUniqueById((seasonsRaw || []).filter(isSeasonPeriod));
         seasons.sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
 
         if (cancelled) return;
@@ -411,9 +422,11 @@ export default function TeamOrganisationDetailPage() {
       setClubTeamsForSwitcherLoading(true);
       try {
         const orgKey = String(org?.slug || resolvedOrgSlug || '').trim();
+        // Fetch all teams for the federation and filter down to the current club.
+        // This avoids relying on `parent_project=...` which can be ignored by some servers.
         const url = orgKey
-          ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgKey)}/projects/?page_size=500&include_archived=true&parent_project=${encodeURIComponent(clubIdForDirectoryLists)}`
-          : `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(clubIdForDirectoryLists)}&page_size=250`;
+          ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgKey)}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`
+          : `${apiBaseUrl}/api/v1/projects/?page_size=2000&include_archived=true`;
 
         const res = await fetch(url, { credentials: 'include' });
         if (!res.ok) throw new Error(`Failed to load club teams (${res.status})`);
@@ -422,14 +435,8 @@ export default function TeamOrganisationDetailPage() {
         const results: any[] = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
         const list = mergeUniqueById(
           (results || []).filter((t: any) => {
-            const parentId =
-              (t as any)?.parent_id ??
-              (t as any)?.parent_project_id ??
-              (t as any)?.parent_project?.id ??
-              (typeof (t as any)?.parent_project === 'object' ? (t as any)?.parent_project?.id : (t as any)?.parent_project) ??
-              null;
-            if (parentId == null) return false;
-            return String(typeof parentId === 'object' ? parentId.id : parentId) === String(clubIdForDirectoryLists);
+            const parentId = getParentProjectId(t);
+            return parentId && parentId === String(clubIdForDirectoryLists);
           }),
         );
 
