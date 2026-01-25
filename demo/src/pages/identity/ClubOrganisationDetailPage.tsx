@@ -349,7 +349,11 @@ export default function ClubOrganisationDetailPage() {
           }),
         );
 
-        const mergedSeasons = mergeUniqueById((seasonsChunks.flat() as any[]).filter(isSeasonPeriod));
+        const mergedSeasons = mergeUniqueById(
+            (seasonsChunks.flat() as any[])
+              // Allow all periods returned by the API (which requested type=season).
+              // Do NOT filter by isSeasonPeriod client-side, in case helper logic is too strict.
+        );
 
         const byTeam: Record<string, Period[]> = {};
         for (const season of mergedSeasons) {

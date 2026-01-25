@@ -621,16 +621,18 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
 
         // No season filter: fetch all org competitions.
         const params = buildParams(undefined);
+
+        // If no season is selected, we MUST relax the check.
+        // Some backends might not return `type=competition` for all items.
+        // But if we use buildParams(undefined), it sets type=competition.
+
         if (teamIdsForOrg && teamIdsForOrg.length > 0) {
           const all = await fetchWithTeamChunks(params, teamIdsForOrg);
-          if (all.length <= 2) {
-            const fallback = await maybeFallbackUntyped(params, teamIdsForOrg);
-            const fallbackUnique = [...new Map(fallback.map((c: any) => [String(c.id), c])).values()];
-            setCompetitions(fallbackUnique as any);
-            return;
-          }
 
-          setCompetitions(all as any);
+          const fallback = await maybeFallbackUntyped(params, teamIdsForOrg);
+          const merged = [...all, ...fallback];
+          const unique = [...new Map(merged.map((c: any) => [String(c.id), c])).values()];
+          setCompetitions(unique as any);
           return;
         }
 
