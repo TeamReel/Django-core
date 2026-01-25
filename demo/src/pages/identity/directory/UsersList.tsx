@@ -860,8 +860,8 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                     <th style={{ ...compactThStyle, width: '10%' }}>Season</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Competition</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Match</th>
-                                                                        <th style={{ ...compactThStyle, width: '12%' }}>User</th>
-                                                                        <th style={{ ...compactThStyle, width: '14%' }}>Email</th>
+                                    <th style={{ ...compactThStyle, width: '12%' }}>Username</th>
+                                    <th style={{ ...compactThStyle, width: '14%' }}>Email</th>
                                     <th style={{ ...compactThStyle, width: '8%' }}>Role</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
                                     <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
@@ -879,7 +879,10 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                     const source = String(u?.membership?.source ?? u?.source ?? '').toLowerCase();
                                     const isDirectMembership = Boolean(membershipId) && isUuid(membershipId) && !source;
 
-                                    const userLabel = `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email;
+                                                                        const usernameLabel =
+                                                                            String((u as any)?.username || '').trim() ||
+                                                                            `${u.first_name || ''} ${u.last_name || ''}`.trim() ||
+                                                                            (String(u.email || '').includes('@') ? String(u.email || '').split('@')[0] : String(u.email || ''));
                                     const roleDisplay = getUserRoleDisplay(u);
 
                                     return (
@@ -926,10 +929,10 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                                     }}
                                                     title="Open user"
                                                 >
-                                                    {userLabel}
+                                                    {usernameLabel}
                                                 </button>
                                             ) : (
-                                                userLabel
+                                                usernameLabel
                                             )}
                                         </td>
                                         <td style={compactTextTdStyle} title={String(u.email || '')}>
@@ -979,7 +982,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                                                 alert('Select a federation first.');
                                                                 return;
                                                             }
-                                                            if (!window.confirm(`Remove ${userLabel} from ${orgName}?`)) return;
+                                                            if (!window.confirm(`Remove ${usernameLabel} from ${orgName}?`)) return;
 
                                                             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
                                                             const csrfToken = getCsrfToken();
