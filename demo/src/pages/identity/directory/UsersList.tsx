@@ -82,11 +82,16 @@ const badgeButtonStyle: React.CSSProperties = {
     alignItems: 'center',
 };
 
+const badgeNoBorderStyle: React.CSSProperties = {
+    border: 'none',
+};
+
 interface UsersListProps {
   preselectedOrgId?: string;
+    preselectedClubId?: string;
 }
 
-export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
+export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselectedClubId }) => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { context, organisations: myOrganisations } = useContextSwitcher();
@@ -110,7 +115,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
 
     // Filter State
     const [selectedOrgId, setSelectedOrgId] = useState<string>('');
-    const [selectedClubId, setSelectedClubId] = useState<string>(''); // For filtering logic
+    const [selectedClubId, setSelectedClubId] = useState<string>(preselectedClubId || ''); // For filtering logic
     const [selectedTeamId, setSelectedTeamId] = useState<string>(''); // For filtering logic
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [roleFilter, setRoleFilter] = useState<string>('');
@@ -127,6 +132,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
     const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
 
     const orgLocked = Boolean(preselectedOrgId);
+    const clubLocked = Boolean(preselectedClubId);
 
     const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
 
@@ -165,6 +171,12 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
         }
 
     }, [preselectedOrgId, context.organisation?.id, isSuperAdmin, searchParams]);
+
+    useEffect(() => {
+        if (preselectedClubId) {
+            setSelectedClubId(String(preselectedClubId));
+        }
+    }, [preselectedClubId]);
 
     // Fetch Orgs (SuperAdmin)
     useEffect(() => {
@@ -817,7 +829,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                         onChange={(e) => {
                             const next = e.target.value;
                             setSelectedOrgId(next);
-                            setSelectedClubId('');
+                            if (!clubLocked) setSelectedClubId('');
                             setSelectedTeamId('');
 
                             if (next) {
@@ -844,9 +856,11 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                 <select
                     value={selectedClubId}
                     onChange={(e) => {
+                        if (clubLocked) return;
                         setSelectedClubId(e.target.value);
                         setSelectedTeamId('');
                     }}
+                    disabled={clubLocked}
                     style={{
                         padding: '8px 12px',
                         border: '1px solid var(--app-border)',
@@ -855,7 +869,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                         backgroundColor: 'var(--app-surface)',
                     }}
                 >
-                    <option value="">Club: All</option>
+                    {!clubLocked && <option value="">Club: All</option>}
                     {clubs
                                                                                         .sort((a, b) => String(a.name).localeCompare(String(b.name)))
                       .map(c => (
@@ -929,7 +943,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                          variant="secondary"
                          size="md"
                          onClick={() => {
-                             setSelectedClubId('');
+                             if (!clubLocked) setSelectedClubId('');
                              setSelectedTeamId('');
                              setStatusFilter('all');
                              setRoleFilter('');
@@ -979,7 +993,9 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                     {!orgLocked && (
                                       <th style={{ ...compactThStyle, width: '14%' }}>Federation</th>
                                     )}
-                                    <th style={{ ...compactThStyle, width: '14%' }}>Club</th>
+                                                                        {!clubLocked && (
+                                                                            <th style={{ ...compactThStyle, width: '14%' }}>Club</th>
+                                                                        )}
                                     <th style={{ ...compactThStyle, width: '14%' }}>Team</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Season</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Competition</th>
@@ -1023,15 +1039,17 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                               )}
                                           </td>
                                         )}
-                                        <td style={compactTextTdStyle} title={scoped.club.title}>
-                                            {clubHref && scoped.club.label !== '-' ? (
-                                                <button style={linkButtonStyle} onClick={() => navigate(clubHref)}>
-                                                    {scoped.club.label}
-                                                </button>
-                                            ) : (
-                                                scoped.club.label
-                                            )}
-                                        </td>
+                                        {!clubLocked && (
+                                          <td style={compactTextTdStyle} title={scoped.club.title}>
+                                              {clubHref && scoped.club.label !== '-' ? (
+                                                  <button style={linkButtonStyle} onClick={() => navigate(clubHref)}>
+                                                      {scoped.club.label}
+                                                  </button>
+                                              ) : (
+                                                  scoped.club.label
+                                              )}
+                                          </td>
+                                        )}
                                         <td style={compactTextTdStyle} title={scoped.team.title}>
                                             {teamHref && scoped.team.label !== '-' ? (
                                                 <button style={linkButtonStyle} onClick={() => navigate(teamHref)}>
@@ -1051,7 +1069,9 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                                     if (href) navigate(href);
                                                 }}
                                             >
-                                                <Badge variant="default">{counts.seasonsCount}</Badge>
+                                                <Badge variant="default" style={orgLocked ? badgeNoBorderStyle : undefined}>
+                                                    {counts.seasonsCount}
+                                                </Badge>
                                             </button>
                                         </td>
                                         <td style={compactTdStyle}>
@@ -1064,7 +1084,9 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                                     if (href) navigate(href);
                                                 }}
                                             >
-                                                <Badge variant="default">{counts.competitionsCount}</Badge>
+                                                <Badge variant="default" style={orgLocked ? badgeNoBorderStyle : undefined}>
+                                                    {counts.competitionsCount}
+                                                </Badge>
                                             </button>
                                         </td>
                                         <td style={compactTdStyle}>
@@ -1077,7 +1099,9 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                                     if (href) navigate(href);
                                                 }}
                                             >
-                                                <Badge variant="default">{counts.matchesCount}</Badge>
+                                                <Badge variant="default" style={orgLocked ? badgeNoBorderStyle : undefined}>
+                                                    {counts.matchesCount}
+                                                </Badge>
                                             </button>
                                         </td>
                                         <td style={compactTextTdStyle} className="font-medium">
@@ -1100,10 +1124,12 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId }) => {
                                             {u.email}
                                         </td>
                                         <td style={compactTdStyle} title={roleDisplay.title}>
-                                            <Badge variant="default">{roleDisplay.label}</Badge>
+                                            <Badge variant="default" style={orgLocked ? badgeNoBorderStyle : undefined}>
+                                                {roleDisplay.label}
+                                            </Badge>
                                         </td>
                                         <td style={compactTdStyle}>
-                                            <Badge variant={u.is_active ? 'success' : 'warning'}>
+                                            <Badge variant={u.is_active ? 'success' : 'warning'} style={orgLocked ? badgeNoBorderStyle : undefined}>
                                                 {u.is_active ? 'Active' : 'Inactive'}
                                             </Badge>
                                         </td>

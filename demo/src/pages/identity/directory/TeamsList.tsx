@@ -22,9 +22,10 @@ import {
 
 interface TeamsListProps {
   preselectedOrgId?: string;
+  preselectedClubId?: string;
 }
 
-export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
+export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselectedClubId }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -50,8 +51,9 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const orgLocked = Boolean(preselectedOrgId);
+  const clubLocked = Boolean(preselectedClubId);
   const [selectedOrgId, setSelectedOrgId] = useState<string>(preselectedOrgId || '');
-  const [selectedClubId, setSelectedClubId] = useState<string>('');
+  const [selectedClubId, setSelectedClubId] = useState<string>(preselectedClubId || '');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -60,6 +62,12 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
       setSelectedOrgId(preselectedOrgId);
     }
   }, [preselectedOrgId]);
+
+  useEffect(() => {
+    if (preselectedClubId) {
+      setSelectedClubId(preselectedClubId);
+    }
+  }, [preselectedClubId]);
 
   const permissionContext = useMemo(
     () => ({
@@ -92,9 +100,9 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
     const teamId = searchParams.get('team_id');
 
     if (!orgLocked && orgId && isSuperAdmin) setSelectedOrgId(String(orgId));
-    if (clubId) setSelectedClubId(String(clubId));
+    if (!clubLocked && clubId) setSelectedClubId(String(clubId));
     if (teamId) setSelectedTeamId(String(teamId));
-  }, [isSuperAdmin, searchParams, orgLocked]);
+  }, [isSuperAdmin, searchParams, orgLocked, clubLocked]);
 
   useEffect(() => {
     if (!isSuperAdmin) {
@@ -257,7 +265,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
             value={selectedOrgId}
             onChange={(e) => {
               setSelectedOrgId(e.target.value);
-              setSelectedClubId('');
+              if (!clubLocked) setSelectedClubId('');
               setSelectedTeamId('');
             }}
             style={{
@@ -279,9 +287,11 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
         <select
           value={selectedClubId}
           onChange={(e) => {
+            if (clubLocked) return;
             setSelectedClubId(e.target.value);
             setSelectedTeamId('');
           }}
+          disabled={clubLocked}
           style={{
             padding: '8px 12px',
             border: '1px solid var(--app-border)',
@@ -290,7 +300,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
             backgroundColor: 'var(--app-surface)',
           }}
         >
-          <option value="">Club: All</option>
+          {!clubLocked && <option value="">Club: All</option>}
           {clubs
             .filter((c) => {
               if (!selectedOrgId) return true;
@@ -325,7 +335,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
             size="md"
             onClick={() => {
               setStatusFilter('all');
-              setSelectedClubId('');
+              if (!clubLocked) setSelectedClubId('');
               setSelectedTeamId('');
               if (isSuperAdmin) setSelectedOrgId('');
             }}
@@ -362,7 +372,9 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
                       {!orgLocked && (
                         <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
                       )}
-                      <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
+                      {!clubLocked && (
+                        <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
+                      )}
                       <th style={{ ...compactThStyle, width: '18%' }}>Team</th>
                       <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
                       <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
@@ -421,22 +433,24 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId }) => {
                           </td>
                         )}
 
-                        <td style={compactTextTdStyle}>
-                          {orgSlugOrId && clubSlugOrId ? (
-                            <a
-                              href={`/${orgSlugOrId}/${clubSlugOrId}`}
-                              className="text-blue-600 hover:underline"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                navigate(`/${orgSlugOrId}/${clubSlugOrId}`);
-                              }}
-                            >
-                              {clubName}
-                            </a>
-                          ) : (
-                            clubName
-                          )}
-                        </td>
+                        {!clubLocked && (
+                          <td style={compactTextTdStyle}>
+                            {orgSlugOrId && clubSlugOrId ? (
+                              <a
+                                href={`/${orgSlugOrId}/${clubSlugOrId}`}
+                                className="text-blue-600 hover:underline"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  navigate(`/${orgSlugOrId}/${clubSlugOrId}`);
+                                }}
+                              >
+                                {clubName}
+                              </a>
+                            ) : (
+                              clubName
+                            )}
+                          </td>
+                        )}
 
                         <td style={compactTextTdStyle}>
                           {orgSlugOrId && clubSlugOrId ? (

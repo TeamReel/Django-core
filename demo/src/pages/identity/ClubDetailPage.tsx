@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
-import ProjectDetailPage from './ProjectDetailPage';
+import ClubOrganisationDetailPage from './ClubOrganisationDetailPage';
 
 type Project = {
   id: string;
@@ -80,6 +80,6 @@ export default function ClubDetailPage() {
     return <Navigate to={`/${orgSlugOrId}/${resolvedClubSlug}${location.search || ''}`} replace />;
   }
 
-  // Wrapper so Club vs Team detail can diverge safely over time.
-  return <ProjectDetailPage forceMode="club" />;
+  // Organisation-style club view (mirrors federation page layout).
+  return <ClubOrganisationDetailPage />;
 }

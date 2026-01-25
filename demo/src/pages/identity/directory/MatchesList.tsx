@@ -48,9 +48,10 @@ const chunkArray = <T,>(items: T[], chunkSize: number): T[][] => {
 
 interface MatchesListProps {
   preselectedOrgId?: string;
+  preselectedClubId?: string;
 }
 
-export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) => {
+export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, preselectedClubId }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -60,6 +61,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
   const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
 
   const orgLocked = Boolean(preselectedOrgId);
+  const clubLocked = Boolean(preselectedClubId);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +77,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
   const [selectedOrgId, setSelectedOrgId] = useState<string>(() =>
     preselectedOrgId ? String(preselectedOrgId) : '',
   );
-  const [selectedClubId, setSelectedClubId] = useState<string>('');
+  const [selectedClubId, setSelectedClubId] = useState<string>(preselectedClubId ? String(preselectedClubId) : '');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedSeasonName, setSelectedSeasonName] = useState<string>('');
   const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>('');
@@ -153,6 +155,12 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
     };
   }, [orgLocked, preselectedOrgId, organisations]);
 
+  useEffect(() => {
+    if (preselectedClubId) {
+      setSelectedClubId(String(preselectedClubId));
+    }
+  }, [preselectedClubId]);
+
   const getSelectedOrgSlugForApi = () => {
     const selectedOrg = selectedOrgId
       ? organisations.find((o) => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
@@ -206,7 +214,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
     if (preselectedOrgId) {
       const clubId = searchParams.get('club_id');
       const teamId = searchParams.get('team_id');
-      if (clubId) setSelectedClubId(String(clubId));
+      if (!clubLocked && clubId) setSelectedClubId(String(clubId));
       if (teamId) setSelectedTeamId(String(teamId));
       return;
     }
@@ -216,9 +224,9 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
     const teamId = searchParams.get('team_id');
 
     if (orgId && isSuperAdmin) setSelectedOrgId(String(orgId));
-    if (clubId) setSelectedClubId(String(clubId));
+    if (!clubLocked && clubId) setSelectedClubId(String(clubId));
     if (teamId) setSelectedTeamId(String(teamId));
-  }, [isSuperAdmin, searchParams]);
+  }, [isSuperAdmin, searchParams, preselectedOrgId, clubLocked]);
 
   const getTeamParentId = (t: any): string | null => {
     const parent =
@@ -700,7 +708,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
             value={selectedOrgId}
             onChange={(e) => {
               setSelectedOrgId(e.target.value);
-              setSelectedClubId('');
+              if (!clubLocked) setSelectedClubId('');
               setSelectedTeamId('');
               setSelectedSeasonName('');
               setSelectedCompetitionId('');
@@ -724,11 +732,13 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
         <select
           value={selectedClubId}
           onChange={(e) => {
+            if (clubLocked) return;
             setSelectedClubId(e.target.value);
             setSelectedTeamId('');
             setSelectedSeasonName('');
             setSelectedCompetitionId('');
           }}
+          disabled={clubLocked}
           style={{
             padding: '8px 12px',
             border: '1px solid var(--app-border)',
@@ -737,7 +747,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
             backgroundColor: 'var(--app-surface)',
           }}
         >
-          <option value="">Club: All</option>
+          {!clubLocked && <option value="">Club: All</option>}
           {clubs
             .filter((c) => {
               if (!selectedOrgId) return true;
@@ -872,7 +882,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
             variant="secondary"
             size="md"
             onClick={() => {
-              setSelectedClubId('');
+              if (!clubLocked) setSelectedClubId('');
               setSelectedTeamId('');
               setSelectedSeasonName('');
               setSelectedCompetitionId('');
@@ -914,7 +924,9 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
                     {!orgLocked && (
                       <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
                     )}
-                    <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
+                    {!clubLocked && (
+                      <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
+                    )}
                     <th style={{ ...compactThStyle, width: '15%' }}>Team</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Season</th>
                     <th style={{ ...compactThStyle, width: 'auto' }}>Competition</th>
@@ -981,20 +993,22 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
                             ) : orgName}
                           </td>
                         )}
-                        <td style={compactTextTdStyle}>
+                        {!clubLocked && (
+                          <td style={compactTextTdStyle}>
                             {clubId ? (
-                                <a
+                              <a
                             href={`/organisations/${orgTarget}/projects/${clubTarget}`}
-                                className="text-blue-600 hover:underline"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                              navigate(`/organisations/${orgTarget}/projects/${clubTarget}`);
-                                }}
-                                >
-                                {clubName}
-                                </a>
+                              className="text-blue-600 hover:underline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                            navigate(`/organisations/${orgTarget}/projects/${clubTarget}`);
+                              }}
+                              >
+                              {clubName}
+                              </a>
                             ) : clubName}
-                        </td>
+                          </td>
+                        )}
                          <td style={compactTextTdStyle}>
                             {teamId ? (
                                 <a

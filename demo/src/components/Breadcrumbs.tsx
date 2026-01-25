@@ -364,7 +364,7 @@ export default function Breadcrumbs() {
 
         const handleTeamSwitch = (option: BreadcrumbSwitcherOption) => {
           const next = String(option.slug || option.id);
-          navigate(`/${orgSlug}/${clubSlugOrId}/${next}`);
+            navigate(`/${orgSlug}/${clubSlugOrId}/${next}${location.search || ''}`);
         };
 
         items.push({
@@ -436,7 +436,7 @@ export default function Breadcrumbs() {
       }
       const handleClubSwitch = (option: BreadcrumbSwitcherOption) => {
         const next = String(option.slug || option.id);
-        navigate(`/${orgSlug}/${next}`);
+        navigate(`/${orgSlug}/${next}${location.search || ''}`);
       };
       items.push({
         label: (
