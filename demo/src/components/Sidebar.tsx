@@ -154,6 +154,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             matchPath({ path: '/organisations/:orgId/projects/:projectId/seasons/:seasonId', end: true }, path) ||
             matchPath({ path: '/:orgId/projects/:projectId/seasons/:seasonId', end: true }, path);
 
+        // Canonical TeamReel hierarchy season routes (no /projects/.../seasons segments)
+        const seasonDetailVanityTeamMatch =
+            matchPath({ path: '/organisations/:orgId/:clubId/:projectId/:seasonId', end: true }, path) ||
+            matchPath({ path: '/:orgId/:clubId/:projectId/:seasonId', end: true }, path);
+
         const orgDetailMatch =
             matchPath({ path: '/organisations/:id', end: true }, path) ||
             matchPath({ path: '/organisations/:orgId', end: true }, path) ||
@@ -282,6 +287,24 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 const baseUrl = path.startsWith('/organisations/')
                   ? `/organisations/${orgId}/projects/${clubId}/teams/${projectId}/seasons/${seasonId}`
                   : `/${orgId}/projects/${clubId}/teams/${projectId}/seasons/${seasonId}`;
+
+                title = 'Season';
+                items = [
+                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
+                    { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
+                    { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
+                    { label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users },
+                    { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                ];
+                break;
+            }
+
+            if (seasonDetailVanityTeamMatch?.params?.orgId && seasonDetailVanityTeamMatch?.params?.clubId && seasonDetailVanityTeamMatch?.params?.projectId && seasonDetailVanityTeamMatch?.params?.seasonId) {
+                const { orgId, clubId, projectId, seasonId } = seasonDetailVanityTeamMatch.params as any;
+                const baseUrl = path.startsWith('/organisations/')
+                  ? `/organisations/${orgId}/${clubId}/${projectId}/${seasonId}`
+                  : `/${orgId}/${clubId}/${projectId}/${seasonId}`;
 
                 title = 'Season';
                 items = [

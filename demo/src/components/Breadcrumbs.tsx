@@ -3,6 +3,28 @@ import { Link, useLocation, useNavigate, matchPath } from 'react-router-dom';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { BreadcrumbContextSwitcher, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
+import { fetchAllPages } from '../utils/fetchAllPages';
+import { periodPathKey } from '../utils/periodPath';
+
+const getPeriodType = (p: any): string => {
+  const t = p?.type ?? p?.data?.type ?? p?.metadata?.type;
+  return String(t || '').toLowerCase();
+};
+
+const getPeriodParentId = (p: any): string => {
+  const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
+  return parentId ? String(parentId) : '';
+};
+
+const isSeasonPeriod = (p: any): boolean => {
+  const parentId = getPeriodParentId(p);
+  if (parentId) return false;
+
+  const type = getPeriodType(p);
+  if (type === 'season') return true;
+  if (['competition', 'league', 'cup', 'friendly', 'tournament', 'round'].includes(type)) return false;
+  return true;
+};
 
 export default function Breadcrumbs() {
   const location = useLocation();
@@ -38,6 +60,17 @@ export default function Breadcrumbs() {
 
   const isClubDetail = Boolean(clubDetailMatch && !teamDetailMatch);
   const isTeamDetail = Boolean(teamDetailMatch);
+
+  const isOrgLevelRoute = Boolean(orgDetailMatch && !isClubDetail && !isTeamDetail);
+  const effectiveClubSlugOrId = isOrgLevelRoute ? '' : clubSlugOrId;
+  const effectiveClubName = isOrgLevelRoute ? '' : clubName;
+  const effectiveTeamSlugOrId = isOrgLevelRoute ? '' : teamSlugOrId;
+  const effectiveTeamName = isOrgLevelRoute ? '' : teamName;
+  const effectiveSeasonSlugOrId = isOrgLevelRoute ? '' : seasonSlugOrId;
+  const effectiveSeasonName = isOrgLevelRoute ? '' : seasonName;
+  const effectiveCompetitionSlugOrId = isOrgLevelRoute ? '' : competitionSlugOrId;
+  const effectiveCompetitionName = isOrgLevelRoute ? '' : competitionName;
+  const effectiveMatchId = isOrgLevelRoute ? '' : matchId;
 
   const orgSubpage = useMemo(() => {
     const orgId = String((orgSubpageMatch?.params as any)?.orgId || '').trim();
@@ -98,6 +131,9 @@ export default function Breadcrumbs() {
   const [clubOptions, setClubOptions] = useState<BreadcrumbSwitcherOption[]>([]);
   const [teamOptions, setTeamOptions] = useState<BreadcrumbSwitcherOption[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
+
+  const [seasonOptions, setSeasonOptions] = useState<BreadcrumbSwitcherOption[]>([]);
+  const [loadingSeasons, setLoadingSeasons] = useState(false);
 
   // For club/team detail pages: fetch switcher options (clubs under org; teams under club)
   useEffect(() => {
@@ -188,6 +224,62 @@ export default function Breadcrumbs() {
     fetchTeams();
   }, [isTeamDetail, orgSlug, clubSlugOrId, clubOptions]);
 
+  // Season breadcrumb switcher (for season detail routes)
+  useEffect(() => {
+    const effectiveOrg = String(orgSlug || '').trim();
+    const effectiveTeam = String(effectiveTeamSlugOrId || '').trim();
+    const effectiveSeason = String(effectiveSeasonSlugOrId || '').trim();
+
+    if (!effectiveOrg || !effectiveTeam || !effectiveSeason) {
+      setSeasonOptions([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    const run = async () => {
+      setLoadingSeasons(true);
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+        const projectRes = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/${encodeURIComponent(effectiveTeam)}/`,
+          { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' }
+        );
+        if (!projectRes.ok) return;
+        const rawProject: any = await projectRes.json();
+        const projectJson: any = rawProject?.data || rawProject;
+        const projectId = String(projectJson?.id || '').trim();
+        if (!projectId) return;
+
+        const rootPeriodsUrl = `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(projectId)}&parent_id=null&page_size=500`;
+        const rootPeriods = await fetchAllPages<any>(
+          rootPeriodsUrl,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: `periods:root:breadcrumb:${projectId}` }
+        );
+
+        const seasons = (rootPeriods || []).filter(isSeasonPeriod);
+        const opts: BreadcrumbSwitcherOption[] = (seasons || []).map((p: any) => ({
+          id: String(p.id),
+          label: String(p.name || p.slug || p.id),
+          slug: periodPathKey(p) || String(p.id),
+        }));
+
+        if (!cancelled) setSeasonOptions(opts);
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoadingSeasons(false);
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [orgSlug, effectiveTeamSlugOrId, effectiveSeasonSlugOrId]);
+
   // Build the context chain
   const items: Array<{ label: React.ReactNode; path: string; isLeaf?: boolean }> = [];
 
@@ -274,17 +366,6 @@ export default function Breadcrumbs() {
       </nav>
     );
   }
-
-  const isOrgLevelRoute = Boolean(orgDetailMatch && !isClubDetail && !isTeamDetail);
-  const effectiveClubSlugOrId = isOrgLevelRoute ? '' : clubSlugOrId;
-  const effectiveClubName = isOrgLevelRoute ? '' : clubName;
-  const effectiveTeamSlugOrId = isOrgLevelRoute ? '' : teamSlugOrId;
-  const effectiveTeamName = isOrgLevelRoute ? '' : teamName;
-  const effectiveSeasonSlugOrId = isOrgLevelRoute ? '' : seasonSlugOrId;
-  const effectiveSeasonName = isOrgLevelRoute ? '' : seasonName;
-  const effectiveCompetitionSlugOrId = isOrgLevelRoute ? '' : competitionSlugOrId;
-  const effectiveCompetitionName = isOrgLevelRoute ? '' : competitionName;
-  const effectiveMatchId = isOrgLevelRoute ? '' : matchId;
 
   if (isOrgDetail) {
     const options: BreadcrumbSwitcherOption[] = (organisations || []).map((o: any) => ({
@@ -537,9 +618,43 @@ export default function Breadcrumbs() {
 
   // Level 3: Season
   if (effectiveSeasonSlugOrId) {
+    const seasonPath = isOrganisationsRoute
+      ? `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${effectiveSeasonSlugOrId}`
+      : `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}`;
+
+    const currentSeasonKey = String(effectiveSeasonSlugOrId || '').trim();
+    const options = [...seasonOptions];
+    if (currentSeasonKey && !options.some((o) => String(o.slug || o.id) === currentSeasonKey)) {
+      options.push({ id: currentSeasonKey, slug: currentSeasonKey, label: effectiveSeasonName || currentSeasonKey });
+    }
+
+    const handleSeasonSwitch = (option: BreadcrumbSwitcherOption) => {
+      const next = String(option.slug || option.id);
+      const nextPath = isOrganisationsRoute
+        ? `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${next}`
+        : `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${next}`;
+      navigate(`${nextPath}${location.search || ''}`);
+    };
+
+    const shouldRenderSwitcher =
+      Boolean(currentSeasonKey) &&
+      !effectiveCompetitionSlugOrId &&
+      !effectiveMatchId;
+
     items.push({
-        label: effectiveSeasonName || effectiveSeasonSlugOrId,
-        path: `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}`
+      label: shouldRenderSwitcher ? (
+        <BreadcrumbContextSwitcher
+          currentId={currentSeasonKey}
+          options={options}
+          onSelect={handleSeasonSwitch}
+          hasDropdown={!loadingSeasons && options.length > 1}
+          type="project"
+          current
+        />
+      ) : (
+        effectiveSeasonName || currentSeasonKey
+      ),
+      path: seasonPath,
     });
   }
 

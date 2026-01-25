@@ -265,62 +265,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     navigate(`${seasonsBasePath}/${seasonKeyOrId}?tab=${encodeURIComponent(tabId)}`);
   };
 
-  const SeasonTabsPanel = (
-    <Card>
-      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 10 }}>Tabs</div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <Button
-          variant={activeTab === 'overview' ? 'primary' : 'secondary'}
-          size="sm"
-          style={{ width: '100%', justifyContent: 'flex-start' }}
-          onClick={() => navigateToTab('overview')}
-        >
-          Overview
-        </Button>
-        <Button
-          variant={activeTab === 'hierarchy' ? 'primary' : 'secondary'}
-          size="sm"
-          style={{ width: '100%', justifyContent: 'flex-start' }}
-          onClick={() => navigateToTab('hierarchy')}
-        >
-          Hierarchy
-        </Button>
-        <Button
-          variant={activeTab === 'competitions' ? 'primary' : 'secondary'}
-          size="sm"
-          style={{ width: '100%', justifyContent: 'flex-start' }}
-          onClick={() => navigateToTab('competitions')}
-        >
-          Competitions
-        </Button>
-        <Button
-          variant={activeTab === 'matches' ? 'primary' : 'secondary'}
-          size="sm"
-          style={{ width: '100%', justifyContent: 'flex-start' }}
-          onClick={() => navigateToTab('matches')}
-        >
-          Matches
-        </Button>
-        <Button
-          variant={activeTab === 'squad' ? 'primary' : 'secondary'}
-          size="sm"
-          style={{ width: '100%', justifyContent: 'flex-start' }}
-          onClick={() => navigateToTab('squad')}
-        >
-          Squad
-        </Button>
-        <Button
-          variant={activeTab === 'transactions' ? 'primary' : 'secondary'}
-          size="sm"
-          style={{ width: '100%', justifyContent: 'flex-start' }}
-          onClick={() => navigateToTab('transactions')}
-        >
-          Transactions
-        </Button>
-      </div>
-    </Card>
-  );
-
   const handleSeasonSwitch = (option: BreadcrumbSwitcherOption) => {
     const suffix = location.search ? location.search : '';
     navigate(`${seasonsBasePath}/${option.slug || option.id}${suffix}`);
@@ -1315,7 +1259,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                     {/* Right Column: Quick Actions */}
                     <div className="space-y-6">
-                      {SeasonTabsPanel}
                       <Card>
                         <h3 className="text-lg font-semibold mb-3">Quick Actions</h3>
                         <div className="space-y-2">
@@ -1352,7 +1295,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
               {activeTab === 'hierarchy' && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
+                  <div className="lg:col-span-3">
                     <Card>
                   <div
                     style={{
@@ -1521,13 +1464,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   )}
                     </Card>
                   </div>
-                  <div className="space-y-6">{SeasonTabsPanel}</div>
                 </div>
               )}
 
               {activeTab === 'squad' && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
+                  <div className="lg:col-span-3">
                     <Card>
                   <div style={{ padding: '16px 16px 0 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
@@ -1903,13 +1845,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   </div>
                     </Card>
                   </div>
-                  <div className="space-y-6">{SeasonTabsPanel}</div>
                 </div>
               )}
 
               {activeTab === 'competitions' && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
+                  <div className="lg:col-span-3">
                     <Card>
                   <div style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
@@ -2036,13 +1977,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   </div>
                     </Card>
                   </div>
-                  <div className="space-y-6">{SeasonTabsPanel}</div>
                 </div>
               )}
 
               {activeTab === 'matches' && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
+                  <div className="lg:col-span-3">
                     <Card>
                   <div style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
@@ -2190,7 +2130,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   </div>
                     </Card>
                   </div>
-                  <div className="space-y-6">{SeasonTabsPanel}</div>
                 </div>
               )}
 
@@ -2199,7 +2138,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
           {activeTab === 'transactions' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-3">
                 <div style={{ display: 'grid', gap: '12px' }}>
                   <TransactionsPanel
                     title="Transactions"
@@ -2212,7 +2151,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   />
                 </div>
               </div>
-              <div className="space-y-6">{SeasonTabsPanel}</div>
             </div>
           )}
         </PageContent>
