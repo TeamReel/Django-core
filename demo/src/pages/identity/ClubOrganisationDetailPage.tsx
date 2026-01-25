@@ -732,41 +732,6 @@ export default function ClubOrganisationDetailPage() {
 
   // If we're still on a numeric/UUID route, the redirect useEffect will replace the URL.
 
-  const tabButtons: Array<{ id: string; label: string }> = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'hierarchy', label: 'Hierarchy' },
-    { id: 'teams', label: 'Teams' },
-    { id: 'seasons', label: 'Seasons' },
-    { id: 'competitions', label: 'Competitions' },
-    { id: 'matches', label: 'Matches' },
-    { id: 'members', label: 'Members' },
-    { id: 'balance', label: 'Balance' },
-    { id: 'transactions', label: 'Transactions' },
-  ];
-
-  const renderTabButton = (id: string, label: string) => {
-    const isActive = activeTabFromUrl === id;
-    return (
-      <button
-        key={id}
-        type="button"
-        onClick={() => navigate(makeTabHref(id))}
-        style={{
-          padding: '8px 12px',
-          borderRadius: '8px',
-          border: `1px solid ${isActive ? 'var(--app-border)' : 'transparent'}`,
-          backgroundColor: isActive ? 'var(--app-surface-2)' : 'transparent',
-          color: 'var(--app-text)',
-          cursor: 'pointer',
-          fontWeight: isActive ? 700 : 600,
-          fontSize: '13px',
-        }}
-      >
-        {label}
-      </button>
-    );
-  };
-
   return (
     <>
       <div className="club-detail-page">
@@ -799,27 +764,24 @@ export default function ClubOrganisationDetailPage() {
         />
 
         <PageContent>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
-            {tabButtons.map((t) => renderTabButton(t.id, t.label))}
-          </div>
-
           {activeTabFromUrl === 'overview' && (
             <div className="space-y-6">
+              {/* Top Stats Row */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card style={{ padding: 16, cursor: 'pointer' }} onClick={() => navigate(makeTabHref('teams'))}>
+                <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('teams'))}>
                   <div className="text-sm font-medium text-gray-500">Teams</div>
                   <div className="text-2xl font-bold mt-1">—</div>
                 </Card>
-                <Card style={{ padding: 16, cursor: 'pointer' }} onClick={() => navigate(makeTabHref('seasons'))}>
+                <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('seasons'))}>
                   <div className="text-sm font-medium text-gray-500">Seasons</div>
                   <div className="text-2xl font-bold mt-1">—</div>
                 </Card>
-                <Card style={{ padding: 16, cursor: 'pointer' }} onClick={() => navigate(makeTabHref('members'))}>
+                <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('members'))}>
                   <div className="text-sm font-medium text-gray-500">Members</div>
                   <div className="text-2xl font-bold mt-1">—</div>
                 </Card>
-                <Card style={{ padding: 16, cursor: 'pointer' }} onClick={() => navigate(makeTabHref('matches'))}>
-                  <div className="text-sm font-medium text-gray-500">Matches</div>
+                <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('matches'))}>
+                  <div className="text-sm font-medium text-gray-500">Active Matches</div>
                   <div className="text-2xl font-bold mt-1">—</div>
                 </Card>
               </div>
@@ -836,6 +798,10 @@ export default function ClubOrganisationDetailPage() {
                   <div>
                     <div className="text-sm font-medium text-gray-500">Federation</div>
                     <div className="text-base text-gray-900 mt-1">{org?.name || '—'}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-500">Slug</div>
+                    <div className="text-base text-gray-900 mt-1">{String((club as any)?.slug || '—')}</div>
                   </div>
                 </div>
               </Card>
