@@ -156,18 +156,18 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
       return;
     }
 
-    // Fallback: fetch org detail by UUID to get slug.
+    // Fallback: resolve UUID -> slug via organisations list (detail lookup_field is slug).
     let cancelled = false;
     const loadSlug = async () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(rawLockedId)}/`, {
-          credentials: 'include',
-        });
+        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=250`, { credentials: 'include' });
         if (!res.ok) return;
         const raw: any = await res.json().catch(() => null);
         const data: any = raw?.data ?? raw;
-        const slug = String(data?.slug || '').trim();
+        const list: any[] = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+        const match = list.find((o: any) => String(o?.id || '') === String(rawLockedId));
+        const slug = String(match?.slug || '').trim();
         if (!cancelled && slug) setLockedOrgSlug(slug);
       } catch {
         // ignore

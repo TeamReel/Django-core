@@ -363,12 +363,30 @@ export function useAppSelection() {
           const orgFromQuery = orgFromQueryRaw;
           const orgFromLast = String(last?.orgSlug || '').trim();
 
-        const orgSlug =
+        let orgSlug =
           (orgFromPathStr && !isNumericId(orgFromPathStr) && !isUuid(orgFromPathStr))
             ? orgFromPathStr
-              : (orgFromQuery || ctxOrgSlugStr || orgFromPathStr || ctxOrgIdStr || orgFromLast || '');
+            : (orgFromQuery || ctxOrgSlugStr || orgFromLast || '');
 
-          if (!orgSlug) return;
+        if (!orgSlug) return;
+
+        // If we somehow have an org UUID (e.g. from stale links), resolve UUID -> slug.
+        // Organisation API lookup_field is `slug`, so using UUID will 404.
+        if (isUuid(orgSlug) || isNumericId(orgSlug)) {
+          try {
+            const orgs = await fetchAllPages<any>(
+              `${apiBaseUrl}/api/v1/organisations/?page_size=250`,
+              { credentials: 'include' },
+              { ttlMs: 120_000 },
+            );
+            const match = (orgs || []).find((o: any) => String(o?.id || '') === String(orgSlug));
+            const resolved = String(match?.slug || '').trim();
+            if (!resolved) return;
+            orgSlug = resolved;
+          } catch {
+            return;
+          }
+        }
 
         // Determine target slugs from URL if present
         const urlClubSlug = parsedPath && 'clubSlugOrId' in parsedPath ? (parsedPath as any).clubSlugOrId : null;

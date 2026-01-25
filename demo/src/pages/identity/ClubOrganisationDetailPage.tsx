@@ -56,6 +56,16 @@ export default function ClubOrganisationDetailPage() {
   const orgSlugOrId = String(orgId || '').trim();
   const clubSlugOrId = String(projectId || '').trim();
 
+  // API lookup for organisations uses slug (not UUID). If we land on a UUID URL,
+  // resolve it via the organisations list (which contains both id + slug).
+  const [resolvedOrgSlug, setResolvedOrgSlug] = useState<string>('');
+  const effectiveOrgSlug = useMemo(() => {
+    const explicit = String(resolvedOrgSlug || '').trim();
+    if (explicit) return explicit;
+    const raw = String(orgSlugOrId || '').trim();
+    return looksLikeIdentifier(raw) ? '' : raw;
+  }, [orgSlugOrId, resolvedOrgSlug]);
+
   const [org, setOrg] = useState<Organisation | null>(null);
   const [club, setClub] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -100,12 +110,27 @@ export default function ClubOrganisationDetailPage() {
           throw new Error('Missing organisation or club identifier.');
         }
 
+        if (!effectiveOrgSlug) {
+          // Resolve UUID -> slug.
+          const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=250`, { credentials: 'include' });
+          if (!res.ok) throw new Error(`Failed to resolve organisation (${res.status})`);
+          const json = await res.json().catch(() => null);
+          const raw = unwrapEnvelope<any>(json);
+          const list: any[] = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
+          const match = list.find((o: any) => String(o?.id || '') === String(orgSlugOrId));
+          const slug = String(match?.slug || '').trim();
+          if (!slug) throw new Error('Organisation not found');
+          if (cancelled) return;
+          setResolvedOrgSlug(slug);
+          return;
+        }
+
         const [orgRes, clubRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/`, {
+          fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrgSlug)}/`, {
             credentials: 'include',
           }),
           fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
+            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
             { credentials: 'include' },
           ),
         ]);
@@ -136,19 +161,28 @@ export default function ClubOrganisationDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [apiBaseUrl, orgSlugOrId, clubSlugOrId]);
+  }, [apiBaseUrl, orgSlugOrId, clubSlugOrId, effectiveOrgSlug]);
 
   const orgIdForDirectoryLists = useMemo(() => {
     const id = String(org?.id || '').trim();
     return id;
   }, [org?.id]);
 
+  // Directory lists (and most API routes) must use org slug.
+  const orgSlugForDirectoryLists = useMemo(() => {
+    const slug = String(org?.slug || resolvedOrgSlug || '').trim();
+    return slug;
+  }, [org?.slug, resolvedOrgSlug]);
+
   const clubIdForDirectoryLists = useMemo(() => {
     const id = String(club?.id || '').trim();
     return id;
   }, [club?.id]);
 
-  const orgKeyForRoutes = useMemo(() => String(org?.slug || orgSlugOrId || '').trim(), [org?.slug, orgSlugOrId]);
+  const orgKeyForRoutes = useMemo(() => {
+    const slug = String(org?.slug || resolvedOrgSlug || '').trim();
+    return slug || String(orgSlugOrId || '').trim();
+  }, [org?.slug, orgSlugOrId, resolvedOrgSlug]);
   const clubKeyForRoutes = useMemo(() => String(club?.slug || clubSlugOrId || '').trim(), [club?.slug, clubSlugOrId]);
 
   const getOrganisationId = (p: any): string => {
@@ -199,7 +233,8 @@ export default function ClubOrganisationDetailPage() {
     let cancelled = false;
 
     const loadOrgClubs = async () => {
-      if (!orgSlugOrId) return;
+      const orgSlug = String(orgSlugForDirectoryLists || effectiveOrgSlug || '').trim();
+      if (!orgSlug) return;
       setOrgClubsForSwitcherLoading(true);
 
       try {
@@ -208,7 +243,7 @@ export default function ClubOrganisationDetailPage() {
         params.set('include_archived', 'true');
         params.set('parent_project__isnull', 'true');
         const res = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/?${params.toString()}`,
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?${params.toString()}`,
           { credentials: 'include' },
         );
         if (!res.ok) throw new Error(`Failed to load clubs (${res.status})`);
@@ -238,14 +273,14 @@ export default function ClubOrganisationDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [apiBaseUrl, orgSlugOrId]);
+  }, [apiBaseUrl, effectiveOrgSlug, orgSlugForDirectoryLists]);
 
   useEffect(() => {
     let cancelled = false;
 
     const loadHierarchy = async () => {
       if (activeTabFromUrl !== 'hierarchy') return;
-      if (!orgIdForDirectoryLists || !clubIdForDirectoryLists) return;
+      if (!orgSlugForDirectoryLists || !clubIdForDirectoryLists) return;
 
       setHierarchyLoading(true);
       setHierarchyError(null);
@@ -255,7 +290,7 @@ export default function ClubOrganisationDetailPage() {
         // We do this (instead of relying on `parent_project=...`) because the API response shape
         // differs between endpoints and older servers may ignore unknown query params.
         const teamsRes = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`,
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForDirectoryLists)}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`,
           { credentials: 'include' },
         );
 
@@ -266,9 +301,6 @@ export default function ClubOrganisationDetailPage() {
 
         const filteredTeams = teamsList
           .filter((t: any) => {
-            const oid = getOrganisationId(t);
-            if (oid && oid !== String(orgIdForDirectoryLists)) return false;
-
             const parent =
               (t as any)?.parent_id ??
               (t as any)?.parent_project_id ??
@@ -316,11 +348,7 @@ export default function ClubOrganisationDetailPage() {
           }),
         );
 
-        const mergedSeasons = mergeUniqueById(
-          (seasonsChunks.flat() as any[])
-            .filter(isSeasonPeriod)
-            .filter((p: any) => getParentPeriodId(p) == null),
-        );
+        const mergedSeasons = mergeUniqueById((seasonsChunks.flat() as any[]).filter(isSeasonPeriod));
 
         const byTeam: Record<string, Period[]> = {};
         for (const season of mergedSeasons) {
@@ -351,7 +379,22 @@ export default function ClubOrganisationDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeTabFromUrl, apiBaseUrl, clubIdForDirectoryLists, orgIdForDirectoryLists]);
+  }, [activeTabFromUrl, apiBaseUrl, clubIdForDirectoryLists, orgSlugForDirectoryLists]);
+
+  // If we arrived via org UUID, replace with org slug for stable routing.
+  const shouldResolveOrg = useMemo(() => looksLikeIdentifier(orgSlugOrId), [orgSlugOrId]);
+
+  useEffect(() => {
+    if (!shouldResolveOrg) return;
+    const slug = String(org?.slug || resolvedOrgSlug || '').trim();
+    if (!slug) return;
+    if (slug === orgSlugOrId) return;
+
+    const clubKey = String(club?.slug || clubSlugOrId || '').trim();
+    if (!clubKey) return;
+
+    navigate(`/${encodeURIComponent(slug)}/${encodeURIComponent(clubKey)}${location.search || ''}`, { replace: true });
+  }, [club, clubSlugOrId, location.search, navigate, org?.slug, orgSlugOrId, resolvedOrgSlug, shouldResolveOrg]);
 
   const backToOrgHref = useMemo(() => {
     const orgKey = String(org?.slug || orgSlugOrId || '').trim();
@@ -646,24 +689,24 @@ export default function ClubOrganisationDetailPage() {
             </div>
           )}
 
-          {activeTabFromUrl === 'teams' && orgIdForDirectoryLists && clubIdForDirectoryLists && (
-            <TeamsList preselectedOrgId={orgIdForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
+          {activeTabFromUrl === 'teams' && orgSlugForDirectoryLists && clubIdForDirectoryLists && (
+            <TeamsList preselectedOrgId={orgSlugForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
           )}
 
-          {activeTabFromUrl === 'seasons' && orgIdForDirectoryLists && clubIdForDirectoryLists && (
-            <SeasonsList preselectedOrgId={orgIdForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
+          {activeTabFromUrl === 'seasons' && orgSlugForDirectoryLists && clubIdForDirectoryLists && (
+            <SeasonsList preselectedOrgId={orgSlugForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
           )}
 
-          {activeTabFromUrl === 'competitions' && orgIdForDirectoryLists && clubIdForDirectoryLists && (
-            <CompetitionsList preselectedOrgId={orgIdForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
+          {activeTabFromUrl === 'competitions' && orgSlugForDirectoryLists && clubIdForDirectoryLists && (
+            <CompetitionsList preselectedOrgId={orgSlugForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
           )}
 
-          {activeTabFromUrl === 'matches' && orgIdForDirectoryLists && clubIdForDirectoryLists && (
-            <MatchesList preselectedOrgId={orgIdForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
+          {activeTabFromUrl === 'matches' && orgSlugForDirectoryLists && clubIdForDirectoryLists && (
+            <MatchesList preselectedOrgId={orgSlugForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
           )}
 
-          {activeTabFromUrl === 'members' && orgIdForDirectoryLists && clubIdForDirectoryLists && (
-            <UsersList preselectedOrgId={orgIdForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
+          {activeTabFromUrl === 'members' && orgSlugForDirectoryLists && clubIdForDirectoryLists && (
+            <UsersList preselectedOrgId={orgSlugForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
           )}
         </PageContent>
       </div>

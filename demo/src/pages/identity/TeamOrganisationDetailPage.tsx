@@ -95,6 +95,16 @@ export default function TeamOrganisationDetailPage() {
   const clubSlugOrId = String(clubId || '').trim();
   const teamSlugOrId = String(projectId || '').trim();
 
+  // API lookup for organisations uses slug (not UUID). If we land on a UUID URL,
+  // resolve it via the organisations list (which contains both id + slug).
+  const [resolvedOrgSlug, setResolvedOrgSlug] = useState<string>('');
+  const effectiveOrgSlug = useMemo(() => {
+    const explicit = String(resolvedOrgSlug || '').trim();
+    if (explicit) return explicit;
+    const raw = String(orgSlugOrId || '').trim();
+    return looksLikeIdentifier(raw) ? '' : raw;
+  }, [orgSlugOrId, resolvedOrgSlug]);
+
   const [org, setOrg] = useState<Organisation | null>(null);
   const [club, setClub] = useState<Project | null>(null);
   const [team, setTeam] = useState<Project | null>(null);
@@ -148,14 +158,28 @@ export default function TeamOrganisationDetailPage() {
           throw new Error('Missing organisation, club, or team identifier.');
         }
 
+        if (!effectiveOrgSlug) {
+          const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=250`, { credentials: 'include' });
+          if (!res.ok) throw new Error(`Failed to resolve organisation (${res.status})`);
+          const json = await res.json().catch(() => null);
+          const raw = unwrapEnvelope<any>(json);
+          const list: any[] = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
+          const match = list.find((o: any) => String(o?.id || '') === String(orgSlugOrId));
+          const slug = String(match?.slug || '').trim();
+          if (!slug) throw new Error('Organisation not found');
+          if (cancelled) return;
+          setResolvedOrgSlug(slug);
+          return;
+        }
+
         const [orgRes, clubRes, teamRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/`, { credentials: 'include' }),
+          fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrgSlug)}/`, { credentials: 'include' }),
           fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
+            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
             { credentials: 'include' },
           ),
           fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(teamSlugOrId)}/`,
+            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/${encodeURIComponent(teamSlugOrId)}/`,
             { credentials: 'include' },
           ),
         ]);
@@ -191,16 +215,25 @@ export default function TeamOrganisationDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [apiBaseUrl, clubSlugOrId, orgSlugOrId, teamSlugOrId]);
+  }, [apiBaseUrl, clubSlugOrId, orgSlugOrId, teamSlugOrId, effectiveOrgSlug]);
 
   const orgIdForDirectoryLists = useMemo(() => String(org?.id || '').trim(), [org?.id]);
   const clubIdForDirectoryLists = useMemo(() => String(club?.id || '').trim(), [club?.id]);
   const teamIdForDirectoryLists = useMemo(() => String(team?.id || '').trim(), [team?.id]);
 
-  const orgKeyForRoutes = useMemo(() => String(org?.slug || orgSlugOrId || '').trim(), [org?.slug, orgSlugOrId]);
+  const orgSlugForDirectoryLists = useMemo(() => {
+    const slug = String(org?.slug || resolvedOrgSlug || '').trim();
+    return slug;
+  }, [org?.slug, resolvedOrgSlug]);
+
+  const orgKeyForRoutes = useMemo(() => {
+    const slug = String(org?.slug || resolvedOrgSlug || '').trim();
+    return slug || String(orgSlugOrId || '').trim();
+  }, [org?.slug, orgSlugOrId, resolvedOrgSlug]);
   const clubKeyForRoutes = useMemo(() => String(club?.slug || clubSlugOrId || '').trim(), [club?.slug, clubSlugOrId]);
   const teamKeyForRoutes = useMemo(() => String(team?.slug || teamSlugOrId || '').trim(), [team?.slug, teamSlugOrId]);
 
+  const shouldResolveOrg = useMemo(() => looksLikeIdentifier(orgSlugOrId), [orgSlugOrId]);
   const shouldResolveClub = useMemo(() => looksLikeIdentifier(clubSlugOrId), [clubSlugOrId]);
   const shouldResolveTeam = useMemo(() => looksLikeIdentifier(teamSlugOrId), [teamSlugOrId]);
 
@@ -219,7 +252,7 @@ export default function TeamOrganisationDetailPage() {
 
     if (!needsRedirect) return;
 
-    const orgKey = String(org?.slug || orgSlugOrId || '').trim();
+    const orgKey = String(org?.slug || resolvedOrgSlug || orgSlugOrId || '').trim();
     if (!orgKey || !desiredClubKey || !desiredTeamKey) return;
 
     navigate(
@@ -227,6 +260,19 @@ export default function TeamOrganisationDetailPage() {
       { replace: true },
     );
   }, [club, clubSlugOrId, location.search, navigate, org, orgSlugOrId, shouldResolveClub, shouldResolveTeam, team, teamSlugOrId]);
+
+  useEffect(() => {
+    if (!shouldResolveOrg) return;
+    const slug = String(org?.slug || resolvedOrgSlug || '').trim();
+    if (!slug) return;
+    if (slug === orgSlugOrId) return;
+    const clubKey = String(club?.slug || clubSlugOrId || '').trim();
+    const teamKey = String(team?.slug || teamSlugOrId || '').trim();
+    if (!clubKey || !teamKey) return;
+    navigate(`/${encodeURIComponent(slug)}/${encodeURIComponent(clubKey)}/${encodeURIComponent(teamKey)}${location.search || ''}`, {
+      replace: true,
+    });
+  }, [club, clubSlugOrId, location.search, navigate, org?.slug, orgSlugOrId, resolvedOrgSlug, shouldResolveOrg, team, teamSlugOrId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -255,11 +301,7 @@ export default function TeamOrganisationDetailPage() {
             ? seasonsRaw
             : [];
 
-        const seasons = mergeUniqueById(
-          (seasonsList || [])
-            .filter(isSeasonPeriod)
-            .filter((p: any) => getParentPeriodId(p) == null),
-        );
+        const seasons = mergeUniqueById((seasonsList || []).filter(isSeasonPeriod));
         seasons.sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
 
         if (cancelled) return;
@@ -324,7 +366,7 @@ export default function TeamOrganisationDetailPage() {
 
       setClubTeamsForSwitcherLoading(true);
       try {
-        const orgKey = String(org?.slug || orgSlugOrId || '').trim();
+        const orgKey = String(org?.slug || resolvedOrgSlug || '').trim();
         const url = orgKey
           ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgKey)}/projects/?page_size=500&include_archived=true&parent_project=${encodeURIComponent(clubIdForDirectoryLists)}`
           : `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(clubIdForDirectoryLists)}&page_size=250`;
@@ -361,7 +403,7 @@ export default function TeamOrganisationDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [apiBaseUrl, clubIdForDirectoryLists]);
+  }, [apiBaseUrl, clubIdForDirectoryLists, org?.slug, resolvedOrgSlug]);
 
   const backToClubHref = useMemo(() => {
     if (!orgKeyForRoutes || !clubKeyForRoutes) return '/federations';
@@ -656,33 +698,33 @@ export default function TeamOrganisationDetailPage() {
             </div>
           )}
 
-          {activeTabFromUrl === 'seasons' && orgIdForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (
+          {activeTabFromUrl === 'seasons' && orgSlugForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (
             <SeasonsList
-              preselectedOrgId={orgIdForDirectoryLists}
+              preselectedOrgId={orgSlugForDirectoryLists}
               preselectedClubId={clubIdForDirectoryLists}
               preselectedTeamId={teamIdForDirectoryLists}
             />
           )}
 
-          {activeTabFromUrl === 'competitions' && orgIdForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (
+          {activeTabFromUrl === 'competitions' && orgSlugForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (
             <CompetitionsList
-              preselectedOrgId={orgIdForDirectoryLists}
+              preselectedOrgId={orgSlugForDirectoryLists}
               preselectedClubId={clubIdForDirectoryLists}
               preselectedTeamId={teamIdForDirectoryLists}
             />
           )}
 
-          {activeTabFromUrl === 'matches' && orgIdForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (
+          {activeTabFromUrl === 'matches' && orgSlugForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (
             <MatchesList
-              preselectedOrgId={orgIdForDirectoryLists}
+              preselectedOrgId={orgSlugForDirectoryLists}
               preselectedClubId={clubIdForDirectoryLists}
               preselectedTeamId={teamIdForDirectoryLists}
             />
           )}
 
-          {activeTabFromUrl === 'members' && orgIdForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (
+          {activeTabFromUrl === 'members' && orgSlugForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (
             <UsersList
-              preselectedOrgId={orgIdForDirectoryLists}
+              preselectedOrgId={orgSlugForDirectoryLists}
               preselectedClubId={clubIdForDirectoryLists}
               preselectedTeamId={teamIdForDirectoryLists}
             />
