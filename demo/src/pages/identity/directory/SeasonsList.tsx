@@ -68,6 +68,19 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId }) =>
 
   const orgLocked = Boolean(preselectedOrgId);
 
+  const isUuid = (value: unknown) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+
+  const getSelectedOrgIdForApi = () => {
+    const selectedOrg = selectedOrgId
+      ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
+      : null;
+    const resolved = selectedOrg ? String((selectedOrg as any).id ?? '') : '';
+    if (resolved && isUuid(resolved)) return resolved;
+    if (selectedOrgId && isUuid(selectedOrgId)) return String(selectedOrgId);
+    return '';
+  };
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -234,8 +247,36 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId }) =>
               return;
             }
           } else if (selectedOrgId) {
-            // If only org selected, fetch all seasons for that org
-            baseParams.set('organisation_id', selectedOrgId);
+            // If only org selected, periods are commonly team-scoped.
+            // Prefer scoping by team ids; fall back to organisation_id using resolved UUID.
+            if (teams.length > 0) {
+              const teamIds = teams.map((t) => String((t as any).id)).filter(Boolean);
+              const chunks = chunkArray(teamIds, 25);
+              const results = (
+                await Promise.all(
+                  chunks.map(async (ids) => {
+                    const params = new URLSearchParams(baseParams);
+                    params.set('project_id__in', ids.join(','));
+                    const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+                    return await fetchAllPages<any>(
+                      url,
+                      { credentials: 'include' },
+                      { ttlMs: 120_000, bypass: refreshKey > 0 },
+                    );
+                  }),
+                )
+              ).flat();
+
+              const roots = (Array.isArray(results) ? results : []).filter(
+                (p: any) => (p?.parent_period_id == null && !p?.parent_period),
+              );
+              const unique = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
+              setSeasons(unique as any);
+              return;
+            }
+
+            const orgIdForApi = getSelectedOrgIdForApi();
+            if (orgIdForApi) baseParams.set('organisation_id', orgIdForApi);
           }
           // If nothing selected at all, fetch all seasons (for superadmin)
 

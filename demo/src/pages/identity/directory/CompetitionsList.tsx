@@ -163,6 +163,18 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
     );
   };
 
+  const getSelectedOrgIdForApi = () => {
+    const selectedOrg = selectedOrgId
+      ? organisations.find(
+          (o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId),
+        )
+      : null;
+    const resolved = selectedOrg ? String((selectedOrg as any).id ?? '') : '';
+    if (resolved && isUuid(resolved)) return resolved;
+    if (selectedOrgId && isUuid(selectedOrgId)) return String(selectedOrgId);
+    return '';
+  };
+
   const parseDateOnlyUtc = (value?: string | null): Date | null => {
     const raw = String(value || '').trim();
     if (!raw) return null;
@@ -405,7 +417,8 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
           }
 
           // Fallback if teams aren't loaded yet
-          baseParams.set('organisation_id', selectedOrgId);
+          const orgIdForApi = getSelectedOrgIdForApi();
+          if (orgIdForApi) baseParams.set('organisation_id', orgIdForApi);
         }
 
         const results = await fetchAllPages<any>(
@@ -476,7 +489,8 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                   .join(','),
               );
             } else {
-              params.set('organisation_id', selectedOrgId);
+              const orgIdForApi = getSelectedOrgIdForApi();
+              if (orgIdForApi) params.set('organisation_id', orgIdForApi);
             }
           }
 

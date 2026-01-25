@@ -109,6 +109,16 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
     );
   };
 
+  const getSelectedOrgIdForApi = () => {
+    const selectedOrg = selectedOrgId
+      ? organisations.find((o) => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
+      : null;
+    const resolved = selectedOrg ? String((selectedOrg as any).id ?? '') : '';
+    if (resolved && isUuid(resolved)) return resolved;
+    if (selectedOrgId && isUuid(selectedOrgId)) return String(selectedOrgId);
+    return '';
+  };
+
   // Initialize org filter
   useEffect(() => {
     if (preselectedOrgId) {
@@ -448,7 +458,8 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
                 // Prefer team-scoped filtering over organisation_id.
                 return await fetchWithTeamChunks(params, teamIdsForOrg);
               } else if (selectedOrgId) {
-                params.set('organisation_id', String(selectedOrgId));
+                const orgIdForApi = getSelectedOrgIdForApi();
+                if (orgIdForApi) params.set('organisation_id', orgIdForApi);
                }
 
                   return await fetchAllPages<any>(
@@ -475,10 +486,34 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
       try {
+        const orgIdForApi = getSelectedOrgIdForApi();
+
         const params = new URLSearchParams();
         params.set('page_size', '250');
         params.set('activity_type', 'match');
         params.set('ordering', '-start_time');
+
+        const baseParams = new URLSearchParams(params);
+
+        const fetchChunk = async (projectIds: string[]) => {
+          const p = new URLSearchParams(baseParams);
+          p.set('project_id__in', projectIds.join(','));
+          if (orgIdForApi) p.set('organisation_id', orgIdForApi);
+
+          if (selectedCompetitionId) {
+            p.set('period_id', selectedCompetitionId);
+          } else if (selectedSeasonIds.length === 1) {
+            p.set('period_id', selectedSeasonIds[0]);
+            p.set('include_descendants', 'true');
+          }
+
+          return await fetchAllPages<Activity>(
+            `${apiBaseUrl}/api/v1/activities/?${p.toString()}`,
+            { credentials: 'include' },
+            { ttlMs: 20_000, bypass: refreshKey > 0 },
+          );
+        };
+
         if (selectedTeamId) {
           params.set('project_id', String(selectedTeamId));
         } else if (selectedClubId && teams.length > 0) {
@@ -488,9 +523,32 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId }) =>
             return;
           }
           params.set('project_id__in', clubTeams.map((t) => String(t.id)).join(','));
+        } else if (selectedOrgId && teams.length > 0) {
+          // Federation scoped view: enforce org scoping via project ids (team-scoped matches)
+          // to avoid leakage when selectedOrgId is a slug.
+          const teamIds = teams.map((t) => String(t.id)).filter(Boolean);
+          if (teamIds.length === 0) {
+            setMatches([]);
+            return;
+          }
+
+          const chunks = chunkArray(teamIds, 25);
+          const all = (await Promise.all(chunks.map((ids) => fetchChunk(ids)))).flat();
+          const unique = [...new Map(all.map((m) => [String(m.id), m])).values()];
+
+          if (selectedSeasonIds.length > 1 && selectedSeasonName) {
+            const filtered = unique.filter((m) => {
+              const seasonName = (m as any)?.period?.parent_period?.name;
+              return String(seasonName || '').trim() === selectedSeasonName;
+            });
+            setMatches(filtered);
+          } else {
+            setMatches(unique);
+          }
+          return;
         }
 
-        if (selectedOrgId) params.set('organisation_id', selectedOrgId);
+        if (orgIdForApi) params.set('organisation_id', orgIdForApi);
 
         // Filter by Season or Competition
         if (selectedCompetitionId) {
