@@ -1532,8 +1532,18 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     ...actionButtonStyle(tone),
     padding: '6px 12px',
     fontWeight: 500,
-    fontSize: '13px',
   });
+
+  const backButtonStyle: React.CSSProperties = {
+    padding: '6px 12px',
+    borderRadius: '4px',
+    border: '1px solid var(--app-border)',
+    backgroundColor: 'var(--app-surface-2)',
+    color: 'var(--app-text)',
+    cursor: 'pointer',
+    fontSize: '12px',
+    fontWeight: 500,
+  };
 
   const renderMatchesTable = (rows: any[]) => {
     if (matchesLoading && !rows.length) {
@@ -1650,9 +1660,8 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
                 type="button"
-                className="app-action-button"
                 onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}
-                style={actionButtonStyle('neutral')}
+                style={backButtonStyle}
               >
                 Back to Season
               </button>
@@ -1660,7 +1669,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 type="button"
                 className="app-action-button"
                 onClick={() => setIsMatchCreateModalOpen(true)}
-                style={actionButtonStyle('primary')}
+                style={tableActionButtonStyle('primary')}
               >
                 Create Match
               </button>
@@ -1671,7 +1680,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                   setSelectedDetailPeriod(competition);
                   setIsPeriodDetailModalOpen(true);
                 }}
-                style={actionButtonStyle('primary')}
+                style={tableActionButtonStyle('primary')}
               >
                 View
               </button>
@@ -1682,7 +1691,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                   setSelectedEditPeriod(competition);
                   setIsPeriodEditModalOpen(true);
                 }}
-                style={actionButtonStyle('warning')}
+                style={tableActionButtonStyle('warning')}
               >
                 Edit
               </button>
@@ -1690,7 +1699,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 type="button"
                 className="app-action-button"
                 onClick={() => navigate('/audit')}
-                style={actionButtonStyle('neutral')}
+                style={tableActionButtonStyle('neutral')}
               >
                 Audit
               </button>
@@ -1698,7 +1707,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 type="button"
                 className="app-action-button"
                 onClick={deleteCompetition}
-                style={actionButtonStyle('danger')}
+                style={tableActionButtonStyle('danger')}
               >
                 Delete
               </button>

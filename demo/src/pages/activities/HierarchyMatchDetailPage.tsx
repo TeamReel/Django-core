@@ -10,6 +10,7 @@ import CreateTransactionModal, { type WalletOption } from '../../components/tran
 import { useAuth } from '@django-core/auth-ui';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import MatchEditModal from '../identity/MatchEditModal';
+import { actionButtonStyle } from '../identity/detail/detailStyles';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
@@ -165,6 +166,12 @@ export default function HierarchyMatchDetailPage() {
     opts.push({ kind: 'me', label: 'My user wallet' });
     return opts;
   }, [project?.id]);
+
+  const detailActionButtonStyle = (tone: 'neutral' | 'primary' | 'warning' | 'danger' | 'success' = 'neutral'): React.CSSProperties => ({
+    ...actionButtonStyle(tone as any),
+    padding: '6px 12px',
+    fontWeight: 500,
+  });
 
   const [eligibleMembers, setEligibleMembers] = useState<OrgMember[]>([]);
   const [orgMembersAll, setOrgMembersAll] = useState<OrgMember[]>([]);
@@ -1539,17 +1546,6 @@ export default function HierarchyMatchDetailPage() {
     if (r === 'editor') return 'Editor';
     return raw ? String(raw) : '—';
   };
-
-
-  const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'hierarchy', label: 'Hierarchy' },
-    { id: 'match', label: 'Match' },
-    { id: 'lineup', label: 'Lineup' },
-    { id: 'date', label: 'Date' },
-    { id: 'transactions', label: 'Transactions' },
-  ];
-
   return (
     <>
       <div>
@@ -1558,35 +1554,46 @@ export default function HierarchyMatchDetailPage() {
           breadcrumbs={breadcrumbs}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <Button
-                variant="outline"
-                style={{ borderColor: '#2196f3', color: '#2196f3' }}
+              <button
+                type="button"
+                className="app-action-button"
                 onClick={() => setIsMatchDetailModalOpen(true)}
+                style={detailActionButtonStyle('primary')}
               >
                 View
-              </Button>
-              <Button
-                variant="outline"
-                style={{ borderColor: '#ff9800', color: '#ff9800' }}
+              </button>
+              <button
+                type="button"
+                className="app-action-button"
                 onClick={() => setIsMatchEditModalOpen(true)}
+                style={detailActionButtonStyle('warning')}
               >
                 Edit
-              </Button>
-              <Button
-                variant="outline"
-                style={{ borderColor: '#f44336', color: '#f44336' }}
+              </button>
+              <button
+                type="button"
+                className="app-action-button"
                 onClick={handleDeleteMatch}
+                style={detailActionButtonStyle('danger')}
               >
                 Delete
-              </Button>
-              <Button variant="secondary" onClick={() => navigate(`/studio/create?context=${match.id}`)}>
-                ✨ Generate Content (AI)
-              </Button>
-              <Button
+              </button>
+              <button
+                type="button"
+                className="app-action-button"
+                onClick={() => navigate(`/studio/create?context=${match.id}`)}
+                style={detailActionButtonStyle('neutral')}
+              >
+                Generate Content (AI)
+              </button>
+              <button
+                type="button"
+                className="app-action-button"
                 onClick={() => setIsCreateTxnModalOpen(true)}
+                style={detailActionButtonStyle('primary')}
               >
                 Create transaction
-              </Button>
+              </button>
             </div>
           }
         />
@@ -1625,36 +1632,6 @@ export default function HierarchyMatchDetailPage() {
         />
 
         <PageContent>
-          <div
-            style={{
-              display: 'flex',
-              gap: '6px',
-              borderBottom: '1px solid var(--app-border)',
-              marginBottom: '20px',
-              flexWrap: 'wrap',
-            }}
-          >
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => navigateToTab(tab.id)}
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: '6px 6px 0 0',
-                  border: '1px solid var(--app-border)',
-                  borderBottom: activeTab === tab.id ? '1px solid var(--app-surface)' : '1px solid var(--app-border)',
-                  backgroundColor: activeTab === tab.id ? 'var(--app-surface)' : 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: activeTab === tab.id ? 600 : 500,
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
           {activeTab === 'overview' && (
             <>
               <Card className="mb-6">

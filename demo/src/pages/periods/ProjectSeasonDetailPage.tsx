@@ -112,6 +112,17 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     fontWeight: 500,
   });
 
+  const backButtonStyle: React.CSSProperties = {
+    padding: '6px 12px',
+    borderRadius: '4px',
+    border: '1px solid var(--app-border)',
+    backgroundColor: 'var(--app-surface-2)',
+    color: 'var(--app-text)',
+    cursor: 'pointer',
+    fontSize: '12px',
+    fontWeight: 500,
+  };
+
   const [org, setOrg] = useState<Organisation | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [club, setClub] = useState<Project | null>(null);
@@ -1032,9 +1043,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
                 type="button"
-                className="app-action-button"
                 onClick={() => navigate(seasonsBasePath)}
-                style={actionButtonStyle('neutral')}
+                style={backButtonStyle}
               >
                 Back
               </button>

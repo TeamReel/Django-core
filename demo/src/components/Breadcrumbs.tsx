@@ -135,6 +135,12 @@ export default function Breadcrumbs() {
   const [seasonOptions, setSeasonOptions] = useState<BreadcrumbSwitcherOption[]>([]);
   const [loadingSeasons, setLoadingSeasons] = useState(false);
 
+  const [competitionOptions, setCompetitionOptions] = useState<BreadcrumbSwitcherOption[]>([]);
+  const [loadingCompetitions, setLoadingCompetitions] = useState(false);
+
+  const [matchOptions, setMatchOptions] = useState<BreadcrumbSwitcherOption[]>([]);
+  const [loadingMatches, setLoadingMatches] = useState(false);
+
   // For club/team detail pages: fetch switcher options (clubs under org; teams under club)
   useEffect(() => {
     const effectiveOrg = String(orgSlug || '').trim();
@@ -279,6 +285,164 @@ export default function Breadcrumbs() {
       cancelled = true;
     };
   }, [orgSlug, effectiveTeamSlugOrId, effectiveSeasonSlugOrId]);
+
+  // Competition breadcrumb switcher (for competition detail routes)
+  useEffect(() => {
+    const effectiveOrg = String(orgSlug || '').trim();
+    const effectiveTeam = String(effectiveTeamSlugOrId || '').trim();
+    const effectiveSeason = String(effectiveSeasonSlugOrId || '').trim();
+    const effectiveCompetition = String(effectiveCompetitionSlugOrId || '').trim();
+
+    if (!effectiveOrg || !effectiveTeam || !effectiveSeason || !effectiveCompetition) {
+      setCompetitionOptions([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    const run = async () => {
+      setLoadingCompetitions(true);
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+        const projectRes = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/${encodeURIComponent(effectiveTeam)}/`,
+          { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' }
+        );
+        if (!projectRes.ok) return;
+        const rawProject: any = await projectRes.json();
+        const projectJson: any = rawProject?.data || rawProject;
+        const projectId = String(projectJson?.id || '').trim();
+        if (!projectId) return;
+
+        const rootPeriodsUrl = `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(projectId)}&parent_id=null&page_size=500`;
+        const rootPeriods = await fetchAllPages<any>(
+          rootPeriodsUrl,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: `periods:root:breadcrumb:${projectId}` }
+        );
+
+        const seasonFromList = (rootPeriods || []).find((p: any) => {
+          const key = periodPathKey(p) || String(p?.id || '');
+          return String(p?.id || '') === effectiveSeason || key === effectiveSeason;
+        });
+        const seasonId = String(seasonFromList?.id || '').trim();
+        if (!seasonId) return;
+
+        const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(seasonId)}&page_size=500`;
+        const competitionPeriods = await fetchAllPages<any>(
+          competitionsUrl,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: `periods:children:breadcrumb:${seasonId}` }
+        );
+
+        const opts: BreadcrumbSwitcherOption[] = (competitionPeriods || []).map((p: any) => ({
+          id: String(p.id),
+          label: String(p.name || p.slug || p.id),
+          slug: periodPathKey(p) || String(p.id),
+        }));
+
+        if (!cancelled) setCompetitionOptions(opts);
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoadingCompetitions(false);
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [orgSlug, effectiveTeamSlugOrId, effectiveSeasonSlugOrId, effectiveCompetitionSlugOrId]);
+
+  // Match breadcrumb switcher (for match detail routes)
+  useEffect(() => {
+    const effectiveOrg = String(orgSlug || '').trim();
+    const effectiveTeam = String(effectiveTeamSlugOrId || '').trim();
+    const effectiveSeason = String(effectiveSeasonSlugOrId || '').trim();
+    const effectiveCompetition = String(effectiveCompetitionSlugOrId || '').trim();
+    const effectiveMatch = String(effectiveMatchId || '').trim();
+
+    if (!effectiveOrg || !effectiveTeam || !effectiveSeason || !effectiveCompetition || !effectiveMatch) {
+      setMatchOptions([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    const run = async () => {
+      setLoadingMatches(true);
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+        const projectRes = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/${encodeURIComponent(effectiveTeam)}/`,
+          { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' }
+        );
+        if (!projectRes.ok) return;
+        const rawProject: any = await projectRes.json();
+        const projectJson: any = rawProject?.data || rawProject;
+        const projectId = String(projectJson?.id || '').trim();
+        if (!projectId) return;
+
+        const rootPeriodsUrl = `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(projectId)}&parent_id=null&page_size=500`;
+        const rootPeriods = await fetchAllPages<any>(
+          rootPeriodsUrl,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: `periods:root:breadcrumb:${projectId}` }
+        );
+
+        const seasonFromList = (rootPeriods || []).find((p: any) => {
+          const key = periodPathKey(p) || String(p?.id || '');
+          return String(p?.id || '') === effectiveSeason || key === effectiveSeason;
+        });
+        const seasonId = String(seasonFromList?.id || '').trim();
+        if (!seasonId) return;
+
+        const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(seasonId)}&page_size=500`;
+        const competitionPeriods = await fetchAllPages<any>(
+          competitionsUrl,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: `periods:children:breadcrumb:${seasonId}` }
+        );
+
+        const competitionFromList = (competitionPeriods || []).find((p: any) => {
+          const key = periodPathKey(p) || String(p?.id || '');
+          return String(p?.id || '') === effectiveCompetition || key === effectiveCompetition;
+        });
+        const competitionId = String(competitionFromList?.id || '').trim();
+        if (!competitionId) return;
+
+        const matchesUrl = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(
+          projectId
+        )}&period_id=${encodeURIComponent(competitionId)}&activity_type=match&ordering=-start_time&page_size=250`;
+
+        const matchRows = await fetchAllPages<any>(
+          matchesUrl,
+          { credentials: 'include' },
+          { ttlMs: 30_000, cacheKey: `matches:competition:breadcrumb:${projectId}:${competitionId}`, maxItems: 250 }
+        );
+
+        const opts: BreadcrumbSwitcherOption[] = (matchRows || []).map((m: any) => ({
+          id: String(m.id),
+          label: String(m.title || m.name || m.slug || m.id),
+          slug: String(m.slug || m.id),
+        }));
+
+        if (!cancelled) setMatchOptions(opts);
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoadingMatches(false);
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [orgSlug, effectiveTeamSlugOrId, effectiveSeasonSlugOrId, effectiveCompetitionSlugOrId, effectiveMatchId]);
 
   // Build the context chain
   const items: Array<{ label: React.ReactNode; path: string; isLeaf?: boolean }> = [];
@@ -618,9 +782,14 @@ export default function Breadcrumbs() {
 
   // Level 3: Season
   if (effectiveSeasonSlugOrId) {
-    const seasonPath = isOrganisationsRoute
+    const isProjectsHierarchyRoute = isOrganisationsRoute && location.pathname.includes('/projects/');
+    const isVanityOrganisationsHierarchyRoute = isOrganisationsRoute && !isProjectsHierarchyRoute;
+
+    const seasonPath = isProjectsHierarchyRoute
       ? `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${effectiveSeasonSlugOrId}`
-      : `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}`;
+      : isVanityOrganisationsHierarchyRoute
+          ? `/organisations/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}`
+          : `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}`;
 
     const currentSeasonKey = String(effectiveSeasonSlugOrId || '').trim();
     const options = [...seasonOptions];
@@ -630,9 +799,11 @@ export default function Breadcrumbs() {
 
     const handleSeasonSwitch = (option: BreadcrumbSwitcherOption) => {
       const next = String(option.slug || option.id);
-      const nextPath = isOrganisationsRoute
+      const nextPath = isProjectsHierarchyRoute
         ? `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${next}`
-        : `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${next}`;
+        : isVanityOrganisationsHierarchyRoute
+            ? `/organisations/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${next}`
+            : `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${next}`;
       navigate(`${nextPath}${location.search || ''}`);
     };
 
@@ -660,17 +831,91 @@ export default function Breadcrumbs() {
 
   // Level 4: Competition
   if (effectiveCompetitionSlugOrId) {
+    const isProjectsHierarchyRoute = isOrganisationsRoute && location.pathname.includes('/projects/');
+    const isVanityOrganisationsHierarchyRoute = isOrganisationsRoute && !isProjectsHierarchyRoute;
+
+    const competitionPath = isProjectsHierarchyRoute
+      ? `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${effectiveSeasonSlugOrId}/competitions/${effectiveCompetitionSlugOrId}`
+      : isVanityOrganisationsHierarchyRoute
+          ? `/organisations/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}/${effectiveCompetitionSlugOrId}`
+          : `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}/${effectiveCompetitionSlugOrId}`;
+
+    const currentCompetitionKey = String(effectiveCompetitionSlugOrId || '').trim();
+    const options = [...competitionOptions];
+    if (currentCompetitionKey && !options.some((o) => String(o.slug || o.id) === currentCompetitionKey)) {
+      options.push({ id: currentCompetitionKey, slug: currentCompetitionKey, label: effectiveCompetitionName || currentCompetitionKey });
+    }
+
+    const handleCompetitionSwitch = (option: BreadcrumbSwitcherOption) => {
+      const next = String(option.slug || option.id);
+      const nextPath = isProjectsHierarchyRoute
+        ? `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${effectiveSeasonSlugOrId}/competitions/${next}`
+        : isVanityOrganisationsHierarchyRoute
+            ? `/organisations/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}/${next}`
+            : `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}/${next}`;
+      navigate(`${nextPath}${location.search || ''}`);
+    };
+
+    const shouldRenderCompetitionSwitcher =
+      Boolean(currentCompetitionKey) &&
+      !effectiveMatchId;
+
     items.push({
-        label: effectiveCompetitionName || effectiveCompetitionSlugOrId,
-        path: `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}/${effectiveCompetitionSlugOrId}`
+      label: shouldRenderCompetitionSwitcher ? (
+        <BreadcrumbContextSwitcher
+          currentId={currentCompetitionKey}
+          options={options}
+          onSelect={handleCompetitionSwitch}
+          hasDropdown={!loadingCompetitions && options.length > 1}
+          type="project"
+          current
+        />
+      ) : (
+        effectiveCompetitionName || currentCompetitionKey
+      ),
+      path: competitionPath,
     });
   }
 
   // Level 5: Match
   if (effectiveMatchId) {
+    const isProjectsHierarchyRoute = isOrganisationsRoute && location.pathname.includes('/projects/');
+    const isVanityOrganisationsHierarchyRoute = isOrganisationsRoute && !isProjectsHierarchyRoute;
+
+    const matchPath = isProjectsHierarchyRoute
+      ? `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${effectiveSeasonSlugOrId}/competitions/${effectiveCompetitionSlugOrId}/matches/${effectiveMatchId}`
+      : isVanityOrganisationsHierarchyRoute
+          ? `/organisations/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}/${effectiveCompetitionSlugOrId}/${effectiveMatchId}`
+          : `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}/${effectiveCompetitionSlugOrId}/${effectiveMatchId}`;
+
+    const currentMatchKey = String(effectiveMatchId || '').trim();
+    const options = [...matchOptions];
+    if (currentMatchKey && !options.some((o) => String(o.slug || o.id) === currentMatchKey)) {
+      options.push({ id: currentMatchKey, slug: currentMatchKey, label: `Match ${currentMatchKey}` });
+    }
+
+    const handleMatchSwitch = (option: BreadcrumbSwitcherOption) => {
+      const next = String(option.slug || option.id);
+      const nextPath = isProjectsHierarchyRoute
+        ? `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${effectiveSeasonSlugOrId}/competitions/${effectiveCompetitionSlugOrId}/matches/${next}`
+        : isVanityOrganisationsHierarchyRoute
+            ? `/organisations/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}/${effectiveCompetitionSlugOrId}/${next}`
+            : `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}/${effectiveSeasonSlugOrId}/${effectiveCompetitionSlugOrId}/${next}`;
+      navigate(`${nextPath}${location.search || ''}`);
+    };
+
     items.push({
-        label: `Match ${effectiveMatchId}`, // Todo: fetch match name/details if possible
-        path: `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${effectiveSeasonSlugOrId}/competitions/${effectiveCompetitionSlugOrId}/matches/${effectiveMatchId}`
+      label: (
+        <BreadcrumbContextSwitcher
+          currentId={currentMatchKey}
+          options={options}
+          onSelect={handleMatchSwitch}
+          hasDropdown={!loadingMatches && options.length > 1}
+          type="project"
+          current
+        />
+      ),
+      path: matchPath,
     });
   }
 
