@@ -39,6 +39,10 @@ export default function Breadcrumbs() {
     matchId
   } = useAppSelection();
 
+  const userDetailMatch =
+    matchPath({ path: '/users/:userId', end: true }, location.pathname) ||
+    matchPath({ path: '/organisations/:orgId/users/:userId', end: true }, location.pathname);
+
   const isOrganisationsRoute = location.pathname.startsWith('/organisations/');
 
   const orgSubpageMatch =
@@ -92,6 +96,7 @@ export default function Breadcrumbs() {
           'directory',
           'search',
           'matches',
+          'users',
           'clubs',
           'teams',
           'seasons',
@@ -140,6 +145,51 @@ export default function Breadcrumbs() {
 
   const [matchOptions, setMatchOptions] = useState<BreadcrumbSwitcherOption[]>([]);
   const [loadingMatches, setLoadingMatches] = useState(false);
+
+  const [userOptions, setUserOptions] = useState<BreadcrumbSwitcherOption[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+
+  useEffect(() => {
+    const currentUserId = String((userDetailMatch?.params as any)?.userId || '').trim();
+    if (!currentUserId) {
+      setUserOptions([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    const run = async () => {
+      setLoadingUsers(true);
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const users = await fetchAllPages<any>(
+          `${apiBaseUrl}/api/v1/admin/users/?page_size=200`,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: 'breadcrumbs:users', maxItems: 200 }
+        );
+
+        if (cancelled) return;
+        setUserOptions(
+          (Array.isArray(users) ? users : []).map((u: any) => {
+            const id = String(u?.id || '').trim();
+            const name = `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim();
+            const email = String(u?.email || '').trim();
+            const label = name || email || (id ? `User ${id}` : 'User');
+            return { id: id || label, label };
+          })
+        );
+      } catch {
+        if (!cancelled) setUserOptions([]);
+      } finally {
+        if (!cancelled) setLoadingUsers(false);
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [userDetailMatch?.params]);
 
   // For club/team detail pages: fetch switcher options (clubs under org; teams under club)
   useEffect(() => {
@@ -452,6 +502,78 @@ export default function Breadcrumbs() {
   const orgPath = orgSlug
     ? `/${orgSlug}`
     : '/dashboard';
+
+  // User detail route: render a breadcrumb leaf switcher for users.
+  if (userDetailMatch?.params?.userId) {
+    const currentUserId = String((userDetailMatch.params as any)?.userId || '').trim();
+    const options = [...userOptions];
+    if (currentUserId && !options.some((o) => String(o.id) === currentUserId)) {
+      options.push({ id: currentUserId, label: `User ${currentUserId}` });
+    }
+
+    const handleUserSwitch = (option: BreadcrumbSwitcherOption) => {
+      const next = String(option.id || '').trim();
+      if (!next) return;
+      navigate(`/users/${encodeURIComponent(next)}${location.search || ''}`);
+    };
+
+    const crumbs: Array<{ label: React.ReactNode; path: string }> = [
+      { label: 'Dashboard', path: '/dashboard' },
+      { label: 'Users', path: '/users' },
+      {
+        label: (
+          <BreadcrumbContextSwitcher
+            currentId={currentUserId}
+            options={options}
+            onSelect={handleUserSwitch}
+            hasDropdown={!loadingUsers && options.length > 1}
+            type="user"
+            current
+          />
+        ),
+        path: `/users/${currentUserId}`,
+      },
+    ];
+
+    return (
+      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center' }}>
+        <ol
+          style={{
+            display: 'flex',
+            listStyle: 'none',
+            padding: 0,
+            margin: 0,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
+          {crumbs.map((item, index) => (
+            <li key={`${index}:${item.path}`} style={{ display: 'flex', alignItems: 'center' }}>
+              {index > 0 && (
+                <span style={{ margin: '0 8px', color: 'var(--app-muted-text)', fontSize: '14px' }}>/</span>
+              )}
+              {typeof item.label === 'string' ? (
+                <Link
+                  to={item.path}
+                  style={{
+                    color: index === crumbs.length - 1 ? 'var(--app-text)' : 'var(--app-muted-text)',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap',
+                    fontWeight: index === crumbs.length - 1 ? 600 : 400,
+                  }}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                item.label
+              )}
+            </li>
+          ))}
+        </ol>
+      </nav>
+    );
+  }
 
   if (orgSubpage) {
     const options: BreadcrumbSwitcherOption[] = (organisations || []).map((o: any) => ({

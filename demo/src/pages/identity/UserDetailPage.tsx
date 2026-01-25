@@ -881,28 +881,6 @@ export const UserDetailPage: React.FC = () => {
   const backPath = orgId ? `/organisations/${orgId}/users` : '/users';
   const userDisplayName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || `User ${userId}`;
 
-  const renderTabButton = (id: string, label: string) => {
-    const isActive = activeTab === id;
-    return (
-      <button
-        type="button"
-        onClick={() => setTab(id)}
-        style={{
-          padding: '8px 12px',
-          borderRadius: '8px',
-          border: `1px solid ${isActive ? 'var(--app-border)' : 'transparent'}`,
-          backgroundColor: isActive ? 'var(--app-surface-2)' : 'transparent',
-          color: 'var(--app-text)',
-          cursor: 'pointer',
-          fontWeight: isActive ? 700 : 600,
-          fontSize: '13px',
-        }}
-      >
-        {label}
-      </button>
-    );
-  };
-
   const hierarchyRows = (() => {
     const q = hierarchySearch.trim().toLowerCase();
     const rows = teamSeasonPairs.map((p) => {
@@ -1004,19 +982,6 @@ export const UserDetailPage: React.FC = () => {
       />
 
       <PageContent>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
-          {renderTabButton('overview', 'Overview')}
-          {renderTabButton('hierarchy', 'Hierarchy')}
-          {renderTabButton('federations', 'Federations')}
-          {renderTabButton('clubs', 'Clubs')}
-          {renderTabButton('teams', 'Teams')}
-          {renderTabButton('seasons', 'Seasons')}
-          {renderTabButton('competitions', 'Competitions')}
-          {renderTabButton('matches', 'Matches')}
-          {renderTabButton('transactions', 'Transactions')}
-          {renderTabButton('balance', 'Balance')}
-        </div>
-
         {activeTab === 'overview' && (
           <div style={{ display: 'grid', gap: '12px' }}>
             <Card>

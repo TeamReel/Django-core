@@ -136,6 +136,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             matchPath({ path: '/organisations/:orgId/users', end: true }, path) ||
             matchPath({ path: '/:orgId/users', end: true }, path);
 
+        const userDetailMatch =
+            matchPath({ path: '/users/:userId', end: true }, path) ||
+            matchPath({ path: '/organisations/:orgId/users/:userId', end: true }, path);
+
         // Detect TeamReel vanity + /organisations routes so Panel B is driven by the actual page.
         const teamDetailMatch =
             matchPath({ path: '/organisations/:orgId/:clubId/:projectId', end: true }, path) ||
@@ -246,6 +250,26 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     ];
                     break;
                 }
+            }
+
+            // User detail page: tabs are querystring-driven and should live in Panel B.
+            if (userDetailMatch?.params?.userId) {
+                const { userId } = userDetailMatch.params as any;
+                const baseUrl = `/users/${userId}`;
+                title = 'User';
+                items = [
+                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
+                    { label: 'Federations', path: makeTabUrl(baseUrl, 'federations'), icon: Globe },
+                    { label: 'Clubs', path: makeTabUrl(baseUrl, 'clubs'), icon: Shield },
+                    { label: 'Teams', path: makeTabUrl(baseUrl, 'teams'), icon: Shirt },
+                    { label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays },
+                    { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
+                    { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
+                    { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                    { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
+                ];
+                break;
             }
 
             // Primary requirement: show the detail-page tabs in Panel B (instead of generic actions).
@@ -549,6 +573,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             'organisations',
             'projects',
             'matches',
+            'users',
         ]);
 
         const orgSections = new Set(['clubs', 'teams', 'seasons', 'competitions', 'matches', 'users', 'hierarchy']);
@@ -596,6 +621,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             { label: seasonLabel, path: seasonPath, icon: CalendarDays, visibility: 'everyone' },
             { label: competitionLabel, path: competitionPath, icon: Trophy, visibility: 'everyone' },
             { label: matchLabel, path: matchPath, icon: Timer, visibility: 'everyone' },
+            { label: 'User: 2364', path: '/users/2364', icon: Users, visibility: 'org_admin' },
         ];
     }, [location.pathname, orgSlug, clubSlugOrId, clubName, teamSlugOrId, teamName, seasonSlugOrId, seasonName, competitionSlugOrId, competitionName, matchId]);
 
