@@ -143,7 +143,8 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
           { credentials: 'include' },
         );
         if (!res.ok) return;
-        const data: any = await res.json();
+        const raw: any = await res.json().catch(() => null);
+        const data: any = raw?.data ?? raw;
         const slug = String(data?.slug || '').trim();
         if (!cancelled && slug) setLockedOrgSlug(slug);
       } catch {

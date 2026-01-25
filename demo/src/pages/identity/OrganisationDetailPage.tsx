@@ -422,7 +422,7 @@ export const OrganisationDetailPage: React.FC = () => {
       { id: 'seasons' as const, label: 'Seasons' },
       { id: 'competitions' as const, label: 'Competitions' },
       { id: 'matches' as const, label: 'Matches' },
-      { id: 'users' as const, label: 'Users' },
+      { id: 'users' as const, label: 'Members' },
       { id: 'audit' as const, label: 'Audit' },
       { id: 'governance' as const, label: 'Governance' },
       { id: 'operations' as const, label: 'Operations (Admin)' },

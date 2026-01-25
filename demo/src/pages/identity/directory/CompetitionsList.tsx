@@ -165,7 +165,8 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
           credentials: 'include',
         });
         if (!res.ok) return;
-        const data: any = await res.json();
+        const raw: any = await res.json().catch(() => null);
+        const data: any = raw?.data ?? raw;
         const slug = String(data?.slug || '').trim();
         if (!cancelled && slug) setLockedOrgSlug(slug);
       } catch {
@@ -396,8 +397,13 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
           }
 
           const clubTeams = teams.filter((t) => {
-            const tParent = (t as any).parent_id || (t as any).parent;
-            return String(tParent) === String(selectedClubId);
+            const parent =
+              (t as any).parent_id ??
+              (t as any).parent ??
+              (t as any).parent_project_id ??
+              (typeof (t as any).parent_project === 'object' ? (t as any).parent_project?.id : (t as any).parent_project);
+            const parentId = parent == null ? '' : String(typeof parent === 'object' ? parent.id : parent);
+            return parentId && parentId === String(selectedClubId);
           });
 
           if (clubTeams.length === 0) {
@@ -487,8 +493,13 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
 
           clubTeamIds = teams
             .filter((t) => {
-              const tParent = (t as any).parent_id || (t as any).parent;
-              return String(tParent) === String(selectedClubId);
+              const parent =
+                (t as any).parent_id ??
+                (t as any).parent ??
+                (t as any).parent_project_id ??
+                (typeof (t as any).parent_project === 'object' ? (t as any).parent_project?.id : (t as any).parent_project);
+              const parentId = parent == null ? '' : String(typeof parent === 'object' ? parent.id : parent);
+              return parentId && parentId === String(selectedClubId);
             })
             .map((t) => String((t as any).id));
 

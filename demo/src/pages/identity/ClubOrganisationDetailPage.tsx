@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Button, Card } from '@django-core/design-system';
-import { PageContent, PageHeader } from '@django-core/page-templates';
+import { BreadcrumbContextSwitcher, PageContent, PageHeader, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
 
 import { TeamsList } from './directory/TeamsList';
 import { SeasonsList } from './directory/SeasonsList';
@@ -65,6 +65,9 @@ export default function ClubOrganisationDetailPage() {
   const [hierarchySeasonsByTeamId, setHierarchySeasonsByTeamId] = useState<Record<string, Period[]>>({});
   const [hierarchyLoading, setHierarchyLoading] = useState(false);
   const [hierarchyError, setHierarchyError] = useState<string | null>(null);
+
+  const [orgClubsForSwitcher, setOrgClubsForSwitcher] = useState<Project[]>([]);
+  const [orgClubsForSwitcherLoading, setOrgClubsForSwitcherLoading] = useState(false);
 
   const activeTabFromUrl = useMemo(() => {
     const params = new URLSearchParams(location.search || '');
@@ -195,6 +198,51 @@ export default function ClubOrganisationDetailPage() {
   useEffect(() => {
     let cancelled = false;
 
+    const loadOrgClubs = async () => {
+      if (!orgSlugOrId) return;
+      setOrgClubsForSwitcherLoading(true);
+
+      try {
+        const params = new URLSearchParams();
+        params.set('page_size', '500');
+        params.set('include_archived', 'true');
+        params.set('parent_project__isnull', 'true');
+        const res = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/?${params.toString()}`,
+          { credentials: 'include' },
+        );
+        if (!res.ok) throw new Error(`Failed to load clubs (${res.status})`);
+        const json = await res.json().catch(() => null);
+        const raw = unwrapEnvelope<any>(json);
+        const list: any[] = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
+        const normalized = mergeUniqueById(
+          (list || [])
+            .map((p: any) => ({
+              id: String(p?.id || '').trim(),
+              name: String(p?.name || 'Club'),
+              slug: p?.slug ? String(p.slug) : undefined,
+            }))
+            .filter((p: any) => Boolean(p.id)),
+        );
+        if (cancelled) return;
+        setOrgClubsForSwitcher(normalized);
+      } catch {
+        if (cancelled) return;
+        setOrgClubsForSwitcher([]);
+      } finally {
+        if (!cancelled) setOrgClubsForSwitcherLoading(false);
+      }
+    };
+
+    void loadOrgClubs();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBaseUrl, orgSlugOrId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
     const loadHierarchy = async () => {
       if (activeTabFromUrl !== 'hierarchy') return;
       if (!orgIdForDirectoryLists || !clubIdForDirectoryLists) return;
@@ -217,7 +265,15 @@ export default function ClubOrganisationDetailPage() {
         const filteredTeams = teamsList
           .filter((t: any) => {
             const oid = getOrganisationId(t);
-            return !oid || oid === String(orgIdForDirectoryLists);
+            if (oid && oid !== String(orgIdForDirectoryLists)) return false;
+
+            const parent =
+              (t as any)?.parent_project_id ??
+              (t as any)?.parent_project?.id ??
+              (t as any)?.parent_id ??
+              (typeof (t as any)?.parent === 'object' ? (t as any)?.parent?.id : (t as any)?.parent);
+            if (parent == null) return false;
+            return String(typeof parent === 'object' ? parent.id : parent) === String(clubIdForDirectoryLists);
           })
           .map((t: any) => ({
             id: String(t?.id || '').trim(),
@@ -302,6 +358,29 @@ export default function ClubOrganisationDetailPage() {
     return `/${encodeURIComponent(orgKey)}?${params.toString()}`;
   }, [location.search, org?.slug, orgSlugOrId]);
 
+  const clubBreadcrumbOptions: BreadcrumbSwitcherOption[] = useMemo(() => {
+    const base = (orgClubsForSwitcher || []).map((c: any) => ({
+      id: String(c.id),
+      label: String(c.name || c.slug || c.id),
+      slug: String(c.slug || c.id),
+    }));
+
+    if (club && !base.some((c) => String(c.id) === String(club.id))) {
+      base.push({
+        id: String(club.id),
+        label: String(club.name || club.slug || club.id),
+        slug: String(club.slug || club.id),
+      });
+    }
+    return base;
+  }, [club, orgClubsForSwitcher]);
+
+  const handleClubSwitch = (option: BreadcrumbSwitcherOption) => {
+    const orgKey = String(org?.slug || orgSlugOrId || '').trim();
+    if (!orgKey) return;
+    navigate(`/${encodeURIComponent(orgKey)}/${encodeURIComponent(String(option.slug || option.id))}${location.search || ''}`);
+  };
+
   const shouldResolveClub = useMemo(() => looksLikeIdentifier(clubSlugOrId), [clubSlugOrId]);
 
   useEffect(() => {
@@ -356,6 +435,22 @@ export default function ClubOrganisationDetailPage() {
         <PageHeader
           title={club.name}
           subtitle="Club overview"
+          breadcrumbs={[
+            { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+            { label: org?.name || 'Federation', onClick: () => navigate(backToOrgHref) },
+            {
+              label: (
+                <BreadcrumbContextSwitcher
+                  currentId={String(club.id)}
+                  options={clubBreadcrumbOptions}
+                  onSelect={handleClubSwitch}
+                  hasDropdown={!orgClubsForSwitcherLoading && clubBreadcrumbOptions.length > 1}
+                  type="project"
+                />
+              ),
+              current: true,
+            },
+          ]}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
               <Button variant="secondary" size="sm" onClick={() => navigate(backToOrgHref)}>

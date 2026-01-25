@@ -332,7 +332,8 @@ export default function TeamOrganisationDetailPage() {
         const list = mergeUniqueById(
           (results || []).filter((t: any) => {
             const parentId = (t as any)?.parent_project_id ?? (t as any)?.parent_project?.id ?? null;
-            return parentId == null || String(parentId) === String(clubIdForDirectoryLists);
+            if (parentId == null) return false;
+            return String(parentId) === String(clubIdForDirectoryLists);
           }),
         );
 

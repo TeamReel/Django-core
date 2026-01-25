@@ -46,6 +46,8 @@ export default function UsersTable({
   onEditMembership,
   onRemoveMembership,
 }: Props) {
+  const noBorderBadgeStyle: React.CSSProperties = { border: 'none', boxShadow: 'none', outline: 'none' };
+
   const looksLikeUuid = (value: string): boolean => {
     const v = String(value || '').trim();
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
@@ -305,12 +307,12 @@ export default function UsersTable({
                   </Link>
                 </td>
                 <td style={compactTdStyle}>
-                  <Badge variant="default" title={String(userObj.email || '')}>
+                  <Badge variant="default" title={String(userObj.email || '')} style={noBorderBadgeStyle}>
                     {String(userObj.email || '—')}
                   </Badge>
                 </td>
                 <td style={compactTdStyle}>
-                  <Badge variant="default" title={roleDisplay.title}>
+                  <Badge variant="default" title={roleDisplay.title} style={noBorderBadgeStyle}>
                     {roleDisplay.label}
                   </Badge>
                 </td>
@@ -319,7 +321,7 @@ export default function UsersTable({
                     {functionalRoles.length ? (
                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                         {functionalRoles.map((r) => (
-                          <Badge key={r} variant="default">
+                          <Badge key={r} variant="default" style={noBorderBadgeStyle}>
                             {r}
                           </Badge>
                         ))}

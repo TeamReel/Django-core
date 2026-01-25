@@ -84,6 +84,8 @@ const badgeButtonStyle: React.CSSProperties = {
 
 const badgeNoBorderStyle: React.CSSProperties = {
     border: 'none',
+    boxShadow: 'none',
+    outline: 'none',
 };
 
 interface UsersListProps {
