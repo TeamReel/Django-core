@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, useLocation, matchPath } from 'react-router-dom';
 import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
@@ -87,6 +87,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
   const { isSystemAdmin, isOrgAdmin, isLandAdmin } = useUserRole();
   const location = useLocation();
   const isStaff = isSystemAdmin || isLandAdmin;
+    const [user2364Label, setUser2364Label] = useState('User: 2364');
   const {
       orgSlug,
       clubSlugOrId, clubName,
@@ -95,6 +96,34 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       competitionSlugOrId, competitionName,
       matchId
   } = useAppSelection();
+
+    useEffect(() => {
+        // Optional convenience shortcut: keep the APP link human-friendly.
+        // If the user isn't accessible, keep the numeric fallback label.
+        let cancelled = false;
+        const run = async () => {
+            try {
+                const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                const res = await fetch(
+                    `${apiBaseUrl}/api/v1/admin/users/2364/`,
+                    { credentials: 'include' }
+                );
+                if (!res.ok) return;
+                const raw = await res.json();
+                const u = (raw as any)?.data ?? raw;
+                const name = `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim();
+                const email = String(u?.email || '').trim();
+                const label = name || email;
+                if (!cancelled && label) setUser2364Label(`User: ${label}`);
+            } catch {
+                // ignore
+            }
+        };
+        void run();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
   // --- PANEL B LOGIC (New) ---
   const panelBConfig = useMemo(() => {
@@ -621,9 +650,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             { label: seasonLabel, path: seasonPath, icon: CalendarDays, visibility: 'everyone' },
             { label: competitionLabel, path: competitionPath, icon: Trophy, visibility: 'everyone' },
             { label: matchLabel, path: matchPath, icon: Timer, visibility: 'everyone' },
-            { label: 'User: 2364', path: '/users/2364', icon: Users, visibility: 'org_admin' },
+            { label: user2364Label, path: '/users/2364', icon: Users, visibility: 'org_admin' },
         ];
-    }, [location.pathname, orgSlug, clubSlugOrId, clubName, teamSlugOrId, teamName, seasonSlugOrId, seasonName, competitionSlugOrId, competitionName, matchId]);
+    }, [location.pathname, orgSlug, clubSlugOrId, clubName, teamSlugOrId, teamName, seasonSlugOrId, seasonName, competitionSlugOrId, competitionName, matchId, user2364Label]);
 
     const panelASections = useMemo(() => {
         return visibleSections

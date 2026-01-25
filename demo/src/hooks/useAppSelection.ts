@@ -43,7 +43,7 @@ const APP_LAST_CTX_KEY = 'demo_app_last_context_v1';
 const RESERVED_ROOT_SEGMENTS = new Set([
   '', 'dashboard', 'login', 'register', 'directory', 'organisations',
   'projects', 'matches', 'health', 'studio', 'content', 'notifications',
-  'usage-events', 'settings'
+  'usage-events', 'settings', 'users'
 ]);
 
 const REGEX = {

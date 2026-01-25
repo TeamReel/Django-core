@@ -162,6 +162,27 @@ export default function Breadcrumbs() {
       setLoadingUsers(true);
       try {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+        // Always resolve the current user label (name/email) to avoid showing only the ID.
+        let currentUserOption: BreadcrumbSwitcherOption | null = null;
+        try {
+          const res = await fetch(
+            `${apiBaseUrl}/api/v1/admin/users/${encodeURIComponent(currentUserId)}/`,
+            { credentials: 'include' }
+          );
+          if (res.ok) {
+            const raw = await res.json();
+            const u = (raw as any)?.data ?? raw;
+            const id = String(u?.id || currentUserId).trim();
+            const name = `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim();
+            const email = String(u?.email || '').trim();
+            const label = name || email || (id ? `User ${id}` : 'User');
+            currentUserOption = { id, label };
+          }
+        } catch {
+          // ignore
+        }
+
         const users = await fetchAllPages<any>(
           `${apiBaseUrl}/api/v1/admin/users/?page_size=200`,
           { credentials: 'include' },
@@ -169,15 +190,20 @@ export default function Breadcrumbs() {
         );
 
         if (cancelled) return;
-        setUserOptions(
-          (Array.isArray(users) ? users : []).map((u: any) => {
+        const nextOptions = (Array.isArray(users) ? users : []).map((u: any) => {
             const id = String(u?.id || '').trim();
             const name = `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim();
             const email = String(u?.email || '').trim();
             const label = name || email || (id ? `User ${id}` : 'User');
             return { id: id || label, label };
-          })
-        );
+          });
+
+        if (currentUserOption) {
+          const has = nextOptions.some((o) => String(o.id) === String(currentUserOption!.id));
+          if (!has) nextOptions.unshift(currentUserOption);
+        }
+
+        setUserOptions(nextOptions);
       } catch {
         if (!cancelled) setUserOptions([]);
       } finally {
@@ -189,7 +215,7 @@ export default function Breadcrumbs() {
     return () => {
       cancelled = true;
     };
-  }, [userDetailMatch?.params]);
+  }, [String((userDetailMatch?.params as any)?.userId || '').trim()]);
 
   // For club/team detail pages: fetch switcher options (clubs under org; teams under club)
   useEffect(() => {
