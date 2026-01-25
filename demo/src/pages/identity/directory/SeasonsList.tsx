@@ -666,7 +666,6 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                     {!clubLocked && (
                       <th style={{ ...compactThStyle, width: '140px' }}>Club</th>
                     )}
-                    <th style={{ ...compactThStyle, width: '140px' }}>Team</th>
                     <th style={{ ...compactThStyle, width: '260px' }}>Season</th>
                   <th style={{ ...compactThStyle, width: '110px' }}>Competition</th>
                   <th style={{ ...compactThStyle, width: '100px' }}>Match</th>
@@ -750,22 +749,6 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                             )}
                           </td>
                         )}
-                        <td style={compactTextTdStyle}>
-                          {teamDetailPath ? (
-                            <a
-                              href={teamDetailPath}
-                              className="text-blue-600 hover:underline"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                navigate(teamDetailPath);
-                              }}
-                            >
-                              {teamName}
-                            </a>
-                          ) : (
-                            teamName
-                          )}
-                        </td>
                         <td style={compactTextTdStyle}>
                           {seasonDetailPath ? (
                             <a

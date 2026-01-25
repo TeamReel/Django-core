@@ -994,7 +994,6 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                     {!clubLocked && (
                       <th style={{ ...compactThStyle, width: '12%' }}>Club</th>
                     )}
-                    <th style={{ ...compactThStyle, width: '12%' }}>Team</th>
                     <th style={{ ...compactThStyle, width: '12%' }}>Season</th>
                     <th style={{ ...compactThStyle, width: '20%' }}>Competition</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
@@ -1076,20 +1075,6 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                             ) : clubName}
                           </td>
                         )}
-                        <td style={compactTextTdStyle}>
-                          {teamId ? (
-                            <a
-                              href={teamBasePath}
-                              className="text-blue-600 hover:underline"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                navigate(teamBasePath);
-                              }}
-                            >
-                              {teamName}
-                            </a>
-                          ) : teamName}
-                        </td>
                         <td style={compactTextTdStyle}>
                             {seasonId ? (
                                 <a

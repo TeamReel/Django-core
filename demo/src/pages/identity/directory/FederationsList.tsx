@@ -271,7 +271,6 @@ export const FederationsList: React.FC = () => {
                     <th onClick={() => handleSort('project_count')} style={{ ...compactThStyle, cursor: 'pointer', width: '8%' }}>
                       Club {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Team</th>
                     <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
                     <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
                     <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
@@ -309,11 +308,6 @@ export const FederationsList: React.FC = () => {
                         <td style={compactTdStyle}>
                           <Badge variant="default">
                             {org.project_count || 0}
-                          </Badge>
-                        </td>
-                        <td style={compactTdStyle}>
-                          <Badge variant="default">
-                            {(org as any).teams_count || 0}
                           </Badge>
                         </td>
                         <td style={compactTdStyle}>

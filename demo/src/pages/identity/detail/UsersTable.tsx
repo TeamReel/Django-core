@@ -179,17 +179,15 @@ export default function UsersTable({
             </>
           ) : (
             <>
-              <col style={{ width: '220px' }} />
-              <col style={{ width: '240px' }} />
-              <col style={{ width: '220px' }} />
-              <col style={{ width: '120px' }} />
+              <col style={{ width: '260px' }} />
+              <col style={{ width: '260px' }} />
+              <col style={{ width: '140px' }} />
               <col style={{ width: '330px' }} />
             </>
           )}
         </colgroup>
         <thead>
           <tr>
-            {!isTeamRoute && <th style={compactThStyle}>Team</th>}
             <th style={compactThStyle}>User</th>
             <th style={compactThStyle}>Email</th>
             <th style={compactThStyle}>Role</th>
@@ -278,34 +276,6 @@ export default function UsersTable({
 
             return (
               <tr key={String(userObj.id)}>
-                {!isTeamRoute && (
-                  <td style={compactTextTdStyle}>
-                    {teamEntries.length > 1 ? (
-                      <>
-                        {teamEntries.map((t, idx) => (
-                          <React.Fragment key={t.id}>
-                            {idx > 0 ? '; ' : null}
-                            <Link
-                              to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${t.slugOrId}`}
-                              className="text-blue-600 hover:underline"
-                            >
-                              {t.name}
-                            </Link>
-                          </React.Fragment>
-                        ))}
-                      </>
-                    ) : teamSlugOrId ? (
-                      <Link
-                        to={`/organisations/${currentOrgSlug}/projects/${currentClubSlugOrId}/teams/${teamSlugOrId}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        {teamName}
-                      </Link>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
-                )}
                 <td style={compactTextTdStyle}>
                   <Link to={`/users/${userObj.id}`} className="text-blue-600 hover:underline">
                     {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}

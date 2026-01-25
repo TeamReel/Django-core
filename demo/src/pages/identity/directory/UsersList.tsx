@@ -1020,7 +1020,6 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                                         {!clubLocked && (
                                                                             <th style={{ ...compactThStyle, width: '14%' }}>Club</th>
                                                                         )}
-                                    <th style={{ ...compactThStyle, width: '14%' }}>Team</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Season</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Competition</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Match</th>
@@ -1037,7 +1036,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                     const scoped = getClubAndTeamForRow(u);
 
                                     const orgHref = getOrganisationLinkForRow(u);
-                                    const { clubHref, teamHref } = getClubAndTeamLinksForRow(u);
+                                    const { clubHref } = getClubAndTeamLinksForRow(u);
 
                                     const membershipId = u?.membership?.id ?? u?.membership_id ?? u?.member_id ?? null;
                                     const source = String(u?.membership?.source ?? u?.source ?? '').toLowerCase();
@@ -1074,15 +1073,6 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                               )}
                                           </td>
                                         )}
-                                        <td style={compactTextTdStyle} title={scoped.team.title}>
-                                            {teamHref && scoped.team.label !== '-' ? (
-                                                <button style={linkButtonStyle} onClick={() => navigate(teamHref)}>
-                                                    {scoped.team.label}
-                                                </button>
-                                            ) : (
-                                                scoped.team.label
-                                            )}
-                                        </td>
                                         <td style={compactTdStyle}>
                                             <button
                                                 type="button"

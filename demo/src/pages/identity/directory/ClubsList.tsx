@@ -302,7 +302,6 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
                     <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
                   )}
                   <th style={{ ...compactThStyle, width: '20%' }}>Club</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Team</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
@@ -368,11 +367,6 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
                         >
                           {club.name}
                         </a>
-                      </td>
-                      <td style={compactTdStyle}>
-                        <Badge variant="default">
-                          {teamsCount}
-                        </Badge>
                       </td>
                       <td style={compactTdStyle}>
                         <Badge variant="default">

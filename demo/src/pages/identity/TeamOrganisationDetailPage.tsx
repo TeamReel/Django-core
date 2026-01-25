@@ -422,21 +422,45 @@ export default function TeamOrganisationDetailPage() {
       setClubTeamsForSwitcherLoading(true);
       try {
         const orgKey = String(org?.slug || resolvedOrgSlug || '').trim();
-        // Fetch all teams for the federation and filter down to the current club.
-        // This avoids relying on `parent_project=...` which can be ignored by some servers.
-        const url = orgKey
-          ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgKey)}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`
-          : `${apiBaseUrl}/api/v1/projects/?page_size=2000&include_archived=true`;
 
-        const res = await fetch(url, { credentials: 'include' });
-        if (!res.ok) throw new Error(`Failed to load club teams (${res.status})`);
-        const json = await res.json().catch(() => null);
-        const raw = unwrapEnvelope<any>(json);
-        const results: any[] = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
+        const clubKeyCandidates = new Set(
+          [
+            String(clubIdForDirectoryLists),
+            String((club as any)?.id ?? ''),
+            String((club as any)?.slug ?? ''),
+            String(clubKeyForRoutes || ''),
+            String(clubSlugOrId || ''),
+          ]
+            .map((v) => String(v || '').trim())
+            .filter(Boolean),
+        );
+
+        const isTeamUnderThisClub = (t: any): boolean => {
+          const parentId = String(getParentProjectId(t) || '').trim();
+          if (!parentId) return false;
+          return clubKeyCandidates.has(parentId);
+        };
+
+        // Strategy:
+        // - First try direct parent_project query (often works and is fast).
+        // - Also fetch org-wide teams (parent_project__isnull=false) and filter client-side.
+        // - Merge both, then strictly filter by parent.
+        const directUrl = `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(String(clubIdForDirectoryLists))}&page_size=500&include_archived=true`;
+        const orgTeamsUrl = orgKey
+          ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgKey)}/projects/?page_size=250&include_archived=true&parent_project__isnull=false`
+          : `${apiBaseUrl}/api/v1/projects/?page_size=250&include_archived=true&parent_project__isnull=false`;
+
+        const [directResults, orgTeamsResults] = await Promise.all([
+          fetchAllPages<any>(directUrl, { credentials: 'include' }, { ttlMs: 60_000, bypass: true, maxItems: 5000 }),
+          fetchAllPages<any>(orgTeamsUrl, { credentials: 'include' }, { ttlMs: 60_000, bypass: true, maxItems: 5000 }),
+        ]);
+
+        const merged = mergeUniqueById([...(directResults || []), ...(orgTeamsResults || [])]);
         const list = mergeUniqueById(
-          (results || []).filter((t: any) => {
-            const parentId = getParentProjectId(t);
-            return parentId && parentId === String(clubIdForDirectoryLists);
+          (merged || []).filter((t: any) => {
+            if (!t?.id) return false;
+            if (String(t.id) === String(clubIdForDirectoryLists)) return false;
+            return isTeamUnderThisClub(t);
           }),
         );
 
@@ -650,17 +674,6 @@ export default function TeamOrganisationDetailPage() {
                       fontWeight: 600,
                     };
 
-                    const seasonRowStyle: React.CSSProperties = {
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: '8px 10px',
-                      border: '1px solid var(--app-border)',
-                      borderRadius: 8,
-                      background: 'var(--app-surface)',
-                    };
-
                     const competitionRowStyle: React.CSSProperties = {
                       display: 'flex',
                       justifyContent: 'space-between',
@@ -700,20 +713,40 @@ export default function TeamOrganisationDetailPage() {
                     const seasonMatches = hierarchyMatchesCountBySeasonId[seasonId] ?? 0;
 
                     return (
-                      <div key={String(season.id)} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <div style={seasonRowStyle}>
-                          <div style={{ minWidth: 0 }}>
+                      <div
+                        key={String(season.id)}
+                        style={{
+                          border: '1px solid var(--app-border)',
+                          borderRadius: 10,
+                          background: 'var(--app-surface)',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '10px 12px',
+                            borderBottom: '1px solid var(--app-border)',
+                            background: 'var(--app-surface-2)',
+                            gap: 12,
+                          }}
+                        >
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
                             {seasonPath ? (
                               <button
                                 type="button"
                                 className="app-unstyled-button text-blue-600 hover:underline"
                                 onClick={() => navigate(seasonPath)}
-                                style={{ textAlign: 'left', fontWeight: 700, fontSize: 13 }}
+                                style={{ textAlign: 'left', fontWeight: 800, fontSize: 14 }}
                               >
                                 {String((season as any)?.name || 'Season')}
                               </button>
                             ) : (
-                              <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--app-text)' }}>{String((season as any)?.name || 'Season')}</div>
+                              <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--app-text)' }}>
+                                {String((season as any)?.name || 'Season')}
+                              </div>
                             )}
                           </div>
 
@@ -723,13 +756,12 @@ export default function TeamOrganisationDetailPage() {
                           </div>
                         </div>
 
-                        {competitions.length === 0 ? (
-                          <div className="text-sm text-gray-500 py-1" style={{ marginLeft: 16 }}>
-                            No competitions.
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginLeft: 16 }}>
-                            {competitions.map((c) => {
+                        <div style={{ padding: '10px 12px' }}>
+                          {competitions.length === 0 ? (
+                            <div className="text-sm text-gray-500 py-2">No competitions.</div>
+                          ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                              {competitions.map((c) => {
                               const competitionKey = String((c as any)?.slug || (c as any)?.id || '').trim();
                               const competitionPath =
                                 orgKeyForRoutes && clubKeyForRoutes && teamKeyForRoutes && seasonKey && competitionKey
@@ -761,9 +793,10 @@ export default function TeamOrganisationDetailPage() {
                                   </div>
                                 </div>
                               );
-                            })}
-                          </div>
-                        )}
+                              })}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                         })}

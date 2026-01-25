@@ -481,7 +481,6 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
                       {!clubLocked && (
                         <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
                       )}
-                      <th style={{ ...compactThStyle, width: '18%' }}>Team</th>
                       <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
                       <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
                       <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
@@ -557,23 +556,6 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
                             )}
                           </td>
                         )}
-
-                        <td style={compactTextTdStyle}>
-                          {orgSlugOrId && clubSlugOrId ? (
-                            <a
-                              href={`/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`}
-                              className="text-blue-600 hover:underline"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                navigate(`/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`);
-                              }}
-                            >
-                              {team.name}
-                            </a>
-                          ) : (
-                            team.name
-                          )}
-                        </td>
 
                         <td style={compactTdStyle}>
                           <Badge variant="default">{(team as any).seasons_count || 0}</Badge>
