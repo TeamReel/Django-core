@@ -1021,11 +1021,11 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                                             <th style={{ ...compactThStyle, width: '14%' }}>Club</th>
                                                                         )}
                                     {!teamLocked && <th style={{ ...compactThStyle, width: '14%' }}>Team</th>}
+                                    <th style={{ ...compactThStyle, width: '12%' }}>Username</th>
+                                    <th style={{ ...compactThStyle, width: '14%' }}>Email</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Season</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Competition</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Match</th>
-                                    <th style={{ ...compactThStyle, width: '12%' }}>Username</th>
-                                    <th style={{ ...compactThStyle, width: '14%' }}>Email</th>
                                     <th style={{ ...compactThStyle, width: '8%' }}>Role</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
                                     <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
@@ -1085,6 +1085,25 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                               )}
                                           </td>
                                         )}
+                                        <td style={compactTextTdStyle} className="font-medium">
+                                            {u?.id ? (
+                                                <button
+                                                    style={linkButtonStyle}
+                                                    onClick={() => {
+                                                        const href = getUserDetailHrefForRow(u);
+                                                        if (href) navigate(href);
+                                                    }}
+                                                    title="Open user"
+                                                >
+                                                    {usernameLabel}
+                                                </button>
+                                            ) : (
+                                                usernameLabel
+                                            )}
+                                        </td>
+                                        <td style={compactTextTdStyle} title={String(u.email || '')}>
+                                            {u.email}
+                                        </td>
                                         <td style={compactTdStyle}>
                                             <button
                                                 type="button"
@@ -1129,25 +1148,6 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                     {counts.matchesCount}
                                                 </Badge>
                                             </button>
-                                        </td>
-                                        <td style={compactTextTdStyle} className="font-medium">
-                                            {u?.id ? (
-                                                <button
-                                                    style={linkButtonStyle}
-                                                    onClick={() => {
-                                                        const href = getUserDetailHrefForRow(u);
-                                                        if (href) navigate(href);
-                                                    }}
-                                                    title="Open user"
-                                                >
-                                                    {usernameLabel}
-                                                </button>
-                                            ) : (
-                                                usernameLabel
-                                            )}
-                                        </td>
-                                        <td style={compactTextTdStyle} title={String(u.email || '')}>
-                                            {u.email}
                                         </td>
                                         <td style={compactTdStyle} title={roleDisplay.title}>
                                             <Badge variant="default" style={scopedLocked ? badgeNoBorderStyle : undefined}>

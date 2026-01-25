@@ -383,6 +383,15 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
     const loadSeasons = async () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       try {
+        const fetchSeasonsWithParams = async (params: URLSearchParams) => {
+          const results = await fetchAllPages<any>(
+            `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+            { credentials: 'include' },
+            { ttlMs: 120_000, bypass: refreshKey > 0 },
+          );
+          return Array.isArray(results) ? results : [];
+        };
+
         const baseParams = new URLSearchParams();
         baseParams.set('page_size', '500');
         baseParams.set('parent_id', 'null');
@@ -411,22 +420,40 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
             return;
           }
 
+          // Seasons can sometimes be club-scoped instead of team-scoped.
+          // Include the club id alongside all team ids.
           const teamIds = clubTeams.map((t) => String((t as any).id));
+          const projectIds = [String(selectedClubId), ...teamIds].filter(Boolean);
           const chunks = chunkArray(teamIds, 25);
-          const results = (
+
+          const typedResults = (
             await Promise.all(
-              chunks.map(async (ids) => {
+              chunkArray(projectIds, 25).map(async (ids) => {
                 const params = new URLSearchParams(baseParams);
                 params.set('project_id__in', ids.join(','));
-                return await fetchAllPages<any>(
-                  `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
-                  { credentials: 'include' },
-                  { ttlMs: 120_000, bypass: refreshKey > 0 },
-                );
+                return await fetchSeasonsWithParams(params);
               }),
             )
           ).flat();
-          const unique = [...new Map((Array.isArray(results) ? results : []).map((p: any) => [String(p.id), p])).values()];
+
+          // Fallback: fetch without type filter (some backends don't tag seasons as type=season).
+          // Then keep only top-level periods.
+          const untypedBaseParams = new URLSearchParams(baseParams);
+          untypedBaseParams.delete('type');
+          const untypedResults = (
+            await Promise.all(
+              chunkArray(projectIds, 25).map(async (ids) => {
+                const params = new URLSearchParams(untypedBaseParams);
+                params.set('project_id__in', ids.join(','));
+                return await fetchSeasonsWithParams(params);
+              }),
+            )
+          )
+            .flat()
+            .filter((p: any) => !p?.parent_period_id && !p?.parent_period);
+
+          const merged = [...typedResults, ...untypedResults];
+          const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
           setSeasons(unique);
           return;
         } else if (selectedOrgId) {
@@ -440,17 +467,27 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                 chunks.map(async (ids) => {
                   const params = new URLSearchParams(baseParams);
                   params.set('project_id__in', ids.join(','));
-                  return await fetchAllPages<any>(
-                    `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
-                    { credentials: 'include' },
-                    { ttlMs: 120_000, bypass: refreshKey > 0 },
-                  );
+                  return await fetchSeasonsWithParams(params);
                 }),
               )
             ).flat();
-            const unique = [
-              ...new Map((Array.isArray(results) ? results : []).map((p: any) => [String(p.id), p])).values(),
-            ];
+
+            const untypedBaseParams = new URLSearchParams(baseParams);
+            untypedBaseParams.delete('type');
+            const untypedResults = (
+              await Promise.all(
+                chunks.map(async (ids) => {
+                  const params = new URLSearchParams(untypedBaseParams);
+                  params.set('project_id__in', ids.join(','));
+                  return await fetchSeasonsWithParams(params);
+                }),
+              )
+            )
+              .flat()
+              .filter((p: any) => !p?.parent_period_id && !p?.parent_period);
+
+            const merged = [...results, ...untypedResults];
+            const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
             setSeasons(unique);
             return;
           }
@@ -460,13 +497,14 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
           if (orgIdForApi) baseParams.set('organisation_id', orgIdForApi);
         }
 
-        const results = await fetchAllPages<any>(
-          `${apiBaseUrl}/api/v1/periods/?${baseParams.toString()}`,
-          { credentials: 'include' },
-          { ttlMs: 120_000, bypass: refreshKey > 0 },
+        const typedAll = await fetchSeasonsWithParams(baseParams);
+        const untypedBaseParams = new URLSearchParams(baseParams);
+        untypedBaseParams.delete('type');
+        const untypedAll = (await fetchSeasonsWithParams(untypedBaseParams)).filter(
+          (p: any) => !p?.parent_period_id && !p?.parent_period,
         );
-        const all = Array.isArray(results) ? results : [];
-        const unique = [...new Map(all.map((p: any) => [String(p.id), p])).values()];
+
+        const unique = [...new Map([...typedAll, ...untypedAll].map((p: any) => [String(p.id), p])).values()];
         setSeasons(unique);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load seasons');

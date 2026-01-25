@@ -302,6 +302,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
                     <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
                   )}
                   <th style={{ ...compactThStyle, width: '20%' }}>Club</th>
+                  <th style={{ ...compactThStyle, width: '8%' }}>Teams</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
@@ -330,9 +331,13 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
                   const clubSlugOrId = club.slug || club.id;
 
                   // Calculate teams count for this club from teams data
-                  const teamsForClub = teams.filter(t => {
-                    const parentId = t.parent_id || (t as any).parent_project_id;
-                    return String(parentId) === String(club.id);
+                  const teamsForClub = teams.filter((t: any) => {
+                    const parent =
+                      t.parent_id ??
+                      t.parent_project_id ??
+                      (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
+                    const parentId = parent == null ? '' : String(typeof parent === 'object' ? parent.id : parent);
+                    return parentId && parentId === String(club.id);
                   });
                   const teamsCount = teamsForClub.length;
 
@@ -367,6 +372,9 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
                         >
                           {club.name}
                         </a>
+                      </td>
+                      <td style={compactTdStyle}>
+                        <Badge variant="default">{teamsCount}</Badge>
                       </td>
                       <td style={compactTdStyle}>
                         <Badge variant="default">
