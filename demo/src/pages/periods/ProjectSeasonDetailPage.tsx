@@ -388,7 +388,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     const competitionId = String((competition as any)?.id || '').trim();
     if (!competitionId) return 0;
     return matches.filter((m: any) => {
-      const periodId = String(m.period_id || m.period?.id || '');
+      const periodId = String(m.period_id || m.period?.id || (m as any)?.period || '');
       return periodId === competitionId;
     }).length;
   };
@@ -1045,7 +1045,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   setSelectedDetailPeriod(season);
                   setIsPeriodDetailModalOpen(true);
                 }}
-                style={actionButtonStyle('primary')}
+                style={tableActionButtonStyle('primary')}
               >
                 View
               </button>
@@ -1057,7 +1057,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     setSelectedEditPeriod(season);
                     setIsPeriodEditModalOpen(true);
                   }}
-                  style={actionButtonStyle('warning')}
+                  style={tableActionButtonStyle('warning')}
                 >
                   Edit
                 </button>
@@ -1091,20 +1091,22 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       alert('Error deleting season');
                     }
                   }}
-                  style={actionButtonStyle('danger')}
+                  style={tableActionButtonStyle('danger')}
                 >
                   Delete
                 </button>
               )}
 
-              <button
-                type="button"
-                className="app-action-button"
-                onClick={() => setIsCreateTxnModalOpen(true)}
-                style={actionButtonStyle('primary')}
-              >
-                Create transaction
-              </button>
+              {userCanEditProject && (
+                <button
+                  type="button"
+                  className="app-action-button"
+                  onClick={() => setIsCreateTxnModalOpen(true)}
+                  style={tableActionButtonStyle('primary')}
+                >
+                  Create transaction
+                </button>
+              )}
             </div>
           }
         />
@@ -1382,7 +1384,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         const competitionId = String((competition as any)?.id || '').trim();
                         if (!competitionId) return [];
                         return matches.filter((m: any) => {
-                          const periodId = String(m.period_id || m.period?.id || '');
+                          const periodId = String(m.period_id || m.period?.id || (m as any)?.period || '');
                           return periodId === competitionId;
                         });
                       };
@@ -1459,7 +1461,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       setSelectedDetailPeriod(competition);
                                       setIsPeriodDetailModalOpen(true);
                                     }}
-                                    style={actionButtonStyle('primary')}
+                                    style={tableActionButtonStyle('primary')}
                                   >
                                     View
                                   </button>
@@ -1471,7 +1473,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         setSelectedEditPeriod(competition);
                                         setIsPeriodEditModalOpen(true);
                                       }}
-                                      style={actionButtonStyle('warning')}
+                                      style={tableActionButtonStyle('warning')}
                                     >
                                       Edit
                                     </button>
@@ -1502,7 +1504,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                           alert('Error deleting competition');
                                         }
                                       }}
-                                      style={actionButtonStyle('danger')}
+                                      style={tableActionButtonStyle('danger')}
                                     >
                                       Delete
                                     </button>

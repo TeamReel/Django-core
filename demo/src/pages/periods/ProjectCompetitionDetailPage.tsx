@@ -12,6 +12,7 @@ import MatchEditModal from '../identity/MatchEditModal';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import {
   actionButtonStyle,
+  ActionTone,
   compactActionsStyle,
   compactTableStyle,
   compactTdStyle,
@@ -1527,6 +1528,13 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     return `/matches/${matchForLink || matchId}`;
   };
 
+  const tableActionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => ({
+    ...actionButtonStyle(tone),
+    padding: '6px 12px',
+    fontWeight: 500,
+    fontSize: '13px',
+  });
+
   const renderMatchesTable = (rows: any[]) => {
     if (matchesLoading && !rows.length) {
       return <div className="text-sm text-gray-500 py-4 text-center">Loading matches…</div>;
@@ -1579,7 +1587,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                         setSelectedDetailMatch(m);
                         setIsMatchDetailModalOpen(true);
                       }}
-                      style={actionButtonStyle('primary')}
+                      style={tableActionButtonStyle('primary')}
                     >
                       View
                     </button>
@@ -1590,7 +1598,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                         setSelectedEditMatch(m);
                         setIsMatchEditModalOpen(true);
                       }}
-                      style={actionButtonStyle('warning')}
+                      style={tableActionButtonStyle('warning')}
                     >
                       Edit
                     </button>
@@ -1618,7 +1626,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                           alert('Error deleting match');
                         }
                       }}
-                      style={actionButtonStyle('danger')}
+                      style={tableActionButtonStyle('danger')}
                     >
                       Delete
                     </button>
@@ -1794,7 +1802,44 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                       </Button>
                     </div>
 
-                    {renderMatchesTable(filteredMatches)}
+                    {(() => {
+                      if (!filteredMatches.length) return renderMatchesTable(filteredMatches);
+
+                      const groups = new Map<string, { label: string; rows: any[] }>();
+                      for (const m of filteredMatches) {
+                        if (m?.start_time) {
+                          const dt = new Date(m.start_time);
+                          const isoKey = Number.isNaN(dt.getTime()) ? 'No date' : dt.toISOString().slice(0, 10);
+                          const label = Number.isNaN(dt.getTime()) ? 'No date' : dt.toLocaleDateString();
+                          const existing = groups.get(isoKey) || { label, rows: [] };
+                          existing.rows.push(m);
+                          groups.set(isoKey, existing);
+                        } else {
+                          const existing = groups.get('No date') || { label: 'No date', rows: [] };
+                          existing.rows.push(m);
+                          groups.set('No date', existing);
+                        }
+                      }
+
+                      const ordered = Array.from(groups.entries()).sort((a, b) => {
+                        if (a[0] === 'No date') return 1;
+                        if (b[0] === 'No date') return -1;
+                        return b[0].localeCompare(a[0]);
+                      });
+
+                      return (
+                        <div style={{ display: 'grid', gap: '16px' }}>
+                          {ordered.map(([key, group]) => (
+                            <div key={key}>
+                              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--app-text-secondary)', marginBottom: '6px' }}>
+                                {group.label}
+                              </div>
+                              {renderMatchesTable(group.rows)}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </Card>
               )}
