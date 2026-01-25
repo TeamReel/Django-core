@@ -532,6 +532,8 @@ export default function Breadcrumbs() {
   // User detail route: render a breadcrumb leaf switcher for users.
   if (userDetailMatch?.params?.userId) {
     const currentUserId = String((userDetailMatch.params as any)?.userId || '').trim();
+    const ctxOrgKey = String((context as any)?.organisation?.slug || (context as any)?.organisation?.id || '').trim();
+    const ctxOrgName = String((context as any)?.organisation?.name || '').trim();
     const options = [...userOptions];
     if (currentUserId && !options.some((o) => String(o.id) === currentUserId)) {
       options.push({ id: currentUserId, label: `User ${currentUserId}` });
@@ -545,6 +547,7 @@ export default function Breadcrumbs() {
 
     const crumbs: Array<{ label: React.ReactNode; path: string }> = [
       { label: 'Dashboard', path: '/dashboard' },
+      ...(ctxOrgKey ? [{ label: ctxOrgName || ctxOrgKey, path: `/${ctxOrgKey}` }] : []),
       { label: 'Users', path: '/users' },
       {
         label: (
@@ -599,6 +602,13 @@ export default function Breadcrumbs() {
         </ol>
       </nav>
     );
+  }
+
+  // Base trail for hierarchy pages: always start with Dashboard -> Federation (if available).
+  items.push(dash);
+  if (orgSlug) {
+    const orgName = (context as any)?.organisation?.name || orgSlug;
+    items.push({ label: orgName, path: orgPath });
   }
 
   if (orgSubpage) {
@@ -946,7 +956,7 @@ export default function Breadcrumbs() {
     }
 
     const handleSeasonSwitch = (option: BreadcrumbSwitcherOption) => {
-      const next = String(option.slug || option.id);
+      const next = isProjectsHierarchyRoute ? String(option.id) : String(option.slug || option.id);
       const nextPath = isProjectsHierarchyRoute
         ? `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${next}`
         : isVanityOrganisationsHierarchyRoute
@@ -995,7 +1005,7 @@ export default function Breadcrumbs() {
     }
 
     const handleCompetitionSwitch = (option: BreadcrumbSwitcherOption) => {
-      const next = String(option.slug || option.id);
+      const next = isProjectsHierarchyRoute ? String(option.id) : String(option.slug || option.id);
       const nextPath = isProjectsHierarchyRoute
         ? `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${effectiveSeasonSlugOrId}/competitions/${next}`
         : isVanityOrganisationsHierarchyRoute
@@ -1043,7 +1053,7 @@ export default function Breadcrumbs() {
     }
 
     const handleMatchSwitch = (option: BreadcrumbSwitcherOption) => {
-      const next = String(option.slug || option.id);
+      const next = isProjectsHierarchyRoute ? String(option.id) : String(option.slug || option.id);
       const nextPath = isProjectsHierarchyRoute
         ? `/organisations/${orgSlug}/projects/${effectiveClubSlugOrId}/teams/${effectiveTeamSlugOrId}/seasons/${effectiveSeasonSlugOrId}/competitions/${effectiveCompetitionSlugOrId}/matches/${next}`
         : isVanityOrganisationsHierarchyRoute
