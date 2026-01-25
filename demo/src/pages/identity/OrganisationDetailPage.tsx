@@ -1875,9 +1875,6 @@ export const OrganisationDetailPage: React.FC = () => {
                           ) : (
                             <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--app-text)' }}>{club.clubName}</div>
                           )}
-                          <div style={{ color: 'var(--app-muted-text)', fontSize: 12 }}>
-                            Club
-                          </div>
                         </div>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -1930,7 +1927,6 @@ export const OrganisationDetailPage: React.FC = () => {
                                     ) : (
                                       <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--app-text)' }}>{t.teamName}</div>
                                     )}
-                                    <div style={{ color: 'var(--app-muted-text)', fontSize: 12 }}>Team</div>
                                   </div>
 
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
