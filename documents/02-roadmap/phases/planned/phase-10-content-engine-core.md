@@ -1,10 +1,10 @@
-# Phase 10: Content Engine Core (039-044)
+# Phase 10: Content Engine Core (239-244)
 
 **Focus**: Generic event planning, content templates, sport configuration, brand identity, AI content generation, and smart media library
 
 ---
 
-## [B30: Generic Activities & Periods](../modules/planned/039-B30-generic-activities.md)
+## [B30: Generic Activities & Periods](../modules/planned/239-B30-generic-activities.md)
 
 **Doel**: Generic event & resource planning - time-bound cycles (seasons/quarters) en activities (matches/meetings) zonder domain lock-in.
 
@@ -25,7 +25,7 @@
   - Roles: configurable (starter, substitute, attendee)
   - Status: present, absent, excused
 - **Calendar views**: Monthly/weekly activity display
-- **Integration**: Audit trail (B09), notifications (B16), exports (B29)
+- **Integration**: Audit trail (B09), notifications (B16), exports (B38)
 
 **Demo Requirements**:
 - 📅 **Activities Page** (`/demo/activities`):
@@ -41,7 +41,7 @@
 
 ---
 
-## [B31: Content Templates & Generation](../modules/planned/040-B31-content-templates-and-generation.md)
+## [B31: Content Templates & Generation](../modules/planned/240-B31-content-templates-and-generation.md)
 
 **Doel**: Reusable templates for AI-generated content with approval workflow and content library/archive.
 
@@ -79,7 +79,7 @@
 
 ---
 
-## [B32: Sport Configuration & Templates](../modules/planned/041-B32-sport-configuration-and-templates.md)
+## [B32: Sport Configuration & Templates](../modules/planned/241-B32-sport-configuration-and-templates.md)
 
 **Doel**: Sport-specific configuration for team sizes, positions, lineup requirements, and outfit variants.
 
@@ -117,7 +117,7 @@
 
 ---
 
-## [B33: Brand Identity Manager](../modules/planned/042-B33-brand-identity-manager.md)
+## [B33: Brand Identity Manager](../modules/planned/242-B33-brand-identity-manager.md)
 
 **Doel**: Centralized brand identity management - logos, colors, design tokens als data (niet hardcoded), ondersteunt white-labeling en AI-driven content generation.
 
@@ -154,7 +154,7 @@
 
 ---
 
-## [B34: Generative Pipelines](../modules/planned/043-B34-generative-pipelines.md)
+## [B34: Generative Pipelines](../modules/planned/243-B34-generative-pipelines.md)
 
 **Doel**: AI content generation factory - manages generation requests (jobs), routes naar appropriate pipelines (LangGraph/n8n/OpenAI), handles async execution.
 
@@ -200,7 +200,7 @@
 
 ---
 
-## [B35: Smart Asset Library](../modules/planned/044-B35-smart-asset-library.md)
+## [B35: Smart Asset Library](../modules/planned/244-B35-smart-asset-library.md)
 
 **Doel**: Digital Asset Management (DAM) - extends B22 file management met semantic metadata, tagging, en relaties ("video belongs to Match X, features Player Y").
 
@@ -278,7 +278,7 @@
 
 **Enables future phases:**
 - Fase 11 (Frontend & Visual Dev) - F08 data viz can show activity calendars
-- Fase 12 (Workflows & Payments) - B29 exports use activity data
+- Fase 12 (Workflows & Payments) - B38 exports use activity data
 - Fase 13 (Advanced UI) - F11 ops console monitors generation jobs
 - Fase 16 (ML/AI Platform) - D13-D15 use B32 pipeline infrastructure
 

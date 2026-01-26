@@ -63,9 +63,22 @@ The Roadmap drives the Demo.
 
 Every completed phase MUST eventually be visible or verifiable in the Demo Shell.
 
----
 
 **See Also:**
 *   **[Full Roadmap](roadmap.md)**: Complete phase breakdown with module details.
 *   **[Module Status](modules/)**: Kanban-style module tracking.
 *   **[Implementation Details](../04-modules/index.md)**: Technical documentation for each module.
+
+## Keeping module links stable
+
+Markdown can’t maintain “dynamic links” automatically when filenames change (e.g., after renumbering). The recommended approach is to treat module codes as the stable identifier (B30, D06, F13, etc.) and use a small script to rewrite links to the current filenames.
+
+Run:
+
+```powershell
+# Preview changes
+python scripts/roadmap/update_module_links.py --dry-run
+
+# Apply changes
+python scripts/roadmap/update_module_links.py --write
+```

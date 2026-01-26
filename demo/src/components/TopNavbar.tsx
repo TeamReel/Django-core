@@ -714,8 +714,8 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
               type="button"
               onClick={() => setCommandOpen(true)}
               className="nav-icon-button"
-              title="Quick switcher (Ctrl+K)"
-              aria-label="Quick switcher"
+              title="Quick switch (Ctrl+K)"
+              aria-label="Quick switch"
               style={{
                 padding: '8px 10px',
                 display: 'inline-flex',
@@ -725,28 +725,49 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
               }}
             >
               <AppIcon icon={Command} size={18} />
-              <span style={{ fontSize: 12, opacity: 0.75, fontWeight: 700 }}>Ctrl+K</span>
+              <span style={{ fontSize: 13, fontWeight: 800 }}>Quick switch</span>
+              <span style={{ fontSize: 12, opacity: 0.7, fontWeight: 700 }}>Ctrl+K</span>
             </button>
 
-            {/* + Create CTA */}
-            <div ref={createMenuRef} style={{ position: 'relative' }}>
+            {/* + Create CTA (main action opens Content Library) */}
+            <div ref={createMenuRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
               <button
                 type="button"
-                onClick={() => setCreateMenuOpen((v) => !v)}
+                onClick={() => navigate('/content')}
                 className="nav-icon-button"
-                title="Create"
-                aria-label="Create"
+                title="Create content"
+                aria-label="Create content"
                 style={{
                   padding: '8px 12px',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 8,
                   borderRadius: 10,
+                  borderTopRightRadius: 0,
+                  borderBottomRightRadius: 0,
                   background: createMenuOpen ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
                 }}
               >
                 <AppIcon icon={Plus} size={18} />
                 <span style={{ fontSize: 13, fontWeight: 800 }}>Create</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCreateMenuOpen((v) => !v)}
+                className="nav-icon-button"
+                title="More create options"
+                aria-label="More create options"
+                style={{
+                  padding: '8px 10px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: 10,
+                  borderTopLeftRadius: 0,
+                  borderBottomLeftRadius: 0,
+                  borderLeft: '1px solid var(--app-border)',
+                  background: createMenuOpen ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
+                }}
+              >
                 <AppIcon icon={createMenuOpen ? ChevronUp : ChevronDown} size={12} />
               </button>
 
@@ -766,13 +787,14 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
                   }}
                 >
                   {[
-                    { label: 'Federation', path: '/organisations/create', hint: 'Create a new federation' },
-                    { label: 'Club', path: '/directory?tab=clubs', hint: 'Go to clubs list' },
-                    { label: 'Team', path: '/directory?tab=teams', hint: 'Go to teams list' },
-                    { label: 'Season', path: '/directory?tab=seasons', hint: 'Go to seasons list' },
+                    { label: 'Content Library', path: '/content', hint: 'Create content for match/season' },
+                    { label: 'AI Studio', path: '/studio/create', hint: 'Generate content (AI)' },
+                    { label: 'Match', path: '/directory?tab=matches&create=match', hint: 'Create a new match' },
                     { label: 'Competition', path: '/directory?tab=competitions', hint: 'Go to competitions list' },
-                    { label: 'Match', path: '/directory?tab=matches', hint: 'Go to matches list' },
-                    { label: 'AI Studio', path: '/studio/create', hint: 'Generate content' },
+                    { label: 'Season', path: '/directory?tab=seasons', hint: 'Go to seasons list' },
+                    { label: 'Team', path: '/directory?tab=teams', hint: 'Go to teams list' },
+                    { label: 'Club', path: '/directory?tab=clubs', hint: 'Go to clubs list' },
+                    { label: 'Federation', path: '/organisations/create', hint: 'Create a new federation' },
                   ].map((item) => (
                     <button
                       key={item.path}

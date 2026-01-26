@@ -1,10 +1,10 @@
-# Phase 16: ML/AI Platform (063-068)
+# Phase 16: ML/AI Platform (268-273)
 
 **Focus**: Feature engineering, model registry, prompt templates, agents, vector search, monitoring
 
 ---
 
-## [D11: Feature Engineering Patterns](../modules/planned/063-D11-feature-engineering-patterns.md)
+## [D11: Feature Engineering Patterns](../modules/planned/268-D11-feature-engineering-patterns.md)
 
 **Feature**: `D11-feature-engineering-patterns`
 
@@ -37,7 +37,7 @@
 
 ---
 
-## [D12: Model Registry](../modules/planned/064-D12-model-registry.md)
+## [D12: Model Registry](../modules/planned/269-D12-model-registry.md)
 
 **Feature**: `D12-model-registry`
 
@@ -71,7 +71,7 @@
 
 ---
 
-## [D13: Prompt Template Library](../modules/planned/065-D13-prompt-template-library.md)
+## [D13: Prompt Template Library](../modules/planned/270-D13-prompt-template-library.md)
 
 **Feature**: `D13-prompt-template-library`
 
@@ -112,7 +112,7 @@ metadata:
 
 ---
 
-## [D14: Agent Operations & Orchestration](../modules/planned/066-D14-agent-operations-and-orchestration.md)
+## [D14: Agent Operations & Orchestration](../modules/planned/271-D14-agent-operations-and-orchestration.md)
 
 **Feature**: `D14-agent-operations-orchestration`
 
@@ -152,7 +152,7 @@ policies:
 
 ---
 
-## [D15: Vector Search & Retrieval Adapter](../modules/planned/067-D15-vector-search-and-retrieval-adapter.md)
+## [D15: Vector Search & Retrieval Adapter](../modules/planned/272-D15-vector-search-and-retrieval-adapter.md)
 
 **Feature**: `D15-vector-search-retrieval-adapter`
 
@@ -185,7 +185,7 @@ policies:
 
 ---
 
-## [D16: Model Monitoring & Feedback Loop](../modules/planned/068-D16-model-monitoring-and-feedback-loop.md)
+## [D16: Model Monitoring & Feedback Loop](../modules/planned/273-D16-model-monitoring-and-feedback-loop.md)
 
 **Feature**: `D16-model-monitoring-feedback-loop`
 
@@ -220,7 +220,7 @@ policies:
 
 ## 📋 Constitution Gate (Post ML & Agent Governance)
 
-**Timing**: Na Phase 15 (modules 059-064 Complete)
+**Timing**: Na Phase 15 (D06-D10 complete)
 
 **Waarom nu**
 - ML/AI infrastructure complete (features, models, prompts, agents, vector search, monitoring)

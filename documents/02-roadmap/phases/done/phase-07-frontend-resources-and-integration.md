@@ -58,13 +58,13 @@
 
 ---
 
-## [F08: (RESERVED FOR FUTURE)](../modules/planned/039-F08-data-visualization-components.md)
+## [F08: (RESERVED FOR FUTURE)](../modules/done/029-F08-reserved-for-future.md)
 
 **Note**: F08 was originally skipped. Now filled in Phase 8 as Data Visualization Components.
 
 ---
 
-## [F09: Frontend-Backend Integration Guides](../modules/planned/040-F09-design-to-code-pipeline-(visily.ai-integration).md)
+## [F09: Frontend-Backend Integration Guides](../modules/done/030-F09-frontend-backend-integration-guides.md)
 
 **Goal**: Integration patterns en examples voor full flows (auth, data fetching, caching, errors).
 

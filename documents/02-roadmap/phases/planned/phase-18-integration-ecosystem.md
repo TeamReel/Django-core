@@ -1,10 +1,10 @@
-# Phase 18: Integration Ecosystem (070-071)
+# Phase 18: Integration Ecosystem (275-276)
 
 **Focus**: Connector framework, compliance exports
 
 ---
 
-## [I01: Connector Framework & SDK (Lightweight)](../modules/planned/070-I01-connector-framework-and-sdk-(lightweight).md)
+## [I01: Connector Framework & SDK (Lightweight)](../modules/planned/275-I01-connector-framework-and-sdk-(lightweight).md)
 
 **Feature**: `I01-connector-framework-sdk`
 
@@ -60,7 +60,7 @@ webhooks:
 
 ---
 
-## [I02: Compliance Exports (Lightweight)](../modules/planned/071-I02-compliance-exports-(lightweight).md)
+## [I02: Compliance Exports (Lightweight)](../modules/planned/276-I02-compliance-exports-(lightweight).md)
 
 **Feature**: `I02-compliance-exports`
 
@@ -73,7 +73,7 @@ webhooks:
 - **Data Portability**: GDPR Article 20 data portability (user data export)
 - **Audit Bundles**: Package audit logs, access logs, security events
 - **Anonymization**: Redact PII for non-compliant exports (via D07)
-- **Format Options**: JSON, CSV, PDF (via B29)
+- **Format Options**: JSON, CSV, PDF (via B38)
 
 **Export Templates**:
 
@@ -110,10 +110,10 @@ webhooks:
 **Acceptance Criteria**:
 - [ ] GDPR DSAR export includes all user data
 - [ ] Export generation <5 min voor typical user
-- [ ] PDF format via B29 (structured + readable)
+- [ ] PDF format via B38 (structured + readable)
 - [ ] Anonymization redacts PII (configurable)
 - [ ] Download link expires after 7 days
 
 ---
 
-**Phase 17 Complete**: 2 modules (I01-I02)
+**Phase 18 Complete**: 2 modules (I01-I02)

@@ -1,10 +1,10 @@
-# Phase 12: Workflows & Payments (046-048)
+# Phase 12: Workflows & Payments (251-253)
 
 **Focus**: Workflow engine, payment gateways, advanced reporting
 
 ---
 
-## [B27: Payment Gateway Adapters](../modules/planned/046-B27-payment-gateway-adapters.md)
+## [B36: Payment Gateway Adapters](../modules/planned/251-B36-payment-gateway-adapters.md)
 
 **Goal**: Multi-gateway payment integration (Stripe first, PayPal adapter) met webhook handling.
 
@@ -45,14 +45,14 @@
   - Payment button (create intent → capture payment)
   - Success/error messages
   - Transaction history (list of past payments)
-  - Receipt download (PDF via B29)
+  - Receipt download (PDF via B38)
   - Tests: select package → enter test card → pay → verify credits added
 
 **Status**: 🚧 ROADMAP
 
 **Specify Prompt**:
 ```
-/spec-kitty.specify feature=B27-payment-gateway-adapters
+/spec-kitty.specify feature=B36-payment-gateway-adapters
 
 [feature summary]
 Multi-gateway payment integration (Stripe, PayPal) with webhook handling and credit purchase flow.
@@ -76,7 +76,7 @@ Demo page: /demo/payments
 
 ---
 
-## [B28: Workflow Engine & State Machine](../modules/planned/047-B28-workflow-engine-and-state-machine.md)
+## [B37: Workflow Engine & State Machine](../modules/planned/252-B37-workflow-engine-and-state-machine.md)
 
 **Goal**: Generic workflow/state machine voor business processes (approvals, order status, etc.).
 
@@ -117,7 +117,7 @@ Demo page: /demo/payments
 
 **Specify Prompt**:
 ```
-/spec-kitty.specify feature=B27-workflow-engine-state-machine
+/spec-kitty.specify feature=B37-workflow-engine-state-machine
 
 [feature summary]
 Generic workflow/state machine for business processes (approvals, status transitions).
@@ -141,7 +141,7 @@ Demo page: /demo/workflows/approval
 
 ---
 
-## [B29: Advanced Reporting & Exports](../modules/planned/048-B29-advanced-reporting-and-exports.md)
+## [B38: Advanced Reporting & Exports](../modules/planned/253-B38-advanced-reporting-and-exports.md)
 
 **Goal**: Genereer PDF/Excel reports, data exports met templates en scheduling.
 
@@ -185,7 +185,7 @@ Demo page: /demo/workflows/approval
 
 **Specify Prompt**:
 ```
-/spec-kitty.specify feature=B29-advanced-reporting-exports
+/spec-kitty.specify feature=B38-advanced-reporting-exports
 
 [feature summary]
 Generate PDF/Excel reports and data exports with templates and scheduling.
@@ -210,5 +210,5 @@ Demo page: /demo/reports
 
 ---
 
-**Phase 11 Complete**: 3 modules (B26, B27, B28)
-**Next**: Phase 12 - Advanced UI & Documents
+**Phase 12 Complete**: 3 modules (B36, B37, B38)
+**Next**: Phase 13 - Advanced UI & Documents

@@ -1,4 +1,4 @@
-# Phase 17: Platform Quality Gates (073-076, 069)
+# Phase 17: Platform Quality Gates (274, 278-281)
 
 **Focus**: Constitutional enforcement, security audit, ML governance, integration security, dependency validation
 
@@ -6,7 +6,7 @@
 
 ---
 
-## [P01: Constitutional Enforcement Engine](../modules/planned/073-P01-constitutional-enforcement-engine.md)
+## [P01: Constitutional Enforcement Engine](../modules/planned/278-P01-constitutional-enforcement-engine.md)
 
 **Feature**: `P01-constitutional-enforcement-engine`
 
@@ -43,7 +43,7 @@
 
 ---
 
-## [P02: Security Audit & ASVS Compliance (Lightweight)](../modules/planned/074-P02-security-audit-and-asvs-compliance-(lightweight).md)
+## [P02: Security Audit & ASVS Compliance (Lightweight)](../modules/planned/279-P02-security-audit-and-asvs-compliance-(lightweight).md)
 
 **Feature**: `P02-security-audit-asvs-compliance`
 
@@ -93,7 +93,7 @@
 
 ---
 
-## [P03: ML & Agent Governance Gate (Lightweight)](../modules/planned/075-P03-ml-and-agent-governance-gate-(lightweight).md)
+## [P03: ML & Agent Governance Gate (Lightweight)](../modules/planned/280-P03-ml-and-agent-governance-gate-(lightweight).md)
 
 **Feature**: `P03-ml-agent-governance-gate`
 
@@ -130,7 +130,7 @@
 
 ---
 
-## [P04: Integration Security Audit (Lightweight)](../modules/planned/076-P04-integration-security-audit-(lightweight).md)
+## [P04: Integration Security Audit (Lightweight)](../modules/planned/281-P04-integration-security-audit-(lightweight).md)
 
 **Feature**: `P04-integration-security-audit`
 
@@ -167,7 +167,7 @@
 
 ---
 
-## [P05: Stack & Dependency Validation](../modules/planned/069-P05-stack-and-dependency-validation.md)
+## [P05: Stack & Dependency Validation](../modules/planned/274-P05-stack-and-dependency-validation.md)
 
 **Feature**: `P05-stack-dependency-validation`
 
@@ -210,4 +210,4 @@
 
 ---
 
-**Phase 16 Complete**: 5 modules (P01-P05) - All lightweight, all results shown in F10 dashboard
+**Phase 17 Complete**: 5 modules (P01-P05) - All lightweight, all results shown in F10 dashboard

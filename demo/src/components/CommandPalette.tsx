@@ -48,8 +48,8 @@ export default function CommandPalette({
       { id: 'create-team', label: 'Create Team', path: '/directory?tab=teams', kind: 'page' },
       { id: 'create-season', label: 'Create Season', path: '/directory?tab=seasons', kind: 'page' },
       { id: 'create-competition', label: 'Create Competition', path: '/directory?tab=competitions', kind: 'page' },
-      { id: 'create-match', label: 'Create Match', path: '/directory?tab=matches', kind: 'page' },
-      { id: 'create-content', label: 'Create Content (AI Studio)', path: '/studio/create', kind: 'page' },
+      { id: 'create-match', label: 'Create Match', path: '/directory?tab=matches&create=match', kind: 'page' },
+      { id: 'create-content', label: 'Create Content', path: '/content', kind: 'page' },
     ],
     []
   );

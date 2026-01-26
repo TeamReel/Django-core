@@ -1,10 +1,10 @@
-# Phase 11: Frontend & Visual Development (043-045)
+# Phase 11: Frontend & Visual Development (248-250)
 
 **Focus**: Frontend components - data visualization, design-to-code pipeline, rich text editor
 
 ---
 
-## [F08: Data Visualization Components](../modules/planned/043-F08-data-visualization-components.md)
+## [F08: Data Visualization Components](../modules/planned/248-F08-data-visualization-components.md)
 
 **Goal**: Herbruikbare visualisatie componenten (charts, graphs, metrics cards) voor dashboards.
 
@@ -75,7 +75,7 @@ Demo page: /demo/visualizations
 
 ---
 
-## [F09: Design-to-Code Pipeline (Visily.ai Integration)](../modules/planned/044-F09-design-to-code-pipeline-(visily.ai-integration).md)
+## [F09: Design-to-Code Pipeline (Visily.ai Integration)](../modules/planned/249-F09-design-to-code-pipeline-(visily.ai-integration).md)
 
 **Goal**: Pipeline om Visily.ai design exports te converteren naar werkende React components met F01 design system.
 
@@ -155,7 +155,7 @@ Demo page: /demo/design-to-code
 
 ---
 
-## [F13: Rich Text Editor Component](../modules/planned/045-F13-rich-text-editor-component.md)
+## [F13: Rich Text Editor Component](../modules/planned/250-F13-rich-text-editor-component.md)
 
 **Goal**: WYSIWYG editor component met content sanitization en markdown support.
 
@@ -295,5 +295,5 @@ Voor modules 041+ (workflows, payments, documents, data foundations), moeten gov
 
 ---
 
-**Phase 10 Complete**: 3 modules (F08, F09, F13)
-**Next**: Phase 11 - Workflows & Payments (B26, B27, B28)
+**Phase 11 Complete**: 3 modules (F08, F09, F13)
+**Next**: Phase 12 - Workflows & Payments (B36, B37, B38)

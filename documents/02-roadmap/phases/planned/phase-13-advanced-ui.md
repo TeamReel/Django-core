@@ -1,10 +1,10 @@
-# Phase 13: Advanced UI (049-052)
+# Phase 13: Advanced UI (254-257)
 
 **Focus**: Admin panel, operations console, billing UI, frontend form components
 
 ---
 
-## [F14: Admin Panel Components](../modules/planned/049-F14-admin-panel-components.md)
+## [F14: Admin Panel Components](../modules/planned/254-F14-admin-panel-components.md)
 
 **Feature**: `F14-admin-panel-components`
 
@@ -35,7 +35,7 @@
 
 ---
 
-## [F11: Operations Console UI](../modules/planned/050-F11-operations-console-ui.md)
+## [F11: Operations Console UI](../modules/planned/255-F11-operations-console-ui.md)
 
 **Feature**: `F11-operations-console`
 
@@ -66,7 +66,7 @@
 
 ---
 
-## [F12: Billing & Usage UI](../modules/planned/051-F12-billing-and-usage-ui.md)
+## [F12: Billing & Usage UI](../modules/planned/256-F12-billing-and-usage-ui.md)
 
 **Feature**: `F12-billing-usage-ui`
 
@@ -77,27 +77,27 @@
 **Dependencies**:
 - `@django-core/design-system` (F01)
 - `@django-core/data-viz` (F08) - usage charts
-- Backend: B11 (billing), B27 (payments)
+- Backend: B11 (billing), B36 (payments)
 
 **Core Features**:
 - **Usage Dashboard**: Charts voor API calls, storage, compute credits
-- **Credit Purchase Flow**: Integration met B27 payment gateways
+- **Credit Purchase Flow**: Integration met B36 payment gateways
 - **Billing History**: Transaction list, invoices, payment methods
 - **Usage Alerts**: Threshold warnings, auto-top-up configuration
-- **Invoice Downloads**: PDF generation via B29
+- **Invoice Downloads**: PDF generation via B38
 
 **Demo Page**: 💰 `/billing` - Usage charts, buy credits flow, transaction history
 
 **Acceptance Criteria**:
 - [ ] Usage charts tonen real-time data (max 5s delay)
-- [ ] Credit purchase flow integreert met Stripe (B27)
-- [ ] Invoice PDFs genereren <2s (B29)
+- [ ] Credit purchase flow integreert met Stripe (B36)
+- [ ] Invoice PDFs genereren <2s (B38)
 - [ ] Multi-currency support
 - [ ] Usage export naar CSV/Excel
 
 ---
 
-## [F15: Frontend Form Components](../modules/planned/052-F15-frontend-form-components.md)
+## [F15: Frontend Form Components](../modules/planned/257-F15-frontend-form-components.md)
 
 **Feature**: `F15-frontend-form-components`
 
@@ -128,4 +128,4 @@
 
 ---
 
-**Phase 12 Complete**: Admin panel, ops console, billing UI, form components - **71 Modules Total**
+**Phase 13 Complete**: Admin panel, ops console, billing UI, form components - **71 Modules Total**

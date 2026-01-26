@@ -1,10 +1,10 @@
-# Phase 14: Data Foundations Part 1 (053-057)
+# Phase 14: Data Foundations Part 1 (258-262)
 
 **Focus**: Data storage adapters, ETL pipelines, dataset management, streaming, versioning
 
 ---
 
-## [D01: Data Storage Adapters](../modules/planned/053-D01-data-storage-adapters.md)
+## [D01: Data Storage Adapters](../modules/planned/258-D01-data-storage-adapters.md)
 
 **Feature**: `D01-data-storage-adapters`
 
@@ -37,7 +37,7 @@
 
 ---
 
-## [D02: ETL & Data Pipeline Foundation](../modules/planned/054-D02-etl-and-data-pipeline-foundation.md)
+## [D02: ETL & Data Pipeline Foundation](../modules/planned/259-D02-etl-and-data-pipeline-foundation.md)
 
 **Feature**: `D02-etl-pipeline-foundation`
 
@@ -63,7 +63,7 @@
 
 ---
 
-## [D03: Dataset Management & Lineage](../modules/planned/055-D03-dataset-management-and-lineage.md)
+## [D03: Dataset Management & Lineage](../modules/planned/260-D03-dataset-management-and-lineage.md)
 
 **Feature**: `D03-dataset-management-lineage`
 
@@ -94,7 +94,7 @@
 
 ---
 
-## [D04: Streaming Data Adapters](../modules/planned/056-D04-streaming-data-adapters.md)
+## [D04: Streaming Data Adapters](../modules/planned/261-D04-streaming-data-adapters.md)
 
 **Feature**: `D04-streaming-data-adapters`
 
@@ -126,7 +126,7 @@
 
 ---
 
-## [D05: Data Version Control](../modules/planned/057-D05-data-version-control.md)
+## [D05: Data Version Control](../modules/planned/262-D05-data-version-control.md)
 
 **Feature**: `D05-data-version-control`
 
@@ -159,4 +159,4 @@
 
 ---
 
-**Phase 13 Complete**: 5 modules (D01-D05)
+**Phase 14 Complete**: 5 modules (D01-D05)

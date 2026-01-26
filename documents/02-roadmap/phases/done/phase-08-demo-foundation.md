@@ -119,7 +119,7 @@
   - File management (B22 placeholders)
   - Real-time updates (B23 WebSocket)
   - Full-text search (B24 indexed)
-  - Workflows (B27 state machines)
+  - Workflows (B37 state machines)
 
 **Transactions & Credits** (B11):
 - Historical transactions (purchases, usage, refunds)

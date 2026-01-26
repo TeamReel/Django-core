@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
@@ -8,15 +8,21 @@ export default function AIStudioPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const contextId = params.get('context'); // e.g. matchId
-  const [isGenerating, setIsGenerating] = useState(false);
+   const [notAvailable, setNotAvailable] = useState(false);
+
+   const contextLabel = useMemo(() => {
+      const raw = String(contextId || '').trim();
+      if (!raw) return '';
+      if (raw.includes(':')) return raw;
+      if (raw === 'match') return 'Match';
+      if (raw === 'season') return 'Season';
+      if (/^\d+$/.test(raw)) return `Match #${raw}`;
+      return raw;
+   }, [contextId]);
 
   const startGeneration = () => {
-     setIsGenerating(true);
-     // Simulate API call
-     setTimeout(() => {
-         setIsGenerating(false);
-         navigate('/content');
-     }, 2500);
+     // No mock generation: this requires backend modules (B31/B34/B35).
+     setNotAvailable(true);
   };
 
   return (
@@ -38,7 +44,7 @@ export default function AIStudioPage() {
                  </h2>
                  {contextId && (
                     <Alert variant="info" className="mb-6 inline-block">
-                       Context: Match #{contextId}
+                       Context: {contextLabel}
                     </Alert>
                  )}
                  <p style={{ maxWidth: '500px', margin: '0 auto 24px', opacity: 0.7 }}>
@@ -46,10 +52,16 @@ export default function AIStudioPage() {
                     match reports, or highlight videos using TeamReel AI.
                  </p>
 
+                 {notAvailable && (
+                    <Alert variant="warning" className="mb-6 inline-block">
+                       Generation is not available yet (no mock runs). Requires B31 (Content), B34 (Pipelines) and B35 (Assets).
+                    </Alert>
+                 )}
+
                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '40px' }}>
                      {['Match Report', 'Social Post', 'Video Highlights', 'Player Stats'].map(type => (
                         <div key={type}
-                             onClick={() => !isGenerating && startGeneration()}
+                             onClick={() => startGeneration()}
                              style={{
                                 cursor: 'pointer',
                                 padding: '24px',
@@ -65,11 +77,9 @@ export default function AIStudioPage() {
                      ))}
                  </div>
 
-                 {isGenerating && (
-                    <div style={{ color: '#007bff', fontWeight: 500 }}>
-                        <span className="animate-pulse">Generating content... ⚡</span>
-                    </div>
-                 )}
+                 <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Button variant="secondary" onClick={() => navigate('/content')}>Open Content Library</Button>
+                 </div>
               </div>
            </Card>
         </PageContent>

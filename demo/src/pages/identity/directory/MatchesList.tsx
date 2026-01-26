@@ -54,7 +54,7 @@ interface MatchesListProps {
 
 export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, preselectedClubId, preselectedTeamId }) => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { context, organisations: myOrganisations } = useContextSwitcher();
 
@@ -104,6 +104,18 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  useEffect(() => {
+    const create = String(searchParams.get('create') || '').trim().toLowerCase();
+    if (create !== 'match') return;
+
+    setIsCreateModalOpen(true);
+
+    // Remove param once consumed so refresh/back doesn't keep reopening.
+    const next = new URLSearchParams(searchParams);
+    next.delete('create');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
   const isUuid = (value: unknown) =>
