@@ -133,9 +133,9 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
                     </div>
                     <div className="font-semibold text-sm">{template.name}</div>
                     <div className="flex flex-wrap gap-1">
-                         <Badge variant="outline" size="sm">{template.style}</Badge>
+                         <Badge variant="default" size="sm">{template.style}</Badge>
                          {template.tags.map(tag => (
-                             <Badge key={tag} variant="secondary" size="sm">{tag}</Badge>
+                             <Badge key={tag} variant="info" size="sm">{tag}</Badge>
                          ))}
                     </div>
                     {selectedTemplateId === template.id && (
