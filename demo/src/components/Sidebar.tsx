@@ -10,8 +10,6 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useUserRole } from './PermissionGuards';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { AppIcon } from './AppIcon';
-import { fetchAllPages } from '../utils/fetchAllPages';
-import { periodPathKey } from '../utils/periodPath';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -117,203 +115,67 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     // Deterministic Panel A defaults: build paths from API-backed slugs/keys.
     useEffect(() => {
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-        const ctxOrgSlug = String((context as any)?.organisation?.slug || '').trim();
-        const ctxOrgName = String((context as any)?.organisation?.name || '').trim();
-        const listOrgSlug = String((organisations as any)?.[0]?.slug || (organisations as any)?.[0]?.id || '').trim();
-        const effectiveOrgSlug = String(orgSlug || ctxOrgSlug || listOrgSlug || '').trim();
 
-        if (!user || !effectiveOrgSlug) {
+        if (!user) {
             setResolvedAppContext(null);
             return;
         }
 
         let cancelled = false;
 
-        const pickFirstByUpdatedOrName = (items: any[]): any | null => {
-            const list = [...(Array.isArray(items) ? items : [])];
-            list.sort((a, b) => {
-                const ua = a?.updated_at ? Date.parse(a.updated_at) : NaN;
-                const ub = b?.updated_at ? Date.parse(b.updated_at) : NaN;
-                const hasU = Number.isFinite(ua) && Number.isFinite(ub);
-                if (hasU && ua !== ub) return ub - ua;
-                return String(a?.name || '').localeCompare(String(b?.name || ''));
-            });
-            return list[0] || null;
-        };
-
-        const isSeasonPeriod = (p: any): boolean => {
-            const parentId = p?.parent_period_id ?? p?.parent_id ?? p?.parent_period?.id ?? p?.parent_period;
-            if (parentId) return false;
-            const typeRaw = p?.type ?? p?.data?.type ?? p?.metadata?.type;
-            const type = String(typeRaw || '').toLowerCase();
-            if (type === 'season') return true;
-            if (['competition', 'league', 'cup', 'friendly', 'tournament', 'round'].includes(type)) return false;
-            return true;
-        };
-
-        const pickMostRecentSeason = (periods: any[]): any | null => {
-            const list = [...(Array.isArray(periods) ? periods : [])];
-            list.sort((a, b) => {
-                const ea = a?.end_date ? Date.parse(a.end_date) : NaN;
-                const eb = b?.end_date ? Date.parse(b.end_date) : NaN;
-                const sa = a?.start_date ? Date.parse(a.start_date) : NaN;
-                const sb = b?.start_date ? Date.parse(b.start_date) : NaN;
-                const hasE = Number.isFinite(ea) && Number.isFinite(eb);
-                if (hasE && ea !== eb) return eb - ea;
-                const hasS = Number.isFinite(sa) && Number.isFinite(sb);
-                if (hasS && sa !== sb) return sb - sa;
-                return String(a?.name || '').localeCompare(String(b?.name || ''));
-            });
-            return list[0] || null;
-        };
-
         const run = async () => {
             try {
-                const orgName =
-                    ctxOrgName ||
-                    String((organisations as any)?.find((o: any) => String(o?.slug || o?.id) === effectiveOrgSlug)?.name || '').trim() ||
-                    null;
+                const response = await fetch(`${apiBaseUrl}/api/v1/auth/default-context/`, {
+                    credentials: 'include',
+                });
 
-                // Club
-                const clubsUrl = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/?page_size=250&parent_project__isnull=true`;
-                const clubs = await fetchAllPages<any>(
-                    clubsUrl,
-                    { credentials: 'include' },
-                    { ttlMs: 120_000, cacheKey: `sidebar:clubs:${effectiveOrgSlug}` }
-                );
-                const preferredClubKey = String(clubSlugOrId || '').trim();
-                const clubRow =
-                    (clubs || []).find((p: any) => String(p?.slug || p?.id || '') === preferredClubKey) ||
-                    (clubs || []).find((p: any) => String(p?.id || '') === preferredClubKey) ||
-                    pickFirstByUpdatedOrName(clubs || []);
-                const club = clubRow
-                    ? { id: String(clubRow.id), slug: String(clubRow.slug || clubRow.id), name: clubRow.name || null }
-                    : null;
-
-                // Team
-                let team: ResolvedAppContext['team'] = null;
-                if (club?.id) {
-                    const teamsUrl = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/?page_size=1000&parent_project=${encodeURIComponent(club.id)}`;
-                    const teamsRaw = await fetchAllPages<any>(
-                        teamsUrl,
-                        { credentials: 'include' },
-                        { ttlMs: 120_000, cacheKey: `sidebar:teams:${effectiveOrgSlug}:${club.id}` }
-                    );
-                    const teams = Array.isArray(teamsRaw) ? teamsRaw : [];
-                    const preferredTeamKey = String(teamSlugOrId || '').trim();
-                    const teamRow =
-                        teams.find((p: any) => String(p?.slug || p?.id || '') === preferredTeamKey) ||
-                        teams.find((p: any) => String(p?.id || '') === preferredTeamKey) ||
-                        pickFirstByUpdatedOrName(teams);
-                    team = teamRow
-                        ? { id: String(teamRow.id), slug: String(teamRow.slug || teamRow.id), name: teamRow.name || null }
-                        : null;
+                if (!response.ok) {
+                    if (!cancelled) setResolvedAppContext(null);
+                    return;
                 }
 
-                // Season
-                let season: ResolvedAppContext['season'] = null;
-                if (team?.id) {
-                    const rootPeriodsUrl = `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(team.id)}&parent_id=null&page_size=500`;
-                    const rootPeriods = await fetchAllPages<any>(
-                        rootPeriodsUrl,
-                        { credentials: 'include' },
-                        { ttlMs: 60_000, cacheKey: `sidebar:seasons:${team.id}` }
-                    );
-                    const seasons = (rootPeriods || []).filter(isSeasonPeriod);
-                    const preferredSeasonKey = String(seasonSlugOrId || '').trim();
-                    const seasonRow =
-                        (seasons || []).find((p: any) => String(p?.id || '') === preferredSeasonKey) ||
-                        (seasons || []).find((p: any) => (periodPathKey(p) || String(p?.id || '')) === preferredSeasonKey) ||
-                        pickMostRecentSeason(seasons);
-                    season = seasonRow
-                        ? { id: String(seasonRow.id), key: periodPathKey(seasonRow) || String(seasonRow.id), name: seasonRow.name || null }
-                        : null;
-                }
-
-                // Competition + next match
-                let competition: ResolvedAppContext['competition'] = null;
-                let match: ResolvedAppContext['match'] = null;
-                if (team?.id && season?.id) {
-                    const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(season.id)}&page_size=500`;
-                    const competitionPeriods = await fetchAllPages<any>(
-                        competitionsUrl,
-                        { credentials: 'include' },
-                        { ttlMs: 60_000, cacheKey: `sidebar:competitions:${team.id}:${season.id}` }
-                    );
-                    const comps = Array.isArray(competitionPeriods) ? competitionPeriods : [];
-                    const ordered = [...comps];
-                    ordered.sort((a, b) => {
-                        const ua = a?.updated_at ? Date.parse(a.updated_at) : NaN;
-                        const ub = b?.updated_at ? Date.parse(b.updated_at) : NaN;
-                        const hasU = Number.isFinite(ua) && Number.isFinite(ub);
-                        if (hasU && ua !== ub) return ub - ua;
-                        return String(a?.name || '').localeCompare(String(b?.name || ''));
-                    });
-
-                    const preferredCompetitionKey = String(competitionSlugOrId || '').trim();
-                    const preferredRow =
-                        ordered.find((p: any) => String(p?.id || '') === preferredCompetitionKey) ||
-                        ordered.find((p: any) => (periodPathKey(p) || String(p?.id || '')) === preferredCompetitionKey) ||
-                        null;
-                    const candidates = preferredRow
-                        ? [preferredRow, ...ordered.filter((p: any) => String(p?.id) !== String(preferredRow?.id))]
-                        : ordered;
-
-                    const now = Date.now();
-                    let firstWithAnyMatch: { comp: any; firstMatch: any | null } | null = null;
-
-                    for (const compRow of candidates.slice(0, 10)) {
-                        const compId = String(compRow?.id || '').trim();
-                        if (!compId) continue;
-
-                        const matchesUrl = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(
-                            team.id
-                        )}&period_id=${encodeURIComponent(compId)}&activity_type=match&ordering=start_time&page_size=50`;
-                        const matchRows = await fetchAllPages<any>(
-                            matchesUrl,
-                            { credentials: 'include' },
-                            { ttlMs: 30_000, cacheKey: `sidebar:matches:${team.id}:${compId}`, maxItems: 50 }
-                        );
-                        const rows = Array.isArray(matchRows) ? matchRows : [];
-                        if (rows.length === 0) continue;
-
-                        const upcoming = rows.find((m: any) => {
-                            const t = m?.start_time ? Date.parse(m.start_time) : NaN;
-                            return Number.isFinite(t) && t >= now;
-                        });
-                        if (!firstWithAnyMatch) firstWithAnyMatch = { comp: compRow, firstMatch: rows[0] || null };
-
-                        if (upcoming) {
-                            competition = { id: compId, key: periodPathKey(compRow) || compId, name: compRow?.name || null };
-                            match = { id: String(upcoming.id), key: String(upcoming.id), label: String(upcoming?.title || upcoming?.name || '').trim() || null };
-                            break;
-                        }
-                    }
-
-                    if (!competition && firstWithAnyMatch) {
-                        const compRow = firstWithAnyMatch.comp;
-                        const compId = String(compRow?.id || '').trim();
-                        competition = { id: compId, key: periodPathKey(compRow) || compId, name: compRow?.name || null };
-                        const first = firstWithAnyMatch.firstMatch;
-                        if (first?.id) match = { id: String(first.id), key: String(first.id), label: String(first?.title || first?.name || '').trim() || null };
-                    }
-
-                    if (!competition) {
-                        const best = pickFirstByUpdatedOrName(ordered);
-                        const compId = String(best?.id || '').trim();
-                        if (compId) competition = { id: compId, key: periodPathKey(best) || compId, name: best?.name || null };
-                    }
-                }
+                const envelope = await response.json();
+                const payload = envelope?.data;
 
                 if (!cancelled) {
                     setResolvedAppContext({
-                        orgSlug: effectiveOrgSlug,
-                        orgName,
-                        club,
-                        team,
-                        season,
-                        competition,
-                        match,
+                        orgSlug: String(payload?.organisation?.slug || '').trim(),
+                        orgName: (payload?.organisation?.name ?? null) as string | null,
+                        club: payload?.club
+                            ? {
+                                  id: String(payload.club.id),
+                                  slug: String(payload.club.slug || payload.club.id),
+                                  name: (payload.club.name ?? null) as string | null,
+                              }
+                            : null,
+                        team: payload?.team
+                            ? {
+                                  id: String(payload.team.id),
+                                  slug: String(payload.team.slug || payload.team.id),
+                                  name: (payload.team.name ?? null) as string | null,
+                              }
+                            : null,
+                        season: payload?.season
+                            ? {
+                                  id: String(payload.season.id),
+                                  key: String(payload.season.key || payload.season.id),
+                                  name: (payload.season.name ?? null) as string | null,
+                              }
+                            : null,
+                        competition: payload?.competition
+                            ? {
+                                  id: String(payload.competition.id),
+                                  key: String(payload.competition.key || payload.competition.id),
+                                  name: (payload.competition.name ?? null) as string | null,
+                              }
+                            : null,
+                        match: payload?.match
+                            ? {
+                                  id: String(payload.match.id),
+                                  key: String(payload.match.key || payload.match.id),
+                                  label: (payload.match.title ?? null) as string | null,
+                              }
+                            : null,
                     });
                 }
             } catch {
@@ -330,12 +192,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         orgSlug,
         (context as any)?.organisation?.slug,
         (context as any)?.organisation?.id,
-        (context as any)?.organisation?.name,
         (organisations as any)?.length,
-        clubSlugOrId,
-        teamSlugOrId,
-        seasonSlugOrId,
-        competitionSlugOrId,
     ]);
 
   // --- PANEL B LOGIC (New) ---

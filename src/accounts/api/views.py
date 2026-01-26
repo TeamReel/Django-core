@@ -270,6 +270,275 @@ def auth_me(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@api_view(["GET"])
+def auth_default_context(request):
+    """Return a deterministic default TeamReel navigation context for the current user.
+
+    This is designed for the frontend sidebar (Panel A) to avoid guessing vanity URL
+    segments from the current route or localStorage.
+
+    Selection rules (80/20):
+    - Organisation: inferred from team membership if available, else club membership,
+      else organisation membership.
+    - Club/Team: derived from the first team the user is a member of; club is the
+      parent project of that team.
+    - Season: current root period for that team (today within start/end); fallback to
+      most recent.
+    - Competition/Match: choose the next upcoming match; competition is that match's
+      period (child under season). Fallback to most recent match.
+
+    Returns 200 with nullable fields; 401 with B13 envelope when unauthenticated.
+    """
+
+    from django.utils import timezone
+    from django.utils.text import slugify
+
+    if not request.user.is_authenticated:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "not_authenticated",
+                    "message": "Authentication credentials were not provided.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    from organisations.models import Membership as OrganisationMembership
+    from projects.models import ProjectMembership
+    from activities.models import Activity, Period
+
+    user = request.user
+    now = timezone.now()
+    today = timezone.localdate()
+
+    def project_payload(project):
+        if not project:
+            return None
+        parent = project.parent_project
+        return {
+            "id": project.id,
+            "slug": project.slug,
+            "name": project.name,
+            "parent": (
+                {
+                    "id": parent.id,
+                    "slug": parent.slug,
+                    "name": parent.name,
+                }
+                if parent
+                else None
+            ),
+        }
+
+    def organisation_payload(org):
+        if not org:
+            return None
+        return {"id": str(org.id), "slug": org.slug, "name": org.name}
+
+    def period_key(period):
+        if not period:
+            return ""
+        return slugify(period.name or "") or str(period.id)
+
+    def period_payload(period):
+        if not period:
+            return None
+        return {
+            "id": str(period.id),
+            "key": period_key(period),
+            "name": period.name,
+            "start_date": period.start_date,
+            "end_date": period.end_date,
+        }
+
+    def match_payload(activity):
+        if not activity:
+            return None
+        key = (activity.slug or "").strip() or str(activity.id)
+        return {
+            "id": str(activity.id),
+            "key": key,
+            "slug": activity.slug,
+            "title": activity.title,
+            "start_time": activity.start_time,
+        }
+
+    source = {
+        "organisation": None,
+        "club": None,
+        "team": None,
+        "season": None,
+        "competition": None,
+        "match": None,
+    }
+
+    organisation = None
+    club = None
+    team = None
+
+    # 1) Prefer: team membership (child project)
+    team_membership = (
+        ProjectMembership.objects.active()
+        .select_related("project__organisation", "project__parent_project")
+        .filter(
+            user=user,
+            project__is_active=True,
+            project__parent_project__isnull=False,
+        )
+        .order_by(
+            "project__organisation__slug",
+            "project__parent_project__slug",
+            "project__slug",
+            "created_at",
+        )
+        .first()
+    )
+    if team_membership:
+        team = team_membership.project
+        club = team.parent_project
+        organisation = team.organisation
+        source["team"] = "project_membership"
+        source["club"] = "derived_from_team"
+        source["organisation"] = "derived_from_team"
+
+    # 2) Fallback: club membership (root project)
+    if not organisation:
+        club_membership = (
+            ProjectMembership.objects.active()
+            .select_related("project__organisation")
+            .filter(
+                user=user,
+                project__is_active=True,
+                project__parent_project__isnull=True,
+            )
+            .order_by("project__organisation__slug", "project__slug", "created_at")
+            .first()
+        )
+        if club_membership:
+            club = club_membership.project
+            organisation = club.organisation
+            source["club"] = "project_membership"
+            source["organisation"] = "derived_from_club"
+
+            # If possible, also pick a team within this club the user is a member of.
+            team_membership = (
+                ProjectMembership.objects.active()
+                .select_related("project__organisation", "project__parent_project")
+                .filter(
+                    user=user,
+                    project__is_active=True,
+                    project__parent_project_id=club.id,
+                )
+                .order_by("project__slug", "created_at")
+                .first()
+            )
+            if team_membership:
+                team = team_membership.project
+                source["team"] = "project_membership"
+
+    # 3) Fallback: organisation membership
+    if not organisation:
+        org_membership = (
+            OrganisationMembership.objects.filter(
+                user=user, is_active=True, organisation__is_active=True
+            )
+            .select_related("organisation")
+            .order_by("organisation__slug", "joined_at")
+            .first()
+        )
+        if org_membership:
+            organisation = org_membership.organisation
+            source["organisation"] = "organisation_membership"
+
+    # 4) Resolve season/competition/match
+    season = None
+    competition = None
+    match = None
+
+    if organisation and team:
+        # Prefer season scoped on the membership (TeamReel-specific)
+        if getattr(team_membership, "period_id", None):
+            scoped_period = team_membership.period
+            if (
+                scoped_period
+                and scoped_period.organisation_id == organisation.id
+                and scoped_period.project_id == team.id
+                and scoped_period.parent_period_id is None
+            ):
+                season = scoped_period
+                source["season"] = "membership_period"
+
+        if not season:
+            season_qs = Period.objects.filter(
+                organisation=organisation,
+                project=team,
+                parent_period__isnull=True,
+            )
+            season = (
+                season_qs.filter(start_date__lte=today, end_date__gte=today)
+                .order_by("-start_date", "name")
+                .first()
+            )
+            if season:
+                source["season"] = "current_by_date"
+            else:
+                season = season_qs.order_by("-end_date", "-start_date", "name").first()
+                if season:
+                    source["season"] = "most_recent"
+
+        # Find next match; use its period as competition
+        match_qs = Activity.objects.filter(
+            project=team,
+            activity_type="match",
+        ).select_related("period")
+
+        if season:
+            match_qs = match_qs.filter(period__parent_period=season)
+
+        match = match_qs.filter(start_time__gte=now).order_by("start_time").first()
+        if match:
+            source["match"] = "next_upcoming"
+            competition = match.period
+            source["competition"] = "from_match"
+        else:
+            match = match_qs.filter(start_time__lt=now).order_by("-start_time").first()
+            if match:
+                source["match"] = "most_recent_past"
+                competition = match.period
+                source["competition"] = "from_match"
+
+        if season and not competition:
+            competition = (
+                Period.objects.filter(
+                    organisation=organisation,
+                    project=team,
+                    parent_period=season,
+                )
+                .order_by("start_date", "name")
+                .first()
+            )
+            if competition:
+                source["competition"] = "first_child_period"
+
+    return Response(
+        {
+            "computed_at": now.isoformat(),
+            "organisation": organisation_payload(organisation),
+            "club": project_payload(club),
+            "team": project_payload(team),
+            "season": period_payload(season),
+            "competition": period_payload(competition),
+            "match": match_payload(match),
+            "source": source,
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
 @api_view(["PATCH"])
 def update_profile(request):
     """
