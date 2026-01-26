@@ -605,36 +605,38 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             'users',
         ]);
 
-        const orgSections = new Set(['clubs', 'teams', 'seasons', 'competitions', 'matches', 'users', 'hierarchy']);
-
         const routeOrg = segs[0] && !reservedRoots.has(segs[0]) ? segs[0] : '';
-        const routeSecond = segs[1] || '';
-        const isOrgLevelRoute = Boolean(routeOrg) && (!routeSecond || orgSections.has(routeSecond));
+        const orgId = String(orgSlug || routeOrg || '').trim();
 
-        const orgId = String(routeOrg || orgSlug || '').trim();
+        // Use useAppSelection's computed context as the primary source of truth.
+        // It already resolves (current path → last visited → most recent).
+        const clubId = String(clubSlugOrId || '').trim();
+        const teamId = String(teamSlugOrId || '').trim();
+        const seasonId = String(seasonSlugOrId || '').trim();
+        const competitionId = String(competitionSlugOrId || '').trim();
+        const matchKey = String(matchId || '').trim();
 
-        // Avoid stale selection on org-level routes by clearing deeper levels.
-        const clubId = isOrgLevelRoute ? '' : String(clubSlugOrId || '').trim();
-        const teamId = isOrgLevelRoute ? '' : String(teamSlugOrId || '').trim();
-        const seasonId = isOrgLevelRoute ? '' : String(seasonSlugOrId || '').trim();
-        const competitionId = isOrgLevelRoute ? '' : String(competitionSlugOrId || '').trim();
-        const matchKey = isOrgLevelRoute ? '' : String(matchId || '').trim();
+                const federationPath = orgId ? `/${orgId}` : '/dashboard';
 
-        const federationPath = orgId ? `/${orgId}` : '/dashboard';
+                // Use distinct, predictable fallbacks so links never collapse into the same path.
+                const directoryPath = '/directory';
+                const clubsIndexPath = orgId ? `/${orgId}/clubs` : directoryPath;
+                const teamsIndexPath = orgId ? `/${orgId}/teams` : directoryPath;
+                const seasonsIndexPath = orgId ? `/${orgId}/seasons` : directoryPath;
+                const competitionsIndexPath = orgId ? `/${orgId}/competitions` : directoryPath;
+                const matchesIndexPath = orgId ? `/${orgId}/matches` : directoryPath;
 
-        // When you're on a federation/org page, you might not have a club/team/etc selected.
-        // In that case, these links should NOT fall back to the federation path, otherwise
-        // multiple items in Panel A become active at once.
-        const directoryPath = '/directory';
-        const clubPath = orgId && clubId ? `/${orgId}/${clubId}` : directoryPath;
-        const teamPath = orgId && clubId && teamId ? `/${orgId}/${clubId}/${teamId}` : directoryPath;
-        const seasonPath = orgId && clubId && teamId && seasonId ? `/${orgId}/${clubId}/${teamId}/${seasonId}` : directoryPath;
-        const competitionPath = orgId && clubId && teamId && seasonId && competitionId
-            ? `/${orgId}/${clubId}/${teamId}/${seasonId}/${competitionId}`
-            : directoryPath;
-        const matchPath = orgId && clubId && teamId && seasonId && competitionId && matchKey
-            ? `/${orgId}/${clubId}/${teamId}/${seasonId}/${competitionId}/${matchKey}`
-            : directoryPath;
+                const clubPath = orgId && clubId ? `/${orgId}/${clubId}` : clubsIndexPath;
+                const teamPath = orgId && clubId && teamId ? `/${orgId}/${clubId}/${teamId}` : teamsIndexPath;
+                const seasonPath = orgId && clubId && teamId && seasonId ? `/${orgId}/${clubId}/${teamId}/${seasonId}` : seasonsIndexPath;
+
+                const competitionPath = orgId && clubId && teamId && seasonId && competitionId
+                    ? `/${orgId}/${clubId}/${teamId}/${seasonId}/${competitionId}`
+                    : (orgId && clubId && teamId && seasonId ? `${seasonPath}?tab=competitions` : competitionsIndexPath);
+
+                const matchPath = orgId && clubId && teamId && seasonId && competitionId && matchKey
+                    ? `/${orgId}/${clubId}/${teamId}/${seasonId}/${competitionId}/${matchKey}`
+                    : (orgId && clubId && teamId && seasonId && competitionId ? `${competitionPath}?tab=matches` : matchesIndexPath);
 
         const federationLabel = `Federation${orgId ? `: ${orgId}` : ''}`;
         const clubLabel = `Club${clubName ? `: ${clubName}` : (clubId ? `: ${clubId}` : '')}`;
