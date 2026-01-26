@@ -240,9 +240,8 @@ export default function HierarchyMatchDetailPage() {
     run();
   }, [apiBaseUrl, clubSlugOrId, orgSlugOrId, shouldResolveClubSlug]);
 
-  if (shouldResolveClubSlug && !clubSlugResolved) return null;
-
-  if (
+  const pendingClubSlugResolve = shouldResolveClubSlug && !clubSlugResolved;
+  const clubSlugRedirectTarget =
     shouldResolveClubSlug &&
     resolvedClubSlug &&
     resolvedClubSlug !== clubSlugOrId &&
@@ -251,14 +250,8 @@ export default function HierarchyMatchDetailPage() {
     seasonKeyOrId &&
     effectiveCompetitionId &&
     effectiveMatchId
-  ) {
-    return (
-      <Navigate
-        to={`/${orgSlugOrId}/${resolvedClubSlug}/${projectSlugOrId}/${seasonKeyOrId}/${effectiveCompetitionId}/${effectiveMatchId}${location.search || ''}`}
-        replace
-      />
-    );
-  }
+      ? `/${orgSlugOrId}/${resolvedClubSlug}/${projectSlugOrId}/${seasonKeyOrId}/${effectiveCompetitionId}/${effectiveMatchId}${location.search || ''}`
+      : null;
 
   const seasonsBasePath = isTeamRoute
     ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
@@ -1449,6 +1442,10 @@ export default function HierarchyMatchDetailPage() {
     if (r === 'editor') return 'Editor';
     return raw ? String(raw) : '—';
   };
+
+  if (pendingClubSlugResolve) return null;
+  if (clubSlugRedirectTarget) return <Navigate to={clubSlugRedirectTarget} replace />;
+
   return (
     <>
       <div>

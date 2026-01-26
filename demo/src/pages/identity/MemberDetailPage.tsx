@@ -32,6 +32,8 @@ export const MemberDetailPage: React.FC = () => {
   // Use 'id' from params as orgId/slug
   const orgSlug = id;
 
+  const waitingForOrgContext = Boolean(id) && context.isLoading;
+
   // Find resolved organisation
   const resolvedOrg = organisations.find(o => o.slug === orgSlug || o.id === id);
 
@@ -75,18 +77,10 @@ export const MemberDetailPage: React.FC = () => {
     }
   }, [searchParams]);
 
-  // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
-  if (id && context.isLoading) {
-    return (
-      <div className="p-6">
-        <LoadingState message="Loading organisation context..." />
-      </div>
-    );
-  }
-
   // Fetch org members for user switcher
   useEffect(() => {
     const fetchOrgMembers = async () => {
+      if (waitingForOrgContext) return;
       if (!orgSlug) {
         console.log('[MemberDetailPage] No orgSlug, skipping member fetch');
         return;
@@ -125,7 +119,7 @@ export const MemberDetailPage: React.FC = () => {
     };
 
     fetchOrgMembers();
-  }, [orgSlug]);
+  }, [orgSlug, waitingForOrgContext]);
 
   useEffect(() => {
     const fetchMember = async () => {
@@ -159,7 +153,16 @@ export const MemberDetailPage: React.FC = () => {
     if (orgSlug && memberId) {
         fetchMember();
     }
-  }, [orgSlug, memberId]);
+  }, [orgSlug, memberId, waitingForOrgContext]);
+
+  // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
+  if (waitingForOrgContext) {
+    return (
+      <div className="p-6">
+        <LoadingState message="Loading organisation context..." />
+      </div>
+    );
+  }
 
   const handleSave = async () => {
       try {

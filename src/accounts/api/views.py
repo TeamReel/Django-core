@@ -309,6 +309,8 @@ def auth_default_context(request):
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
+    from django.db.models import Exists, OuterRef
+
     from organisations.models import Membership as OrganisationMembership
     from projects.models import ProjectMembership
     from activities.models import Activity, Period
@@ -398,7 +400,9 @@ def auth_default_context(request):
     team = None
 
     # 1) Prefer: team membership (child project)
-    team_membership = (
+    # Primary criterion: pick a team that actually has matches (so the returned
+    # season/competition/match are always meaningful for navigation).
+    team_memberships_qs = (
         ProjectMembership.objects.active()
         .select_related("project__organisation", "project__parent_project")
         .filter(
@@ -406,13 +410,29 @@ def auth_default_context(request):
             project__is_active=True,
             project__parent_project__isnull=False,
         )
-        .order_by(
+    )
+    team_memberships_with_matches = team_memberships_qs.annotate(
+        has_matches=Exists(
+            Activity.objects.filter(
+                project_id=OuterRef("project_id"),
+                activity_type="match",
+            )
+        )
+    ).filter(has_matches=True)
+
+    team_membership = (
+        team_memberships_with_matches.order_by(
             "project__organisation__slug",
             "project__parent_project__slug",
             "project__slug",
             "created_at",
-        )
-        .first()
+        ).first()
+        or team_memberships_qs.order_by(
+            "project__organisation__slug",
+            "project__parent_project__slug",
+            "project__slug",
+            "created_at",
+        ).first()
     )
     if team_membership:
         team = team_membership.project
@@ -477,7 +497,14 @@ def auth_default_context(request):
     match = None
 
     if organisation and team:
-        # Prefer season scoped on the membership (TeamReel-specific)
+        match_qs = Activity.objects.filter(
+            project=team,
+            activity_type="match",
+        ).select_related("period")
+
+        # Prefer season scoped on the membership (TeamReel-specific), but only if
+        # that season actually contains matches.
+        membership_season = None
         if getattr(team_membership, "period_id", None):
             scoped_period = team_membership.period
             if (
@@ -486,9 +513,51 @@ def auth_default_context(request):
                 and scoped_period.project_id == team.id
                 and scoped_period.parent_period_id is None
             ):
-                season = scoped_period
-                source["season"] = "membership_period"
+                membership_season = scoped_period
 
+        if membership_season and match_qs.filter(period__parent_period=membership_season).exists():
+            season = membership_season
+            source["season"] = "membership_period"
+            match = (
+                match_qs.filter(period__parent_period=season)
+                .filter(start_time__gte=now)
+                .order_by("start_time")
+                .first()
+            )
+            if match:
+                source["match"] = "next_upcoming"
+            else:
+                match = (
+                    match_qs.filter(period__parent_period=season)
+                    .filter(start_time__lt=now)
+                    .order_by("-start_time")
+                    .first()
+                )
+                if match:
+                    source["match"] = "most_recent_past"
+
+            if match and match.period_id:
+                competition = match.period
+                source["competition"] = "from_match"
+        else:
+            # Primary criterion: pick a match first (across seasons), then derive
+            # competition + season from that match.
+            match = match_qs.filter(start_time__gte=now).order_by("start_time").first()
+            if match:
+                source["match"] = "next_upcoming"
+            else:
+                match = match_qs.filter(start_time__lt=now).order_by("-start_time").first()
+                if match:
+                    source["match"] = "most_recent_past"
+
+            if match and match.period_id:
+                competition = match.period
+                source["competition"] = "from_match"
+                if getattr(competition, "parent_period_id", None):
+                    season = competition.parent_period
+                    source["season"] = "from_match"
+
+        # If we still don't have a season (no matches), fall back deterministically.
         if not season:
             season_qs = Period.objects.filter(
                 organisation=organisation,
@@ -501,32 +570,11 @@ def auth_default_context(request):
                 .first()
             )
             if season:
-                source["season"] = "current_by_date"
+                source["season"] = source["season"] or "current_by_date"
             else:
                 season = season_qs.order_by("-end_date", "-start_date", "name").first()
                 if season:
-                    source["season"] = "most_recent"
-
-        # Find next match; use its period as competition
-        match_qs = Activity.objects.filter(
-            project=team,
-            activity_type="match",
-        ).select_related("period")
-
-        if season:
-            match_qs = match_qs.filter(period__parent_period=season)
-
-        match = match_qs.filter(start_time__gte=now).order_by("start_time").first()
-        if match:
-            source["match"] = "next_upcoming"
-            competition = match.period
-            source["competition"] = "from_match"
-        else:
-            match = match_qs.filter(start_time__lt=now).order_by("-start_time").first()
-            if match:
-                source["match"] = "most_recent_past"
-                competition = match.period
-                source["competition"] = "from_match"
+                    source["season"] = source["season"] or "most_recent"
 
         if season and not competition:
             competition = (

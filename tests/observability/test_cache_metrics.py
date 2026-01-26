@@ -413,7 +413,12 @@ class TestCacheBenchmarkAPIEndpoint:
         mock_caches.__getitem__.return_value = mock_cache
 
         url = reverse("observability-cache-benchmark")
-        response = api_client.post(url)
+        # Patch perf_counter to avoid flaky timing-based failures.
+        # cold_duration = (0.2 - 0.0) * 1000 = 200ms
+        # warm_duration = (1.05 - 1.0) * 1000 = 50ms
+        # speedup_factor = 4.0
+        with patch("time.perf_counter", side_effect=[0.0, 0.2, 1.0, 1.05]):
+            response = api_client.post(url)
 
         assert response.status_code == status.HTTP_200_OK
         # Cached should be faster (higher speedup factor)

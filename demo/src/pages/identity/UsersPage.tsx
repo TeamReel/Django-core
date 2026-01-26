@@ -341,12 +341,7 @@ export default function UsersPage() {
         return null;
     };
 
-  // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
-  if (orgIdParam && context.isLoading) {
-    return (
-        <LoadingState message="Loading organisation context..." />
-    );
-  }
+    const waitingForOrgContext = Boolean(orgIdParam) && context.isLoading;
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -465,10 +460,21 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
-    if (user) {
-        fetchUsers();
-    }
-    }, [user, context.organisation, isSuperAdmin, selectedOrgId, selectedClubKey, selectedTeamKey, projectIdParam, orgIdParam, statusFilter, page]);
+        if (waitingForOrgContext) return;
+        if (user) fetchUsers();
+    }, [
+        user,
+        waitingForOrgContext,
+        context.organisation,
+        isSuperAdmin,
+        selectedOrgId,
+        selectedClubKey,
+        selectedTeamKey,
+        projectIdParam,
+        orgIdParam,
+        statusFilter,
+        page,
+    ]);
 
   const handlePageChange = (newPage: number) => {
         const nextParams = new URLSearchParams(searchParams);
@@ -566,7 +572,11 @@ export default function UsersPage() {
       console.log(`[UsersPage] 📊 Results: ${filteredUsers.length}/${users.length}`);
   }
 
-  return (
+    if (waitingForOrgContext) {
+        return <LoadingState message="Loading organisation context..." />;
+    }
+
+    return (
     <>
       <PageHeader
         title={

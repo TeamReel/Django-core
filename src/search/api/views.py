@@ -189,6 +189,7 @@ class SearchAPIView(APIView):
             results = queryset[:100]
 
             grouped: dict[str, list] = {
+                "projects": [],
                 "clubs": [],
                 "teams": [],
                 "seasons": [],
@@ -204,12 +205,9 @@ class SearchAPIView(APIView):
                 model_name = entry.content_type.model
 
                 if model_name == "project":
-                    try:
-                        obj = entry.content_object
-                        is_team = bool(getattr(obj, "parent_project_id", None))
-                        key = "teams" if is_team else "clubs"
-                    except (AttributeError, TypeError, ValueError):
-                        key = "clubs"
+                    # Global search groups all project-like results under 'projects'.
+                    # (Specific 'clubs'/'teams' grouping is supported via ?types=clubs|teams.)
+                    key = "projects"
                 elif model_name == "period":
                     try:
                         obj = entry.content_object
@@ -240,6 +238,7 @@ class SearchAPIView(APIView):
 
             response_data: dict[str, list] = {}
             for key in [
+                "projects",
                 "clubs",
                 "teams",
                 "seasons",

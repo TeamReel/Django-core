@@ -34,25 +34,33 @@ export default function ProfileAvatarDropdown({ onLogout }: ProfileAvatarDropdow
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  if (!user) return null;
-
   // Get user initials from name or email
   const getInitials = (): string => {
-    if (user.first_name && user.last_name) {
-      return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
+    const firstName = user?.first_name || '';
+    const lastName = user?.last_name || '';
+    const email = user?.email || '';
+
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`.toUpperCase();
     }
-    if (user.first_name) {
-      return user.first_name.slice(0, 2).toUpperCase();
+    if (firstName) {
+      return firstName.slice(0, 2).toUpperCase();
     }
-    if (user.email) {
-      return user.email.slice(0, 2).toUpperCase();
+    if (email) {
+      return email.slice(0, 2).toUpperCase();
     }
     return 'U';
   };
 
   const getUserDisplayName = (): string => {
-    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-    return fullName || user.email.split('@')[0];
+    const firstName = user?.first_name || '';
+    const lastName = user?.last_name || '';
+    const email = user?.email || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+
+    if (fullName) return fullName;
+    if (email) return email.split('@')[0];
+    return 'User';
   };
 
   // Handle logout
@@ -91,6 +99,8 @@ export default function ProfileAvatarDropdown({ onLogout }: ProfileAvatarDropdow
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
+
+  if (!user) return null;
 
   // Keyboard handling
   const handleKeyDown = (e: React.KeyboardEvent) => {

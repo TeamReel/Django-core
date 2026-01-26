@@ -292,11 +292,22 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     switch (activeSection) {
         case 'work':
             // Dashboard or Directory: show overview section in Panel B
-            if (path === '/dashboard' || path === '/directory') {
+            if (path === '/dashboard') {
                 title = 'Overview';
                 items = [
                     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
                     { label: 'Directory', path: '/directory', icon: Folder },
+                ];
+                break;
+            }
+
+            // Directory landing page: show directory tabs in Panel B.
+            if (path === '/directory') {
+                title = 'Directory';
+                items = [
+                    { label: 'Federations', path: '/directory?tab=federations', icon: Globe },
+                    { label: 'Clubs', path: '/directory?tab=clubs', icon: Shield },
+                    { label: 'Teams', path: '/directory?tab=teams', icon: Shirt },
                 ];
                 break;
             }
@@ -705,7 +716,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
                 const matchPath = orgId && clubSlug && teamSlug && seasonKey && competitionKey && matchKey
                     ? `/${orgId}/${clubSlug}/${teamSlug}/${seasonKey}/${competitionKey}/${matchKey}`
-                    : (orgId && clubSlug && teamSlug && seasonKey && competitionKey ? competitionPath : matchesIndexPath);
+                    : matchesIndexPath;
 
         const federationLabel = `Federation${orgId ? `: ${String(resolvedAppContext?.orgName || orgId)}` : ''}`;
         const clubLabel = `Club${resolvedAppContext?.club?.name ? `: ${resolvedAppContext.club.name}` : (clubName ? `: ${clubName}` : '')}`;
@@ -923,7 +934,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 const itemSearch = itemQuery ? `?${itemQuery}` : '';
                                 const locationTab = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
                                 const itemTab = String(new URLSearchParams(itemSearch).get('tab') || '').trim().toLowerCase();
-                                const effectiveLocationTab = locationTab || 'overview';
+                                const effectiveLocationTab = locationTab || (location.pathname === '/directory' ? 'federations' : 'overview');
                                 const effectiveItemTab = itemTab || 'overview';
                                 const isActive = location.pathname === itemPathname && effectiveLocationTab === effectiveItemTab;
 

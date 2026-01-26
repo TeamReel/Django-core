@@ -113,17 +113,18 @@ class PermissionResolutionService:
         permission_cache_misses_total.inc()
 
         # Step 1: Explicit membership
-        # NOTE: TeamReel allows multiple memberships per (project, user) across seasons/roles.
-        # We must not assume uniqueness here.
-        memberships = (
+        memberships_qs = (
             ProjectMembership.objects.active()
             .filter(project_id=project_id, user_id=user_id)
             .only("role", "created_at")
             .order_by("-created_at")
         )
 
-        if memberships.exists():
-            best_role = self._pick_best_membership_role(list(memberships))
+        # Important: avoid an .exists() check (extra query). Evaluate once.
+        memberships = list(memberships_qs)
+
+        if memberships:
+            best_role = self._pick_best_membership_role(memberships)
             result = self._build_result(best_role, "explicit_membership")
             self.cache_service.set_permission(user_id, project_id, result)
 
