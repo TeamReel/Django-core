@@ -49,8 +49,10 @@ def main():
             print("✓ Migrations completed successfully")
         except subprocess.CalledProcessError as e:
             print(f"✗ Migration failed with exit code {e.returncode}")
-            if os.environ.get("FAIL_ON_MIGRATION_ERROR", "1") == "1":
-                # Request termination; main thread forwards to Daphne.
+            # Default is fail-open to avoid taking down the whole API with an endless
+            # crashloop (which surfaces as 502s behind the proxy). Set FAIL_ON_MIGRATION_ERROR=1
+            # to enforce fail-fast behavior.
+            if os.environ.get("FAIL_ON_MIGRATION_ERROR", "0") == "1":
                 try:
                     os.kill(os.getpid(), signal.SIGTERM)
                 except Exception:
