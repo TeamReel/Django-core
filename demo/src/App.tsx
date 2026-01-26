@@ -85,10 +85,10 @@ import {
 import {
   DocsPage,
   TasksPage,
-  NotificationsPage,
   DeploymentPage,
 } from './pages/docs';
 import NotificationRoutingLogsPage from './pages/docs/NotificationRoutingLogsPage';
+import NotificationsPage from './pages/NotificationsPage';
 import RoutingRulesPage from './pages/config/RoutingRulesPage';
 import MatchDetailPage from './pages/activities/MatchDetailPage';
 import HierarchyMatchDetailPage from './pages/activities/HierarchyMatchDetailPage';

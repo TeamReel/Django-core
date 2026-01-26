@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import AppShell from '../components/AppShell';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useUserRole } from '../components/PermissionGuards';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const debugLog = (...args: unknown[]) => {
   if (import.meta.env.DEV) console.log(...args);
@@ -57,6 +58,8 @@ const isUuid = (value: string | null | undefined) =>
   Boolean(value && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value)));
 
 export default function NotificationsPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { context } = useContextSwitcher();
   const { isSystemAdmin, isLandAdmin, isOrgAdmin } = useUserRole();
   const canManageOrgSettings = isSystemAdmin || isLandAdmin || isOrgAdmin;
@@ -65,6 +68,27 @@ export default function NotificationsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<'inbox' | 'settings'>('inbox');
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = (params.get('tab') || '').toLowerCase();
+    if (tab === 'settings') {
+      setActiveTab('settings');
+      return;
+    }
+    if (tab === 'inbox') {
+      setActiveTab('inbox');
+      return;
+    }
+  }, [location.search]);
+
+  const goToTab = (tab: 'inbox' | 'settings') => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(location.search);
+    params.set('tab', tab);
+    const qs = params.toString();
+    navigate(`${location.pathname}${qs ? `?${qs}` : ''}`, { replace: true });
+  };
 
   const [preferences, setPreferences] = useState<NotificationPreference[]>([]);
   const [prefsLoading, setPrefsLoading] = useState(false);
@@ -496,7 +520,7 @@ export default function NotificationsPage() {
 
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <button
-              onClick={() => setActiveTab('inbox')}
+              onClick={() => goToTab('inbox')}
               style={{
                 padding: '8px 12px',
                 backgroundColor: activeTab === 'inbox' ? '#2196f3' : 'var(--app-surface)',
@@ -511,7 +535,7 @@ export default function NotificationsPage() {
               Inbox
             </button>
             <button
-              onClick={() => setActiveTab('settings')}
+              onClick={() => goToTab('settings')}
               style={{
                 padding: '8px 12px',
                 backgroundColor: activeTab === 'settings' ? '#2196f3' : 'var(--app-surface)',

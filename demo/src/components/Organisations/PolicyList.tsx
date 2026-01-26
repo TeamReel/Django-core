@@ -283,7 +283,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
             <div style={{ color: 'var(--app-text-muted)', fontStyle: 'italic' }}>
               No explicit notification policy found. Defaults apply.
               <div style={{ marginTop: '12px' }}>
-                <a href="/notifications" style={{ color: 'var(--app-link)', textDecoration: 'none' }}>
+                <a href="/notifications?tab=settings" style={{ color: 'var(--app-link)', textDecoration: 'none' }}>
                   Manage notification preferences
                 </a>
               </div>
@@ -320,7 +320,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
               <div style={{ color: 'var(--app-text-muted)', fontSize: '13px', lineHeight: 1.5 }}>
                 Routing rules decide who gets notified; per-user preferences only exist when a user deviates from defaults.
                 <div style={{ marginTop: '12px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  <a href="/notifications" style={{ color: 'var(--app-link)', textDecoration: 'none' }}>
+                  <a href="/notifications?tab=settings" style={{ color: 'var(--app-link)', textDecoration: 'none' }}>
                     Manage notification preferences
                   </a>
                   <a href="/routing-rules" style={{ color: 'var(--app-link)', textDecoration: 'none' }}>
