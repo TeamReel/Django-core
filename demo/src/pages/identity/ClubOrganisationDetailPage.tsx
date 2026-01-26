@@ -39,6 +39,13 @@ type Period = {
   metadata?: any;
 };
 
+type OverviewMember = {
+  id: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+};
+
 const unwrapEnvelope = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
 const extractList = (raw: any): any[] => {
@@ -57,6 +64,15 @@ const looksLikeIdentifier = (value: string) => {
   if (/^\d+$/.test(v)) return true;
   if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v)) return true;
   return false;
+};
+
+const getTeamParentId = (t: any): string => {
+  const parent =
+    (t as any)?.parent_id ??
+    (t as any)?.parent_project_id ??
+    (typeof (t as any)?.parent_project === 'object' ? (t as any)?.parent_project?.id : (t as any)?.parent_project) ??
+    (typeof (t as any)?.parent === 'object' ? (t as any)?.parent?.id : (t as any)?.parent);
+  return parent != null ? String(typeof parent === 'object' ? parent.id : parent) : '';
 };
 
 export default function ClubOrganisationDetailPage() {
@@ -96,6 +112,13 @@ export default function ClubOrganisationDetailPage() {
   const [hierarchyError, setHierarchyError] = useState<string | null>(null);
 
   const [hierarchySearch, setHierarchySearch] = useState('');
+
+  const [overviewLoading, setOverviewLoading] = useState(false);
+  const [overviewError, setOverviewError] = useState<string | null>(null);
+  const [overviewTeams, setOverviewTeams] = useState<Project[]>([]);
+  const [overviewSeasons, setOverviewSeasons] = useState<Period[]>([]);
+  const [overviewMembers, setOverviewMembers] = useState<OverviewMember[]>([]);
+  const [overviewCounts, setOverviewCounts] = useState<{ teams: number; seasons: number; members: number } | null>(null);
 
   const visibleHierarchyTeams = useMemo(() => {
     const q = String(hierarchySearch || '').trim().toLowerCase();
@@ -254,6 +277,148 @@ export default function ClubOrganisationDetailPage() {
     const id = String(club?.id || '').trim();
     return id;
   }, [club?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadOverview = async () => {
+      if (activeTabFromUrl !== 'overview') return;
+      const orgSlug = String(orgSlugForDirectoryLists || '').trim();
+      const clubId = String(clubIdForDirectoryLists || '').trim();
+      if (!orgSlug || !clubId) return;
+
+      setOverviewLoading(true);
+      setOverviewError(null);
+
+      try {
+        // 1) Teams (under this club)
+        const teamsRes = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`,
+          { credentials: 'include' },
+        );
+        if (!teamsRes.ok) throw new Error(`Failed to load teams (${teamsRes.status})`);
+        const teamsJson = await teamsRes.json().catch(() => null);
+        const teamsRaw = unwrapEnvelope<any>(teamsJson);
+        const teamsList: any[] = Array.isArray(teamsRaw?.results) ? teamsRaw.results : Array.isArray(teamsRaw) ? teamsRaw : [];
+        const clubTeams: Project[] = (teamsList || [])
+          .filter((t: any) => String(getTeamParentId(t) || '') === String(clubId))
+          .map((t: any) => ({
+            id: String(t?.id || '').trim(),
+            name: String(t?.name || 'Team'),
+            slug: t?.slug ? String(t.slug) : undefined,
+            organisation_id: t?.organisation_id ? String(t.organisation_id) : undefined,
+            organisation: t?.organisation,
+          }))
+          .filter((t) => Boolean(t.id));
+
+        // 2) Seasons (across those teams)
+        const teamIds = clubTeams.map((t) => String(t.id)).filter(Boolean);
+        let mergedSeasons: any[] = [];
+        if (teamIds.length > 0) {
+          const chunkSize = 50;
+          const chunks: string[][] = [];
+          for (let i = 0; i < teamIds.length; i += chunkSize) chunks.push(teamIds.slice(i, i + chunkSize));
+
+          const seasonsChunks = await Promise.all(
+            chunks.map(async (chunk) => {
+              const params = new URLSearchParams();
+              params.set('project_id__in', chunk.join(','));
+              params.set('page_size', '500');
+
+              const typed = new URLSearchParams(params);
+              typed.set('type', 'season');
+
+              const typedRes = await fetch(`${apiBaseUrl}/api/v1/periods/?${typed.toString()}`, { credentials: 'include' });
+              if (!typedRes.ok) throw new Error(`Failed to load seasons (${typedRes.status})`);
+              const typedJson = await typedRes.json().catch(() => null);
+              const typedRaw = unwrapEnvelope<any>(typedJson);
+              const typedList: any[] = extractList(typedRaw);
+              if (typedList.length > 0) return typedList;
+
+              const untypedRes = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
+              if (!untypedRes.ok) throw new Error(`Failed to load seasons (${untypedRes.status})`);
+              const untypedJson = await untypedRes.json().catch(() => null);
+              const untypedRaw = unwrapEnvelope<any>(untypedJson);
+              const untypedList: any[] = extractList(untypedRaw);
+              return untypedList.filter(isSeasonPeriod);
+            }),
+          );
+
+          mergedSeasons = mergeUniqueById(seasonsChunks.flat() as any[]);
+        }
+
+        // 3) Members (org members filtered by club/team memberships)
+        const memberParams = new URLSearchParams();
+        memberParams.set('page_size', '250');
+        memberParams.set('include_project_memberships', 'true');
+        memberParams.set('include_project_membership_details', 'true');
+        const membersRes = await fetch(
+          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/members/?${memberParams.toString()}`,
+          { credentials: 'include' },
+        );
+        if (!membersRes.ok) throw new Error(`Failed to load members (${membersRes.status})`);
+        const membersJson = await membersRes.json().catch(() => null);
+        const membersRawList =
+          membersJson?.data?.data || membersJson?.data?.results || membersJson?.results || membersJson?.data || [];
+        const membersList: any[] = Array.isArray(membersRawList) ? membersRawList : [];
+
+        const isMemberInClub = (item: any): boolean => {
+          const nestedUser = item?.user;
+          const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
+          const memberships = item?.project_memberships || u?.project_memberships || [];
+          if (!Array.isArray(memberships) || memberships.length === 0) return false;
+          return memberships.some((m: any) => {
+            const projectId = String(m?.project_id ?? m?.project?.id ?? '');
+            const parentId = String(m?.project?.parent_id ?? m?.project?.parent_project_id ?? '');
+            return projectId === String(clubId) || parentId === String(clubId);
+          });
+        };
+
+        const normalizedMembers: OverviewMember[] = membersList
+          .filter(isMemberInClub)
+          .map((item: any) => {
+            const nestedUser = item?.user;
+            const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
+            return {
+              id: String(u?.id ?? item?.id ?? '').trim(),
+              email: u?.email,
+              first_name: u?.first_name,
+              last_name: u?.last_name,
+            };
+          })
+          .filter((u) => Boolean(u.id));
+
+        if (cancelled) return;
+
+        const sortedTeams = [...clubTeams].sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
+        const sortedSeasons = [...(mergedSeasons as Period[])].sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
+        const sortedMembers = [...normalizedMembers].sort((a, b) => {
+          const an = `${a?.last_name || ''} ${a?.first_name || ''} ${a?.email || ''}`.trim();
+          const bn = `${b?.last_name || ''} ${b?.first_name || ''} ${b?.email || ''}`.trim();
+          return an.localeCompare(bn);
+        });
+
+        setOverviewTeams(sortedTeams.slice(0, 6));
+        setOverviewSeasons(sortedSeasons.slice(0, 6));
+        setOverviewMembers(sortedMembers.slice(0, 6));
+        setOverviewCounts({ teams: clubTeams.length, seasons: sortedSeasons.length, members: sortedMembers.length });
+      } catch (e) {
+        if (cancelled) return;
+        setOverviewError(e instanceof Error ? e.message : 'Failed to load overview');
+        setOverviewTeams([]);
+        setOverviewSeasons([]);
+        setOverviewMembers([]);
+        setOverviewCounts(null);
+      } finally {
+        if (!cancelled) setOverviewLoading(false);
+      }
+    };
+
+    void loadOverview();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTabFromUrl, apiBaseUrl, clubIdForDirectoryLists, orgSlugForDirectoryLists]);
 
   useEffect(() => {
     let cancelled = false;
@@ -772,19 +937,128 @@ export default function ClubOrganisationDetailPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('teams'))}>
                   <div className="text-sm font-medium text-gray-500">Teams</div>
-                  <div className="text-2xl font-bold mt-1">—</div>
+                  <div className="text-2xl font-bold mt-1">
+                    {overviewLoading ? '…' : overviewCounts ? overviewCounts.teams : '—'}
+                  </div>
                 </Card>
                 <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('seasons'))}>
                   <div className="text-sm font-medium text-gray-500">Seasons</div>
-                  <div className="text-2xl font-bold mt-1">—</div>
+                  <div className="text-2xl font-bold mt-1">
+                    {overviewLoading ? '…' : overviewCounts ? overviewCounts.seasons : '—'}
+                  </div>
                 </Card>
                 <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('members'))}>
                   <div className="text-sm font-medium text-gray-500">Members</div>
-                  <div className="text-2xl font-bold mt-1">—</div>
+                  <div className="text-2xl font-bold mt-1">
+                    {overviewLoading ? '…' : overviewCounts ? overviewCounts.members : '—'}
+                  </div>
                 </Card>
                 <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('matches'))}>
                   <div className="text-sm font-medium text-gray-500">Active Matches</div>
                   <div className="text-2xl font-bold mt-1">—</div>
+                </Card>
+              </div>
+
+              {overviewError && <Alert variant="error">{overviewError}</Alert>}
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card style={{ padding: 16 }}>
+                  <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                    <div className="text-sm font-semibold text-gray-900">Teams</div>
+                    <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('teams'))}>
+                      View all
+                    </Button>
+                  </div>
+                  {overviewLoading && overviewTeams.length === 0 ? (
+                    <div className="text-sm text-gray-500">Loading teams…</div>
+                  ) : overviewTeams.length === 0 ? (
+                    <div className="text-sm text-gray-500">No teams found.</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {overviewTeams.map((t) => {
+                        const teamKey = String(t?.slug || t?.id || '').trim();
+                        const teamPath =
+                          orgKeyForRoutes && clubKeyForRoutes && teamKey
+                            ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKey)}`
+                            : '';
+
+                        return (
+                          <div key={String(t.id)} className="flex items-center justify-between" style={{ gap: 12 }}>
+                            {teamPath ? (
+                              <button
+                                type="button"
+                                className="app-unstyled-button text-blue-600 hover:underline"
+                                onClick={() => navigate(teamPath)}
+                                style={{ textAlign: 'left', fontWeight: 600, minWidth: 0 }}
+                              >
+                                {t.name}
+                              </button>
+                            ) : (
+                              <div className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                                {t.name}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </Card>
+
+                <Card style={{ padding: 16 }}>
+                  <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                    <div className="text-sm font-semibold text-gray-900">Seasons</div>
+                    <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('seasons'))}>
+                      View all
+                    </Button>
+                  </div>
+                  {overviewLoading && overviewSeasons.length === 0 ? (
+                    <div className="text-sm text-gray-500">Loading seasons…</div>
+                  ) : overviewSeasons.length === 0 ? (
+                    <div className="text-sm text-gray-500">No seasons found.</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {overviewSeasons.map((s) => (
+                        <div key={String((s as any)?.id)} className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                          {String((s as any)?.name || 'Season')}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+
+                <Card style={{ padding: 16 }}>
+                  <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                    <div className="text-sm font-semibold text-gray-900">Members</div>
+                    <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('members'))}>
+                      View all
+                    </Button>
+                  </div>
+                  {overviewLoading && overviewMembers.length === 0 ? (
+                    <div className="text-sm text-gray-500">Loading members…</div>
+                  ) : overviewMembers.length === 0 ? (
+                    <div className="text-sm text-gray-500">No members found.</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {overviewMembers.map((m) => {
+                        const label =
+                          `${String(m?.first_name || '').trim()} ${String(m?.last_name || '').trim()}`.trim() ||
+                          String(m?.email || '').trim() ||
+                          `User ${m.id}`;
+                        return (
+                          <button
+                            key={String(m.id)}
+                            type="button"
+                            className="app-unstyled-button text-blue-600 hover:underline"
+                            onClick={() => navigate(`/users/${encodeURIComponent(String(m.id))}`)}
+                            style={{ textAlign: 'left', fontWeight: 600 }}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </Card>
               </div>
 
