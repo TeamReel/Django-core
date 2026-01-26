@@ -8,6 +8,8 @@ import {
 import { useUserRole } from './PermissionGuards';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { AppIcon } from './AppIcon';
+import { fetchAllPages } from '../utils/fetchAllPages';
+import { periodPathKey } from '../utils/periodPath';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -94,8 +96,152 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       teamSlugOrId, teamName,
       seasonSlugOrId, seasonName,
       competitionSlugOrId, competitionName,
-      matchId
+            matchId,
+            teamIdForApi,
+            seasonIdForApi
   } = useAppSelection();
+
+    const [resolvedCompetition, setResolvedCompetition] = useState<null | {
+        slugOrId: string;
+        idForApi: string;
+        name: string | null;
+    }>(null);
+
+    const [resolvedMatch, setResolvedMatch] = useState<null | {
+        key: string;
+        label: string | null;
+    }>(null);
+
+    // Best-effort: if competition/match are missing, resolve the most recent ones so
+    // Panel A always navigates to a detail page (no ?tab fallbacks).
+    useEffect(() => {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const orgId = String(orgSlug || '').trim();
+        const projectId = String(teamIdForApi || '').trim();
+        const seasonId = String(seasonIdForApi || '').trim();
+        const currentCompetitionKey = String(competitionSlugOrId || '').trim();
+        const currentMatchKey = String(matchId || '').trim();
+
+        if (!orgId || !projectId || !seasonId) {
+            setResolvedCompetition(null);
+            setResolvedMatch(null);
+            return;
+        }
+
+        let cancelled = false;
+
+        const pickMostRecentPeriod = (periods: any[]): any | null => {
+            const list = [...(Array.isArray(periods) ? periods : [])];
+            list.sort((a, b) => {
+                const ea = a?.end_date ? Date.parse(a.end_date) : NaN;
+                const eb = b?.end_date ? Date.parse(b.end_date) : NaN;
+                const sa = a?.start_date ? Date.parse(a.start_date) : NaN;
+                const sb = b?.start_date ? Date.parse(b.start_date) : NaN;
+                const ua = a?.updated_at ? Date.parse(a.updated_at) : NaN;
+                const ub = b?.updated_at ? Date.parse(b.updated_at) : NaN;
+
+                const hasE = Number.isFinite(ea) && Number.isFinite(eb);
+                if (hasE && ea !== eb) return eb - ea;
+                const hasS = Number.isFinite(sa) && Number.isFinite(sb);
+                if (hasS && sa !== sb) return sb - sa;
+                const hasU = Number.isFinite(ua) && Number.isFinite(ub);
+                if (hasU && ua !== ub) return ub - ua;
+                return String(a?.name || '').localeCompare(String(b?.name || ''));
+            });
+            return list[0] || null;
+        };
+
+        const run = async () => {
+            try {
+                // 1) Resolve competition (either match existing key -> id, or pick most recent)
+                const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(seasonId)}&page_size=500`;
+                const competitionPeriods = await fetchAllPages<any>(
+                    competitionsUrl,
+                    { credentials: 'include' },
+                    { ttlMs: 60_000, cacheKey: `sidebar:competitions:${projectId}:${seasonId}` }
+                );
+
+                const findByKey = (rows: any[], key: string) => {
+                    const needle = String(key || '').trim();
+                    if (!needle) return null;
+                    return (
+                        (rows || []).find((p: any) => String(p?.id || '') === needle) ||
+                        (rows || []).find((p: any) => {
+                            const k = periodPathKey(p) || String(p?.id || '');
+                            return String(k) === needle;
+                        }) ||
+                        null
+                    );
+                };
+
+                const resolvedCompetitionRow =
+                    findByKey(competitionPeriods || [], currentCompetitionKey) ||
+                    pickMostRecentPeriod(competitionPeriods || []);
+
+                const resolvedCompetitionIdForApi = String(resolvedCompetitionRow?.id || '').trim();
+                const resolvedCompetitionSlugOrId = resolvedCompetitionRow
+                    ? (periodPathKey(resolvedCompetitionRow) || String(resolvedCompetitionRow.id))
+                    : '';
+
+                if (!cancelled) {
+                    if (resolvedCompetitionIdForApi && resolvedCompetitionSlugOrId) {
+                        setResolvedCompetition({
+                            idForApi: resolvedCompetitionIdForApi,
+                            slugOrId: resolvedCompetitionSlugOrId,
+                            name: resolvedCompetitionRow?.name || null,
+                        });
+                    } else {
+                        setResolvedCompetition(null);
+                    }
+                }
+
+                // 2) Resolve match (if missing) from the resolved competition id
+                if (currentMatchKey) {
+                    if (!cancelled) setResolvedMatch(null);
+                    return;
+                }
+
+                if (!resolvedCompetitionIdForApi) {
+                    if (!cancelled) setResolvedMatch(null);
+                    return;
+                }
+
+                const matchesUrl = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(
+                    projectId
+                )}&period_id=${encodeURIComponent(resolvedCompetitionIdForApi)}&activity_type=match&ordering=-start_time&page_size=250`;
+
+                const matchRows = await fetchAllPages<any>(
+                    matchesUrl,
+                    { credentials: 'include' },
+                    {
+                        ttlMs: 30_000,
+                        cacheKey: `sidebar:matches:${projectId}:${resolvedCompetitionIdForApi}`,
+                        maxItems: 250,
+                    }
+                );
+
+                const first = Array.isArray(matchRows) ? matchRows[0] : null;
+                const nextKey = String(first?.slug || first?.id || '').trim();
+                const nextLabel = String(first?.title || first?.name || '').trim();
+
+                if (!cancelled) {
+                    if (nextKey) setResolvedMatch({ key: nextKey, label: nextLabel || `Match ${nextKey}` });
+                    else setResolvedMatch(null);
+                }
+            } catch {
+                if (!cancelled) {
+                    // Best-effort only
+                    setResolvedCompetition(null);
+                    setResolvedMatch(null);
+                }
+            }
+        };
+
+        void run();
+        return () => {
+            cancelled = true;
+        };
+    }, [orgSlug, teamIdForApi, seasonIdForApi, competitionSlugOrId, matchId]);
 
     useEffect(() => {
         // Optional convenience shortcut: keep the APP link human-friendly.
@@ -613,8 +759,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         const clubId = String(clubSlugOrId || '').trim();
         const teamId = String(teamSlugOrId || '').trim();
         const seasonId = String(seasonSlugOrId || '').trim();
-        const competitionId = String(competitionSlugOrId || '').trim();
-        const matchKey = String(matchId || '').trim();
+        const competitionKey = String(competitionSlugOrId || resolvedCompetition?.slugOrId || '').trim();
+        const matchKey = String(matchId || resolvedMatch?.key || '').trim();
 
                 const federationPath = orgId ? `/${orgId}` : '/dashboard';
 
@@ -630,20 +776,21 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 const teamPath = orgId && clubId && teamId ? `/${orgId}/${clubId}/${teamId}` : teamsIndexPath;
                 const seasonPath = orgId && clubId && teamId && seasonId ? `/${orgId}/${clubId}/${teamId}/${seasonId}` : seasonsIndexPath;
 
-                const competitionPath = orgId && clubId && teamId && seasonId && competitionId
-                    ? `/${orgId}/${clubId}/${teamId}/${seasonId}/${competitionId}`
-                    : (orgId && clubId && teamId && seasonId ? `${seasonPath}?tab=competitions` : competitionsIndexPath);
+                // No more ?tab fallbacks: always go to a detail page, or fall back one level up.
+                const competitionPath = orgId && clubId && teamId && seasonId && competitionKey
+                    ? `/${orgId}/${clubId}/${teamId}/${seasonId}/${competitionKey}`
+                    : (orgId && clubId && teamId && seasonId ? seasonPath : competitionsIndexPath);
 
-                const matchPath = orgId && clubId && teamId && seasonId && competitionId && matchKey
-                    ? `/${orgId}/${clubId}/${teamId}/${seasonId}/${competitionId}/${matchKey}`
-                    : (orgId && clubId && teamId && seasonId && competitionId ? `${competitionPath}?tab=matches` : matchesIndexPath);
+                const matchPath = orgId && clubId && teamId && seasonId && competitionKey && matchKey
+                    ? `/${orgId}/${clubId}/${teamId}/${seasonId}/${competitionKey}/${matchKey}`
+                    : (orgId && clubId && teamId && seasonId && competitionKey ? competitionPath : matchesIndexPath);
 
         const federationLabel = `Federation${orgId ? `: ${orgId}` : ''}`;
         const clubLabel = `Club${clubName ? `: ${clubName}` : (clubId ? `: ${clubId}` : '')}`;
         const teamLabel = `Team${teamName ? `: ${teamName}` : (teamId ? `: ${teamId}` : '')}`;
         const seasonLabel = `Season${seasonName ? `: ${seasonName}` : (seasonId ? `: ${seasonId}` : '')}`;
-        const competitionLabel = `Competition${competitionName ? `: ${competitionName}` : (competitionId ? `: ${competitionId}` : '')}`;
-        const matchLabel = `Match${matchKey ? `: ${matchKey}` : ''}`;
+        const competitionLabel = `Competition${competitionName ? `: ${competitionName}` : (resolvedCompetition?.name ? `: ${resolvedCompetition.name}` : (competitionKey ? `: ${competitionKey}` : ''))}`;
+        const matchLabel = `Match${resolvedMatch?.label ? `: ${resolvedMatch.label}` : (matchKey ? `: ${matchKey}` : '')}`;
 
         return [
             { label: federationLabel, path: federationPath, icon: Globe, visibility: 'everyone' },
@@ -654,7 +801,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             { label: matchLabel, path: matchPath, icon: Timer, visibility: 'everyone' },
             { label: user2364Label, path: '/users/2364', icon: Users, visibility: 'org_admin' },
         ];
-    }, [location.pathname, orgSlug, clubSlugOrId, clubName, teamSlugOrId, teamName, seasonSlugOrId, seasonName, competitionSlugOrId, competitionName, matchId, user2364Label]);
+    }, [location.pathname, orgSlug, clubSlugOrId, clubName, teamSlugOrId, teamName, seasonSlugOrId, seasonName, competitionSlugOrId, competitionName, matchId, resolvedCompetition, resolvedMatch, user2364Label]);
 
     const panelASections = useMemo(() => {
         return visibleSections
