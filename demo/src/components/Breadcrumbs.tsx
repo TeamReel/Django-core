@@ -531,6 +531,7 @@ export default function Breadcrumbs() {
 
   // User detail route: render a breadcrumb leaf switcher for users.
   if (userDetailMatch?.params?.userId) {
+    const isStandaloneUserRoute = location.pathname.startsWith('/users/');
     const currentUserId = String((userDetailMatch.params as any)?.userId || '').trim();
     const ctxOrgKey = String((context as any)?.organisation?.slug || (context as any)?.organisation?.id || '').trim();
     const ctxOrgName = String((context as any)?.organisation?.name || '').trim();
@@ -547,7 +548,7 @@ export default function Breadcrumbs() {
 
     const crumbs: Array<{ label: React.ReactNode; path: string }> = [
       { label: 'Dashboard', path: '/dashboard' },
-      ...(ctxOrgKey ? [{ label: ctxOrgName || ctxOrgKey, path: `/${ctxOrgKey}` }] : []),
+      ...(!isStandaloneUserRoute && ctxOrgKey ? [{ label: ctxOrgName || ctxOrgKey, path: `/${ctxOrgKey}` }] : []),
       { label: 'Users', path: '/users' },
       {
         label: (
