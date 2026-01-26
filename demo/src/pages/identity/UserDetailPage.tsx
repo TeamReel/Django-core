@@ -983,7 +983,159 @@ export const UserDetailPage: React.FC = () => {
 
       <PageContent>
         {activeTab === 'overview' && (
-          <div style={{ display: 'grid', gap: '12px' }}>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card style={{ padding: 16 }}>
+                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                  <div className="text-sm font-semibold text-gray-900">
+                    Federations <span className="text-gray-500" style={{ fontWeight: 600 }}>({userOrgs.length})</span>
+                  </div>
+                  <button type="button" className="app-action-button" onClick={() => setTab('federations')} style={actionButtonStyle('neutral')}>
+                    View all
+                  </button>
+                </div>
+                {userOrgs.length === 0 ? (
+                  <div className="text-sm text-gray-500">No federations.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {userOrgs.slice(0, 6).map((o: any) => {
+                      const orgSlugOrId = String(o?.slug || o?.id || '').trim();
+                      const orgPath = orgSlugOrId ? `/organisations/${encodeURIComponent(orgSlugOrId)}` : '';
+                      return orgPath ? (
+                        <button
+                          key={String(o?.id || o?.slug || orgSlugOrId)}
+                          type="button"
+                          className="app-unstyled-button text-blue-600 hover:underline"
+                          onClick={() => navigate(orgPath)}
+                          style={{ textAlign: 'left', fontWeight: 600 }}
+                        >
+                          {String(o?.name || orgSlugOrId)}
+                        </button>
+                      ) : (
+                        <div key={String(o?.id || o?.slug || orgSlugOrId)} className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                          {String(o?.name || 'Federation')}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Card>
+
+              <Card style={{ padding: 16 }}>
+                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                  <div className="text-sm font-semibold text-gray-900">
+                    Clubs <span className="text-gray-500" style={{ fontWeight: 600 }}>({clubsForTab.length})</span>
+                  </div>
+                  <button type="button" className="app-action-button" onClick={() => setTab('clubs')} style={actionButtonStyle('neutral')}>
+                    View all
+                  </button>
+                </div>
+                {clubsForTab.length === 0 ? (
+                  <div className="text-sm text-gray-500">No clubs.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {clubsForTab.slice(0, 6).map((c: any) => {
+                      const orgKey = String(primaryOrgSlug || '').trim();
+                      const clubKeyOrId = String(c?.slug || c?.id || '').trim();
+                      const clubPath = orgKey && clubKeyOrId ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(clubKeyOrId)}` : '';
+                      return clubPath ? (
+                        <button
+                          key={String(c?.id || clubKeyOrId)}
+                          type="button"
+                          className="app-unstyled-button text-blue-600 hover:underline"
+                          onClick={() => navigate(clubPath)}
+                          style={{ textAlign: 'left', fontWeight: 600 }}
+                        >
+                          {String(c?.name || 'Club')}
+                        </button>
+                      ) : (
+                        <div key={String(c?.id || clubKeyOrId)} className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                          {String(c?.name || 'Club')}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Card>
+
+              <Card style={{ padding: 16 }}>
+                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                  <div className="text-sm font-semibold text-gray-900">
+                    Teams <span className="text-gray-500" style={{ fontWeight: 600 }}>({teamMemberships.length})</span>
+                  </div>
+                  <button type="button" className="app-action-button" onClick={() => setTab('teams')} style={actionButtonStyle('neutral')}>
+                    View all
+                  </button>
+                </div>
+                {teamMemberships.length === 0 ? (
+                  <div className="text-sm text-gray-500">No teams.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {teamMemberships.slice(0, 6).map((t: any) => {
+                      const orgKey = String(primaryOrgSlug || '').trim();
+                      const clubIdValue = String(t?.parent || '').trim();
+                      const clubKeyOrId = String(clubSlugById.get(clubIdValue) || clubIdValue || '').trim();
+                      const teamKeyOrId = String(t?.slug || t?.id || '').trim();
+                      const teamPath = orgKey && clubKeyOrId && teamKeyOrId
+                        ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(clubKeyOrId)}/${encodeURIComponent(teamKeyOrId)}`
+                        : '';
+                      return teamPath ? (
+                        <button
+                          key={String(t?.id || teamKeyOrId)}
+                          type="button"
+                          className="app-unstyled-button text-blue-600 hover:underline"
+                          onClick={() => navigate(teamPath)}
+                          style={{ textAlign: 'left', fontWeight: 600 }}
+                        >
+                          {String(t?.name || 'Team')}
+                        </button>
+                      ) : (
+                        <div key={String(t?.id || teamKeyOrId)} className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                          {String(t?.name || 'Team')}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Card>
+
+              <Card style={{ padding: 16 }}>
+                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                  <div className="text-sm font-semibold text-gray-900">
+                    Matches <span className="text-gray-500" style={{ fontWeight: 600 }}>({linkedMatches.length})</span>
+                  </div>
+                  <button type="button" className="app-action-button" onClick={() => setTab('matches')} style={actionButtonStyle('neutral')}>
+                    View all
+                  </button>
+                </div>
+                {linkedMatches.length === 0 ? (
+                  <div className="text-sm text-gray-500">No matches.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {linkedMatches.slice(0, 6).map((m: any) => {
+                      const matchKeyOrId = String((m as any)?.slug || (m as any)?.id || '').trim();
+                      const matchPath = matchKeyOrId ? `/matches/${encodeURIComponent(matchKeyOrId)}` : '';
+                      return matchPath ? (
+                        <button
+                          key={String(m?.id || matchKeyOrId)}
+                          type="button"
+                          className="app-unstyled-button text-blue-600 hover:underline"
+                          onClick={() => navigate(matchPath)}
+                          style={{ textAlign: 'left', fontWeight: 600 }}
+                        >
+                          {String(m?.title || m?.name || 'Match')}
+                        </button>
+                      ) : (
+                        <div key={String(m?.id || 'match')} className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                          {String(m?.title || m?.name || 'Match')}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Card>
+            </div>
+
             <Card>
               <h3 style={{ marginTop: 0 }}>User</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '8px 16px' }}>
@@ -1006,25 +1158,6 @@ export const UserDetailPage: React.FC = () => {
                 </div>
               </div>
             </Card>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '12px' }}>
-              <Card>
-                <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Federations</div>
-                <div style={{ fontWeight: 800, fontSize: '22px' }}>{userOrgs.length}</div>
-              </Card>
-              <Card>
-                <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Clubs</div>
-                <div style={{ fontWeight: 800, fontSize: '22px' }}>{clubMemberships.length}</div>
-              </Card>
-              <Card>
-                <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Teams</div>
-                <div style={{ fontWeight: 800, fontSize: '22px' }}>{teamMemberships.length}</div>
-              </Card>
-              <Card>
-                <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Matches</div>
-                <div style={{ fontWeight: 800, fontSize: '22px' }}>{linkedMatches.length}</div>
-              </Card>
-            </div>
           </div>
         )}
 

@@ -695,40 +695,18 @@ export default function TeamOrganisationDetailPage() {
         <PageContent>
           {activeTabFromUrl === 'overview' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('seasons'))}>
-                  <div className="text-sm font-medium text-gray-500">Seasons</div>
-                  <div className="text-2xl font-bold mt-1">{hierarchyLoading ? '…' : hierarchySeasons.length}</div>
-                </Card>
-                <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('competitions'))}>
-                  <div className="text-sm font-medium text-gray-500">Competitions</div>
-                  <div className="text-2xl font-bold mt-1">
-                    {hierarchyLoading
-                      ? '…'
-                      : Object.values(hierarchyCompetitionsBySeasonId || {}).reduce((sum, list) => sum + (list?.length || 0), 0)}
-                  </div>
-                </Card>
-                <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('members'))}>
-                  <div className="text-sm font-medium text-gray-500">Members</div>
-                  <div className="text-2xl font-bold mt-1">{overviewMembersLoading ? '…' : overviewMembersCount ?? '—'}</div>
-                </Card>
-                <Card style={{ padding: '16px', cursor: 'pointer' }} onClick={() => navigate(makeTabHref('matches'))}>
-                  <div className="text-sm font-medium text-gray-500">Active Matches</div>
-                  <div className="text-2xl font-bold mt-1">
-                    {hierarchyLoading
-                      ? '…'
-                      : Object.values(hierarchyMatchesCountBySeasonId || {}).reduce((sum, n) => sum + (typeof n === 'number' ? n : 0), 0)}
-                  </div>
-                </Card>
-              </div>
-
               {hierarchyError && <Alert variant="error">{hierarchyError}</Alert>}
               {overviewMembersError && <Alert variant="error">{overviewMembersError}</Alert>}
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card style={{ padding: 16 }}>
                   <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
-                    <div className="text-sm font-semibold text-gray-900">Seasons</div>
+                    <div className="text-sm font-semibold text-gray-900">
+                      Seasons{' '}
+                      <span className="text-gray-500" style={{ fontWeight: 600 }}>
+                        ({hierarchyLoading ? '…' : hierarchySeasons.length})
+                      </span>
+                    </div>
                     <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('seasons'))}>
                       View all
                     </Button>
@@ -767,7 +745,16 @@ export default function TeamOrganisationDetailPage() {
 
                 <Card style={{ padding: 16 }}>
                   <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
-                    <div className="text-sm font-semibold text-gray-900">Competitions</div>
+                    <div className="text-sm font-semibold text-gray-900">
+                      Competitions{' '}
+                      <span className="text-gray-500" style={{ fontWeight: 600 }}>
+                        (
+                        {hierarchyLoading
+                          ? '…'
+                          : Object.values(hierarchyCompetitionsBySeasonId || {}).reduce((sum, list) => sum + (list?.length || 0), 0)}
+                        )
+                      </span>
+                    </div>
                     <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('competitions'))}>
                       View all
                     </Button>
@@ -817,7 +804,12 @@ export default function TeamOrganisationDetailPage() {
 
                 <Card style={{ padding: 16 }}>
                   <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
-                    <div className="text-sm font-semibold text-gray-900">Members</div>
+                    <div className="text-sm font-semibold text-gray-900">
+                      Members{' '}
+                      <span className="text-gray-500" style={{ fontWeight: 600 }}>
+                        ({overviewMembersLoading ? '…' : overviewMembersCount ?? '—'})
+                      </span>
+                    </div>
                     <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('members'))}>
                       View all
                     </Button>
@@ -848,6 +840,25 @@ export default function TeamOrganisationDetailPage() {
                       })}
                     </div>
                   )}
+                </Card>
+
+                <Card style={{ padding: 16 }}>
+                  <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                    <div className="text-sm font-semibold text-gray-900">
+                      Matches{' '}
+                      <span className="text-gray-500" style={{ fontWeight: 600 }}>
+                        (
+                        {hierarchyLoading
+                          ? '…'
+                          : Object.values(hierarchyMatchesCountBySeasonId || {}).reduce((sum, n) => sum + (typeof n === 'number' ? n : 0), 0)}
+                        )
+                      </span>
+                    </div>
+                    <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('matches'))}>
+                      View all
+                    </Button>
+                  </div>
+                  <div className="text-sm text-gray-500">Open the Matches tab to view fixtures and results.</div>
                 </Card>
               </div>
 

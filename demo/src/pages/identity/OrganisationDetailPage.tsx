@@ -245,6 +245,18 @@ export const OrganisationDetailPage: React.FC = () => {
     if (activeTab === 'users') {
       void fetchMembers(false);
     }
+
+    if (activeTab === 'overview') {
+      if (!clubsLoading && clubs.length === 0) {
+        void fetchClubsPage(1);
+      }
+      if (!teamsLoading && teams.length === 0) {
+        void fetchTeamsForOrg({ force: false });
+      }
+      if (!membersLoading && members.length === 0) {
+        void fetchMembers(false);
+      }
+    }
   }, [activeTab, currentOrgSlug]);
 
   const createModalOrganisations = useMemo(() => {
@@ -1586,35 +1598,142 @@ export const OrganisationDetailPage: React.FC = () => {
       <PageContent>
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Top Stats Row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card
-                style={{ padding: '16px', cursor: 'pointer' }}
-                onClick={() => navigate(makeTabHref('clubs'))}
-              >
-                <div className="text-sm font-medium text-gray-500">Clubs</div>
-                <div className="text-2xl font-bold mt-1">{org.clubs_count || clubsCount || 0}</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card style={{ padding: 16 }}>
+                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                  <div className="text-sm font-semibold text-gray-900">
+                    Clubs <span className="text-gray-500" style={{ fontWeight: 600 }}>({org.clubs_count || clubsCount || 0})</span>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('clubs'))}>
+                    View all
+                  </Button>
+                </div>
+                {clubsLoading && clubs.length === 0 ? (
+                  <div className="text-sm text-gray-500">Loading clubs…</div>
+                ) : clubs.length === 0 ? (
+                  <div className="text-sm text-gray-500">No clubs found.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {clubs.slice(0, 6).map((c: any) => (
+                      <button
+                        key={String(c?.id)}
+                        type="button"
+                        className="app-unstyled-button text-blue-600 hover:underline"
+                        onClick={() =>
+                          navigate(
+                            `/organisations/${encodeURIComponent(String(currentOrgSlug || id || ''))}/projects/${encodeURIComponent(String(c?.slug || c?.id || ''))}`
+                          )
+                        }
+                        style={{ textAlign: 'left', fontWeight: 600 }}
+                      >
+                        {String(c?.name || 'Club')}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </Card>
-              <Card
-                style={{ padding: '16px', cursor: 'pointer' }}
-                onClick={() => navigate(makeTabHref('teams'))}
-              >
-                <div className="text-sm font-medium text-gray-500">Teams</div>
-                <div className="text-2xl font-bold mt-1">{org.teams_count || teamsCount || 0}</div>
+
+              <Card style={{ padding: 16 }}>
+                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                  <div className="text-sm font-semibold text-gray-900">
+                    Teams <span className="text-gray-500" style={{ fontWeight: 600 }}>({org.teams_count || teamsCount || 0})</span>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('teams'))}>
+                    View all
+                  </Button>
+                </div>
+                {teamsLoading && teams.length === 0 ? (
+                  <div className="text-sm text-gray-500">Loading teams…</div>
+                ) : teams.length === 0 ? (
+                  <div className="text-sm text-gray-500">No teams found.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {(teams as any[]).slice(0, 6).map((t: any) => (
+                      <button
+                        key={String(t?.id)}
+                        type="button"
+                        className="app-unstyled-button text-blue-600 hover:underline"
+                        onClick={() =>
+                          navigate(
+                            `/organisations/${encodeURIComponent(String(currentOrgSlug || id || ''))}/projects/${encodeURIComponent(String(t?.slug || t?.id || ''))}`
+                          )
+                        }
+                        style={{ textAlign: 'left', fontWeight: 600 }}
+                      >
+                        {String(t?.name || 'Team')}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </Card>
-              <Card
-                style={{ padding: '16px', cursor: 'pointer' }}
-                onClick={() => navigate(makeTabHref('users'))}
-              >
-                <div className="text-sm font-medium text-gray-500">Members</div>
-                <div className="text-2xl font-bold mt-1">{org.member_count || members.length || 0}</div>
+
+              <Card style={{ padding: 16 }}>
+                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                  <div className="text-sm font-semibold text-gray-900">
+                    Members <span className="text-gray-500" style={{ fontWeight: 600 }}>({org.member_count || members.length || 0})</span>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('users'))}>
+                    View all
+                  </Button>
+                </div>
+                {membersLoading && members.length === 0 ? (
+                  <div className="text-sm text-gray-500">Loading members…</div>
+                ) : members.length === 0 ? (
+                  <div className="text-sm text-gray-500">No members found.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {(members as any[]).slice(0, 6).map((m: any) => {
+                      const u = m?.user || m;
+                      const label =
+                        `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim() ||
+                        String(u?.email || '').trim() ||
+                        `User ${String(u?.id || m?.id)}`;
+                      const userId = String(u?.id || m?.id || '').trim();
+                      return (
+                        <button
+                          key={String(userId || label)}
+                          type="button"
+                          className="app-unstyled-button text-blue-600 hover:underline"
+                          onClick={() => (userId ? navigate(`/users/${encodeURIComponent(userId)}`) : void 0)}
+                          style={{ textAlign: 'left', fontWeight: 600 }}
+                          disabled={!userId}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </Card>
-              <Card
-                style={{ padding: '16px', cursor: 'pointer' }}
-                onClick={() => navigate(makeTabHref('matches'))}
-              >
-                <div className="text-sm font-medium text-gray-500">Active Matches</div>
-                <div className="text-2xl font-bold mt-1">{matchesCount ?? '—'}</div>
+
+              <Card style={{ padding: 16 }}>
+                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                  <div className="text-sm font-semibold text-gray-900">
+                    Matches <span className="text-gray-500" style={{ fontWeight: 600 }}>({matchesCount ?? '—'})</span>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('matches'))}>
+                    View all
+                  </Button>
+                </div>
+                {scheduledMatchesLoading && scheduledMatches.length === 0 ? (
+                  <div className="text-sm text-gray-500">Loading matches…</div>
+                ) : scheduledMatches.length === 0 ? (
+                  <div className="text-sm text-gray-500">No upcoming matches scheduled.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {scheduledMatches.slice(0, 6).map((m: any) => (
+                      <button
+                        key={String(m?.id)}
+                        type="button"
+                        className="app-unstyled-button text-blue-600 hover:underline"
+                        onClick={() => navigate(getBestMatchDetailPath(m))}
+                        style={{ textAlign: 'left', fontWeight: 600 }}
+                      >
+                        {String(m?.title || m?.name || 'Match')}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </Card>
             </div>
 
@@ -1644,147 +1763,6 @@ export const OrganisationDetailPage: React.FC = () => {
                 </div>
               </div>
             </Card>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column: Recent Activity & Competitions (2/3) */}
-              <div className="lg:col-span-2 space-y-6">
-                <Card>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Recent Results</h3>
-                    <Button variant="secondary" size="sm" onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}/matches`)}>
-                      View All Matches
-                    </Button>
-                  </div>
-                  {recentPlayedMatchesLoading ? (
-                    <div className="text-sm text-gray-500 py-4 text-center">Loading recent matches...</div>
-                  ) : recentPlayedMatches.length === 0 ? (
-                    <div className="text-sm text-gray-500 py-4 text-center">No recent matches played.</div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table style={compactTableStyle}>
-                        <thead>
-                          <tr>
-                            <th style={compactThStyle}>Match</th>
-                            <th style={compactThStyle}>Date</th>
-                            <th style={compactThStyle}>Result</th>
-                            <th style={compactThStyle}></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {recentPlayedMatches.map((m: any) => (
-                            <tr key={m.id}>
-                              <td style={compactTextTdStyle}>
-                                <div className="font-medium">{m.title || m.name || 'Match'}</div>
-                                <div className="text-xs text-gray-500">{m.period?.name || '-'}</div>
-                              </td>
-                              <td style={compactTextTdStyle}>{m.start_time ? new Date(m.start_time).toLocaleDateString() : '-'}</td>
-                              <td style={compactTextTdStyle}>
-                                <Badge variant="default">Finished</Badge>
-                              </td>
-                              <td style={compactTdStyle}>
-                                <button className="text-xs text-blue-600 hover:underline" onClick={() => navigate(getBestMatchDetailPath(m))}>
-                                  View
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
-                    </div>
-                  )}
-                </Card>
-
-                <Card>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Competitions</h3>
-                    <Button variant="secondary" size="sm" onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}/competitions`)}>
-                      Manage Competitions
-                    </Button>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="p-3 bg-gray-50 rounded-lg text-center flex-1">
-                      <div className="font-bold text-lg text-gray-900">{seasonsCount ?? 0}</div>
-                      <div>Active Seasons</div>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg text-center flex-1">
-                      <div className="font-bold text-lg text-gray-900">{competitionsCount ?? 0}</div>
-                      <div>Competitions</div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* Right Column: Scheduled & Quick Links (1/3) */}
-              <div className="space-y-6">
-                <Card>
-                  <h3 className="text-lg font-semibold mb-3">Scheduled Matches</h3>
-                  {scheduledMatchesLoading ? (
-                    <div className="text-sm text-gray-500 py-2">Loading...</div>
-                  ) : scheduledMatches.length === 0 ? (
-                    <div className="text-sm text-gray-500 py-2">No upcoming matches scheduled.</div>
-                  ) : (
-                    <div className="space-y-3">
-                      {scheduledMatches.map((m: any) => (
-                        <div key={m.id} className="pb-3 border-b border-gray-100 last:border-0 last:pb-0">
-                          <div className="font-medium text-sm text-gray-900">{m.title || m.name || 'Match'}</div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {m.start_time
-                              ? new Date(m.start_time).toLocaleString(undefined, {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })
-                              : 'TBA'}
-                          </div>
-                          <button
-                            className="text-xs text-blue-600 mt-1 hover:underline bg-transparent border-0 p-0 cursor-pointer"
-                            onClick={() => navigate(getBestMatchDetailPath(m))}
-                          >
-                            View Details →
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="mt-4 pt-3 border-t border-gray-100">
-                    <Button variant="secondary" size="sm" style={{ width: '100%' }} onClick={() => navigate(`/${encodeURIComponent(String(currentOrgSlug || id || ''))}/matches`)}>
-                      View All Matches
-                    </Button>
-                  </div>
-                </Card>
-
-                <Card>
-                  <h3 className="text-lg font-semibold mb-3">Quick Actions</h3>
-                  <div className="space-y-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      style={{ width: '100%', justifyContent: 'flex-start' }}
-                      onClick={() => navigate(makeTabHref('users'))}
-                    >
-                      Manage Members
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      style={{ width: '100%', justifyContent: 'flex-start' }}
-                      onClick={() => alert('Coming soon')}
-                    >
-                      View Policies
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      style={{ width: '100%', justifyContent: 'flex-start' }}
-                      onClick={() => alert('Coming soon')}
-                    >
-                      System Operations
-                    </Button>
-                  </div>
-                </Card>
-              </div>
-            </div>
           </div>
         )}
 
