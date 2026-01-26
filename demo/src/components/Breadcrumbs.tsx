@@ -1122,19 +1122,35 @@ export default function Breadcrumbs() {
                         fontSize: '14px'
                     }}>/</span>
                 )}
-                <Link
-                    to={item.path}
+                {typeof item.label === 'string' ? (
+                  <Link
+                      to={item.path}
+                      style={{
+                          color: isLast ? 'var(--app-text)' : 'var(--app-muted-text)',
+                          textDecoration: 'none',
+                          fontSize: '14px',
+                          whiteSpace: 'nowrap',
+                          fontWeight: isLast ? 600 : 400
+                      }}
+                      aria-current={isLast ? 'page' : undefined}
+                  >
+                      {item.label}
+                  </Link>
+                ) : (
+                  <span
                     style={{
-                        color: isLast ? 'var(--app-text)' : 'var(--app-muted-text)',
-                        textDecoration: 'none',
-                        fontSize: '14px',
-                        whiteSpace: 'nowrap',
-                        fontWeight: isLast ? 600 : 400
+                      color: isLast ? 'var(--app-text)' : 'var(--app-muted-text)',
+                      fontSize: '14px',
+                      whiteSpace: 'nowrap',
+                      fontWeight: isLast ? 600 : 400,
+                      display: 'inline-flex',
+                      alignItems: 'center',
                     }}
                     aria-current={isLast ? 'page' : undefined}
-                >
+                  >
                     {item.label}
-                </Link>
+                  </span>
+                )}
             </li>
            );
         })}
