@@ -57,6 +57,23 @@ interface OrganisationNotificationPolicy {
 const isUuid = (value: string | null | undefined) =>
   Boolean(value && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value)));
 
+const safeSearchParams = (search: string) => {
+  try {
+    return new URLSearchParams(search);
+  } catch {
+    return new URLSearchParams();
+  }
+};
+
+const safeLocalStorageGetItem = (key: string) => {
+  try {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage?.getItem(key) ?? null;
+  } catch {
+    return null;
+  }
+};
+
 export default function NotificationsPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -70,7 +87,7 @@ export default function NotificationsPage() {
   const [activeTab, setActiveTab] = useState<'inbox' | 'settings'>('inbox');
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
+    const params = safeSearchParams(location.search);
     const tab = (params.get('tab') || '').toLowerCase();
     if (tab === 'settings') {
       setActiveTab('settings');
@@ -84,7 +101,7 @@ export default function NotificationsPage() {
 
   const goToTab = (tab: 'inbox' | 'settings') => {
     setActiveTab(tab);
-    const params = new URLSearchParams(location.search);
+    const params = safeSearchParams(location.search);
     params.set('tab', tab);
     const qs = params.toString();
     navigate(`${location.pathname}${qs ? `?${qs}` : ''}`, { replace: true });
@@ -116,7 +133,7 @@ export default function NotificationsPage() {
   const currentOrgId = useMemo(() => {
     const fromContext = context?.organisation?.id ? String((context.organisation as any).id) : '';
     if (isUuid(fromContext)) return fromContext;
-    const fromStorage = localStorage.getItem('django-core:currentOrgId');
+    const fromStorage = safeLocalStorageGetItem('django-core:currentOrgId');
     if (isUuid(fromStorage)) return String(fromStorage);
     return '';
   }, [context?.organisation?.id]);
