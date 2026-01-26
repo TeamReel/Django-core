@@ -291,7 +291,9 @@ def auth_default_context(request):
     """
 
     from django.utils import timezone
-    from django.utils.text import slugify
+
+    import re
+    import unicodedata
 
     if not request.user.is_authenticated:
         return Response(
@@ -339,10 +341,25 @@ def auth_default_context(request):
             return None
         return {"id": str(org.id), "slug": org.slug, "name": org.name}
 
+    def _frontend_slugify(value: str) -> str:
+        """Match demo/src/utils/periodPath.ts slugify() for consistent URLs."""
+
+        input_value = str(value or "").strip().lower()
+        if not input_value:
+            return ""
+
+        normalized = unicodedata.normalize("NFKD", input_value)
+        without_marks = "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn")
+
+        cleaned = re.sub(r"[^a-z0-9]+", "-", without_marks)
+        cleaned = re.sub(r"^-+|-+$", "", cleaned)
+        cleaned = re.sub(r"--+", "-", cleaned)
+        return cleaned
+
     def period_key(period):
         if not period:
             return ""
-        return slugify(period.name or "") or str(period.id)
+        return _frontend_slugify(period.name or "") or str(period.id)
 
     def period_payload(period):
         if not period:

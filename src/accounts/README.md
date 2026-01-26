@@ -139,6 +139,7 @@ The module enforces a three-tier role hierarchy with clear permission boundaries
 
 #### Authenticated Endpoints (IsAuthenticated)
 - `POST /api/v1/auth/logout` - User logout
+- `GET /api/v1/auth/default-context/` - Deterministic default navigation context (org/club/team/season/competition/match) for the frontend sidebar
 
 #### Admin Endpoints (IsAdmin - superadmin or admin)
 - `GET /api/v1/admin/users` - List users (paginated, 50/page)
@@ -218,6 +219,18 @@ The module provides both form-based views and REST API endpoints. See OpenAPI sp
 - `POST /api/v1/auth/login` - Sign in
 - `POST /api/v1/auth/logout` - Sign out
 - `POST /api/v1/auth/password-reset-request` - Request password reset
+- `GET /api/v1/auth/default-context/` - Default navigation context for TeamReel hierarchy routes
+
+#### `GET /api/v1/auth/default-context/`
+
+Returns a deterministic “where should the user land by default” context for the TeamReel demo sidebar (Panel A), so the frontend doesn’t have to guess vanity URL segments.
+
+Response is wrapped by the global API envelope:
+
+- Success: `{ "status": "success", "data": { ... } }`
+- Unauthenticated: `{ "status": "error", "error": { "code": "not_authenticated", ... } }` (401)
+
+`data` includes nullable fields: `organisation`, `club`, `team`, `season`, `competition`, `match`, plus `source` and `computed_at`.
 - `POST /api/v1/auth/password-reset-confirm` - Confirm password reset
 - `GET /api/v1/admin/users` - List users (admin only)
 - `PATCH /api/v1/admin/users/{id}/activate` - Activate user (admin only)

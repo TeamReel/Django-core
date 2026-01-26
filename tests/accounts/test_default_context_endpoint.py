@@ -122,7 +122,9 @@ class TestAuthDefaultContextEndpoint:
         assert payload["team"]["parent"]["slug"] == club.slug
 
         assert payload["season"]["id"] == str(season.id)
+        assert payload["season"]["key"] == "seizoen-2024-2025"
         assert payload["competition"]["id"] == str(competition.id)
+        assert payload["competition"]["key"] == "competitie"
 
         assert payload["match"]["id"] == str(next_match.id)
         assert payload["match"]["slug"] == next_match.slug
