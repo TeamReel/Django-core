@@ -5,6 +5,39 @@
 **Feature:** TeamReel Gamified Content Navigation
 **Last Updated:** January 2026
 
+## 0.5. Implementation Status (Reality Check)
+
+This section summarizes what is already implemented in code today, what is still pending, and what the backend already enables (so it can be built next without major architecture work).
+
+### Implemented (Frontend)
+
+- **Panel A / Panel B navigation shell** implemented in `demo/src/components/Sidebar.tsx`.
+  - Panel A is intentionally **high-level** (Overview / App / Content / Preferences / Organisation / Platform / Help).
+  - Panel B provides **sub-navigation** for the active section (Directory tabs, entity tabs, Preferences, Organisation, Platform).
+- **Panel A simplified** (to reduce cognitive load):
+  - Personal routes (`/profile`, `/notifications`, `/preferences`) are not separate Panel A items; they live under **Preferences** and are shown in Panel B.
+  - Search is not shown in Panel A (it exists as a route but is also accessible via the top navbar).
+- **Wallet navigation is explicit**: `/credits` is split via a query param so Panel B links route correctly:
+  - Personal wallet: `/credits?wallet=personal`
+  - Organisation wallet: `/credits?wallet=org`
+- **Match Hub “slot/action center” (basic)** exists on match overview (click → modal). This is the first slice of the “gamified slot system”.
+- **Season “Setup (Beta)” placeholder** exists on season overview as the entry point for Smart Import / season reuse.
+
+### Implemented (Backend/API)
+
+- Credits/transactions foundations exist and are usable for the wallet UX:
+  - Credits models include `UserCreditsBalance` (user-scoped balance per organisation).
+  - Transactions support `wallet_scope` and `charged_user` so user-wallet transactions can be filtered.
+- Minimal API surface to support “My Wallet” has been exposed:
+  - `GET /api/v1/credits/me/?organisation_id=...` returns the authenticated user’s `UserCreditsBalance`.
+
+### Pending (Not Implemented Yet)
+
+- **Smart Import / Clone Season squad** is not implemented end-to-end (currently an entrypoint/placeholder only).
+- **True gamification loop** (event triggers → slot unlock/pulse, completion scores computed from real data) is not wired.
+- **Content template library + generation pipeline integration** (B31/B34) is still mocked in the UI.
+- **Navigation/RBAC hardening** (guarantee “nav never reveals a 403 route” across all roles/routes) is not fully enforced.
+
 ## 0. Scope & Constraints
 
 - **Execution:** This document acts as the blueprint for Frontend implementation.
@@ -99,9 +132,9 @@ Routes below are confirmed in `demo/src/App.tsx`.
   - OVERVIEW: `/dashboard`, `/directory`
   - APP: injected “current context” hierarchy links (Federation → Club → Team → Season → Competition → Match + current User)
   - CONTENT: `/content`, `/studio`
-  - PREFERENCES: placeholder section (empty)
-  - ORGANISATION: `/permissions` (org_admin visibility)
-  - PLATFORM: `/health` (staff visibility)
+  - PREFERENCES: high-level entry; sub-items live in Panel B (Profile / Notifications / Preferences / My Wallet)
+  - ORGANISATION: high-level entry; sub-items live in Panel B (Permissions / Users / Audit / Credits)
+  - PLATFORM: high-level entry; sub-items live in Panel B (Health / Flags / Integration / Observability / Security, staff-only)
   - HELP (bottom pinned): `/docs`, `/constitution`
 
 **Panel B (contextual)**
@@ -110,6 +143,11 @@ Routes below are confirmed in `demo/src/App.tsx`.
 - Confirmed behaviors:
   - `/dashboard` → Panel B: Overview (Dashboard, Directory)
   - `/directory` → Panel B: Directory tabs (`?tab=federations|clubs|teams|seasons|competitions|matches|users`)
+  - `/profile` `/notifications` `/preferences` → Panel B: Preferences submenu
+  - `/credits?wallet=personal` → Panel B: Preferences submenu (My Wallet)
+  - `/credits?wallet=org` → Panel B: Organisation submenu (Credits)
+  - `/permissions` `/users` `/audit` → Panel B: Organisation submenu
+  - `/health` `/flags` `/integration-status` `/observability` `/security` → Panel B: Platform submenu
   - Federation pages → Panel B: Federation tabs (Overview, Hierarchy, Clubs, Teams, Seasons, Competitions, Matches, Members; plus Audit/Governance/Operations on federation detail)
   - Club/Team/Season/Competition/Match/User detail pages → Panel B: querystring tabs per entity (see §3)
 
@@ -159,7 +197,7 @@ This is the “final model” target. Some items are already present; others are
 *Purpose: Immediate attention to what matters: active matches, drafts pending, and completion status.*
 - Dashboard → `/dashboard`
 - Directory → `/directory`
-- Search → `/search` (route exists; not currently surfaced in Panel A)
+- Search → `/search` (route exists; intentionally not surfaced in Panel A because Search exists in the top navbar)
 
 **B. APP (Context)**
 Goal: mirror ImageKit’s “current folder” concept as “current hierarchy”.
@@ -457,28 +495,26 @@ Important: navigation should never reveal routes that would 403.
 
 These are the delta items between “proposed final model” and “today’s UI”, without changing any routes.
 
-1. **Panel A does not yet mirror the Personal vs Configuration split**
-  - Today, Panel A has an empty `PREFERENCES` placeholder and does not surface `/profile`, `/notifications`, `/preferences`.
-  - Today, Panel A `ORGANISATION` surfaces only `/permissions` (missing `/users`, `/audit`, `/credits`).
-  - Today, Panel A `PLATFORM` surfaces only `/health` (missing `/flags`, `/observability`, `/security`, `/integration-status`).
-  - `/search` exists but is not surfaced in Panel A.
+1. **Navigation shell is implemented, but deeper product flows are not**
+  - Panel A is now high-level and Panel B contains sub-items (Preferences/Organisation/Platform).
+  - Remaining gaps are now mainly about *data + workflows* (Smart Import, templates/pipelines, completion scores).
 
 2. **AI Studio link mismatch**
-   - Panel A links `/studio`, but the routed page is `/studio/create`.
+  - There is still a mismatch risk: desired route is `/studio/create`.
 
-3. **Active section detection is currently prefix-based**
-  - `activeSection` logic in `Sidebar.tsx` does not account for the personal settings routes (`/profile`, `/notifications`, `/preferences`) as a first-class “Preferences” section.
+3. **RBAC/nav consistency (hardening)**
+  - Navigation should never reveal routes that would 403; this is partially handled by visibility checks, but is not yet guaranteed for every route/role.
 
 4. **Panel B fallback “Directory shortcuts” mixes list pages**
    - The fallback uses `/federations`, `/clubs`, etc., while the newer model prefers `/directory?tab=...` for browse.
 
-5. **Panel B settings/config navigation is not explicitly defined**
-  - Panel B currently focuses on Directory and entity detail tabs; it should also provide local navigation for PREFERENCES (personal), ORGANISATION (configuration), and PLATFORM (configuration) routes while respecting RBAC.
+5. **Smart Import / Season reuse**
+  - UI entrypoint exists; end-to-end import/copy logic is not built.
 
 6. **User nav for non-org-admin**
    - Current APP section links current user to `/users/:id` (org-admin gated). The final model should fall back to `/profile` when `/users/:id` is not accessible.
 
-*Proposal only: no implementation yet.*
+*This spec is partially implemented: the navigation shell is real; the deeper workflows remain pending.*
 
 
 ---
