@@ -752,15 +752,26 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         ]);
 
         const routeOrg = segs[0] && !reservedRoots.has(segs[0]) ? segs[0] : '';
+        const orgSections = new Set(['clubs', 'teams', 'seasons', 'competitions', 'matches', 'users', 'hierarchy']);
+        const routeSecond = segs[1] || '';
+        const isOrgLevelRoute = Boolean(routeOrg) && (!routeSecond || orgSections.has(routeSecond));
         const orgId = String(orgSlug || routeOrg || '').trim();
+
+        // Prefer the current vanity path segments when available to keep URLs stable.
+        // Example: /knvb/ajax/ajax-1/season-2024-2025 (not /knvb/2/ajax-1/...).
+        const routeClub = !isOrgLevelRoute ? String(segs[1] || '').trim() : '';
+        const routeTeam = !isOrgLevelRoute ? String(segs[2] || '').trim() : '';
+        const routeSeason = !isOrgLevelRoute ? String(segs[3] || '').trim() : '';
+        const routeCompetition = !isOrgLevelRoute ? String(segs[4] || '').trim() : '';
+        const routeMatch = !isOrgLevelRoute ? String(segs[5] || '').trim() : '';
 
         // Use useAppSelection's computed context as the primary source of truth.
         // It already resolves (current path → last visited → most recent).
-        const clubId = String(clubSlugOrId || '').trim();
-        const teamId = String(teamSlugOrId || '').trim();
-        const seasonId = String(seasonSlugOrId || '').trim();
-        const competitionKey = String(competitionSlugOrId || resolvedCompetition?.slugOrId || '').trim();
-        const matchKey = String(matchId || resolvedMatch?.key || '').trim();
+        const clubId = String(routeClub || clubSlugOrId || '').trim();
+        const teamId = String(routeTeam || teamSlugOrId || '').trim();
+        const seasonId = String(routeSeason || seasonSlugOrId || '').trim();
+        const competitionKey = String(routeCompetition || competitionSlugOrId || resolvedCompetition?.slugOrId || '').trim();
+        const matchKey = String(routeMatch || matchId || resolvedMatch?.key || '').trim();
 
                 const federationPath = orgId ? `/${orgId}` : '/dashboard';
 
