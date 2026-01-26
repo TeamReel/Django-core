@@ -38,6 +38,13 @@ Implemented in `src/accounts/api/views.py`.
 | `GET` | `/api/auth/me/` | Get current user context. | Authenticated |
 | `POST` | `/api/auth/verify-email/...` | Verify token. | Public |
 
+### TeamReel Navigation Support
+| Method | Endpoint | Description | Permissions |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/v1/auth/default-context/` | Returns a deterministic “navigation context” chain (Organisation → Club → Team → Season → Competition → Match) for the authenticated user. Used by the TeamReel demo Sidebar to avoid invalid/guessed routes. | Authenticated |
+
+**Response shape:** Uses the global B13 response envelope: `{"status":"success","data":{...},"meta":{...}}`.
+
 ### Profile & Management
 | Method | Endpoint | Description | Permissions |
 | :--- | :--- | :--- | :--- |

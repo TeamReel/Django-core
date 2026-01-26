@@ -223,6 +223,8 @@ The application context and navigation **must** follow this strict hierarchy:
 *   It should act as a vertical breadcrumb for the current task context.
 *   **Visual Separation:** The Context block must be visually distinct from the Application Navigation (e.g., breadcrumb styling vs menu styling).
 
+**Implementation note (Jan 2026):** The TeamReel demo resolves the *default* context server-side via `GET /api/v1/auth/default-context/` and uses that single response to build stable, valid hierarchy links (instead of guessing paths on the client).
+
 ## 8. UX Stability & Freeze Rules (As of Jan 2026)
 
 ### 8.1. Architecture Freeze

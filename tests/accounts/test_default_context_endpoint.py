@@ -1,14 +1,14 @@
-"""Tests for GET /auth/default-context endpoint."""
+"""Tests for GET /api/v1/auth/default-context/.
 
-# ruff: noqa: S101, S106  # Allow assert and hardcoded passwords in tests
+Note: The API response is wrapped by the global envelope renderer, so these tests assert
+against the rendered JSON body (response.json()).
+"""
 
 from __future__ import annotations
 
 from datetime import timedelta
 
 import pytest
-from django.contrib.auth import get_user_model
-from django.test import Client
 from django.utils import timezone
 from rest_framework import status
 
@@ -17,48 +17,27 @@ from organisations.models import Organisation
 from projects.models import Project
 from projects.models.project_membership import ProjectMembership
 
-User = get_user_model()
 
-
-@pytest.fixture
-def authenticated_user(db):
-    user = User.objects.create_user(
-        email="test@example.com",
-        password="TestPass123!",
-        first_name="Test",
-        last_name="User",
-        is_active=True,
-    )
-    return user
-
-
-@pytest.fixture
-def authenticated_client(authenticated_user):
-    client = Client()
-    client.force_login(authenticated_user)
-    return client, authenticated_user
-
-
+@pytest.mark.api
 @pytest.mark.django_db
 class TestAuthDefaultContextEndpoint:
-    def test_unauthenticated_user_returns_401(self, db):
-        client = Client()
-        response = client.get("/api/v1/auth/default-context/")
+    def test_unauthenticated_user_returns_401(self, api_client):
+        response = api_client.get("/api/v1/auth/default-context/")
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
-        data = response.json()
-        assert data["status"] == "error"
-        assert data["error"]["code"] == "not_authenticated"
-        assert "timestamp" in data["meta"]
+        body = response.json()
+        assert body["status"] == "error"
+        assert body["error"]["code"] == "not_authenticated"
+        assert "timestamp" in body["meta"]
 
     def test_authenticated_user_without_memberships_returns_nulls(self, authenticated_client):
-        client, _user = authenticated_client
-        response = client.get("/api/v1/auth/default-context/")
+        response = authenticated_client.get("/api/v1/auth/default-context/")
 
         assert response.status_code == status.HTTP_200_OK
-        envelope = response.json()
-        assert envelope["status"] == "success"
-        payload = envelope["data"]
+        body = response.json()
+        assert body["status"] == "success"
+        payload = body["data"]
+
         assert payload["organisation"] is None
         assert payload["club"] is None
         assert payload["team"] is None
@@ -66,26 +45,26 @@ class TestAuthDefaultContextEndpoint:
         assert payload["competition"] is None
         assert payload["match"] is None
 
-    def test_picks_next_match_context_for_team_member(self, authenticated_client):
-        client, user = authenticated_client
-
-        org = Organisation.objects.create(name="KNVB", creator=user)
+    def test_picks_next_match_context_for_team_member(self, authenticated_client, regular_user):
+        org = Organisation.objects.create(name="KNVB", creator=regular_user)
         club = Project.objects.create(
             organisation=org,
-            creator=user,
+            creator=regular_user,
             name="Ajax",
             slug="ajax",
             parent_project=None,
         )
         team = Project.objects.create(
             organisation=org,
-            creator=user,
+            creator=regular_user,
             name="Heren 1",
             slug="heren-1",
             parent_project=club,
         )
 
-        membership = ProjectMembership.objects.create(project=team, user=user, role="viewer")
+        membership = ProjectMembership.objects.create(
+            project=team, user=regular_user, role="viewer"
+        )
 
         today = timezone.localdate()
         now = timezone.now()
@@ -130,12 +109,12 @@ class TestAuthDefaultContextEndpoint:
         membership.period = season
         membership.save(update_fields=["period"])
 
-        response = client.get("/api/v1/auth/default-context/")
+        response = authenticated_client.get("/api/v1/auth/default-context/")
 
         assert response.status_code == status.HTTP_200_OK
-        envelope = response.json()
-        assert envelope["status"] == "success"
-        payload = envelope["data"]
+        body = response.json()
+        assert body["status"] == "success"
+        payload = body["data"]
 
         assert payload["organisation"]["slug"] == org.slug
         assert payload["club"]["slug"] == club.slug
