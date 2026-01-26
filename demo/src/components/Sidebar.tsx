@@ -59,28 +59,14 @@ const NAV_CONFIG: NavSection[] = [
     ]
   },
   {
-    id: 'preferences',
-    title: 'PREFERENCES',
-    visibility: 'everyone',
-    items: [
-            { path: '/preferences', label: 'Preferences', icon: Settings, visibility: 'everyone' }
-    ]
-  },
-  {
-    id: 'organisation',
-    title: 'ORGANISATION',
-    visibility: 'org_admin',
-    items: [
+        id: 'settings',
+        title: 'SETTINGS',
+        visibility: 'everyone',
+        items: [
+            { path: '/preferences', label: 'Preferences', icon: Settings, visibility: 'everyone' },
             { path: '/permissions', label: 'Organisation', icon: Users, visibility: 'org_admin' },
-    ]
-  },
-  {
-    id: 'platform',
-    title: 'PLATFORM',
-    visibility: 'staff',
-    items: [
             { path: '/health', label: 'Platform', icon: Activity, visibility: 'staff' },
-    ]
+        ]
   },
   {
     id: 'help',
@@ -890,6 +876,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 const walletParam = new URLSearchParams(location.search || '').get('wallet');
                                 const isPersonalWallet = walletParam === 'personal';
 
+                                const itemPath = String(item.path || '').split('?')[0];
+
                                 const isPreferencesRoute =
                                     path.startsWith('/profile') ||
                                     path.startsWith('/notifications') ||
@@ -910,12 +898,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     path.startsWith('/observability') ||
                                     path.startsWith('/security');
 
-                                const isActiveViaSection =
-                                    (section.id === 'preferences' && isPreferencesRoute) ||
-                                    (section.id === 'organisation' && isOrganisationRoute) ||
-                                    (section.id === 'platform' && isPlatformRoute);
+                                const isActiveViaItem =
+                                    (itemPath === '/preferences' && isPreferencesRoute) ||
+                                    (itemPath === '/permissions' && isOrganisationRoute) ||
+                                    (itemPath === '/health' && isPlatformRoute);
 
-                                const active = isActive || isActiveViaSection;
+                                const active = isActive || isActiveViaItem;
 
                                 return {
                                 height: 40,
