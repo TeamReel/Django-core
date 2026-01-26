@@ -732,17 +732,14 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     ? `/${orgId}/${clubSlug}/${teamSlug}/${seasonKey}/${competitionKey}/${matchKey}`
                     : matchesIndexPath;
 
-        const federationLabel = `Federation${orgId ? `: ${String(resolvedAppContext?.orgName || orgId)}` : ''}`;
-        const clubLabel = `Club${resolvedAppContext?.club?.name ? `: ${resolvedAppContext.club.name}` : (clubName ? `: ${clubName}` : '')}`;
-        const teamLabel = `Team${resolvedAppContext?.team?.name ? `: ${resolvedAppContext.team.name}` : (teamName ? `: ${teamName}` : '')}`;
+        const federationLabel = 'Federation';
+        const clubLabel = 'Club';
+        const teamLabel = 'Team';
         const seasonLabel = 'Season';
         const competitionLabel = 'Competition';
         const matchLabel = 'Match';
 
         const currentUserId = String((user as any)?.id || '').trim();
-        const currentUserName = `${String((user as any)?.first_name || '').trim()} ${String((user as any)?.last_name || '').trim()}`.trim();
-        const currentUserEmail = String((user as any)?.email || '').trim();
-        const userLabel = currentUserName || currentUserEmail || 'User';
 
         return [
             { label: federationLabel, path: federationPath, icon: Globe, visibility: 'everyone' },
@@ -751,7 +748,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             { label: seasonLabel, path: seasonPath, icon: CalendarDays, visibility: 'everyone' },
             { label: competitionLabel, path: competitionPath, icon: Trophy, visibility: 'everyone' },
             { label: matchLabel, path: matchPath, icon: Timer, visibility: 'everyone' },
-            ...(currentUserId ? [{ label: `User: ${userLabel}`, path: `/users/${encodeURIComponent(currentUserId)}`, icon: Users, visibility: 'everyone' as const }] : []),
+            ...(currentUserId ? [{ label: 'User', path: `/users/${encodeURIComponent(currentUserId)}`, icon: Users, visibility: 'everyone' as const }] : []),
         ];
     }, [location.pathname, orgSlug, clubName, teamName, resolvedAppContext, user]);
 
