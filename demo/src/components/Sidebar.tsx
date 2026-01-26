@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
   LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder,
-  Search, Bell, CreditCard, UserCircle
+    Bell, CreditCard, UserCircle
 } from 'lucide-react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -40,7 +40,6 @@ const NAV_CONFIG: NavSection[] = [
     items: [
       { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, visibility: 'everyone' },
       { path: '/directory', label: 'Directory', icon: Folder, visibility: 'everyone' },
-      { path: '/search', label: 'Search', icon: Search, visibility: 'everyone' }
     ]
   },
   {
@@ -64,9 +63,7 @@ const NAV_CONFIG: NavSection[] = [
     title: 'PREFERENCES',
     visibility: 'everyone',
     items: [
-      { path: '/profile', label: 'Profile', icon: UserCircle, visibility: 'everyone' },
-      { path: '/notifications', label: 'Notifications', icon: Bell, visibility: 'everyone' },
-      { path: '/preferences', label: 'Settings', icon: Settings, visibility: 'everyone' }
+            { path: '/preferences', label: 'Preferences', icon: Settings, visibility: 'everyone' }
     ]
   },
   {
@@ -74,10 +71,7 @@ const NAV_CONFIG: NavSection[] = [
     title: 'ORGANISATION',
     visibility: 'org_admin',
     items: [
-      { path: '/permissions', label: 'Permissions', icon: Lock, visibility: 'org_admin' },
-      { path: '/users', label: 'Users', icon: Users, visibility: 'org_admin' },
-      { path: '/audit', label: 'Audit', icon: Scroll, visibility: 'org_admin' },
-      { path: '/credits', label: 'Credits', icon: CreditCard, visibility: 'org_admin' },
+            { path: '/permissions', label: 'Organisation', icon: Users, visibility: 'org_admin' },
     ]
   },
   {
@@ -85,11 +79,7 @@ const NAV_CONFIG: NavSection[] = [
     title: 'PLATFORM',
     visibility: 'staff',
     items: [
-      { path: '/health', label: 'Health', icon: Activity, visibility: 'staff' },
-      { path: '/flags', label: 'Features', icon: Flag, visibility: 'staff' },
-      { path: '/integration-status', label: 'Integration', icon: Puzzle, visibility: 'staff' },
-      { path: '/observability', label: 'Observability', icon: LineChart, visibility: 'staff' },
-      { path: '/security', label: 'Security', icon: Lock, visibility: 'staff' },
+            { path: '/health', label: 'Platform', icon: Activity, visibility: 'staff' },
     ]
   },
   {
@@ -619,7 +609,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         case 'preferences':
             title = 'Personal Settings';
             items = [
-                { label: 'My Wallet', path: '/profile?tab=balance', icon: CreditCard },
+                { label: 'My Wallet', path: '/credits', icon: CreditCard },
                 { label: 'Profile', path: '/profile', icon: UserCircle },
                 { label: 'Notifications', path: '/notifications', icon: Bell },
                 { label: 'Preferences', path: '/preferences', icon: Settings },
@@ -892,7 +882,36 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                             end={section.id === 'app'}
                             title={!isOpen ? item.label : undefined}
                             className="flex items-center rounded-md transition-colors"
-                            style={({ isActive }) => ({
+                            style={({ isActive }) => {
+                                const path = location.pathname;
+                                const isPreferencesRoute =
+                                    path.startsWith('/profile') ||
+                                    path.startsWith('/notifications') ||
+                                    path.startsWith('/preferences') ||
+                                    path.startsWith('/credits');
+
+                                const isOrganisationRoute =
+                                    path.startsWith('/permissions') ||
+                                    path === '/users' ||
+                                    path.startsWith('/audit') ||
+                                    path.startsWith('/credits');
+
+                                const isPlatformRoute =
+                                    path.startsWith('/health') ||
+                                    path.startsWith('/flags') ||
+                                    path.startsWith('/integration-status') ||
+                                    path.startsWith('/design-system') ||
+                                    path.startsWith('/observability') ||
+                                    path.startsWith('/security');
+
+                                const isActiveViaSection =
+                                    (section.id === 'preferences' && isPreferencesRoute) ||
+                                    (section.id === 'organisation' && isOrganisationRoute) ||
+                                    (section.id === 'platform' && isPlatformRoute);
+
+                                const active = isActive || isActiveViaSection;
+
+                                return {
                                 height: 40,
                                 textDecoration: 'none',
                                 padding: isOpen ? '0 12px' : '0',
@@ -900,9 +919,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 alignItems: 'center',
                                 justifyContent: isOpen ? 'flex-start' : 'center',
                                 borderRadius: 8,
-                                background: isActive ? 'var(--sidebar-a-active-bg)' : 'transparent',
-                                color: isActive ? 'var(--sidebar-a-active-text)' : 'var(--sidebar-a-text)',
-                            })}
+                                background: active ? 'var(--sidebar-a-active-bg)' : 'transparent',
+                                color: active ? 'var(--sidebar-a-active-text)' : 'var(--sidebar-a-text)',
+                                };
+                            }}
                         >
                             <span style={{ minWidth: 24, display: 'flex', justifyContent: 'center' }}>
                                 <AppIcon icon={item.icon} size={18} />

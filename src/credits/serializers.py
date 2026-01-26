@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import CreditsBalance, ProjectCreditsBalance
+from .models import UserCreditsBalance
 
 
 class CreditsBalanceSerializer(serializers.ModelSerializer):
@@ -40,6 +41,29 @@ class ProjectCreditsBalanceSerializer(serializers.ModelSerializer):
             "project_name",
             "organisation_id",
             "organisation_name",
+            "current_balance",
+            "updated_at",
+            "created_at",
+        ]
+        read_only_fields = ["id", "updated_at", "created_at"]
+
+
+class UserCreditsBalanceSerializer(serializers.ModelSerializer):
+    """User-scoped credits balance within an organisation."""
+
+    organisation_id = serializers.UUIDField(source="organisation.id", read_only=True)
+    organisation_name = serializers.CharField(source="organisation.name", read_only=True)
+    user_id = serializers.IntegerField(source="user.id", read_only=True)
+    user_email = serializers.EmailField(source="user.email", read_only=True)
+
+    class Meta:
+        model = UserCreditsBalance
+        fields = [
+            "id",
+            "organisation_id",
+            "organisation_name",
+            "user_id",
+            "user_email",
             "current_balance",
             "updated_at",
             "created_at",

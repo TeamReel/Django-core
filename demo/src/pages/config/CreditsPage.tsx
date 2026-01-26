@@ -22,7 +22,16 @@ import { useAuth } from '@django-core/auth-ui';
 interface CreditsBalance {
   organisation_id: string;
   organisation_name: string;
-  current_balance: number;
+  current_balance: number | string;
+  updated_at: string;
+}
+
+interface UserCreditsBalance {
+  organisation_id: string;
+  organisation_name: string;
+  user_id: number;
+  user_email: string;
+  current_balance: number | string;
   updated_at: string;
 }
 
@@ -52,6 +61,10 @@ export const CreditsPage: React.FC = () => {
   const [credits, setCredits] = useState<CreditsBalance | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [personalCredits, setPersonalCredits] = useState<UserCreditsBalance | null>(null);
+  const [personalLoading, setPersonalLoading] = useState(false);
+  const [personalError, setPersonalError] = useState<string | null>(null);
+  const [personalRecentTransactions, setPersonalRecentTransactions] = useState<Transaction[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>('balance');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
@@ -116,6 +129,7 @@ export const CreditsPage: React.FC = () => {
   // Fetch transactions when tab switches, org changes, or filters change
   useEffect(() => {
     const fetchTransactions = async () => {
+      if (scope !== 'org') return;
       if (activeTab !== 'transactions' || !currentOrgId) return;
 
       setTransactionsLoading(true);
@@ -212,10 +226,11 @@ export const CreditsPage: React.FC = () => {
     };
 
     fetchTransactions();
-  }, [activeTab, currentOrgId, sourceTypeFilter, userFilter, dateFromFilter, dateToFilter]);
+  }, [scope, activeTab, currentOrgId, sourceTypeFilter, userFilter, dateFromFilter, dateToFilter]);
 
   // Fetch recent transactions for balance tab preview
   const fetchBalanceTabData = async () => {
+    if (scope !== 'org') return;
     if (!currentOrgId) return;
 
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
@@ -264,10 +279,15 @@ export const CreditsPage: React.FC = () => {
     if (activeTab === 'balance') {
       fetchBalanceTabData();
     }
-  }, [activeTab, currentOrgId]);
+  }, [scope, activeTab, currentOrgId]);
 
   useEffect(() => {
     const fetchCredits = async () => {
+      if (scope !== 'org') {
+        setCredits(null);
+        setLoading(false);
+        return;
+      }
       if (!currentOrgId) {
         // Wait for auto-select to happen if possible
         if (organisations.length === 0) {
@@ -327,7 +347,106 @@ export const CreditsPage: React.FC = () => {
 
     fetchCredits();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentOrgId]);
+  }, [scope, currentOrgId]);
+
+  // Personal wallet: fetch balance for current user within current organisation context
+  useEffect(() => {
+    const fetchPersonalCredits = async () => {
+      if (scope !== 'personal') return;
+
+      if (!currentOrgId) {
+        setPersonalCredits(null);
+        setPersonalError('Please select an organisation to view your personal wallet.');
+        setPersonalRecentTransactions([]);
+        return;
+      }
+
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const client = createApiClient({ baseUrl: apiBaseUrl });
+
+      try {
+        setPersonalLoading(true);
+        setPersonalError(null);
+
+        const response = await client.get<UserCreditsBalance>(
+          `/api/v1/credits/me/?organisation_id=${currentOrgId}`
+        );
+
+        if (response.error) {
+          if (response.error.code === 404) {
+            setPersonalError('No personal credits balance found for this organisation.');
+          } else if (response.error.code === 403) {
+            setPersonalError('You do not have permission to view personal credits for this organisation.');
+          } else {
+            setPersonalError(response.error.message || 'Failed to load personal credits balance');
+          }
+          setPersonalCredits(null);
+          return;
+        }
+
+        if (response.data) {
+          const creditsData = (response.data as any).data || response.data;
+          setPersonalCredits(creditsData);
+        }
+      } catch (err: any) {
+        console.error('[CreditsPage] Personal credits fetch exception:', err);
+        setPersonalError(err.message || 'Failed to load personal credits balance');
+        setPersonalCredits(null);
+      } finally {
+        setPersonalLoading(false);
+      }
+    };
+
+    fetchPersonalCredits();
+  }, [scope, currentOrgId]);
+
+  // Personal wallet: fetch a small recent activity list
+  useEffect(() => {
+    const fetchPersonalRecentTransactions = async () => {
+      if (scope !== 'personal') return;
+      if (!currentOrgId || !user?.id) {
+        setPersonalRecentTransactions([]);
+        return;
+      }
+
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const client = createApiClient({ baseUrl: apiBaseUrl });
+
+      try {
+        const params = new URLSearchParams();
+        params.append('organization_id', currentOrgId);
+        params.append('charged_user_id', String(user.id));
+
+        const response = await client.get<Transaction[]>(
+          `/api/v1/transactions/transactions/?${params.toString()}`
+        );
+
+        if (response.error) {
+          if (response.error.code === 401) {
+            window.location.href = '/login';
+            return;
+          }
+          setPersonalRecentTransactions([]);
+          return;
+        }
+
+        const rawData = response.data as any;
+        let txns: any[] = [];
+        if (Array.isArray(rawData)) txns = rawData;
+        else if (Array.isArray(rawData.data?.data)) txns = rawData.data.data;
+        else if (Array.isArray(rawData.data?.results)) txns = rawData.data.results;
+        else if (Array.isArray(rawData.results)) txns = rawData.results;
+        else if (Array.isArray(rawData.data)) txns = rawData.data;
+
+        setPersonalRecentTransactions(txns.slice(0, 5));
+      } catch (err) {
+        console.error('[CreditsPage] Personal transactions fetch exception:', err);
+        setPersonalRecentTransactions([]);
+      }
+    };
+
+    fetchPersonalRecentTransactions();
+  }, [scope, currentOrgId, user?.id]);
 
   const handleTestAction = async (action: string) => {
     if (!currentOrgId) {
@@ -524,26 +643,73 @@ export const CreditsPage: React.FC = () => {
         </div>
 
         {scope === 'personal' ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 {/* Personal Wallet Placeholder - Frontend Layer 1 */}
+             <div>
+               {personalError && (
+                 <Alert variant="info" style={{ marginBottom: '16px' }}>
+                   {personalError}
+                 </Alert>
+               )}
+
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                  <Card>
-                    <div className="p-6 text-center">
-                        <div className="text-4xl mb-4">👤</div>
-                        <h2 className="text-xl font-bold mb-2">My Personal Wallet</h2>
-                        <div className="text-3xl font-bold text-gray-800 mb-6">0 Credits</div>
-                        <p className="text-gray-500 mb-6">
-                            Personal credits allow you to generate content for your own projects or when not covered by an Organisation plan.
-                        </p>
-                        <div className="p-4 bg-blue-50 text-blue-800 rounded-lg text-sm mb-4">
-                            <strong>Beta:</strong> Personal top-ups are coming soon. For now, please switch to your Team/Club Organisation to use corporate credits.
-                        </div>
-                    </div>
+                   <div className="p-6 text-center">
+                     <div className="text-4xl mb-4">👤</div>
+                     <h2 className="text-xl font-bold mb-2">My Personal Wallet</h2>
+                     <div className="text-3xl font-bold text-gray-800 mb-2">
+                       {Number(personalCredits?.current_balance ?? 0).toLocaleString()} Credits
+                     </div>
+                     <div className="text-xs text-gray-500 mb-6">
+                       {currentOrgName ? `Organisation: ${currentOrgName}` : 'Organisation context required'}
+                       {personalCredits?.updated_at
+                         ? ` • Updated ${new Date(personalCredits.updated_at).toLocaleString()}`
+                         : ''}
+                     </div>
+                     <p className="text-gray-500 mb-6">
+                       Personal credits allow you to generate content for your own projects or when not covered by an Organisation plan.
+                     </p>
+                     <div className="p-4 bg-blue-50 text-blue-800 rounded-lg text-sm mb-4">
+                       <strong>Beta:</strong> Personal top-ups are coming soon. For now, your personal wallet is read-only and reflects backend balances.
+                     </div>
+                     {personalLoading && (
+                       <div className="text-sm text-gray-500">Loading…</div>
+                     )}
+                   </div>
                  </Card>
+
                  <Card title="Recent Activity">
-                    <div className="p-6 text-center text-gray-500 italic">
-                        No recent personal activity.
-                    </div>
+                   <div className="p-6">
+                     {personalRecentTransactions.length === 0 ? (
+                       <div className="text-center text-gray-500 italic">
+                         No recent personal activity.
+                       </div>
+                     ) : (
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                         {personalRecentTransactions.map((txn) => (
+                           <div
+                             key={txn.id}
+                             style={{
+                               display: 'flex',
+                               alignItems: 'center',
+                               justifyContent: 'space-between',
+                               padding: '10px 12px',
+                               border: '1px solid var(--border-color, #e0e0e0)',
+                               borderRadius: '8px',
+                             }}
+                           >
+                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                               <div style={{ fontWeight: 600, fontSize: '13px' }}>{txn.source_type}</div>
+                               <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                                 {txn.timestamp ? new Date(txn.timestamp).toLocaleString() : ''}
+                               </div>
+                             </div>
+                             <div style={{ fontWeight: 700 }}>{txn.amount}</div>
+                           </div>
+                         ))}
+                       </div>
+                     )}
+                   </div>
                  </Card>
+               </div>
              </div>
         ) : (
         <>
@@ -662,7 +828,7 @@ export const CreditsPage: React.FC = () => {
         {credits && !loading && (
           <>
             {/* Low Balance Alert */}
-            {credits.current_balance < 500 && (
+            {Number(credits.current_balance) < 500 && (
               <Alert variant="warning" style={{ marginBottom: '24px' }}>
                 <strong>⚠️ Low Credit Balance</strong>
                 <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
@@ -675,7 +841,7 @@ export const CreditsPage: React.FC = () => {
             <Card style={{
               padding: '32px',
               marginBottom: '24px',
-              background: credits.current_balance < 500
+              background: Number(credits.current_balance) < 500
                 ? 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)'
                 : 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
               textAlign: 'center'
@@ -687,9 +853,9 @@ export const CreditsPage: React.FC = () => {
                 fontSize: '64px',
                 fontWeight: 'bold',
                 margin: '8px 0',
-                color: credits.current_balance < 500 ? 'var(--app-warning)' : 'var(--app-success)'
+                color: Number(credits.current_balance) < 500 ? 'var(--app-warning)' : 'var(--app-success)'
               }}>
-                {(credits.current_balance || 0).toLocaleString()}
+                {Number(credits.current_balance || 0).toLocaleString()}
               </div>
               <div style={{ fontSize: '20px', opacity: 0.7, marginBottom: '12px' }}>
                 credits
