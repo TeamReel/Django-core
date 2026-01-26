@@ -1220,9 +1220,9 @@ export default function App() {
       <Route
         path="/credits"
         element={
-          <OrgAdminRoute>
+          <ProtectedRoute>
             <CreditsPage />
-          </OrgAdminRoute>
+          </ProtectedRoute>
         }
       />
 

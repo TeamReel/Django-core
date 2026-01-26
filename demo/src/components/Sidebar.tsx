@@ -3,7 +3,8 @@ import { Link, NavLink, useLocation, matchPath } from 'react-router-dom';
 import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
-  LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder
+  LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder,
+  Search, Bell, CreditCard, UserCircle
 } from 'lucide-react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -34,20 +35,20 @@ interface NavSection {
 const NAV_CONFIG: NavSection[] = [
   {
     id: 'overview',
-        title: 'OVERVIEW',
+    title: 'OVERVIEW',
     visibility: 'everyone',
     items: [
-            { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, visibility: 'everyone' },
-            { path: '/directory', label: 'Directory', icon: Folder, visibility: 'everyone' }
+      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, visibility: 'everyone' },
+      { path: '/directory', label: 'Directory', icon: Folder, visibility: 'everyone' },
+      { path: '/search', label: 'Search', icon: Search, visibility: 'everyone' }
     ]
   },
   {
     id: 'app',
     title: 'APP',
     visibility: 'everyone',
-        // NOTE: Panel A should show detail/context links here (not table/list pages).
-        // Items are injected dynamically via `panelASections`.
-        items: []
+    // Items are injected dynamically based on resolvedAppContext
+    items: []
   },
   {
     id: 'content',
@@ -58,18 +59,25 @@ const NAV_CONFIG: NavSection[] = [
       { path: '/studio', label: 'AI Studio', icon: Sparkles, visibility: 'everyone' },
     ]
   },
-    {
-        id: 'preferences',
-        title: 'PREFERENCES',
-        visibility: 'everyone',
-        items: []
-    },
+  {
+    id: 'preferences',
+    title: 'PREFERENCES',
+    visibility: 'everyone',
+    items: [
+      { path: '/profile', label: 'Profile', icon: UserCircle, visibility: 'everyone' },
+      { path: '/notifications', label: 'Notifications', icon: Bell, visibility: 'everyone' },
+      { path: '/preferences', label: 'Settings', icon: Settings, visibility: 'everyone' }
+    ]
+  },
   {
     id: 'organisation',
     title: 'ORGANISATION',
     visibility: 'org_admin',
     items: [
-      { path: '/permissions', label: 'Settings', icon: Settings, visibility: 'org_admin' },
+      { path: '/permissions', label: 'Permissions', icon: Lock, visibility: 'org_admin' },
+      { path: '/users', label: 'Users', icon: Users, visibility: 'org_admin' },
+      { path: '/audit', label: 'Audit', icon: Scroll, visibility: 'org_admin' },
+      { path: '/credits', label: 'Credits', icon: CreditCard, visibility: 'org_admin' },
     ]
   },
   {
@@ -77,7 +85,11 @@ const NAV_CONFIG: NavSection[] = [
     title: 'PLATFORM',
     visibility: 'staff',
     items: [
-      { path: '/health', label: 'Platform', icon: Activity, visibility: 'staff' },
+      { path: '/health', label: 'Health', icon: Activity, visibility: 'staff' },
+      { path: '/flags', label: 'Features', icon: Flag, visibility: 'staff' },
+      { path: '/integration-status', label: 'Integration', icon: Puzzle, visibility: 'staff' },
+      { path: '/observability', label: 'Observability', icon: LineChart, visibility: 'staff' },
+      { path: '/security', label: 'Security', icon: Lock, visibility: 'staff' },
     ]
   },
   {
@@ -285,9 +297,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             matchPath({ path: '/:orgId', end: true }, path);
 
     // 1. Determine Active Section
-    let activeSection: 'work' | 'people' | 'content' | 'organisation' | 'platform' | 'help' = 'work';
+    let activeSection: 'work' | 'people' | 'content' | 'organisation' | 'platform' | 'help' | 'preferences' = 'work';
     if (path.startsWith('/content') || path.startsWith('/studio')) activeSection = 'content';
-    else if (path.startsWith('/permissions') || path.startsWith('/settings')) activeSection = 'organisation';
+    else if (path.startsWith('/permissions') || path.startsWith('/audit') || path.startsWith('/credits') || path === '/users') activeSection = 'organisation';
+    else if (path.startsWith('/profile') || path.startsWith('/notifications') || path.startsWith('/preferences')) activeSection = 'preferences';
     else if (['/health', '/flags', '/integration', '/design', '/observability', '/security'].some(prefix => path.startsWith(prefix))) activeSection = 'platform';
     else if (['/docs', '/constitution'].some(prefix => path.startsWith(prefix))) activeSection = 'help';
 
@@ -603,11 +616,24 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             ];
             break;
 
+        case 'preferences':
+            title = 'Personal Settings';
+            items = [
+                { label: 'My Wallet', path: '/profile?tab=balance', icon: CreditCard },
+                { label: 'Profile', path: '/profile', icon: UserCircle },
+                { label: 'Notifications', path: '/notifications', icon: Bell },
+                { label: 'Preferences', path: '/preferences', icon: Settings },
+            ];
+            break;
+
         case 'organisation':
             if (isOrgAdmin || isSystemAdmin) {
                 title = 'Organisation';
                 items = [
-                    { label: 'Settings', path: '/permissions', icon: Settings },
+                    { label: 'Permissions', path: '/permissions', icon: Lock },
+                    { label: 'Users', path: '/users', icon: Users },
+                    { label: 'Audit', path: '/audit', icon: Scroll },
+                    { label: 'Credits', path: '/credits', icon: CreditCard },
                 ];
             }
             break;
@@ -627,8 +653,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             break;
 
         case 'help':
-            // Hidden specifically requested? "Hide or show 2-3 links".
-            // We'll hide it for cleanliness if empty, or show minimal.
             title = 'Help';
             items = [
                 { label: 'User Guide', path: '/docs', icon: BookOpen },

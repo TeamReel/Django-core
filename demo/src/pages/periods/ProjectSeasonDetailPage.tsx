@@ -1276,6 +1276,25 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           </Button>
                         </div>
                       </Card>
+
+                      {userCanEditProject && (
+                        <Card>
+                          <h3 className="text-lg font-semibold mb-3">Season Setup (Beta)</h3>
+                          <div className="space-y-2">
+                             <div className="text-xs text-gray-500 mb-2">
+                               Quickly populate this season from previous data.
+                             </div>
+                             <Button
+                                variant="secondary"
+                                size="sm"
+                                style={{ width: '100%', justifyContent: 'flex-start' }}
+                                onClick={() => alert('Smart Import: Allows selecting a source season (e.g. 23/24) to copy players into this campaign.')}
+                              >
+                                Import Squad from Previous Season
+                              </Button>
+                          </div>
+                        </Card>
+                      )}
                     </div>
                   </div>
                 </>

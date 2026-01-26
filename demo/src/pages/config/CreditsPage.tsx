@@ -77,6 +77,19 @@ export const CreditsPage: React.FC = () => {
   // For demo validation: show test controls to all authenticated users
   const canSeeTestControls = !!user;
 
+  // F05: Wallet Scoping (Personal vs Organisation)
+  const [scope, setScope] = useState<'personal' | 'org'>(() => {
+    // Default to 'org' if we have an orgId, otherwise 'personal'
+    return context.organisation?.id ? 'org' : 'personal';
+  });
+
+  // Sync scope if external context changes (e.g. lost org access)
+  useEffect(() => {
+    if (!context.organisation?.id && scope === 'org') {
+      setScope('personal');
+    }
+  }, [context.organisation?.id]);
+
   // Breadcrumb context switcher setup
   const {
     organisationOptions,
@@ -463,6 +476,77 @@ export const CreditsPage: React.FC = () => {
       />
 
       <PageContent>
+        {/* Scope Switcher (F05: Three-Layer Wallet System) */}
+        <div style={{ display: 'flex', marginBottom: '24px', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: '8px', padding: '4px', background: 'var(--app-surface-2)', borderRadius: '8px' }}>
+                <button
+                    onClick={() => setScope('personal')}
+                    style={{
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: scope === 'personal' ? 'white' : 'transparent',
+                        boxShadow: scope === 'personal' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+                        color: scope === 'personal' ? 'var(--app-text)' : 'var(--app-muted-text)',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                    }}
+                >
+                    My Wallet
+                </button>
+                <button
+                    onClick={() => {
+                        if (!currentOrgId) {
+                            setToastMessage('No organisation context active. Please select an organisation.');
+                            setTimeout(() => setToastMessage(null), 3000);
+                            return;
+                        }
+                        setScope('org');
+                    }}
+                    style={{
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: scope === 'org' ? 'white' : 'transparent',
+                        boxShadow: scope === 'org' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+                        color: scope === 'org' ? 'var(--app-text)' : 'var(--app-muted-text)',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        opacity: !currentOrgId ? 0.5 : 1
+                    }}
+                    disabled={!currentOrgId}
+                >
+                    Organisation Wallet {currentOrgName ? `(${currentOrgName})` : ''}
+                </button>
+            </div>
+        </div>
+
+        {scope === 'personal' ? (
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 {/* Personal Wallet Placeholder - Frontend Layer 1 */}
+                 <Card>
+                    <div className="p-6 text-center">
+                        <div className="text-4xl mb-4">👤</div>
+                        <h2 className="text-xl font-bold mb-2">My Personal Wallet</h2>
+                        <div className="text-3xl font-bold text-gray-800 mb-6">0 Credits</div>
+                        <p className="text-gray-500 mb-6">
+                            Personal credits allow you to generate content for your own projects or when not covered by an Organisation plan.
+                        </p>
+                        <div className="p-4 bg-blue-50 text-blue-800 rounded-lg text-sm mb-4">
+                            <strong>Beta:</strong> Personal top-ups are coming soon. For now, please switch to your Team/Club Organisation to use corporate credits.
+                        </div>
+                    </div>
+                 </Card>
+                 <Card title="Recent Activity">
+                    <div className="p-6 text-center text-gray-500 italic">
+                        No recent personal activity.
+                    </div>
+                 </Card>
+             </div>
+        ) : (
+        <>
         {/* Toast notification */}
         {toastMessage && (
           <div style={{
@@ -1039,6 +1123,8 @@ export const CreditsPage: React.FC = () => {
             )}
           </>
         )}
+        </>
+      )}
       </PageContent>
     </>
   );

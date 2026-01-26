@@ -10,6 +10,7 @@ import CreateTransactionModal, { type WalletOption } from '../../components/tran
 import { useAuth } from '@django-core/auth-ui';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import MatchEditModal from '../identity/MatchEditModal';
+import ContentGenerationModal from '../identity/ContentGenerationModal';
 import { actionButtonStyle } from '../identity/detail/detailStyles';
 
 type Organisation = { id: string; name: string; slug?: string };
@@ -155,6 +156,15 @@ export default function HierarchyMatchDetailPage() {
 
   const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
   const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
+
+  // B31 Content Generation
+  const [isContentModalOpen, setIsContentModalOpen] = useState(false);
+  const [selectedSlotType, setSelectedSlotType] = useState<any | null>(null);
+
+  const openContentModal = (slotType: string) => {
+    setSelectedSlotType(slotType);
+    setIsContentModalOpen(true);
+  };
 
   const matchWalletOptions = useMemo<WalletOption[]>(() => {
     const opts: WalletOption[] = [{ kind: 'default', label: 'Default (recommended)' }];
@@ -1530,6 +1540,13 @@ export default function HierarchyMatchDetailPage() {
           }}
         />
 
+        <ContentGenerationModal
+            isOpen={isContentModalOpen}
+            onClose={() => setIsContentModalOpen(false)}
+            slotType={selectedSlotType}
+            matchData={match}
+        />
+
         <PageContent>
           {activeTab === 'overview' && (
             <>
@@ -1576,6 +1593,48 @@ export default function HierarchyMatchDetailPage() {
                 >
                   📍 {match.location || match.metadata?.venue || 'Unknown Venue'} • 🏆 {competition?.name || match.period?.name || 'Competition'}
                 </div>
+              </Card>
+
+              {/* F05: Match Day "Slot System" (Action Center) */}
+              <Card title="Content Action Center" className="mb-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div
+                        className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                        onClick={() => openContentModal('announcement')}
+                        title="Create Pre-Match Flyer"
+                    >
+                        <div className="text-2xl mb-2">📅</div>
+                        <div className="font-semibold text-sm">Announcement</div>
+                        <div className="text-xs text-gray-500 mt-1">Pre-Match</div>
+                    </div>
+                    <div
+                        className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                        onClick={() => openContentModal('lineup')}
+                        title="Create Lineup Graphic"
+                    >
+                        <div className="text-2xl mb-2">📋</div>
+                        <div className="font-semibold text-sm">Lineup</div>
+                        <div className="text-xs text-gray-500 mt-1">Pre-Match</div>
+                    </div>
+                     <div
+                        className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                        onClick={() => openContentModal('half-time')}
+                        title="Create Half-Time Graphic"
+                    >
+                        <div className="text-2xl mb-2">⏸️</div>
+                        <div className="font-semibold text-sm">Half-Time</div>
+                        <div className="text-xs text-gray-500 mt-1">Live</div>
+                    </div>
+                    <div
+                        className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                        onClick={() => openContentModal('full-time')}
+                        title="Create Full-Time Graphic"
+                    >
+                        <div className="text-2xl mb-2">🏁</div>
+                        <div className="font-semibold text-sm">Full-Time</div>
+                        <div className="text-xs text-gray-500 mt-1">Post-Match</div>
+                    </div>
+                  </div>
               </Card>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

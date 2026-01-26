@@ -1088,7 +1088,7 @@ export default function Breadcrumbs() {
       });
   }
 
-  // Work Hierarchy generic pages
+  // Work Hierarchy generic pages & Personal Context (F05)
   if (items.length === 0) {
       if (location.pathname === '/directory') items.push({ label: 'Directory', path: '/directory' });
       else if (location.pathname === '/federations') items.push({ label: 'Directory', path: '/directory' }, { label: 'Federations', path: '/federations' });
@@ -1097,6 +1097,13 @@ export default function Breadcrumbs() {
       else if (location.pathname === '/seasons') items.push({ label: 'Directory', path: '/directory' }, { label: 'Seasons', path: '/seasons' });
       else if (location.pathname === '/competitions') items.push({ label: 'Directory', path: '/directory' }, { label: 'Competitions', path: '/competitions' });
       else if (location.pathname === '/matches') items.push({ label: 'Directory', path: '/directory' }, { label: 'Matches', path: '/matches' });
+
+      // Personal / F05 Contexts
+      else if (location.pathname.startsWith('/profile')) items.push({ label: 'Profile', path: '/profile' });
+      else if (location.pathname.startsWith('/notifications')) items.push({ label: 'Notifications', path: '/notifications' });
+      else if (location.pathname.startsWith('/credits')) items.push({ label: 'My Wallet', path: '/credits' });
+      else if (location.pathname.startsWith('/settings')) items.push({ label: 'Settings', path: '/settings' });
+      else if (location.pathname.startsWith('/analytics')) items.push({ label: 'Analytics', path: '/analytics' });
   }
 
   if (items.length === 0) return null;

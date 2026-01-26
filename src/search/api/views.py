@@ -188,16 +188,16 @@ class SearchAPIView(APIView):
         if not types_param:
             results = queryset[:100]
 
+            # Frontend grouping order:
+            # Federation, Club, Team, Season, Competition, Match, User
             grouped: dict[str, list] = {
-                "projects": [],
+                "organisations": [],
                 "clubs": [],
                 "teams": [],
                 "seasons": [],
                 "competitions": [],
                 "matches": [],
-                "activities": [],
                 "users": [],
-                "organisations": [],
             }
             max_per_group = 5
 
@@ -205,9 +205,13 @@ class SearchAPIView(APIView):
                 model_name = entry.content_type.model
 
                 if model_name == "project":
-                    # Global search groups all project-like results under 'projects'.
-                    # (Specific 'clubs'/'teams' grouping is supported via ?types=clubs|teams.)
-                    key = "projects"
+                    # Split projects into clubs vs teams based on hierarchy.
+                    try:
+                        obj = entry.content_object
+                        is_team = bool(getattr(obj, "parent_project_id", None))
+                        key = "teams" if is_team else "clubs"
+                    except (AttributeError, TypeError, ValueError):
+                        key = "clubs"
                 elif model_name == "period":
                     try:
                         obj = entry.content_object
@@ -218,13 +222,9 @@ class SearchAPIView(APIView):
                 elif model_name == "activity":
                     try:
                         obj = entry.content_object
-                        key = (
-                            "matches"
-                            if getattr(obj, "activity_type", None) == "match"
-                            else "activities"
-                        )
+                        key = "matches" if getattr(obj, "activity_type", None) == "match" else None
                     except (AttributeError, TypeError, ValueError):
-                        key = "activities"
+                        key = None
                 elif model_name == "user":
                     key = "users"
                 elif model_name in {"organisation", "organization"}:
@@ -233,23 +233,23 @@ class SearchAPIView(APIView):
                     # Unknown model type; keep API stable by skipping for now.
                     continue
 
-                if key in grouped and len(grouped[key]) < max_per_group:
+                if key and key in grouped and len(grouped[key]) < max_per_group:
                     grouped[key].append(entry)
 
             response_data: dict[str, list] = {}
             for key in [
-                "projects",
+                "organisations",
                 "clubs",
                 "teams",
                 "seasons",
                 "competitions",
                 "matches",
-                "activities",
                 "users",
-                "organisations",
             ]:
                 if grouped.get(key):
-                    serializer = SearchEntrySerializer(grouped[key], many=True)
+                    serializer = SearchEntrySerializer(
+                        grouped[key], many=True, context={"request": request}
+                    )
                     response_data[key] = serializer.data
 
             return Response(response_data)
@@ -259,8 +259,8 @@ class SearchAPIView(APIView):
             paginator = StandardResultsSetPagination()
             page = paginator.paginate_queryset(queryset, request)
             if page is not None:
-                serializer = SearchEntrySerializer(page, many=True)
+                serializer = SearchEntrySerializer(page, many=True, context={"request": request})
                 return paginator.get_paginated_response(serializer.data)
 
-            serializer = SearchEntrySerializer(queryset, many=True)
+            serializer = SearchEntrySerializer(queryset, many=True, context={"request": request})
             return Response(serializer.data)

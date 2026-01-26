@@ -66,15 +66,19 @@ Represents the specific squad or functional unit (e.g., First Team, U21, Women's
 *   **Key Characteristics:**
     *   This is the primary "Work Unit".
     *   Seasons and Memberships are attached here.
+*   **Metadata (Required):**
+    *   `team_type`: `"field_11v11"`, `"field_8v8"`, `"field_6v6"`, `"futsal"`, `"basketball_5v5"` (CRITICAL: Drives template availability. e.g. No corner kicks in futsal; smaller pitch image for 6v6).
+    *   `gender`: `"male"`, `"female"`, `"mixed"`.
 
 ### Level 4: Season (Team-Scoped Period)
 The main time-bound container for a yearly campaign.
 *   **Model:** `Period`
 *   **Scope:** `project = Team` (e.g., Ajax 1)
-*   **Examples:** `Season 2024/2025`.
+*   **Examples:** `Season 2024/2025` (Standardized).
 *   **Key Characteristics:**
     *   **Players are Members here**: `ProjectMembership` links a `User` to the `Team` Project, but scoped to this specific `Period`.
     *   This ensures players are only active for that specific season.
+*   **Consistency Rule:** Use standardized names from Organisation configuration (e.g., `YYYY/YYYY` format). Do not use free-text variants like "25/26".
 
 ### Level 5: Competition (Sub-Period)
 Specific contexts within a season (League, Cup, Friendly).

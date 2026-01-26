@@ -42,15 +42,15 @@ export default function SearchPage() {
 
   const getCategoryLabel = (category: string): string => {
     const labels: Record<string, string> = {
+      organisations: 'Federations',
       clubs: 'Clubs',
       teams: 'Teams',
       seasons: 'Seasons',
       competitions: 'Competitions',
-      periods: 'Seasons & Competitions',
       matches: 'Matches',
-      activities: 'Activities',
       users: 'Users',
-      organisations: 'Organisations',
+      periods: 'Periods',
+      activities: 'Activities',
       projects: 'Projects',
     };
     return labels[category] || category;
@@ -58,15 +58,15 @@ export default function SearchPage() {
 
   const getCategoryIcon = (category: string): string => {
     const icons: Record<string, string> = {
+      organisations: '🏛️',
       clubs: '🏟️',
       teams: '👕',
       seasons: '🗓️',
       competitions: '🏆',
-      periods: '🗓️',
       matches: '🎯',
-      activities: '📅',
       users: '👥',
-      organisations: '🏢',
+      periods: '🗓️',
+      activities: '📅',
       projects: '📁',
     };
     return icons[category] || '📄';
