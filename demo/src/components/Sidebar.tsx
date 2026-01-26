@@ -34,6 +34,7 @@ interface NavSection {
 const NAV_CONFIG: NavSection[] = [
   {
     id: 'overview',
+        title: 'OVERVIEW',
     visibility: 'everyone',
     items: [
             { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, visibility: 'everyone' },
@@ -57,6 +58,12 @@ const NAV_CONFIG: NavSection[] = [
       { path: '/studio', label: 'AI Studio', icon: Sparkles, visibility: 'everyone' },
     ]
   },
+    {
+        id: 'preferences',
+        title: 'PREFERENCES',
+        visibility: 'everyone',
+        items: []
+    },
   {
     id: 'organisation',
     title: 'ORGANISATION',
@@ -848,7 +855,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             {panelASections.map(section => (
                <div key={section.id} style={{ marginBottom: section.bottom ? 0 : 16 }}>
                     {/* Section Label (Only if open) */}
-                    {isOpen && section.title && !section.bottom && (
+                    {isOpen && section.title && (
                         <div style={{ padding: '0 12px', marginBottom: 6, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', opacity: 0.5, color: 'var(--sidebar-a-text)' }}>
                             {section.title}
                         </div>
