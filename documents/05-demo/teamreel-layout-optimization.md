@@ -1,8 +1,8 @@
 # TeamReel Layout Optimization
 
-**Date:** 2026-01-09
-**Status:** ✅ Implemented
-**Related:** [teamreel-frontend-integration-audit.md](teamreel-frontend-integration-audit.md), [teamreel-data-strategy.md](teamreel-data-strategy.md)
+**Date:** 2026-01-26
+**Status:** ✅ Navigation implemented; data-backed modules pending
+**Related:** [teamreel-navigation-model.md](teamreel-navigation-model.md), [teamreel-frontend-integration-audit.md](teamreel-frontend-integration-audit.md), [teamreel-data-strategy.md](teamreel-data-strategy.md)
 
 ---
 
@@ -17,6 +17,9 @@
 ---
 
 ## ✅ Implemented Changes
+
+> **No-mock policy (TeamReel):** UI may exist ahead of modules, but screens should not display fake datasets or pretend operations succeeded.
+> Use empty states and “requires module X” messaging until the backend exists.
 
 ### 1. TopNavbar Restructuring
 
@@ -46,6 +49,14 @@ Developer     → API Docs, Guides, Design System, Theme, Constitution, Deployme
 - ✅ TeamReel-specifieke terminologie
 
 **File:** [demo/src/components/TopNavbar.tsx](../../demo/src/components/TopNavbar.tsx#L51-L117)
+
+**Added modern UX (navigation productivity):**
+- ✅ Recents page + dashboard widget
+- ✅ Favorites page + favorites section in sidebar
+- ✅ Quick switch (Command Palette) in TopNavbar
+- ✅ Create (split button): main action opens Content Library
+
+**Backend note:** Recents/Favorites are currently client-side. For server-backed persistence, see module **B41**.
 
 ---
 
@@ -313,6 +324,29 @@ const displayedMembers = filteredMembers.slice(0, displayLimit);
 ---
 
 ## 🔮 Future Enhancements
+
+### High-value “modern webapp” add-ons (recommended)
+- 🔲 Toasts + undo (favorite toggle, save, create)
+- 🔲 Keyboard shortcuts help (discoverable, not just Ctrl+K)
+- 🔲 Better empty states + first-run onboarding hints
+- 🔲 Notifications center improvements (real feed + deep links)
+- 🔲 Drafts/autosave for content creation
+
+---
+
+## ✅ Reality Check: Data-backed vs UI-only
+
+| Feature | Current state (demo) | Uses real backend data? | Needs module(s) to be “real” |
+|--------|-----------------------|-------------------------|------------------------------|
+| Panel A/B navigation shell | Implemented | ✅ Yes (routing) | None |
+| Recents | Implemented | ❌ No (client-only) | **B41** (User Navigation State) |
+| Favorites | Implemented | ❌ No (client-only) | **B41** (User Navigation State) |
+| Quick switch (command palette) | Implemented | ✅/❌ Mixed (routes only) | Optional **B41** (if you want server-backed history) |
+| Create → Content | Implemented (main action) | ✅ Route only | Content data requires **B31/B34/B35** |
+| Content Library screen | Implemented as empty-state | ✅ No mock | **B31** (Content), **B34** (Pipelines), **B35** (Assets) |
+| AI Studio screen | Implemented as entry point | ✅ No mock runs | **B34** (generation jobs) + **B31** (items) |
+
+**Guiding rule:** Build the backend module first for a feature that stores/represents domain data (content, approvals, assets). Then align the layout to the final entities + permissions.
 
 ### Phase 2: Search & Filtering
 - 🔲 Search bar binnen Roster tab (filter by name/email)

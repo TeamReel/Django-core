@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { Table } from '../../../shims/design-system';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
+import GovernanceSummaryCard from '../../../components/Governance/GovernanceSummaryCard';
 import {
   compactTableStyle,
   compactTdStyle,
@@ -247,6 +248,15 @@ export default function TeamCreditsTab(props: {
             <div style={{ padding: '16px', textAlign: 'center', opacity: 0.7 }}>Loading balance…</div>
           ) : (
             <>
+              <div style={{ marginBottom: '12px' }}>
+                <GovernanceSummaryCard
+                  organisationId={organisationId}
+                  projectId={projectId}
+                  title="Governance (Org policies)"
+                  description="Balance policy applies to team credits and match transactions."
+                />
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
                 <Card
                   style={{
@@ -453,6 +463,15 @@ export default function TeamCreditsTab(props: {
               {transactionsError}
             </Alert>
           )}
+
+          <div style={{ marginBottom: '12px' }}>
+            <GovernanceSummaryCard
+              organisationId={organisationId}
+              projectId={projectId}
+              title="Governance (Org policies)"
+              description="Helps explain why some transactions may warn/block on low balance."
+            />
+          </div>
 
           {transactionsLoading ? (
             <div style={{ padding: '16px', textAlign: 'center', opacity: 0.7 }}>Loading transactions…</div>

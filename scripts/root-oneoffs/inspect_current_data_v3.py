@@ -3,17 +3,26 @@ import sys
 import django
 
 sys.path.insert(0, "src")
-os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.production"
+os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.local"
 django.setup()
+
+from django.db import connection
+
+if connection.vendor != "postgresql":
+    db_name = connection.settings_dict.get("NAME")
+    raise SystemExit(
+        "❌ Refusing to run: expected PostgreSQL (Railway). "
+        f"Got vendor={connection.vendor} name={db_name!r}."
+    )
 
 from projects.models import ProjectMembership, Project
 from activities.models import Period
 from organisations.models import Organisation
 
-output_file = "documents/05-demo/CURRENT_DB_STATE.md"
+output_file = "documents/05-demo/archive/teamreel-current-db-inspect.md"
 
 with open(output_file, "w", encoding="utf-8") as f:
-    f.write("# Current Database State\n\n")
+    f.write("# TeamReel Current DB (Inspector Output)\n\n")
 
     for org in Organisation.objects.all():
         f.write(f"## Organisation: {org.name}\n")

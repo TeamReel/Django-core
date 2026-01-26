@@ -532,6 +532,65 @@ class TestBalancePolicyAPI:
         assert policy.allow_negative is True
         assert policy.enforcement_mode == EnforcementModeChoices.WARN
 
+    def test_get_effective_policy_project_override(self, organisation, project):
+        """Effective policy returns project override when present."""
+        BalancePolicy.objects.create(
+            organization=organisation,
+            allow_negative=False,
+            enforcement_mode=EnforcementModeChoices.BLOCK,
+        )
+        proj_policy = BalancePolicy.objects.create(
+            organization=organisation,
+            project=project,
+            allow_negative=True,
+            enforcement_mode=EnforcementModeChoices.ALLOW,
+        )
+
+        client = APIClient()
+        url = reverse("transactions:balance-policy-effective")
+        response = client.get(
+            url,
+            {"organization_id": str(organisation.id), "project_id": str(project.id)},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["source"] == "project"
+        assert response.data["policy"]["id"] == str(proj_policy.id)
+        assert response.data["policy"]["allow_negative"] is True
+
+    def test_get_effective_policy_org_fallback(self, organisation, project):
+        """Effective policy falls back to organisation policy when no project override exists."""
+        org_policy = BalancePolicy.objects.create(
+            organization=organisation,
+            allow_negative=False,
+            enforcement_mode=EnforcementModeChoices.WARN,
+        )
+
+        client = APIClient()
+        url = reverse("transactions:balance-policy-effective")
+        response = client.get(
+            url,
+            {"organization_id": str(organisation.id), "project_id": str(project.id)},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["source"] == "organization"
+        assert response.data["policy"]["id"] == str(org_policy.id)
+
+    def test_get_effective_policy_default(self, organisation, project):
+        """Effective policy returns default when neither org nor project policy exists."""
+        client = APIClient()
+        url = reverse("transactions:balance-policy-effective")
+        response = client.get(
+            url,
+            {"organization_id": str(organisation.id), "project_id": str(project.id)},
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["source"] == "default"
+        assert response.data["policy"]["allow_negative"] is False
+        assert response.data["policy"]["enforcement_mode"] == EnforcementModeChoices.BLOCK
+
 
 @pytest.mark.django_db
 class TestMultiTenantIsolation:

@@ -4,6 +4,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views.preference_views import NotificationPreferenceViewSet
+from .views.org_policy_views import OrganisationNotificationPolicyByOrganisationView
 from .views.routing_logs_views import RoutingDecisionLogViewSet
 
 app_name = "contextual_notifications"
@@ -14,4 +15,9 @@ router.register(r"preferences", NotificationPreferenceViewSet, basename="notific
 
 urlpatterns = [
     path("", include(router.urls)),
+    path(
+        "org-policies/organization/<uuid:org_id>/",
+        OrganisationNotificationPolicyByOrganisationView.as_view(),
+        name="org-notification-policy",
+    ),
 ]

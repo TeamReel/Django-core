@@ -1,4 +1,5 @@
 import logging
+import os
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -17,6 +18,9 @@ def handle_save(sender, instance, **_kwargs):
 
     Gracefully handles Redis/Celery connection errors during bulk operations.
     """
+    if str(os.environ.get("SEARCH_INDEX_DISABLE_SIGNALS", "")).lower() in {"1", "true", "yes"}:
+        return
+
     if sender not in search_registry.get_registered_models():
         return
 
@@ -57,6 +61,9 @@ def handle_delete(sender, instance, **_kwargs):
     """
     Signal handler to trigger search index deletion on delete.
     """
+    if str(os.environ.get("SEARCH_INDEX_DISABLE_SIGNALS", "")).lower() in {"1", "true", "yes"}:
+        return
+
     if sender not in search_registry.get_registered_models():
         return
 

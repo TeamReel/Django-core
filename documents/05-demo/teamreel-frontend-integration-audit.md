@@ -1,6 +1,6 @@
 # TeamReel Frontend Integration Audit
 
-**Last Updated:** 2026-01-08 09:20
+**Last Updated:** 2026-01-26 19:00
 **Environment:** Demo Application (Vite + React + TypeScript)
 **Backend:** Railway PostgreSQL Production (switchback.proxy.rlwy.net:17304)
 **Purpose:** Map backend models to frontend components, identify integration gaps
@@ -10,9 +10,10 @@
 - [TeamReel Current Database State](teamreel-current-db-state.md) - Quick reference statistics
 - [index.md](index.md) - Documentation Overview
 
+
 ---
 
-## � How to Regenerate This Audit
+## How to Regenerate This Audit
 
 This frontend integration audit is **manually maintained** and should be updated when:
 - New frontend components are added
@@ -79,9 +80,10 @@ Get-Content demo/src/**/*.tsx | Select-String -Pattern "'/api/v1/.*'" -AllMatche
 - ✅ Monthly for comprehensive integration health check
 - ✅ Before major releases or stakeholder demos
 
+
 ---
 
-## �📊 Executive Summary
+## Executive Summary
 
 | Metric | Count | Percentage | Status |
 |--------|-------|------------|--------|
@@ -92,7 +94,9 @@ Get-Content demo/src/**/*.tsx | Select-String -Pattern "'/api/v1/.*'" -AllMatche
 | **Not Connected** | 5 | 25% | 🔴 Missing |
 | **Overall Integration** | - | 60% | 🟡 **Partially Complete** |
 
-**Critical Finding:** 1,307 Activity records (matches) exist in backend but have **zero frontend visibility**.
+> Note: the record-count numbers in this document can drift. Treat it as an integration map; use the DB audit for authoritative counts.
+
+**Critical Finding (Updated):** Activities (matches) are now visible via the Directory matches list and match detail pages; remaining gaps are mostly around “supporting systems” (billing/notifications/settings) and richer match-event timelines.
 
 ---
 
@@ -121,7 +125,7 @@ Get-Content demo/src/**/*.tsx | Select-String -Pattern "'/api/v1/.*'" -AllMatche
 
 | Model | Records | Issue | Frontend Component | Missing Functionality | Impact |
 |-------|---------|-------|-------------------|----------------------|--------|
-| **activities.Activity** | 1,307 | **Invisible** | ❌ No component | No "Matches" page to display the 680 league matches created | **HIGH** - Core TeamReel data not accessible |
+| **activities.Activity** | (see DB audit) | **Visible** | `MatchesList.tsx`, `MatchDetailPage.tsx` | Some advanced match views may still be incomplete | **HIGH** - Core TeamReel data |
 | **transactions.Transaction** | ~50 | **Limited** | `CreditsPage.tsx` | Only shows transaction history, not match-specific credits | **MEDIUM** - Works but incomplete |
 | **contextual_notifications.NotificationPreference** | ~10 | **Complex UI** | `PreferencesPage.tsx` | Preference management exists but UX is complex | **LOW** - Functional but could improve |
 
@@ -143,17 +147,16 @@ Get-Content demo/src/**/*.tsx | Select-String -Pattern "'/api/v1/.*'" -AllMatche
 ## 🎯 Critical Missing Integrations
 
 ### 1. **Matches Page (HIGHEST PRIORITY)**
-**Backend:** 1,307 Activity records (680 new + 627 legacy)
-**Frontend Status:** ❌ **No component exists**
-**API Endpoint:** `/api/v1/activities/?activity_type=match`
+**Backend:** Activities (matches)
+**Frontend Status:** ✅ **Implemented**
+**Frontend Components:** `demo/src/pages/identity/directory/MatchesList.tsx`, `demo/src/pages/activities/MatchDetailPage.tsx`
+**API Endpoint:** `/api/v1/activities/` (list) and `/api/v1/activities/:id/` (detail)
 
-**Required Functionality:**
-- **List View:** Display all matches for a team or competition
-- **Match Details:** Opponent, location, date, round number, status
-- **Filtering:** By season, competition type, team, date range
-- **Data Display:** Home/Away team names, venue (via opponent_project FK), match status
+**Covered Functionality (current):**
+- Match list with filtering
+- Match detail with related entities
 
-**Component Location:** `demo/src/pages/projects/MatchesPage.tsx` (does not exist)
+**Component Location:** Implemented under directory + activity pages
 
 **Technical Requirements:**
 - Fetch activities with `activity_type=match` filter
@@ -209,6 +212,8 @@ Get-Content demo/src/**/*.tsx | Select-String -Pattern "'/api/v1/.*'" -AllMatche
 | `/api/v1/projects/:id/` | GET | ProjectDetailPage | ✅ Working |
 | `/api/v1/projects/:id/members/` | GET | MemberList | ✅ Working |
 | `/api/v1/periods/` | GET | ProjectDetailPage filters | ✅ Working |
+| `/api/v1/activities/` | GET | MatchesList | ✅ Working |
+| `/api/v1/activities/:id/` | GET | MatchDetailPage / HierarchyMatchDetailPage | ✅ Working |
 | `/api/v1/permissions/` | GET | PermissionsPage | ✅ Working |
 | `/api/v1/roles/` | GET | RoleAssignmentPage | ✅ Working |
 | `/api/v1/user-notifications/` | GET | NotificationsPage | ✅ Working |
@@ -219,7 +224,7 @@ Get-Content demo/src/**/*.tsx | Select-String -Pattern "'/api/v1/.*'" -AllMatche
 
 | Endpoint | Backend Status | Frontend Status | Priority |
 |----------|---------------|-----------------|----------|
-| `/api/v1/activities/` | ✅ 1,307 records | ❌ No component | **HIGH** |
+| `/api/v1/activities/` | ✅ Has data | ✅ In use | - |
 | `/api/v1/participations/` | ❌ Empty | ❌ No component | LOW |
 | `/api/v1/transactions/policies/` | ✅ 6 records | ❌ No component | MEDIUM |
 | `/api/v1/contextual-notifications/policies/` | ✅ 6 records | ❌ No component | LOW |

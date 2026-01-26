@@ -1,6 +1,6 @@
 # TeamReel Demo Documentation
 
-**Last Updated:** 2026-01-08
+**Last Updated:** 2026-01-26
 **Demo Context:** Football League Management (TeamReel)
 **Production Environment:** Railway
 **Status:** Active Development
@@ -57,10 +57,23 @@ TeamReel is the reference implementation of the Django Core-App, demonstrating a
   Quick reference showing database fill statistics, record counts, and seeding progress.
 
 - **[TeamReel Database Audit](teamreel-db-audit.md)** ⭐
-  Comprehensive database analysis with model-by-model breakdown, changelog, and health metrics.
+  Concise, auto-generated overview of all database tables with counts + status.
 
 - **[TeamReel Frontend Integration Audit](teamreel-frontend-integration-audit.md)** ⭐
   Complete audit of backend-to-frontend connections, identifying integrated vs. missing components.
+
+---
+
+## 🧭 Navigation & UX
+
+- **[TeamReel Navigation Model (Panel A + Panel B)](teamreel-navigation-model.md)** ⭐
+  The final navigation spec, aligned with current implementation and no-mock policy.
+
+- **[TeamReel Layout Optimization](teamreel-layout-optimization.md)**
+  What changed in the demo UI (TopNavbar, sidebars, modern UX add-ons).
+
+- **[TeamReel Webapp Hierarchy](teamreel-webapp-hierarchy.md)**
+  High-level hierarchy UX: Federation → Club → Team → Season → Competition → Match.
 
 ---
 
@@ -84,22 +97,14 @@ TeamReel is the reference implementation of the Django Core-App, demonstrating a
 
 ---
 
-## 📊 Current Status (2026-01-08)
+## 📊 Current Status
 
-### Database Fill
-- **Total Records**: 8,029 (68.3% of schema capacity)
-- **Key Models**:
-  - 2,121 Users
-  - 1,307 Activities (matches)
-  - 2,190 ProjectMemberships (players/staff)
-  - 433 RoleAssignments
-  - 215 Projects (clubs/teams)
+Source of truth for current counts:
+- [TeamReel Database Audit](teamreel-db-audit.md) (model-by-model counts)
+- [TeamReel Current Database State](teamreel-current-db-state.md) (hierarchy snapshot; regenerate when needed)
 
-### Frontend Integration
-- **Fully Connected**: 12 models (60%) - Identity, RBAC, Orgs, Projects
-- **Partially Connected**: 3 models (15%) - Activities (NO UI), Transactions, Preferences
-- **Not Connected**: 5 models (25%) - Participation, BalancePolicy, etc.
-- **Critical Gap**: 1,307 match records exist but no frontend display component
+Source of truth for UI coverage:
+- [TeamReel Frontend Integration Audit](teamreel-frontend-integration-audit.md)
 
 ### Implementation Priorities
 1. **MatchesPage.tsx** - Display 1,307 match activities

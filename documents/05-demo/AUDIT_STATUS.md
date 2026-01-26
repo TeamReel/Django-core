@@ -1,6 +1,6 @@
 # TeamReel Audit Status Overview
 
-**Last Updated:** 2026-01-14
+**Last Updated:** 2026-01-26
 **Purpose:** Quick reference for all audit documents and their currency status
 
 ---
@@ -9,14 +9,13 @@
 
 ### 1. Database State Audit
 **File:** [teamreel-current-db-state.md](teamreel-current-db-state.md)
-**Last Updated:** 2026-01-08 09:13
-**Freshness:** 🟢 **Current** (within hours)
-**Auto-Generated:** Yes (via `generate_db_state.py`)
+**Last Updated:** 2026-01-08 09:55
+**Freshness:** 🟡 **Stale** (regenerate before using)
+**Auto-Generated:** Yes (via `scripts/root-oneoffs/generate_db_state.py`)
 **Update Frequency:** After seeding operations, weekly monitoring
 **Regeneration Time:** 5-10 seconds
 
 **What it tracks:**
-- Database fill statistics per federation
 - Club/Team/Season/Competition hierarchy
 - Player counts per team
 - Match counts per competition
@@ -24,25 +23,24 @@
 **Regenerate command:**
 ```powershell
 $env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
-python generate_db_state.py
+python scripts/root-oneoffs/generate_db_state.py
 ```
 
 ---
 
 ### 2. Database Model Audit
 **File:** [teamreel-db-audit.md](teamreel-db-audit.md)
-**Last Updated:** 2026-01-14 20:46
-**Freshness:** 🟢 **Current** (within hours)
+**Last Updated:** 2026-01-26 19:24
+**Freshness:** 🟢 **Current**
 **Auto-Generated:** Yes (via `scripts/update_teamreel_db_audit.py`)
 **Update Frequency:** After major seeding, monthly for trends
 **Regeneration Time:** 10-15 seconds
 
 **What it tracks:**
-- All 42 Django models with record counts
-- Database fill percentage (45.2%)
-- Empty vs populated tables
-- Model-by-model breakdown by app
-- Changelog of major data operations
+- All Django models/tables with record counts
+- Status per table: OK / THIN / EMPTY
+- Executive summary metrics (models/empty/records/fill)
+- (Webapp visibility is tracked separately; see frontend integration audit)
 
 **Regenerate command:**
 ```powershell
@@ -54,8 +52,8 @@ python scripts/update_teamreel_db_audit.py
 
 ### 3. Frontend Integration Audit
 **File:** [teamreel-frontend-integration-audit.md](teamreel-frontend-integration-audit.md)
-**Last Updated:** 2026-01-08 09:20
-**Freshness:** 🟢 **Current** (within hours)
+**Last Updated:** 2026-01-26 19:00
+**Freshness:** 🟢 **Current**
 **Auto-Generated:** No (fully manual)
 **Update Frequency:** Weekly during active development, monthly health check
 **Regeneration Time:** 30-60 minutes (manual review)
@@ -63,7 +61,7 @@ python scripts/update_teamreel_db_audit.py
 **What it tracks:**
 - Backend models → Frontend component mapping
 - Integration gaps (12 fully connected, 3 partial, 5 missing)
-- Critical finding: 1,307 matches with no UI
+- Matches/activities visibility status and remaining gaps
 - API endpoint usage patterns
 - Implementation roadmap (Phase 1-3)
 
@@ -80,9 +78,9 @@ python scripts/update_teamreel_db_audit.py
 
 | Audit Type | Trigger | Frequency | Last Run | Next Due |
 |------------|---------|-----------|----------|----------|
-| **DB State** | After seeding | Weekly | 2026-01-08 09:13 | 2026-01-15 |
-| **DB Model** | After major changes | Monthly | 2026-01-08 09:15 | 2026-02-08 |
-| **Frontend Integration** | Component changes | Weekly (active dev) | 2026-01-08 09:20 | 2026-01-15 |
+| **DB State** | After seeding | Weekly | 2026-01-08 09:55 | 2026-02-02 |
+| **DB Model** | After major changes | Monthly | 2026-01-26 19:24 | 2026-02-26 |
+| **Frontend Integration** | Component changes | Weekly (active dev) | 2026-01-26 19:00 | 2026-02-02 |
 
 ---
 
@@ -92,11 +90,10 @@ python scripts/update_teamreel_db_audit.py
 ```powershell
 # 1. Database State (5 seconds)
 $env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
-python generate_db_state.py
+python scripts/root-oneoffs/generate_db_state.py
 
-# 2. Database Model Audit (10 seconds + manual update)
-python manage.py audit_production_db > temp-audit-output.md
-# Review temp-audit-output.md and update teamreel-db-audit.md manually
+# 2. Database Model Audit (10-15 seconds, fully auto-generated)
+python scripts/update_teamreel_db_audit.py
 
 # 3. Frontend Integration Audit (manual - 30-60 minutes)
 # Follow the 5-step process in teamreel-frontend-integration-audit.md
@@ -111,9 +108,9 @@ Get-ChildItem -Path demo/src -Recurse -Include *.tsx,*.ts | Select-String "/api/
 
 | Indicator | Status | Target | Current |
 |-----------|--------|--------|---------|
-| **Database Fill** | 🟢 Good | >60% | 68.3% |
+| **Database Fill** | 🟢 Good | >60% | 68.9% |
 | **Frontend Coverage** | 🟡 Partial | >90% | 60% |
-| **Critical Gaps** | 🔴 Issues | 0 | 1 (Matches page missing) |
+| **Critical Gaps** | 🟡 Partial | 0 | Match events + supporting systems |
 | **Documentation Freshness** | 🟢 Current | <7 days | <1 day |
 
 ---
@@ -130,7 +127,7 @@ Get-ChildItem -Path demo/src -Recurse -Include *.tsx,*.ts | Select-String "/api/
 ### Medium Term (This Month)
 - 🔄 Full audit cycle refresh (all 3 documents)
 - 📊 Trend analysis: Compare database fill month-over-month
-- 🎯 Close critical integration gap (MatchesPage.tsx implementation)
+- 🎯 Improve match event timelines + fill supporting systems as needed
 
 ---
 

@@ -379,7 +379,8 @@ class BalancePolicySerializer(serializers.ModelSerializer):
     """Serializer for BalancePolicy model."""
 
     organization_id = serializers.UUIDField(source="organization.id", read_only=True)
-    project_id = serializers.UUIDField(source="project.id", read_only=True, allow_null=True)
+    # Project uses an integer PK (BigAutoField). Keep allow_null for org-scoped policies.
+    project_id = serializers.IntegerField(source="project.id", read_only=True, allow_null=True)
 
     class Meta:
         """Serializer metadata."""
@@ -402,3 +403,22 @@ class BalancePolicySerializer(serializers.ModelSerializer):
         if value is not None and value < Decimal("0"):
             raise serializers.ValidationError("warn_threshold cannot be negative")
         return value
+
+
+class EffectiveBalancePolicySerializer(serializers.Serializer):
+    """Read-only serializer for resolved balance policy + source.
+
+    Source values match Option B resolution order:
+    - project: project-specific override exists
+    - organization: org-level policy exists
+    - default: implicit fallback (unsaved)
+    """
+
+    source = serializers.ChoiceField(choices=["project", "organization", "default"])
+    policy = BalancePolicySerializer()
+
+    def create(self, validated_data):  # pragma: no cover
+        raise NotImplementedError("EffectiveBalancePolicySerializer is read-only")
+
+    def update(self, instance, validated_data):  # pragma: no cover
+        raise NotImplementedError("EffectiveBalancePolicySerializer is read-only")

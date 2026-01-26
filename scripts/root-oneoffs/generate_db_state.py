@@ -1,54 +1,96 @@
-import os, sys, django
+from __future__ import annotations
 
-sys.path.insert(0, "src")
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
-django.setup()
+import os
+import sys
 
-from organisations.models import Organisation
-from projects.models import Project, ProjectMembership
-from activities.models import Period, Activity
-from django.db.models import Count
+import django
+from django.utils import timezone
 
-# Build complete state with efficient queries
-output = []
-output.append("# Current Database State")
-output.append(f"\n**Generated:** 2026-01-07 22:50\n")
-output.append("| ORG | CLUB | TEAM | SEASON | COMPETITION | PLAYERS | MATCHES |")
-output.append("|-----|------|------|--------|-------------|---------|---------|")
 
-for org in Organisation.objects.all().order_by("name"):
-    clubs = Project.objects.filter(organisation=org, parent_project__isnull=True).order_by("name")
+def main() -> int:
+    sys.path.insert(0, "src")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 
-    for club in clubs:
-        teams = Project.objects.filter(parent_project=club).order_by("name")
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        print("❌ DATABASE_URL is not set; refusing to run against a local/empty DB.")
+        print("   Set DATABASE_URL to the Railway Postgres connection string and retry.")
+        return 2
+    django.setup()
 
-        for team in teams:
-            seasons = Period.objects.filter(project=team, parent_period__isnull=True).order_by(
-                "name"
-            )
+    from django.db import connection
 
-            for season in seasons:
-                # Count players for this season
-                player_count = ProjectMembership.objects.filter(project=team, period=season).count()
+    if connection.vendor != "postgresql":
+        db_name = connection.settings_dict.get("NAME")
+        print("❌ Refusing to run: expected PostgreSQL (Railway), got:")
+        print(f"   vendor={connection.vendor} name={db_name!r}")
+        print("   Ensure DATABASE_URL points to Railway Postgres.")
+        return 3
 
-                # Get competitions under this season
-                competitions = Period.objects.filter(parent_period=season).order_by("name")
+    from activities.models import Activity, Period
+    from organisations.models import Organisation
+    from projects.models import Project, ProjectMembership
 
-                if competitions.exists():
-                    for comp in competitions:
-                        match_count = Activity.objects.filter(project=team, period=comp).count()
-                        output.append(
-                            f"| {org.slug} | {club.name} | {team.name} | {season.name} | {comp.name} | {player_count} | {match_count} |"
-                        )
-                else:
-                    # Season exists but no competitions yet
-                    output.append(
-                        f"| {org.slug} | {club.name} | {team.name} | {season.name} | *(none)* | {player_count} | 0 |"
-                    )
+    out: list[str] = []
+    out.append("# TeamReel Current Database State")
+    out.append("")
+    out.append(f"**Last Updated:** {timezone.now().strftime('%Y-%m-%d %H:%M')}")
+    out.append("**Environment:** Railway PostgreSQL Production")
+    out.append("**Purpose:** Quick hierarchy snapshot (teams/seasons/competitions with players + matches)")
+    out.append("")
+    out.append("> This file is auto-generated. Do not edit manually.")
+    out.append("")
+    out.append("---")
+    out.append("")
+    out.append("## Snapshot")
+    out.append("")
+    out.append("| ORG | CLUB | TEAM | SEASON | COMPETITION | PLAYERS | MATCHES |")
+    out.append("| :--- | :--- | :--- | :--- | :--- | ---: | ---: |")
 
-# Write to markdown file
-with open("documents/05-demo/CURRENT_DB_STATE.md", "w", encoding="utf-8") as f:
-    f.write("\n".join(output))
+    rows_written = 0
 
-print("\n✅ Complete database state written to documents/05-demo/CURRENT_DB_STATE.md")
-print(f"   Total rows: {len(output) - 3}")  # Subtract header rows
+    for org in Organisation.objects.all().order_by("name"):
+        clubs = Project.objects.filter(organisation=org, parent_project__isnull=True).order_by("name")
+        for club in clubs:
+            teams = Project.objects.filter(parent_project=club).order_by("name")
+            for team in teams:
+                seasons = Period.objects.filter(project=team, parent_period__isnull=True).order_by("name")
+                for season in seasons:
+                    player_count = ProjectMembership.objects.filter(project=team, period=season).count()
+                    competitions = Period.objects.filter(parent_period=season).order_by("name")
+                    if competitions.exists():
+                        for comp in competitions:
+                            match_count = Activity.objects.filter(project=team, period=comp).count()
+                            if match_count == 0:
+                                continue
+                            out.append(
+                                "| "
+                                + " | ".join(
+                                    [
+                                        str(org.slug),
+                                        str(club.name),
+                                        str(team.name),
+                                        str(season.name),
+                                        str(comp.name),
+                                        str(player_count),
+                                        str(match_count),
+                                    ]
+                                )
+                                + " |"
+                            )
+                            rows_written += 1
+                    else:
+                        # No competitions under this season.
+                        continue
+
+    output_file = "documents/05-demo/teamreel-current-db-state.md"
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write("\n".join(out) + "\n")
+
+    print(f"\n✅ Database state written to {output_file}")
+    print(f"   Rows: {rows_written}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

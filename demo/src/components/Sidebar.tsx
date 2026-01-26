@@ -118,14 +118,48 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
     // Record recents for canonical TeamReel hierarchy pages.
     useEffect(() => {
-        const path = String(location.pathname || '').trim();
-        if (!path || path === '/' || path.startsWith('/dashboard') || path.startsWith('/directory') || path.startsWith('/recents') || path.startsWith('/favorites')) {
+        const pathname = String(location.pathname || '').trim();
+        const search = String(location.search || '');
+        const fullPath = `${pathname}${search}`;
+
+        if (!pathname || pathname === '/' || pathname.startsWith('/recents') || pathname.startsWith('/favorites')) {
             return;
         }
 
-        const segs = path.split('/').map(s => s.trim()).filter(Boolean);
+        const segs = pathname.split('/').map(s => s.trim()).filter(Boolean);
         if (segs.length === 0) return;
 
+        // Track common pages (no backend needed; this makes Recents feel alive immediately).
+        if (pathname === '/directory') {
+            const tab = new URLSearchParams(search).get('tab');
+            const label = tab ? `Directory • ${String(tab).trim()}` : 'Directory';
+            addRecent({ kind: 'page', label, path: fullPath });
+            return;
+        }
+
+        if (pathname.startsWith('/content')) {
+            addRecent({ kind: 'page', label: 'Library', path: fullPath });
+            return;
+        }
+
+        if (pathname.startsWith('/studio')) {
+            addRecent({ kind: 'page', label: 'AI Studio', path: fullPath });
+            return;
+        }
+
+        if (pathname.startsWith('/credits')) {
+            const wallet = new URLSearchParams(search).get('wallet');
+            addRecent({ kind: 'page', label: wallet === 'personal' ? 'My Wallet' : 'Credits', path: fullPath });
+            return;
+        }
+
+        if (pathname === '/profile' || pathname === '/preferences' || pathname.startsWith('/notifications')) {
+            const label = pathname === '/profile' ? 'My Profile' : (pathname === '/preferences' ? 'Preferences' : 'Notifications');
+            addRecent({ kind: 'page', label, path: fullPath });
+            return;
+        }
+
+        // Canonical vanity hierarchy (best labels from resolved context).
         const reservedRoots = new Set([
             'dashboard',
             'directory',
@@ -139,6 +173,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             'search',
             'login',
             'logout',
+            'register',
             'organisations',
             'projects',
             'matches',
@@ -164,29 +199,35 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             'favorites',
         ]);
 
-        // Only track canonical vanity hierarchy: /:org/:club/:team/... (no reserved roots)
-        if (reservedRoots.has(segs[0])) return;
+        // If it's not a reserved root, assume it's a vanity hierarchy route.
+        if (!reservedRoots.has(segs[0])) {
+            // Org-scoped list routes like /:orgId/clubs should be treated as pages.
+            const orgSectionLike = new Set(['clubs', 'teams', 'seasons', 'competitions', 'matches', 'users', 'projects']);
+            if (segs[1] && orgSectionLike.has(segs[1])) {
+                const orgLabel = String(resolvedAppContext?.orgName || segs[0]).trim();
+                addRecent({ kind: 'page', label: `${orgLabel} • ${segs[1]}`, path: fullPath });
+                return;
+            }
 
-        const orgSectionLike = new Set(['clubs', 'teams', 'seasons', 'competitions', 'matches', 'users', 'projects']);
-        if (segs[1] && orgSectionLike.has(segs[1])) return;
+            const kindOrder = ['federation', 'club', 'team', 'season', 'competition', 'match'] as const;
+            const depth = Math.min(segs.length, kindOrder.length) - 1;
+            const kind = kindOrder[Math.max(0, depth)];
 
-        const kindOrder = ['federation', 'club', 'team', 'season', 'competition', 'match'] as const;
-        const depth = Math.min(segs.length, kindOrder.length) - 1;
-        const kind = kindOrder[Math.max(0, depth)];
+            let label = '';
+            if (kind === 'federation') label = resolvedAppContext?.orgName || segs[0];
+            else if (kind === 'club') label = resolvedAppContext?.club?.name || segs[1];
+            else if (kind === 'team') label = resolvedAppContext?.team?.name || segs[2];
+            else if (kind === 'season') label = resolvedAppContext?.season?.name || segs[3];
+            else if (kind === 'competition') label = resolvedAppContext?.competition?.name || segs[4];
+            else if (kind === 'match') label = resolvedAppContext?.match?.label || segs[5];
 
-        let label = '';
-        if (kind === 'federation') label = resolvedAppContext?.orgName || segs[0];
-        else if (kind === 'club') label = resolvedAppContext?.club?.name || segs[1];
-        else if (kind === 'team') label = resolvedAppContext?.team?.name || segs[2];
-        else if (kind === 'season') label = resolvedAppContext?.season?.name || segs[3];
-        else if (kind === 'competition') label = resolvedAppContext?.competition?.name || segs[4];
-        else if (kind === 'match') label = resolvedAppContext?.match?.label || segs[5];
+            const cleanLabel = String(label || '').trim();
+            if (!cleanLabel) return;
 
-        const cleanLabel = String(label || '').trim();
-        if (!cleanLabel) return;
-
-        addRecent({ kind, label: cleanLabel, path });
-    }, [location.pathname, resolvedAppContext]);
+            addRecent({ kind, label: cleanLabel, path: fullPath });
+            return;
+        }
+    }, [location.pathname, location.search, resolvedAppContext]);
 
     // Deterministic Panel A defaults: build paths from API-backed slugs/keys.
     useEffect(() => {
@@ -378,6 +419,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
                     { label: 'Directory', path: '/directory', icon: Folder },
                     { label: 'Recents', path: '/recents', icon: Timer },
+                    { label: 'Manage Favorites', path: '/favorites', icon: Star },
                 ];
                 break;
             }
@@ -855,8 +897,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             visibility: 'everyone',
         }));
 
-        // Always provide a management entry
-        items.push({ label: 'Manage', path: '/favorites', icon: Star, visibility: 'everyone' });
         return items;
     }, [favorites]);
 

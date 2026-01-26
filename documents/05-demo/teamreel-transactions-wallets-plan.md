@@ -129,6 +129,27 @@ Operationally, this is set via the management command:
 
 ---
 
+## 🛡️ Governance baseline (BalancePolicy)
+
+Naast *payer routing* gebruikt TeamReel een expliciete **BalancePolicy** per organisatie als veiligheidsgordel:
+
+- **Wat het doet:** bepaalt of negatieve saldi zijn toegestaan en hoe streng we handhaven.
+- **Waarom:** payer routing bepaalt *wie betaalt*; BalancePolicy bepaalt *of* en *hoe* een “onder nul” scenario wordt toegestaan/geb lokkeerd.
+
+**Defaults (TeamReel strategy):**
+- org-level policy (`project = NULL`)
+- `allow_negative = False`
+- `enforcement_mode = BLOCK`
+- `warn_threshold = 100.0000`
+
+**Operationally (Railway-safe):**
+- Preview (no writes): `python manage.py seed_teamreel_governance`
+- Apply: `python manage.py seed_teamreel_governance --execute`
+
+Note: dit seed-commando is idempotent en vult alleen ontbrekende governance defaults.
+
+---
+
 ## 🧪 Demo seeding & verification (Railway-safe)
 
 ### 1) “User wallet burn” volume seeding

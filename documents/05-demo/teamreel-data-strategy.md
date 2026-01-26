@@ -440,6 +440,57 @@ Optional (Fase 6+):
 
 ---
 
+## 🛡️ TeamReel Governance: BalancePolicy + Notifications
+
+Dit is de 80/20 invulling om de (nu lege) policy-tabellen zinvol te maken in productie, zonder onnodige “seed noise”. Alles hieronder past 1-op-1 op bestaande Django Core tabellen.
+
+### 1) BalancePolicy (Credits/B11)
+
+**Doel (TeamReel):** credits zijn “team-first” (project wallet), maar de **policy** is het safety-net dat bepaalt of een wallet onder nul mag en hoe hard we afdwingen.
+
+**Backend mapping:**
+- `transactions_balancepolicy` (`transactions.BalancePolicy`)
+  - `organization` (+ optioneel `project`) bepaalt scope
+  - `allow_negative` → prepaid/postpaid
+  - `enforcement_mode` (`block|warn|allow`) → afdwingen
+  - `warn_threshold` → “low balance” signalering
+
+**80/20 default (aanrader):**
+- **Org-level default**: prepaid + `BLOCK` (veilig, productie-proof)
+- `warn_threshold = 100.0000` zodat UI/ops “low balance” kan signaleren
+- Project-level policies alleen toevoegen als je per Team/Project afwijkend wilt sturen
+
+**Waarom je nu 0 rows ziet:** de API kan een “default policy” teruggeven zonder DB-row (service-layer fallback). Voor zichtbaarheid/configuratie in productie is het beter om 1 row per org te seeden.
+
+### 2) Notifications (B16 + B17)
+
+**Doel (TeamReel):** in-app notifications voor “actie nodig” momenten (content klaar voor review, match gewijzigd, uitnodiging), met routing op org/project context.
+
+**Backend mapping:**
+- `notifications_notification` (`notifications.Notification`): daadwerkelijke notificaties (in-app/email/webhook)
+- `notifications_delivery_attempt`: alleen gevuld als je delivery probeert (email/webhook); kan 0 zijn als je enkel in-app doet
+- `contextual_notifications_routingrule` (`contextual_notifications.RoutingRule`): “welke events → wie → via welk kanaal”
+- `contextual_notifications_organisationnotificationpolicy` (`contextual_notifications.OrganisationNotificationPolicy`): quiet hours + rate limits per org
+- `contextual_notifications_notificationpreference` (`contextual_notifications.NotificationPreference`): user opt-out per `(user, event_type, channel)`
+
+**Belangrijk (bewust design):** `NotificationPreference` hoeft níet gevuld te zijn. Het model is “opt-out”: als er geen row is, is de default `enabled=True`.
+
+**80/20 event taxonomy (aanrader):**
+- `content.ready_for_review` → notify reviewers (in-app)
+- `match.updated` → notify team admins/members (in-app)
+- `membership.invited` → notify invitee (in-app + optioneel email)
+
+### 3) Seeding / Operationalisatie
+
+**Eenmalig (of idempotent herhaalbaar) defaults zetten:**
+- Routing rules (global): `python manage.py configure_routing`
+- TeamReel governance defaults (org balance policy + org quiet-hours policy): `python manage.py seed_teamreel_governance --execute`
+  - Optioneel quiet hours aan: `python manage.py seed_teamreel_governance --execute --quiet-hours`
+
+Deze aanpak zorgt dat de tabellen niet langer “leeg” zijn waar dat wél waarde geeft (org policies + routing rules + balance policy), terwijl preferences klein blijven (alleen afwijkingen).
+
+---
+
 ### 🚨 Wat ONTBREEKT (niet in codebase, niet in roadmap)?
 
 #### 1. **ContentTemplate + ContentItem + ContentApproval** 🔴 **CRITICAL**
@@ -657,11 +708,11 @@ Gebruik de 8-step SQL rebuild (zie verderop in document)
 
 ### 🆕 PROPOSED NEW MODULES
 
-**Module #040: B31 Content Templates & Generation**
+**Module #240: B31 Content Templates & Generation**
 
 **Roadmap Position:** Fase 10 (Content Engine Core) - tussen B30 (Activities) en B32 (Sport Configuration)
 
-**Module ID:** `040-B31-content-templates-and-generation.md`
+**Module ID:** `240-B31-content-templates-and-generation.md`
 
 **Doel:** Reusable templates voor AI-content generatie met approval workflow
 
@@ -674,11 +725,11 @@ Gebruik de 8-step SQL rebuild (zie verderop in document)
 
 ---
 
-**Module #041: B32 Sport Configuration & Templates**
+**Module #241: B32 Sport Configuration & Templates**
 
 **Roadmap Position:** Fase 10 (Content Engine Core) - tussen B31 (Content Templates) en B33 (Brand Identity)
 
-**Module ID:** `041-B32-sport-configuration-and-templates.md`
+**Module ID:** `241-B32-sport-configuration-and-templates.md`
 
 **Doel:** Sport-specifieke configuratie voor team sizes, positions, outfit variants en template requirements
 

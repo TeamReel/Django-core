@@ -14,6 +14,7 @@ class RoutingRuleSerializer(serializers.ModelSerializer):
 
     organisation_name = serializers.CharField(source="organisation.name", read_only=True)
     project_name = serializers.CharField(source="project.name", read_only=True)
+    enabled = serializers.BooleanField(source="is_enabled")
 
     class Meta:
         model = RoutingRule
@@ -67,7 +68,7 @@ class NotificationPreferenceSerializer(serializers.ModelSerializer):
         enabled = validated_data.get("enabled", True)
 
         # Use update_or_create to avoid duplicate entries
-        preference, created = NotificationPreference.objects.update_or_create(
+        preference, _created = NotificationPreference.objects.update_or_create(
             user=user, event_type=event_type, channel=channel, defaults={"enabled": enabled}
         )
 
@@ -128,6 +129,12 @@ class RoutingDecisionLogSerializer(serializers.Serializer):
             "project_name",
             "metadata",
         ]
+
+    def create(self, validated_data):  # pragma: no cover
+        raise NotImplementedError("RoutingDecisionLogSerializer is read-only")
+
+    def update(self, instance, validated_data):  # pragma: no cover
+        raise NotImplementedError("RoutingDecisionLogSerializer is read-only")
 
     def get_project_id(self, obj):
         return obj.project.id if obj.project else None

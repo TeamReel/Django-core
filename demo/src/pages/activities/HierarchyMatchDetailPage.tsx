@@ -6,6 +6,7 @@ import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
+import GovernanceSummaryCard from '../../components/Governance/GovernanceSummaryCard';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import { useAuth } from '@django-core/auth-ui';
 import MatchDetailModal from '../identity/MatchDetailModal';
@@ -1687,6 +1688,12 @@ export default function HierarchyMatchDetailPage() {
 
           {activeTab === 'transactions' && (
             <div style={{ display: 'grid', gap: '12px' }}>
+              <GovernanceSummaryCard
+                organisationId={String(org?.id || '')}
+                projectId={String(match?.project?.id || project?.id || '')}
+                title="Governance (Org policies)"
+                description="Balance policy can warn/block match-scoped transactions when credits run low."
+              />
               <TransactionsPanel
                 title="Transactions"
                 description="Match-scoped transactions (usage_event.metadata.activity_id)"

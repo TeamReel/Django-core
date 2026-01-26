@@ -27,9 +27,12 @@ Dit zijn beheerfuncties die je niet “in de weg” wil hebben in de hoofdapp, e
 - Usage Events
 - Feature Flags
 - Credits (alleen voor rollen die credits mogen beheren)
+- Governance defaults (policies): BalancePolicy + notification routing
 - Platform status (Health/Observability/Integration)
 
 **Superadmin** ziet altijd alles en kan (indien nodig) filteren op organisatie/project.
+
+> TeamReel note: governance defaults worden in productie/demo gezet via `python manage.py seed_teamreel_governance`.
 
 ---
 

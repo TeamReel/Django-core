@@ -17,15 +17,17 @@ Usage:
     python manage.py seed_teamreel_production
 """
 
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from organisations.models import Organisation
+from organisations.models import Membership
 from projects.models.project import Project
 from projects.models.project_membership import ProjectMembership
 from activities.models import Period, Activity, Participation
-from credits.models import CreditsBalance
-from transactions.models import Transaction
+from credits.models import CreditsBalance, ProjectCreditsBalance
+from transactions.models import SourceTypeChoices, Transaction, WalletScopeChoices
 from decimal import Decimal
 
 User = get_user_model()
@@ -77,7 +79,16 @@ class Command(BaseCommand):
         # Step 10: Setup Credits
         self.setup_credits()
 
+        # Step 11: Seed governance defaults (policies + routing rules)
+        self.seed_governance()
+
         self.stdout.write(self.style.SUCCESS("\n✅ TeamReel demo data complete!\n"))
+
+    def seed_governance(self):
+        """Seed governance defaults used by TeamReel."""
+        self.stdout.write("\n🛡️  Seeding governance defaults...")
+        # Idempotent command (safe to run multiple times)
+        call_command("seed_teamreel_governance", execute=True)
 
     def create_users(self):
         """Create demo users with different roles"""
@@ -452,8 +463,8 @@ class Command(BaseCommand):
                 project=ajax_team,
                 user=user,
                 defaults={
-                    "role": player_data["role"],
-                    "is_active": True,
+                    # ProjectMembership.role is RBAC (viewer/editor/admin). Keep players as viewers.
+                    "role": ProjectMembership.Role.VIEWER,
                     "metadata": {
                         "shirt_number": player_data["number"],
                         "position": player_data["role"],
@@ -474,15 +485,25 @@ class Command(BaseCommand):
         ajax_team = self.teams["ajax_ajax_eerste_elftal"]
         season = self.periods["season_2024"]
 
-        memberships = ProjectMembership.objects.filter(project=ajax_team, is_active=True)
+        memberships = ProjectMembership.objects.filter(project=ajax_team, deleted_at__isnull=True)
 
         for membership in memberships:
-            participation, created = Participation.objects.get_or_create(
-                period=season,
+            org_membership, _created = Membership.objects.get_or_create(
+                organisation=self.organisations["knvb"],
                 user=membership.user,
                 defaults={
-                    "role": membership.role,
-                    "metadata": membership.metadata,
+                    "role": "member",
+                    "is_active": True,
+                    "invited_by": self.users.get("admin"),
+                },
+            )
+            participation, created = Participation.objects.get_or_create(
+                period=season,
+                member=org_membership,
+                defaults={
+                    "role": "squad_member",
+                    "data": membership.metadata or {},
+                    "created_by": self.users.get("admin"),
                 },
             )
             if created:
@@ -532,11 +553,11 @@ class Command(BaseCommand):
 
         for match_data in matches_data:
             activity, created = Activity.objects.get_or_create(
-                name=match_data["name"],
+                title=match_data["name"],
                 project=match_data["home_team"],
                 period=eredivisie,
                 defaults={
-                    "organisation": self.organisations["knvb"],
+                    "activity_type": "match",
                     "start_time": match_data["start_time"],
                     "end_time": match_data["start_time"] + timezone.timedelta(hours=2),
                     "opponent_project": match_data["away_team"],
@@ -545,9 +566,9 @@ class Command(BaseCommand):
                 },
             )
             if created:
-                self.stdout.write(f"  ✓ Created match: {activity.name}")
+                self.stdout.write(f"  ✓ Created match: {activity.title}")
             else:
-                self.stdout.write(f"  ↻ Match exists: {activity.name}")
+                self.stdout.write(f"  ↻ Match exists: {activity.title}")
 
             match_key = match_data["name"].lower().replace(" ", "_")
             self.activities[match_key] = activity
@@ -557,27 +578,48 @@ class Command(BaseCommand):
         self.stdout.write("\n💰 Setting up credits...")
 
         ajax_team = self.teams["ajax_ajax_eerste_elftal"]
+        knvb = self.organisations["knvb"]
+        admin = self.users["admin"]
 
-        # Create credits balance for Ajax team
-        balance, created = CreditsBalance.objects.get_or_create(
-            project=ajax_team,
+        org_txn, org_created = Transaction.objects.get_or_create(
+            idempotency_key="seed:teamreel:credits:knvb:org",
             defaults={
-                "organisation": self.organisations["knvb"],
-                "balance": Decimal("1000.00"),
+                "organization": knvb,
+                "wallet_scope": WalletScopeChoices.ORGANIZATION,
+                "amount": Decimal("10000.0000"),
+                "source_type": SourceTypeChoices.ADJUSTMENT,
+                "created_by": admin,
+                "notes": "Initial demo credits (organisation wallet)",
             },
         )
-        if created:
-            self.stdout.write(f"  ✓ Created credits balance for {ajax_team.name}")
 
-            # Create initial transaction
-            Transaction.objects.create(
-                organisation=self.organisations["knvb"],
-                project=ajax_team,
-                amount=Decimal("1000.00"),
-                transaction_type="credit",
-                description="Initial demo credits",
-                created_by=self.users["admin"],
-            )
-            self.stdout.write(f"  ✓ Added 1000 credits to {ajax_team.name}")
+        proj_txn, proj_created = Transaction.objects.get_or_create(
+            idempotency_key=f"seed:teamreel:credits:knvb:project:{ajax_team.id}",
+            defaults={
+                "organization": knvb,
+                "wallet_scope": WalletScopeChoices.PROJECT,
+                "project": ajax_team,
+                "amount": Decimal("1000.0000"),
+                "source_type": SourceTypeChoices.ADJUSTMENT,
+                "created_by": admin,
+                "notes": "Initial demo credits (project wallet)",
+            },
+        )
+
+        if org_created:
+            self.stdout.write(f"  ✓ Seeded org credits via transaction: {org_txn.amount}")
         else:
-            self.stdout.write(f"  ↻ Credits already exist for {ajax_team.name}")
+            self.stdout.write("  ↻ Org credits transaction already exists")
+
+        if proj_created:
+            self.stdout.write(f"  ✓ Seeded project credits via transaction: {proj_txn.amount}")
+        else:
+            self.stdout.write("  ↻ Project credits transaction already exists")
+
+        # Print derived balances (maintained by transactions signals)
+        org_balance = CreditsBalance.objects.filter(organisation=knvb).first()
+        if org_balance:
+            self.stdout.write(f"  • Organisation balance now: {org_balance.current_balance}")
+        project_balance = ProjectCreditsBalance.objects.filter(project=ajax_team).first()
+        if project_balance:
+            self.stdout.write(f"  • Project balance now: {project_balance.current_balance}")

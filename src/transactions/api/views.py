@@ -31,6 +31,7 @@ from .filters import TransactionFilter, UsageEventFilter
 from .serializers import (
     BalancePolicySerializer,
     BalanceSerializer,
+    EffectiveBalancePolicySerializer,
     TransactionSerializer,
     UsageEventSerializer,
 )
@@ -434,6 +435,74 @@ class BalancePolicyViewSet(viewsets.ModelViewSet):
             {"error": "Invalid scope_type. Must be 'organization' or 'project'."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+    @action(detail=False, methods=["get"], url_path=r"effective")
+    def effective(self, request: Request) -> Response:
+        """Return the effective BalancePolicy for an org/project context.
+
+        Query params:
+        - organization_id (or org_id): UUID (optional if project_id provided)
+        - project_id: int (optional)
+
+        Resolution (Option B): project override -> org policy -> default.
+        """
+
+        from organisations.models import Organisation
+        from projects.models import Project
+
+        org_id = request.query_params.get("organization_id") or request.query_params.get("org_id")
+        project_id = request.query_params.get("project_id")
+
+        organization = None
+        project = None
+
+        if project_id is not None and str(project_id).strip() != "":
+            try:
+                project = Project.objects.select_related("organisation").get(id=int(project_id))
+            except (ValueError, TypeError):
+                return Response({"error": "Invalid project_id"}, status=status.HTTP_400_BAD_REQUEST)
+            except Project.DoesNotExist:
+                return Response({"error": "Project not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            organization = project.organisation
+
+        if org_id:
+            try:
+                organization = Organisation.objects.get(id=org_id)
+            except Organisation.DoesNotExist:
+                return Response(
+                    {"error": "Organization not found"}, status=status.HTTP_404_NOT_FOUND
+                )
+
+        if organization is None:
+            return Response(
+                {"error": "Provide organization_id (or project_id)"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if project is not None and str(project.organisation_id) != str(organization.id):
+            return Response(
+                {"error": "Project does not belong to organization"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        source = "default"
+        if (
+            project is not None
+            and BalancePolicy.objects.filter(organization=organization, project=project).exists()
+        ):
+            source = "project"
+        elif BalancePolicy.objects.filter(organization=organization, project__isnull=True).exists():
+            source = "organization"
+
+        policy = get_policy(organization=organization, project=project)
+
+        payload = {
+            "source": source,
+            "policy": BalancePolicySerializer(policy, context=self.get_serializer_context()).data,
+        }
+        serializer = EffectiveBalancePolicySerializer(payload)
+        return Response(serializer.data)
 
 
 class HealthCheckView(APIView):
