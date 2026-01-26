@@ -5,11 +5,13 @@ import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { TransactionWidget } from '../components/TransactionWidget/TransactionWidget';
 import { useCreditBalance } from '../hooks/useCreditBalance';
 import { UpcomingMatchesWidget } from '../components/UpcomingMatchesWidget';
+import { useNavRecents } from '../hooks/useNavItems';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { context } = useContextSwitcher();
   const organisation = context.organisation as any;
+  const recents = useNavRecents();
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
     context.organisation?.slug,
@@ -71,6 +73,69 @@ export default function DashboardPage() {
         )}
 
         <h1 style={{ marginBottom: '24px', color: 'var(--app-text)' }}>Welcome back!</h1>
+
+        <div style={{
+          marginBottom: '24px',
+          padding: '16px',
+          backgroundColor: 'var(--app-surface)',
+          borderRadius: '8px',
+          border: '1px solid var(--app-border)',
+          color: 'var(--app-text)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '16px' }}>Recents</h3>
+              <div style={{ fontSize: '12px', opacity: 0.7, marginTop: 4 }}>Jump back to recently visited items.</div>
+            </div>
+            <Link
+              to="/recents"
+              style={{
+                padding: '8px 12px',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                border: '1px solid var(--app-border)',
+                textDecoration: 'none',
+                borderRadius: '6px',
+                fontWeight: 600,
+                fontSize: '13px'
+              }}
+            >
+              View all
+            </Link>
+          </div>
+
+          {recents.length === 0 ? (
+            <div style={{ marginTop: 12, opacity: 0.7, fontSize: 13 }}>
+              No recents yet.
+            </div>
+          ) : (
+            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {recents.slice(0, 6).map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  style={{
+                    padding: '8px 10px',
+                    backgroundColor: 'var(--app-surface-2)',
+                    color: 'var(--app-text)',
+                    border: '1px solid var(--app-border)',
+                    textDecoration: 'none',
+                    borderRadius: '999px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    maxWidth: 260,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                  title={item.label}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Activity Feed and Welcome row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '24px', marginBottom: '32px' }}>

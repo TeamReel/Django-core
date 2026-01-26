@@ -28,7 +28,7 @@ import { useTheme } from '@django-core/theme-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Home, Menu, X, ChevronDown, ChevronUp, Sun, Moon,
-  Globe, Bell, Coins, LucideIcon, PanelLeftOpen, PanelLeftClose
+  Globe, Bell, Coins, LucideIcon, PanelLeftOpen, PanelLeftClose, Command, Plus
 } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
@@ -36,6 +36,7 @@ import { useUserRole } from './PermissionGuards';
 import ProfileAvatarDropdown from './ProfileAvatarDropdown';
 import { SearchBar } from './SearchBar';
 import Breadcrumbs from './Breadcrumbs';
+import CommandPalette from './CommandPalette';
 
 interface NavGroup {
   id: string;
@@ -80,6 +81,9 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
   const [unreadCount, setUnreadCount] = useState(0);
   const [myCreditsBalance, setMyCreditsBalance] = useState<string | null>(null);
   const [navSearchHasQuery, setNavSearchHasQuery] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [createMenuOpen, setCreateMenuOpen] = useState(false);
+  const createMenuRef = useRef<HTMLDivElement | null>(null);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const orgIdForMyBalance = String((context as any)?.organisation?.id || '').trim();
@@ -107,6 +111,32 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
     if (myCreditsBalance == null) return 'My balance';
     return `Credits: ${String(myCreditsBalance)}`;
   }, [myCreditsBalance]);
+
+  // Ctrl+K / Cmd+K Quick Switcher
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toLowerCase().includes('mac');
+      const mod = isMac ? e.metaKey : e.ctrlKey;
+      if (mod && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandOpen(true);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  // Close Create menu on click outside
+  useEffect(() => {
+    if (!createMenuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      const el = createMenuRef.current;
+      if (!el) return;
+      if (!el.contains(e.target as Node)) setCreateMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [createMenuOpen]);
 
 
 
@@ -453,6 +483,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
 
   return (
     <div style={{ height: '57px', position: 'relative', zIndex: 500 }}>
+      <CommandPalette isOpen={commandOpen} onClose={() => setCommandOpen(false)} />
       <nav style={{
         backgroundColor: 'var(--app-surface)',
         borderBottom: '1px solid var(--app-border)',
@@ -692,6 +723,106 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
                 placeholder="Search..."
                 onQueryChange={(q) => setNavSearchHasQuery(Boolean(String(q || '').trim()))}
               />
+            </div>
+
+            {/* Quick Switcher */}
+            <button
+              type="button"
+              onClick={() => setCommandOpen(true)}
+              className="nav-icon-button"
+              title="Quick switcher (Ctrl+K)"
+              aria-label="Quick switcher"
+              style={{
+                padding: '8px 10px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                borderRadius: 10,
+              }}
+            >
+              <AppIcon icon={Command} size={18} />
+              <span style={{ fontSize: 12, opacity: 0.75, fontWeight: 700 }}>Ctrl+K</span>
+            </button>
+
+            {/* + Create CTA */}
+            <div ref={createMenuRef} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setCreateMenuOpen((v) => !v)}
+                className="nav-icon-button"
+                title="Create"
+                aria-label="Create"
+                style={{
+                  padding: '8px 12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  borderRadius: 10,
+                  background: createMenuOpen ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
+                }}
+              >
+                <AppIcon icon={Plus} size={18} />
+                <span style={{ fontSize: 13, fontWeight: 800 }}>Create</span>
+                <AppIcon icon={createMenuOpen ? ChevronUp : ChevronDown} size={12} />
+              </button>
+
+              {createMenuOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 10px)',
+                    right: 0,
+                    minWidth: 260,
+                    backgroundColor: 'var(--app-surface)',
+                    border: '1px solid var(--app-border)',
+                    borderRadius: 12,
+                    boxShadow: '0 10px 28px rgba(0, 0, 0, 0.18)',
+                    padding: '8px',
+                    zIndex: 1200,
+                  }}
+                >
+                  {[
+                    { label: 'Federation', path: '/organisations/create', hint: 'Create a new federation' },
+                    { label: 'Club', path: '/directory?tab=clubs', hint: 'Go to clubs list' },
+                    { label: 'Team', path: '/directory?tab=teams', hint: 'Go to teams list' },
+                    { label: 'Season', path: '/directory?tab=seasons', hint: 'Go to seasons list' },
+                    { label: 'Competition', path: '/directory?tab=competitions', hint: 'Go to competitions list' },
+                    { label: 'Match', path: '/directory?tab=matches', hint: 'Go to matches list' },
+                    { label: 'AI Studio', path: '/studio/create', hint: 'Generate content' },
+                  ].map((item) => (
+                    <button
+                      key={item.path}
+                      type="button"
+                      onClick={() => {
+                        setCreateMenuOpen(false);
+                        navigate(item.path);
+                      }}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        border: 'none',
+                        background: 'transparent',
+                        padding: '10px 10px',
+                        borderRadius: 10,
+                        cursor: 'pointer',
+                        color: 'var(--app-text)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--app-surface-2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      <span style={{ fontSize: 14, fontWeight: 700 }}>{item.label}</span>
+                      <span style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>{item.hint}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Theme Toggle - for superadmin: check global flag only, for others: check resolved flag (with org overrides) */}

@@ -4,6 +4,8 @@ import { useAuth } from '@django-core/auth-ui';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import RecentsPage from './pages/RecentsPage';
+import FavoritesPage from './pages/FavoritesPage';
 import SearchPage from './pages/SearchPage';
 import ForbiddenPage from './pages/errors/ForbiddenPage';
 import NotFoundPage from './pages/errors/NotFoundPage';
@@ -401,6 +403,24 @@ export default function App() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/recents"
+        element={
+          <ProtectedRoute>
+            <RecentsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/favorites"
+        element={
+          <ProtectedRoute>
+            <FavoritesPage />
           </ProtectedRoute>
         }
       />

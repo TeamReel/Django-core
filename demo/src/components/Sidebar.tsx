@@ -4,13 +4,15 @@ import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
   LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder,
-    Bell, CreditCard, UserCircle
+        Bell, CreditCard, UserCircle, Star
 } from 'lucide-react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useUserRole } from './PermissionGuards';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { AppIcon } from './AppIcon';
+import { useNavFavorites } from '../hooks/useNavItems';
+import { addRecent } from '../utils/navStorage';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -42,6 +44,13 @@ const NAV_CONFIG: NavSection[] = [
       { path: '/directory', label: 'Directory', icon: Folder, visibility: 'everyone' },
     ]
   },
+    {
+        id: 'favorites',
+        title: 'FAVORITES',
+        visibility: 'everyone',
+        // Items are injected dynamically from localStorage
+        items: []
+    },
   {
     id: 'app',
     title: 'APP',
@@ -84,6 +93,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     const { user } = useAuth();
     const { context, organisations } = useContextSwitcher();
   const location = useLocation();
+    const favorites = useNavFavorites();
   const isStaff = isSystemAdmin || isLandAdmin;
   const {
       orgSlug,
@@ -105,6 +115,78 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     };
 
     const [resolvedAppContext, setResolvedAppContext] = useState<ResolvedAppContext | null>(null);
+
+    // Record recents for canonical TeamReel hierarchy pages.
+    useEffect(() => {
+        const path = String(location.pathname || '').trim();
+        if (!path || path === '/' || path.startsWith('/dashboard') || path.startsWith('/directory') || path.startsWith('/recents') || path.startsWith('/favorites')) {
+            return;
+        }
+
+        const segs = path.split('/').map(s => s.trim()).filter(Boolean);
+        if (segs.length === 0) return;
+
+        const reservedRoots = new Set([
+            'dashboard',
+            'directory',
+            'content',
+            'studio',
+            'permissions',
+            'settings',
+            'health',
+            'docs',
+            'constitution',
+            'search',
+            'login',
+            'logout',
+            'organisations',
+            'projects',
+            'matches',
+            'users',
+            'credits',
+            'profile',
+            'notifications',
+            'preferences',
+            'audit',
+            'flags',
+            'integration-status',
+            'design-system',
+            'observability',
+            'security',
+            'api-docs',
+            'demo',
+            'usage-events',
+            'routing-logs',
+            'auth-flows',
+            'context',
+            'resources',
+            'recents',
+            'favorites',
+        ]);
+
+        // Only track canonical vanity hierarchy: /:org/:club/:team/... (no reserved roots)
+        if (reservedRoots.has(segs[0])) return;
+
+        const orgSectionLike = new Set(['clubs', 'teams', 'seasons', 'competitions', 'matches', 'users', 'projects']);
+        if (segs[1] && orgSectionLike.has(segs[1])) return;
+
+        const kindOrder = ['federation', 'club', 'team', 'season', 'competition', 'match'] as const;
+        const depth = Math.min(segs.length, kindOrder.length) - 1;
+        const kind = kindOrder[Math.max(0, depth)];
+
+        let label = '';
+        if (kind === 'federation') label = resolvedAppContext?.orgName || segs[0];
+        else if (kind === 'club') label = resolvedAppContext?.club?.name || segs[1];
+        else if (kind === 'team') label = resolvedAppContext?.team?.name || segs[2];
+        else if (kind === 'season') label = resolvedAppContext?.season?.name || segs[3];
+        else if (kind === 'competition') label = resolvedAppContext?.competition?.name || segs[4];
+        else if (kind === 'match') label = resolvedAppContext?.match?.label || segs[5];
+
+        const cleanLabel = String(label || '').trim();
+        if (!cleanLabel) return;
+
+        addRecent({ kind, label: cleanLabel, path });
+    }, [location.pathname, resolvedAppContext]);
 
     // Deterministic Panel A defaults: build paths from API-backed slugs/keys.
     useEffect(() => {
@@ -295,6 +377,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 items = [
                     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
                     { label: 'Directory', path: '/directory', icon: Folder },
+                    { label: 'Recents', path: '/recents', icon: Timer },
                 ];
                 break;
             }
@@ -751,6 +834,32 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         ];
     }, [location.pathname, orgSlug, clubName, teamName, resolvedAppContext, user]);
 
+    const favoritesItems = useMemo<NavItem[]>(() => {
+        const mapIcon = (kind: string): LucideIcon => {
+            switch (kind) {
+                case 'federation': return Globe;
+                case 'club': return Shield;
+                case 'team': return Shirt;
+                case 'season': return CalendarDays;
+                case 'competition': return Trophy;
+                case 'match': return Timer;
+                case 'user': return Users;
+                default: return Star;
+            }
+        };
+
+        const items: NavItem[] = favorites.slice(0, 8).map((f) => ({
+            label: String(f.label || '').trim() || f.path,
+            path: f.path,
+            icon: mapIcon(String((f as any)?.kind || 'page')),
+            visibility: 'everyone',
+        }));
+
+        // Always provide a management entry
+        items.push({ label: 'Manage', path: '/favorites', icon: Star, visibility: 'everyone' });
+        return items;
+    }, [favorites]);
+
     const panelASections = useMemo(() => {
         return visibleSections
             .map((section) => {
@@ -760,9 +869,16 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     items: appDetailItems,
                 };
             })
+            .map((section) => {
+                if (section.id !== 'favorites') return section;
+                return {
+                    ...section,
+                    items: favoritesItems,
+                };
+            })
             // Always keep the APP section visible (it now contains stable hierarchy links).
             ;
-    }, [visibleSections, appDetailItems]);
+    }, [visibleSections, appDetailItems, favoritesItems]);
 
 
   return (
