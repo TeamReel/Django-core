@@ -75,7 +75,6 @@ const NAV_CONFIG: NavSection[] = [
     bottom: true,
     items: [
       { path: '/docs', label: 'User Guide', icon: BookOpen, visibility: 'everyone' },
-      { path: '/constitution', label: 'Constitution', icon: Scroll, visibility: 'everyone' },
     ]
   }
 ];
@@ -280,8 +279,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     else if (path.startsWith('/credits')) activeSection = isPersonalWallet ? 'preferences' : 'organisation';
     else if (path.startsWith('/permissions') || path.startsWith('/audit') || path === '/users') activeSection = 'organisation';
     else if (path.startsWith('/profile') || path.startsWith('/notifications') || path.startsWith('/preferences')) activeSection = 'preferences';
-    else if (['/health', '/flags', '/integration', '/design', '/observability', '/security'].some(prefix => path.startsWith(prefix))) activeSection = 'platform';
-    else if (['/docs', '/constitution'].some(prefix => path.startsWith(prefix))) activeSection = 'help';
+    else if (['/health', '/flags', '/integration', '/design', '/observability', '/security', '/constitution'].some(prefix => path.startsWith(prefix))) activeSection = 'platform';
+    else if (['/docs'].some(prefix => path.startsWith(prefix))) activeSection = 'help';
 
 
     // 2. Build Items based on Section & Context
@@ -627,6 +626,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Design System', path: '/design-system', icon: Palette },
                     { label: 'Observability', path: '/observability', icon: LineChart },
                     { label: 'Security', path: '/security', icon: Lock },
+                    { label: 'Constitution', path: '/constitution', icon: Scroll },
                 ];
             }
             break;
@@ -635,7 +635,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             title = 'Help';
             items = [
                 { label: 'User Guide', path: '/docs', icon: BookOpen },
-                { label: 'Constitution', path: '/constitution', icon: Scroll }
             ];
             break;
     }
@@ -784,9 +783,43 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             flexDirection: 'column',
             transition: 'width 0.2s ease-in-out',
             flexShrink: 0,
-            borderRight: '1px solid var(--sidebar-a-border)'
+            borderRight: '1px solid var(--sidebar-a-border)',
+            position: 'relative'
         }}
       >
+        {/* Collapse/Expand Toggle (Top-right edge of Panel A) */}
+        <button
+            onClick={toggle}
+            title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+            aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+            style={{
+                position: 'absolute',
+                top: 18,
+                right: -14,
+                width: 28,
+                height: 28,
+                borderRadius: 999,
+                backgroundColor: 'var(--sidebar-a-bg)',
+                border: '1px solid var(--sidebar-a-border)',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                cursor: 'pointer',
+                color: 'var(--sidebar-a-text)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 30,
+                opacity: 0.95,
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '1';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '0.95';
+            }}
+        >
+            <span style={{ fontSize: 16, lineHeight: 1 }}>{isOpen ? '«' : '»'}</span>
+        </button>
+
         {/* LOGO AREA */}
         <div style={{
             height: 64,
@@ -798,53 +831,16 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             marginBottom: 16
         }}>
              {isOpen ? (
-                <>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                         <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
-                            <AppIcon icon={Command} size={24} />
-                        </span>
-                        <span style={{ marginLeft: 12, fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em', color: 'var(--sidebar-a-text)' }}>TeamReel</span>
-                    </div>
-                    <button
-                        onClick={toggle}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            color: 'var(--sidebar-a-text)',
-                            padding: 4,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            opacity: 0.6
-                        }}
-                    >
-                        <span style={{ fontSize: 20 }}>«</span>
-                    </button>
-                </>
-             ) : (
-                <button
-                    onClick={toggle}
-                    title="Expand Sidebar"
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: 48,
-                        height: 48
-                    }}
-                >
-                    <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
-                            <AppIcon icon={Command} size={24} />
-                        </span>
-                        <span style={{ fontSize: 14, opacity: 0.7, lineHeight: 1 }}>»</span>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                     <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
+                        <AppIcon icon={Command} size={24} />
                     </span>
-                </button>
+                    <span style={{ marginLeft: 12, fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em', color: 'var(--sidebar-a-text)' }}>TeamReel</span>
+                </div>
+             ) : (
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
+                    <AppIcon icon={Command} size={24} />
+                </span>
              )}
         </div>
 

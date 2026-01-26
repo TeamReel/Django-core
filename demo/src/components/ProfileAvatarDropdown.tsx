@@ -98,7 +98,7 @@ export default function ProfileAvatarDropdown({ onLogout }: ProfileAvatarDropdow
   // Close on route change
   useEffect(() => {
     setIsOpen(false);
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   if (!user) return null;
 
@@ -264,7 +264,7 @@ export default function ProfileAvatarDropdown({ onLogout }: ProfileAvatarDropdow
 
           <button
             role="menuitem"
-            onClick={() => handleNavigate('/credits')}
+            onClick={() => handleNavigate('/credits?wallet=personal')}
             style={{
               width: '100%',
               padding: '10px 16px',
