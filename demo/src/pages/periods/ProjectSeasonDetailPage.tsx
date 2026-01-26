@@ -2,8 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import {
-  BreadcrumbContextSwitcher,
-  type BreadcrumbSwitcherOption,
   PageContent,
   PageHeader,
 } from '@django-core/page-templates';
@@ -265,6 +263,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
     : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
 
+  const seasonPathKey = periodPathKey(season as any) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
+
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
@@ -284,60 +284,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     navigate(`${seasonsBasePath}/${seasonKeyOrId}?tab=${encodeURIComponent(tabId)}`);
   };
 
-  const handleSeasonSwitch = (option: BreadcrumbSwitcherOption) => {
-    const suffix = location.search ? location.search : '';
-    // Vanity routes use a slug-like segment (periodPathKey). /organisations/.../projects/... routes
-    // use the numeric period id for stable routing.
-    const next = isTeamRoute ? String(option.slug || option.id) : String(option.id);
-    navigate(`${seasonsBasePath}/${encodeURIComponent(next)}${suffix}`);
-  };
 
-  const seasonPathKey = periodPathKey(season) || effectiveSeasonId;
-
-  const breadcrumbs = useMemo(
-    () => [
-      { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: org?.name || 'Federation', onClick: () => navigate(`/${orgSlugOrId}`) },
-      ...(isTeamRoute
-        ? [
-            {
-              label: club?.name || 'Club',
-              onClick: () => navigate(`/${orgSlugOrId}/${clubSlugOrId}`),
-            },
-            { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
-          ]
-        : [{ label: project?.name || 'Club/Team', onClick: () => navigate(projectDetailPath) }]),
-      {
-        label: (
-          <BreadcrumbContextSwitcher
-            currentId={String(seasonId || periodPathKey(season as any) || resolvedSeasonId || (season as any)?.id || '')}
-            options={seasonsForSwitcher.map((s) => ({
-              id: String(s.id),
-              label: String(s.name || s.slug || s.id),
-              slug: periodPathKey(s) || String(s.id),
-            }))}
-            onSelect={handleSeasonSwitch}
-            hasDropdown={seasonsForSwitcher.length > 1}
-          />
-        ),
-        current: true,
-      },
-    ],
-    [
-      navigate,
-      org?.name,
-      project?.name,
-      club?.name,
-      orgSlugOrId,
-      seasonsBasePath,
-      projectDetailPath,
-      isTeamRoute,
-      clubSlugOrId,
-      effectiveSeasonId,
-      season,
-      seasonsForSwitcher,
-    ]
-  );
 
   const savePeriodEdits = async (periodToEdit: any, patch: any) => {
     const periodId = String(periodToEdit?.id || '').trim();
@@ -1041,7 +988,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       <div>
         <PageHeader
           title={season ? season.name : 'Season'}
-          breadcrumbs={breadcrumbs}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button

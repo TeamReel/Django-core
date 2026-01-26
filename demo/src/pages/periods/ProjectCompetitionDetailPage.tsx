@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
-import { BreadcrumbContextSwitcher, BreadcrumbSwitcherOption, PageContent, PageHeader } from '@django-core/page-templates';
+import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
@@ -959,68 +959,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     navigate(`${competitionBasePath}?tab=${encodeURIComponent(tabId)}`);
   };
 
-  const handleCompetitionSwitch = (option: BreadcrumbSwitcherOption) => {
-    if (!seasonKeyOrId) return;
-    const suffix = location.search ? location.search : '';
-    const compKey = String(option.slug || option.id).trim();
-    if (!compKey) return;
-    navigate(
-      isTeamRoute
-        ? `${seasonsBasePath}/${seasonKeyOrId}/${compKey}${suffix}`
-        : `${seasonsBasePath}/${seasonKeyOrId}/competitions/${compKey}${suffix}`
-    );
-  };
 
-  const breadcrumbs = useMemo(
-    () => [
-      { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: org?.name || 'Federation', onClick: () => navigate(`/${orgSlugOrId}`) },
-      ...(isTeamRoute
-        ? [
-            {
-              label: club?.name || 'Club',
-              onClick: () => navigate(`/${orgSlugOrId}/${clubSlugOrId}`),
-            },
-            { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
-          ]
-        : [{ label: project?.name || 'Club/Team', onClick: () => navigate(projectDetailPath) }]),
-      {
-        label: season?.name || 'Season',
-        onClick: () => navigate(`${seasonsBasePath}/${seasonKeyOrId}`),
-      },
-      {
-        label: (
-          <BreadcrumbContextSwitcher
-            currentId={String(resolvedCompetitionId || (competition as any)?.id || '')}
-            options={competitionsForSwitcher.map((c) => ({
-              id: String(c.id),
-              label: String(c.name || c.slug || c.id),
-              slug: periodPathKey(c) || String(c.id),
-            }))}
-            onSelect={handleCompetitionSwitch}
-            hasDropdown={competitionsForSwitcher.length > 1}
-          />
-        ),
-        current: true,
-      },
-    ],
-    [
-      navigate,
-      org?.name,
-      project?.name,
-      club?.name,
-      season?.name,
-      orgSlugOrId,
-      seasonsBasePath,
-      projectDetailPath,
-      seasonKeyOrId,
-      isTeamRoute,
-      clubSlugOrId,
-      competition,
-      competitionsForSwitcher,
-      resolvedCompetitionId,
-    ]
-  );
 
   useEffect(() => {
     const run = async () => {
@@ -1655,7 +1594,6 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
       <div>
         <PageHeader
           title={competition ? competition.name : 'Competition'}
-          breadcrumbs={breadcrumbs}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button

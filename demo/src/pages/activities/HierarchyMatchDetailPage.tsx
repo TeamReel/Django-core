@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
-import { BreadcrumbContextSwitcher, type BreadcrumbSwitcherOption, PageContent, PageHeader } from '@django-core/page-templates';
+import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
@@ -153,7 +153,6 @@ export default function HierarchyMatchDetailPage() {
 
   const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
 
-  const [matchesForSwitcher, setMatchesForSwitcher] = useState<any[]>([]);
   const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
   const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
 
@@ -299,20 +298,7 @@ export default function HierarchyMatchDetailPage() {
     navigate({ pathname, search: search ? `?${search}` : '' });
   };
 
-  const handleMatchSwitch = (option: BreadcrumbSwitcherOption) => {
-    const matchKey = String(option.slug || option.id).trim();
-    if (!matchKey) return;
 
-    const pathname = location.pathname || '';
-    if (!pathname) return;
-
-    const marker = '/matches/';
-    const newPathname = pathname.includes(marker)
-      ? pathname.replace(new RegExp(`${marker}[^/]+$`), `${marker}${matchKey}`)
-      : pathname.replace(/[^/]+$/, matchKey);
-
-    navigate({ pathname: newPathname, search: location.search ? location.search : '' });
-  };
 
   useEffect(() => {
     const run = async () => {
@@ -447,29 +433,6 @@ export default function HierarchyMatchDetailPage() {
     effectiveCompetitionId,
     effectiveMatchId,
   ]);
-
-  useEffect(() => {
-    const run = async () => {
-      const projectIdValue = String(match?.project?.id || project?.id || '').trim();
-      const competitionIdValue = String(resolvedCompetitionUuid || effectiveCompetitionId || '').trim();
-      if (!projectIdValue || !competitionIdValue) return;
-
-      try {
-        const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(
-          projectIdValue
-        )}&period_id=${encodeURIComponent(competitionIdValue)}&activity_type=match&ordering=-start_time&page_size=250`;
-        const res = await fetch(url, { credentials: 'include' });
-        if (!res.ok) return;
-        const raw = await res.json().catch(() => null);
-        const list = getEnvelopeListResults<any>(raw);
-        setMatchesForSwitcher(Array.isArray(list) ? list : []);
-      } catch {
-        // Best-effort only: breadcrumb switcher should not break page.
-      }
-    };
-
-    run();
-  }, [apiBaseUrl, effectiveCompetitionId, match?.project?.id, project?.id, resolvedCompetitionUuid]);
 
   useEffect(() => {
     const run = async () => {
@@ -717,67 +680,7 @@ export default function HierarchyMatchDetailPage() {
     run();
   }, [apiBaseUrl, club?.id, match?.project?.id, orgSlugOrId, resolvedSeasonUuid]);
 
-  const breadcrumbs = useMemo(() => {
-    const projectDetailPath = isTeamRoute
-      ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
-      : `/${orgSlugOrId}/projects/${projectSlugOrId}`;
 
-    return [
-      { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: org?.name || 'Federation', onClick: () => navigate(`/${orgSlugOrId}`) },
-      ...(isTeamRoute
-        ? [
-            {
-              label: club?.name || 'Club',
-              onClick: () => navigate(`/${orgSlugOrId}/${clubSlugOrId}`),
-            },
-            { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
-          ]
-        : [{ label: project?.name || 'Club/Team', onClick: () => navigate(projectDetailPath) }]),
-      {
-        label: season?.name || 'Season',
-        onClick: () => navigate(`${seasonsBasePath}/${seasonKeyOrId}`),
-      },
-      {
-        label: competition?.name || 'Competition',
-        onClick: () => navigate(`${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}`),
-      },
-      {
-        label: (
-          <BreadcrumbContextSwitcher
-            currentId={String(match?.id || '')}
-            options={matchesForSwitcher.map((m: any) => ({
-              id: String(m.id),
-              label: String(m.title || m.name || m.slug || m.id),
-              slug: String(m.slug || m.id),
-            }))}
-            onSelect={handleMatchSwitch}
-            hasDropdown={matchesForSwitcher.length > 1}
-          />
-        ),
-        current: true,
-      },
-    ] as any[];
-  }, [
-    club,
-    clubSlugOrId,
-    competition?.name,
-    effectiveCompetitionId,
-    isTeamRoute,
-    handleMatchSwitch,
-    match?.title,
-    match?.id,
-    matchesForSwitcher,
-    navigate,
-    org?.name,
-    orgSlugOrId,
-    project?.name,
-    projectSlugOrId,
-    season?.name,
-    seasonKeyOrId,
-    seasonsBasePath,
-    isTeamRoute,
-  ]);
 
   const saveMatchEdits = async (matchToEdit: any, patch: any) => {
     const matchIdValue = String(matchToEdit?.id || '').trim();
@@ -1551,7 +1454,6 @@ export default function HierarchyMatchDetailPage() {
       <div>
         <PageHeader
           title={match.title}
-          breadcrumbs={breadcrumbs}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
