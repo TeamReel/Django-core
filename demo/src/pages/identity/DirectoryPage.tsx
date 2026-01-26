@@ -8,6 +8,10 @@ import {
 import { ClubsList } from './directory/ClubsList';
 import { FederationsList } from './directory/FederationsList';
 import { TeamsList } from './directory/TeamsList';
+import { SeasonsList } from './directory/SeasonsList';
+import { CompetitionsList } from './directory/CompetitionsList';
+import { MatchesList } from './directory/MatchesList';
+import { UsersList } from './directory/UsersList';
 
 export const DirectoryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +21,24 @@ export const DirectoryPage: React.FC = () => {
     .trim()
     .toLowerCase();
 
-  const subtitle = tab === 'clubs' ? 'Clubs' : tab === 'teams' ? 'Teams' : 'Federations';
+  const allowed = new Set(['federations', 'clubs', 'teams', 'seasons', 'competitions', 'matches', 'users', 'members']);
+  const effectiveTab = allowed.has(tab) ? tab : 'federations';
+  const normalizedTab = effectiveTab === 'members' ? 'users' : effectiveTab;
+
+  const subtitle =
+    normalizedTab === 'clubs'
+      ? 'Clubs'
+      : normalizedTab === 'teams'
+        ? 'Teams'
+        : normalizedTab === 'seasons'
+          ? 'Seasons'
+          : normalizedTab === 'competitions'
+            ? 'Competitions'
+            : normalizedTab === 'matches'
+              ? 'Matches'
+              : normalizedTab === 'users'
+                ? 'Users'
+                : 'Federations';
 
   return (
       <div>
@@ -30,7 +51,21 @@ export const DirectoryPage: React.FC = () => {
           ]}
         />
         <PageContent>
-            {tab === 'clubs' ? <ClubsList /> : tab === 'teams' ? <TeamsList /> : <FederationsList />}
+            {normalizedTab === 'clubs' ? (
+              <ClubsList />
+            ) : normalizedTab === 'teams' ? (
+              <TeamsList />
+            ) : normalizedTab === 'seasons' ? (
+              <SeasonsList />
+            ) : normalizedTab === 'competitions' ? (
+              <CompetitionsList />
+            ) : normalizedTab === 'matches' ? (
+              <MatchesList />
+            ) : normalizedTab === 'users' ? (
+              <UsersList />
+            ) : (
+              <FederationsList />
+            )}
         </PageContent>
       </div>
   );

@@ -308,6 +308,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Federations', path: '/directory?tab=federations', icon: Globe },
                     { label: 'Clubs', path: '/directory?tab=clubs', icon: Shield },
                     { label: 'Teams', path: '/directory?tab=teams', icon: Shirt },
+                    { label: 'Seasons', path: '/directory?tab=seasons', icon: CalendarDays },
+                    { label: 'Competitions', path: '/directory?tab=competitions', icon: Trophy },
+                    { label: 'Matches', path: '/directory?tab=matches', icon: Timer },
+                    { label: 'Users', path: '/directory?tab=users', icon: Users },
                 ];
                 break;
             }
