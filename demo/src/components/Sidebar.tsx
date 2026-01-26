@@ -909,9 +909,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
             aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
             style={{
-                position: 'absolute',
-                top: 18,
-                right: -14,
+                position: 'fixed',
+                top: 14,
+                left: (isOpen ? 240 : 72) - 14,
                 width: 28,
                 height: 28,
                 borderRadius: 999,
@@ -923,7 +923,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                zIndex: 30,
+                zIndex: 2001,
                 opacity: 0.95,
             }}
             onMouseEnter={(e) => {

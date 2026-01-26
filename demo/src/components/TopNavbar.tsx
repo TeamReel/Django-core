@@ -530,22 +530,6 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
             flexWrap: 'nowrap',
             height: '100%',
           }} className="desktop-nav">
-            {/* Sidebar toggle (Panel A) */}
-            {onToggleSidebar && (
-              <button
-                type="button"
-                onClick={onToggleSidebar}
-                title={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-                aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-                className="nav-icon-button"
-                style={{
-                  padding: '8px 10px',
-                }}
-              >
-                <AppIcon icon={isSidebarOpen ? PanelLeftClose : PanelLeftOpen} size={18} />
-              </button>
-            )}
-
             {/* Dashboard link */}
             <Link
               to={dashboardItem.path}
