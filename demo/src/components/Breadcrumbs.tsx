@@ -605,13 +605,6 @@ export default function Breadcrumbs() {
     );
   }
 
-  // Base trail for hierarchy pages: always start with Dashboard -> Federation (if available).
-  items.push(dash);
-  if (orgSlug) {
-    const orgName = (context as any)?.organisation?.name || orgSlug;
-    items.push({ label: orgName, path: orgPath });
-  }
-
   if (orgSubpage) {
     const options: BreadcrumbSwitcherOption[] = (organisations || []).map((o: any) => ({
       id: String(o.id),
@@ -921,6 +914,13 @@ export default function Breadcrumbs() {
         </ol>
       </nav>
     );
+  }
+
+  // Base trail for hierarchy pages: always start with Dashboard -> Federation (if available).
+  items.push(dash);
+  if (orgSlug) {
+    const orgName = (context as any)?.organisation?.name || orgSlug;
+    items.push({ label: orgName, path: orgPath });
   }
 
   // Level 1: Club
