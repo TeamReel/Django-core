@@ -206,7 +206,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
   // --- PANEL B LOGIC (New) ---
   const panelBConfig = useMemo(() => {
-    const path = location.pathname;
+        const path = location.pathname;
+        const walletParam = new URLSearchParams(location.search || '').get('wallet');
+        const isPersonalWallet = walletParam === 'personal';
 
         const makeTabUrl = (baseUrl: string, tab: string) => {
             const t = String(tab || '').trim().toLowerCase();
@@ -289,7 +291,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     // 1. Determine Active Section
     let activeSection: 'work' | 'people' | 'content' | 'organisation' | 'platform' | 'help' | 'preferences' = 'work';
     if (path.startsWith('/content') || path.startsWith('/studio')) activeSection = 'content';
-    else if (path.startsWith('/permissions') || path.startsWith('/audit') || path.startsWith('/credits') || path === '/users') activeSection = 'organisation';
+    else if (path.startsWith('/credits')) activeSection = isPersonalWallet ? 'preferences' : 'organisation';
+    else if (path.startsWith('/permissions') || path.startsWith('/audit') || path === '/users') activeSection = 'organisation';
     else if (path.startsWith('/profile') || path.startsWith('/notifications') || path.startsWith('/preferences')) activeSection = 'preferences';
     else if (['/health', '/flags', '/integration', '/design', '/observability', '/security'].some(prefix => path.startsWith(prefix))) activeSection = 'platform';
     else if (['/docs', '/constitution'].some(prefix => path.startsWith(prefix))) activeSection = 'help';
@@ -609,7 +612,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         case 'preferences':
             title = 'Personal Settings';
             items = [
-                { label: 'My Wallet', path: '/credits', icon: CreditCard },
+                { label: 'My Wallet', path: '/credits?wallet=personal', icon: CreditCard },
                 { label: 'Profile', path: '/profile', icon: UserCircle },
                 { label: 'Notifications', path: '/notifications', icon: Bell },
                 { label: 'Preferences', path: '/preferences', icon: Settings },
@@ -623,7 +626,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Permissions', path: '/permissions', icon: Lock },
                     { label: 'Users', path: '/users', icon: Users },
                     { label: 'Audit', path: '/audit', icon: Scroll },
-                    { label: 'Credits', path: '/credits', icon: CreditCard },
+                    { label: 'Credits', path: '/credits?wallet=org', icon: CreditCard },
                 ];
             }
             break;
@@ -884,17 +887,20 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                             className="flex items-center rounded-md transition-colors"
                             style={({ isActive }) => {
                                 const path = location.pathname;
+                                const walletParam = new URLSearchParams(location.search || '').get('wallet');
+                                const isPersonalWallet = walletParam === 'personal';
+
                                 const isPreferencesRoute =
                                     path.startsWith('/profile') ||
                                     path.startsWith('/notifications') ||
                                     path.startsWith('/preferences') ||
-                                    path.startsWith('/credits');
+                                    (path.startsWith('/credits') && isPersonalWallet);
 
                                 const isOrganisationRoute =
                                     path.startsWith('/permissions') ||
                                     path === '/users' ||
                                     path.startsWith('/audit') ||
-                                    path.startsWith('/credits');
+                                    (path.startsWith('/credits') && !isPersonalWallet);
 
                                 const isPlatformRoute =
                                     path.startsWith('/health') ||

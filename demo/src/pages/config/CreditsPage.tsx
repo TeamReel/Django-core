@@ -79,6 +79,9 @@ export const CreditsPage: React.FC = () => {
   const dateFromFilter = searchParams.get('date_from') || '';
   const dateToFilter = searchParams.get('date_to') || '';
 
+  // Wallet routing param (drives sidebar section + default view)
+  const walletParam = searchParams.get('wallet');
+
   const currentOrgId = context.organisation?.id ? String(context.organisation.id) : null;
   const currentOrgName = context.organisation?.name || '';
 
@@ -92,9 +95,24 @@ export const CreditsPage: React.FC = () => {
 
   // F05: Wallet Scoping (Personal vs Organisation)
   const [scope, setScope] = useState<'personal' | 'org'>(() => {
+    if (walletParam === 'personal') return 'personal';
+    if (walletParam === 'org') return 'org';
     // Default to 'org' if we have an orgId, otherwise 'personal'
     return context.organisation?.id ? 'org' : 'personal';
   });
+
+  // Keep scope in sync when wallet param changes (e.g. clicking Panel B links)
+  useEffect(() => {
+    if (walletParam === 'personal' && scope !== 'personal') setScope('personal');
+    if (walletParam === 'org' && scope !== 'org') setScope('org');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletParam]);
+
+  const setWalletParam = (wallet: 'personal' | 'org') => {
+    const next = new URLSearchParams(searchParams);
+    next.set('wallet', wallet);
+    setSearchParams(next);
+  };
 
   // Sync scope if external context changes (e.g. lost org access)
   useEffect(() => {
@@ -599,7 +617,10 @@ export const CreditsPage: React.FC = () => {
         <div style={{ display: 'flex', marginBottom: '24px', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', gap: '8px', padding: '4px', background: 'var(--app-surface-2)', borderRadius: '8px' }}>
                 <button
-                    onClick={() => setScope('personal')}
+                  onClick={() => {
+                    setScope('personal');
+                    setWalletParam('personal');
+                  }}
                     style={{
                         padding: '8px 16px',
                         borderRadius: '6px',
@@ -621,7 +642,8 @@ export const CreditsPage: React.FC = () => {
                             setTimeout(() => setToastMessage(null), 3000);
                             return;
                         }
-                        setScope('org');
+                    setScope('org');
+                    setWalletParam('org');
                     }}
                     style={{
                         padding: '8px 16px',
