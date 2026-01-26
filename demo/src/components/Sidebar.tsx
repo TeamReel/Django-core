@@ -788,9 +788,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         const federationLabel = `Federation${orgId ? `: ${orgId}` : ''}`;
         const clubLabel = `Club${clubName ? `: ${clubName}` : (clubId ? `: ${clubId}` : '')}`;
         const teamLabel = `Team${teamName ? `: ${teamName}` : (teamId ? `: ${teamId}` : '')}`;
-        const seasonLabel = `Season${seasonName ? `: ${seasonName}` : (seasonId ? `: ${seasonId}` : '')}`;
-        const competitionLabel = `Competition${competitionName ? `: ${competitionName}` : (resolvedCompetition?.name ? `: ${resolvedCompetition.name}` : (competitionKey ? `: ${competitionKey}` : ''))}`;
-        const matchLabel = `Match${resolvedMatch?.label ? `: ${resolvedMatch.label}` : (matchKey ? `: ${matchKey}` : '')}`;
+        const seasonLabel = 'Season';
+        const competitionLabel = 'Competition';
+        const matchLabel = 'Match';
 
         return [
             { label: federationLabel, path: federationPath, icon: Globe, visibility: 'everyone' },
