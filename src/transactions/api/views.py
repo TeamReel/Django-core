@@ -3,10 +3,12 @@
 import csv
 from io import StringIO
 
+from django.core.exceptions import PermissionDenied
 from django.http import StreamingHttpResponse
 from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from permissions.api.permissions import HasOrganizationPermission, HasProjectPermission
+from permissions.audit import evaluate_permission
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -376,7 +378,7 @@ class BalancePolicyViewSet(viewsets.ModelViewSet):
 
     queryset = BalancePolicy.objects.select_related("organization", "project")
     serializer_class = BalancePolicySerializer
-    http_method_names = ["get", "patch"]
+    http_method_names = ["get", "patch", "put"]
     permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
 
     def get_queryset(self):
@@ -389,7 +391,7 @@ class BalancePolicyViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False,
-        methods=["get"],
+        methods=["get", "patch", "put"],
         url_path=r"(?P<scope_type>organization|project)/(?P<scope_id>[^/.]+)",
     )
     def get_by_scope(self, request: Request, scope_type: str, scope_id: str) -> Response:
@@ -397,9 +399,31 @@ class BalancePolicyViewSet(viewsets.ModelViewSet):
 
         URL: GET /balance-policies/organization/{org_id}/
         URL: GET /balance-policies/project/{proj_id}/
+
+        Writes (upsert):
+        URL: PATCH /balance-policies/organization/{org_id}/
+        URL: PATCH /balance-policies/project/{proj_id}/
         """
         from organisations.models import Organisation
         from projects.models import Project
+
+        def _require_org_manage_settings(org_id: str) -> None:
+            if not request.user or not request.user.is_authenticated:
+                raise PermissionDenied("Authentication required")
+
+            if request.user.is_superuser:
+                return
+
+            allowed = evaluate_permission(
+                user=request.user,
+                permission="org.manage_settings",
+                context={
+                    "scope": "ORGANIZATION",
+                    "organization_id": str(org_id),
+                },
+            )
+            if not allowed:
+                raise PermissionDenied("You do not have access to balance policy settings")
 
         if scope_type == "organization":
             try:
@@ -410,11 +434,27 @@ class BalancePolicyViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            # Get policy via service layer (returns default if not found)
-            policy = get_policy(organization=organization)
+            # GET: return effective policy (may be unsaved default)
+            if request.method == "GET":
+                policy = get_policy(organization=organization)
+                serializer = self.get_serializer(policy)
+                return Response(serializer.data)
 
-            serializer = self.get_serializer(policy)
-            return Response(serializer.data)
+            # PATCH/PUT: upsert org-scoped policy row (requires org.manage_settings)
+            _require_org_manage_settings(str(organization.id))
+
+            instance = BalancePolicy.objects.filter(
+                organization=organization, project__isnull=True
+            ).first() or BalancePolicy(organization=organization, project=None)
+
+            serializer = self.get_serializer(
+                instance,
+                data=request.data,
+                partial=(request.method == "PATCH"),
+            )
+            serializer.is_valid(raise_exception=True)
+            policy = serializer.save()
+            return Response(self.get_serializer(policy).data)
 
         elif scope_type == "project":
             try:
@@ -425,11 +465,27 @@ class BalancePolicyViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            # Get policy via service layer (returns org-level or default if not found)
-            policy = get_policy(organization=project.organisation, project=project)
+            # GET: return effective policy (may be unsaved default)
+            if request.method == "GET":
+                policy = get_policy(organization=project.organisation, project=project)
+                serializer = self.get_serializer(policy)
+                return Response(serializer.data)
 
-            serializer = self.get_serializer(policy)
-            return Response(serializer.data)
+            # PATCH/PUT: upsert project-scoped policy row (requires org.manage_settings)
+            _require_org_manage_settings(str(project.organisation_id))
+
+            instance = BalancePolicy.objects.filter(
+                organization=project.organisation, project=project
+            ).first() or BalancePolicy(organization=project.organisation, project=project)
+
+            serializer = self.get_serializer(
+                instance,
+                data=request.data,
+                partial=(request.method == "PATCH"),
+            )
+            serializer.is_valid(raise_exception=True)
+            policy = serializer.save()
+            return Response(self.get_serializer(policy).data)
 
         return Response(
             {"error": "Invalid scope_type. Must be 'organization' or 'project'."},

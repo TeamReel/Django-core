@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import AppShell from '../components/AppShell';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { useUserRole } from '../components/PermissionGuards';
 
 const debugLog = (...args: unknown[]) => {
   if (import.meta.env.DEV) console.log(...args);
@@ -57,6 +58,8 @@ const isUuid = (value: string | null | undefined) =>
 
 export default function NotificationsPage() {
   const { context } = useContextSwitcher();
+  const { isSystemAdmin, isLandAdmin, isOrgAdmin } = useUserRole();
+  const canManageOrgSettings = isSystemAdmin || isLandAdmin || isOrgAdmin;
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,6 +79,10 @@ export default function NotificationsPage() {
   const [orgNotifPolicy, setOrgNotifPolicy] = useState<OrganisationNotificationPolicy | null>(null);
   const [orgPolicyLoading, setOrgPolicyLoading] = useState(false);
   const [orgPolicyError, setOrgPolicyError] = useState<string | null>(null);
+
+  const [routingRulesCount, setRoutingRulesCount] = useState<number | null>(null);
+  const [routingRulesLoading, setRoutingRulesLoading] = useState(false);
+  const [routingRulesError, setRoutingRulesError] = useState<string | null>(null);
 
   const apiBaseUrl = useMemo(
     () => import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
@@ -104,6 +111,14 @@ export default function NotificationsPage() {
     void fetchOrgPolicies();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, currentOrgId]);
+
+  useEffect(() => {
+    if (activeTab !== 'settings') return;
+    if (!currentOrgId) return;
+    if (!canManageOrgSettings) return;
+    void fetchRoutingRulesSummary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, currentOrgId, canManageOrgSettings]);
 
   const fetchNotifications = async () => {
     try {
@@ -264,6 +279,52 @@ export default function NotificationsPage() {
       setPrefsError(err instanceof Error ? err.message : 'Failed to load preferences');
     } finally {
       setPrefsLoading(false);
+    }
+  };
+
+  const fetchRoutingRulesSummary = async () => {
+    if (!currentOrgId) {
+      setRoutingRulesCount(null);
+      return;
+    }
+
+    try {
+      setRoutingRulesLoading(true);
+      setRoutingRulesError(null);
+
+      const response = await fetch(
+        `${apiBaseUrl}/api/v1/contextual-notifications/routing-rules/?org_id=${encodeURIComponent(currentOrgId)}`,
+        {
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        const msg =
+          (payload && (payload.detail || payload.error)) ||
+          `Failed to fetch routing rules (${response.status})`;
+        throw new Error(msg);
+      }
+
+      const data = await response.json().catch(() => null);
+      const list: any[] = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.results)
+          ? data.results
+          : Array.isArray(data?.data?.results)
+            ? data.data.results
+            : Array.isArray(data?.data)
+              ? data.data
+              : [];
+
+      setRoutingRulesCount(list.length);
+    } catch (err) {
+      console.error('Error fetching routing rules summary:', err);
+      setRoutingRulesCount(null);
+      setRoutingRulesError(err instanceof Error ? err.message : 'Failed to load routing rules');
+    } finally {
+      setRoutingRulesLoading(false);
     }
   };
 
@@ -723,6 +784,67 @@ export default function NotificationsPage() {
                       ) : (
                         <div style={{ color: '#666', fontSize: 13 }}>
                           Not available (may require org admin permissions).
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{
+                      padding: '12px',
+                      border: '1px solid #eee',
+                      borderRadius: '8px',
+                      backgroundColor: 'var(--app-surface-2)',
+                    }}>
+                      <div style={{ fontWeight: 800, marginBottom: 6 }}>Routing rules (sending)</div>
+                      <div style={{ color: '#666', fontSize: 13, marginBottom: 10 }}>
+                        Controls which notifications can be sent for this organisation (separate from user opt-out preferences).
+                      </div>
+
+                      {!canManageOrgSettings ? (
+                        <div style={{ color: '#666', fontSize: 13 }}>
+                          You need org admin permissions to manage routing rules.
+                        </div>
+                      ) : routingRulesLoading ? (
+                        <div style={{ color: '#666', fontSize: 13 }}>Loading routing rules…</div>
+                      ) : routingRulesError ? (
+                        <div style={{ color: '#8a5a00', fontSize: 13 }}>{routingRulesError}</div>
+                      ) : (
+                        <div style={{ color: '#444', fontSize: 13 }}>
+                          Current rules: <b>{routingRulesCount ?? '—'}</b>
+                        </div>
+                      )}
+
+                      {canManageOrgSettings && (
+                        <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+                          <a
+                            href="/routing-rules"
+                            style={{
+                              display: 'inline-block',
+                              padding: '10px 12px',
+                              backgroundColor: '#2196f3',
+                              color: 'white',
+                              borderRadius: '6px',
+                              textDecoration: 'none',
+                              fontWeight: 800,
+                              fontSize: 13,
+                            }}
+                          >
+                            Manage routing rules
+                          </a>
+                          <button
+                            onClick={fetchRoutingRulesSummary}
+                            disabled={routingRulesLoading}
+                            style={{
+                              padding: '10px 12px',
+                              backgroundColor: 'var(--app-surface)',
+                              color: '#666',
+                              border: '1px solid #ddd',
+                              borderRadius: '6px',
+                              cursor: routingRulesLoading ? 'not-allowed' : 'pointer',
+                              fontWeight: 700,
+                            }}
+                          >
+                            Refresh rules
+                          </button>
                         </div>
                       )}
                     </div>

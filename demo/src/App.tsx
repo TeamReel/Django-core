@@ -89,6 +89,7 @@ import {
   DeploymentPage,
 } from './pages/docs';
 import NotificationRoutingLogsPage from './pages/docs/NotificationRoutingLogsPage';
+import RoutingRulesPage from './pages/config/RoutingRulesPage';
 import MatchDetailPage from './pages/activities/MatchDetailPage';
 import HierarchyMatchDetailPage from './pages/activities/HierarchyMatchDetailPage';
 import ProjectHierarchyMatchRedirectPage from './pages/activities/ProjectHierarchyMatchRedirectPage';
@@ -1270,6 +1271,15 @@ export default function App() {
           <AdminOnlyRoute>
             <NotificationRoutingLogsPage />
           </AdminOnlyRoute>
+        }
+      />
+
+      <Route
+        path="/routing-rules"
+        element={
+          <OrgAdminRoute>
+            <RoutingRulesPage />
+          </OrgAdminRoute>
         }
       />
 
