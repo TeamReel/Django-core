@@ -180,17 +180,24 @@ export const PreferencesPage: React.FC = () => {
       try {
         setLoadingOrgs(true);
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        console.log('[PreferencesPage] Loading organisations from:', `${baseUrl}/api/v1/organisations/`);
         const response = await fetch(`${baseUrl}/api/v1/organisations/`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
           credentials: 'include',
         });
-        if (!response.ok) throw new Error('Failed to load organisations');
+        console.log('[PreferencesPage] Response status:', response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[PreferencesPage] Error response:', errorText);
+          throw new Error(`Failed to load organisations: ${response.status}`);
+        }
         const json = await response.json();
         const results = json.data?.results || json.results || json.data || json;
         console.log('[PreferencesPage] Loaded organisations:', results);
         if (!cancelled) setOrganisations(Array.isArray(results) ? results : []);
       } catch (e) {
-        console.error('Failed to load organisations:', e);
+        console.error('[PreferencesPage] Failed to load organisations:', e);
+        if (!cancelled) setActiveContextError(`Failed to load federations: ${e instanceof Error ? e.message : 'Unknown error'}`);
       } finally {
         if (!cancelled) setLoadingOrgs(false);
       }
@@ -1011,6 +1018,9 @@ export const PreferencesPage: React.FC = () => {
 
                   {isEditingContext ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 600 }}>
+                      {loadingOrgs && (
+                        <Alert variant="info">Loading federations...</Alert>
+                      )}
                       <div>
                         <label className="block text-sm font-medium mb-2">Federation</label>
                         <select
@@ -1027,8 +1037,7 @@ export const PreferencesPage: React.FC = () => {
                           disabled={loadingOrgs || savingContext}
                         >
                           <option value="">— Select Federation —</option>
-                          {loadingOrgs && <option disabled>Loading federations...</option>}
-                          {!loadingOrgs && organisations.length === 0 && <option disabled>No federations found</option>}
+                          {!loadingOrgs && organisations.length === 0 && <option disabled>No federations found (check console)</option>}
                           {organisations.map((org) => (
                             <option key={org.id} value={org.id}>
                               {org.name}
