@@ -84,8 +84,7 @@ export const PreferencesPage: React.FC = () => {
   const [activeContextLoading, setActiveContextLoading] = useState(false);
   const [activeContextError, setActiveContextError] = useState<string | null>(null);
 
-  // Cascading dropdown state for active context editing
-  const [isEditingContext, setIsEditingContext] = useState(false);
+  // Cascading dropdown state for active context (always visible)
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
@@ -171,10 +170,8 @@ export const PreferencesPage: React.FC = () => {
     };
   }, []);
 
-  // Load organisations when entering edit mode
+  // Load organisations on mount
   useEffect(() => {
-    if (!isEditingContext) return;
-
     let cancelled = false;
     const loadOrgs = async () => {
       try {
@@ -205,11 +202,11 @@ export const PreferencesPage: React.FC = () => {
 
     void loadOrgs();
     return () => { cancelled = true; };
-  }, [isEditingContext]);
+  }, []);
 
   // Load clubs when organisation selected
   useEffect(() => {
-    if (!isEditingContext || !selectedOrgId) {
+    if (!selectedOrgId) {
       setClubs([]);
       return;
     }
@@ -239,46 +236,21 @@ export const PreferencesPage: React.FC = () => {
 
     void loadClubs();
     return () => { cancelled = true; };
-  }, [isEditingContext, selectedOrgId, organisations]);
+  }, [selectedOrgId, organisations]);
 
-  // Load teams when club selected
+  // Teams are NOT loaded - club is the end level for active context
+  // (Teams exist in hierarchy but are not selectable as active context)
   useEffect(() => {
-    if (!isEditingContext || !selectedClubId) {
-      setTeams([]);
-      return;
-    }
-
-    let cancelled = false;
-    const loadTeams = async () => {
-      try {
-        setLoadingTeams(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-        const club = clubs.find(c => String(c.id) === selectedClubId);
-        if (!club) return;
-
-        const response = await fetch(`${baseUrl}/api/v1/projects/${club.id}/subprojects/`, {
-          headers: { 'X-Requested-With': 'XMLHttpRequest' },
-          credentials: 'include',
-        });
-        if (!response.ok) throw new Error('Failed to load teams');
-        const json = await response.json();
-        const results = json.data?.results || json.results || json.data || json;
-        if (!cancelled) setTeams(Array.isArray(results) ? results : []);
-      } catch (e) {
-        console.error('Failed to load teams:', e);
-        if (!cancelled) setTeams([]);
-      } finally {
-        if (!cancelled) setLoadingTeams(false);
-      }
-    };
-
-    void loadTeams();
-    return () => { cancelled = true; };
-  }, [isEditingContext, selectedClubId, clubs]);
-
-  // Load seasons when team selected
+    setTeams([]);
+  // Teams are NOT loaded - club is the end level for active context
+  // (Teams exist in hierarchy but are not selectable as active context)
   useEffect(() => {
-    if (!isEditingContext || !selectedTeamId) {
+    setTeams([]);
+  }, []);
+
+  // Load seasons when club selected (not team, since club is end level)
+  useEffect(() => {
+    if (!selectedClubId) {
       setSeasons([]);
       return;
     }
@@ -288,10 +260,10 @@ export const PreferencesPage: React.FC = () => {
       try {
         setLoadingSeasons(true);
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-        const team = teams.find(t => String(t.id) === selectedTeamId);
-        if (!team) return;
+        const club = clubs.find(c => String(c.id) === selectedClubId);
+        if (!club) return;
 
-        const response = await fetch(`${baseUrl}/api/v1/projects/${team.id}/periods/?is_season=true`, {
+        const response = await fetch(`${baseUrl}/api/v1/projects/${club.id}/periods/?is_season=true`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
           credentials: 'include',
         });
@@ -309,11 +281,11 @@ export const PreferencesPage: React.FC = () => {
 
     void loadSeasons();
     return () => { cancelled = true; };
-  }, [isEditingContext, selectedTeamId, teams]);
+  }, [selectedClubId, clubs]);
 
   // Load competitions when season selected
   useEffect(() => {
-    if (!isEditingContext || !selectedSeasonId) {
+    if (!selectedSeasonId) {
       setCompetitions([]);
       return;
     }
@@ -344,11 +316,11 @@ export const PreferencesPage: React.FC = () => {
 
     void loadComps();
     return () => { cancelled = true; };
-  }, [isEditingContext, selectedSeasonId, seasons]);
+  }, [selectedSeasonId, seasons]);
 
   // Load matches when competition selected
   useEffect(() => {
-    if (!isEditingContext || !selectedCompetitionId) {
+    if (!selectedCompetitionId) {
       setMatches([]);
       return;
     }
@@ -379,7 +351,7 @@ export const PreferencesPage: React.FC = () => {
 
     void loadMatches();
     return () => { cancelled = true; };
-  }, [isEditingContext, selectedCompetitionId, competitions]);
+  }, [selectedCompetitionId, competitions]);
 
   const handleSaveActiveContext = async () => {
     try {
@@ -418,7 +390,6 @@ export const PreferencesPage: React.FC = () => {
       // Reload active context
       const data = await fetchActiveContext();
       setActiveContext(data);
-      setIsEditingContext(false);
 
       // Trigger event for sidebar refresh
       window.dispatchEvent(new Event(ACTIVE_CONTEXT_CHANGED_EVENT));
@@ -428,28 +399,6 @@ export const PreferencesPage: React.FC = () => {
       setSavingContext(false);
     }
   };
-
-  const handleStartEditContext = () => {
-    setIsEditingContext(true);
-    setSelectedOrgId(String(activeContext?.organisation?.id || activeContext?.organisation?.slug || ''));
-    setSelectedClubId(String(activeContext?.club?.id || ''));
-    setSelectedTeamId(String(activeContext?.team?.id || ''));
-    setSelectedSeasonId(String(activeContext?.season?.id || ''));
-    setSelectedCompetitionId(String(activeContext?.competition?.id || ''));
-    setSelectedMatchId(String(activeContext?.match?.id || ''));
-  };
-
-  const handleCancelEditContext = () => {
-    setIsEditingContext(false);
-    setSelectedOrgId('');
-    setSelectedClubId('');
-    setSelectedTeamId('');
-    setSelectedSeasonId('');
-    setSelectedCompetitionId('');
-    setSelectedMatchId('');
-    setActiveContextError(null);
-  };
-
 
   // Initialize preferences from Theme System + Defaults
   useEffect(() => {
@@ -1004,20 +953,14 @@ export const PreferencesPage: React.FC = () => {
                 <Card>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                     <h3 className="text-lg font-semibold mb-0">Active context</h3>
-                    {!isEditingContext && !activeContextLoading && (
-                      <Button variant="primary" size="sm" onClick={handleStartEditContext}>
-                        Edit Context
-                      </Button>
-                    )}
                   </div>
                   <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
-                    Your current Federation → Club → Team → Season → Competition → Match selection used for sidebar defaults.
+                    Your current Federation → Club → Season → Competition → Match selection used for sidebar defaults.
                   </div>
 
                   {activeContextError && <Alert variant="error" style={{ marginBottom: 12 }}>{activeContextError}</Alert>}
 
-                  {isEditingContext ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 600 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 600 }}>
                       {loadingOrgs && (
                         <Alert variant="info">Loading federations...</Alert>
                       )}
@@ -1054,7 +997,6 @@ export const PreferencesPage: React.FC = () => {
                             value={selectedClubId}
                             onChange={(e) => {
                               setSelectedClubId(e.target.value);
-                              setSelectedTeamId('');
                               setSelectedSeasonId('');
                               setSelectedCompetitionId('');
                               setSelectedMatchId('');
@@ -1073,31 +1015,6 @@ export const PreferencesPage: React.FC = () => {
                       )}
 
                       {selectedClubId && (
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Team</label>
-                          <select
-                            className="w-full border rounded px-3 py-2"
-                            value={selectedTeamId}
-                            onChange={(e) => {
-                              setSelectedTeamId(e.target.value);
-                              setSelectedSeasonId('');
-                              setSelectedCompetitionId('');
-                              setSelectedMatchId('');
-                            }}
-                            disabled={loadingTeams || savingContext || teams.length === 0}
-                          >
-                            <option value="">— Select Team —</option>
-                            {teams.map((team) => (
-                              <option key={team.id} value={team.id}>
-                                {team.name}
-                              </option>
-                            ))}
-                          </select>
-                          {loadingTeams && <div className="text-xs text-gray-500 mt-1">Loading teams…</div>}
-                        </div>
-                      )}
-
-                      {selectedTeamId && (
                         <div>
                           <label className="block text-sm font-medium mb-2">Season</label>
                           <select
@@ -1172,19 +1089,9 @@ export const PreferencesPage: React.FC = () => {
                         >
                           {savingContext ? 'Saving…' : 'Save Context'}
                         </Button>
-                        <Button
-                          variant="secondary"
-                          onClick={handleCancelEditContext}
-                          disabled={savingContext}
-                        >
-                          Cancel
-                        </Button>
                       </div>
                     </div>
-                  ) : activeContextLoading ? (
-                    <div className="text-sm text-gray-500">Loading active context…</div>
-                  ) : (
-                    (() => {
+                </Card>
                       const org = activeContext?.organisation;
                       const club = activeContext?.club;
                       const team = activeContext?.team;

@@ -946,7 +946,10 @@ export default function ClubOrganisationDetailPage() {
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
               {(() => {
-                const isActive = club && activeContext?.club?.id === club.id;
+                const isActive = club && activeContext?.club && (
+                  String(activeContext.club.id) === String(club.id) ||
+                  activeContext.club.slug === club.slug
+                );
                 return (
                   <Button
                     variant={isActive ? 'primary' : 'secondary'}
@@ -958,6 +961,7 @@ export default function ClubOrganisationDetailPage() {
                         await setActiveContext('club', String(club.id));
                         const context = await getActiveContext();
                         setActiveContextState(context);
+                        console.log('[ClubOrganisationDetailPage] Active context updated:', context);
                       } catch (error) {
                         console.error('Failed to set active context:', error);
                       } finally {
