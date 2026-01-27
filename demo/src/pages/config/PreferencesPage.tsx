@@ -1416,6 +1416,7 @@ export const PreferencesPage: React.FC = () => {
                 </Card>
               </>
             )}
+          </div>
 
             {/* Debug Info - Temporary for validation */}
             <div className="mt-6 p-3 border border-dashed border-gray-300 rounded text-xs text-gray-600">
@@ -1423,7 +1424,6 @@ export const PreferencesPage: React.FC = () => {
               <br />
               <strong>Current Mode:</strong> {mode} | <strong>Resolved:</strong> {resolvedMode}
             </div>
-          </div>
         </PageContent>
     </>
   );
