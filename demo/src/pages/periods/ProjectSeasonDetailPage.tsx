@@ -1011,35 +1011,33 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               {(() => {
                 const isActive = season && activeContext?.season?.id === season.id;
                 return (
-                  <>
-                    {isActive && (
-                      <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontSize: '0.875rem', fontWeight: '500' }}>✓ Active Context</span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (!season || isActive) return;
-                        try {
-                          setActivatingContext(true);
-                          await setActiveContext('season', String(season.id));
-                          const context = await getActiveContext();
-                          setActiveContextState(context);
-                        } finally {
-                          setActivatingContext(false);
-                        }
-                      }}
-                      disabled={activatingContext || (isActive ?? false)}
-                      style={{
-                        ...backButtonStyle,
-                        cursor: activatingContext || isActive ? 'not-allowed' : backButtonStyle.cursor,
-                        opacity: activatingContext || isActive ? 0.6 : 1,
-                        ...(isActive ? { background: '#f3f4f6', color: '#9ca3af' } : {}),
-                      }}
-                      title="Set this season as your active context"
-                    >
-                      {isActive ? 'Already Active' : 'Make active'}
-                    </button>
-                  </>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!season || isActive) return;
+                      try {
+                        setActivatingContext(true);
+                        await setActiveContext('season', String(season.id));
+                        const context = await getActiveContext();
+                        setActiveContextState(context);
+                      } finally {
+                        setActivatingContext(false);
+                      }
+                    }}
+                    disabled={activatingContext || (isActive ?? false)}
+                    style={{
+                      ...backButtonStyle,
+                      border: isActive ? '1px solid #10b981' : backButtonStyle.border,
+                      background: isActive ? '#dcfce7' : backButtonStyle.background,
+                      color: isActive ? '#166534' : backButtonStyle.color,
+                      fontWeight: isActive ? 600 : backButtonStyle.fontWeight,
+                      cursor: activatingContext || isActive ? 'not-allowed' : backButtonStyle.cursor,
+                      opacity: activatingContext || isActive ? 0.8 : 1,
+                    }}
+                    title="Set this season as your active context"
+                  >
+                    {isActive ? '✓ Active Context' : 'Make active'}
+                  </button>
                 );
               })()}
               <button

@@ -313,30 +313,31 @@ export const MatchDetailPage: React.FC = () => {
               {(() => {
                 const isActive = match && activeContext?.match?.id === match.id;
                 return (
-                  <>
-                    {isActive && (
-                      <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontSize: '0.875rem', fontWeight: '500' }}>✓ Active Context</span>
-                    )}
-                    <Button
-                      variant="secondary"
-                      onClick={async () => {
-                        if (isActive) return;
-                        try {
-                          setActivatingContext(true);
-                          await setActiveContext('match', String(match.id));
-                          const context = await getActiveContext();
-                          setActiveContextState(context);
-                        } finally {
-                          setActivatingContext(false);
-                        }
-                      }}
-                      disabled={activatingContext || isActive}
-                      title="Set this match as your active context"
-                      style={isActive ? { background: '#f3f4f6', color: '#9ca3af', opacity: 0.6 } : {}}
-                    >
-                      {isActive ? 'Already Active' : 'Make active'}
-                    </Button>
-                  </>
+                  <Button
+                    variant={isActive ? 'primary' : 'secondary'}
+                    onClick={async () => {
+                      if (isActive) return;
+                      try {
+                        setActivatingContext(true);
+                        await setActiveContext('match', String(match.id));
+                        const context = await getActiveContext();
+                        setActiveContextState(context);
+                      } finally {
+                        setActivatingContext(false);
+                      }
+                    }}
+                    disabled={activatingContext || isActive}
+                    title="Set this match as your active context"
+                    style={{
+                      backgroundColor: isActive ? '#dcfce7' : undefined,
+                      color: isActive ? '#166534' : undefined,
+                      border: isActive ? '1px solid #10b981' : undefined,
+                      fontWeight: isActive ? 600 : undefined,
+                      opacity: activatingContext || isActive ? 0.8 : 1,
+                    }}
+                  >
+                    {isActive ? '✓ Active Context' : 'Make active'}
+                  </Button>
                 );
               })()}
               <Button onClick={() => navigate(`/studio/create?context=${match.id}`)}>

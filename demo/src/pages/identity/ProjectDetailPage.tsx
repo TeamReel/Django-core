@@ -2399,54 +2399,35 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
                 (!isTeamRoute && activeContext?.club?.id === project.id)
               );
               return (
-                <>
-                  {isActive && (
-                    <span
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '4px',
-                        backgroundColor: '#dcfce7',
-                        color: '#166534',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                      }}
-                    >
-                      ✓ Active Context
-                    </span>
-                  )}
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (!project || isActive) return;
-                      try {
-                        setActivatingContext(true);
-                        await setActiveContext(isTeamRoute ? 'team' : 'club', String(project.id));
-                        const context = await getActiveContext();
-                        setActiveContextState(context);
-                      } finally {
-                        setActivatingContext(false);
-                      }
-                    }}
-                    disabled={activatingContext || isActive}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '4px',
-                      border: '1px solid var(--app-border)',
-                      backgroundColor: isActive ? '#f3f4f6' : 'var(--app-surface-2)',
-                      color: isActive ? '#9ca3af' : 'var(--app-text)',
-                      cursor: (activatingContext || isActive) ? 'not-allowed' : 'pointer',
-                      fontSize: '12px',
-                      fontWeight: 500,
-                      opacity: (activatingContext || isActive) ? 0.6 : 1,
-                    }}
-                    title={isActive ? 'This is already your active context' : 'Set this as your active context'}
-                  >
-                    {isActive ? 'Already Active' : 'Make active'}
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!project || isActive) return;
+                    try {
+                      setActivatingContext(true);
+                      await setActiveContext(isTeamRoute ? 'team' : 'club', String(project.id));
+                      const context = await getActiveContext();
+                      setActiveContextState(context);
+                    } finally {
+                      setActivatingContext(false);
+                    }
+                  }}
+                  disabled={activatingContext || isActive}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    border: isActive ? '1px solid #10b981' : '1px solid var(--app-border)',
+                    backgroundColor: isActive ? '#dcfce7' : 'var(--app-surface-2)',
+                    color: isActive ? '#166534' : 'var(--app-text)',
+                    cursor: (activatingContext || isActive) ? 'not-allowed' : 'pointer',
+                    fontSize: '12px',
+                    fontWeight: isActive ? 600 : 500,
+                    opacity: (activatingContext || isActive) ? 0.8 : 1,
+                  }}
+                  title={isActive ? 'This is already your active context' : 'Set this as your active context'}
+                >
+                  {isActive ? '✓ Active Context' : 'Make active'}
+                </button>
               );
             })()}
             <button

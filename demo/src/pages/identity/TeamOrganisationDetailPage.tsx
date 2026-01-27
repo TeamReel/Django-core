@@ -707,50 +707,33 @@ export default function TeamOrganisationDetailPage() {
               {(() => {
                 const isActive = team && activeContext?.team?.id === team.id;
                 return (
-                  <>
-                    {isActive && (
-                      <span
-                        style={{
-                          padding: '6px 12px',
-                          borderRadius: '4px',
-                          backgroundColor: '#dcfce7',
-                          color: '#166534',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                        }}
-                      >
-                        ✓ Active Context
-                      </span>
-                    )}
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={async () => {
-                        if (!team || isActive) return;
-                        try {
-                          setActivatingContext(true);
-                          await setActiveContext('team', String(team.id));
-                          const context = await getActiveContext();
-                          setActiveContextState(context);
-                        } finally {
-                          setActivatingContext(false);
-                        }
-                      }}
-                      disabled={activatingContext || isActive}
-                      title={isActive ? 'This team is already your active context' : 'Set this team as your active context'}
-                      style={{
-                        backgroundColor: isActive ? '#f3f4f6' : undefined,
-                        color: isActive ? '#9ca3af' : undefined,
-                        cursor: (activatingContext || isActive) ? 'not-allowed' : 'pointer',
-                        opacity: (activatingContext || isActive) ? 0.6 : 1,
-                      }}
-                    >
-                      {isActive ? 'Already Active' : 'Make active'}
-                    </Button>
-                  </>
+                  <Button
+                    variant={isActive ? 'primary' : 'secondary'}
+                    size="sm"
+                    onClick={async () => {
+                      if (!team || isActive) return;
+                      try {
+                        setActivatingContext(true);
+                        await setActiveContext('team', String(team.id));
+                        const context = await getActiveContext();
+                        setActiveContextState(context);
+                      } finally {
+                        setActivatingContext(false);
+                      }
+                    }}
+                    disabled={activatingContext || isActive}
+                    title={isActive ? 'This team is already your active context' : 'Set this team as your active context'}
+                    style={{
+                      backgroundColor: isActive ? '#dcfce7' : undefined,
+                      color: isActive ? '#166534' : undefined,
+                      border: isActive ? '1px solid #10b981' : undefined,
+                      cursor: (activatingContext || isActive) ? 'not-allowed' : 'pointer',
+                      opacity: (activatingContext || isActive) ? 0.8 : 1,
+                      fontWeight: isActive ? 600 : undefined,
+                    }}
+                  >
+                    {isActive ? '✓ Active Context' : 'Make active'}
+                  </Button>
                 );
               })()}
               <Button variant="secondary" size="sm" onClick={() => navigate(backToClubHref)}>

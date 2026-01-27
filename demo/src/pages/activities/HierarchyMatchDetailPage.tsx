@@ -1485,36 +1485,34 @@ export default function HierarchyMatchDetailPage() {
               {(() => {
                 const isActive = match && activeContext?.match?.id === match.id;
                 return (
-                  <>
-                    {isActive && (
-                      <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontSize: '0.875rem', fontWeight: '500', marginRight: '8px' }}>✓ Active Context</span>
-                    )}
-                    <button
-                      type="button"
-                      className="app-action-button"
-                      onClick={async () => {
-                        if (!match || isActive) return;
-                        try {
-                          setActivatingContext(true);
-                          await setActiveContext('match', String(match.id));
-                          const context = await getActiveContext();
-                          setActiveContextState(context);
-                        } finally {
-                          setActivatingContext(false);
-                        }
-                      }}
-                      disabled={activatingContext || isActive}
-                      style={{
-                        ...detailActionButtonStyle('neutral'),
-                        opacity: activatingContext || isActive ? 0.6 : 1,
-                        cursor: activatingContext || isActive ? 'not-allowed' : 'pointer',
-                        ...(isActive ? { background: '#f3f4f6', color: '#9ca3af' } : {}),
-                      }}
-                      title="Set this match as your active context"
-                    >
-                      {isActive ? 'Already Active' : 'Make active'}
-                    </button>
-                  </>
+                  <button
+                    type="button"
+                    className="app-action-button"
+                    onClick={async () => {
+                      if (!match || isActive) return;
+                      try {
+                        setActivatingContext(true);
+                        await setActiveContext('match', String(match.id));
+                        const context = await getActiveContext();
+                        setActiveContextState(context);
+                      } finally {
+                        setActivatingContext(false);
+                      }
+                    }}
+                    disabled={activatingContext || isActive}
+                    style={{
+                      ...detailActionButtonStyle('neutral'),
+                      border: isActive ? '1px solid #10b981' : detailActionButtonStyle('neutral').border,
+                      background: isActive ? '#dcfce7' : detailActionButtonStyle('neutral').background,
+                      color: isActive ? '#166534' : detailActionButtonStyle('neutral').color,
+                      fontWeight: isActive ? 600 : detailActionButtonStyle('neutral').fontWeight,
+                      opacity: activatingContext || isActive ? 0.8 : 1,
+                      cursor: activatingContext || isActive ? 'not-allowed' : 'pointer',
+                    }}
+                    title="Set this match as your active context"
+                  >
+                    {isActive ? '✓ Active Context' : 'Make active'}
+                  </button>
                 );
               })()}
               <button
