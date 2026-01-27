@@ -38,7 +38,7 @@ import {
 import { AuditLogTable } from '../../components/AuditLog/AuditLogTable';
 import { PolicyList } from '../../components/Organisations/PolicyList';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
-import { setActiveContext } from '../../utils/activeContext';
+import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { periodPathKey } from '../../utils/periodPath';
 import { ClubsList } from './directory/ClubsList';
 import { TeamsList } from './directory/TeamsList';
@@ -65,6 +65,7 @@ export const OrganisationDetailPage: React.FC = () => {
   const { user } = useAuth();
   const [org, setOrg] = useState<Organisation | null>(null);
   const [activatingContext, setActivatingContext] = useState(false);
+  const [activeContext, setActiveContextState] = useState<any | null>(null);
   const [members, setMembers] = useState<User[]>([]);
   const [membersLoading, setMembersLoading] = useState(false);
   const [clubs, setClubs] = useState<Project[]>([]);
@@ -222,6 +223,21 @@ export const OrganisationDetailPage: React.FC = () => {
     ]);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
+
+  // Load active context when component mounts
+  useEffect(() => {
+    let cancelled = false;
+    const loadActiveContext = async () => {
+      try {
+        const context = await getActiveContext();
+        if (!cancelled) setActiveContextState(context);
+      } catch (e) {
+        console.error('Failed to load active context:', e);
+      }
+    };
+    void loadActiveContext();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (!currentOrgSlug) return;
@@ -1535,31 +1551,59 @@ export const OrganisationDetailPage: React.FC = () => {
         subtitle="Federation overview"
         actions={
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <button
-              onClick={async () => {
-                try {
-                  setActivatingContext(true);
-                  await setActiveContext('organisation', String((org as any)?.slug || (org as any)?.id || ''));
-                } finally {
-                  setActivatingContext(false);
-                }
-              }}
-              disabled={activatingContext}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '4px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                cursor: activatingContext ? 'not-allowed' : 'pointer',
-                fontSize: '12px',
-                fontWeight: 500,
-                opacity: activatingContext ? 0.6 : 1,
-              }}
-              title="Set this federation as your active context"
-            >
-              Make active
-            </button>
+            {(() => {
+              const isActive = activeContext?.organisation?.id === org.id ||
+                               activeContext?.organisation?.slug === (org as any)?.slug;
+              return (
+                <>
+                  {isActive && (
+                    <span
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        backgroundColor: '#dcfce7',
+                        color: '#166534',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      ✓ Active Context
+                    </span>
+                  )}
+                  <button
+                    onClick={async () => {
+                      if (isActive) return;
+                      try {
+                        setActivatingContext(true);
+                        await setActiveContext('organisation', String((org as any)?.slug || (org as any)?.id || ''));
+                        const context = await getActiveContext();
+                        setActiveContextState(context);
+                      } finally {
+                        setActivatingContext(false);
+                      }
+                    }}
+                    disabled={activatingContext || isActive}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--app-border)',
+                      backgroundColor: isActive ? '#f3f4f6' : 'var(--app-surface-2)',
+                      color: isActive ? '#9ca3af' : 'var(--app-text)',
+                      cursor: (activatingContext || isActive) ? 'not-allowed' : 'pointer',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      opacity: (activatingContext || isActive) ? 0.6 : 1,
+                    }}
+                    title={isActive ? 'This federation is already your active context' : 'Set this federation as your active context'}
+                  >
+                    {isActive ? 'Already Active' : 'Make active'}
+                  </button>
+                </>
+              );
+            })()}
             <button
               onClick={() => navigate('/federations')}
               style={{

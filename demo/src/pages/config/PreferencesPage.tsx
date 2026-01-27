@@ -15,6 +15,15 @@ import { useAuth } from "@django-core/auth-ui";
 import { useLocation } from 'react-router-dom';
 import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext as fetchActiveContext } from '../../utils/activeContext';
 
+function getCsrfToken(): string {
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'csrftoken') return decodeURIComponent(value);
+  }
+  return '';
+}
+
 /**
  * T015 - Preferences Page
  *
@@ -74,6 +83,30 @@ export const PreferencesPage: React.FC = () => {
   const [activeContext, setActiveContext] = useState<any | null>(null);
   const [activeContextLoading, setActiveContextLoading] = useState(false);
   const [activeContextError, setActiveContextError] = useState<string | null>(null);
+
+  // Cascading dropdown state for active context editing
+  const [isEditingContext, setIsEditingContext] = useState(false);
+  const [selectedOrgId, setSelectedOrgId] = useState<string>('');
+  const [selectedClubId, setSelectedClubId] = useState<string>('');
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
+  const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>('');
+  const [selectedMatchId, setSelectedMatchId] = useState<string>('');
+
+  const [organisations, setOrganisations] = useState<any[]>([]);
+  const [clubs, setClubs] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [seasons, setSeasons] = useState<any[]>([]);
+  const [competitions, setCompetitions] = useState<any[]>([]);
+  const [matches, setMatches] = useState<any[]>([]);
+
+  const [loadingOrgs, setLoadingOrgs] = useState(false);
+  const [loadingClubs, setLoadingClubs] = useState(false);
+  const [loadingTeams, setLoadingTeams] = useState(false);
+  const [loadingSeasons, setLoadingSeasons] = useState(false);
+  const [loadingCompetitions, setLoadingCompetitions] = useState(false);
+  const [loadingMatches, setLoadingMatches] = useState(false);
+  const [savingContext, setSavingContext] = useState(false);
 
   // Notification channel preferences state
   const [channelPrefs, setChannelPrefs] = useState<EventTypeGroup[]>([]);
@@ -137,6 +170,277 @@ export const PreferencesPage: React.FC = () => {
       window.removeEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, onChanged);
     };
   }, []);
+
+  // Load organisations when entering edit mode
+  useEffect(() => {
+    if (!isEditingContext) return;
+
+    let cancelled = false;
+    const loadOrgs = async () => {
+      try {
+        setLoadingOrgs(true);
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const response = await fetch(`${baseUrl}/api/v1/organisations/`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Failed to load organisations');
+        const json = await response.json();
+        const results = json.data?.results || json.results || json.data || json;
+        if (!cancelled) setOrganisations(Array.isArray(results) ? results : []);
+      } catch (e) {
+        console.error('Failed to load organisations:', e);
+      } finally {
+        if (!cancelled) setLoadingOrgs(false);
+      }
+    };
+
+    void loadOrgs();
+    return () => { cancelled = true; };
+  }, [isEditingContext]);
+
+  // Load clubs when organisation selected
+  useEffect(() => {
+    if (!isEditingContext || !selectedOrgId) {
+      setClubs([]);
+      return;
+    }
+
+    let cancelled = false;
+    const loadClubs = async () => {
+      try {
+        setLoadingClubs(true);
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
+        const orgSlug = org?.slug || selectedOrgId;
+        const response = await fetch(`${baseUrl}/api/v1/organisations/${orgSlug}/projects/?is_club=true`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Failed to load clubs');
+        const json = await response.json();
+        const results = json.data?.results || json.results || json.data || json;
+        if (!cancelled) setClubs(Array.isArray(results) ? results : []);
+      } catch (e) {
+        console.error('Failed to load clubs:', e);
+        if (!cancelled) setClubs([]);
+      } finally {
+        if (!cancelled) setLoadingClubs(false);
+      }
+    };
+
+    void loadClubs();
+    return () => { cancelled = true; };
+  }, [isEditingContext, selectedOrgId, organisations]);
+
+  // Load teams when club selected
+  useEffect(() => {
+    if (!isEditingContext || !selectedClubId) {
+      setTeams([]);
+      return;
+    }
+
+    let cancelled = false;
+    const loadTeams = async () => {
+      try {
+        setLoadingTeams(true);
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const club = clubs.find(c => String(c.id) === selectedClubId);
+        if (!club) return;
+
+        const response = await fetch(`${baseUrl}/api/v1/projects/${club.id}/subprojects/`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Failed to load teams');
+        const json = await response.json();
+        const results = json.data?.results || json.results || json.data || json;
+        if (!cancelled) setTeams(Array.isArray(results) ? results : []);
+      } catch (e) {
+        console.error('Failed to load teams:', e);
+        if (!cancelled) setTeams([]);
+      } finally {
+        if (!cancelled) setLoadingTeams(false);
+      }
+    };
+
+    void loadTeams();
+    return () => { cancelled = true; };
+  }, [isEditingContext, selectedClubId, clubs]);
+
+  // Load seasons when team selected
+  useEffect(() => {
+    if (!isEditingContext || !selectedTeamId) {
+      setSeasons([]);
+      return;
+    }
+
+    let cancelled = false;
+    const loadSeasons = async () => {
+      try {
+        setLoadingSeasons(true);
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const team = teams.find(t => String(t.id) === selectedTeamId);
+        if (!team) return;
+
+        const response = await fetch(`${baseUrl}/api/v1/projects/${team.id}/periods/?is_season=true`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Failed to load seasons');
+        const json = await response.json();
+        const results = json.data?.results || json.results || json.data || json;
+        if (!cancelled) setSeasons(Array.isArray(results) ? results : []);
+      } catch (e) {
+        console.error('Failed to load seasons:', e);
+        if (!cancelled) setSeasons([]);
+      } finally {
+        if (!cancelled) setLoadingSeasons(false);
+      }
+    };
+
+    void loadSeasons();
+    return () => { cancelled = true; };
+  }, [isEditingContext, selectedTeamId, teams]);
+
+  // Load competitions when season selected
+  useEffect(() => {
+    if (!isEditingContext || !selectedSeasonId) {
+      setCompetitions([]);
+      return;
+    }
+
+    let cancelled = false;
+    const loadComps = async () => {
+      try {
+        setLoadingCompetitions(true);
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const season = seasons.find(s => String(s.id) === selectedSeasonId);
+        if (!season) return;
+
+        const response = await fetch(`${baseUrl}/api/v1/periods/${season.id}/subperiods/`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Failed to load competitions');
+        const json = await response.json();
+        const results = json.data?.results || json.results || json.data || json;
+        if (!cancelled) setCompetitions(Array.isArray(results) ? results : []);
+      } catch (e) {
+        console.error('Failed to load competitions:', e);
+        if (!cancelled) setCompetitions([]);
+      } finally {
+        if (!cancelled) setLoadingCompetitions(false);
+      }
+    };
+
+    void loadComps();
+    return () => { cancelled = true; };
+  }, [isEditingContext, selectedSeasonId, seasons]);
+
+  // Load matches when competition selected
+  useEffect(() => {
+    if (!isEditingContext || !selectedCompetitionId) {
+      setMatches([]);
+      return;
+    }
+
+    let cancelled = false;
+    const loadMatches = async () => {
+      try {
+        setLoadingMatches(true);
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const competition = competitions.find(c => String(c.id) === selectedCompetitionId);
+        if (!competition) return;
+
+        const response = await fetch(`${baseUrl}/api/v1/periods/${competition.id}/activities/`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Failed to load matches');
+        const json = await response.json();
+        const results = json.data?.results || json.results || json.data || json;
+        if (!cancelled) setMatches(Array.isArray(results) ? results : []);
+      } catch (e) {
+        console.error('Failed to load matches:', e);
+        if (!cancelled) setMatches([]);
+      } finally {
+        if (!cancelled) setLoadingMatches(false);
+      }
+    };
+
+    void loadMatches();
+    return () => { cancelled = true; };
+  }, [isEditingContext, selectedCompetitionId, competitions]);
+
+  const handleSaveActiveContext = async () => {
+    try {
+      setSavingContext(true);
+      setActiveContextError(null);
+
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const body: any = {};
+
+      if (selectedOrgId) {
+        const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
+        body.organisation_slug = org?.slug || selectedOrgId;
+      }
+      if (selectedClubId) body.club_id = parseInt(selectedClubId, 10);
+      if (selectedTeamId) body.team_id = parseInt(selectedTeamId, 10);
+      if (selectedSeasonId) body.season_id = parseInt(selectedSeasonId, 10);
+      if (selectedCompetitionId) body.competition_id = parseInt(selectedCompetitionId, 10);
+      if (selectedMatchId) body.match_id = parseInt(selectedMatchId, 10);
+
+      const response = await fetch(`${baseUrl}/api/v1/auth/active-context/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to update active context (${response.status})`);
+      }
+
+      // Reload active context
+      const data = await fetchActiveContext();
+      setActiveContext(data);
+      setIsEditingContext(false);
+
+      // Trigger event for sidebar refresh
+      window.dispatchEvent(new Event(ACTIVE_CONTEXT_CHANGED_EVENT));
+    } catch (e) {
+      setActiveContextError(e instanceof Error ? e.message : 'Failed to save active context');
+    } finally {
+      setSavingContext(false);
+    }
+  };
+
+  const handleStartEditContext = () => {
+    setIsEditingContext(true);
+    setSelectedOrgId(String(activeContext?.organisation?.id || activeContext?.organisation?.slug || ''));
+    setSelectedClubId(String(activeContext?.club?.id || ''));
+    setSelectedTeamId(String(activeContext?.team?.id || ''));
+    setSelectedSeasonId(String(activeContext?.season?.id || ''));
+    setSelectedCompetitionId(String(activeContext?.competition?.id || ''));
+    setSelectedMatchId(String(activeContext?.match?.id || ''));
+  };
+
+  const handleCancelEditContext = () => {
+    setIsEditingContext(false);
+    setSelectedOrgId('');
+    setSelectedClubId('');
+    setSelectedTeamId('');
+    setSelectedSeasonId('');
+    setSelectedCompetitionId('');
+    setSelectedMatchId('');
+    setActiveContextError(null);
+  };
 
 
   // Initialize preferences from Theme System + Defaults
@@ -690,13 +994,182 @@ export const PreferencesPage: React.FC = () => {
                 </Card>
 
                 <Card>
-                  <h3 className="text-lg font-semibold mb-2">Active context</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <h3 className="text-lg font-semibold mb-0">Active context</h3>
+                    {!isEditingContext && !activeContextLoading && (
+                      <Button variant="primary" size="sm" onClick={handleStartEditContext}>
+                        Edit Context
+                      </Button>
+                    )}
+                  </div>
                   <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
                     Your current Federation → Club → Team → Season → Competition → Match selection used for sidebar defaults.
                   </div>
 
-                  {activeContextError && <Alert variant="error">{activeContextError}</Alert>}
-                  {activeContextLoading ? (
+                  {activeContextError && <Alert variant="error" style={{ marginBottom: 12 }}>{activeContextError}</Alert>}
+
+                  {isEditingContext ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 600 }}>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Federation</label>
+                        <select
+                          className="w-full border rounded px-3 py-2"
+                          value={selectedOrgId}
+                          onChange={(e) => {
+                            setSelectedOrgId(e.target.value);
+                            setSelectedClubId('');
+                            setSelectedTeamId('');
+                            setSelectedSeasonId('');
+                            setSelectedCompetitionId('');
+                            setSelectedMatchId('');
+                          }}
+                          disabled={loadingOrgs || savingContext}
+                        >
+                          <option value="">— Select Federation —</option>
+                          {organisations.map((org) => (
+                            <option key={org.id} value={org.id}>
+                              {org.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {selectedOrgId && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Club</label>
+                          <select
+                            className="w-full border rounded px-3 py-2"
+                            value={selectedClubId}
+                            onChange={(e) => {
+                              setSelectedClubId(e.target.value);
+                              setSelectedTeamId('');
+                              setSelectedSeasonId('');
+                              setSelectedCompetitionId('');
+                              setSelectedMatchId('');
+                            }}
+                            disabled={loadingClubs || savingContext || clubs.length === 0}
+                          >
+                            <option value="">— Select Club —</option>
+                            {clubs.map((club) => (
+                              <option key={club.id} value={club.id}>
+                                {club.name}
+                              </option>
+                            ))}
+                          </select>
+                          {loadingClubs && <div className="text-xs text-gray-500 mt-1">Loading clubs…</div>}
+                        </div>
+                      )}
+
+                      {selectedClubId && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Team</label>
+                          <select
+                            className="w-full border rounded px-3 py-2"
+                            value={selectedTeamId}
+                            onChange={(e) => {
+                              setSelectedTeamId(e.target.value);
+                              setSelectedSeasonId('');
+                              setSelectedCompetitionId('');
+                              setSelectedMatchId('');
+                            }}
+                            disabled={loadingTeams || savingContext || teams.length === 0}
+                          >
+                            <option value="">— Select Team —</option>
+                            {teams.map((team) => (
+                              <option key={team.id} value={team.id}>
+                                {team.name}
+                              </option>
+                            ))}
+                          </select>
+                          {loadingTeams && <div className="text-xs text-gray-500 mt-1">Loading teams…</div>}
+                        </div>
+                      )}
+
+                      {selectedTeamId && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Season</label>
+                          <select
+                            className="w-full border rounded px-3 py-2"
+                            value={selectedSeasonId}
+                            onChange={(e) => {
+                              setSelectedSeasonId(e.target.value);
+                              setSelectedCompetitionId('');
+                              setSelectedMatchId('');
+                            }}
+                            disabled={loadingSeasons || savingContext || seasons.length === 0}
+                          >
+                            <option value="">— Select Season —</option>
+                            {seasons.map((season) => (
+                              <option key={season.id} value={season.id}>
+                                {season.name}
+                              </option>
+                            ))}
+                          </select>
+                          {loadingSeasons && <div className="text-xs text-gray-500 mt-1">Loading seasons…</div>}
+                        </div>
+                      )}
+
+                      {selectedSeasonId && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Competition</label>
+                          <select
+                            className="w-full border rounded px-3 py-2"
+                            value={selectedCompetitionId}
+                            onChange={(e) => {
+                              setSelectedCompetitionId(e.target.value);
+                              setSelectedMatchId('');
+                            }}
+                            disabled={loadingCompetitions || savingContext || competitions.length === 0}
+                          >
+                            <option value="">— Select Competition —</option>
+                            {competitions.map((comp) => (
+                              <option key={comp.id} value={comp.id}>
+                                {comp.name}
+                              </option>
+                            ))}
+                          </select>
+                          {loadingCompetitions && <div className="text-xs text-gray-500 mt-1">Loading competitions…</div>}
+                        </div>
+                      )}
+
+                      {selectedCompetitionId && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Match</label>
+                          <select
+                            className="w-full border rounded px-3 py-2"
+                            value={selectedMatchId}
+                            onChange={(e) => setSelectedMatchId(e.target.value)}
+                            disabled={loadingMatches || savingContext || matches.length === 0}
+                          >
+                            <option value="">— Select Match —</option>
+                            {matches.map((match) => (
+                              <option key={match.id} value={match.id}>
+                                {match.title || match.name}
+                              </option>
+                            ))}
+                          </select>
+                          {loadingMatches && <div className="text-xs text-gray-500 mt-1">Loading matches…</div>}
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                        <Button
+                          variant="primary"
+                          onClick={handleSaveActiveContext}
+                          disabled={savingContext}
+                        >
+                          {savingContext ? 'Saving…' : 'Save Context'}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          onClick={handleCancelEditContext}
+                          disabled={savingContext}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : activeContextLoading ? (
                     <div className="text-sm text-gray-500">Loading active context…</div>
                   ) : (
                     (() => {

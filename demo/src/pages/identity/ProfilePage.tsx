@@ -4,6 +4,8 @@ import {
   Card,
   Badge,
   Alert,
+  Button,
+  Input,
 } from '@django-core/design-system';
 import {
   PageHeader,
@@ -12,18 +14,33 @@ import {
 import { User } from '../../types';
 import AppShell from '../../components/AppShell';
 
+function getCsrfToken(): string {
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'csrftoken') return decodeURIComponent(value);
+  }
+  return '';
+}
+
 /**
  * T011 - Profile Page
  *
- * Purpose: Display current user info and roles
+ * Purpose: Display and edit user profile
  * - Shows user name, email, role, last login
- * - Read-only view
+ * - Allows editing first_name and last_name
  */
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -59,6 +76,8 @@ export const ProfilePage: React.FC = () => {
         console.log('[ProfilePage] Parsed user:', actualUser);
 
         setUser(actualUser);
+        setFirstName(actualUser.first_name || '');
+        setLastName(actualUser.last_name || '');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch profile');
         console.error('Profile fetch error:', err);
@@ -69,6 +88,51 @@ export const ProfilePage: React.FC = () => {
 
     fetchProfile();
   }, []);
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    try {
+      setSaving(true);
+      setSaveSuccess(false);
+      setError(null);
+
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiBaseUrl}/api/v1/auth/profile/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to update profile (${response.status})`);
+      }
+
+      const updatedData = await response.json();
+      const updatedUser = (updatedData as any).data || updatedData;
+
+      setUser(updatedUser);
+      setFirstName(updatedUser.first_name || '');
+      setLastName(updatedUser.last_name || '');
+      setSaveSuccess(true);
+      setIsEditing(false);
+
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -138,12 +202,102 @@ export const ProfilePage: React.FC = () => {
       />
 
       <PageContent>
+        {saveSuccess && (
+          <Alert variant="success" style={{ marginBottom: '16px' }}>
+            Profile updated successfully!
+          </Alert>
+        )}
+
+        {error && (
+          <Alert variant="error" style={{ marginBottom: '16px' }}>
+            {error}
+          </Alert>
+        )}
+
         {/* Profile Information Card */}
         <Card data-testid="profile-info-card">
-          <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>
-            Profile Information
-          </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0, color: 'var(--app-text)' }}>
+              Profile Information
+            </h3>
+            {!isEditing ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+              >
+                Edit Profile
+              </Button>
+            ) : (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setFirstName(user?.first_name || '');
+                    setLastName(user?.last_name || '');
+                    setError(null);
+                  }}
+                  disabled={saving}
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
+          </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {isEditing ? (
+              <>
+                <div>
+                  <Input
+                    label="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Enter first name"
+                    disabled={saving}
+                  />
+                </div>
+                <div>
+                  <Input
+                    label="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Enter last name"
+                    disabled={saving}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                    First Name
+                  </label>
+                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>
+                    {user?.first_name || '—'}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                    Last Name
+                  </label>
+                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>
+                    {user?.last_name || '—'}
+                  </div>
+                </div>
+              </>
+            )}
+
             <div>
               <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
                 Full Name

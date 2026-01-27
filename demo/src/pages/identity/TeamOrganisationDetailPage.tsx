@@ -4,7 +4,7 @@ import { Alert, Button, Card, Input } from '@django-core/design-system';
 import { BreadcrumbContextSwitcher, PageContent, PageHeader, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
 
 import { fetchAllPages } from '../../utils/fetchAllPages';
-import { setActiveContext } from '../../utils/activeContext';
+import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 
 import { SeasonsList } from './directory/SeasonsList';
 import { CompetitionsList } from './directory/CompetitionsList';
