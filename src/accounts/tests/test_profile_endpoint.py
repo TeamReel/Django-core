@@ -39,14 +39,15 @@ class TestProfileUpdateEndpoint:
         """Test: Update first_name with correct current_password."""
         client, user = authenticated_client
         response = client.patch(
-            "/api/v1/auth/profile",
+            "/api/v1/auth/profile/",
             data={"first_name": "Updated", "current_password": "TestPass123!"},
             content_type="application/json",
         )
 
         assert response.status_code == status.HTTP_200_OK
-        data = response.json()
-        # Success response returns data directly (no envelope)
+        payload = response.json()
+        assert payload["status"] == "success"
+        data = payload["data"]
         assert data["first_name"] == "Updated"
         assert data["last_name"] == "Name"  # Unchanged
 
@@ -58,7 +59,7 @@ class TestProfileUpdateEndpoint:
         """Test: Update both first_name and last_name."""
         client, user = authenticated_client
         response = client.patch(
-            "/api/v1/auth/profile",
+            "/api/v1/auth/profile/",
             data={
                 "first_name": "New First",
                 "last_name": "New Last",
@@ -68,6 +69,8 @@ class TestProfileUpdateEndpoint:
         )
 
         assert response.status_code == status.HTTP_200_OK
+        payload = response.json()
+        assert payload["status"] == "success"
         user.refresh_from_db()
         assert user.first_name == "New First"
         assert user.last_name == "New Last"
@@ -76,7 +79,7 @@ class TestProfileUpdateEndpoint:
         """Test: Request without current_password fails with B13 envelope."""
         client, user = authenticated_client
         response = client.patch(
-            "/api/v1/auth/profile",
+            "/api/v1/auth/profile/",
             data={"first_name": "Updated"},
             content_type="application/json",
         )
@@ -92,7 +95,7 @@ class TestProfileUpdateEndpoint:
         """Test: Wrong current_password fails with generic error in B13 envelope."""
         client, user = authenticated_client
         response = client.patch(
-            "/api/v1/auth/profile",
+            "/api/v1/auth/profile/",
             data={"first_name": "Updated", "current_password": "WrongPassword"},
             content_type="application/json",
         )
@@ -111,7 +114,7 @@ class TestProfileUpdateEndpoint:
         """Test: Empty first_name fails validation with B13 envelope."""
         client, user = authenticated_client
         response = client.patch(
-            "/api/v1/auth/profile",
+            "/api/v1/auth/profile/",
             data={"first_name": "   ", "current_password": "TestPass123!"},  # Whitespace only
             content_type="application/json",
         )
@@ -125,7 +128,7 @@ class TestProfileUpdateEndpoint:
         """Test: Name exceeding 150 chars fails validation with B13 envelope."""
         client, user = authenticated_client
         response = client.patch(
-            "/api/v1/auth/profile",
+            "/api/v1/auth/profile/",
             data={"first_name": "A" * 151, "current_password": "TestPass123!"},
             content_type="application/json",
         )
@@ -139,7 +142,7 @@ class TestProfileUpdateEndpoint:
         """Test: Unauthenticated request returns 401 with B13 envelope."""
         client = Client()
         response = client.patch(
-            "/api/v1/auth/profile",
+            "/api/v1/auth/profile/",
             data={"first_name": "Updated", "current_password": "TestPass123!"},
             content_type="application/json",
         )
@@ -153,12 +156,14 @@ class TestProfileUpdateEndpoint:
         """Test: Update only last_name, first_name unchanged."""
         client, user = authenticated_client
         response = client.patch(
-            "/api/v1/auth/profile",
+            "/api/v1/auth/profile/",
             data={"last_name": "NewLastName", "current_password": "TestPass123!"},
             content_type="application/json",
         )
 
         assert response.status_code == status.HTTP_200_OK
+        payload = response.json()
+        assert payload["status"] == "success"
         user.refresh_from_db()
         assert user.first_name == "Original"  # Unchanged
         assert user.last_name == "NewLastName"
@@ -167,7 +172,7 @@ class TestProfileUpdateEndpoint:
         """Test: Empty last_name fails validation with B13 envelope."""
         client, user = authenticated_client
         response = client.patch(
-            "/api/v1/auth/profile",
+            "/api/v1/auth/profile/",
             data={"last_name": "", "current_password": "TestPass123!"},
             content_type="application/json",
         )
@@ -181,7 +186,7 @@ class TestProfileUpdateEndpoint:
         """Test: Request with only password (no fields to update) returns 400."""
         client, user = authenticated_client
         response = client.patch(
-            "/api/v1/auth/profile",
+            "/api/v1/auth/profile/",
             data={"current_password": "TestPass123!"},
             content_type="application/json",
         )

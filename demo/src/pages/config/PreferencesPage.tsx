@@ -467,7 +467,9 @@ export const PreferencesPage: React.FC = () => {
 
         const params = new URLSearchParams();
         params.set('project_id', String(selectedTeamId));
-        params.set('type', 'season');
+        // Do not rely purely on metadata.type=season.
+        // In some demo/prod datasets seasons are simply root periods.
+        params.set('parent_id', 'null');
         params.set('page_size', '500');
 
         const response = await fetch(`${baseUrl}/api/v1/periods/?${params.toString()}`, {
@@ -476,8 +478,14 @@ export const PreferencesPage: React.FC = () => {
         });
         if (!response.ok) throw new Error('Failed to load seasons');
         const json = await response.json();
+
         const results = json.data?.results || json.results || json.data || json;
-        if (!cancelled) setSeasons(Array.isArray(results) ? results : []);
+        const all = Array.isArray(results) ? results : [];
+        const rootOnly = all.filter((p: any) => {
+          const parent = p?.parent_period_id ?? p?.parent_period?.id ?? null;
+          return !parent;
+        });
+        if (!cancelled) setSeasons(rootOnly);
       } catch (e) {
         console.error('Failed to load seasons:', e);
         if (!cancelled) setSeasons([]);
@@ -1355,7 +1363,7 @@ export const PreferencesPage: React.FC = () => {
                               body: JSON.stringify({
                                 current_password: passwordCurrent,
                                 new_password: passwordNext,
-                                confirm_password: passwordConfirm,
+                                new_password_confirm: passwordConfirm,
                               }),
                             });
 
@@ -1951,7 +1959,7 @@ export const PreferencesPage: React.FC = () => {
                           checked={preferences?.email_notifications || false}
                           onChange={(e) => {
                             const newValue = e.target.checked;
-                            setPreferences(prev => prev ? ({ ...prev, email_notifications: newValue }) : null);
+                            setPreferences((prev) => (prev ? ({ ...prev, email_notifications: newValue }) : null));
                             // Auto-save to localStorage
                             localStorage.setItem('email_notifications', String(newValue));
                           }}

@@ -35,7 +35,10 @@ class TestAuthMeOrganisations:
         response = client.get("/api/v1/auth/me/")
 
         assert response.status_code == status.HTTP_200_OK
-        data = response.json()
+        payload = response.json()
+
+        assert payload["status"] == "success"
+        data = payload["data"]
 
         assert "organisations" in data
         assert isinstance(data["organisations"], list)

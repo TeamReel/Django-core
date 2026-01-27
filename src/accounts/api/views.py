@@ -1595,9 +1595,42 @@ def update_avatar(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    user.avatar = file_obj
-    user.save(update_fields=["avatar"])
-    audit_log.record("auth.avatar_updated", user=user, request=request)
+    # Some clients/browsers may provide a path-like name (e.g. C:\fakepath\avatar.png).
+    # Sanitise to a safe basename to prevent storage/path errors.
+    try:
+        import os
+
+        original_name = str(getattr(file_obj, "name", "") or "").strip()
+        safe_name = os.path.basename(original_name.replace("\\", "/"))
+        safe_name = safe_name or "avatar"
+        file_obj.name = safe_name
+    except Exception:
+        # If sanitisation fails, continue with storage's default handling.
+        pass
+
+    # Save avatar with defensive error handling (storage backends can raise).
+    try:
+        user.avatar = file_obj
+        user.save(update_fields=["avatar"])
+        audit_log.record("auth.avatar_updated", user=user, request=request)
+    except Exception:
+        import logging
+
+        logging.getLogger(__name__).exception(
+            "Avatar upload failed", extra={"user_id": getattr(user, "id", None)}
+        )
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "server_error",
+                    "message": "Failed to save avatar. Please try again.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
     serializer = UserListSerializer(user)
     return Response(serializer.data, status=status.HTTP_200_OK)

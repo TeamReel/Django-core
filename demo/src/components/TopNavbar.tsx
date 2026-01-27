@@ -86,6 +86,12 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
   const createMenuRef = useRef<HTMLDivElement | null>(null);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  const showBreadcrumbs = !(
+    location.pathname.startsWith('/notifications') ||
+    location.pathname.startsWith('/login') ||
+    location.pathname.startsWith('/register')
+  );
+
   const orgIdForMyBalance = String((context as any)?.organisation?.id || '').trim();
   const currentUserId = (user as any)?.id;
   const myCreditsNumber = useMemo(() => {
@@ -553,7 +559,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
             </Link>
 
             {/* Breadcrumbs for Hierarchy Context */}
-            <Breadcrumbs />
+            {showBreadcrumbs ? <Breadcrumbs /> : null}
 
             {/* Group triggers */}
             {filteredNavGroups.map(group => {

@@ -41,7 +41,10 @@ class TestAuthMeEndpoint:
         response = client.get("/api/v1/auth/me/")
 
         assert response.status_code == status.HTTP_200_OK
-        data = response.json()
+        payload = response.json()
+
+        assert payload["status"] == "success"
+        data = payload["data"]
 
         assert data["id"] == user.id
         assert data["email"] == user.email
@@ -75,7 +78,9 @@ class TestAuthMeEndpoint:
 
         response = client.get("/api/v1/auth/me/")
         assert response.status_code == status.HTTP_200_OK
-        assert response.json()["role"] == "superadmin"
+        payload = response.json()
+        assert payload["status"] == "success"
+        assert payload["data"]["role"] == "superadmin"
 
     def test_staff_role_mapping(self, db):
         """Test: Staff user mapped to "admin" role."""
@@ -92,7 +97,9 @@ class TestAuthMeEndpoint:
 
         response = client.get("/api/v1/auth/me/")
         assert response.status_code == status.HTTP_200_OK
-        assert response.json()["role"] == "admin"
+        payload = response.json()
+        assert payload["status"] == "success"
+        assert payload["data"]["role"] == "admin"
 
     def test_inactive_user_returns_profile(self, db):
         """Test: Inactive user still authenticated but profile shows is_active=False."""
