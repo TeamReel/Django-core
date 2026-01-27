@@ -102,6 +102,8 @@ export default function ProfileAvatarDropdown({ onLogout }: ProfileAvatarDropdow
 
   if (!user) return null;
 
+  const avatarUrl = String((user as any)?.avatar_url || '').trim();
+
   // Keyboard handling
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -156,8 +158,21 @@ export default function ProfileAvatarDropdown({ onLogout }: ProfileAvatarDropdow
         }}
         title="User menu"
       >
-        {/* TODO: In future, check for user.profile_image and render <img> if present */}
-        {getInitials()}
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt="Profile"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+              borderRadius: '50%',
+            }}
+          />
+        ) : (
+          getInitials()
+        )}
       </button>
 
       {/* Dropdown Menu */}

@@ -54,6 +54,7 @@ class UserListSerializer(serializers.ModelSerializer):
     """Serializer for user list (admin)."""
 
     role = serializers.SerializerMethodField()
+    avatar_url = serializers.SerializerMethodField()
     organisations = serializers.SerializerMethodField()
     projects = serializers.SerializerMethodField()
 
@@ -65,6 +66,8 @@ class UserListSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "role",
+            "avatar_url",
+            "two_factor_enabled",
             "is_active",
             "email_verified",
             "date_joined",
@@ -72,6 +75,15 @@ class UserListSerializer(serializers.ModelSerializer):
             "organisations",
             "projects",
         ]
+
+    def get_avatar_url(self, obj):
+        avatar = getattr(obj, "avatar", None)
+        if not avatar:
+            return None
+        try:
+            return avatar.url
+        except Exception:
+            return None
 
     def get_role(self, obj):
         """Return the canonical platform role slug.

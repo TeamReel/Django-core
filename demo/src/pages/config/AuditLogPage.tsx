@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
+import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Input,
   Badge,
@@ -25,6 +26,7 @@ import { AuditEvent, ListResponse } from '../../types';
  */
 export const AuditLogPage: React.FC = () => {
   const { user: authUser } = useAuth();
+  const { context } = useContextSwitcher();
   const [searchParams, setSearchParams] = useSearchParams();
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,10 +38,24 @@ export const AuditLogPage: React.FC = () => {
   const eventType = searchParams.get('event_type') || '';
   const user = searchParams.get('user') || '';
   const outcome = searchParams.get('outcome') || '';
+  const organization = searchParams.get('organization') || '';
   const dateFrom = searchParams.get('date_from') || '';
   const dateTo = searchParams.get('date_to') || '';
   const page = searchParams.get('page') || '1';
   const limit = 50;
+
+  const contextOrgId = String((context as any)?.organisation?.id || '').trim();
+
+  // Default to org-scoped audit when an org context exists.
+  useEffect(() => {
+    if (!contextOrgId) return;
+    if (searchParams.get('organization')) return;
+
+    const next = new URLSearchParams(searchParams);
+    next.set('organization', contextOrgId);
+    next.set('page', '1');
+    setSearchParams(next, { replace: true });
+  }, [contextOrgId, searchParams, setSearchParams]);
 
   // Helper to determine event outcome
   const getEventOutcome = (event: AuditEvent): string => {
@@ -82,6 +98,9 @@ export const AuditLogPage: React.FC = () => {
         if (dateTo) {
           // Convert to ISO datetime format for Django (end of day)
           params.append('created_at__lte', `${dateTo}T23:59:59`);
+        }
+        if (organization) {
+          params.append('organization', organization);
         }
 
         // Use relative URL to leverage Vite proxy (handles cookies correctly)
@@ -126,7 +145,7 @@ export const AuditLogPage: React.FC = () => {
     };
 
     fetchAuditEvents();
-  }, [eventType, user, outcome, dateFrom, dateTo, page]);
+  }, [eventType, user, outcome, organization, dateFrom, dateTo, page]);
 
   // WebSocket Integration for Real-time Updates
   useEffect(() => {

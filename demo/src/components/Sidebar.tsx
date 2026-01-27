@@ -404,9 +404,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     let activeSection: 'work' | 'people' | 'content' | 'organisation' | 'platform' | 'help' | 'preferences' = 'work';
     if (path.startsWith('/content') || path.startsWith('/studio')) activeSection = 'content';
     else if (path.startsWith('/credits')) activeSection = isPersonalWallet ? 'preferences' : 'organisation';
-    else if (path.startsWith('/permissions') || path.startsWith('/audit') || path === '/users') activeSection = 'organisation';
-    else if (path.startsWith('/profile') || path.startsWith('/preferences')) activeSection = 'preferences';
-    else if (['/health', '/flags', '/integration', '/design', '/observability', '/security', '/constitution'].some(prefix => path.startsWith(prefix))) activeSection = 'platform';
+    else if (path.startsWith('/permissions') || path === '/users') activeSection = 'organisation';
+    else if (path.startsWith('/profile') || path.startsWith('/preferences') || path.startsWith('/memberships') || path.startsWith('/billing') || path.startsWith('/notifications')) activeSection = 'preferences';
+    else if (['/health', '/flags', '/audit', '/integration', '/design', '/observability', '/security', '/constitution', '/demo/performance'].some(prefix => path.startsWith(prefix))) activeSection = 'platform';
     else if (['/docs'].some(prefix => path.startsWith(prefix))) activeSection = 'help';
 
 
@@ -730,6 +730,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 { label: 'Personalisation', path: '/preferences?tab=personalisation', icon: Palette },
                 { label: 'Notification settings', path: '/preferences?tab=notifications', icon: Settings },
                 { label: 'My Wallet', path: '/credits?wallet=personal', icon: CreditCard },
+                { label: 'Memberships', path: '/memberships', icon: Users },
+                { label: 'My Audit', path: `/audit?user=${encodeURIComponent(String(user?.email || ''))}`, icon: Scroll },
+                { label: 'Billing & Licensing', path: '/billing', icon: CreditCard },
             ];
             break;
 
@@ -739,25 +742,28 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 items = [
                     { label: 'Permissions', path: '/permissions', icon: Lock },
                     { label: 'Users', path: '/users', icon: Users },
+                    ...(isStaff ? [{ label: 'Features', path: '/flags', icon: Flag }] : []),
                     { label: 'Audit', path: '/audit', icon: Scroll },
-                    { label: 'Credits', path: '/credits?wallet=org', icon: CreditCard },
+                    { label: 'Organisation Wallet', path: '/credits?wallet=org', icon: CreditCard },
                 ];
             }
             break;
 
         case 'platform':
-            if (isStaff) {
-                title = 'Platform';
-                items = [
+            title = 'Platform';
+            items = [
+                ...((isOrgAdmin || isSystemAdmin) ? [{ label: 'Audit', path: '/audit', icon: Scroll }] : []),
+                ...(isStaff ? [
                     { label: 'Health', path: '/health', icon: Activity },
+                    { label: 'Cache Performance', path: '/demo/performance', icon: LineChart },
                     { label: 'Features', path: '/flags', icon: Flag },
                     { label: 'Integration', path: '/integration-status', icon: Puzzle },
                     { label: 'Design System', path: '/design-system', icon: Palette },
                     { label: 'Observability', path: '/observability', icon: LineChart },
                     { label: 'Security', path: '/security', icon: Lock },
                     { label: 'Constitution', path: '/constitution', icon: Scroll },
-                ];
-            }
+                ] : []),
+            ];
             break;
 
         case 'help':
@@ -771,7 +777,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     if (items.length === 0) return null;
 
     return { title, items, isActive: true };
-  }, [location.pathname, orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId, competitionSlugOrId, matchId, teamName, seasonName, competitionName, isOrgAdmin, isSystemAdmin, isStaff]);
+    }, [location.pathname, orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId, competitionSlugOrId, matchId, teamName, seasonName, competitionName, isOrgAdmin, isSystemAdmin, isStaff, user?.email]);
 
   // Filter groups and items based on permissions
   const visibleSections = useMemo(() => {

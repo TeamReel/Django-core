@@ -51,6 +51,8 @@ import {
   FeatureFlagsPage,
   CreditsPage,
   PreferencesPage,
+  MembershipsPage,
+  BillingPage,
 } from './pages/config';
 import UsageEventsPage from './pages/config/UsageEventsPage';
 
@@ -1251,6 +1253,24 @@ export default function App() {
         element={
           <ProtectedRoute>
             <PreferencesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/memberships"
+        element={
+          <ProtectedRoute>
+            <MembershipsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/billing"
+        element={
+          <ProtectedRoute>
+            <BillingPage />
           </ProtectedRoute>
         }
       />

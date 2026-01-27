@@ -15,6 +15,8 @@ urlpatterns = [
     path("auth/default-context/", views.auth_default_context, name="api_auth_default_context"),
     path("auth/active-context/", views.auth_active_context, name="api_auth_active_context"),
     path("auth/profile/", views.update_profile, name="api_update_profile"),
+    path("auth/change-password/", views.change_password, name="api_change_password"),
+    path("auth/avatar/", views.update_avatar, name="api_update_avatar"),
     path(
         "auth/password-reset/",
         views.password_reset_request_api,

@@ -613,55 +613,12 @@ export const CreditsPage: React.FC = () => {
       />
 
       <PageContent>
-        {/* Scope Switcher (F05: Three-Layer Wallet System) */}
-        <div style={{ display: 'flex', marginBottom: '24px', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', gap: '8px', padding: '4px', background: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                <button
-                  onClick={() => {
-                    setScope('personal');
-                    setWalletParam('personal');
-                  }}
-                    style={{
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: scope === 'personal' ? 'white' : 'transparent',
-                        boxShadow: scope === 'personal' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-                        color: scope === 'personal' ? 'var(--app-text)' : 'var(--app-muted-text)',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontSize: '14px'
-                    }}
-                >
-                    My Wallet
-                </button>
-                <button
-                    onClick={() => {
-                        if (!currentOrgId) {
-                            setToastMessage('No organisation context active. Please select an organisation.');
-                            setTimeout(() => setToastMessage(null), 3000);
-                            return;
-                        }
-                    setScope('org');
-                    setWalletParam('org');
-                    }}
-                    style={{
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        background: scope === 'org' ? 'white' : 'transparent',
-                        boxShadow: scope === 'org' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-                        color: scope === 'org' ? 'var(--app-text)' : 'var(--app-muted-text)',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        opacity: !currentOrgId ? 0.5 : 1
-                    }}
-                    disabled={!currentOrgId}
-                >
-                    Organisation Wallet {currentOrgName ? `(${currentOrgName})` : ''}
-                </button>
-            </div>
+        <div style={{ marginBottom: 16 }}>
+          <div className="text-sm text-gray-600">
+            {scope === 'personal'
+              ? 'My Wallet'
+              : `Organisation Wallet${currentOrgName ? ` (${currentOrgName})` : ''}`}
+          </div>
         </div>
 
         {scope === 'personal' ? (

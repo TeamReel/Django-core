@@ -1290,12 +1290,14 @@ def auth_active_context(request):
 @api_view(["PATCH"])
 def update_profile(request):
     """
-    Update authenticated user's profile (first_name, last_name).
+    Update authenticated user's profile.
 
     Request Body:
         {
             "first_name": str (optional),
             "last_name": str (optional),
+            "email": str (optional),
+            "two_factor_enabled": bool (optional),
             "current_password": str (required for verification)
         }
 
@@ -1376,6 +1378,26 @@ def update_profile(request):
         else:
             user.last_name = last_name.strip()
 
+    email = data.get("email")
+    if email is not None:
+        has_update_fields = True
+        email_value = str(email).strip().lower()
+        if not email_value:
+            errors["email"] = ["Email cannot be empty"]
+        elif len(email_value) > 254:
+            errors["email"] = ["Email must be 254 characters or fewer"]
+        else:
+            # Enforce uniqueness
+            if User.objects.filter(email__iexact=email_value).exclude(pk=user.pk).exists():
+                errors["email"] = ["A user with that email already exists"]
+            else:
+                user.email = email_value
+
+    two_factor_enabled = data.get("two_factor_enabled")
+    if two_factor_enabled is not None:
+        has_update_fields = True
+        user.two_factor_enabled = bool(two_factor_enabled)
+
     # Check if at least one field was provided
     if not has_update_fields:
         return Response(
@@ -1409,25 +1431,176 @@ def update_profile(request):
     user.save()
 
     # Return updated profile (same format as /auth/me)
-    role = (
-        "superadmin"
-        if user.is_superuser
-        else ("admin" if getattr(user, "is_admin", False) or user.is_staff else "user")
-    )
+    serializer = UserListSerializer(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # Success response returns data directly (no envelope)
-    return Response(
+
+@api_view(["POST"])
+def change_password(request):
+    """Change the authenticated user's password.
+
+    Request Body:
         {
-            "id": user.id,
-            "email": user.email,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "role": role,
-            "email_verified": getattr(user, "email_verified", True),
-            "is_active": user.is_active,
-        },
-        status=status.HTTP_200_OK,
-    )
+            "current_password": str (required),
+            "new_password": str (required),
+            "new_password_confirm": str (required)
+        }
+    """
+    if not request.user.is_authenticated:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "not_authenticated",
+                    "message": "Authentication credentials were not provided.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    user = request.user
+    data = request.data or {}
+
+    current_password = data.get("current_password")
+    new_password = data.get("new_password")
+    new_password_confirm = data.get("new_password_confirm")
+
+    errors: dict[str, list[str]] = {}
+
+    if not current_password:
+        errors["current_password"] = ["This field is required"]
+    if not new_password:
+        errors["new_password"] = ["This field is required"]
+    if not new_password_confirm:
+        errors["new_password_confirm"] = ["This field is required"]
+
+    if errors:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "Validation failed",
+                    "details": errors,
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not user.check_password(current_password):
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "authentication_failed",
+                    "message": "Unable to verify credentials.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if str(new_password) != str(new_password_confirm):
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "Validation failed",
+                    "details": {"new_password": ["Passwords do not match."]},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    from django.contrib.auth.password_validation import validate_password
+    from django.contrib.auth import update_session_auth_hash
+
+    try:
+        validate_password(str(new_password), user=user)
+    except Exception as exc:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "Validation failed",
+                    "details": {"new_password": [str(exc)]},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user.set_password(str(new_password))
+    user.save(update_fields=["password"])
+    update_session_auth_hash(request, user)
+    audit_log.record("auth.password_changed", user=user, request=request)
+
+    serializer = UserListSerializer(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def update_avatar(request):
+    """Upload/update the authenticated user's avatar image."""
+
+    if not request.user.is_authenticated:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "not_authenticated",
+                    "message": "Authentication credentials were not provided.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    user = request.user
+    file_obj = (request.FILES or {}).get("avatar")
+    if not file_obj:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "Validation failed",
+                    "details": {"avatar": ["This field is required"]},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    content_type = getattr(file_obj, "content_type", "") or ""
+    if not content_type.startswith("image/"):
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "Validation failed",
+                    "details": {"avatar": ["Avatar must be an image"]},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user.avatar = file_obj
+    user.save(update_fields=["avatar"])
+    audit_log.record("auth.avatar_updated", user=user, request=request)
+
+    serializer = UserListSerializer(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])

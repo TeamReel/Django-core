@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import AppShell from '../components/AppShell';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Alert, Button, Card } from '@django-core/design-system';
 
 const debugLog = (...args: unknown[]) => {
   if (import.meta.env.DEV) console.log(...args);
@@ -182,9 +183,9 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <AppShell>
-        <div style={{ padding: '20px' }}>
-          <h1>Notifications</h1>
-          <p>Loading notifications...</p>
+        <div style={{ padding: '24px 16px', maxWidth: 1100, margin: '0 auto' }}>
+          <div className="text-lg font-semibold" style={{ color: 'var(--app-text)' }}>Notifications</div>
+          <div className="text-sm" style={{ color: 'var(--app-muted-text)' }}>Loading notifications…</div>
         </div>
       </AppShell>
     );
@@ -192,123 +193,75 @@ export default function NotificationsPage() {
 
   return (
     <AppShell>
-      <div style={{ padding: '20px' }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '24px'
-        }}>
+      <div style={{ padding: '24px 16px', maxWidth: 1100, margin: '0 auto' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            gap: 12,
+            flexWrap: 'wrap',
+            marginBottom: 16,
+          }}
+        >
           <div>
-            <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 600 }}>Notifications</h1>
-            <p style={{ color: '#666', margin: 0 }}>
+            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: 'var(--app-text)' }}>Notifications</h1>
+            <div style={{ color: 'var(--app-muted-text)', marginTop: 4 }}>
               View all your system notifications and updates
-            </p>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <Button
+              variant="primary"
+              size="sm"
               onClick={markAllAsRead}
               disabled={notificationsList.length === 0}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: notificationsList.length === 0 ? '#ccc' : '#2196f3',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: notificationsList.length === 0 ? 'not-allowed' : 'pointer',
-                fontSize: '14px',
-                fontWeight: 500,
-              }}
-              onMouseEnter={(e) => {
-                if (notificationsList.length > 0) e.currentTarget.style.backgroundColor = '#1976d2';
-              }}
-              onMouseLeave={(e) => {
-                if (notificationsList.length > 0) e.currentTarget.style.backgroundColor = '#2196f3';
-              }}
             >
               Mark All as Read
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={markAllAsUnread}
               disabled={notificationsList.length === 0}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: 'var(--app-surface)',
-                color: notificationsList.length === 0 ? '#ccc' : '#666',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                cursor: notificationsList.length === 0 ? 'not-allowed' : 'pointer',
-                fontSize: '14px',
-                fontWeight: 500,
-              }}
-              onMouseEnter={(e) => {
-                if (notificationsList.length > 0) e.currentTarget.style.backgroundColor = 'var(--app-surface-2)';
-              }}
-              onMouseLeave={(e) => {
-                if (notificationsList.length > 0) e.currentTarget.style.backgroundColor = 'var(--app-surface)';
-              }}
             >
               Mark All as Unread
-            </button>
+            </Button>
           </div>
         </div>
 
-        <div style={{ maxWidth: '800px' }}>
-          <div style={{
-            padding: '12px 14px',
-            border: '1px solid #e5e7eb',
-            borderRadius: 8,
-            backgroundColor: 'var(--app-surface)',
-            marginBottom: 12,
-            color: 'var(--app-text)',
-          }}>
+        <div style={{ maxWidth: 900 }}>
+          <Card>
             <div style={{ fontWeight: 800, marginBottom: 4 }}>Notification settings moved</div>
-            <div style={{ fontSize: 13, color: '#666', marginBottom: 10 }}>
+            <div style={{ fontSize: 13, color: 'var(--app-muted-text)', marginBottom: 10 }}>
               Manage your notification channels and preferences in Preferences.
             </div>
-            <a
-              href="/preferences?tab=notifications"
-              style={{
-                display: 'inline-block',
-                padding: '10px 12px',
-                backgroundColor: '#2196f3',
-                color: 'white',
-                borderRadius: '6px',
-                textDecoration: 'none',
-                fontWeight: 800,
-                fontSize: 13,
-              }}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate('/preferences?tab=notifications')}
             >
               Open notification settings
-            </a>
-          </div>
+            </Button>
+          </Card>
 
           {!!error && (
-            <div style={{
-              padding: '12px',
-              backgroundColor: '#fee',
-              borderRadius: '8px',
-              color: '#c00',
-              marginBottom: '12px',
-            }}>
-              {error}
+            <div style={{ marginTop: 12 }}>
+              <Alert variant="error">{error}</Alert>
             </div>
           )}
 
-          {notificationsList.length === 0 ? (
-            <div style={{
-              padding: '40px',
-              textAlign: 'center',
-              backgroundColor: '#f8f9fa',
-              borderRadius: '8px',
-              color: '#666'
-            }}>
-              No notifications yet
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {notificationsList.map((notification) => {
+          <div style={{ marginTop: 12 }}>
+            {notificationsList.length === 0 ? (
+              <Card>
+                <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--app-muted-text)' }}>
+                  No notifications yet
+                </div>
+              </Card>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {notificationsList.map((notification) => {
                 const isUnread = !notification.read_at;
                 const notificationType = notification.metadata?.event_type || 'info';
                 const title =
@@ -339,81 +292,77 @@ export default function NotificationsPage() {
                 }
 
                 const borderColor =
-                  notificationType === 'project_created' ? '#2196f3' :
-                  notificationType === 'member_role_changed' ? '#ff9800' :
-                  '#4caf50';
+                  notificationType === 'project_created' ? 'var(--app-primary)' :
+                  notificationType === 'member_role_changed' ? 'var(--app-warning, #f59e0b)' :
+                  'var(--app-success, #22c55e)';
 
                 return (
                   <div
                     key={notification.id}
                     onClick={() => isUnread && markAsRead(notification.id)}
                     style={{
-                      padding: '16px',
-                      backgroundColor: isUnread ? '#e3f2fd' : '#f8f9fa',
-                      borderRadius: '8px',
-                      borderLeft: `4px solid ${borderColor}`,
                       cursor: isUnread ? 'pointer' : 'default',
-                      transition: 'all 0.2s',
-                      opacity: isUnread ? 1 : 0.7,
-                    }}
-                    onMouseEnter={(e) => {
-                      if (isUnread) {
-                        e.currentTarget.style.backgroundColor = '#bbdefb';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (isUnread) {
-                        e.currentTarget.style.backgroundColor = '#e3f2fd';
-                      }
+                      borderLeft: `4px solid ${borderColor}`,
+                      borderRadius: 8,
                     }}
                   >
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'start',
-                      marginBottom: '8px'
-                    }}>
-                      <h3 style={{
-                        margin: 0,
-                        fontSize: '16px',
-                        fontWeight: isUnread ? 600 : 400,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}>
-                        {title}
+                    <Card>
+                      <div
+                        style={{
+                          padding: 0,
+                          background: isUnread ? 'var(--app-surface-2)' : 'var(--app-surface)',
+                          borderRadius: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            gap: 12,
+                            marginBottom: 6,
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ fontSize: 16, fontWeight: isUnread ? 800 : 600, color: 'var(--app-text)' }}>
+                              {title}
+                            </div>
+                            {isUnread && (
+                              <span
+                                style={{
+                                  display: 'inline-block',
+                                  width: 8,
+                                  height: 8,
+                                  backgroundColor: 'var(--app-primary)',
+                                  borderRadius: '50%',
+                                }}
+                              />
+                            )}
+                          </div>
+                          <div style={{ fontSize: 12, color: 'var(--app-muted-text)', whiteSpace: 'nowrap' }}>
+                            {createdLabel || '—'}
+                          </div>
+                        </div>
+
+                        {body ? (
+                          <div style={{ color: 'var(--app-muted-text)', fontSize: 14, lineHeight: 1.4 }}>
+                            {body}
+                          </div>
+                        ) : null}
+
                         {isUnread && (
-                          <span style={{
-                            display: 'inline-block',
-                            width: '8px',
-                            height: '8px',
-                            backgroundColor: '#2196f3',
-                            borderRadius: '50%'
-                          }}></span>
+                          <div style={{ marginTop: 8, fontSize: 12, color: 'var(--app-primary)', fontStyle: 'italic' }}>
+                            Click to mark as read
+                          </div>
                         )}
-                      </h3>
-                      <span style={{ fontSize: '12px', color: '#666', whiteSpace: 'nowrap', marginLeft: '16px' }}>
-                        {createdLabel || '—'}
-                      </span>
-                    </div>
-                    <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
-                      {body}
-                    </p>
-                    {isUnread && (
-                      <p style={{
-                        margin: '8px 0 0 0',
-                        fontSize: '12px',
-                        color: '#2196f3',
-                        fontStyle: 'italic'
-                      }}>
-                        Click to mark as read
-                      </p>
-                    )}
+                      </div>
+                    </Card>
                   </div>
                 );
               })}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </AppShell>

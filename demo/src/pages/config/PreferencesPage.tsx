@@ -4,6 +4,8 @@ import {
   Button,
   Badge,
   Alert,
+  Input,
+  Modal,
 } from '@django-core/design-system';
 import {
   PageHeader,
@@ -76,7 +78,7 @@ interface EventTypeGroup {
 export const PreferencesPage: React.FC = () => {
   const location = useLocation();
   const { setTheme, mode, resolvedMode } = useTheme();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const darkModeEnabled = useFeatureFlag('dark_mode', true); // Default enabled
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [initialPreferences, setInitialPreferences] = useState<UserPreferences | null>(null);
@@ -120,6 +122,30 @@ export const PreferencesPage: React.FC = () => {
   const [demoMode, setDemoMode] = useState(false);
 
   const [activeTab, setActiveTab] = useState<'profile' | 'personalisation' | 'notifications'>('profile');
+
+  // Profile editing (in-app)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+
+  const [profileFirstName, setProfileFirstName] = useState('');
+  const [profileLastName, setProfileLastName] = useState('');
+  const [profileEmail, setProfileEmail] = useState('');
+  const [profileTwoFactorEnabled, setProfileTwoFactorEnabled] = useState(false);
+  const [profileCurrentPassword, setProfileCurrentPassword] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+
+  const [passwordCurrent, setPasswordCurrent] = useState('');
+  const [passwordNext, setPasswordNext] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
 
   useEffect(() => {
     let tab = '';
@@ -439,7 +465,12 @@ export const PreferencesPage: React.FC = () => {
         setLoadingSeasons(true);
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
-        const response = await fetch(`${baseUrl}/api/v1/projects/${selectedTeamId}/periods/?is_season=true`, {
+        const params = new URLSearchParams();
+        params.set('project_id', String(selectedTeamId));
+        params.set('type', 'season');
+        params.set('page_size', '500');
+
+        const response = await fetch(`${baseUrl}/api/v1/periods/?${params.toString()}`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
           credentials: 'include',
         });
@@ -474,7 +505,11 @@ export const PreferencesPage: React.FC = () => {
         const season = seasons.find(s => String(s.id) === selectedSeasonId);
         if (!season) return;
 
-        const response = await fetch(`${baseUrl}/api/v1/periods/${season.id}/subperiods/`, {
+        const params = new URLSearchParams();
+        params.set('parent_id', String(season.id));
+        params.set('page_size', '500');
+
+        const response = await fetch(`${baseUrl}/api/v1/periods/?${params.toString()}`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
           credentials: 'include',
         });
@@ -509,7 +544,12 @@ export const PreferencesPage: React.FC = () => {
         const competition = competitions.find(c => String(c.id) === selectedCompetitionId);
         if (!competition) return;
 
-        const response = await fetch(`${baseUrl}/api/v1/periods/${competition.id}/activities/`, {
+        const params = new URLSearchParams();
+        params.set('period_id', String(competition.id));
+        params.set('activity_type', 'match');
+        params.set('page_size', '500');
+
+        const response = await fetch(`${baseUrl}/api/v1/activities/?${params.toString()}`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
           credentials: 'include',
         });
@@ -1057,27 +1097,419 @@ export const PreferencesPage: React.FC = () => {
             {activeTab === 'profile' && (
               <>
                 <Card>
-                  <h3 className="text-lg font-semibold mb-4">Profile</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, maxWidth: 900 }}>
-                    <div>
-                      <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Signed in as</div>
-                      <div className="text-base" style={{ fontWeight: 700 }}>
-                        {String((user as any)?.email || (user as any)?.username || (user as any)?.name || '—')}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+                    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                      <div
+                        style={{
+                          width: 56,
+                          height: 56,
+                          borderRadius: 999,
+                          overflow: 'hidden',
+                          background: 'var(--app-border)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                        }}
+                      >
+                        {String((user as any)?.avatar_url || '').trim() ? (
+                          <img
+                            src={String((user as any)?.avatar_url)}
+                            alt="Profile"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <span style={{ color: 'var(--app-text)' }}>
+                            {String((user as any)?.first_name || (user as any)?.email || 'U')
+                              .trim()
+                              .slice(0, 1)
+                              .toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <h3 className="text-lg font-semibold mb-1">Profile</h3>
+                        <div className="text-sm" style={{ fontWeight: 700 }}>
+                          {String((user as any)?.name || `${(user as any)?.first_name || ''} ${(user as any)?.last_name || ''}` || '').trim() || '—'}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {String((user as any)?.email || (user as any)?.username || '—')}
+                        </div>
+                        <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                          <Badge variant={Boolean((user as any)?.two_factor_enabled) ? 'success' : 'default'}>
+                            2FA: {Boolean((user as any)?.two_factor_enabled) ? 'On' : 'Off'}
+                          </Badge>
+                          <span className="text-xs text-gray-500">User ID: {String((user as any)?.id ?? '—')}</span>
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <div className="text-xs font-semibold text-gray-500 uppercase mb-1">User ID</div>
-                      <div className="text-base">{String((user as any)?.id ?? '—')}</div>
+
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setProfileError(null);
+                          setProfileFirstName(String((user as any)?.first_name || '').trim());
+                          setProfileLastName(String((user as any)?.last_name || '').trim());
+                          setProfileEmail(String((user as any)?.email || '').trim());
+                          setProfileTwoFactorEnabled(Boolean((user as any)?.two_factor_enabled));
+                          setProfileCurrentPassword('');
+                          setIsProfileModalOpen(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setAvatarError(null);
+                          setAvatarFile(null);
+                          setIsAvatarModalOpen(true);
+                        }}
+                      >
+                        Photo
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setPasswordError(null);
+                          setPasswordSuccess(false);
+                          setPasswordCurrent('');
+                          setPasswordNext('');
+                          setPasswordConfirm('');
+                          setIsPasswordModalOpen(true);
+                        }}
+                      >
+                        Password
+                      </Button>
                     </div>
                   </div>
-
-                  <div style={{ marginTop: 16 }}>
-                    <Alert variant="info">
-                      Profile editing (name, email, password, 2FA) is typically managed via your identity provider.
-                      If you want this editable inside TeamReel, we can add a dedicated Account API and UI.
-                    </Alert>
-                  </div>
                 </Card>
+
+                <Modal
+                  isOpen={isProfileModalOpen}
+                  onClose={() => {
+                    if (profileSaving) return;
+                    setIsProfileModalOpen(false);
+                  }}
+                  title="Edit profile"
+                  footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setIsProfileModalOpen(false)}
+                        disabled={profileSaving}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            setProfileSaving(true);
+                            setProfileError(null);
+
+                            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                            const response = await fetch(`${apiBaseUrl}/api/v1/auth/profile/`, {
+                              method: 'PATCH',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': getCsrfToken(),
+                              },
+                              credentials: 'include',
+                              body: JSON.stringify({
+                                first_name: profileFirstName,
+                                last_name: profileLastName,
+                                email: profileEmail,
+                                two_factor_enabled: profileTwoFactorEnabled,
+                                current_password: profileCurrentPassword,
+                              }),
+                            });
+
+                            const json = await response.json().catch(() => ({}));
+                            if (!response.ok) {
+                              const message =
+                                (json as any)?.error?.message ||
+                                (json as any)?.message ||
+                                `Failed to update profile (${response.status})`;
+                              throw new Error(message);
+                            }
+
+                            const updatedUser = (json as any)?.data || json;
+                            if (typeof setUser === 'function') {
+                              setUser(updatedUser);
+                            }
+                            setIsProfileModalOpen(false);
+                          } catch (e) {
+                            setProfileError(e instanceof Error ? e.message : 'Failed to update profile');
+                          } finally {
+                            setProfileSaving(false);
+                          }
+                        }}
+                        disabled={profileSaving}
+                      >
+                        {profileSaving ? 'Saving…' : 'Save'}
+                      </Button>
+                    </div>
+                  }
+                >
+                  {profileError && (
+                    <div style={{ marginBottom: 12 }}>
+                      <Alert variant="error">{profileError}</Alert>
+                    </div>
+                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <Input
+                      label="First name"
+                      value={profileFirstName}
+                      onChange={(e) => setProfileFirstName(e.target.value)}
+                      placeholder="First name"
+                      disabled={profileSaving}
+                    />
+                    <Input
+                      label="Last name"
+                      value={profileLastName}
+                      onChange={(e) => setProfileLastName(e.target.value)}
+                      placeholder="Last name"
+                      disabled={profileSaving}
+                    />
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <Input
+                      label="Email"
+                      value={profileEmail}
+                      onChange={(e) => setProfileEmail(e.target.value)}
+                      placeholder="name@example.com"
+                      disabled={profileSaving}
+                    />
+                  </div>
+                  <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input
+                      id="twoFactorEnabled"
+                      type="checkbox"
+                      checked={profileTwoFactorEnabled}
+                      onChange={(e) => setProfileTwoFactorEnabled(e.target.checked)}
+                      disabled={profileSaving}
+                    />
+                    <label htmlFor="twoFactorEnabled" className="text-sm">
+                      Enable 2FA (flag)
+                    </label>
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <Input
+                      label="Current password (required)"
+                      value={profileCurrentPassword}
+                      onChange={(e) => setProfileCurrentPassword(e.target.value)}
+                      placeholder="Enter your current password"
+                      type="password"
+                      disabled={profileSaving}
+                    />
+                    <div className="text-xs text-gray-500" style={{ marginTop: 6 }}>
+                      Required to confirm changes to your account.
+                    </div>
+                  </div>
+                </Modal>
+
+                <Modal
+                  isOpen={isPasswordModalOpen}
+                  onClose={() => {
+                    if (passwordSaving) return;
+                    setIsPasswordModalOpen(false);
+                  }}
+                  title="Change password"
+                  footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setIsPasswordModalOpen(false)}
+                        disabled={passwordSaving}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            setPasswordSaving(true);
+                            setPasswordError(null);
+                            setPasswordSuccess(false);
+
+                            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                            const response = await fetch(`${apiBaseUrl}/api/v1/auth/change-password/`, {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': getCsrfToken(),
+                              },
+                              credentials: 'include',
+                              body: JSON.stringify({
+                                current_password: passwordCurrent,
+                                new_password: passwordNext,
+                                confirm_password: passwordConfirm,
+                              }),
+                            });
+
+                            const json = await response.json().catch(() => ({}));
+                            if (!response.ok) {
+                              const message =
+                                (json as any)?.error?.message ||
+                                (json as any)?.message ||
+                                `Failed to change password (${response.status})`;
+                              throw new Error(message);
+                            }
+
+                            setPasswordSuccess(true);
+                            setPasswordCurrent('');
+                            setPasswordNext('');
+                            setPasswordConfirm('');
+                          } catch (e) {
+                            setPasswordError(e instanceof Error ? e.message : 'Failed to change password');
+                          } finally {
+                            setPasswordSaving(false);
+                          }
+                        }}
+                        disabled={passwordSaving}
+                      >
+                        {passwordSaving ? 'Saving…' : 'Change password'}
+                      </Button>
+                    </div>
+                  }
+                >
+                  {passwordSuccess && (
+                    <div style={{ marginBottom: 12 }}>
+                      <Alert variant="success">Password updated.</Alert>
+                    </div>
+                  )}
+                  {passwordError && (
+                    <div style={{ marginBottom: 12 }}>
+                      <Alert variant="error">{passwordError}</Alert>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <Input
+                      label="Current password"
+                      value={passwordCurrent}
+                      onChange={(e) => setPasswordCurrent(e.target.value)}
+                      type="password"
+                      disabled={passwordSaving}
+                    />
+                    <Input
+                      label="New password"
+                      value={passwordNext}
+                      onChange={(e) => setPasswordNext(e.target.value)}
+                      type="password"
+                      disabled={passwordSaving}
+                    />
+                    <Input
+                      label="Confirm new password"
+                      value={passwordConfirm}
+                      onChange={(e) => setPasswordConfirm(e.target.value)}
+                      type="password"
+                      disabled={passwordSaving}
+                    />
+                  </div>
+                </Modal>
+
+                <Modal
+                  isOpen={isAvatarModalOpen}
+                  onClose={() => {
+                    if (avatarSaving) return;
+                    setIsAvatarModalOpen(false);
+                  }}
+                  title="Update profile photo"
+                  footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setIsAvatarModalOpen(false)}
+                        disabled={avatarSaving}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={async () => {
+                          if (!avatarFile) {
+                            setAvatarError('Please choose an image file');
+                            return;
+                          }
+
+                          try {
+                            setAvatarSaving(true);
+                            setAvatarError(null);
+
+                            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                            const formData = new FormData();
+                            formData.append('avatar', avatarFile);
+
+                            const response = await fetch(`${apiBaseUrl}/api/v1/auth/avatar/`, {
+                              method: 'POST',
+                              headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': getCsrfToken(),
+                              },
+                              credentials: 'include',
+                              body: formData,
+                            });
+
+                            const json = await response.json().catch(() => ({}));
+                            if (!response.ok) {
+                              const message =
+                                (json as any)?.error?.message ||
+                                (json as any)?.message ||
+                                `Failed to upload avatar (${response.status})`;
+                              throw new Error(message);
+                            }
+
+                            const updatedUser = (json as any)?.data || json;
+                            if (typeof setUser === 'function') {
+                              setUser(updatedUser);
+                            }
+
+                            setIsAvatarModalOpen(false);
+                            setAvatarFile(null);
+                          } catch (e) {
+                            setAvatarError(e instanceof Error ? e.message : 'Failed to upload avatar');
+                          } finally {
+                            setAvatarSaving(false);
+                          }
+                        }}
+                        disabled={avatarSaving}
+                      >
+                        {avatarSaving ? 'Uploading…' : 'Upload'}
+                      </Button>
+                    </div>
+                  }
+                >
+                  {avatarError && (
+                    <div style={{ marginBottom: 12 }}>
+                      <Alert variant="error">{avatarError}</Alert>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                      disabled={avatarSaving}
+                    />
+                    <div className="text-xs text-gray-500">
+                      PNG/JPG recommended. After upload, you may need a hard refresh if your browser caches the old image.
+                    </div>
+                  </div>
+                </Modal>
 
                 <Card>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
