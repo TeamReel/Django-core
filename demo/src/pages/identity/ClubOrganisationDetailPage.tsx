@@ -4,6 +4,7 @@ import { Alert, Button, Card, Input } from '@django-core/design-system';
 import { BreadcrumbContextSwitcher, PageContent, PageHeader, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
 
 import { fetchAllPages } from '../../utils/fetchAllPages';
+import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 
 import { TeamsList } from './directory/TeamsList';
 import { SeasonsList } from './directory/SeasonsList';
@@ -97,6 +98,8 @@ export default function ClubOrganisationDetailPage() {
 
   const [org, setOrg] = useState<Organisation | null>(null);
   const [club, setClub] = useState<Project | null>(null);
+  const [activeContext, setActiveContextState] = useState<any | null>(null);
+  const [activatingContext, setActivatingContext] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -196,6 +199,25 @@ export default function ClubOrganisationDetailPage() {
     const qs = params.toString();
     return qs ? `${location.pathname}?${qs}` : location.pathname;
   };
+
+  // Load active context
+  useEffect(() => {
+    let cancelled = false;
+    const loadActiveContext = async () => {
+      try {
+        const context = await getActiveContext();
+        if (!cancelled) {
+          setActiveContextState(context);
+        }
+      } catch (error) {
+        console.error('Failed to load active context:', error);
+      }
+    };
+    void loadActiveContext();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -923,6 +945,38 @@ export default function ClubOrganisationDetailPage() {
           ]}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+              {(() => {
+                const isActive = club && activeContext?.club?.id === club.id;
+                return (
+                  <Button
+                    variant={isActive ? 'primary' : 'secondary'}
+                    size="sm"
+                    onClick={async () => {
+                      if (!club || isActive) return;
+                      try {
+                        setActivatingContext(true);
+                        await setActiveContext('club', String(club.id));
+                        const context = await getActiveContext();
+                        setActiveContextState(context);
+                      } catch (error) {
+                        console.error('Failed to set active context:', error);
+                      } finally {
+                        setActivatingContext(false);
+                      }
+                    }}
+                    disabled={activatingContext || isActive}
+                    style={{
+                      backgroundColor: isActive ? '#dcfce7' : undefined,
+                      color: isActive ? '#166534' : undefined,
+                      border: isActive ? '1px solid #10b981' : undefined,
+                      fontWeight: isActive ? 600 : undefined,
+                      opacity: activatingContext || isActive ? 0.8 : 1,
+                    }}
+                  >
+                    {isActive ? '✓ Active Context' : 'Make active'}
+                  </Button>
+                );
+              })()}
               <Button variant="secondary" size="sm" onClick={() => navigate(backToOrgHref)}>
                 Back
               </Button>
