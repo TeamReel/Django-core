@@ -176,24 +176,47 @@ export const PreferencesPage: React.FC = () => {
     };
   }, []);
 
-  // Prefill cascading selectors from active context (without overriding user edits)
+  const deriveSelectionFromActiveContext = (ctx: any): {
+    orgId: string;
+    clubId: string;
+    teamId: string;
+    seasonId: string;
+    competitionId: string;
+    matchId: string;
+  } => {
+    const rawOrgId = String(ctx?.organisation?.id || '').trim();
+    const rawOrgSlug = String(ctx?.organisation?.slug || '').trim();
+    const resolvedOrgId = rawOrgId
+      ? rawOrgId
+      : (rawOrgSlug
+          ? String(organisations.find((o) => String(o?.slug || '').trim() === rawOrgSlug)?.id || rawOrgSlug).trim()
+          : '');
+
+    return {
+      orgId: resolvedOrgId,
+      clubId: String(ctx?.club?.id || '').trim(),
+      teamId: String(ctx?.team?.id || '').trim(),
+      seasonId: String(ctx?.season?.id || '').trim(),
+      competitionId: String(ctx?.competition?.id || '').trim(),
+      matchId: String(ctx?.match?.id || '').trim(),
+    };
+  };
+
+  // Keep cascading selectors consistent with the server active context.
+  // This ensures e.g. "Make active" on a club page is reflected immediately here.
   useEffect(() => {
-    if (!activeContext || hasEditedContext) return;
+    if (!activeContext) return;
+    if (hasEditedContext) return;
+    if (savingContext) return;
 
-    const orgKey = String(activeContext?.organisation?.id || activeContext?.organisation?.slug || '').trim();
-    const clubKey = String(activeContext?.club?.id || '').trim();
-    const teamKey = String(activeContext?.team?.id || '').trim();
-    const seasonKey = String(activeContext?.season?.id || '').trim();
-    const competitionKey = String(activeContext?.competition?.id || '').trim();
-    const matchKey = String(activeContext?.match?.id || '').trim();
-
-    if (!selectedOrgId && orgKey) setSelectedOrgId(orgKey);
-    if (!selectedClubId && clubKey) setSelectedClubId(clubKey);
-    if (!selectedTeamId && teamKey) setSelectedTeamId(teamKey);
-    if (!selectedSeasonId && seasonKey) setSelectedSeasonId(seasonKey);
-    if (!selectedCompetitionId && competitionKey) setSelectedCompetitionId(competitionKey);
-    if (!selectedMatchId && matchKey) setSelectedMatchId(matchKey);
-  }, [activeContext, hasEditedContext, selectedClubId, selectedCompetitionId, selectedMatchId, selectedOrgId, selectedSeasonId, selectedTeamId]);
+    const next = deriveSelectionFromActiveContext(activeContext);
+    setSelectedOrgId(next.orgId);
+    setSelectedClubId(next.clubId);
+    setSelectedTeamId(next.teamId);
+    setSelectedSeasonId(next.seasonId);
+    setSelectedCompetitionId(next.competitionId);
+    setSelectedMatchId(next.matchId);
+  }, [activeContext, organisations, hasEditedContext, savingContext]);
 
   // Load organisations on mount
   useEffect(() => {
@@ -203,7 +226,7 @@ export const PreferencesPage: React.FC = () => {
         setLoadingOrgs(true);
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
         console.log('[PreferencesPage] Loading organisations from:', `${baseUrl}/api/v1/organisations/`);
-        const response = await fetch(`${baseUrl}/api/v1/organisations/`, {
+        const response = await fetch(`${baseUrl}/api/v1/organisations/?page_size=250`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
           credentials: 'include',
         });
@@ -243,19 +266,37 @@ export const PreferencesPage: React.FC = () => {
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
         const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
         const orgSlug = org?.slug || selectedOrgId;
-        const response = await fetch(`${baseUrl}/api/v1/organisations/${orgSlug}/projects/?is_club=true`, {
-          headers: { 'X-Requested-With': 'XMLHttpRequest' },
-          credentials: 'include',
-        });
-        if (!response.ok) throw new Error('Failed to load clubs');
-        const json = await response.json();
-        const results = json.data?.results || json.results || json.data || json;
-        // Defensive filter: some backends ignore ?is_club=true; exclude team projects by requiring no parent.
-        const allProjects = Array.isArray(results) ? results : [];
-        const rootProjects = allProjects.filter((p: any) => {
+        const extract = (raw: any): { results: any[]; next: string } => {
+          const data = raw?.data ?? raw;
+          const results = (Array.isArray(data?.results) ? data.results : (Array.isArray(data) ? data : [])) as any[];
+          const next = String(data?.next || raw?.next || '').trim();
+          return { results, next };
+        };
+
+        const collected: any[] = [];
+        let nextUrl = `${baseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?is_club=true&page_size=250`;
+        let safety = 0;
+        while (nextUrl && safety < 25) {
+          safety += 1;
+          const response = await fetch(nextUrl, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'include',
+          });
+          if (!response.ok) throw new Error('Failed to load clubs');
+          const json = await response.json();
+          const { results, next } = extract(json);
+          collected.push(...results);
+          nextUrl = next;
+          if (cancelled) return;
+          if (!nextUrl) break;
+        }
+
+        // Defensive filter: exclude team projects by requiring no parent.
+        const rootProjects = collected.filter((p: any) => {
           const parentId = (p as any)?.parent_id;
           return parentId === null || parentId === undefined || String(parentId).trim() === '';
         });
+
         if (!cancelled) setClubs(rootProjects);
       } catch (e) {
         console.error('Failed to load clubs:', e);
@@ -284,19 +325,33 @@ export const PreferencesPage: React.FC = () => {
         const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
         const orgSlug = org?.slug || selectedOrgId;
 
-        // There is no dedicated "list teams under club" endpoint; we list team projects
-        // and filter by parent_id (club project id).
-        const response = await fetch(
-          `${baseUrl}/api/v1/organisations/${orgSlug}/projects/?parent_project__isnull=false`,
-          {
+        const extract = (raw: any): { results: any[]; next: string } => {
+          const data = raw?.data ?? raw;
+          const results = (Array.isArray(data?.results) ? data.results : (Array.isArray(data) ? data : [])) as any[];
+          const next = String(data?.next || raw?.next || '').trim();
+          return { results, next };
+        };
+
+        // There is no dedicated "list teams under club" endpoint; we list team projects and filter by parent_id.
+        const collected: any[] = [];
+        let nextUrl = `${baseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?parent_project__isnull=false&page_size=250`;
+        let safety = 0;
+        while (nextUrl && safety < 25) {
+          safety += 1;
+          const response = await fetch(nextUrl, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             credentials: 'include',
-          }
-        );
-        if (!response.ok) throw new Error('Failed to load teams');
-        const json = await response.json();
-        const results = json.data?.results || json.results || json.data || json;
-        const allTeams = Array.isArray(results) ? results : [];
+          });
+          if (!response.ok) throw new Error('Failed to load teams');
+          const json = await response.json();
+          const { results, next } = extract(json);
+          collected.push(...results);
+          nextUrl = next;
+          if (cancelled) return;
+          if (!nextUrl) break;
+        }
+
+        const allTeams = collected;
         const filteredTeams = allTeams.filter((t: any) => String(t?.parent_id || '') === String(selectedClubId));
         if (!cancelled) setTeams(filteredTeams);
       } catch (e) {
