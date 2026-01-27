@@ -2349,6 +2349,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     ? `/${orgSlugOrId}/${clubSlugOrId}`
     : clubsListPath;
 
+  console.log('[ProjectDetail] About to render main view. loading:', loading, 'context.isLoading:', context.isLoading, 'project:', project);
 
   return (
     <>
