@@ -2053,29 +2053,33 @@ export const PreferencesPage: React.FC = () => {
                       columns={[
                         {
                           key: 'timestamp',
-                          header: 'When',
-                          render: (row: any) => {
-                            try {
-                              return new Date(String(row.timestamp)).toLocaleString('nl-NL');
-                            } catch {
-                              return String(row.timestamp || '—');
-                            }
-                          },
+                          label: 'When',
                         },
-                        { key: 'event_type', header: 'Event', render: (row: any) => String(row.event_type || '—') },
+                        { key: 'event_type', label: 'Event' },
                         {
                           key: 'organisation_id',
-                          header: 'Org',
-                          render: (row: any) => String(row.organisation_id || '—').slice(0, 8),
+                          label: 'Org',
                         },
                         {
                           key: 'project_id',
-                          header: 'Project',
-                          render: (row: any) => String(row.project_id || '—'),
+                          label: 'Project',
                         },
                       ]}
-                      data={myAuditEvents}
-                      getRowKey={(row: any) => String(row.id)}
+                      rows={myAuditEvents.map((row: any) => {
+                        let when: string = '—';
+                        try {
+                          when = new Date(String(row.timestamp)).toLocaleString('nl-NL');
+                        } catch {
+                          when = String(row.timestamp || '—');
+                        }
+
+                        return {
+                          timestamp: when,
+                          event_type: String(row.event_type || '—'),
+                          organisation_id: String(row.organisation_id || '—').slice(0, 8),
+                          project_id: String(row.project_id || '—'),
+                        };
+                      })}
                     />
                   )}
                 </Card>

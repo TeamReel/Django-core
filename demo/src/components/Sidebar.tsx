@@ -421,7 +421,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 title = 'Overview';
                 items = [
                     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-                    { label: 'Directory', path: '/directory', icon: Folder },
                     { label: 'Recents', path: '/recents', icon: Timer },
                     { label: 'Manage Favorites', path: '/favorites', icon: Star },
                 ];
