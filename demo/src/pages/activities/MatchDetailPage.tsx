@@ -311,12 +311,12 @@ export const MatchDetailPage: React.FC = () => {
           actions={
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
               {(() => {
-                const isActive = match && activeContext?.match?.id === match.id;
+                const isActive = !!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
                 return (
                   <Button
                     variant={isActive ? 'primary' : 'secondary'}
                     onClick={async () => {
-                      if (isActive) return;
+                      if (!match || isActive) return;
                       try {
                         setActivatingContext(true);
                         await setActiveContext('match', String(match.id));

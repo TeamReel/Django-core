@@ -705,7 +705,7 @@ export default function TeamOrganisationDetailPage() {
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
               {(() => {
-                const isActive = team && activeContext?.team?.id === team.id;
+                const isActive = !!team && String(activeContext?.team?.id ?? '') === String(team.id ?? '');
                 return (
                   <Button
                     variant={isActive ? 'primary' : 'secondary'}

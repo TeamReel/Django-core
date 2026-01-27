@@ -1552,8 +1552,9 @@ export const OrganisationDetailPage: React.FC = () => {
         actions={
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {(() => {
-              const isActive = activeContext?.organisation?.id === org.id ||
-                               activeContext?.organisation?.slug === (org as any)?.slug;
+              const isActive =
+                String(activeContext?.organisation?.id ?? '') === String((org as any)?.id ?? '') ||
+                activeContext?.organisation?.slug === (org as any)?.slug;
               return (
                 <button
                   onClick={async () => {

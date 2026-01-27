@@ -13,7 +13,12 @@ import { useTheme } from '@django-core/theme-system';
 import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import { useAuth } from "@django-core/auth-ui";
 import { useLocation } from 'react-router-dom';
-import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext as fetchActiveContext } from '../../utils/activeContext';
+import {
+  ACTIVE_CONTEXT_CHANGED_EVENT,
+  getActiveContext as fetchActiveContext,
+  setActiveContext as apiSetActiveContext,
+  type ActiveContextKind,
+} from '../../utils/activeContext';
 
 function getCsrfToken(): string {
   const cookies = document.cookie.split(';');
@@ -83,6 +88,7 @@ export const PreferencesPage: React.FC = () => {
   const [activeContext, setActiveContext] = useState<any | null>(null);
   const [activeContextLoading, setActiveContextLoading] = useState(false);
   const [activeContextError, setActiveContextError] = useState<string | null>(null);
+  const [hasEditedContext, setHasEditedContext] = useState(false);
 
   // Cascading dropdown state for active context (always visible)
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
@@ -170,6 +176,25 @@ export const PreferencesPage: React.FC = () => {
     };
   }, []);
 
+  // Prefill cascading selectors from active context (without overriding user edits)
+  useEffect(() => {
+    if (!activeContext || hasEditedContext) return;
+
+    const orgKey = String(activeContext?.organisation?.id || activeContext?.organisation?.slug || '').trim();
+    const clubKey = String(activeContext?.club?.id || '').trim();
+    const teamKey = String(activeContext?.team?.id || '').trim();
+    const seasonKey = String(activeContext?.season?.id || '').trim();
+    const competitionKey = String(activeContext?.competition?.id || '').trim();
+    const matchKey = String(activeContext?.match?.id || '').trim();
+
+    if (!selectedOrgId && orgKey) setSelectedOrgId(orgKey);
+    if (!selectedClubId && clubKey) setSelectedClubId(clubKey);
+    if (!selectedTeamId && teamKey) setSelectedTeamId(teamKey);
+    if (!selectedSeasonId && seasonKey) setSelectedSeasonId(seasonKey);
+    if (!selectedCompetitionId && competitionKey) setSelectedCompetitionId(competitionKey);
+    if (!selectedMatchId && matchKey) setSelectedMatchId(matchKey);
+  }, [activeContext, hasEditedContext, selectedClubId, selectedCompetitionId, selectedMatchId, selectedOrgId, selectedSeasonId, selectedTeamId]);
+
   // Load organisations on mount
   useEffect(() => {
     let cancelled = false;
@@ -238,15 +263,51 @@ export const PreferencesPage: React.FC = () => {
     return () => { cancelled = true; };
   }, [selectedOrgId, organisations]);
 
-  // Teams are NOT loaded - club is the end level for active context
-  // (Teams exist in hierarchy but are not selectable as active context)
+  // Load teams when club selected
   useEffect(() => {
-    setTeams([]);
-  }, []);
+    if (!selectedOrgId || !selectedClubId) {
+      setTeams([]);
+      return;
+    }
 
-  // Load seasons when club selected (not team, since club is end level)
+    let cancelled = false;
+    const loadTeams = async () => {
+      try {
+        setLoadingTeams(true);
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
+        const orgSlug = org?.slug || selectedOrgId;
+
+        // There is no dedicated "list teams under club" endpoint; we list team projects
+        // and filter by parent_id (club project id).
+        const response = await fetch(
+          `${baseUrl}/api/v1/organisations/${orgSlug}/projects/?parent_project__isnull=false`,
+          {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'include',
+          }
+        );
+        if (!response.ok) throw new Error('Failed to load teams');
+        const json = await response.json();
+        const results = json.data?.results || json.results || json.data || json;
+        const allTeams = Array.isArray(results) ? results : [];
+        const filteredTeams = allTeams.filter((t: any) => String(t?.parent_id || '') === String(selectedClubId));
+        if (!cancelled) setTeams(filteredTeams);
+      } catch (e) {
+        console.error('Failed to load teams:', e);
+        if (!cancelled) setTeams([]);
+      } finally {
+        if (!cancelled) setLoadingTeams(false);
+      }
+    };
+
+    void loadTeams();
+    return () => { cancelled = true; };
+  }, [organisations, selectedClubId, selectedOrgId]);
+
+  // Load seasons when team selected
   useEffect(() => {
-    if (!selectedClubId) {
+    if (!selectedTeamId) {
       setSeasons([]);
       return;
     }
@@ -256,10 +317,8 @@ export const PreferencesPage: React.FC = () => {
       try {
         setLoadingSeasons(true);
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-        const club = clubs.find(c => String(c.id) === selectedClubId);
-        if (!club) return;
 
-        const response = await fetch(`${baseUrl}/api/v1/projects/${club.id}/periods/?is_season=true`, {
+        const response = await fetch(`${baseUrl}/api/v1/projects/${selectedTeamId}/periods/?is_season=true`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
           credentials: 'include',
         });
@@ -277,7 +336,7 @@ export const PreferencesPage: React.FC = () => {
 
     void loadSeasons();
     return () => { cancelled = true; };
-  }, [selectedClubId, clubs]);
+  }, [selectedTeamId]);
 
   // Load competitions when season selected
   useEffect(() => {
@@ -354,38 +413,36 @@ export const PreferencesPage: React.FC = () => {
       setSavingContext(true);
       setActiveContextError(null);
 
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-      const body: any = {};
-
-      if (selectedOrgId) {
-        const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
-        body.organisation_slug = org?.slug || selectedOrgId;
+      let kind: ActiveContextKind = 'clear';
+      let id: string | undefined;
+      if (selectedMatchId) {
+        kind = 'match';
+        id = selectedMatchId;
+      } else if (selectedCompetitionId) {
+        kind = 'competition';
+        id = selectedCompetitionId;
+      } else if (selectedSeasonId) {
+        kind = 'season';
+        id = selectedSeasonId;
+      } else if (selectedTeamId) {
+        kind = 'team';
+        id = selectedTeamId;
+      } else if (selectedClubId) {
+        kind = 'club';
+        id = selectedClubId;
+      } else if (selectedOrgId) {
+        kind = 'organisation';
+        id = selectedOrgId;
       }
-      if (selectedClubId) body.club_id = parseInt(selectedClubId, 10);
-      if (selectedTeamId) body.team_id = parseInt(selectedTeamId, 10);
-      if (selectedSeasonId) body.season_id = parseInt(selectedSeasonId, 10);
-      if (selectedCompetitionId) body.competition_id = parseInt(selectedCompetitionId, 10);
-      if (selectedMatchId) body.match_id = parseInt(selectedMatchId, 10);
 
-      const response = await fetch(`${baseUrl}/api/v1/auth/active-context/`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        credentials: 'include',
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Failed to update active context (${response.status})`);
-      }
+      await apiSetActiveContext(kind, id);
 
       // Reload active context
       const data = await fetchActiveContext();
       setActiveContext(data);
+
+      // After a successful save, the UI reflects the active context again.
+      setHasEditedContext(false);
 
       // Trigger event for sidebar refresh
       window.dispatchEvent(new Event(ACTIVE_CONTEXT_CHANGED_EVENT));
@@ -951,142 +1008,167 @@ export const PreferencesPage: React.FC = () => {
                     <h3 className="text-lg font-semibold mb-0">Active context</h3>
                   </div>
                   <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
-                    Your current Federation → Club → Season → Competition → Match selection used for sidebar defaults.
+                    Your current Federation → Club → Team → Season → Competition → Match selection used for sidebar defaults.
                   </div>
 
                   {activeContextError && <Alert variant="error" style={{ marginBottom: 12 }}>{activeContextError}</Alert>}
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 600 }}>
-                      {loadingOrgs && (
-                        <Alert variant="info">Loading federations...</Alert>
-                      )}
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Federation</label>
-                        <select
-                          className="w-full border rounded px-3 py-2"
-                          value={selectedOrgId}
-                          onChange={(e) => {
-                            setSelectedOrgId(e.target.value);
-                            setSelectedClubId('');
-                            setSelectedTeamId('');
-                            setSelectedSeasonId('');
-                            setSelectedCompetitionId('');
-                            setSelectedMatchId('');
-                          }}
-                          disabled={loadingOrgs || savingContext}
-                        >
-                          <option value="">— Select Federation —</option>
-                          {!loadingOrgs && organisations.length === 0 && <option disabled>No federations found (check console)</option>}
-                          {organisations.map((org) => (
-                            <option key={org.id} value={org.id}>
-                              {org.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                    {loadingOrgs && (
+                      <Alert variant="info">Loading federations...</Alert>
+                    )}
 
-                      {selectedOrgId && (
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Club</label>
-                          <select
-                            className="w-full border rounded px-3 py-2"
-                            value={selectedClubId}
-                            onChange={(e) => {
-                              setSelectedClubId(e.target.value);
-                              setSelectedSeasonId('');
-                              setSelectedCompetitionId('');
-                              setSelectedMatchId('');
-                            }}
-                            disabled={loadingClubs || savingContext || clubs.length === 0}
-                          >
-                            <option value="">— Select Club —</option>
-                            {clubs.map((club) => (
-                              <option key={club.id} value={club.id}>
-                                {club.name}
-                              </option>
-                            ))}
-                          </select>
-                          {loadingClubs && <div className="text-xs text-gray-500 mt-1">Loading clubs…</div>}
-                        </div>
-                      )}
-
-                      {selectedClubId && (
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Season</label>
-                          <select
-                            className="w-full border rounded px-3 py-2"
-                            value={selectedSeasonId}
-                            onChange={(e) => {
-                              setSelectedSeasonId(e.target.value);
-                              setSelectedCompetitionId('');
-                              setSelectedMatchId('');
-                            }}
-                            disabled={loadingSeasons || savingContext || seasons.length === 0}
-                          >
-                            <option value="">— Select Season —</option>
-                            {seasons.map((season) => (
-                              <option key={season.id} value={season.id}>
-                                {season.name}
-                              </option>
-                            ))}
-                          </select>
-                          {loadingSeasons && <div className="text-xs text-gray-500 mt-1">Loading seasons…</div>}
-                        </div>
-                      )}
-
-                      {selectedSeasonId && (
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Competition</label>
-                          <select
-                            className="w-full border rounded px-3 py-2"
-                            value={selectedCompetitionId}
-                            onChange={(e) => {
-                              setSelectedCompetitionId(e.target.value);
-                              setSelectedMatchId('');
-                            }}
-                            disabled={loadingCompetitions || savingContext || competitions.length === 0}
-                          >
-                            <option value="">— Select Competition —</option>
-                            {competitions.map((comp) => (
-                              <option key={comp.id} value={comp.id}>
-                                {comp.name}
-                              </option>
-                            ))}
-                          </select>
-                          {loadingCompetitions && <div className="text-xs text-gray-500 mt-1">Loading competitions…</div>}
-                        </div>
-                      )}
-
-                      {selectedCompetitionId && (
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Match</label>
-                          <select
-                            className="w-full border rounded px-3 py-2"
-                            value={selectedMatchId}
-                            onChange={(e) => setSelectedMatchId(e.target.value)}
-                            disabled={loadingMatches || savingContext || matches.length === 0}
-                          >
-                            <option value="">— Select Match —</option>
-                            {matches.map((match) => (
-                              <option key={match.id} value={match.id}>
-                                {match.title || match.name}
-                              </option>
-                            ))}
-                          </select>
-                          {loadingMatches && <div className="text-xs text-gray-500 mt-1">Loading matches…</div>}
-                        </div>
-                      )}
-
-                      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                        <Button
-                          variant="primary"
-                          onClick={handleSaveActiveContext}
-                          disabled={savingContext}
-                        >
-                          {savingContext ? 'Saving…' : 'Save Context'}
-                        </Button>
-                      </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Federation</label>
+                      <select
+                        className="w-full border rounded px-3 py-2"
+                        value={selectedOrgId}
+                        onChange={(e) => {
+                          setHasEditedContext(true);
+                          setSelectedOrgId(e.target.value);
+                          setSelectedClubId('');
+                          setSelectedTeamId('');
+                          setSelectedSeasonId('');
+                          setSelectedCompetitionId('');
+                          setSelectedMatchId('');
+                        }}
+                        disabled={loadingOrgs || savingContext}
+                      >
+                        <option value="">— Select Federation —</option>
+                        {!loadingOrgs && organisations.length === 0 && <option disabled>No federations found</option>}
+                        {organisations.map((org) => (
+                          <option key={org.id} value={org.id}>
+                            {org.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Club</label>
+                      <select
+                        className="w-full border rounded px-3 py-2"
+                        value={selectedClubId}
+                        onChange={(e) => {
+                          setHasEditedContext(true);
+                          setSelectedClubId(e.target.value);
+                          setSelectedTeamId('');
+                          setSelectedSeasonId('');
+                          setSelectedCompetitionId('');
+                          setSelectedMatchId('');
+                        }}
+                        disabled={!selectedOrgId || loadingClubs || savingContext || clubs.length === 0}
+                      >
+                        <option value="">{selectedOrgId ? '— Select Club —' : '— Select Federation first —'}</option>
+                        {clubs.map((club) => (
+                          <option key={club.id} value={club.id}>
+                            {club.name}
+                          </option>
+                        ))}
+                      </select>
+                      {selectedOrgId && loadingClubs && <div className="text-xs text-gray-500 mt-1">Loading clubs…</div>}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Team</label>
+                      <select
+                        className="w-full border rounded px-3 py-2"
+                        value={selectedTeamId}
+                        onChange={(e) => {
+                          setHasEditedContext(true);
+                          setSelectedTeamId(e.target.value);
+                          setSelectedSeasonId('');
+                          setSelectedCompetitionId('');
+                          setSelectedMatchId('');
+                        }}
+                        disabled={!selectedClubId || loadingTeams || savingContext || teams.length === 0}
+                      >
+                        <option value="">{selectedClubId ? '— Select Team —' : '— Select Club first —'}</option>
+                        {teams.map((team) => (
+                          <option key={team.id} value={team.id}>
+                            {team.name}
+                          </option>
+                        ))}
+                      </select>
+                      {selectedClubId && loadingTeams && <div className="text-xs text-gray-500 mt-1">Loading teams…</div>}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Season</label>
+                      <select
+                        className="w-full border rounded px-3 py-2"
+                        value={selectedSeasonId}
+                        onChange={(e) => {
+                          setHasEditedContext(true);
+                          setSelectedSeasonId(e.target.value);
+                          setSelectedCompetitionId('');
+                          setSelectedMatchId('');
+                        }}
+                        disabled={!selectedTeamId || loadingSeasons || savingContext || seasons.length === 0}
+                      >
+                        <option value="">{selectedTeamId ? '— Select Season —' : '— Select Team first —'}</option>
+                        {seasons.map((season) => (
+                          <option key={season.id} value={season.id}>
+                            {season.name}
+                          </option>
+                        ))}
+                      </select>
+                      {selectedTeamId && loadingSeasons && <div className="text-xs text-gray-500 mt-1">Loading seasons…</div>}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Competition</label>
+                      <select
+                        className="w-full border rounded px-3 py-2"
+                        value={selectedCompetitionId}
+                        onChange={(e) => {
+                          setHasEditedContext(true);
+                          setSelectedCompetitionId(e.target.value);
+                          setSelectedMatchId('');
+                        }}
+                        disabled={!selectedSeasonId || loadingCompetitions || savingContext || competitions.length === 0}
+                      >
+                        <option value="">{selectedSeasonId ? '— Select Competition —' : '— Select Season first —'}</option>
+                        {competitions.map((comp) => (
+                          <option key={comp.id} value={comp.id}>
+                            {comp.name}
+                          </option>
+                        ))}
+                      </select>
+                      {selectedSeasonId && loadingCompetitions && <div className="text-xs text-gray-500 mt-1">Loading competitions…</div>}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Match</label>
+                      <select
+                        className="w-full border rounded px-3 py-2"
+                        value={selectedMatchId}
+                        onChange={(e) => {
+                          setHasEditedContext(true);
+                          setSelectedMatchId(e.target.value);
+                        }}
+                        disabled={!selectedCompetitionId || loadingMatches || savingContext || matches.length === 0}
+                      >
+                        <option value="">{selectedCompetitionId ? '— Select Match —' : '— Select Competition first —'}</option>
+                        {matches.map((match) => (
+                          <option key={match.id} value={match.id}>
+                            {match.title || match.name}
+                          </option>
+                        ))}
+                      </select>
+                      {selectedCompetitionId && loadingMatches && <div className="text-xs text-gray-500 mt-1">Loading matches…</div>}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                      <Button
+                        variant="primary"
+                        onClick={handleSaveActiveContext}
+                        disabled={savingContext}
+                      >
+                        {savingContext ? 'Saving…' : 'Save Context'}
+                      </Button>
+                    </div>
+                  </div>
                 </Card>
               </>
             )}

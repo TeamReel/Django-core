@@ -267,21 +267,21 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         season: payload?.season
                             ? {
                                   id: String(payload.season.id),
-                                  key: String(payload.season.key || payload.season.id),
+                                  key: String(payload.season.key || payload.season.slug || payload.season.id),
                                   name: (payload.season.name ?? null) as string | null,
                               }
                             : null,
                         competition: payload?.competition
                             ? {
                                   id: String(payload.competition.id),
-                                  key: String(payload.competition.key || payload.competition.id),
+                                  key: String(payload.competition.key || payload.competition.slug || payload.competition.id),
                                   name: (payload.competition.name ?? null) as string | null,
                               }
                             : null,
                         match: payload?.match
                             ? {
                                   id: String(payload.match.id),
-                                  key: String(payload.match.key || payload.match.id),
+                                  key: String(payload.match.slug || payload.match.key || payload.match.id),
                                   label: (payload.match.title ?? null) as string | null,
                               }
                             : null,
@@ -837,28 +837,54 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         const competitionKey = String(resolvedAppContext?.competition?.key || '').trim();
         const matchKey = String(resolvedAppContext?.match?.key || '').trim();
 
-                const federationPath = orgId ? `/${orgId}` : '/dashboard';
+        const withTab = (rawPath: string, tab: string): string => {
+            const safePath = String(rawPath || '').trim();
+            const t = String(tab || '').trim();
+            if (!safePath || !t) return safePath;
+            const [base, qs] = safePath.split('?');
+            const params = new URLSearchParams(qs || '');
+            params.set('tab', t);
+            const next = params.toString();
+            return next ? `${base}?${next}` : base;
+        };
 
-                // Use distinct, predictable fallbacks so links never collapse into the same path.
-                const directoryPath = '/directory';
-                const clubsIndexPath = orgId ? `/${orgId}/clubs` : directoryPath;
-                const teamsIndexPath = orgId ? `/${orgId}/teams` : directoryPath;
-                const seasonsIndexPath = orgId ? `/${orgId}/seasons` : directoryPath;
-                const competitionsIndexPath = orgId ? `/${orgId}/competitions` : directoryPath;
-                const matchesIndexPath = orgId ? `/${orgId}/matches` : directoryPath;
+        const federationPath = orgId ? `/${orgId}` : '/dashboard';
 
-                const clubPath = orgId && clubSlug ? `/${orgId}/${clubSlug}` : clubsIndexPath;
-                const teamPath = orgId && clubSlug && teamSlug ? `/${orgId}/${clubSlug}/${teamSlug}` : teamsIndexPath;
-                const seasonPath = orgId && clubSlug && teamSlug && seasonKey ? `/${orgId}/${clubSlug}/${teamSlug}/${seasonKey}` : seasonsIndexPath;
+        // Use distinct, predictable fallbacks so links never collapse into the same path.
+        const directoryPath = '/directory';
+        const clubsIndexPath = orgId ? `/${orgId}/clubs` : directoryPath;
+        const teamsIndexPath = orgId ? `/${orgId}/teams` : directoryPath;
+        const seasonsIndexPath = orgId ? `/${orgId}/seasons` : directoryPath;
+        const competitionsIndexPath = orgId ? `/${orgId}/competitions` : directoryPath;
+        const matchesIndexPath = orgId ? `/${orgId}/matches` : directoryPath;
 
-                // No more ?tab fallbacks: always go to a detail page, or fall back one level up.
-                const competitionPath = orgId && clubSlug && teamSlug && seasonKey && competitionKey
-                    ? `/${orgId}/${clubSlug}/${teamSlug}/${seasonKey}/${competitionKey}`
-                    : (orgId && clubSlug && teamSlug && seasonKey ? seasonPath : competitionsIndexPath);
+        const clubPath = orgId && clubSlug ? `/${orgId}/${clubSlug}` : clubsIndexPath;
+        const teamPath = orgId && clubSlug && teamSlug ? `/${orgId}/${clubSlug}/${teamSlug}` : teamsIndexPath;
 
-                const matchPath = orgId && clubSlug && teamSlug && seasonKey && competitionKey && matchKey
-                    ? `/${orgId}/${clubSlug}/${teamSlug}/${seasonKey}/${competitionKey}/${matchKey}`
-                    : matchesIndexPath;
+        // Prefer team-scoped routes when possible.
+        const teamSeasonsPath = orgId && clubSlug && teamSlug
+            ? `/${orgId}/${clubSlug}/${teamSlug}/seasons`
+            : seasonsIndexPath;
+
+        const seasonPath = orgId && clubSlug && teamSlug && seasonKey
+            ? `/${orgId}/${clubSlug}/${teamSlug}/${seasonKey}`
+            : teamSeasonsPath;
+
+        const competitionDetailPath = orgId && clubSlug && teamSlug && seasonKey && competitionKey
+            ? `/${orgId}/${clubSlug}/${teamSlug}/${seasonKey}/${competitionKey}`
+            : '';
+
+        const competitionPath = competitionDetailPath
+            ? competitionDetailPath
+            : (orgId && clubSlug && teamSlug && seasonKey ? withTab(seasonPath, 'competitions') : competitionsIndexPath);
+
+        const matchDetailPath = orgId && clubSlug && teamSlug && seasonKey && competitionKey && matchKey
+            ? `/${orgId}/${clubSlug}/${teamSlug}/${seasonKey}/${competitionKey}/${matchKey}`
+            : '';
+
+        const matchPath = matchDetailPath
+            ? matchDetailPath
+            : (competitionDetailPath ? withTab(competitionDetailPath, 'matches') : (seasonKey ? withTab(seasonPath, 'matches') : matchesIndexPath));
 
         const federationLabel = 'Federation';
         const clubLabel = 'Club';

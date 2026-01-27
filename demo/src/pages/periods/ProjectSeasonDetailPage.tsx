@@ -1009,7 +1009,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {(() => {
-                const isActive = season && activeContext?.season?.id === season.id;
+                const isActive = !!season && String(activeContext?.season?.id ?? '') === String((season as any)?.id ?? '');
                 return (
                   <button
                     type="button"

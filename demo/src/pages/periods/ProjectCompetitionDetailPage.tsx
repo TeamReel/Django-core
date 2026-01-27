@@ -1615,7 +1615,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {(() => {
-                const isActive = competition && activeContext?.competition?.id === competition.id;
+                const isActive = !!competition && String(activeContext?.competition?.id ?? '') === String((competition as any)?.id ?? '');
                 return (
                   <button
                     type="button"

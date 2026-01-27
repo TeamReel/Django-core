@@ -1483,7 +1483,7 @@ export default function HierarchyMatchDetailPage() {
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {(() => {
-                const isActive = match && activeContext?.match?.id === match.id;
+                const isActive = !!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
                 return (
                   <button
                     type="button"
