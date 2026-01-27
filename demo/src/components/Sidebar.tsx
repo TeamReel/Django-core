@@ -405,6 +405,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     if (path.startsWith('/content') || path.startsWith('/studio')) activeSection = 'content';
     else if (path.startsWith('/credits')) activeSection = isPersonalWallet ? 'preferences' : 'organisation';
     else if (path.startsWith('/permissions') || path === '/users') activeSection = 'organisation';
+    else if (path.startsWith('/organisation/')) activeSection = 'organisation';
     else if (path.startsWith('/profile') || path.startsWith('/preferences') || path.startsWith('/memberships') || path.startsWith('/billing') || path.startsWith('/notifications')) activeSection = 'preferences';
     else if (['/health', '/flags', '/audit', '/integration', '/design', '/observability', '/security', '/constitution', '/demo/performance'].some(prefix => path.startsWith(prefix))) activeSection = 'platform';
     else if (['/docs'].some(prefix => path.startsWith(prefix))) activeSection = 'help';
@@ -418,6 +419,16 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         case 'work':
             // Dashboard or Directory: show overview section in Panel B
             if (path === '/dashboard') {
+                title = 'Overview';
+                items = [
+                    { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+                    { label: 'Recents', path: '/recents', icon: Timer },
+                    { label: 'Manage Favorites', path: '/favorites', icon: Star },
+                ];
+                break;
+            }
+
+            if (path === '/recents' || path === '/favorites') {
                 title = 'Overview';
                 items = [
                     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -742,7 +753,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Permissions', path: '/permissions', icon: Lock },
                     { label: 'Users', path: '/users', icon: Users },
                     ...(isStaff ? [{ label: 'Features', path: '/flags', icon: Flag }] : []),
-                    { label: 'Audit', path: '/audit', icon: Scroll },
+                    { label: 'Audit', path: '/organisation/audit', icon: Scroll },
                     { label: 'Organisation Wallet', path: '/credits?wallet=org', icon: CreditCard },
                 ];
             }

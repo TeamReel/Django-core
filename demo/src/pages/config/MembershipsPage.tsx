@@ -150,8 +150,8 @@ export const MembershipsPage: React.FC = () => {
           <Alert variant="error">Not signed in.</Alert>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
-          <Card>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 20 }}>
+          <Card style={{ padding: 24 }}>
             <h3 className="text-lg font-semibold mb-2">Federations</h3>
             <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
               Organisations you belong to.
@@ -181,7 +181,7 @@ export const MembershipsPage: React.FC = () => {
             )}
           </Card>
 
-          <Card>
+          <Card style={{ padding: 24 }}>
             <h3 className="text-lg font-semibold mb-2">Clubs</h3>
             <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
               Clubs you belong to.
@@ -211,7 +211,7 @@ export const MembershipsPage: React.FC = () => {
             )}
           </Card>
 
-          <Card>
+          <Card style={{ padding: 24 }}>
             <h3 className="text-lg font-semibold mb-2">Teams</h3>
             <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
               Teams you belong to.
@@ -241,7 +241,7 @@ export const MembershipsPage: React.FC = () => {
             )}
           </Card>
 
-          <Card>
+          <Card style={{ padding: 24 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
               <div>
                 <h3 className="text-lg font-semibold mb-2">Seasons</h3>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Card,
   Button,
@@ -108,6 +108,38 @@ export const PreferencesPage: React.FC = () => {
   const [seasons, setSeasons] = useState<any[]>([]);
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
+
+  const organisationLabelByKey = useMemo(() => {
+    const map = new Map<string, string>();
+    const userOrgs: any[] = Array.isArray((user as any)?.organisations) ? (user as any).organisations : [];
+    for (const o of [...organisations, ...userOrgs]) {
+      const id = String(o?.id || '').trim();
+      const slug = String(o?.slug || '').trim();
+      const label = String(o?.name || o?.title || o?.label || o?.slug || o?.id || '').trim();
+      if (label) {
+        if (id) map.set(id, label);
+        if (slug) map.set(slug, label);
+      }
+    }
+    return map;
+  }, [organisations, user]);
+
+  const projectLabelByKey = useMemo(() => {
+    const map = new Map<string, string>();
+    const userProjects: any[] = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+    for (const p of [...clubs, ...teams, ...userProjects]) {
+      const id = String(p?.id || '').trim();
+      const slug = String(p?.slug || '').trim();
+      const key = String(p?.key || '').trim();
+      const label = String(p?.name || p?.title || p?.label || p?.slug || p?.id || '').trim();
+      if (label) {
+        if (id) map.set(id, label);
+        if (slug) map.set(slug, label);
+        if (key) map.set(key, label);
+      }
+    }
+    return map;
+  }, [clubs, teams, user]);
 
   const [loadingOrgs, setLoadingOrgs] = useState(false);
   const [loadingClubs, setLoadingClubs] = useState(false);
@@ -2073,11 +2105,22 @@ export const PreferencesPage: React.FC = () => {
                           when = String(row.timestamp || '—');
                         }
 
+                        const orgKey = String(row.organisation_id || '').trim();
+                        const projectKey = String(row.project_id || '').trim();
+
+                        const orgLabel = orgKey
+                          ? (organisationLabelByKey.get(orgKey) || `${orgKey.slice(0, 8)}…`)
+                          : '—';
+
+                        const projectLabel = projectKey
+                          ? (projectLabelByKey.get(projectKey) || projectKey)
+                          : '—';
+
                         return {
                           timestamp: when,
                           event_type: String(row.event_type || '—'),
-                          organisation_id: String(row.organisation_id || '—').slice(0, 8),
-                          project_id: String(row.project_id || '—'),
+                          organisation_id: orgLabel,
+                          project_id: projectLabel,
                         };
                       })}
                     />

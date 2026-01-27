@@ -48,6 +48,7 @@ import {
 // Config pages
 import {
   AuditLogPage,
+  OrganisationAuditPage,
   FeatureFlagsPage,
   CreditsPage,
   PreferencesPage,
@@ -1226,6 +1227,15 @@ export default function App() {
         element={
           <OrgAdminRoute>
             <AuditLogPage />
+          </OrgAdminRoute>
+        }
+      />
+
+      <Route
+        path="/organisation/audit"
+        element={
+          <OrgAdminRoute>
+            <OrganisationAuditPage />
           </OrgAdminRoute>
         }
       />
