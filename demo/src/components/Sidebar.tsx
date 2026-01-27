@@ -731,7 +731,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 { label: 'Notification settings', path: '/preferences?tab=notifications', icon: Settings },
                 { label: 'My Wallet', path: '/credits?wallet=personal', icon: CreditCard },
                 { label: 'Memberships', path: '/memberships', icon: Users },
-                { label: 'My Audit', path: `/audit?user=${encodeURIComponent(String(user?.email || ''))}`, icon: Scroll },
+                { label: 'My Audit', path: '/preferences?tab=audit', icon: Scroll },
                 { label: 'Billing & Licensing', path: '/billing', icon: CreditCard },
             ];
             break;
@@ -948,7 +948,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             position: 'relative'
         }}
       >
-        {/* Collapse/Expand Toggle (Top-right edge of Panel A) */}
+        {/* Collapse/Expand Toggle (Top-right edge of Panels A+B) */}
         <button
             onClick={toggle}
             title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
@@ -956,12 +956,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             style={{
                 position: 'fixed',
                 top: 14,
-                left: (isOpen ? 240 : 72) - 14,
+                left: ((isOpen ? 240 : 72) + (panelBConfig ? 220 : 0)) - 14,
                 width: 28,
                 height: 28,
                 borderRadius: 999,
-                backgroundColor: 'var(--sidebar-a-bg)',
-                border: '1px solid var(--sidebar-a-border)',
+                backgroundColor: 'var(--app-surface)',
+                border: '1px solid var(--app-border)',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
                 cursor: 'pointer',
                 color: 'var(--sidebar-a-text)',
@@ -1159,6 +1159,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                             width: '100%',
                                         }}
                                     >
+                                        {item.icon && (
+                                            <span style={{ marginRight: 10, display: 'flex' }}>
+                                                <AppIcon icon={item.icon} size={16} />
+                                            </span>
+                                        )}
                                         {item.label}
                                     </Link>
                                 );

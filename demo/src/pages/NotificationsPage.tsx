@@ -9,19 +9,30 @@ const debugLog = (...args: unknown[]) => {
 
 interface Notification {
   id: string;
-  type: {
-    code: string;
-    name: string;
+  title?: string;
+  message?: string;
+  level?: string;
+  is_read?: boolean;
+  created_at?: string;
+  // Back-compat fields (older schema)
+  type?: {
+    code?: string;
+    name?: string;
   };
-  payload: {
-    title: string;
-    body: string;
+  payload?: {
+    title?: string;
+    body?: string;
+    message?: string;
   };
-  metadata: any;
-  status: string;
-  created_at: string;
-  read_at: string | null;
+  metadata?: any;
+  status?: string;
+  read_at?: string | null;
 }
+
+const unwrapResponseData = <T,>(raw: any): T => {
+  // Global renderer can wrap as { status, data, meta }
+  return (raw?.data ?? raw) as T;
+};
 
 const safeSearchParams = (search: string) => {
   try {
@@ -70,18 +81,15 @@ export default function NotificationsPage() {
         throw new Error('Failed to fetch notifications');
       }
 
-      const data = await response.json();
+      const raw = await response.json();
+      const data = unwrapResponseData<any>(raw);
       debugLog('Fetched notifications:', data);
 
       const list: any[] = Array.isArray(data)
         ? data
         : Array.isArray(data?.results)
           ? data.results
-          : Array.isArray(data?.data?.results)
-            ? data.data.results
-            : Array.isArray(data?.data)
-              ? data.data
-              : [];
+          : [];
 
       debugLog('Array length:', list.length);
       setNotifications(list as Notification[]);
@@ -112,7 +120,8 @@ export default function NotificationsPage() {
         throw new Error('Failed to mark notification as read');
       }
 
-      const updatedNotification = await response.json();
+      const raw = await response.json();
+      const updatedNotification = unwrapResponseData<Notification>(raw);
 
       // Update local state
       setNotifications(prev =>
@@ -262,19 +271,32 @@ export default function NotificationsPage() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {notificationsList.map((notification) => {
-                const isUnread = !notification.read_at;
-                const notificationType = notification.metadata?.event_type || 'info';
+                const isUnread = (notification as any)?.is_read === undefined
+                  ? !notification.read_at
+                  : !Boolean((notification as any)?.is_read);
+
+                const notificationType =
+                  String((notification as any)?.level || (notification as any)?.metadata?.event_type || 'info').toLowerCase();
+
                 const title =
-                  (notification as any)?.payload?.title ||
-                  (notification as any)?.metadata?.title ||
-                  (notification as any)?.type?.name ||
-                  (notification as any)?.metadata?.event_type ||
-                  'Notification';
+                  String(
+                    (notification as any)?.title ||
+                    (notification as any)?.payload?.title ||
+                    (notification as any)?.metadata?.title ||
+                    (notification as any)?.type?.name ||
+                    (notification as any)?.metadata?.event_type ||
+                    'Notification'
+                  );
+
                 const body =
-                  (notification as any)?.payload?.body ||
-                  (notification as any)?.metadata?.body ||
-                  (notification as any)?.metadata?.message ||
-                  '';
+                  String(
+                    (notification as any)?.message ||
+                    (notification as any)?.payload?.message ||
+                    (notification as any)?.payload?.body ||
+                    (notification as any)?.metadata?.body ||
+                    (notification as any)?.metadata?.message ||
+                    ''
+                  );
 
                 let createdLabel = '';
                 try {
@@ -292,9 +314,10 @@ export default function NotificationsPage() {
                 }
 
                 const borderColor =
-                  notificationType === 'project_created' ? 'var(--app-primary)' :
-                  notificationType === 'member_role_changed' ? 'var(--app-warning, #f59e0b)' :
-                  'var(--app-success, #22c55e)';
+                  notificationType === 'error' ? 'var(--app-danger, #ef4444)' :
+                  notificationType === 'warning' ? 'var(--app-warning, #f59e0b)' :
+                  notificationType === 'success' ? 'var(--app-success, #22c55e)' :
+                  'var(--app-primary)';
 
                 return (
                   <div

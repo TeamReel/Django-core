@@ -118,20 +118,6 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
     return `Credits: ${String(myCreditsBalance)}`;
   }, [myCreditsBalance]);
 
-  // Ctrl+K / Cmd+K Quick Switcher
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      const isMac = navigator.platform.toLowerCase().includes('mac');
-      const mod = isMac ? e.metaKey : e.ctrlKey;
-      if (mod && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setCommandOpen(true);
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
-
   // Close Create menu on click outside
   useEffect(() => {
     if (!createMenuOpen) return;
@@ -720,7 +706,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
               type="button"
               onClick={() => setCommandOpen(true)}
               className="nav-icon-button"
-              title="Quick switch (Ctrl+K)"
+              title="Quick switch"
               aria-label="Quick switch"
               style={{
                 padding: '8px 10px',
@@ -732,7 +718,6 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
             >
               <AppIcon icon={Command} size={18} />
               <span style={{ fontSize: 13, fontWeight: 800 }}>Quick switch</span>
-              <span style={{ fontSize: 12, opacity: 0.7, fontWeight: 700 }}>Ctrl+K</span>
             </button>
 
             {/* + Create CTA (main action opens Content Library) */}

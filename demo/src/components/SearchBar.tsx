@@ -126,20 +126,20 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
             width: '100%',
             padding: '8px 12px 8px 36px',
             fontSize: '16px',
-            border: '1px solid var(--color-border)',
+            border: '1px solid var(--app-border, var(--color-border))',
             borderRadius: '6px',
-            backgroundColor: 'var(--color-background-secondary)',
-            color: 'var(--color-text-primary)',
+            backgroundColor: 'var(--app-surface, var(--color-background-secondary))',
+            color: 'var(--app-text, var(--color-text-primary))',
             outline: 'none',
             transition: 'border-color 0.2s, box-shadow 0.2s',
           }}
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = 'var(--color-primary)';
+            e.currentTarget.style.borderColor = 'var(--app-primary, var(--color-primary))';
             e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
             query.trim().length >= 2 && setIsOpen(true);
           }}
           onBlur={(e) => {
-            e.currentTarget.style.borderColor = 'var(--color-border)';
+            e.currentTarget.style.borderColor = 'var(--app-border, var(--color-border))';
             e.currentTarget.style.boxShadow = 'none';
           }}
         />
@@ -164,8 +164,8 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
             top: 'calc(100% + 8px)',
             left: 0,
             right: 0,
-            backgroundColor: 'var(--color-background-primary)',
-            border: '1px solid var(--color-border)',
+            backgroundColor: 'var(--app-surface, var(--color-background-primary))',
+            border: '1px solid var(--app-border, var(--color-border))',
             borderRadius: '8px',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
             maxHeight: '70vh',

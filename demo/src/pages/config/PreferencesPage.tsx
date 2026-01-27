@@ -11,10 +11,12 @@ import {
   PageHeader,
   PageContent,
 } from '@django-core/page-templates';
+import { Table } from '../../shims/design-system';
 import { useTheme } from '@django-core/theme-system';
 import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import { useAuth } from "@django-core/auth-ui";
 import { useLocation } from 'react-router-dom';
+import type { AuditEvent } from '../../types';
 import {
   ACTIVE_CONTEXT_CHANGED_EVENT,
   getActiveContext as fetchActiveContext,
@@ -121,7 +123,11 @@ export const PreferencesPage: React.FC = () => {
   const [channelPrefsSaving, setChannelPrefsSaving] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'personalisation' | 'notifications'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'personalisation' | 'notifications' | 'audit'>('profile');
+
+  const [myAuditEvents, setMyAuditEvents] = useState<AuditEvent[]>([]);
+  const [myAuditLoading, setMyAuditLoading] = useState(false);
+  const [myAuditError, setMyAuditError] = useState<string | null>(null);
 
   // Profile editing (in-app)
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -166,6 +172,10 @@ export const PreferencesPage: React.FC = () => {
       setActiveTab('profile');
       return;
     }
+    if (tab === 'audit' || tab === 'my-audit' || tab === 'myaudit') {
+      setActiveTab('audit');
+      return;
+    }
     if (tab === 'personalisation' || tab === 'personalization' || tab === 'general' || tab === 'prefs') {
       setActiveTab('personalisation');
       return;
@@ -173,6 +183,63 @@ export const PreferencesPage: React.FC = () => {
 
     setActiveTab('profile');
   }, [location.search]);
+
+  useEffect(() => {
+    if (activeTab !== 'audit') return;
+
+    const myUserId = String((user as any)?.id || '').trim();
+    const myEmail = String((user as any)?.email || '').trim().toLowerCase();
+    if (!myUserId && !myEmail) return;
+
+    let cancelled = false;
+    const run = async () => {
+      try {
+        setMyAuditLoading(true);
+        setMyAuditError(null);
+
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const params = new URLSearchParams();
+        params.set('limit', '200');
+        params.set('offset', '0');
+
+        const response = await fetch(`${baseUrl}/api/v1/activity/?${params.toString()}`, {
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load audit events (${response.status})`);
+        }
+
+        const raw = await response.json();
+        const data = (raw?.data ?? raw) as any;
+        const results: AuditEvent[] = Array.isArray(data?.results)
+          ? data.results
+          : Array.isArray(data)
+            ? data
+            : [];
+
+        const filtered = results
+          .filter((e) => {
+            const uid = String((e as any)?.user?.id || '').trim();
+            const email = String((e as any)?.user?.email || '').trim().toLowerCase();
+            return (myUserId && uid === myUserId) || (myEmail && email === myEmail);
+          })
+          .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
+
+        if (!cancelled) setMyAuditEvents(filtered);
+      } catch (e) {
+        if (!cancelled) setMyAuditError(e instanceof Error ? e.message : 'Failed to load audit events');
+      } finally {
+        if (!cancelled) setMyAuditLoading(false);
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, user]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1118,6 +1185,23 @@ export const PreferencesPage: React.FC = () => {
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontWeight: 800,
+                          cursor: 'pointer',
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        title="Change profile photo"
+                        aria-label="Change profile photo"
+                        onClick={() => {
+                          setAvatarError(null);
+                          setAvatarFile(null);
+                          setIsAvatarModalOpen(true);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key !== 'Enter' && e.key !== ' ') return;
+                          e.preventDefault();
+                          setAvatarError(null);
+                          setAvatarFile(null);
+                          setIsAvatarModalOpen(true);
                         }}
                       >
                         {String((user as any)?.avatar_url || '').trim() ? (
@@ -1943,6 +2027,58 @@ export const PreferencesPage: React.FC = () => {
                     </div>
                   </Card>
                 )}
+              </>
+            )}
+
+            {activeTab === 'audit' && (
+              <>
+                <Card>
+                  <h3 className="text-lg font-semibold mb-2">My Audit</h3>
+                  <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
+                    Your most recent audit events.
+                  </div>
+
+                  {myAuditError && (
+                    <div style={{ marginBottom: 12 }}>
+                      <Alert variant="error">{myAuditError}</Alert>
+                    </div>
+                  )}
+
+                  {myAuditLoading ? (
+                    <div className="text-sm text-gray-600">Loading audit events…</div>
+                  ) : myAuditEvents.length === 0 ? (
+                    <div className="text-sm text-gray-600">No audit events found.</div>
+                  ) : (
+                    <Table
+                      columns={[
+                        {
+                          key: 'timestamp',
+                          header: 'When',
+                          render: (row: any) => {
+                            try {
+                              return new Date(String(row.timestamp)).toLocaleString('nl-NL');
+                            } catch {
+                              return String(row.timestamp || '—');
+                            }
+                          },
+                        },
+                        { key: 'event_type', header: 'Event', render: (row: any) => String(row.event_type || '—') },
+                        {
+                          key: 'organisation_id',
+                          header: 'Org',
+                          render: (row: any) => String(row.organisation_id || '—').slice(0, 8),
+                        },
+                        {
+                          key: 'project_id',
+                          header: 'Project',
+                          render: (row: any) => String(row.project_id || '—'),
+                        },
+                      ]}
+                      data={myAuditEvents}
+                      getRowKey={(row: any) => String(row.id)}
+                    />
+                  )}
+                </Card>
               </>
             )}
 
