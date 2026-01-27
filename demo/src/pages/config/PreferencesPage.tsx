@@ -250,7 +250,13 @@ export const PreferencesPage: React.FC = () => {
         if (!response.ok) throw new Error('Failed to load clubs');
         const json = await response.json();
         const results = json.data?.results || json.results || json.data || json;
-        if (!cancelled) setClubs(Array.isArray(results) ? results : []);
+        // Defensive filter: some backends ignore ?is_club=true; exclude team projects by requiring no parent.
+        const allProjects = Array.isArray(results) ? results : [];
+        const rootProjects = allProjects.filter((p: any) => {
+          const parentId = (p as any)?.parent_id;
+          return parentId === null || parentId === undefined || String(parentId).trim() === '';
+        });
+        if (!cancelled) setClubs(rootProjects);
       } catch (e) {
         console.error('Failed to load clubs:', e);
         if (!cancelled) setClubs([]);
@@ -304,6 +310,66 @@ export const PreferencesPage: React.FC = () => {
     void loadTeams();
     return () => { cancelled = true; };
   }, [organisations, selectedClubId, selectedOrgId]);
+
+  const getOrganisationIdentifier = (orgKey: string): string => {
+    const key = String(orgKey || '').trim();
+    if (!key) return '';
+    const org = organisations.find((o) => String(o?.id ?? '').trim() === key || String(o?.slug ?? '').trim() === key);
+    return String(org?.slug || key).trim();
+  };
+
+  const computeDeepestContext = (next: {
+    orgId: string;
+    clubId: string;
+    teamId: string;
+    seasonId: string;
+    competitionId: string;
+    matchId: string;
+  }): { kind: ActiveContextKind; id?: string } => {
+    const orgIdentifier = getOrganisationIdentifier(next.orgId);
+    const clubId = String(next.clubId || '').trim();
+    const teamId = String(next.teamId || '').trim();
+    const seasonId = String(next.seasonId || '').trim();
+    const competitionId = String(next.competitionId || '').trim();
+    const matchId = String(next.matchId || '').trim();
+
+    if (matchId) return { kind: 'match', id: matchId };
+    if (competitionId) return { kind: 'competition', id: competitionId };
+    if (seasonId) return { kind: 'season', id: seasonId };
+    if (teamId) return { kind: 'team', id: teamId };
+    if (clubId) return { kind: 'club', id: clubId };
+    if (orgIdentifier) return { kind: 'organisation', id: orgIdentifier };
+    return { kind: 'clear' };
+  };
+
+  const applyActiveContextSelection = async (next: {
+    orgId: string;
+    clubId: string;
+    teamId: string;
+    seasonId: string;
+    competitionId: string;
+    matchId: string;
+  }) => {
+    try {
+      setSavingContext(true);
+      setActiveContextError(null);
+
+      const { kind, id } = computeDeepestContext(next);
+      await apiSetActiveContext(kind, id);
+
+      // Keep local UI aligned with server state.
+      const data = await fetchActiveContext();
+      setActiveContext(data);
+      setHasEditedContext(false);
+
+      // Sidebar listens for this event too.
+      window.dispatchEvent(new Event(ACTIVE_CONTEXT_CHANGED_EVENT));
+    } catch (e) {
+      setActiveContextError(e instanceof Error ? e.message : 'Failed to save active context');
+    } finally {
+      setSavingContext(false);
+    }
+  };
 
   // Load seasons when team selected
   useEffect(() => {
@@ -407,51 +473,6 @@ export const PreferencesPage: React.FC = () => {
     void loadMatches();
     return () => { cancelled = true; };
   }, [selectedCompetitionId, competitions]);
-
-  const handleSaveActiveContext = async () => {
-    try {
-      setSavingContext(true);
-      setActiveContextError(null);
-
-      let kind: ActiveContextKind = 'clear';
-      let id: string | undefined;
-      if (selectedMatchId) {
-        kind = 'match';
-        id = selectedMatchId;
-      } else if (selectedCompetitionId) {
-        kind = 'competition';
-        id = selectedCompetitionId;
-      } else if (selectedSeasonId) {
-        kind = 'season';
-        id = selectedSeasonId;
-      } else if (selectedTeamId) {
-        kind = 'team';
-        id = selectedTeamId;
-      } else if (selectedClubId) {
-        kind = 'club';
-        id = selectedClubId;
-      } else if (selectedOrgId) {
-        kind = 'organisation';
-        id = selectedOrgId;
-      }
-
-      await apiSetActiveContext(kind, id);
-
-      // Reload active context
-      const data = await fetchActiveContext();
-      setActiveContext(data);
-
-      // After a successful save, the UI reflects the active context again.
-      setHasEditedContext(false);
-
-      // Trigger event for sidebar refresh
-      window.dispatchEvent(new Event(ACTIVE_CONTEXT_CHANGED_EVENT));
-    } catch (e) {
-      setActiveContextError(e instanceof Error ? e.message : 'Failed to save active context');
-    } finally {
-      setSavingContext(false);
-    }
-  };
 
   // Initialize preferences from Theme System + Defaults
   useEffect(() => {
@@ -1024,13 +1045,23 @@ export const PreferencesPage: React.FC = () => {
                         className="w-full border rounded px-3 py-2"
                         value={selectedOrgId}
                         onChange={(e) => {
+                          const nextOrgId = e.target.value;
                           setHasEditedContext(true);
-                          setSelectedOrgId(e.target.value);
+                          setSelectedOrgId(nextOrgId);
                           setSelectedClubId('');
                           setSelectedTeamId('');
                           setSelectedSeasonId('');
                           setSelectedCompetitionId('');
                           setSelectedMatchId('');
+
+                          void applyActiveContextSelection({
+                            orgId: nextOrgId,
+                            clubId: '',
+                            teamId: '',
+                            seasonId: '',
+                            competitionId: '',
+                            matchId: '',
+                          });
                         }}
                         disabled={loadingOrgs || savingContext}
                       >
@@ -1050,12 +1081,22 @@ export const PreferencesPage: React.FC = () => {
                         className="w-full border rounded px-3 py-2"
                         value={selectedClubId}
                         onChange={(e) => {
+                          const nextClubId = e.target.value;
                           setHasEditedContext(true);
-                          setSelectedClubId(e.target.value);
+                          setSelectedClubId(nextClubId);
                           setSelectedTeamId('');
                           setSelectedSeasonId('');
                           setSelectedCompetitionId('');
                           setSelectedMatchId('');
+
+                          void applyActiveContextSelection({
+                            orgId: selectedOrgId,
+                            clubId: nextClubId,
+                            teamId: '',
+                            seasonId: '',
+                            competitionId: '',
+                            matchId: '',
+                          });
                         }}
                         disabled={!selectedOrgId || loadingClubs || savingContext || clubs.length === 0}
                       >
@@ -1075,16 +1116,26 @@ export const PreferencesPage: React.FC = () => {
                         className="w-full border rounded px-3 py-2"
                         value={selectedTeamId}
                         onChange={(e) => {
+                          const nextTeamId = e.target.value;
                           setHasEditedContext(true);
-                          setSelectedTeamId(e.target.value);
+                          setSelectedTeamId(nextTeamId);
                           setSelectedSeasonId('');
                           setSelectedCompetitionId('');
                           setSelectedMatchId('');
+
+                          void applyActiveContextSelection({
+                            orgId: selectedOrgId,
+                            clubId: selectedClubId,
+                            teamId: nextTeamId,
+                            seasonId: '',
+                            competitionId: '',
+                            matchId: '',
+                          });
                         }}
                         disabled={!selectedClubId || loadingTeams || savingContext || teams.length === 0}
                       >
                         <option value="">{selectedClubId ? '— Select Team —' : '— Select Club first —'}</option>
-                        {teams.map((team) => (
+                        {selectedClubId && teams.map((team) => (
                           <option key={team.id} value={team.id}>
                             {team.name}
                           </option>
@@ -1099,10 +1150,20 @@ export const PreferencesPage: React.FC = () => {
                         className="w-full border rounded px-3 py-2"
                         value={selectedSeasonId}
                         onChange={(e) => {
+                          const nextSeasonId = e.target.value;
                           setHasEditedContext(true);
-                          setSelectedSeasonId(e.target.value);
+                          setSelectedSeasonId(nextSeasonId);
                           setSelectedCompetitionId('');
                           setSelectedMatchId('');
+
+                          void applyActiveContextSelection({
+                            orgId: selectedOrgId,
+                            clubId: selectedClubId,
+                            teamId: selectedTeamId,
+                            seasonId: nextSeasonId,
+                            competitionId: '',
+                            matchId: '',
+                          });
                         }}
                         disabled={!selectedTeamId || loadingSeasons || savingContext || seasons.length === 0}
                       >
@@ -1122,9 +1183,19 @@ export const PreferencesPage: React.FC = () => {
                         className="w-full border rounded px-3 py-2"
                         value={selectedCompetitionId}
                         onChange={(e) => {
+                          const nextCompetitionId = e.target.value;
                           setHasEditedContext(true);
-                          setSelectedCompetitionId(e.target.value);
+                          setSelectedCompetitionId(nextCompetitionId);
                           setSelectedMatchId('');
+
+                          void applyActiveContextSelection({
+                            orgId: selectedOrgId,
+                            clubId: selectedClubId,
+                            teamId: selectedTeamId,
+                            seasonId: selectedSeasonId,
+                            competitionId: nextCompetitionId,
+                            matchId: '',
+                          });
                         }}
                         disabled={!selectedSeasonId || loadingCompetitions || savingContext || competitions.length === 0}
                       >
@@ -1144,8 +1215,18 @@ export const PreferencesPage: React.FC = () => {
                         className="w-full border rounded px-3 py-2"
                         value={selectedMatchId}
                         onChange={(e) => {
+                          const nextMatchId = e.target.value;
                           setHasEditedContext(true);
-                          setSelectedMatchId(e.target.value);
+                          setSelectedMatchId(nextMatchId);
+
+                          void applyActiveContextSelection({
+                            orgId: selectedOrgId,
+                            clubId: selectedClubId,
+                            teamId: selectedTeamId,
+                            seasonId: selectedSeasonId,
+                            competitionId: selectedCompetitionId,
+                            matchId: nextMatchId,
+                          });
                         }}
                         disabled={!selectedCompetitionId || loadingMatches || savingContext || matches.length === 0}
                       >
@@ -1159,15 +1240,11 @@ export const PreferencesPage: React.FC = () => {
                       {selectedCompetitionId && loadingMatches && <div className="text-xs text-gray-500 mt-1">Loading matches…</div>}
                     </div>
 
-                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                      <Button
-                        variant="primary"
-                        onClick={handleSaveActiveContext}
-                        disabled={savingContext}
-                      >
-                        {savingContext ? 'Saving…' : 'Save Context'}
-                      </Button>
-                    </div>
+                    {savingContext && (
+                      <div className="text-xs text-gray-500" style={{ marginTop: 4 }}>
+                        Saving…
+                      </div>
+                    )}
                   </div>
                 </Card>
               </>
