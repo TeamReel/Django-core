@@ -130,6 +130,11 @@ export default function NotificationsPage() {
     []
   );
 
+  const notificationsList = useMemo(
+    () => (Array.isArray(notifications) ? notifications : []),
+    [notifications]
+  );
+
   const currentOrgId = useMemo(() => {
     const fromContext = context?.organisation?.id ? String((context.organisation as any).id) : '';
     if (isUuid(fromContext)) return fromContext;
@@ -173,8 +178,19 @@ export default function NotificationsPage() {
 
       const data = await response.json();
       debugLog('Fetched notifications:', data);
-      debugLog('Array length:', (data.results || data).length);
-      setNotifications(data.results || data);
+
+      const list: any[] = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.results)
+          ? data.results
+          : Array.isArray(data?.data?.results)
+            ? data.data.results
+            : Array.isArray(data?.data)
+              ? data.data
+              : [];
+
+      debugLog('Array length:', list.length);
+      setNotifications(list as Notification[]);
       setError(null);
     } catch (err) {
       console.error('Error fetching notifications:', err);
@@ -571,11 +587,11 @@ export default function NotificationsPage() {
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={markAllAsRead}
-              disabled={notifications.length === 0}
+              disabled={notificationsList.length === 0}
               aria-disabled={activeTab !== 'inbox'}
               style={{
                 padding: '8px 16px',
-                backgroundColor: activeTab !== 'inbox' ? '#ccc' : (notifications.length === 0 ? '#ccc' : '#2196f3'),
+                backgroundColor: activeTab !== 'inbox' ? '#ccc' : (notificationsList.length === 0 ? '#ccc' : '#2196f3'),
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
@@ -584,22 +600,22 @@ export default function NotificationsPage() {
                 fontWeight: 500,
               }}
               onMouseEnter={(e) => {
-                if (activeTab === 'inbox' && notifications.length > 0) e.currentTarget.style.backgroundColor = '#1976d2';
+                if (activeTab === 'inbox' && notificationsList.length > 0) e.currentTarget.style.backgroundColor = '#1976d2';
               }}
               onMouseLeave={(e) => {
-                if (activeTab === 'inbox' && notifications.length > 0) e.currentTarget.style.backgroundColor = '#2196f3';
+                if (activeTab === 'inbox' && notificationsList.length > 0) e.currentTarget.style.backgroundColor = '#2196f3';
               }}
             >
               Mark All as Read
             </button>
             <button
               onClick={markAllAsUnread}
-              disabled={notifications.length === 0}
+              disabled={notificationsList.length === 0}
               aria-disabled={activeTab !== 'inbox'}
               style={{
                 padding: '8px 16px',
                 backgroundColor: 'var(--app-surface)',
-                color: activeTab !== 'inbox' || notifications.length === 0 ? '#ccc' : '#666',
+                color: activeTab !== 'inbox' || notificationsList.length === 0 ? '#ccc' : '#666',
                 border: '1px solid #ddd',
                 borderRadius: '4px',
                 cursor: activeTab !== 'inbox' || notifications.length === 0 ? 'not-allowed' : 'pointer',
@@ -607,10 +623,10 @@ export default function NotificationsPage() {
                 fontWeight: 500,
               }}
               onMouseEnter={(e) => {
-                if (activeTab === 'inbox' && notifications.length > 0) e.currentTarget.style.backgroundColor = 'var(--app-surface-2)';
+                if (activeTab === 'inbox' && notificationsList.length > 0) e.currentTarget.style.backgroundColor = 'var(--app-surface-2)';
               }}
               onMouseLeave={(e) => {
-                if (activeTab === 'inbox' && notifications.length > 0) e.currentTarget.style.backgroundColor = 'var(--app-surface)';
+                if (activeTab === 'inbox' && notificationsList.length > 0) e.currentTarget.style.backgroundColor = 'var(--app-surface)';
               }}
             >
               Mark All as Unread
@@ -911,7 +927,7 @@ export default function NotificationsPage() {
                 )}
               </div>
             </div>
-          ) : notifications.length === 0 ? (
+          ) : notificationsList.length === 0 ? (
             <div style={{
               padding: '40px',
               textAlign: 'center',
@@ -923,7 +939,7 @@ export default function NotificationsPage() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {notifications.map((notification) => {
+              {notificationsList.map((notification) => {
                 const isUnread = !notification.read_at;
                 const notificationType = notification.metadata?.event_type || 'info';
                 const borderColor =
