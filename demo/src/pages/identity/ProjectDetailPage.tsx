@@ -124,6 +124,10 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     return allowed.has(tab) ? tab : 'overview';
   }, [location.search]);
 
+  // State declarations
+  const [activeContext, setActiveContextState] = useState<any | null>(null);
+  const [activatingContext, setActivatingContext] = useState(false);
+
   // Load active context
   useEffect(() => {
     let cancelled = false;
@@ -145,8 +149,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   }, [activeTabFromUrl]);
 
   const [project, setProject] = useState<Project | null>(null);
-  const [activatingContext, setActivatingContext] = useState(false);
-  const [activeContext, setActiveContextState] = useState<any | null>(null);
   const [members, setMembers] = useState<any[]>([]);
   const [recentEvents, setRecentEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
