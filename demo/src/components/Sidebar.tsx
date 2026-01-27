@@ -723,7 +723,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             title = 'Personal Settings';
             items = [
                 { label: 'My Wallet', path: '/credits?wallet=personal', icon: CreditCard },
-                { label: 'Profile', path: '/profile', icon: UserCircle },
+                { label: 'Profile', path: '/preferences?tab=profile', icon: UserCircle },
                 { label: 'Notifications', path: '/notifications', icon: Bell },
                 { label: 'Preferences', path: '/preferences', icon: Settings },
             ];

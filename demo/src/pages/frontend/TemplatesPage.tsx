@@ -229,7 +229,7 @@ export function TemplatesPage() {
             <TabPanel value="settings" className="h-full overflow-auto">
               <div className="bg-gray-50 p-4 border-b border-gray-200">
                 <p className="text-sm text-gray-900 font-medium">Settings: Used for configuration and preference pages.</p>
-                <p className="text-xs text-gray-500 mt-1">Used in: <a href="/config/preferences" className="hover:underline">Preferences</a>, <a href="/profile" className="hover:underline">Profile</a></p>
+                <p className="text-xs text-gray-500 mt-1">Used in: <a href="/config/preferences" className="hover:underline">Preferences</a>, <a href="/preferences?tab=profile" className="hover:underline">Profile</a></p>
               </div>
               <Settings
                 sections={SETTINGS_SECTIONS}

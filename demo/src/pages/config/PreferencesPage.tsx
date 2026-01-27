@@ -12,6 +12,7 @@ import {
 import { useTheme } from '@django-core/theme-system';
 import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import { useAuth } from "@django-core/auth-ui";
+import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
  * T015 - Preferences Page
@@ -58,6 +59,8 @@ interface EventTypeGroup {
 }
 
 export const PreferencesPage: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { setTheme, mode, resolvedMode } = useTheme();
   const { user } = useAuth();
   const darkModeEnabled = useFeatureFlag('dark_mode', true); // Default enabled
@@ -73,6 +76,42 @@ export const PreferencesPage: React.FC = () => {
   const [channelPrefsLoading, setChannelPrefsLoading] = useState(true);
   const [channelPrefsSaving, setChannelPrefsSaving] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
+
+  const [activeTab, setActiveTab] = useState<'profile' | 'personalisation' | 'notifications'>('personalisation');
+
+  useEffect(() => {
+    let tab = '';
+    try {
+      tab = String(new URLSearchParams(location.search).get('tab') || '').toLowerCase();
+    } catch {
+      tab = '';
+    }
+    if (tab === 'notifications' || tab === 'notification') {
+      setActiveTab('notifications');
+      return;
+    }
+    if (tab === 'profile' || tab === 'account') {
+      setActiveTab('profile');
+      return;
+    }
+    if (tab === 'personalisation' || tab === 'personalization' || tab === 'general' || tab === 'prefs') {
+      setActiveTab('personalisation');
+      return;
+    }
+  }, [location.search]);
+
+  const goToTab = (tab: 'profile' | 'personalisation' | 'notifications') => {
+    setActiveTab(tab);
+    let params: URLSearchParams;
+    try {
+      params = new URLSearchParams(location.search);
+    } catch {
+      params = new URLSearchParams();
+    }
+    params.set('tab', tab);
+    const qs = params.toString();
+    navigate(`${location.pathname}${qs ? `?${qs}` : ''}`, { replace: true });
+  };
 
   // Initialize preferences from Theme System + Defaults
   useEffect(() => {
@@ -598,320 +637,376 @@ export const PreferencesPage: React.FC = () => {
             </div>
           )}
 
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+            <Button
+              variant={activeTab === 'profile' ? 'primary' : 'outline'}
+              onClick={() => goToTab('profile')}
+            >
+              Profile
+            </Button>
+            <Button
+              variant={activeTab === 'personalisation' ? 'primary' : 'outline'}
+              onClick={() => goToTab('personalisation')}
+            >
+              Personalisation
+            </Button>
+            <Button
+              variant={activeTab === 'notifications' ? 'primary' : 'outline'}
+              onClick={() => goToTab('notifications')}
+            >
+              Notification settings
+            </Button>
+          </div>
+
           <div>
-            {/* Theme Section - gated by dark_mode feature flag */}
-            {darkModeEnabled ? (
-              <Card>
-                <h3 className="text-lg font-semibold mb-4">Appearance</h3>
-                <div style={{ maxWidth: '800px' }}>
-                  <label className="block text-sm font-medium mb-3">
-                    Theme
-                  </label>
-                  <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }} role="group" aria-label="Theme selection">
-                    {['light', 'dark', 'auto'].map((t) => {
-                      const isActive = preferences?.theme === t;
-                      return (
-                        <Button
-                          key={t}
-                          variant={isActive ? 'primary' : 'outline'}
-                          onClick={() => setPreferences(prev => prev ? ({ ...prev, theme: t as any }) : null)}
+            {activeTab === 'profile' && (
+              <>
+                <Card>
+                  <h3 className="text-lg font-semibold mb-4">Profile</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, maxWidth: 900 }}>
+                    <div>
+                      <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Signed in as</div>
+                      <div className="text-base" style={{ fontWeight: 700 }}>
+                        {String((user as any)?.email || (user as any)?.username || (user as any)?.name || '—')}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs font-semibold text-gray-500 uppercase mb-1">User ID</div>
+                      <div className="text-base">{String((user as any)?.id ?? '—')}</div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: 16 }}>
+                    <Alert variant="info">
+                      Profile editing (name, email, password, 2FA) is typically managed via your identity provider.
+                      If you want this editable inside TeamReel, we can add a dedicated Account API and UI.
+                    </Alert>
+                  </div>
+                </Card>
+              </>
+            )}
+
+            {activeTab === 'personalisation' && (
+              <>
+                {/* Theme Section - gated by dark_mode feature flag */}
+                {darkModeEnabled ? (
+                  <Card>
+                    <h3 className="text-lg font-semibold mb-4">Appearance</h3>
+                    <div style={{ maxWidth: '800px' }}>
+                      <label className="block text-sm font-medium mb-3">
+                        Theme
+                      </label>
+                      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }} role="group" aria-label="Theme selection">
+                        {['light', 'dark', 'auto'].map((t) => {
+                          const isActive = preferences?.theme === t;
+                          return (
+                            <Button
+                              key={t}
+                              variant={isActive ? 'primary' : 'outline'}
+                              onClick={() => setPreferences(prev => prev ? ({ ...prev, theme: t as any }) : null)}
+                            >
+                              {t === 'auto' ? 'Auto (System)' : t.charAt(0).toUpperCase() + t.slice(1)}
+                            </Button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Preview Cards */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                        <div
+                          style={{
+                            padding: '24px',
+                            backgroundColor: '#ffffff',
+                            border: preferences?.theme === 'light' || (preferences?.theme === 'auto' && resolvedMode === 'light') ? '2px solid #3b82f6' : '1px solid #e5e7eb',
+                            borderRadius: '8px',
+                          }}
                         >
-                          {t === 'auto' ? 'Auto (System)' : t.charAt(0).toUpperCase() + t.slice(1)}
-                        </Button>
-                      );
-                    })}
-                  </div>
+                          <h4 style={{ margin: '0 0 12px 0', color: '#1f2937', fontWeight: 600 }}>Light Theme</h4>
+                          <div style={{ padding: '12px', backgroundColor: '#f9fafb', borderRadius: '4px', marginBottom: '12px' }}>
+                            <p style={{ margin: 0, fontSize: '12px', color: '#1f2937' }}>Background: #FFFFFF</p>
+                            <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#6b7280' }}>Text: #1F2937</p>
+                          </div>
+                          {preferences?.theme === 'light' && <Badge variant="success">Selected</Badge>}
+                        </div>
 
-                  {/* Preview Cards */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                    <div
-                      style={{
-                        padding: '24px',
-                        backgroundColor: '#ffffff',
-                        border: preferences?.theme === 'light' || (preferences?.theme === 'auto' && resolvedMode === 'light') ? '2px solid #3b82f6' : '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                      }}
-                    >
-                      <h4 style={{ margin: '0 0 12px 0', color: '#1f2937', fontWeight: 600 }}>Light Theme</h4>
-                      <div style={{ padding: '12px', backgroundColor: '#f9fafb', borderRadius: '4px', marginBottom: '12px' }}>
-                        <p style={{ margin: 0, fontSize: '12px', color: '#1f2937' }}>Background: #FFFFFF</p>
-                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#6b7280' }}>Text: #1F2937</p>
+                        <div
+                          style={{
+                            padding: '24px',
+                            backgroundColor: '#1f2937',
+                            color: '#f3f4f6',
+                            border: preferences?.theme === 'dark' || (preferences?.theme === 'auto' && resolvedMode === 'dark') ? '2px solid #3b82f6' : '1px solid #374151',
+                            borderRadius: '8px',
+                          }}
+                        >
+                          <h4 style={{ margin: '0 0 12px 0', color: '#f3f4f6', fontWeight: 600 }}>Dark Theme</h4>
+                          <div
+                            style={{
+                              padding: '12px',
+                              backgroundColor: '#111827',
+                              borderRadius: '4px',
+                              marginBottom: '12px',
+                            }}
+                          >
+                            <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#f3f4f6' }}>Background: #1F2937</p>
+                            <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#9ca3af' }}>Text: #F3F4F6</p>
+                          </div>
+                          {preferences?.theme === 'dark' && <Badge variant="success">Selected</Badge>}
+                        </div>
                       </div>
-                      {preferences?.theme === 'light' && <Badge variant="success">Selected</Badge>}
-                    </div>
 
-                    <div
-                      style={{
-                        padding: '24px',
-                        backgroundColor: '#1f2937',
-                        color: '#f3f4f6',
-                        border: preferences?.theme === 'dark' || (preferences?.theme === 'auto' && resolvedMode === 'dark') ? '2px solid #3b82f6' : '1px solid #374151',
-                        borderRadius: '8px',
-                      }}
-                    >
-                      <h4 style={{ margin: '0 0 12px 0', color: '#f3f4f6', fontWeight: 600 }}>Dark Theme</h4>
-                      <div
-                        style={{
-                          padding: '12px',
-                          backgroundColor: '#111827',
-                          borderRadius: '4px',
-                          marginBottom: '12px',
-                        }}
-                      >
-                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#f3f4f6' }}>Background: #1F2937</p>
-                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#9ca3af' }}>Text: #F3F4F6</p>
-                      </div>
-                      {preferences?.theme === 'dark' && <Badge variant="success">Selected</Badge>}
+                      <p className="text-sm text-gray-600 mt-6">
+                        Select your preferred interface theme. "Auto" will sync with your operating system settings.
+                      </p>
                     </div>
-                  </div>
-
-                  <p className="text-sm text-gray-600 mt-6">
-                    Select your preferred interface theme. "Auto" will sync with your operating system settings.
-                  </p>
-                </div>
-              </Card>
-            ) : (
-              <Card>
-                <h3 className="text-lg font-semibold mb-4">Appearance</h3>
-                <Alert variant="info">
-                  <strong>Theme settings disabled</strong> - The dark mode feature is currently disabled by a feature flag.
-                  Contact your administrator to enable theme customization.
-                </Alert>
-              </Card>
-            )}
-
-            {/* Localisation Section */}
-            <Card style={{ marginTop: '24px' }}>
-              <h3 className="text-lg font-semibold mb-4">Localisation</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Language
-                  </label>
-                  <select
-                    value={preferences?.language || 'en'}
-                    onChange={(e) => {
-                      const newLang = e.target.value;
-                      setPreferences(prev => prev ? ({ ...prev, language: newLang }) : null);
-                      // Auto-save to localStorage
-                      const langMap: Record<string, string> = { 'en': 'EN', 'nl': 'NL', 'de': 'DE', 'es': 'ES', 'fr': 'FR', 'ja': 'JA' };
-                      localStorage.setItem('demo_language', langMap[newLang] || 'EN');
-                      window.dispatchEvent(new Event('languageChanged'));
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  >
-                    <option value="en">English (EN)</option>
-                    <option value="nl">Nederlands (NL)</option>
-                    <option value="de">Deutsch (DE)</option>
-                    <option value="es">Español (ES)</option>
-                    <option value="fr">Français (FR)</option>
-                    <option value="ja">日本語 (JA)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Timezone
-                  </label>
-                  <select
-                    value={preferences?.timezone || 'UTC'}
-                    onChange={(e) => {
-                      const newTimezone = e.target.value;
-                      setPreferences(prev => prev ? ({ ...prev, timezone: newTimezone }) : null);
-                      // Auto-save to localStorage
-                      localStorage.setItem('demo_timezone', newTimezone);
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                  >
-                    <option value="UTC">UTC</option>
-                    <option value="America/New_York">Eastern Time</option>
-                    <option value="America/Los_Angeles">Pacific Time</option>
-                    <option value="Europe/London">GMT (London)</option>
-                    <option value="Europe/Paris">CET (Paris)</option>
-                    <option value="Asia/Tokyo">JST (Tokyo)</option>
-                  </select>
-                </div>
-              </div>
-            </Card>
-
-            {/* Effective i18n Preferences (Backend-Resolved) */}
-            {effectivePrefs && (
-              <Card style={{ marginTop: '24px' }}>
-                <h3 className="text-lg font-semibold mb-2">
-                  Effective Preferences (Server-Resolved)
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  These are the actual values used by the system, resolved from your user settings, organization defaults, or system fallbacks.
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Language
-                    </div>
-                    <div className="text-base">
-                      {effectivePrefs.language}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Timezone
-                    </div>
-                    <div className="text-base">
-                      {effectivePrefs.timezone}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Date Format
-                    </div>
-                    <div className="text-base">
-                      {effectivePrefs.date_format}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Time Format
-                    </div>
-                    <div className="text-base">
-                      {effectivePrefs.time_format}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Currency
-                    </div>
-                    <div className="text-base">
-                      {effectivePrefs.currency}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Resolved From
-                    </div>
-                    <Badge variant={effectivePrefs.resolved_from === 'user' ? 'success' : effectivePrefs.resolved_from === 'org' ? 'warning' : 'info'}>
-                      {effectivePrefs.resolved_from}
-                    </Badge>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* Notifications Section */}
-            <Card style={{ marginTop: '24px' }}>
-              <h3 className="text-lg font-semibold mb-4">Notifications</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <label className="flex items-start cursor-pointer">
-                  <div className="flex items-center h-5">
-                    <input
-                      type="checkbox"
-                      checked={preferences?.email_notifications || false}
-                      onChange={(e) => {
-                        const newValue = e.target.checked;
-                        setPreferences(prev => prev ? ({ ...prev, email_notifications: newValue }) : null);
-                        // Auto-save to localStorage
-                        localStorage.setItem('email_notifications', String(newValue));
-                      }}
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
-                  </div>
-                  <div className="ml-3 text-sm">
-                    <span className="font-medium block">Email Notifications</span>
-                    <p className="text-gray-500 mt-1">Receive notifications about important account activity.</p>
-                  </div>
-                </label>
-
-                <label className="flex items-start cursor-pointer border-t border-gray-200 pt-4">
-                  <div className="flex items-center h-5">
-                    <input
-                      type="checkbox"
-                      checked={preferences?.marketing_email || false}
-                      onChange={(e) => {
-                        const newValue = e.target.checked;
-                        setPreferences(prev => prev ? ({ ...prev, marketing_email: newValue }) : null);
-                        // Auto-save to localStorage
-                        localStorage.setItem('marketing_email', String(newValue));
-                      }}
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
-                  </div>
-                  <div className="ml-3 text-sm">
-                    <span className="font-medium block">Marketing Emails</span>
-                    <p className="text-gray-500 mt-1">Receive updates about new features and special offers.</p>
-                  </div>
-                </label>
-              </div>
-            </Card>
-
-            {/* Notification Channels Section */}
-            <Card style={{ marginTop: '24px' }}>
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold">Notification Channels</h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Choose which channels you want to receive notifications on for each event type.
-                  </p>
-                </div>
-                {demoMode && (
-                  <Badge variant="warning">Demo Mode</Badge>
+                  </Card>
+                ) : (
+                  <Card>
+                    <h3 className="text-lg font-semibold mb-4">Appearance</h3>
+                    <Alert variant="info">
+                      <strong>Theme settings disabled</strong> - The dark mode feature is currently disabled by a feature flag.
+                      Contact your administrator to enable theme customization.
+                    </Alert>
+                  </Card>
                 )}
-              </div>
 
-              {channelPrefsLoading && (
-                <div className="text-center py-8 text-gray-500">
-                  Loading channel preferences...
-                </div>
-              )}
+                {/* Localisation Section */}
+                <Card style={{ marginTop: '24px' }}>
+                  <h3 className="text-lg font-semibold mb-4">Localisation</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Language
+                      </label>
+                      <select
+                        value={preferences?.language || 'en'}
+                        onChange={(e) => {
+                          const newLang = e.target.value;
+                          setPreferences(prev => prev ? ({ ...prev, language: newLang }) : null);
+                          // Auto-save to localStorage
+                          const langMap: Record<string, string> = { 'en': 'EN', 'nl': 'NL', 'de': 'DE', 'es': 'ES', 'fr': 'FR', 'ja': 'JA' };
+                          localStorage.setItem('demo_language', langMap[newLang] || 'EN');
+                          window.dispatchEvent(new Event('languageChanged'));
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      >
+                        <option value="en">English (EN)</option>
+                        <option value="nl">Nederlands (NL)</option>
+                        <option value="de">Deutsch (DE)</option>
+                        <option value="es">Español (ES)</option>
+                        <option value="fr">Français (FR)</option>
+                        <option value="ja">日本語 (JA)</option>
+                      </select>
+                    </div>
 
-              {!channelPrefsLoading && channelPrefs.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  No notification preferences configured yet.
-                </div>
-              )}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Timezone
+                      </label>
+                      <select
+                        value={preferences?.timezone || 'UTC'}
+                        onChange={(e) => {
+                          const newTimezone = e.target.value;
+                          setPreferences(prev => prev ? ({ ...prev, timezone: newTimezone }) : null);
+                          // Auto-save to localStorage
+                          localStorage.setItem('demo_timezone', newTimezone);
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      >
+                        <option value="UTC">UTC</option>
+                        <option value="America/New_York">Eastern Time</option>
+                        <option value="America/Los_Angeles">Pacific Time</option>
+                        <option value="Europe/London">GMT (London)</option>
+                        <option value="Europe/Paris">CET (Paris)</option>
+                        <option value="Asia/Tokyo">JST (Tokyo)</option>
+                      </select>
+                    </div>
+                  </div>
+                </Card>
 
-              {!channelPrefsLoading && channelPrefs.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  {channelPrefs.map((group) => (
-                    <div key={group.event_type} className="border-t border-gray-200 pt-4 first:border-t-0 first:pt-0">
-                      <h4 className="text-sm font-semibold mb-3 text-gray-900">
-                        {formatEventType(group.event_type)}
-                      </h4>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-                        <label className="flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={group.channels.email}
-                            onChange={() => handleToggleChannel(group.event_type, 'email')}
-                            disabled={channelPrefsSaving}
-                            className="h-4 w-4 rounded border-gray-300 mr-2"
-                          />
-                          <span className="text-sm">📧 Email</span>
-                        </label>
-                        <label className="flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={group.channels.push}
-                            onChange={() => handleToggleChannel(group.event_type, 'push')}
-                            disabled={channelPrefsSaving}
-                            className="h-4 w-4 rounded border-gray-300 mr-2"
-                          />
-                          <span className="text-sm">🔔 Push</span>
-                        </label>
-                        <label className="flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={group.channels.in_app}
-                            onChange={() => handleToggleChannel(group.event_type, 'in_app')}
-                            disabled={channelPrefsSaving}
-                            className="h-4 w-4 rounded border-gray-300 mr-2"
-                          />
-                          <span className="text-sm">💬 In-App</span>
-                        </label>
+                {/* Effective i18n Preferences (Backend-Resolved) */}
+                {effectivePrefs && (
+                  <Card style={{ marginTop: '24px' }}>
+                    <h3 className="text-lg font-semibold mb-2">
+                      Effective Preferences (Server-Resolved)
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      These are the actual values used by the system, resolved from your user settings, organization defaults, or system fallbacks.
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div>
+                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                          Language
+                        </div>
+                        <div className="text-base">
+                          {effectivePrefs.language}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                          Timezone
+                        </div>
+                        <div className="text-base">
+                          {effectivePrefs.timezone}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                          Date Format
+                        </div>
+                        <div className="text-base">
+                          {effectivePrefs.date_format}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                          Time Format
+                        </div>
+                        <div className="text-base">
+                          {effectivePrefs.time_format}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                          Currency
+                        </div>
+                        <div className="text-base">
+                          {effectivePrefs.currency}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+                          Resolved From
+                        </div>
+                        <Badge variant={effectivePrefs.resolved_from === 'user' ? 'success' : effectivePrefs.resolved_from === 'org' ? 'warning' : 'info'}>
+                          {effectivePrefs.resolved_from}
+                        </Badge>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </Card>
+                  </Card>
+                )}
+              </>
+            )}
+
+            {activeTab === 'notifications' && (
+              <>
+                {/* Notifications Section */}
+                <Card>
+                  <h3 className="text-lg font-semibold mb-4">Notifications</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <label className="flex items-start cursor-pointer">
+                      <div className="flex items-center h-5">
+                        <input
+                          type="checkbox"
+                          checked={preferences?.email_notifications || false}
+                          onChange={(e) => {
+                            const newValue = e.target.checked;
+                            setPreferences(prev => prev ? ({ ...prev, email_notifications: newValue }) : null);
+                            // Auto-save to localStorage
+                            localStorage.setItem('email_notifications', String(newValue));
+                          }}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                      </div>
+                      <div className="ml-3 text-sm">
+                        <span className="font-medium block">Email Notifications</span>
+                        <p className="text-gray-500 mt-1">Receive notifications about important account activity.</p>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start cursor-pointer border-t border-gray-200 pt-4">
+                      <div className="flex items-center h-5">
+                        <input
+                          type="checkbox"
+                          checked={preferences?.marketing_email || false}
+                          onChange={(e) => {
+                            const newValue = e.target.checked;
+                            setPreferences(prev => prev ? ({ ...prev, marketing_email: newValue }) : null);
+                            // Auto-save to localStorage
+                            localStorage.setItem('marketing_email', String(newValue));
+                          }}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                      </div>
+                      <div className="ml-3 text-sm">
+                        <span className="font-medium block">Marketing Emails</span>
+                        <p className="text-gray-500 mt-1">Receive updates about new features and special offers.</p>
+                      </div>
+                    </label>
+                  </div>
+                </Card>
+
+                {/* Notification Channels Section */}
+                <Card style={{ marginTop: '24px' }}>
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">Notification Channels</h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Choose which channels you want to receive notifications on for each event type.
+                      </p>
+                    </div>
+                    {demoMode && (
+                      <Badge variant="warning">Demo Mode</Badge>
+                    )}
+                  </div>
+
+                  {channelPrefsLoading && (
+                    <div className="text-center py-8 text-gray-500">
+                      Loading channel preferences...
+                    </div>
+                  )}
+
+                  {!channelPrefsLoading && channelPrefs.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      No notification preferences configured yet.
+                    </div>
+                  )}
+
+                  {!channelPrefsLoading && channelPrefs.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                      {channelPrefs.map((group) => (
+                        <div key={group.event_type} className="border-t border-gray-200 pt-4 first:border-t-0 first:pt-0">
+                          <h4 className="text-sm font-semibold mb-3 text-gray-900">
+                            {formatEventType(group.event_type)}
+                          </h4>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                            <label className="flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={group.channels.email}
+                                onChange={() => handleToggleChannel(group.event_type, 'email')}
+                                disabled={channelPrefsSaving}
+                                className="h-4 w-4 rounded border-gray-300 mr-2"
+                              />
+                              <span className="text-sm">📧 Email</span>
+                            </label>
+                            <label className="flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={group.channels.push}
+                                onChange={() => handleToggleChannel(group.event_type, 'push')}
+                                disabled={channelPrefsSaving}
+                                className="h-4 w-4 rounded border-gray-300 mr-2"
+                              />
+                              <span className="text-sm">🔔 Push</span>
+                            </label>
+                            <label className="flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={group.channels.in_app}
+                                onChange={() => handleToggleChannel(group.event_type, 'in_app')}
+                                disabled={channelPrefsSaving}
+                                className="h-4 w-4 rounded border-gray-300 mr-2"
+                              />
+                              <span className="text-sm">💬 In-App</span>
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              </>
+            )}
 
             {/* Debug Info - Temporary for validation */}
             <div className="mt-6 p-3 border border-dashed border-gray-300 rounded text-xs text-gray-600">

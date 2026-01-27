@@ -1099,7 +1099,7 @@ export default function Breadcrumbs() {
       else if (location.pathname === '/matches') items.push({ label: 'Directory', path: '/directory' }, { label: 'Matches', path: '/matches' });
 
       // Personal / F05 Contexts
-      else if (location.pathname.startsWith('/profile')) items.push({ label: 'Profile', path: '/profile' });
+      else if (location.pathname.startsWith('/profile')) items.push({ label: 'Preferences', path: '/preferences?tab=profile' });
       else if (location.pathname.startsWith('/notifications')) items.push({ label: 'Notifications', path: '/notifications' });
       else if (location.pathname.startsWith('/credits')) items.push({ label: 'My Wallet', path: '/credits' });
       else if (location.pathname.startsWith('/settings')) items.push({ label: 'Settings', path: '/settings' });

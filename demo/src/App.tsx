@@ -1214,7 +1214,7 @@ export default function App() {
         path="/profile"
         element={
           <ProtectedRoute>
-            <ProfilePage />
+            <Navigate to="/preferences?tab=profile" replace />
           </ProtectedRoute>
         }
       />

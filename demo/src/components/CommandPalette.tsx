@@ -32,7 +32,7 @@ export default function CommandPalette({
     () => [
       { id: 'dash', label: 'Dashboard', path: '/dashboard', kind: 'page' },
       { id: 'dir', label: 'Directory', path: '/directory', kind: 'page' },
-      { id: 'profile', label: 'My Profile', path: '/profile', kind: 'page' },
+      { id: 'profile', label: 'My Profile', path: '/preferences?tab=profile', kind: 'page' },
       { id: 'prefs', label: 'Preferences', path: '/preferences', kind: 'page' },
       { id: 'wallet', label: 'My Wallet', path: '/credits?wallet=personal', kind: 'page' },
       { id: 'recents', label: 'Recents', path: '/recents', kind: 'page' },

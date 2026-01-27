@@ -210,7 +210,7 @@ export default function ProfileAvatarDropdown({ onLogout }: ProfileAvatarDropdow
           {/* Menu Items */}
           <button
             role="menuitem"
-            onClick={() => handleNavigate('/profile')}
+            onClick={() => handleNavigate('/preferences?tab=profile')}
             style={{
               width: '100%',
               padding: '10px 16px',
