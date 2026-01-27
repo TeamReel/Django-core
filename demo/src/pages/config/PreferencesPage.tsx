@@ -242,10 +242,6 @@ export const PreferencesPage: React.FC = () => {
   // (Teams exist in hierarchy but are not selectable as active context)
   useEffect(() => {
     setTeams([]);
-  // Teams are NOT loaded - club is the end level for active context
-  // (Teams exist in hierarchy but are not selectable as active context)
-  useEffect(() => {
-    setTeams([]);
   }, []);
 
   // Load seasons when club selected (not team, since club is end level)

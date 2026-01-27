@@ -31,5 +31,6 @@
     }
   },
   "include": ["src"],
+  "exclude": ["src/pages/_archive"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
