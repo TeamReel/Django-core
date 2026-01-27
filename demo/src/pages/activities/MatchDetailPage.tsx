@@ -5,6 +5,7 @@ import { PageHeader, PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { periodPathKey } from '../../utils/periodPath';
+import { setActiveContext } from '../../utils/activeContext';
 
 interface Participation {
   id: string;
@@ -82,6 +83,7 @@ export const MatchDetailPage: React.FC = () => {
   const [seasonPeriod, setSeasonPeriod] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activatingContext, setActivatingContext] = useState(false);
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -291,9 +293,26 @@ export const MatchDetailPage: React.FC = () => {
             { label: match.title || 'Match', current: true },
           ].filter(Boolean) as any[])}
           actions={
-            <Button onClick={() => navigate(`/studio/create?context=${match.id}`)}>
-               ✨ Generate Content (AI)
-            </Button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <Button
+                variant="secondary"
+                onClick={async () => {
+                  try {
+                    setActivatingContext(true);
+                    await setActiveContext('match', String(match.id));
+                  } finally {
+                    setActivatingContext(false);
+                  }
+                }}
+                disabled={activatingContext}
+                title="Set this match as your active context"
+              >
+                Make active
+              </Button>
+              <Button onClick={() => navigate(`/studio/create?context=${match.id}`)}>
+                ✨ Generate Content (AI)
+              </Button>
+            </div>
           }
         />
 

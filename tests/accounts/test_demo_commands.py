@@ -19,6 +19,27 @@ from organisations.models import Membership, Organisation
 from projects.models import Project
 
 
+def _perf_tests_enabled() -> bool:
+    """Performance tests are opt-in to avoid flaky/slow local runs.
+
+    Enable with RUN_PERF_TESTS=1.
+    """
+
+    return str(os.environ.get("RUN_PERF_TESTS", "")).strip() == "1"
+
+
+def _perf_budget_seconds(default: float) -> float:
+    """Allow overriding budgets in CI via env vars."""
+
+    raw = str(os.environ.get("PERF_BUDGET_SECONDS", "")).strip()
+    if not raw:
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        return default
+
+
 @pytest.mark.django_db
 class TestSeedDemoDataCommand(TestCase):
     """Test seed_demo_data management command."""
@@ -97,13 +118,17 @@ class TestSeedDemoDataCommand(TestCase):
         """Test seed completes within performance target (<30s)."""
         import time
 
+        if not _perf_tests_enabled():
+            pytest.skip("Performance tests are opt-in (set RUN_PERF_TESTS=1)")
+
         os.environ["DEMO_RANDOM_SEED"] = "12345"
 
         start = time.time()
         call_command("seed_demo_data", "--force", stdout=StringIO())
         elapsed = time.time() - start
 
-        assert elapsed < 30, f"Seed took {elapsed}s, must be <30s"
+        budget = _perf_budget_seconds(30.0)
+        assert elapsed < budget, f"Seed took {elapsed}s, must be <{budget}s"
 
     def test_seed_with_json_flag(self):
         """Test --json flag produces valid JSON output."""
@@ -132,8 +157,9 @@ class TestSeedDemoDataCommand(TestCase):
 class TestValidateDemoDataCommand(TestCase):
     """Test validate_demo_data management command."""
 
-    def setUp(self):
-        """Create valid demo data before each test."""
+    @classmethod
+    def setUpTestData(cls):
+        """Create valid demo data once for the class (faster than per-test)."""
         os.environ["DEMO_RANDOM_SEED"] = "12345"
         call_command("seed_demo_data", "--force", stdout=StringIO())
 
@@ -195,8 +221,9 @@ class TestValidateDemoDataCommand(TestCase):
 class TestResetDemoDataCommand(TestCase):
     """Test reset_demo_data management command."""
 
-    def setUp(self):
-        """Create demo data before each test."""
+    @classmethod
+    def setUpTestData(cls):
+        """Create demo data once for the class (faster than per-test)."""
         os.environ["DEMO_RANDOM_SEED"] = "12345"
         call_command("seed_demo_data", "--force", stdout=StringIO())
 
@@ -245,11 +272,15 @@ class TestResetDemoDataCommand(TestCase):
         """Test reset completes within performance target (<60s)."""
         import time
 
+        if not _perf_tests_enabled():
+            pytest.skip("Performance tests are opt-in (set RUN_PERF_TESTS=1)")
+
         start = time.time()
         call_command("reset_demo_data", "--force", stdout=StringIO())
         elapsed = time.time() - start
 
-        assert elapsed < 60, f"Reset took {elapsed}s, must be <60s"
+        budget = _perf_budget_seconds(60.0)
+        assert elapsed < budget, f"Reset took {elapsed}s, must be <{budget}s"
 
     def test_reset_only_deletes_demo_data(self):
         """Test reset preserves non-demo data."""

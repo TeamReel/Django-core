@@ -6,6 +6,7 @@ import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
+import { setActiveContext } from '../../utils/activeContext';
 import PeriodDetailModal from '../identity/PeriodDetailModal';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import MatchEditModal from '../identity/MatchEditModal';
@@ -884,6 +885,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const [club, setClub] = useState<Project | null>(null);
   const [season, setSeason] = useState<Period | null>(null);
   const [competition, setCompetition] = useState<Period | null>(null);
+  const [activatingContext, setActivatingContext] = useState(false);
   const [resolvedSeasonId, setResolvedSeasonId] = useState<string>('');
   const [resolvedCompetitionId, setResolvedCompetitionId] = useState<string>('');
   const [competitionsForSwitcher, setCompetitionsForSwitcher] = useState<Period[]>([]);
@@ -1596,6 +1598,27 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
           title={competition ? competition.name : 'Competition'}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!competition) return;
+                  try {
+                    setActivatingContext(true);
+                    await setActiveContext('competition', String(competition.id));
+                  } finally {
+                    setActivatingContext(false);
+                  }
+                }}
+                disabled={activatingContext}
+                style={{
+                  ...backButtonStyle,
+                  cursor: activatingContext ? 'not-allowed' : backButtonStyle.cursor,
+                  opacity: activatingContext ? 0.6 : 1,
+                }}
+                title="Set this competition as your active context"
+              >
+                Make active
+              </button>
               <button
                 type="button"
                 onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}

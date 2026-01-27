@@ -140,6 +140,94 @@ The module enforces a three-tier role hierarchy with clear permission boundaries
 #### Authenticated Endpoints (IsAuthenticated)
 - `POST /api/v1/auth/logout` - User logout
 - `GET /api/v1/auth/default-context/` - Deterministic default navigation context (org/club/team/season/competition/match) for the frontend sidebar
+- `GET /api/v1/auth/active-context/` - Get the user's persisted active navigation context
+- `PATCH /api/v1/auth/active-context/` - Set/clear the user's persisted active navigation context
+
+## Active Navigation Context (TeamReel)
+
+The TeamReel frontend keeps a hierarchy of “active” items:
+
+Federation (Organisation) → Club (Project) → Team (Project) → Season (Period) → Competition (Period) → Match (Activity)
+
+This module persists that selection per user via `accounts.UserActiveContext`.
+
+### Data model
+
+The persisted context lives in `accounts_user_active_context` (model: `accounts.UserActiveContext`).
+
+- Exactly one row per user (enforced by `OneToOneField`).
+- Each level is nullable; setting a higher level clears lower levels.
+- `updated_at` changes on every update.
+
+### Why this exists
+
+The sidebar (Panel A) should always be able to link to the correct detail pages without guessing slugs/keys from the current URL or localStorage. The backend therefore provides:
+
+- `GET /api/v1/auth/default-context/` as the single source of truth for “what the sidebar should point at”.
+- `GET/PATCH /api/v1/auth/active-context/` so users can explicitly set what is active.
+
+`default-context` prefers `UserActiveContext` when present, and fills in missing lower levels deterministically.
+
+### API contract (PATCH)
+
+Request body:
+
+```json
+{ "kind": "team", "id": "123" }
+```
+
+#### CSRF (browser/session auth)
+
+If the client is using session authentication (cookies), `PATCH` requests must include a CSRF token.
+In practice this means sending the `X-CSRFToken` header (value from the `csrftoken` cookie).
+
+The demo frontend helper in `demo/src/utils/activeContext.ts` handles this automatically.
+
+Where `kind` is one of:
+
+- `organisation`, `club`, `team`, `season`, `competition`, `match`, `clear`
+
+Behavior:
+
+- Setting a higher level clears lower levels (e.g. setting `team` clears season/competition/match).
+- Setting a lower level implies higher levels where possible (e.g. setting `match` also sets competition/season/team/club/organisation).
+- Membership is enforced: users can only set active items they have access to.
+
+### Frontend integration (Demo app)
+
+The demo app uses these endpoints as follows:
+
+- The sidebar (Panel A) calls `GET /api/v1/auth/default-context/` and builds deterministic detail links.
+- Detail pages include a "Make active" action which calls `PATCH /api/v1/auth/active-context/`.
+- Preferences → Profile shows a small "Active context" summary card (fed/club/team/season/competition/match).
+
+Implementation references:
+
+- Client helper: demo/src/utils/activeContext.ts
+- Sidebar refresh: demo/src/components/Sidebar.tsx
+
+### Local verification
+
+Backend:
+
+1. Run migrations: `python manage.py migrate`
+2. Sign in via the demo app.
+3. `GET /api/v1/auth/active-context/` should return nulls initially.
+4. Use "Make active" on any detail page and confirm:
+    - `PATCH /api/v1/auth/active-context/` returns the updated context
+    - `GET /api/v1/auth/default-context/` returns the chosen active item (prefers active context)
+
+Tests:
+
+## Production validation (best practice)
+
+Avoid running `pytest` directly against production databases.
+
+Use staging/clone for full test runs, and production-safe smoke checks for production verification:
+- [Production validation runbook](documents/07-operations/production-validation.md)
+- [Smoke script](scripts/dev-utils/smoke_production.py)
+
+- `python -m pytest -q tests/accounts/test_active_context_endpoint.py --no-cov`
 
 #### Admin Endpoints (IsAdmin - superadmin or admin)
 - `GET /api/v1/admin/users` - List users (paginated, 50/page)

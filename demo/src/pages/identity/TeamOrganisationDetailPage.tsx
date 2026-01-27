@@ -4,6 +4,7 @@ import { Alert, Button, Card, Input } from '@django-core/design-system';
 import { BreadcrumbContextSwitcher, PageContent, PageHeader, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
 
 import { fetchAllPages } from '../../utils/fetchAllPages';
+import { setActiveContext } from '../../utils/activeContext';
 
 import { SeasonsList } from './directory/SeasonsList';
 import { CompetitionsList } from './directory/CompetitionsList';
@@ -141,6 +142,8 @@ export default function TeamOrganisationDetailPage() {
   const [overviewMembersCount, setOverviewMembersCount] = useState<number | null>(null);
   const [overviewMembersLoading, setOverviewMembersLoading] = useState(false);
   const [overviewMembersError, setOverviewMembersError] = useState<string | null>(null);
+
+  const [activatingContext, setActivatingContext] = useState(false);
 
   const [clubTeamsForSwitcher, setClubTeamsForSwitcher] = useState<Project[]>([]);
   const [clubTeamsForSwitcherLoading, setClubTeamsForSwitcherLoading] = useState(false);
@@ -685,6 +688,23 @@ export default function TeamOrganisationDetailPage() {
           ]}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={async () => {
+                  if (!team) return;
+                  try {
+                    setActivatingContext(true);
+                    await setActiveContext('team', String(team.id));
+                  } finally {
+                    setActivatingContext(false);
+                  }
+                }}
+                disabled={activatingContext}
+                title="Set this team as your active context"
+              >
+                Make active
+              </Button>
               <Button variant="secondary" size="sm" onClick={() => navigate(backToClubHref)}>
                 Back
               </Button>

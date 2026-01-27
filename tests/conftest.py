@@ -233,14 +233,19 @@ def unwrap_envelope_error(response):
     return response.data
 
 
-@pytest.fixture(autouse=True)
-def ensure_roles(db):
-    """Ensure default roles exist for every test."""
+@pytest.fixture(scope="session", autouse=True)
+def ensure_roles(django_db_setup, django_db_blocker):
+    """Ensure default roles exist once per test session.
+
+    This was previously autouse per-test, which can be very costly because it
+    touches the database and may invoke a management command.
+    """
     from permissions.models import Role
 
-    # Check if Global Admin exists as a proxy for all roles
-    if not Role.objects.filter(name="Global Admin").exists():
-        from django.core.management import call_command
+    with django_db_blocker.unblock():
+        # Check if Global Admin exists as a proxy for all roles
+        if not Role.objects.filter(name="Global Admin").exists():
+            from django.core.management import call_command
 
-        # Suppress output to keep test logs clean
-        call_command("seed_default_roles", verbosity=0)
+            # Suppress output to keep test logs clean
+            call_command("seed_default_roles", verbosity=0)

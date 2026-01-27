@@ -12,6 +12,8 @@ This section outlines the processes for building, testing, and contributing to t
 *   **[Git Workflow](git-workflow.md)**: Branching strategy, commit conventions, and merging.
 *   **[Testing Strategy](testing.md)**: How to run and write tests (Unit, Integration, E2E).
 *   **[CI/CD Pipeline](cicd.md)**: Automated checks and deployment triggers.
+*   **[Railway Setup](railway-setup.md)**: Production deployment configuration and remote commands.
+*   **[Railway Staging Setup](railway-staging-setup.md)**: Staging environment for safe full test runs.
 
 ## Quick Start
 

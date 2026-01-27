@@ -18,6 +18,7 @@ import MatchDetailModal from '../identity/MatchDetailModal';
 import SeasonSquadAddMemberModal from '../identity/SeasonSquadAddMemberModal';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { fetchAllPages } from '../../utils/fetchAllPages';
+import { setActiveContext } from '../../utils/activeContext';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import {
@@ -125,6 +126,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [club, setClub] = useState<Project | null>(null);
   const [season, setSeason] = useState<Period | null>(null);
+  const [activatingContext, setActivatingContext] = useState(false);
   const [resolvedSeasonId, setResolvedSeasonId] = useState<string>('');
   const [seasonsForSwitcher, setSeasonsForSwitcher] = useState<Period[]>([]);
   const [competitions, setCompetitions] = useState<Period[]>([]);
@@ -990,6 +992,27 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           title={season ? season.name : 'Season'}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!season) return;
+                  try {
+                    setActivatingContext(true);
+                    await setActiveContext('season', String(season.id));
+                  } finally {
+                    setActivatingContext(false);
+                  }
+                }}
+                disabled={activatingContext}
+                style={{
+                  ...backButtonStyle,
+                  cursor: activatingContext ? 'not-allowed' : backButtonStyle.cursor,
+                  opacity: activatingContext ? 0.6 : 1,
+                }}
+                title="Set this season as your active context"
+              >
+                Make active
+              </button>
               <button
                 type="button"
                 onClick={() => navigate(seasonsBasePath)}

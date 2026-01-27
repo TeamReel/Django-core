@@ -12,6 +12,7 @@ import { useUserRole } from './PermissionGuards';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { AppIcon } from './AppIcon';
 import { addRecent } from '../utils/navStorage';
+import { ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -64,7 +65,7 @@ const NAV_CONFIG: NavSection[] = [
         title: 'SETTINGS',
         visibility: 'everyone',
         items: [
-            { path: '/preferences', label: 'Preferences', icon: Settings, visibility: 'everyone' },
+            { path: '/preferences?tab=profile', label: 'Preferences', icon: Settings, visibility: 'everyone' },
             { path: '/permissions', label: 'Organisation', icon: Users, visibility: 'org_admin' },
             { path: '/health', label: 'Platform', icon: Activity, visibility: 'staff' },
         ]
@@ -231,7 +232,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
         let cancelled = false;
 
-        const run = async () => {
+        const load = async () => {
             try {
                 const response = await fetch(`${apiBaseUrl}/api/v1/auth/default-context/`, {
                     credentials: 'include',
@@ -291,9 +292,15 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             }
         };
 
-        void run();
+        const onActiveContextChanged = () => {
+            void load();
+        };
+
+        void load();
+        window.addEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, onActiveContextChanged);
         return () => {
             cancelled = true;
+            window.removeEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, onActiveContextChanged);
         };
     }, [
         user,
@@ -306,6 +313,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
   // --- PANEL B LOGIC (New) ---
   const panelBConfig = useMemo(() => {
         const path = location.pathname;
+
+        // Notifications has its own top navbar entry; keep Panel B hidden here.
+        if (path.startsWith('/notifications')) {
+            return null;
+        }
+
         const walletParam = new URLSearchParams(location.search || '').get('wallet');
         const isPersonalWallet = walletParam === 'personal';
 
@@ -392,7 +405,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     if (path.startsWith('/content') || path.startsWith('/studio')) activeSection = 'content';
     else if (path.startsWith('/credits')) activeSection = isPersonalWallet ? 'preferences' : 'organisation';
     else if (path.startsWith('/permissions') || path.startsWith('/audit') || path === '/users') activeSection = 'organisation';
-    else if (path.startsWith('/profile') || path.startsWith('/notifications') || path.startsWith('/preferences')) activeSection = 'preferences';
+    else if (path.startsWith('/profile') || path.startsWith('/preferences')) activeSection = 'preferences';
     else if (['/health', '/flags', '/integration', '/design', '/observability', '/security', '/constitution'].some(prefix => path.startsWith(prefix))) activeSection = 'platform';
     else if (['/docs'].some(prefix => path.startsWith(prefix))) activeSection = 'help';
 
@@ -713,11 +726,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         case 'preferences':
             title = 'Personal Settings';
             items = [
-                { label: 'My Wallet', path: '/credits?wallet=personal', icon: CreditCard },
-                { label: 'Notifications (Inbox)', path: '/notifications', icon: Bell },
                 { label: 'Profile', path: '/preferences?tab=profile', icon: UserCircle },
                 { label: 'Personalisation', path: '/preferences?tab=personalisation', icon: Palette },
                 { label: 'Notification settings', path: '/preferences?tab=notifications', icon: Settings },
+                { label: 'My Wallet', path: '/credits?wallet=personal', icon: CreditCard },
             ];
             break;
 

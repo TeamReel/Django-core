@@ -13,6 +13,7 @@ import { useTheme } from '@django-core/theme-system';
 import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import { useAuth } from "@django-core/auth-ui";
 import { useLocation } from 'react-router-dom';
+import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext as fetchActiveContext } from '../../utils/activeContext';
 
 /**
  * T015 - Preferences Page
@@ -70,13 +71,17 @@ export const PreferencesPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const [activeContext, setActiveContext] = useState<any | null>(null);
+  const [activeContextLoading, setActiveContextLoading] = useState(false);
+  const [activeContextError, setActiveContextError] = useState<string | null>(null);
+
   // Notification channel preferences state
   const [channelPrefs, setChannelPrefs] = useState<EventTypeGroup[]>([]);
   const [channelPrefsLoading, setChannelPrefsLoading] = useState(true);
   const [channelPrefsSaving, setChannelPrefsSaving] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'personalisation' | 'notifications'>('personalisation');
+  const [activeTab, setActiveTab] = useState<'profile' | 'personalisation' | 'notifications'>('profile');
 
   useEffect(() => {
     let tab = '';
@@ -84,6 +89,10 @@ export const PreferencesPage: React.FC = () => {
       tab = String(new URLSearchParams(location.search).get('tab') || '').toLowerCase();
     } catch {
       tab = '';
+    }
+    if (!tab) {
+      setActiveTab('profile');
+      return;
     }
     if (tab === 'notifications' || tab === 'notification') {
       setActiveTab('notifications');
@@ -97,7 +106,37 @@ export const PreferencesPage: React.FC = () => {
       setActiveTab('personalisation');
       return;
     }
+
+    setActiveTab('profile');
   }, [location.search]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        setActiveContextLoading(true);
+        setActiveContextError(null);
+        const data = await fetchActiveContext();
+        if (!cancelled) setActiveContext(data);
+      } catch (e) {
+        if (!cancelled) setActiveContextError(e instanceof Error ? e.message : 'Failed to load active context');
+      } finally {
+        if (!cancelled) setActiveContextLoading(false);
+      }
+    };
+
+    const onChanged = () => {
+      void load();
+    };
+
+    void load();
+    window.addEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, onChanged);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, onChanged);
+    };
+  }, []);
 
 
   // Initialize preferences from Theme System + Defaults
@@ -648,6 +687,67 @@ export const PreferencesPage: React.FC = () => {
                       If you want this editable inside TeamReel, we can add a dedicated Account API and UI.
                     </Alert>
                   </div>
+                </Card>
+
+                <Card>
+                  <h3 className="text-lg font-semibold mb-2">Active context</h3>
+                  <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
+                    Your current Federation → Club → Team → Season → Competition → Match selection used for sidebar defaults.
+                  </div>
+
+                  {activeContextError && <Alert variant="error">{activeContextError}</Alert>}
+                  {activeContextLoading ? (
+                    <div className="text-sm text-gray-500">Loading active context…</div>
+                  ) : (
+                    (() => {
+                      const org = activeContext?.organisation;
+                      const club = activeContext?.club;
+                      const team = activeContext?.team;
+                      const season = activeContext?.season;
+                      const competition = activeContext?.competition;
+                      const match = activeContext?.match;
+
+                      const orgSlug = String(org?.slug || '').trim();
+                      const clubSlug = String(club?.slug || '').trim();
+                      const teamSlug = String(team?.slug || '').trim();
+                      const seasonKey = String(season?.key || '').trim();
+                      const competitionKey = String(competition?.key || '').trim();
+                      const matchKey = String(match?.key || '').trim();
+
+                      const federationPath = orgSlug ? `/${orgSlug}` : '/dashboard';
+                      const clubPath = orgSlug && clubSlug ? `/${orgSlug}/${clubSlug}` : federationPath;
+                      const teamPath = orgSlug && clubSlug && teamSlug ? `/${orgSlug}/${clubSlug}/${teamSlug}` : clubPath;
+                      const seasonPath = orgSlug && clubSlug && teamSlug && seasonKey ? `/${orgSlug}/${clubSlug}/${teamSlug}/${seasonKey}` : teamPath;
+                      const competitionPath = orgSlug && clubSlug && teamSlug && seasonKey && competitionKey
+                        ? `/${orgSlug}/${clubSlug}/${teamSlug}/${seasonKey}/${competitionKey}`
+                        : seasonPath;
+                      const matchPath = orgSlug && clubSlug && teamSlug && seasonKey && competitionKey && matchKey
+                        ? `/${orgSlug}/${clubSlug}/${teamSlug}/${seasonKey}/${competitionKey}/${matchKey}`
+                        : competitionPath;
+
+                      const Row = ({ label, value, href }: { label: string; value: string; href: string }) => (
+                        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 12, padding: '6px 0' }}>
+                          <div className="text-xs font-semibold text-gray-500 uppercase">{label}</div>
+                          <div className="text-sm" style={{ fontWeight: 600 }}>
+                            <a href={href} style={{ color: 'var(--app-link, #2563eb)' }}>
+                              {value}
+                            </a>
+                          </div>
+                        </div>
+                      );
+
+                      return (
+                        <div style={{ maxWidth: 900 }}>
+                          <Row label="Federation" value={String(org?.name || '—')} href={federationPath} />
+                          <Row label="Club" value={String(club?.name || '—')} href={clubPath} />
+                          <Row label="Team" value={String(team?.name || '—')} href={teamPath} />
+                          <Row label="Season" value={String(season?.name || '—')} href={seasonPath} />
+                          <Row label="Competition" value={String(competition?.name || '—')} href={competitionPath} />
+                          <Row label="Match" value={String(match?.title || match?.name || '—')} href={matchPath} />
+                        </div>
+                      );
+                    })()
+                  )}
                 </Card>
               </>
             )}

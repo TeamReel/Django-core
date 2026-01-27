@@ -2,6 +2,8 @@
 
 This guide helps you configure the backend on Railway.app and connect to it locally for management tasks.
 
+For **staging environment setup** (to run the full test suite safely), see [railway-staging-setup.md](railway-staging-setup.md).
+
 ## 1. Critical Variables (Required)
 
 | Variable | Value | Description |
@@ -99,6 +101,51 @@ This error occurs when the PostgreSQL database has reached its maximum number of
 **Option B: Using Public URL (Without CLI)**
 1.  Set `$env:DATABASE_URL` as described in **Section 3**.
 2.  Run: `python manage.py createsuperuser`
+
+## 5b. Production validation (recommended)
+
+Do **not** run `pytest` against the production DB.
+
+Instead:
+- Run full test suites against **staging** (see [railway-staging-setup.md](railway-staging-setup.md))
+- For prod verification, run the production-safe smoke checks
+
+### Full test suite on staging
+
+Create a Railway **staging environment** with its own Postgres, deploy the same code, and run pytest there:
+
+```powershell
+railway ssh -e staging -- bash -c "DJANGO_SETTINGS_MODULE=config.settings.test python -m pytest --no-cov -q"
+```
+
+See [railway-staging-setup.md](railway-staging-setup.md) for complete setup steps.
+
+### Smoke checks on production
+
+Because the production DB URL inside Railway is often an **internal hostname** (e.g. `postgres.railway.internal`), you generally cannot rely on `railway run` from your local machine.
+
+Instead, run the smoke script locally using the **Public Connection URL** (Section 3):
+
+```powershell
+# Set the variable (use the Public Connection URL from Railway)
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
+
+# Minimal key so production settings can load
+$env:SECRET_KEY="smoke-check"
+
+# Read-only checks
+python scripts/dev-utils/smoke_production.py --mode read
+```
+
+After you’ve deployed a version that includes the smoke script, you can also run it *inside* the container:
+
+```powershell
+railway login
+railway link
+railway ssh python scripts/dev-utils/smoke_production.py --mode read
+```
+
+Runbook: `documents/07-operations/production-validation.md`
 
 ## 6. Setting Up Celery Beat Worker (Optional - For Cache Metrics)
 

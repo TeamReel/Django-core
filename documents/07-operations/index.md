@@ -10,6 +10,7 @@ This section covers the operational aspects of running the Django Core-App in pr
 *   **[Railway Integration](railway-integration.md)**: Specific guide for Railway deployment (recommended).
 *   **[Observability](observability.md)**: Monitoring, logging, metrics, health checks, and error tracking.
 *   **[Database Management](database.md)**: Backups, migrations, maintenance, and optimization.
+- **[Production Validation](./production-validation.md)**
 
 ## Deployment Options
 

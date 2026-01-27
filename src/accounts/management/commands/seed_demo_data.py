@@ -23,6 +23,7 @@ Features:
 import json
 import os
 import time
+from contextlib import contextmanager
 from datetime import timedelta
 
 from django.core.management.base import BaseCommand
@@ -125,33 +126,36 @@ class Command(BaseCommand):
                     )
                 )
 
-        with transaction.atomic():
-            # T001: Seed scaffolding complete (helpers loaded)
+        # Demo seeding should be fast and should not generate per-object audit/metrics logs.
+        # Temporarily disconnect noisy signal handlers to keep performance predictable.
+        with self._disable_noisy_signals_for_seed():
+            with transaction.atomic():
+                # T001: Seed scaffolding complete (helpers loaded)
 
-            # T002: Demo accounts (org creators), orgs, users, preferences
-            demo_accounts = self._seed_demo_accounts_first(progress, verbose)
-            orgs = self._seed_organizations(demo_accounts, progress, verbose)
-            users = self._seed_users(orgs, progress, verbose)
-            self._seed_user_preferences(users, progress, verbose)
+                # T002: Demo accounts (org creators), orgs, users, preferences
+                demo_accounts = self._seed_demo_accounts_first(progress, verbose)
+                orgs = self._seed_organizations(demo_accounts, progress, verbose)
+                users = self._seed_users(orgs, progress, verbose)
+                self._seed_user_preferences(users, progress, verbose)
 
-            # T003: Projects
-            projects = self._seed_projects(orgs, users, progress, verbose)
+                # T003: Projects
+                projects = self._seed_projects(orgs, users, progress, verbose)
 
-            # T004: Transactions
-            self._seed_transactions(orgs, progress, verbose)
+                # T004: Transactions
+                self._seed_transactions(orgs, progress, verbose)
 
-            # T005: Audit events
-            self._seed_audit_events(orgs, users, projects, progress, verbose)
+                # T005: Audit events
+                self._seed_audit_events(orgs, users, projects, progress, verbose)
 
-            # T006: Notifications (skip for now - model needs updating)
-            # self._seed_notifications(orgs, users, progress, verbose)
+                # T006: Notifications (skip for now - model needs updating)
+                # self._seed_notifications(orgs, users, progress, verbose)
 
-            # T007: Feature flags and file metadata placeholders
-            self._seed_feature_flags(orgs, progress, verbose)
-            self._seed_file_metadata(projects, progress, verbose)
+                # T007: Feature flags and file metadata placeholders
+                self._seed_feature_flags(orgs, progress, verbose)
+                self._seed_file_metadata(projects, progress, verbose)
 
-            # T008: Credits balance
-            self._seed_credits_balance(orgs, progress, verbose)
+                # T008: Credits balance
+                self._seed_credits_balance(orgs, progress, verbose)
 
         elapsed = time.time() - start_time
 
@@ -170,6 +174,64 @@ class Command(BaseCommand):
             for entity, count in summary.items():
                 if entity != "elapsed_seconds" and entity != "idempotent_rerun":
                     self.stdout.write(f"  {entity}: {count}")
+
+    @contextmanager
+    def _disable_noisy_signals_for_seed(self):
+        """Disable expensive audit/metrics/caching signal handlers during demo seeding.
+
+        This command can create many Organisations, Memberships and Projects. Some signal
+        handlers do per-save aggregation queries + structured logging, which can dominate
+        runtime under pytest log capture.
+        """
+
+        from django.db.models.signals import post_delete, post_save, pre_delete
+
+        disconnected: list[tuple[object, object, object]] = []
+
+        def _disconnect(signal, receiver, sender):
+            if signal.disconnect(receiver, sender=sender):
+                disconnected.append((signal, receiver, sender))
+
+        # Organisations app signals
+        try:
+            from organisations.models import Membership as OrgMembership, Organisation
+            from organisations.signals import (
+                log_membership_change,
+                log_membership_deletion,
+                log_organisation_change,
+                log_organisation_deletion,
+            )
+
+            _disconnect(post_save, log_organisation_change, Organisation)
+            _disconnect(pre_delete, log_organisation_deletion, Organisation)
+            _disconnect(post_save, log_membership_change, OrgMembership)
+            _disconnect(pre_delete, log_membership_deletion, OrgMembership)
+        except Exception:
+            # Best-effort: seeding must never fail because of optional signal wiring.
+            pass
+
+        # Projects app signals
+        try:
+            from projects.models import Project, ProjectMembership
+            from projects.signals import (
+                invalidate_on_membership_change,
+                log_project_deleted,
+                log_project_pre_delete,
+                log_project_saved,
+            )
+
+            _disconnect(post_save, log_project_saved, Project)
+            _disconnect(pre_delete, log_project_pre_delete, Project)
+            _disconnect(post_delete, log_project_deleted, Project)
+            _disconnect(post_save, invalidate_on_membership_change, ProjectMembership)
+        except Exception:
+            pass
+
+        try:
+            yield
+        finally:
+            for signal, receiver, sender in disconnected:
+                signal.connect(receiver, sender=sender, weak=False)
 
     def _delete_demo_data(self):
         """Delete existing demo data (scoped to demo org slugs and emails)."""

@@ -23,6 +23,7 @@ import AppShell from '../../components/AppShell';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import { periodPathKey } from '../../utils/periodPath';
 import { fetchAllPages as fetchAllPagesCached, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
+import { setActiveContext } from '../../utils/activeContext';
 import ProjectDetailModal from './ProjectDetailModal';
 import ProjectCreateModal from './ProjectCreateModal';
 import ProjectEditModal from './ProjectEditModal';
@@ -129,6 +130,7 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   }, [activeTabFromUrl]);
 
   const [project, setProject] = useState<Project | null>(null);
+  const [activatingContext, setActivatingContext] = useState(false);
   const [members, setMembers] = useState<any[]>([]);
   const [recentEvents, setRecentEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -2375,6 +2377,32 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         ]}
         actions={
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  setActivatingContext(true);
+                  await setActiveContext(isTeamRoute ? 'team' : 'club', String(project.id));
+                } finally {
+                  setActivatingContext(false);
+                }
+              }}
+              disabled={activatingContext}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-2)',
+                color: 'var(--app-text)',
+                cursor: activatingContext ? 'not-allowed' : 'pointer',
+                fontSize: '12px',
+                fontWeight: 500,
+                opacity: activatingContext ? 0.6 : 1,
+              }}
+              title="Set this as your active context"
+            >
+              Make active
+            </button>
             <button
               type="button"
               onClick={() => navigate(backPath)}

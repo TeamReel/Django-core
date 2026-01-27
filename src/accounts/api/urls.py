@@ -13,6 +13,7 @@ urlpatterns = [
     path("auth/logout/", views.LogoutView.as_view(), name="api_logout"),
     path("auth/me/", views.auth_me, name="api_auth_me"),
     path("auth/default-context/", views.auth_default_context, name="api_auth_default_context"),
+    path("auth/active-context/", views.auth_active_context, name="api_auth_active_context"),
     path("auth/profile/", views.update_profile, name="api_update_profile"),
     path(
         "auth/password-reset/",

@@ -76,3 +76,76 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self) -> str:
         """Return string representation of user."""
         return self.email
+
+
+class UserActiveContext(models.Model):
+    """Persist a user's active TeamReel navigation context.
+
+    This is the user's explicit "currently active" federation/club/team/season/
+    competition/match used to seed navigation defaults.
+    """
+
+    id = models.BigAutoField(primary_key=True)
+
+    user = models.OneToOneField(
+        "accounts.User",
+        on_delete=models.CASCADE,
+        related_name="active_context",
+    )
+
+    organisation = models.ForeignKey(
+        "organisations.Organisation",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    club = models.ForeignKey(
+        "projects.Project",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    team = models.ForeignKey(
+        "projects.Project",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    season = models.ForeignKey(
+        "activities.Period",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    competition = models.ForeignKey(
+        "activities.Period",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    match = models.ForeignKey(
+        "activities.Activity",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "accounts_user_active_context"
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["organisation"]),
+            models.Index(fields=["club"]),
+            models.Index(fields=["team"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"ActiveContext(user={self.user_id})"

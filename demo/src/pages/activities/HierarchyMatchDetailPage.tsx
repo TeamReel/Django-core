@@ -13,6 +13,7 @@ import MatchDetailModal from '../identity/MatchDetailModal';
 import MatchEditModal from '../identity/MatchEditModal';
 import ContentGenerationModal from '../identity/ContentGenerationModal';
 import { actionButtonStyle } from '../identity/detail/detailStyles';
+import { setActiveContext } from '../../utils/activeContext';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
@@ -152,6 +153,7 @@ export default function HierarchyMatchDetailPage() {
   const [resolvedCompetitionUuid, setResolvedCompetitionUuid] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activatingContext, setActivatingContext] = useState(false);
 
   const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
 
@@ -1464,6 +1466,28 @@ export default function HierarchyMatchDetailPage() {
           title={match.title}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="app-action-button"
+                onClick={async () => {
+                  if (!match) return;
+                  try {
+                    setActivatingContext(true);
+                    await setActiveContext('match', String(match.id));
+                  } finally {
+                    setActivatingContext(false);
+                  }
+                }}
+                disabled={activatingContext}
+                style={{
+                  ...detailActionButtonStyle('neutral'),
+                  opacity: activatingContext ? 0.6 : 1,
+                  cursor: activatingContext ? 'not-allowed' : 'pointer',
+                }}
+                title="Set this match as your active context"
+              >
+                Make active
+              </button>
               <button
                 type="button"
                 className="app-action-button"
