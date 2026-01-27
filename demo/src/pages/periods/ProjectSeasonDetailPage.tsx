@@ -18,7 +18,7 @@ import MatchDetailModal from '../identity/MatchDetailModal';
 import SeasonSquadAddMemberModal from '../identity/SeasonSquadAddMemberModal';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { fetchAllPages } from '../../utils/fetchAllPages';
-import { setActiveContext } from '../../utils/activeContext';
+import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import {
@@ -127,6 +127,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [club, setClub] = useState<Project | null>(null);
   const [season, setSeason] = useState<Period | null>(null);
   const [activatingContext, setActivatingContext] = useState(false);
+  const [activeContext, setActiveContextState] = useState<any | null>(null);
   const [resolvedSeasonId, setResolvedSeasonId] = useState<string>('');
   const [seasonsForSwitcher, setSeasonsForSwitcher] = useState<Period[]>([]);
   const [competitions, setCompetitions] = useState<Period[]>([]);
@@ -191,6 +192,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const orgSlugOrId = orgId || '';
   const projectSlugOrId = projectId || '';
   const effectiveSeasonId = seasonId || '';
+
+  // Load active context on mount
+  useEffect(() => {
+    let cancelled = false;
+    const loadActiveContext = async () => {
+      try {
+        const context = await getActiveContext();
+        if (!cancelled) setActiveContextState(context);
+      } catch (e) {
+        console.error('Failed to load active context:', e);
+      }
+    };
+    void loadActiveContext();
+    return () => { cancelled = true; };
+  }, []);
 
   const isTeamRoute = Boolean(clubId);
   const clubSlugOrId = clubId || '';
@@ -992,27 +1008,40 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           title={season ? season.name : 'Season'}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={async () => {
-                  if (!season) return;
-                  try {
-                    setActivatingContext(true);
-                    await setActiveContext('season', String(season.id));
-                  } finally {
-                    setActivatingContext(false);
-                  }
-                }}
-                disabled={activatingContext}
-                style={{
-                  ...backButtonStyle,
-                  cursor: activatingContext ? 'not-allowed' : backButtonStyle.cursor,
-                  opacity: activatingContext ? 0.6 : 1,
-                }}
-                title="Set this season as your active context"
-              >
-                Make active
-              </button>
+              {(() => {
+                const isActive = season && activeContext?.season?.id === season.id;
+                return (
+                  <>
+                    {isActive && (
+                      <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontSize: '0.875rem', fontWeight: '500' }}>✓ Active Context</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!season || isActive) return;
+                        try {
+                          setActivatingContext(true);
+                          await setActiveContext('season', String(season.id));
+                          const context = await getActiveContext();
+                          setActiveContextState(context);
+                        } finally {
+                          setActivatingContext(false);
+                        }
+                      }}
+                      disabled={activatingContext || isActive}
+                      style={{
+                        ...backButtonStyle,
+                        cursor: activatingContext || isActive ? 'not-allowed' : backButtonStyle.cursor,
+                        opacity: activatingContext || isActive ? 0.6 : 1,
+                        ...(isActive ? { background: '#f3f4f6', color: '#9ca3af' } : {}),
+                      }}
+                      title="Set this season as your active context"
+                    >
+                      {isActive ? 'Already Active' : 'Make active'}
+                    </button>
+                  </>
+                );
+              })()}
               <button
                 type="button"
                 onClick={() => navigate(seasonsBasePath)}

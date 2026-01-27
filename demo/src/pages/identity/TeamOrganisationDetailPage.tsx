@@ -144,6 +144,7 @@ export default function TeamOrganisationDetailPage() {
   const [overviewMembersError, setOverviewMembersError] = useState<string | null>(null);
 
   const [activatingContext, setActivatingContext] = useState(false);
+  const [activeContext, setActiveContextState] = useState<any | null>(null);
 
   const [clubTeamsForSwitcher, setClubTeamsForSwitcher] = useState<Project[]>([]);
   const [clubTeamsForSwitcherLoading, setClubTeamsForSwitcherLoading] = useState(false);
@@ -174,6 +175,21 @@ export default function TeamOrganisationDetailPage() {
     const qs = params.toString();
     return qs ? `${location.pathname}?${qs}` : location.pathname;
   };
+
+  // Load active context
+  useEffect(() => {
+    let cancelled = false;
+    const loadActiveContext = async () => {
+      try {
+        const context = await getActiveContext();
+        if (!cancelled) setActiveContextState(context);
+      } catch (e) {
+        console.error('Failed to load active context:', e);
+      }
+    };
+    void loadActiveContext();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -688,23 +704,55 @@ export default function TeamOrganisationDetailPage() {
           ]}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={async () => {
-                  if (!team) return;
-                  try {
-                    setActivatingContext(true);
-                    await setActiveContext('team', String(team.id));
-                  } finally {
-                    setActivatingContext(false);
-                  }
-                }}
-                disabled={activatingContext}
-                title="Set this team as your active context"
-              >
-                Make active
-              </Button>
+              {(() => {
+                const isActive = team && activeContext?.team?.id === team.id;
+                return (
+                  <>
+                    {isActive && (
+                      <span
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '4px',
+                          backgroundColor: '#dcfce7',
+                          color: '#166534',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                      >
+                        ✓ Active Context
+                      </span>
+                    )}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={async () => {
+                        if (!team || isActive) return;
+                        try {
+                          setActivatingContext(true);
+                          await setActiveContext('team', String(team.id));
+                          const context = await getActiveContext();
+                          setActiveContextState(context);
+                        } finally {
+                          setActivatingContext(false);
+                        }
+                      }}
+                      disabled={activatingContext || isActive}
+                      title={isActive ? 'This team is already your active context' : 'Set this team as your active context'}
+                      style={{
+                        backgroundColor: isActive ? '#f3f4f6' : undefined,
+                        color: isActive ? '#9ca3af' : undefined,
+                        cursor: (activatingContext || isActive) ? 'not-allowed' : 'pointer',
+                        opacity: (activatingContext || isActive) ? 0.6 : 1,
+                      }}
+                    >
+                      {isActive ? 'Already Active' : 'Make active'}
+                    </Button>
+                  </>
+                );
+              })()}
               <Button variant="secondary" size="sm" onClick={() => navigate(backToClubHref)}>
                 Back
               </Button>

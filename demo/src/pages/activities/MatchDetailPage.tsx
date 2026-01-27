@@ -5,7 +5,7 @@ import { PageHeader, PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { periodPathKey } from '../../utils/periodPath';
-import { setActiveContext } from '../../utils/activeContext';
+import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 
 interface Participation {
   id: string;
@@ -84,8 +84,24 @@ export const MatchDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activatingContext, setActivatingContext] = useState(false);
+  const [activeContext, setActiveContextState] = useState<any | null>(null);
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+  // Load active context on mount
+  useEffect(() => {
+    let cancelled = false;
+    const loadActiveContext = async () => {
+      try {
+        const context = await getActiveContext();
+        if (!cancelled) setActiveContextState(context);
+      } catch (e) {
+        console.error('Failed to load active context:', e);
+      }
+    };
+    void loadActiveContext();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const fetchMatchDetails = async () => {
@@ -293,22 +309,36 @@ export const MatchDetailPage: React.FC = () => {
             { label: match.title || 'Match', current: true },
           ].filter(Boolean) as any[])}
           actions={
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <Button
-                variant="secondary"
-                onClick={async () => {
-                  try {
-                    setActivatingContext(true);
-                    await setActiveContext('match', String(match.id));
-                  } finally {
-                    setActivatingContext(false);
-                  }
-                }}
-                disabled={activatingContext}
-                title="Set this match as your active context"
-              >
-                Make active
-              </Button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              {(() => {
+                const isActive = match && activeContext?.match?.id === match.id;
+                return (
+                  <>
+                    {isActive && (
+                      <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontSize: '0.875rem', fontWeight: '500' }}>✓ Active Context</span>
+                    )}
+                    <Button
+                      variant="secondary"
+                      onClick={async () => {
+                        if (isActive) return;
+                        try {
+                          setActivatingContext(true);
+                          await setActiveContext('match', String(match.id));
+                          const context = await getActiveContext();
+                          setActiveContextState(context);
+                        } finally {
+                          setActivatingContext(false);
+                        }
+                      }}
+                      disabled={activatingContext || isActive}
+                      title="Set this match as your active context"
+                      style={isActive ? { background: '#f3f4f6', color: '#9ca3af', opacity: 0.6 } : {}}
+                    >
+                      {isActive ? 'Already Active' : 'Make active'}
+                    </Button>
+                  </>
+                );
+              })()}
               <Button onClick={() => navigate(`/studio/create?context=${match.id}`)}>
                 ✨ Generate Content (AI)
               </Button>

@@ -13,7 +13,7 @@ import MatchDetailModal from '../identity/MatchDetailModal';
 import MatchEditModal from '../identity/MatchEditModal';
 import ContentGenerationModal from '../identity/ContentGenerationModal';
 import { actionButtonStyle } from '../identity/detail/detailStyles';
-import { setActiveContext } from '../../utils/activeContext';
+import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
@@ -154,8 +154,24 @@ export default function HierarchyMatchDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activatingContext, setActivatingContext] = useState(false);
+  const [activeContext, setActiveContextState] = useState<any | null>(null);
 
   const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
+
+  // Load active context on mount
+  useEffect(() => {
+    let cancelled = false;
+    const loadActiveContext = async () => {
+      try {
+        const context = await getActiveContext();
+        if (!cancelled) setActiveContextState(context);
+      } catch (e) {
+        console.error('Failed to load active context:', e);
+      }
+    };
+    void loadActiveContext();
+    return () => { cancelled = true; };
+  }, []);
 
   const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
   const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
@@ -1466,28 +1482,41 @@ export default function HierarchyMatchDetailPage() {
           title={match.title}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                className="app-action-button"
-                onClick={async () => {
-                  if (!match) return;
-                  try {
-                    setActivatingContext(true);
-                    await setActiveContext('match', String(match.id));
-                  } finally {
-                    setActivatingContext(false);
-                  }
-                }}
-                disabled={activatingContext}
-                style={{
-                  ...detailActionButtonStyle('neutral'),
-                  opacity: activatingContext ? 0.6 : 1,
-                  cursor: activatingContext ? 'not-allowed' : 'pointer',
-                }}
-                title="Set this match as your active context"
-              >
-                Make active
-              </button>
+              {(() => {
+                const isActive = match && activeContext?.match?.id === match.id;
+                return (
+                  <>
+                    {isActive && (
+                      <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontSize: '0.875rem', fontWeight: '500', marginRight: '8px' }}>✓ Active Context</span>
+                    )}
+                    <button
+                      type="button"
+                      className="app-action-button"
+                      onClick={async () => {
+                        if (!match || isActive) return;
+                        try {
+                          setActivatingContext(true);
+                          await setActiveContext('match', String(match.id));
+                          const context = await getActiveContext();
+                          setActiveContextState(context);
+                        } finally {
+                          setActivatingContext(false);
+                        }
+                      }}
+                      disabled={activatingContext || isActive}
+                      style={{
+                        ...detailActionButtonStyle('neutral'),
+                        opacity: activatingContext || isActive ? 0.6 : 1,
+                        cursor: activatingContext || isActive ? 'not-allowed' : 'pointer',
+                        ...(isActive ? { background: '#f3f4f6', color: '#9ca3af' } : {}),
+                      }}
+                      title="Set this match as your active context"
+                    >
+                      {isActive ? 'Already Active' : 'Make active'}
+                    </button>
+                  </>
+                );
+              })()}
               <button
                 type="button"
                 className="app-action-button"

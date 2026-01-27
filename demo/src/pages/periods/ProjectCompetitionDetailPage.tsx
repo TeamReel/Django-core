@@ -6,7 +6,7 @@ import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
-import { setActiveContext } from '../../utils/activeContext';
+import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import PeriodDetailModal from '../identity/PeriodDetailModal';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import MatchEditModal from '../identity/MatchEditModal';
@@ -886,6 +886,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const [season, setSeason] = useState<Period | null>(null);
   const [competition, setCompetition] = useState<Period | null>(null);
   const [activatingContext, setActivatingContext] = useState(false);
+  const [activeContext, setActiveContextState] = useState<any | null>(null);
   const [resolvedSeasonId, setResolvedSeasonId] = useState<string>('');
   const [resolvedCompetitionId, setResolvedCompetitionId] = useState<string>('');
   const [competitionsForSwitcher, setCompetitionsForSwitcher] = useState<Period[]>([]);
@@ -918,6 +919,21 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const [selectedMembershipEdit, setSelectedMembershipEdit] = useState<any | null>(null);
 
   const [isCreateUserHelpModalOpen, setIsCreateUserHelpModalOpen] = useState(false);
+
+  // Load active context on mount
+  useEffect(() => {
+    let cancelled = false;
+    const loadActiveContext = async () => {
+      try {
+        const context = await getActiveContext();
+        if (!cancelled) setActiveContextState(context);
+      } catch (e) {
+        console.error('Failed to load active context:', e);
+      }
+    };
+    void loadActiveContext();
+    return () => { cancelled = true; };
+  }, []);
 
   const orgSlugOrId = orgId || '';
   const projectSlugOrId = projectId || '';
@@ -1598,27 +1614,40 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
           title={competition ? competition.name : 'Competition'}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={async () => {
-                  if (!competition) return;
-                  try {
-                    setActivatingContext(true);
-                    await setActiveContext('competition', String(competition.id));
-                  } finally {
-                    setActivatingContext(false);
-                  }
-                }}
-                disabled={activatingContext}
-                style={{
-                  ...backButtonStyle,
-                  cursor: activatingContext ? 'not-allowed' : backButtonStyle.cursor,
-                  opacity: activatingContext ? 0.6 : 1,
-                }}
-                title="Set this competition as your active context"
-              >
-                Make active
-              </button>
+              {(() => {
+                const isActive = competition && activeContext?.competition?.id === competition.id;
+                return (
+                  <>
+                    {isActive && (
+                      <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontSize: '0.875rem', fontWeight: '500' }}>✓ Active Context</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!competition || isActive) return;
+                        try {
+                          setActivatingContext(true);
+                          await setActiveContext('competition', String(competition.id));
+                          const context = await getActiveContext();
+                          setActiveContextState(context);
+                        } finally {
+                          setActivatingContext(false);
+                        }
+                      }}
+                      disabled={activatingContext || isActive}
+                      style={{
+                        ...backButtonStyle,
+                        cursor: activatingContext || isActive ? 'not-allowed' : backButtonStyle.cursor,
+                        opacity: activatingContext || isActive ? 0.6 : 1,
+                        ...(isActive ? { background: '#f3f4f6', color: '#9ca3af' } : {}),
+                      }}
+                      title="Set this competition as your active context"
+                    >
+                      {isActive ? 'Already Active' : 'Make active'}
+                    </button>
+                  </>
+                );
+              })()}
               <button
                 type="button"
                 onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}

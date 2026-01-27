@@ -124,6 +124,21 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
     return allowed.has(tab) ? tab : 'overview';
   }, [location.search]);
 
+  // Load active context
+  useEffect(() => {
+    let cancelled = false;
+    const loadActiveContext = async () => {
+      try {
+        const context = await getActiveContext();
+        if (!cancelled) setActiveContextState(context);
+      } catch (e) {
+        console.error('Failed to load active context:', e);
+      }
+    };
+    void loadActiveContext();
+    return () => { cancelled = true; };
+  }, []);
+
   useEffect(() => {
     if (activeTab !== activeTabFromUrl) setActiveTab(activeTabFromUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -2378,32 +2393,62 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         ]}
         actions={
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  setActivatingContext(true);
-                  await setActiveContext(isTeamRoute ? 'team' : 'club', String(project.id));
-                } finally {
-                  setActivatingContext(false);
-                }
-              }}
-              disabled={activatingContext}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '4px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                cursor: activatingContext ? 'not-allowed' : 'pointer',
-                fontSize: '12px',
-                fontWeight: 500,
-                opacity: activatingContext ? 0.6 : 1,
-              }}
-              title="Set this as your active context"
-            >
-              Make active
-            </button>
+            {(() => {
+              const isActive = project && (
+                (isTeamRoute && activeContext?.team?.id === project.id) ||
+                (!isTeamRoute && activeContext?.club?.id === project.id)
+              );
+              return (
+                <>
+                  {isActive && (
+                    <span
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        backgroundColor: '#dcfce7',
+                        color: '#166534',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      ✓ Active Context
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!project || isActive) return;
+                      try {
+                        setActivatingContext(true);
+                        await setActiveContext(isTeamRoute ? 'team' : 'club', String(project.id));
+                        const context = await getActiveContext();
+                        setActiveContextState(context);
+                      } finally {
+                        setActivatingContext(false);
+                      }
+                    }}
+                    disabled={activatingContext || isActive}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--app-border)',
+                      backgroundColor: isActive ? '#f3f4f6' : 'var(--app-surface-2)',
+                      color: isActive ? '#9ca3af' : 'var(--app-text)',
+                      cursor: (activatingContext || isActive) ? 'not-allowed' : 'pointer',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      opacity: (activatingContext || isActive) ? 0.6 : 1,
+                    }}
+                    title={isActive ? 'This is already your active context' : 'Set this as your active context'}
+                  >
+                    {isActive ? 'Already Active' : 'Make active'}
+                  </button>
+                </>
+              );
+            })()}
             <button
               type="button"
               onClick={() => navigate(backPath)}
