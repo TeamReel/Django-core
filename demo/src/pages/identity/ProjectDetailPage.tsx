@@ -2396,10 +2396,12 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
         actions={
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {(() => {
+              console.log('[ProjectDetail] Rendering actions. activeContext:', activeContext, 'project:', project);
               const isActive = project && (
                 (isTeamRoute && activeContext?.team?.id === project.id) ||
                 (!isTeamRoute && activeContext?.club?.id === project.id)
               );
+              console.log('[ProjectDetail] isActive:', isActive, 'isTeamRoute:', isTeamRoute);
               return (
                 <button
                   type="button"
