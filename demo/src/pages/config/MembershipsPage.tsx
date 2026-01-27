@@ -150,7 +150,13 @@ export const MembershipsPage: React.FC = () => {
           <Alert variant="error">Not signed in.</Alert>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+            gap: 20,
+          }}
+        >
           <Card style={{ padding: 24 }}>
             <h3 className="text-lg font-semibold mb-2">Federations</h3>
             <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>

@@ -1,3 +1,5 @@
+import { getApiBaseUrl } from './apiBase';
+
 export type ActiveContextKind =
   | 'organisation'
   | 'club'
@@ -32,7 +34,7 @@ function getCsrfToken(): string {
 }
 
 export async function setActiveContext(kind: ActiveContextKind, id?: string | number) {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const baseUrl = getApiBaseUrl();
   const csrfToken = getCsrfToken();
 
   const res = await fetch(`${baseUrl}/api/v1/auth/active-context/`, {
@@ -63,7 +65,7 @@ export async function setActiveContext(kind: ActiveContextKind, id?: string | nu
 }
 
 export async function getActiveContext() {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const baseUrl = getApiBaseUrl();
   const res = await fetch(`${baseUrl}/api/v1/auth/active-context/`, {
     credentials: 'include',
     headers: {

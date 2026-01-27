@@ -23,6 +23,7 @@ import {
   setActiveContext as apiSetActiveContext,
   type ActiveContextKind,
 } from '../../utils/activeContext';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 function getCsrfToken(): string {
   const cookies = document.cookie.split(';');
@@ -349,7 +350,7 @@ export const PreferencesPage: React.FC = () => {
     const loadOrgs = async () => {
       try {
         setLoadingOrgs(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const baseUrl = getApiBaseUrl();
         console.log('[PreferencesPage] Loading organisations from:', `${baseUrl}/api/v1/organisations/`);
         const response = await fetch(`${baseUrl}/api/v1/organisations/?page_size=250`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -388,7 +389,7 @@ export const PreferencesPage: React.FC = () => {
     const loadClubs = async () => {
       try {
         setLoadingClubs(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const baseUrl = getApiBaseUrl();
         const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
         const orgSlug = org?.slug || selectedOrgId;
         const extract = (raw: any): { results: any[]; next: string } => {
@@ -446,7 +447,7 @@ export const PreferencesPage: React.FC = () => {
     const loadTeams = async () => {
       try {
         setLoadingTeams(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const baseUrl = getApiBaseUrl();
         const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
         const orgSlug = org?.slug || selectedOrgId;
 
@@ -457,7 +458,6 @@ export const PreferencesPage: React.FC = () => {
           return { results, next };
         };
 
-        // There is no dedicated "list teams under club" endpoint; we list team projects and filter by parent_id.
         const collected: any[] = [];
         let nextUrl = `${baseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?parent_project__isnull=false&page_size=250`;
         let safety = 0;
@@ -476,8 +476,7 @@ export const PreferencesPage: React.FC = () => {
           if (!nextUrl) break;
         }
 
-        const allTeams = collected;
-        const filteredTeams = allTeams.filter((t: any) => String(t?.parent_id || '') === String(selectedClubId));
+        const filteredTeams = collected.filter((t: any) => String(t?.parent_id || '') === String(selectedClubId));
         if (!cancelled) setTeams(filteredTeams);
       } catch (e) {
         console.error('Failed to load teams:', e);
@@ -562,7 +561,7 @@ export const PreferencesPage: React.FC = () => {
     const loadSeasons = async () => {
       try {
         setLoadingSeasons(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const baseUrl = getApiBaseUrl();
 
         const resolveOrganisationIdForQuery = () => {
           const raw = String(selectedOrgId || '').trim();
@@ -640,7 +639,7 @@ export const PreferencesPage: React.FC = () => {
     const loadComps = async () => {
       try {
         setLoadingCompetitions(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const baseUrl = getApiBaseUrl();
         const season = seasons.find(s => String(s.id) === selectedSeasonId);
         if (!season) return;
 
@@ -681,7 +680,7 @@ export const PreferencesPage: React.FC = () => {
     const loadMatches = async () => {
       try {
         setLoadingMatches(true);
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const baseUrl = getApiBaseUrl();
 
         const params = new URLSearchParams();
         params.set('period_id', String(periodId));
