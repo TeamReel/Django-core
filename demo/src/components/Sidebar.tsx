@@ -234,7 +234,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
         const load = async () => {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/v1/auth/default-context/`, {
+                const response = await fetch(`${apiBaseUrl}/api/v1/auth/active-context/`, {
                     credentials: 'include',
                 });
 

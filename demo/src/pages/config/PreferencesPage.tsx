@@ -1092,55 +1092,6 @@ export const PreferencesPage: React.FC = () => {
                       </div>
                     </div>
                 </Card>
-                      const org = activeContext?.organisation;
-                      const club = activeContext?.club;
-                      const team = activeContext?.team;
-                      const season = activeContext?.season;
-                      const competition = activeContext?.competition;
-                      const match = activeContext?.match;
-
-                      const orgSlug = String(org?.slug || '').trim();
-                      const clubSlug = String(club?.slug || '').trim();
-                      const teamSlug = String(team?.slug || '').trim();
-                      const seasonKey = String(season?.key || '').trim();
-                      const competitionKey = String(competition?.key || '').trim();
-                      const matchKey = String(match?.key || '').trim();
-
-                      const federationPath = orgSlug ? `/${orgSlug}` : '/dashboard';
-                      const clubPath = orgSlug && clubSlug ? `/${orgSlug}/${clubSlug}` : federationPath;
-                      const teamPath = orgSlug && clubSlug && teamSlug ? `/${orgSlug}/${clubSlug}/${teamSlug}` : clubPath;
-                      const seasonPath = orgSlug && clubSlug && teamSlug && seasonKey ? `/${orgSlug}/${clubSlug}/${teamSlug}/${seasonKey}` : teamPath;
-                      const competitionPath = orgSlug && clubSlug && teamSlug && seasonKey && competitionKey
-                        ? `/${orgSlug}/${clubSlug}/${teamSlug}/${seasonKey}/${competitionKey}`
-                        : seasonPath;
-                      const matchPath = orgSlug && clubSlug && teamSlug && seasonKey && competitionKey && matchKey
-                        ? `/${orgSlug}/${clubSlug}/${teamSlug}/${seasonKey}/${competitionKey}/${matchKey}`
-                        : competitionPath;
-
-                      const Row = ({ label, value, href }: { label: string; value: string; href: string }) => (
-                        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 12, padding: '6px 0' }}>
-                          <div className="text-xs font-semibold text-gray-500 uppercase">{label}</div>
-                          <div className="text-sm" style={{ fontWeight: 600 }}>
-                            <a href={href} style={{ color: 'var(--app-link, #2563eb)' }}>
-                              {value}
-                            </a>
-                          </div>
-                        </div>
-                      );
-
-                      return (
-                        <div style={{ maxWidth: 900 }}>
-                          <Row label="Federation" value={String(org?.name || '—')} href={federationPath} />
-                          <Row label="Club" value={String(club?.name || '—')} href={clubPath} />
-                          <Row label="Team" value={String(team?.name || '—')} href={teamPath} />
-                          <Row label="Season" value={String(season?.name || '—')} href={seasonPath} />
-                          <Row label="Competition" value={String(competition?.name || '—')} href={competitionPath} />
-                          <Row label="Match" value={String(match?.title || match?.name || '—')} href={matchPath} />
-                        </div>
-                      );
-                    })()
-                  )}
-                </Card>
               </>
             )}
 
