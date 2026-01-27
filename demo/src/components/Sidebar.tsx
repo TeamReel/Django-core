@@ -4,14 +4,13 @@ import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
   LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder,
-        Bell, CreditCard, UserCircle, Star
+      Bell, CreditCard, UserCircle, Star
 } from 'lucide-react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useUserRole } from './PermissionGuards';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { AppIcon } from './AppIcon';
-import { useNavFavorites } from '../hooks/useNavItems';
 import { addRecent } from '../utils/navStorage';
 
 interface SidebarProps {
@@ -44,13 +43,6 @@ const NAV_CONFIG: NavSection[] = [
       { path: '/directory', label: 'Directory', icon: Folder, visibility: 'everyone' },
     ]
   },
-    {
-        id: 'favorites',
-        title: 'FAVORITES',
-        visibility: 'everyone',
-        // Items are injected dynamically from localStorage
-        items: []
-    },
   {
     id: 'app',
     title: 'APP',
@@ -93,7 +85,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     const { user } = useAuth();
     const { context, organisations } = useContextSwitcher();
   const location = useLocation();
-    const favorites = useNavFavorites();
   const isStaff = isSystemAdmin || isLandAdmin;
   const {
       orgSlug,
@@ -877,30 +868,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         ];
     }, [location.pathname, orgSlug, clubName, teamName, resolvedAppContext, user]);
 
-    const favoritesItems = useMemo<NavItem[]>(() => {
-        const mapIcon = (kind: string): LucideIcon => {
-            switch (kind) {
-                case 'federation': return Globe;
-                case 'club': return Shield;
-                case 'team': return Shirt;
-                case 'season': return CalendarDays;
-                case 'competition': return Trophy;
-                case 'match': return Timer;
-                case 'user': return Users;
-                default: return Star;
-            }
-        };
-
-        const items: NavItem[] = favorites.slice(0, 8).map((f) => ({
-            label: String(f.label || '').trim() || f.path,
-            path: f.path,
-            icon: mapIcon(String((f as any)?.kind || 'page')),
-            visibility: 'everyone',
-        }));
-
-        return items;
-    }, [favorites]);
-
     const panelASections = useMemo(() => {
         return visibleSections
             .map((section) => {
@@ -910,16 +877,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     items: appDetailItems,
                 };
             })
-            .map((section) => {
-                if (section.id !== 'favorites') return section;
-                return {
-                    ...section,
-                    items: favoritesItems,
-                };
-            })
             // Always keep the APP section visible (it now contains stable hierarchy links).
             ;
-    }, [visibleSections, appDetailItems, favoritesItems]);
+    }, [visibleSections, appDetailItems]);
 
 
   return (
