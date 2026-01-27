@@ -12,6 +12,8 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  first_name?: string;
+  last_name?: string;
   role: 'admin' | 'member' | 'viewer';
   is_active: boolean;
   created_at?: string;

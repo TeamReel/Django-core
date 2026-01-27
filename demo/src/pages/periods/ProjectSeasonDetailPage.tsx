@@ -1028,7 +1028,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           setActivatingContext(false);
                         }
                       }}
-                      disabled={activatingContext || isActive}
+                      disabled={activatingContext || (isActive ?? false)}
                       style={{
                         ...backButtonStyle,
                         cursor: activatingContext || isActive ? 'not-allowed' : backButtonStyle.cursor,
