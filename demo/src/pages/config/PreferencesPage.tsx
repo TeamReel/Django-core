@@ -12,7 +12,7 @@ import {
 import { useTheme } from '@django-core/theme-system';
 import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import { useAuth } from "@django-core/auth-ui";
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 /**
  * T015 - Preferences Page
@@ -60,7 +60,6 @@ interface EventTypeGroup {
 
 export const PreferencesPage: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { setTheme, mode, resolvedMode } = useTheme();
   const { user } = useAuth();
   const darkModeEnabled = useFeatureFlag('dark_mode', true); // Default enabled
@@ -100,18 +99,6 @@ export const PreferencesPage: React.FC = () => {
     }
   }, [location.search]);
 
-  const goToTab = (tab: 'profile' | 'personalisation' | 'notifications') => {
-    setActiveTab(tab);
-    let params: URLSearchParams;
-    try {
-      params = new URLSearchParams(location.search);
-    } catch {
-      params = new URLSearchParams();
-    }
-    params.set('tab', tab);
-    const qs = params.toString();
-    navigate(`${location.pathname}${qs ? `?${qs}` : ''}`, { replace: true });
-  };
 
   // Initialize preferences from Theme System + Defaults
   useEffect(() => {
@@ -636,27 +623,6 @@ export const PreferencesPage: React.FC = () => {
                 </Alert>
             </div>
           )}
-
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
-            <Button
-              variant={activeTab === 'profile' ? 'primary' : 'outline'}
-              onClick={() => goToTab('profile')}
-            >
-              Profile
-            </Button>
-            <Button
-              variant={activeTab === 'personalisation' ? 'primary' : 'outline'}
-              onClick={() => goToTab('personalisation')}
-            >
-              Personalisation
-            </Button>
-            <Button
-              variant={activeTab === 'notifications' ? 'primary' : 'outline'}
-              onClick={() => goToTab('notifications')}
-            >
-              Notification settings
-            </Button>
-          </div>
 
           <div>
             {activeTab === 'profile' && (
