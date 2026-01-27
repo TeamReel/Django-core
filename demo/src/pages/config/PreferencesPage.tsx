@@ -187,6 +187,7 @@ export const PreferencesPage: React.FC = () => {
         if (!response.ok) throw new Error('Failed to load organisations');
         const json = await response.json();
         const results = json.data?.results || json.results || json.data || json;
+        console.log('[PreferencesPage] Loaded organisations:', results);
         if (!cancelled) setOrganisations(Array.isArray(results) ? results : []);
       } catch (e) {
         console.error('Failed to load organisations:', e);
@@ -1026,6 +1027,8 @@ export const PreferencesPage: React.FC = () => {
                           disabled={loadingOrgs || savingContext}
                         >
                           <option value="">— Select Federation —</option>
+                          {loadingOrgs && <option disabled>Loading federations...</option>}
+                          {!loadingOrgs && organisations.length === 0 && <option disabled>No federations found</option>}
                           {organisations.map((org) => (
                             <option key={org.id} value={org.id}>
                               {org.name}
