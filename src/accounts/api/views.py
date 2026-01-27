@@ -921,13 +921,32 @@ def auth_active_context(request):
     def user_has_org(org) -> bool:
         if not org:
             return False
+        # Check direct organisation membership
         if OrganisationMembership.objects.filter(
             user=user, organisation=org, is_active=True
         ).exists():
             return True
-        return (
+        # Check indirect membership via projects
+        has_project_membership = (
             ProjectMembership.objects.active().filter(user=user, project__organisation=org).exists()
         )
+        if not has_project_membership:
+            # Debug log
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.info(
+                f"User {user.id} ({user.email}) has no access to org {org.id} ({org.name}). "
+                f"Checking project memberships..."
+            )
+            # Show which projects the user has access to
+            user_projects = list(
+                ProjectMembership.objects.active()
+                .filter(user=user)
+                .values_list("project__id", "project__name", "project__organisation__id")
+            )
+            logger.info(f"User's projects: {user_projects}")
+        return has_project_membership
 
     def user_has_project(project: Project) -> bool:
         return ProjectMembership.objects.active().filter(user=user, project=project).exists()
