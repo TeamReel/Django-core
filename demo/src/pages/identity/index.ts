@@ -5,7 +5,6 @@ export { OrganisationDetailPage } from './OrganisationDetailPage';
 export { ProjectsPage } from './ProjectsPage';
 export { ProjectCreatePage } from './ProjectCreatePage';
 export { ProjectEditPage } from './ProjectEditPage';
-export { ProjectDetailPage } from './ProjectDetailPage';
 export { default as ClubDetailPage } from './ClubDetailPage';
 export { default as TeamDetailPage } from './TeamDetailPage';
 export { default as SeasonDetailPage } from './SeasonDetailPage';

@@ -35,7 +35,6 @@ import {
   ProjectsPage,
   ProjectCreatePage,
   ProjectEditPage,
-  ProjectDetailPage,
   ClubDetailPage,
   TeamDetailPage,
   SeasonDetailPage,
