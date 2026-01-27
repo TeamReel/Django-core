@@ -921,6 +921,9 @@ def auth_active_context(request):
     def user_has_org(org) -> bool:
         if not org:
             return False
+        # Superusers have access to everything
+        if user.is_superuser:
+            return True
         # Check direct organisation membership
         if OrganisationMembership.objects.filter(
             user=user, organisation=org, is_active=True
