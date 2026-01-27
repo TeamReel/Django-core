@@ -791,7 +791,6 @@ def auth_active_context(request):
     import unicodedata
 
     from django.db import transaction
-    from django.db.models import Q
     from organisations.models import Membership as OrganisationMembership
     from projects.models import Project, ProjectMembership
     from activities.models import Activity, Period
@@ -952,7 +951,23 @@ def auth_active_context(request):
         return has_project_membership
 
     def user_has_project(project: Project) -> bool:
-        return ProjectMembership.objects.active().filter(user=user, project=project).exists()
+        if not project:
+            return False
+        # Superusers have access to everything
+        if user.is_superuser:
+            return True
+        # Direct project membership
+        if ProjectMembership.objects.active().filter(user=user, project=project).exists():
+            return True
+        # Organisation membership (federation admins)
+        if (
+            project.organisation
+            and OrganisationMembership.objects.filter(
+                user=user, organisation=project.organisation, is_active=True
+            ).exists()
+        ):
+            return True
+        return False
 
     with transaction.atomic():
         ctx, _ = UserActiveContext.objects.select_for_update().get_or_create(user=user)
@@ -1057,14 +1072,14 @@ def auth_active_context(request):
                 ctx.team = project
                 ctx.club = project.parent_project
             else:
-                # Club: allow membership in the club OR any team under it.
-                has_membership = (
+                # Club: check direct club access, OR any team under it, OR org membership
+                has_direct_access = user_has_project(project)
+                has_team_access = (
                     ProjectMembership.objects.active()
-                    .filter(user=user)
-                    .filter(Q(project=project) | Q(project__parent_project=project))
+                    .filter(user=user, project__parent_project=project)
                     .exists()
                 )
-                if not has_membership:
+                if not (has_direct_access or has_team_access):
                     return Response(
                         {
                             "status": "error",
@@ -1113,10 +1128,30 @@ def auth_active_context(request):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            # Require membership to the team/project this period belongs to.
+            # Require membership to the team/project OR club OR organisation this period belongs to.
             project = getattr(period, "project", None)
             org = getattr(period, "organisation", None)
-            if not project or not org or not user_has_project(project):
+            if not project or not org:
+                return Response(
+                    {
+                        "status": "error",
+                        "error": {
+                            "code": "not_found",
+                            "message": "Period project or organisation not found.",
+                            "details": {},
+                        },
+                        "meta": {"timestamp": timezone.now().isoformat()},
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Check access: direct team membership, club membership, or org membership
+            has_access = user_has_project(project)
+            if not has_access and project.parent_project:
+                # Period belongs to team, check if user has club access
+                has_access = user_has_project(project.parent_project)
+
+            if not has_access:
                 return Response(
                     {
                         "status": "error",
@@ -1169,7 +1204,27 @@ def auth_active_context(request):
                 )
 
             project = getattr(activity, "project", None)
-            if not project or not user_has_project(project):
+            if not project:
+                return Response(
+                    {
+                        "status": "error",
+                        "error": {
+                            "code": "not_found",
+                            "message": "Match project not found.",
+                            "details": {},
+                        },
+                        "meta": {"timestamp": timezone.now().isoformat()},
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # Check access: direct team membership, club membership, or org membership
+            has_access = user_has_project(project)
+            if not has_access and project.parent_project:
+                # Match belongs to team, check if user has club access
+                has_access = user_has_project(project.parent_project)
+
+            if not has_access:
                 return Response(
                     {
                         "status": "error",
