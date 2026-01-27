@@ -942,6 +942,33 @@ export default function NotificationsPage() {
               {notificationsList.map((notification) => {
                 const isUnread = !notification.read_at;
                 const notificationType = notification.metadata?.event_type || 'info';
+                const title =
+                  (notification as any)?.payload?.title ||
+                  (notification as any)?.metadata?.title ||
+                  (notification as any)?.type?.name ||
+                  (notification as any)?.metadata?.event_type ||
+                  'Notification';
+                const body =
+                  (notification as any)?.payload?.body ||
+                  (notification as any)?.metadata?.body ||
+                  (notification as any)?.metadata?.message ||
+                  '';
+
+                let createdLabel = '';
+                try {
+                  if ((notification as any)?.created_at) {
+                    createdLabel = new Date((notification as any).created_at).toLocaleString('nl-NL', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    });
+                  }
+                } catch {
+                  createdLabel = '';
+                }
+
                 const borderColor =
                   notificationType === 'project_created' ? '#2196f3' :
                   notificationType === 'member_role_changed' ? '#ff9800' :
@@ -985,7 +1012,7 @@ export default function NotificationsPage() {
                         alignItems: 'center',
                         gap: '8px'
                       }}>
-                        {notification.payload.title}
+                        {title}
                         {isUnread && (
                           <span style={{
                             display: 'inline-block',
@@ -997,17 +1024,11 @@ export default function NotificationsPage() {
                         )}
                       </h3>
                       <span style={{ fontSize: '12px', color: '#666', whiteSpace: 'nowrap', marginLeft: '16px' }}>
-                        {new Date(notification.created_at).toLocaleString('nl-NL', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        {createdLabel || '—'}
                       </span>
                     </div>
                     <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
-                      {notification.payload.body}
+                      {body}
                     </p>
                     {isUnread && (
                       <p style={{
