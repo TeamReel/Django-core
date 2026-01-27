@@ -16,6 +16,8 @@ Including another URLconf
 """
 
 from common.health import health_check
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
@@ -92,3 +94,7 @@ urlpatterns = [
     # B14: Web UI Baseline - User-facing HTML pages
     path("ui/", include("web_ui.urls")),  # Web UI URLs under /ui/
 ]
+
+# Media (user uploads)
+if getattr(settings, "MEDIA_URL", None) and getattr(settings, "MEDIA_ROOT", None):
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -564,6 +564,14 @@ export const PreferencesPage: React.FC = () => {
         setLoadingSeasons(true);
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
+        const resolveOrganisationIdForQuery = () => {
+          const raw = String(selectedOrgId || '').trim();
+          if (!raw) return '';
+          if (/^\d+$/.test(raw)) return raw;
+          const found = organisations.find((o) => String(o?.slug || '').trim() === raw);
+          return String(found?.id || '').trim();
+        };
+
         const params = new URLSearchParams();
         params.set('project_id', String(selectedTeamId));
         // Do not rely purely on metadata.type=season.
@@ -571,19 +579,43 @@ export const PreferencesPage: React.FC = () => {
         params.set('parent_id', 'null');
         params.set('page_size', '500');
 
+        const parsePeriods = (json: any) => {
+          const results = json?.data?.results || json?.results || json?.data || json;
+          const all = Array.isArray(results) ? results : [];
+          return all.filter((p: any) => {
+            const parent = p?.parent_period_id ?? p?.parent_period?.id ?? null;
+            return !parent;
+          });
+        };
+
+        // Try project-scoped seasons first.
         const response = await fetch(`${baseUrl}/api/v1/periods/?${params.toString()}`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
           credentials: 'include',
         });
         if (!response.ok) throw new Error('Failed to load seasons');
         const json = await response.json();
+        let rootOnly = parsePeriods(json);
 
-        const results = json.data?.results || json.results || json.data || json;
-        const all = Array.isArray(results) ? results : [];
-        const rootOnly = all.filter((p: any) => {
-          const parent = p?.parent_period_id ?? p?.parent_period?.id ?? null;
-          return !parent;
-        });
+        // Fallback: some datasets store seasons as organisation-scoped root periods.
+        if (rootOnly.length === 0) {
+          const orgId = resolveOrganisationIdForQuery();
+          if (orgId) {
+            const orgParams = new URLSearchParams();
+            orgParams.set('organisation_id', orgId);
+            orgParams.set('parent_id', 'null');
+            orgParams.set('page_size', '500');
+            const orgRes = await fetch(`${baseUrl}/api/v1/periods/?${orgParams.toString()}`, {
+              headers: { 'X-Requested-With': 'XMLHttpRequest' },
+              credentials: 'include',
+            });
+            if (orgRes.ok) {
+              const orgJson = await orgRes.json();
+              rootOnly = parsePeriods(orgJson);
+            }
+          }
+        }
+
         if (!cancelled) setSeasons(rootOnly);
       } catch (e) {
         console.error('Failed to load seasons:', e);
@@ -638,7 +670,9 @@ export const PreferencesPage: React.FC = () => {
 
   // Load matches when competition selected
   useEffect(() => {
-    if (!selectedCompetitionId) {
+    const shouldLoadForSeasonOnly = Boolean(selectedSeasonId && competitions.length === 0);
+    const periodId = selectedCompetitionId || (shouldLoadForSeasonOnly ? selectedSeasonId : '');
+    if (!periodId) {
       setMatches([]);
       return;
     }
@@ -648,11 +682,9 @@ export const PreferencesPage: React.FC = () => {
       try {
         setLoadingMatches(true);
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-        const competition = competitions.find(c => String(c.id) === selectedCompetitionId);
-        if (!competition) return;
 
         const params = new URLSearchParams();
-        params.set('period_id', String(competition.id));
+        params.set('period_id', String(periodId));
         params.set('activity_type', 'match');
         params.set('page_size', '500');
 
@@ -674,7 +706,7 @@ export const PreferencesPage: React.FC = () => {
 
     void loadMatches();
     return () => { cancelled = true; };
-  }, [selectedCompetitionId, competitions]);
+  }, [selectedCompetitionId, selectedSeasonId, competitions]);
 
   // Initialize preferences from Theme System + Defaults
   useEffect(() => {
@@ -1839,16 +1871,24 @@ export const PreferencesPage: React.FC = () => {
                             matchId: nextMatchId,
                           });
                         }}
-                        disabled={!selectedCompetitionId || loadingMatches || savingContext || matches.length === 0}
+                        disabled={(!selectedCompetitionId && !(selectedSeasonId && competitions.length === 0)) || loadingMatches || savingContext || matches.length === 0}
                       >
-                        <option value="">{selectedCompetitionId ? '— Select Match —' : '— Select Competition first —'}</option>
+                        <option value="">{
+                          selectedCompetitionId
+                            ? '— Select Match —'
+                            : (selectedSeasonId && competitions.length === 0)
+                              ? '— Select Match —'
+                              : '— Select Competition first —'
+                        }</option>
                         {matches.map((match) => (
                           <option key={match.id} value={match.id}>
                             {match.title || match.name}
                           </option>
                         ))}
                       </select>
-                      {selectedCompetitionId && loadingMatches && <div className="text-xs text-gray-500 mt-1">Loading matches…</div>}
+                      {(selectedCompetitionId || (selectedSeasonId && competitions.length === 0)) && loadingMatches && (
+                        <div className="text-xs text-gray-500 mt-1">Loading matches…</div>
+                      )}
                     </div>
 
                     {savingContext && (
@@ -2250,13 +2290,6 @@ export const PreferencesPage: React.FC = () => {
               </>
             )}
           </div>
-
-            {/* Debug Info - Temporary for validation */}
-            <div className="mt-6 p-3 border border-dashed border-gray-300 rounded text-xs text-gray-600">
-              <strong>Debug Storage (django_core_theme):</strong> {typeof window !== 'undefined' ? localStorage.getItem('django_core_theme') || 'null' : 'N/A'}
-              <br />
-              <strong>Current Mode:</strong> {mode} | <strong>Resolved:</strong> {resolvedMode}
-            </div>
         </PageContent>
     </>
   );

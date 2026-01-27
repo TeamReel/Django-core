@@ -752,7 +752,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 items = [
                     { label: 'Permissions', path: '/permissions', icon: Lock },
                     { label: 'Users', path: '/users', icon: Users },
-                    ...(isStaff ? [{ label: 'Features', path: '/flags', icon: Flag }] : []),
                     { label: 'Audit', path: '/organisation/audit', icon: Scroll },
                     { label: 'Organisation Wallet', path: '/credits?wallet=org', icon: CreditCard },
                 ];
@@ -964,9 +963,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
             aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
             style={{
-                position: 'fixed',
+                position: 'absolute',
                 top: 14,
-                left: ((isOpen ? 240 : 72) + (panelBConfig ? 220 : 0)) - 14,
+                right: -14,
                 width: 28,
                 height: 28,
                 borderRadius: 999,
@@ -1019,11 +1018,70 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         {/* Global Navigation (Panel A) */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px', overflowY: 'auto' }}>
 
-            {panelASections.map(section => (
+            {panelASections.map((section) => {
+                const path = location.pathname;
+                const walletParam = new URLSearchParams(location.search || '').get('wallet');
+                const isPersonalWallet = walletParam === 'personal';
+
+                const isPreferencesRoute =
+                    path.startsWith('/profile') ||
+                    path.startsWith('/notifications') ||
+                    path.startsWith('/preferences') ||
+                    path.startsWith('/memberships') ||
+                    path.startsWith('/billing') ||
+                    (path.startsWith('/credits') && isPersonalWallet);
+
+                const isOrganisationRoute =
+                    path.startsWith('/permissions') ||
+                    path === '/users' ||
+                    path.startsWith('/organisation/') ||
+                    path.startsWith('/audit') ||
+                    (path.startsWith('/credits') && !isPersonalWallet);
+
+                const isPlatformRoute =
+                    path.startsWith('/health') ||
+                    path.startsWith('/flags') ||
+                    path.startsWith('/integration-status') ||
+                    path.startsWith('/design-system') ||
+                    path.startsWith('/observability') ||
+                    path.startsWith('/security');
+
+                const sectionIsActive = (() => {
+                    if (section.id === 'settings') {
+                        return isPreferencesRoute || isOrganisationRoute || isPlatformRoute;
+                    }
+
+                    return section.items.some((item) => {
+                        const itemPath = String(item.path || '').split('?')[0];
+                        if (!itemPath) return false;
+                        if (itemPath === '/dashboard') {
+                            return path === '/dashboard' || path === '/recents' || path === '/favorites';
+                        }
+                        if (itemPath === '/directory') {
+                            return path.startsWith('/directory');
+                        }
+                        if (itemPath === '/content' || itemPath === '/studio') {
+                            return path.startsWith(itemPath);
+                        }
+                        return path === itemPath || path.startsWith(`${itemPath}/`);
+                    });
+                })();
+
+                return (
                <div key={section.id} style={{ marginBottom: section.bottom ? 0 : 16 }}>
                     {/* Section Label (Only if open) */}
                     {isOpen && section.title && (
-                        <div style={{ padding: '0 12px', marginBottom: 6, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', opacity: 0.5, color: 'var(--sidebar-a-text)' }}>
+                        <div
+                          style={{
+                            padding: '0 12px',
+                            marginBottom: 6,
+                            fontSize: 10,
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            opacity: sectionIsActive ? 1 : 0.5,
+                            color: sectionIsActive ? 'var(--sidebar-a-active-text)' : 'var(--sidebar-a-text)',
+                          }}
+                        >
                             {section.title}
                         </div>
                     )}
@@ -1046,15 +1104,18 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     path.startsWith('/profile') ||
                                     path.startsWith('/notifications') ||
                                     path.startsWith('/preferences') ||
+                                    path.startsWith('/memberships') ||
+                                    path.startsWith('/billing') ||
                                     (path.startsWith('/credits') && isPersonalWallet);
 
                                 const isOrganisationRoute =
                                     path.startsWith('/permissions') ||
                                     path === '/users' ||
-                                    path.startsWith('/audit') ||
+                                    path.startsWith('/organisation/') ||
                                     (path.startsWith('/credits') && !isPersonalWallet);
 
                                 const isPlatformRoute =
+                                    path.startsWith('/audit') ||
                                     path.startsWith('/health') ||
                                     path.startsWith('/flags') ||
                                     path.startsWith('/integration-status') ||
@@ -1089,7 +1150,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         </NavLink>
                     ))}
                </div>
-            ))}
+                );
+            })}
         </div>
 
         {/* Collapse Toggle Removed */}

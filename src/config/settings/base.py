@@ -236,6 +236,19 @@ LOCALE_PATHS = [
 
 STATIC_URL = "static/"
 
+# Media uploads (avatars, etc.)
+MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
+
+# Default to a project-level media folder, but fall back to /tmp if the
+# filesystem is read-only (common on Railway/containers).
+_default_media_root = Path(BASE_DIR).parent / "media"
+MEDIA_ROOT = Path(os.getenv("MEDIA_ROOT", str(_default_media_root)))
+try:
+    MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+except (PermissionError, OSError):
+    MEDIA_ROOT = Path("/tmp/media")
+    MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # WP13: Security enforcement mode configuration (FR-024)

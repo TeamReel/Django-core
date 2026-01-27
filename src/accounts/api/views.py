@@ -1625,7 +1625,7 @@ def update_avatar(request):
                 "error": {
                     "code": "server_error",
                     "message": "Failed to save avatar. Please try again.",
-                    "details": {},
+                    "details": {"correlation_id": getattr(request, "correlation_id", None)},
                 },
                 "meta": {"timestamp": timezone.now().isoformat()},
             },
