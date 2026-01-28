@@ -112,12 +112,16 @@ export default function MatchCreateModal({
 
   const [title, setTitle] = useState('');
   const [titleTouched, setTitleTouched] = useState(false);
+  const [titleAutoValue, setTitleAutoValue] = useState('');
   const [matchDate, setMatchDate] = useState('');
   const [matchTime, setMatchTime] = useState('');
   const [venue, setVenue] = useState<'Home' | 'Away'>('Home');
   const [location, setLocation] = useState('');
   const [locationTouched, setLocationTouched] = useState(false);
+  const [locationAutoValue, setLocationAutoValue] = useState('');
   const [description, setDescription] = useState('');
+  const [descriptionTouched, setDescriptionTouched] = useState(false);
+  const [descriptionAutoValue, setDescriptionAutoValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -154,11 +158,15 @@ export default function MatchCreateModal({
     setError(null);
     setTitle('');
     setTitleTouched(false);
+    setTitleAutoValue('');
     setMatchDate('');
     setMatchTime('14:30');
     setLocation('');
     setLocationTouched(false);
+    setLocationAutoValue('');
     setDescription('');
+    setDescriptionTouched(false);
+    setDescriptionAutoValue('');
     setSelectedOrganisationId(String(initialOrganisationId || ''));
     setSelectedClubId(String(initialClubId || ''));
     setSelectedTeamId(String(initialTeamId || ''));
@@ -178,6 +186,16 @@ export default function MatchCreateModal({
   }, [opened, initialOrganisationId, initialClubId, initialTeamId, initialSeasonId, initialCompetitionId]);
 
   const [projectDetailsById, setProjectDetailsById] = useState<Record<string, any>>({});
+
+  const getParentProjectId = (p: any): string | null => {
+    const parent =
+      p?.parent_id ??
+      p?.parent ??
+      p?.parent_project_id ??
+      (typeof p?.parent_project === 'object' ? p?.parent_project?.id : p?.parent_project);
+    if (parent == null) return null;
+    return String(typeof parent === 'object' ? parent.id : parent);
+  };
 
   const getProjectIdentity = (p: any) => {
     const identity = p?.metadata?.identity || {};
@@ -213,8 +231,17 @@ export default function MatchCreateModal({
       }
     };
 
+    const resolvedOpponentClubId =
+      String(selectedOpponentClubId || '').trim() ||
+      (() => {
+        const oppTeam = (opponentTeams || []).find((t) => String(t?.id) === String(selectedOpponentTeamId));
+        return oppTeam ? String(getParentProjectId(oppTeam) || '') : '';
+      })();
+
     void load(String(selectedTeamId || ''));
     void load(String(selectedOpponentTeamId || ''));
+    void load(String(selectedClubId || ''));
+    void load(String(resolvedOpponentClubId || ''));
 
     return () => {
       cancelled = true;
@@ -222,7 +249,7 @@ export default function MatchCreateModal({
     };
     // Intentionally omit projectDetailsById from deps to avoid refetch loops.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [opened, apiBaseUrl, selectedTeamId, selectedOpponentTeamId]);
+  }, [opened, apiBaseUrl, selectedTeamId, selectedOpponentTeamId, selectedClubId, selectedOpponentClubId, opponentTeams]);
 
   const selectedTeamDetail = useMemo(() => {
     const key = String(selectedTeamId || '').trim();
@@ -234,9 +261,29 @@ export default function MatchCreateModal({
     return key ? projectDetailsById[key] : null;
   }, [projectDetailsById, selectedOpponentTeamId]);
 
+  const resolvedOpponentClubId = useMemo(() => {
+    const explicit = String(selectedOpponentClubId || '').trim();
+    if (explicit) return explicit;
+    const oppTeam = (opponentTeams || []).find((t) => String(t?.id) === String(selectedOpponentTeamId));
+    return oppTeam ? String(getParentProjectId(oppTeam) || '').trim() : '';
+  }, [selectedOpponentClubId, opponentTeams, selectedOpponentTeamId]);
+
+  const selectedClubDetail = useMemo(() => {
+    const key = String(selectedClubId || '').trim();
+    return key ? projectDetailsById[key] : null;
+  }, [projectDetailsById, selectedClubId]);
+
+  const selectedOpponentClubDetail = useMemo(() => {
+    const key = String(resolvedOpponentClubId || '').trim();
+    return key ? projectDetailsById[key] : null;
+  }, [projectDetailsById, resolvedOpponentClubId]);
+
   const derived = useMemo(() => {
     const our = getProjectIdentity(selectedTeamDetail);
     const opp = getProjectIdentity(selectedOpponentDetail);
+
+    const ourClub = getProjectIdentity(selectedClubDetail);
+    const oppClub = getProjectIdentity(selectedOpponentClubDetail);
 
     const home = venue === 'Home' ? our : opp;
     const away = venue === 'Home' ? opp : our;
@@ -245,7 +292,8 @@ export default function MatchCreateModal({
       ? (venue === 'Home' ? `${home.name} vs ${away.name}` : `${our.name || 'Team'} @ ${opp.name || 'Opponent'}`)
       : '';
 
-    const locationDefault = venue === 'Home' ? home.defaultLocation : home.defaultLocation;
+    const homeClub = venue === 'Home' ? ourClub : oppClub;
+    const locationDefault = (homeClub.defaultLocation || home.defaultLocation || '').trim();
 
     const season = (seasonOptions || []).find((s: any) => String(s?.id) === String(selectedSeasonId));
     const competition = (competitionOptions || []).find((c: any) => String(c?.id) === String(selectedCompetitionId));
@@ -263,26 +311,82 @@ export default function MatchCreateModal({
       },
     };
 
+    const descriptionLines: string[] = [];
+    if (metadata.identity.competition_name || metadata.identity.season_name) {
+      const comp = metadata.identity.competition_name || '';
+      const seas = metadata.identity.season_name || '';
+      descriptionLines.push([comp, seas].filter(Boolean).join(' — '));
+    }
+    if (home.name && away.name) {
+      descriptionLines.push(`${home.name} vs ${away.name}`);
+    }
+    if (matchDate || matchTime) {
+      const dt = [matchDate, matchTime].filter(Boolean).join(' ');
+      if (dt) descriptionLines.push(`Date/Time: ${dt}`);
+    }
+    if (locationDefault) {
+      descriptionLines.push(`Location: ${locationDefault}`);
+    }
+    const descriptionDefault = descriptionLines.filter(Boolean).join('\n');
+
     return {
       titleDefault,
       locationDefault,
+      descriptionDefault,
       metadata,
     };
-  }, [venue, selectedTeamDetail, selectedOpponentDetail, seasonOptions, competitionOptions, selectedSeasonId, selectedCompetitionId]);
+  }, [
+    venue,
+    selectedTeamDetail,
+    selectedOpponentDetail,
+    selectedClubDetail,
+    selectedOpponentClubDetail,
+    seasonOptions,
+    competitionOptions,
+    selectedSeasonId,
+    selectedCompetitionId,
+    matchDate,
+    matchTime,
+  ]);
 
   useEffect(() => {
     if (!opened) return;
-    if (!titleTouched && !title.trim() && derived.titleDefault) {
+    if (titleTouched) return;
+    if (!derived.titleDefault) return;
+    if (!title.trim() || title === titleAutoValue) {
       setTitle(derived.titleDefault);
+      setTitleAutoValue(derived.titleDefault);
     }
-  }, [opened, titleTouched, title, derived.titleDefault]);
+  }, [opened, titleTouched, title, titleAutoValue, derived.titleDefault]);
 
   useEffect(() => {
     if (!opened) return;
-    if (!locationTouched && !location.trim() && derived.locationDefault) {
+    if (locationTouched) return;
+    if (!derived.locationDefault) return;
+    if (!location.trim() || location === locationAutoValue) {
       setLocation(derived.locationDefault);
+      setLocationAutoValue(derived.locationDefault);
     }
-  }, [opened, locationTouched, location, derived.locationDefault]);
+  }, [opened, locationTouched, location, locationAutoValue, derived.locationDefault]);
+
+  useEffect(() => {
+    if (!opened) return;
+    if (descriptionTouched) return;
+    if (!derived.descriptionDefault) return;
+    if (!description.trim() || description === descriptionAutoValue) {
+      setDescription(derived.descriptionDefault);
+      setDescriptionAutoValue(derived.descriptionDefault);
+    }
+  }, [opened, descriptionTouched, description, descriptionAutoValue, derived.descriptionDefault]);
+
+  useEffect(() => {
+    if (!opened) return;
+    if (selectedOpponentTeamId && !selectedOpponentClubId) {
+      const oppTeam = (opponentTeams || []).find((t) => String(t?.id) === String(selectedOpponentTeamId));
+      const parentId = oppTeam ? getParentProjectId(oppTeam) : null;
+      if (parentId) setSelectedOpponentClubId(String(parentId));
+    }
+  }, [opened, selectedOpponentTeamId, selectedOpponentClubId, opponentTeams]);
 
   // Load federations/organisations so user can select outside current page context.
   useEffect(() => {
@@ -439,15 +543,7 @@ export default function MatchCreateModal({
     return org ? String(org) : null;
   };
 
-  const getTeamParentId = (t: ProjectOption): string | null => {
-    const parent =
-      (t as any)?.parent_id ??
-      (t as any)?.parent ??
-      (t as any)?.parent_project_id ??
-      (typeof (t as any)?.parent_project === 'object' ? (t as any)?.parent_project?.id : (t as any)?.parent_project);
-    if (parent == null) return null;
-    return String(typeof parent === 'object' ? parent.id : parent);
-  };
+  const getTeamParentId = (t: ProjectOption): string | null => getParentProjectId(t);
 
   const filteredTeams = useMemo(() => {
     const clubId = selectedClubId;
@@ -666,6 +762,13 @@ export default function MatchCreateModal({
 
   useEffect(() => {
     if (!opened) return;
+    if (!selectedSeasonId && seasonOptions.length === 1 && !isSeasonDetailMode) {
+      setSelectedSeasonId(String(seasonOptions[0]?.id || ''));
+    }
+  }, [opened, selectedSeasonId, seasonOptions, isSeasonDetailMode]);
+
+  useEffect(() => {
+    if (!opened) return;
     if (!selectedSeasonId || !selectedOrganisationId || !selectedTeamId) {
       setCompetitionOptions([]);
       setSelectedCompetitionId('');
@@ -703,6 +806,13 @@ export default function MatchCreateModal({
     load();
   }, [opened, selectedSeasonId, selectedOrganisationId, selectedTeamId]);
 
+  useEffect(() => {
+    if (!opened) return;
+    if (!selectedCompetitionId && competitionOptions.length === 1) {
+      setSelectedCompetitionId(String(competitionOptions[0]?.id || ''));
+    }
+  }, [opened, selectedCompetitionId, competitionOptions]);
+
   if (!opened) return null;
 
   async function handleCreate(e: React.FormEvent) {
@@ -724,12 +834,18 @@ export default function MatchCreateModal({
       // Football match default duration: 2 hours (includes warm-up/overrun)
       const end = addHoursToIsoLike(start, 2);
 
+      const finalTitle = title.trim() || derived.titleDefault || '';
+      if (!finalTitle) throw new Error('Enter a title.');
+
+      const finalLocation = (location || derived.locationDefault || '').trim() || undefined;
+      const finalDescription = (description || derived.descriptionDefault || '').trim() || undefined;
+
       await onCreate({
-        title,
+        title: finalTitle,
         start_time: start,
         end_time: end,
-        location: (location || derived.locationDefault || '').trim() || undefined,
-        description: description || undefined,
+        location: finalLocation,
+        description: finalDescription,
 
         metadata: derived.metadata,
 
@@ -742,11 +858,15 @@ export default function MatchCreateModal({
       });
       setTitle('');
       setTitleTouched(false);
+      setTitleAutoValue('');
       setMatchDate('');
       setMatchTime('');
       setLocation('');
       setLocationTouched(false);
+      setLocationAutoValue('');
       setDescription('');
+      setDescriptionTouched(false);
+      setDescriptionAutoValue('');
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to create match');
@@ -1109,7 +1229,10 @@ export default function MatchCreateModal({
             <textarea
               id="match-create-description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescriptionTouched(true);
+                setDescription(e.target.value);
+              }}
               rows={5}
               disabled={isSaving}
               style={{
