@@ -15,10 +15,68 @@ class IdentityDefaults:
 
 
 DEFAULTS_BY_NORMALIZED_NAME: dict[str, IdentityDefaults] = {
+    "ado den haag": IdentityDefaults(name="ADO Den Haag", default_location="Bingoal Stadion"),
     "ajax": IdentityDefaults(name="Ajax", default_location="Johan Cruijff ArenA"),
     "afc ajax": IdentityDefaults(name="AFC Ajax", default_location="Johan Cruijff ArenA"),
+    "cambuur leeuwarden": IdentityDefaults(name="SC Cambuur", default_location="Cambuur Stadion"),
+    "fc den bosch": IdentityDefaults(name="FC Den Bosch", default_location="De Vliert"),
+    "fc dordrecht": IdentityDefaults(name="FC Dordrecht", default_location="M-Scores Stadion"),
+    "helmond sport": IdentityDefaults(name="Helmond Sport", default_location="SolarUnie Stadion"),
+    "jong ajax": IdentityDefaults(name="Jong Ajax", default_location="Sportcomplex De Toekomst"),
+    "jong az": IdentityDefaults(name="Jong AZ", default_location="AFAS Trainingscomplex"),
+    "jong fc utrecht": IdentityDefaults(
+        name="Jong FC Utrecht", default_location="Sportcomplex Zoudenbalch"
+    ),
+    "jong psv": IdentityDefaults(name="Jong PSV", default_location="PSV Campus De Herdgang"),
+    "mvv": IdentityDefaults(name="MVV Maastricht", default_location="De Geusselt"),
+    "mvv maastricht": IdentityDefaults(name="MVV Maastricht", default_location="De Geusselt"),
+    "roda jc": IdentityDefaults(
+        name="Roda JC Kerkrade", default_location="Parkstad Limburg Stadion"
+    ),
+    "roda jc kerkrade": IdentityDefaults(
+        name="Roda JC Kerkrade", default_location="Parkstad Limburg Stadion"
+    ),
+    "vvv-venlo": IdentityDefaults(name="VVV-Venlo", default_location="Covebo Stadion - De Koel"),
+    "vvv venlo": IdentityDefaults(name="VVV-Venlo", default_location="Covebo Stadion - De Koel"),
+    "almere city": IdentityDefaults(name="Almere City", default_location="Yanmar Stadion"),
+    "az": IdentityDefaults(name="AZ", default_location="AFAS Stadion"),
+    "cambuur": IdentityDefaults(name="SC Cambuur", default_location="Cambuur Stadion"),
+    "sc cambuur": IdentityDefaults(name="SC Cambuur", default_location="Cambuur Stadion"),
+    "de graafschap": IdentityDefaults(name="De Graafschap", default_location="De Vijverberg"),
+    "excelsior": IdentityDefaults(name="Excelsior", default_location="Van Donge & De Roo Stadion"),
+    "fc eindhoven": IdentityDefaults(name="FC Eindhoven", default_location="Jan Louwers Stadion"),
+    "fc emmen": IdentityDefaults(name="FC Emmen", default_location="De Oude Meerdijk"),
+    "fc groningen": IdentityDefaults(name="FC Groningen", default_location="Euroborg"),
+    "fc twente": IdentityDefaults(name="FC Twente", default_location="De Grolsch Veste"),
+    "fc utrecht": IdentityDefaults(name="FC Utrecht", default_location="Stadion Galgenwaard"),
     "feyenoord": IdentityDefaults(name="Feyenoord", default_location="De Kuip"),
+    "fortuna sittard": IdentityDefaults(
+        name="Fortuna Sittard", default_location="Fortuna Sittard Stadion"
+    ),
+    "go ahead eagles": IdentityDefaults(
+        name="Go Ahead Eagles", default_location="De Adelaarshorst"
+    ),
+    "heracles": IdentityDefaults(name="Heracles Almelo", default_location="Erve Asito"),
+    "heracles almelo": IdentityDefaults(name="Heracles Almelo", default_location="Erve Asito"),
+    "nec": IdentityDefaults(name="NEC", default_location="Goffertstadion"),
+    "n.e.c.": IdentityDefaults(name="NEC", default_location="Goffertstadion"),
+    "pec zwolle": IdentityDefaults(name="PEC Zwolle", default_location="MAC3PARK Stadion"),
     "psv": IdentityDefaults(name="PSV", default_location="Philips Stadion"),
+    "rkc waalwijk": IdentityDefaults(name="RKC Waalwijk", default_location="Mandemakers Stadion"),
+    "sc heerenveen": IdentityDefaults(name="sc Heerenveen", default_location="Abe Lenstra Stadion"),
+    "heerenveen": IdentityDefaults(name="sc Heerenveen", default_location="Abe Lenstra Stadion"),
+    "sparta": IdentityDefaults(
+        name="Sparta Rotterdam", default_location="Sparta-Stadion Het Kasteel"
+    ),
+    "sparta rotterdam": IdentityDefaults(
+        name="Sparta Rotterdam", default_location="Sparta-Stadion Het Kasteel"
+    ),
+    "telstar": IdentityDefaults(name="Telstar", default_location="711 Stadion"),
+    "top oss": IdentityDefaults(name="TOP Oss", default_location="Frans Heesen Stadion"),
+    "vitesse": IdentityDefaults(name="Vitesse", default_location="GelreDome"),
+    "volendam": IdentityDefaults(name="FC Volendam", default_location="Kras Stadion"),
+    "fc volendam": IdentityDefaults(name="FC Volendam", default_location="Kras Stadion"),
+    "willem ii": IdentityDefaults(name="Willem II", default_location="Koning Willem II Stadion"),
 }
 
 
