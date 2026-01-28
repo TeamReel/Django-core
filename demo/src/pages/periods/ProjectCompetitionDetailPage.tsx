@@ -7,6 +7,7 @@ import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
+import { canEditProject } from '../../utils/permissions';
 import PeriodDetailModal from '../identity/PeriodDetailModal';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import MatchEditModal from '../identity/MatchEditModal';
@@ -44,6 +45,7 @@ type Organisation = {
   id: string;
   name: string;
   slug?: string;
+  user_role?: string;
 };
 
 const getCsrfToken = (): string => {
@@ -943,6 +945,10 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
   const isTeamRoute = Boolean(clubId);
   const clubSlugOrId = clubId || '';
+
+  // Permission checks (consistent with other identity pages)
+  const permissionContext = useMemo(() => ({ currentOrganisation: org as any, isSuperAdmin: false }), [org]);
+  const userCanEditProject = canEditProject(permissionContext);
 
   const projectDetailPath = isTeamRoute
     ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
