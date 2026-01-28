@@ -4,7 +4,16 @@ import { Button, Card, Badge } from '@django-core/design-system';
 interface ContentGenerationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  slotType: 'announcement' | 'lineup' | 'half-time' | 'full-time';
+  slotType:
+    | 'announcement'
+    | 'poster'
+    | 'walk-on'
+    | 'lineup'
+    | 'goal-update'
+    | 'score-update'
+    | 'injury-update'
+    | 'half-time'
+    | 'full-time';
   matchData: any; // Using any for "Basic" phase, to be typed with B30 Activity later
 }
 
@@ -14,10 +23,26 @@ const MOCK_TEMPLATES = {
     { id: 'ann-1', name: 'Classic Versus', style: 'Modern', tags: ['Instagram', 'Story'] },
     { id: 'ann-2', name: 'Bold Typography', style: 'Bold', tags: ['Twitter'] },
   ],
+  poster: [
+    { id: 'pos-1', name: 'Match Poster', style: 'Photo-heavy', tags: ['Instagram', 'A3'] },
+    { id: 'pos-2', name: 'Minimal Poster', style: 'Minimal', tags: ['Instagram'] },
+  ],
+  'walk-on': [
+    { id: 'wo-1', name: 'Walk-on Hype', style: 'Energy', tags: ['Story'] },
+  ],
   lineup: [
     { id: 'lin-1', name: 'Field View', style: 'Tactical', tags: ['11v11'] },
     { id: 'lin-2', name: 'List View (Simple)', style: 'Minimal', tags: ['List'] },
     { id: 'lin-3', name: 'Player Spotlight', style: 'Dynamic', tags: ['Video'] },
+  ],
+  'goal-update': [
+    { id: 'gu-1', name: 'Goal Card', style: 'Bold', tags: ['Instagram', 'Story'] },
+  ],
+  'score-update': [
+    { id: 'su-1', name: 'Live Score', style: 'Clean', tags: ['Instagram', 'Story'] },
+  ],
+  'injury-update': [
+    { id: 'iu-1', name: 'Injury Update', style: 'Simple', tags: ['Instagram'] },
   ],
   'half-time': [
     { id: 'ht-1', name: 'Score Update', style: 'Clean', tags: [] },

@@ -301,8 +301,14 @@ export default function HierarchyMatchDetailPage() {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'hierarchy', 'match', 'lineup', 'date', 'transactions']);
-    return allowed.has(raw) ? raw : 'overview';
+    const allowed = new Set(['overview', 'content', 'lineup', 'transactions', 'details']);
+    if (allowed.has(raw)) return raw;
+    const legacyMap: Record<string, string> = {
+      hierarchy: 'details',
+      match: 'details',
+      date: 'details',
+    };
+    return legacyMap[raw] || 'overview';
   }, [location.search]);
 
   const navigateToTab = (tabId: string) => {
@@ -1600,6 +1606,44 @@ export default function HierarchyMatchDetailPage() {
         />
 
         <PageContent>
+          <div
+            style={{
+              display: 'flex',
+              gap: '6px',
+              borderBottom: '2px solid var(--app-border)',
+              marginBottom: '24px',
+              flexWrap: 'wrap',
+            }}
+          >
+            {([
+              { id: 'overview', label: 'Overview' },
+              { id: 'content', label: 'Content' },
+              { id: 'lineup', label: 'Lineup' },
+              { id: 'transactions', label: 'Transactions' },
+              { id: 'details', label: 'Details' },
+            ] as const).map((t) => {
+              const isActive = activeTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => navigateToTab(t.id)}
+                  style={{
+                    padding: '10px 14px',
+                    border: 'none',
+                    background: isActive ? 'var(--app-surface)' : 'transparent',
+                    borderBottom: isActive ? '3px solid var(--app-primary)' : '3px solid transparent',
+                    cursor: 'pointer',
+                    fontWeight: isActive ? 600 : 500,
+                    color: isActive ? 'var(--app-text)' : 'var(--app-muted-text)',
+                    borderRadius: '6px 6px 0 0',
+                  }}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+
           {activeTab === 'overview' && (
             <>
               <Card className="mb-6">
@@ -1624,7 +1668,9 @@ export default function HierarchyMatchDetailPage() {
                       </Badge>
                     </div>
                     <div style={{ marginTop: '8px', fontSize: '0.9rem' }}>
-                      {date ? `${date.toLocaleDateString()} • ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '—'}
+                      {date
+                        ? `${date.toLocaleDateString()} • ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                        : '—'}
                     </div>
                   </div>
 
@@ -1643,50 +1689,9 @@ export default function HierarchyMatchDetailPage() {
                     color: 'var(--app-text-secondary)',
                   }}
                 >
-                  📍 {match.location || match.metadata?.venue || 'Unknown Venue'} • 🏆 {competition?.name || match.period?.name || 'Competition'}
+                  📍 {match.location || match.metadata?.venue || 'Unknown Venue'} • 🏆{' '}
+                  {competition?.name || match.period?.name || 'Competition'}
                 </div>
-              </Card>
-
-              {/* F05: Match Day "Slot System" (Action Center) */}
-              <Card title="Content Action Center" className="mb-6">
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div
-                        className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                        onClick={() => openContentModal('announcement')}
-                        title="Create Pre-Match Flyer"
-                    >
-                        <div className="text-2xl mb-2">📅</div>
-                        <div className="font-semibold text-sm">Announcement</div>
-                        <div className="text-xs text-gray-500 mt-1">Pre-Match</div>
-                    </div>
-                    <div
-                        className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                        onClick={() => openContentModal('lineup')}
-                        title="Create Lineup Graphic"
-                    >
-                        <div className="text-2xl mb-2">📋</div>
-                        <div className="font-semibold text-sm">Lineup</div>
-                        <div className="text-xs text-gray-500 mt-1">Pre-Match</div>
-                    </div>
-                     <div
-                        className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                        onClick={() => openContentModal('half-time')}
-                        title="Create Half-Time Graphic"
-                    >
-                        <div className="text-2xl mb-2">⏸️</div>
-                        <div className="font-semibold text-sm">Half-Time</div>
-                        <div className="text-xs text-gray-500 mt-1">Live</div>
-                    </div>
-                    <div
-                        className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                        onClick={() => openContentModal('full-time')}
-                        title="Create Full-Time Graphic"
-                    >
-                        <div className="text-2xl mb-2">🏁</div>
-                        <div className="font-semibold text-sm">Full-Time</div>
-                        <div className="text-xs text-gray-500 mt-1">Post-Match</div>
-                    </div>
-                  </div>
               </Card>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1737,6 +1742,106 @@ export default function HierarchyMatchDetailPage() {
             </>
           )}
 
+          {activeTab === 'content' && (
+            <div style={{ display: 'grid', gap: '16px' }}>
+              <Card title="Pre-match">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div
+                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                    onClick={() => openContentModal('announcement')}
+                    title="Create Match Flyer / Announcement"
+                  >
+                    <div className="text-2xl mb-2">📣</div>
+                    <div className="font-semibold text-sm">Flyer</div>
+                    <div className="text-xs text-gray-500 mt-1">Announcement</div>
+                  </div>
+                  <div
+                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                    onClick={() => openContentModal('lineup')}
+                    title="Create Lineup Graphic"
+                  >
+                    <div className="text-2xl mb-2">📋</div>
+                    <div className="font-semibold text-sm">Lineup</div>
+                    <div className="text-xs text-gray-500 mt-1">Starting XI</div>
+                  </div>
+                  <div
+                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                    onClick={() => openContentModal('walk-on')}
+                    title="Create Walk-on Graphic"
+                  >
+                    <div className="text-2xl mb-2">🚶</div>
+                    <div className="font-semibold text-sm">Walk-on</div>
+                    <div className="text-xs text-gray-500 mt-1">Kickoff</div>
+                  </div>
+                  <div
+                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                    onClick={() => openContentModal('poster')}
+                    title="Create Match Poster"
+                  >
+                    <div className="text-2xl mb-2">🖼️</div>
+                    <div className="font-semibold text-sm">Poster</div>
+                    <div className="text-xs text-gray-500 mt-1">Match poster</div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card title="During match">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div
+                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                    onClick={() => openContentModal('goal-update')}
+                    title="Create Goal Update"
+                  >
+                    <div className="text-2xl mb-2">⚽</div>
+                    <div className="font-semibold text-sm">Goal</div>
+                    <div className="text-xs text-gray-500 mt-1">Update</div>
+                  </div>
+                  <div
+                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                    onClick={() => openContentModal('score-update')}
+                    title="Create Score Update"
+                  >
+                    <div className="text-2xl mb-2">🔢</div>
+                    <div className="font-semibold text-sm">Score</div>
+                    <div className="text-xs text-gray-500 mt-1">Update</div>
+                  </div>
+                  <div
+                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                    onClick={() => openContentModal('injury-update')}
+                    title="Create Injury Update"
+                  >
+                    <div className="text-2xl mb-2">🩹</div>
+                    <div className="font-semibold text-sm">Injury</div>
+                    <div className="text-xs text-gray-500 mt-1">Update</div>
+                  </div>
+                  <div
+                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                    onClick={() => openContentModal('half-time')}
+                    title="Create Half-Time Graphic"
+                  >
+                    <div className="text-2xl mb-2">⏸️</div>
+                    <div className="font-semibold text-sm">Half-time</div>
+                    <div className="text-xs text-gray-500 mt-1">Live</div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card title="Post-match">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div
+                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
+                    onClick={() => openContentModal('full-time')}
+                    title="Create Endscore / Full-Time Graphic"
+                  >
+                    <div className="text-2xl mb-2">🏁</div>
+                    <div className="font-semibold text-sm">Endscore</div>
+                    <div className="text-xs text-gray-500 mt-1">Full-time</div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+
           {activeTab === 'transactions' && (
             <div style={{ display: 'grid', gap: '12px' }}>
               <GovernanceSummaryCard
@@ -1757,140 +1862,148 @@ export default function HierarchyMatchDetailPage() {
             </div>
           )}
 
-          {activeTab === 'hierarchy' && (
-            <Card>
-              <div style={{ padding: '16px' }}>
-                <div style={{ color: 'var(--app-muted-text)', fontSize: '13px', marginBottom: '10px' }}>
-                  Navigate the hierarchy around this match.
-                </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <Button variant="secondary" size="sm" onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}>
-                    Season
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}`)}
-                  >
-                    Competition
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}?tab=matches`)}
-                  >
-                    Matches
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {activeTab === 'match' && (
-            <Card>
-              <div style={{ padding: '16px' }}>
-                <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 600 }}>Match Details</h3>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <tbody>
-                      <tr>
-                        <th style={{ textAlign: 'left', width: '180px' }}>Title</th>
-                        <td>{match.title}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ textAlign: 'left' }}>Home</th>
-                        <td>{homeTeamName}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ textAlign: 'left' }}>Away</th>
-                        <td>{awayTeamName}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ textAlign: 'left' }}>Status</th>
-                        <td>{status}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ textAlign: 'left' }}>Venue</th>
-                        <td>{match.location || match.metadata?.venue || '—'}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ textAlign: 'left' }}>Competition</th>
-                        <td>
-                          {competition ? (
-                            <Link
-                              to={
-                                `${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}`
-                              }
-                              className="text-blue-600 hover:underline"
-                              style={{ textDecoration: 'none' }}
-                            >
-                              {competition.name}
-                            </Link>
-                          ) : (
-                            match.period?.name || '—'
-                          )}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </Table>
-                </div>
-
-                <div style={{ marginTop: '16px' }}>
-                  <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 600 }}>
-                    Selected users by role
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(personaGroups)
-                      .filter(([, users]) => users.length > 0)
-                      .map(([group, users]) => (
-                        <div
-                          key={group}
-                          style={{
-                            border: '1px solid var(--app-border)',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            background: 'var(--app-surface-2)',
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ fontWeight: 600 }}>{group}</div>
-                            <Badge variant="default">{users.length}</Badge>
-                          </div>
-                          <div style={{ marginTop: '8px', display: 'grid', gap: '6px' }}>
-                            {users.map((p) => (
-                              <div key={String(p.id)} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                <span style={{ fontWeight: 500 }}>{p.member?.user_name || 'Unknown'}</span>
-                                {p.role ? <Badge variant="default">{roleLabel(p.role)}</Badge> : null}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    {Object.values(personaGroups).every((arr) => arr.length === 0) ? (
-                      <Alert variant="info">No participants selected for this match.</Alert>
-                    ) : null}
+          {activeTab === 'details' && (
+            <div style={{ display: 'grid', gap: '12px' }}>
+              <Card>
+                <div style={{ padding: '16px' }}>
+                  <div style={{ color: 'var(--app-muted-text)', fontSize: '13px', marginBottom: '10px' }}>
+                    Navigate the hierarchy around this match.
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <Button variant="secondary" size="sm" onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}>
+                      Season
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}`)}
+                    >
+                      Competition
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}?tab=matches`)}
+                    >
+                      Matches
+                    </Button>
                   </div>
                 </div>
+              </Card>
 
-                <div style={{ marginTop: '14px' }}>
-                  <details>
-                    <summary style={{ cursor: 'pointer', color: 'var(--app-muted-text)' }}>Raw metadata</summary>
-                    <pre
-                      style={{
-                        marginTop: '10px',
-                        background: 'var(--app-surface-2)',
-                        padding: '12px',
-                        borderRadius: '6px',
-                        overflowX: 'auto',
-                        fontSize: '12px',
-                      }}
-                    >
-                      {JSON.stringify(match.metadata || {}, null, 2)}
-                    </pre>
-                  </details>
+              <Card>
+                <div style={{ padding: '16px' }}>
+                  <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 600 }}>Match Details</h3>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <tbody>
+                        <tr>
+                          <th style={{ textAlign: 'left', width: '180px' }}>Title</th>
+                          <td>{match.title}</td>
+                        </tr>
+                        <tr>
+                          <th style={{ textAlign: 'left' }}>Home</th>
+                          <td>{homeTeamName}</td>
+                        </tr>
+                        <tr>
+                          <th style={{ textAlign: 'left' }}>Away</th>
+                          <td>{awayTeamName}</td>
+                        </tr>
+                        <tr>
+                          <th style={{ textAlign: 'left' }}>Status</th>
+                          <td>{status}</td>
+                        </tr>
+                        <tr>
+                          <th style={{ textAlign: 'left' }}>Venue</th>
+                          <td>{match.location || match.metadata?.venue || '—'}</td>
+                        </tr>
+                        <tr>
+                          <th style={{ textAlign: 'left' }}>Competition</th>
+                          <td>
+                            {competition ? (
+                              <Link
+                                to={`${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}`}
+                                className="text-blue-600 hover:underline"
+                                style={{ textDecoration: 'none' }}
+                              >
+                                {competition.name}
+                              </Link>
+                            ) : (
+                              match.period?.name || '—'
+                            )}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th style={{ textAlign: 'left' }}>Start</th>
+                          <td>{match.start_time ? new Date(match.start_time).toLocaleString() : '—'}</td>
+                        </tr>
+                        <tr>
+                          <th style={{ textAlign: 'left' }}>End</th>
+                          <td>{match.end_time ? new Date(match.end_time).toLocaleString() : '—'}</td>
+                        </tr>
+                        <tr>
+                          <th style={{ textAlign: 'left' }}>Round</th>
+                          <td>{String(match.metadata?.round ?? '—')}</td>
+                        </tr>
+                      </tbody>
+                    </Table>
+                  </div>
+
+                  <div style={{ marginTop: '16px' }}>
+                    <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 600 }}>Selected users by role</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Object.entries(personaGroups)
+                        .filter(([, users]) => users.length > 0)
+                        .map(([group, users]) => (
+                          <div
+                            key={group}
+                            style={{
+                              border: '1px solid var(--app-border)',
+                              borderRadius: '8px',
+                              padding: '12px',
+                              background: 'var(--app-surface-2)',
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ fontWeight: 600 }}>{group}</div>
+                              <Badge variant="default">{users.length}</Badge>
+                            </div>
+                            <div style={{ marginTop: '8px', display: 'grid', gap: '6px' }}>
+                              {users.map((p) => (
+                                <div key={String(p.id)} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                  <span style={{ fontWeight: 500 }}>{p.member?.user_name || 'Unknown'}</span>
+                                  {p.role ? <Badge variant="default">{roleLabel(p.role)}</Badge> : null}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      {Object.values(personaGroups).every((arr) => arr.length === 0) ? (
+                        <Alert variant="info">No participants selected for this match.</Alert>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '14px' }}>
+                    <details>
+                      <summary style={{ cursor: 'pointer', color: 'var(--app-muted-text)' }}>Raw metadata</summary>
+                      <pre
+                        style={{
+                          marginTop: '10px',
+                          background: 'var(--app-surface-2)',
+                          padding: '12px',
+                          borderRadius: '6px',
+                          overflowX: 'auto',
+                          fontSize: '12px',
+                        }}
+                      >
+                        {JSON.stringify(match.metadata || {}, null, 2)}
+                      </pre>
+                    </details>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </div>
           )}
 
           {activeTab === 'lineup' && (
@@ -1905,32 +2018,6 @@ export default function HierarchyMatchDetailPage() {
                       <Alert variant="info">No opponent team configured for this match.</Alert>
                     </Card>
                   )}
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {activeTab === 'date' && (
-            <Card>
-              <div style={{ padding: '16px' }}>
-                <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 600 }}>Date & Time</h3>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <tbody>
-                      <tr>
-                        <th style={{ textAlign: 'left', width: '180px' }}>Start</th>
-                        <td>{match.start_time ? new Date(match.start_time).toLocaleString() : '—'}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ textAlign: 'left' }}>End</th>
-                        <td>{match.end_time ? new Date(match.end_time).toLocaleString() : '—'}</td>
-                      </tr>
-                      <tr>
-                        <th style={{ textAlign: 'left' }}>Round</th>
-                        <td>{String(match.metadata?.round ?? '—')}</td>
-                      </tr>
-                    </tbody>
-                  </Table>
                 </div>
               </div>
             </Card>
