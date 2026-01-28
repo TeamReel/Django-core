@@ -13,6 +13,7 @@ class ProjectsConfig(AppConfig):
     def ready(self):
         """Import signal handlers when app is ready."""
         import projects.signals  # noqa: F401
+        import projects.metrics  # noqa: F401
 
         from audit.registry import register_event_type
 

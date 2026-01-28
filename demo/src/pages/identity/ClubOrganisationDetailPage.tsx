@@ -936,12 +936,14 @@ export default function ClubOrganisationDetailPage() {
 
   // If we're still on a numeric/UUID route, the redirect useEffect will replace the URL.
 
+  const clubDefaultLocation = String((club as any)?.metadata?.identity?.default_location || '').trim();
+
   return (
     <>
       <div className="club-detail-page">
         <PageHeader
           title={club.name}
-          subtitle="Club overview"
+          subtitle={clubDefaultLocation ? `Club overview • Location: ${clubDefaultLocation}` : 'Club overview • Location: —'}
           breadcrumbs={[
             { label: 'Dashboard', onClick: () => navigate('/dashboard') },
             { label: org?.name || 'Federation', onClick: () => navigate(backToOrgHref) },

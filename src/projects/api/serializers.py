@@ -286,6 +286,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     organisation = OrganisationNestedSerializer(read_only=True)
     creator = UserNestedSerializer(read_only=True)
     current_user_access = serializers.SerializerMethodField()
+    metadata = serializers.JSONField(required=False)
     # Project uses the default Django AutoField (integer) primary key.
     # This is TeamReel's Club 7 Team hierarchy link.
     parent_project_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
@@ -304,6 +305,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "description",
             "is_active",
             "is_private",
+            "metadata",
             "created_at",
             "updated_at",
             "archived_at",
@@ -416,9 +418,11 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
     Slug is immutable after creation.
     """
 
+    metadata = serializers.JSONField(required=False)
+
     class Meta:
         model = Project
-        fields = ["name", "description"]
+        fields = ["name", "description", "metadata"]
 
     def validate_name(self, value):
         """Validate name length and format."""
@@ -479,12 +483,21 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         `is_private` as an input key. DRF will ignore unknown keys during
         validation, so we explicitly apply it here when present.
         """
+        incoming_metadata = validated_data.pop("metadata", None)
+
         if "is_private" in getattr(self, "initial_data", {}):
             raw_value = self.initial_data.get("is_private")
             # Coerce typical representations; DRF already parsed JSON booleans.
             if isinstance(raw_value, str):
                 raw_value = raw_value.strip().lower() in {"1", "true", "yes", "on"}
             instance.is_private = bool(raw_value)
+
+        if incoming_metadata is not None:
+            existing = getattr(instance, "metadata", None) or {}
+            if isinstance(existing, dict) and isinstance(incoming_metadata, dict):
+                instance.metadata = {**existing, **incoming_metadata}
+            else:
+                instance.metadata = incoming_metadata
 
         instance = super().update(instance, validated_data)
 

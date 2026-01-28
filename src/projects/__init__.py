@@ -1,4 +1,5 @@
 """Projects & Workspaces Management app."""
 
-# Import metrics to register them with Prometheus
-from . import metrics  # noqa: F401
+# Intentionally avoid importing metrics at package import time.
+# Metrics registration happens in ProjectsConfig.ready() to prevent
+# side effects (and duplicated timeseries) during test collection.
