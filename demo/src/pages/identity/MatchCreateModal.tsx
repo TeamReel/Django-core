@@ -298,7 +298,7 @@ export default function MatchCreateModal({
     const season = (seasonOptions || []).find((s: any) => String(s?.id) === String(selectedSeasonId));
     const competition = (competitionOptions || []).find((c: any) => String(c?.id) === String(selectedCompetitionId));
 
-    const metadata = {
+    const metadataBase = {
       identity: {
         home_team_name: home.name || null,
         home_team_logo_url: home.logoUrl || null,
@@ -309,12 +309,39 @@ export default function MatchCreateModal({
         competition_id: competition?.id ? String(competition.id) : null,
         competition_name: competition?.name ? String(competition.name) : null,
       },
+      teamreel: {
+        match_context: {
+          organisation_id: selectedOrganisationId ? String(selectedOrganisationId) : null,
+          club_id: selectedClubId ? String(selectedClubId) : null,
+          team_id: selectedTeamId ? String(selectedTeamId) : null,
+          opponent_organisation_id: (selectedOpponentOrganisationId || selectedOrganisationId)
+            ? String(selectedOpponentOrganisationId || selectedOrganisationId)
+            : null,
+          opponent_club_id: resolvedOpponentClubId ? String(resolvedOpponentClubId) : null,
+          opponent_team_id: selectedOpponentTeamId ? String(selectedOpponentTeamId) : null,
+
+          season_id: season?.id ? String(season.id) : null,
+          season_name: season?.name ? String(season.name) : null,
+          competition_id: competition?.id ? String(competition.id) : null,
+          competition_name: competition?.name ? String(competition.name) : null,
+
+          home_team_name: home.name || null,
+          away_team_name: away.name || null,
+          home_club_default_location: homeClub.defaultLocation || null,
+        },
+        vars: {
+          season_name: season?.name ? String(season.name) : null,
+          competition_name: competition?.name ? String(competition.name) : null,
+          home_team_name: home.name || null,
+          away_team_name: away.name || null,
+        },
+      },
     };
 
     const descriptionLines: string[] = [];
-    if (metadata.identity.competition_name || metadata.identity.season_name) {
-      const comp = metadata.identity.competition_name || '';
-      const seas = metadata.identity.season_name || '';
+    if (metadataBase.identity.competition_name || metadataBase.identity.season_name) {
+      const comp = metadataBase.identity.competition_name || '';
+      const seas = metadataBase.identity.season_name || '';
       descriptionLines.push([comp, seas].filter(Boolean).join(' — '));
     }
     if (home.name && away.name) {
@@ -322,10 +349,10 @@ export default function MatchCreateModal({
     }
     if (matchDate || matchTime) {
       const dt = [matchDate, matchTime].filter(Boolean).join(' ');
-      if (dt) descriptionLines.push(`Date/Time: ${dt}`);
+      if (dt) descriptionLines.push(`Datum/tijd: ${dt}`);
     }
     if (locationDefault) {
-      descriptionLines.push(`Location: ${locationDefault}`);
+      descriptionLines.push(`Locatie: ${locationDefault}`);
     }
     const descriptionDefault = descriptionLines.filter(Boolean).join('\n');
 
@@ -333,7 +360,7 @@ export default function MatchCreateModal({
       titleDefault,
       locationDefault,
       descriptionDefault,
-      metadata,
+      metadataBase,
     };
   }, [
     venue,
@@ -347,6 +374,12 @@ export default function MatchCreateModal({
     selectedCompetitionId,
     matchDate,
     matchTime,
+    selectedOrganisationId,
+    selectedClubId,
+    selectedTeamId,
+    selectedOpponentOrganisationId,
+    selectedOpponentTeamId,
+    resolvedOpponentClubId,
   ]);
 
   useEffect(() => {
@@ -840,6 +873,33 @@ export default function MatchCreateModal({
       const finalLocation = (location || derived.locationDefault || '').trim() || undefined;
       const finalDescription = (description || derived.descriptionDefault || '').trim() || undefined;
 
+      const metadataFinal = {
+        ...(derived.metadataBase || {}),
+        teamreel: {
+          ...((derived.metadataBase as any)?.teamreel || {}),
+          match_context: {
+            ...(((derived.metadataBase as any)?.teamreel || {})?.match_context || {}),
+            title: finalTitle,
+            venue,
+            is_home: venue === 'Home',
+            start_time: start,
+            end_time: end,
+            match_date: matchDate || null,
+            match_time: matchTime || null,
+            location: finalLocation || null,
+            description: finalDescription || null,
+          },
+          vars: {
+            ...(((derived.metadataBase as any)?.teamreel || {})?.vars || {}),
+            match_title: finalTitle,
+            match_venue: venue,
+            match_date: matchDate || null,
+            match_time: matchTime || null,
+            match_location: finalLocation || null,
+          },
+        },
+      };
+
       await onCreate({
         title: finalTitle,
         start_time: start,
@@ -847,7 +907,7 @@ export default function MatchCreateModal({
         location: finalLocation,
         description: finalDescription,
 
-        metadata: derived.metadata,
+        metadata: metadataFinal,
 
         venue,
         organisation_id: selectedOrganisationId,

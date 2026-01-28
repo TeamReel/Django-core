@@ -2564,6 +2564,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 metadata: {
                   venue: payload.venue || 'Home',
                   is_home: (payload.venue || 'Home') === 'Home',
+                  ...(payload as any)?.metadata,
                 },
               }),
             });
