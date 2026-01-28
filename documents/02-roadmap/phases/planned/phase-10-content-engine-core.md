@@ -4,7 +4,7 @@
 
 ---
 
-## [B30: Generic Activities & Periods](../modules/planned/239-B30-generic-activities.md)
+## [B30: Generic Activities & Periods](../modules/done/039-B30-generic-activities.md)
 
 **Doel**: Generic event & resource planning - time-bound cycles (seasons/quarters) en activities (matches/meetings) zonder domain lock-in.
 

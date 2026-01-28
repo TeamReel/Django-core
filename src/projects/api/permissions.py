@@ -16,6 +16,18 @@ class IsOrganisationMemberOrAdmin(permissions.BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
 
+        def has_global_view_all() -> bool:
+            """True if user has any role assignment granting cross-org read."""
+            try:
+                from permissions.models import RoleAssignment
+            except ImportError:
+                return False
+
+            return RoleAssignment.objects.filter(
+                user=request.user,
+                role__permissions__permission__in=["org.view_all", "project.view_all"],
+            ).exists()
+
         # Superusers (admin role) have full access
         if request.user.is_superuser or request.user.is_staff:
             return True
@@ -66,6 +78,10 @@ class IsOrganisationMemberOrAdmin(permissions.BasePermission):
                 if has_any_project_role:
                     return True
 
+                # Cross-organisation read roles (e.g., Land Admin)
+                if request.method in permissions.SAFE_METHODS and has_global_view_all():
+                    return True
+
                 return False
 
             # For write operations, check admin status
@@ -89,6 +105,22 @@ class IsOrganisationMemberOrAdmin(permissions.BasePermission):
         # Superusers (admin role) have full access
         if request.user.is_superuser or request.user.is_staff:
             return True
+
+        # Cross-organisation read roles (e.g., Land Admin)
+        if request.method in permissions.SAFE_METHODS:
+            try:
+                from permissions.models import RoleAssignment
+            except ImportError:
+                RoleAssignment = None
+
+            if (
+                RoleAssignment is not None
+                and RoleAssignment.objects.filter(
+                    user=request.user,
+                    role__permissions__permission__in=["org.view_all", "project.view_all"],
+                ).exists()
+            ):
+                return True
 
         # 0. TeamReel RBAC: project scoped permissions
         from permissions.evaluator import check_permission
@@ -185,6 +217,22 @@ class IsProjectMemberOrOrgAdmin(IsOrganisationMemberOrAdmin):
         # Superusers (admin role) have full access
         if request.user.is_superuser or request.user.is_staff:
             return True
+
+        # Cross-organisation read roles (e.g., Land Admin)
+        if request.method in permissions.SAFE_METHODS:
+            try:
+                from permissions.models import RoleAssignment
+            except ImportError:
+                RoleAssignment = None
+
+            if (
+                RoleAssignment is not None
+                and RoleAssignment.objects.filter(
+                    user=request.user,
+                    role__permissions__permission__in=["org.view_all", "project.view_all"],
+                ).exists()
+            ):
+                return True
 
         # 1. Check Project Membership (New B26)
         from projects.models import ProjectMembership

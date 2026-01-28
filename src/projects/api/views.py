@@ -109,6 +109,31 @@ class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsProjectMemberOrOrgAdmin]
     pagination_class = ProjectCursorPagination
 
+    def _has_cross_org_project_view_permission(self) -> bool:
+        """True if user has any role assignment granting global project visibility.
+
+        This is intentionally a coarse check (exists anywhere) to support federation
+        roles like Land Admin where `project.view_all` should enable discovery across
+        organisations.
+        """
+
+        user = getattr(self.request, "user", None)
+        if not user or not getattr(user, "is_authenticated", False):
+            return False
+
+        if getattr(user, "is_superuser", False) or getattr(user, "is_staff", False):
+            return True
+
+        try:
+            from permissions.models import RoleAssignment
+        except ImportError:
+            return False
+
+        return RoleAssignment.objects.filter(
+            user=user,
+            role__permissions__permission__in=["project.view_all", "org.view_all"],
+        ).exists()
+
     def get_object(self):
         """Retrieve a Project by numeric ID or slug.
 
@@ -322,7 +347,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         # Apply visibility filter for all routes
         user = self.request.user
-        if user.is_authenticated and not user.is_superuser:
+        has_cross_org_view = (
+            user.is_authenticated
+            and not user.is_superuser
+            and self._has_cross_org_project_view_permission()
+        )
+
+        if user.is_authenticated and not user.is_superuser and not has_cross_org_view:
             from permissions.models import RoleAssignment, ScopeChoices
 
             # 1. Direct org membership
@@ -417,7 +448,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
                     return queryset.none()
             else:
                 user = self.request.user
-                if user.is_authenticated and not user.is_superuser:
+                has_cross_org_view = (
+                    user.is_authenticated
+                    and not user.is_superuser
+                    and self._has_cross_org_project_view_permission()
+                )
+
+                if user.is_authenticated and not user.is_superuser and not has_cross_org_view:
                     from permissions.models import RoleAssignment, ScopeChoices
 
                     # 1. Direct membership
@@ -462,6 +499,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         """Return appropriate serializer based on action."""
         if self.action == "list":
+            if self._has_cross_org_project_view_permission() and not getattr(
+                self.request.user, "is_superuser", False
+            ):
+                from projects.api.serializers import ProjectPublicListSerializer
+
+                return ProjectPublicListSerializer
+
             return ProjectListSerializer
         elif self.action in ["update", "partial_update"]:
             return ProjectUpdateSerializer

@@ -174,6 +174,24 @@ class OrganisationListSerializer(serializers.ModelSerializer):
         return membership.role if membership else None
 
 
+class OrganisationPublicListSerializer(serializers.ModelSerializer):
+    """Minimal, non-sensitive organisation list serializer.
+
+    Intended for cross-organisation discovery (e.g. opponent selection) when a user
+    has a permission like org.view_all but is not necessarily a member.
+    """
+
+    class Meta:
+        model = Organisation
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "is_active",
+        ]
+        read_only_fields = fields
+
+
 class OrganisationSerializer(serializers.ModelSerializer):
     """
     Read serializer for Organisation with computed fields.

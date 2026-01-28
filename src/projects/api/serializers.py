@@ -242,6 +242,40 @@ class ProjectListSerializer(serializers.ModelSerializer):
         ).count()
 
 
+class ProjectPublicListSerializer(serializers.ModelSerializer):
+    """Minimal serializer for cross-organisation project discovery.
+
+    Used when a user has platform-wide read permissions like `project.view_all`.
+    Avoids expensive computed counts and reduces data leakage.
+    """
+
+    organisation = OrganisationNestedSerializer(read_only=True)
+    parent_id = serializers.IntegerField(
+        source="parent_project.id", allow_null=True, read_only=True
+    )
+    parent_name = serializers.CharField(
+        source="parent_project.name", allow_null=True, read_only=True
+    )
+
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "organisation",
+            "name",
+            "slug",
+            "description",
+            "is_active",
+            "is_private",
+            "created_at",
+            "updated_at",
+            "archived_at",
+            "parent_id",
+            "parent_name",
+        ]
+        read_only_fields = fields
+
+
 class ProjectDetailSerializer(serializers.ModelSerializer):
     """
     Serializer for project detail view (create/retrieve/update).

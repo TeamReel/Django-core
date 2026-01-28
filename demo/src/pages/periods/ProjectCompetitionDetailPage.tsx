@@ -11,6 +11,7 @@ import PeriodDetailModal from '../identity/PeriodDetailModal';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import MatchEditModal from '../identity/MatchEditModal';
 import MatchDetailModal from '../identity/MatchDetailModal';
+import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import {
   actionButtonStyle,
   ActionTone,
@@ -1433,6 +1434,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     venue?: 'Home' | 'Away';
     location?: string;
     description?: string;
+    metadata?: any;
   }) => {
     const projectNumericId = String((project as any)?.id || '').trim();
     const competitionUuid = String(resolvedCompetitionId || (competition as any)?.id || '').trim();
@@ -1459,6 +1461,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         metadata: {
           venue: payload.venue || 'Home',
           is_home: (payload.venue || 'Home') === 'Home',
+          ...(payload as any)?.metadata,
         },
       }),
     });
@@ -1765,6 +1768,47 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                           </Button>
                         </div>
                       </Card>
+
+                      <IdentitySettingsCard
+                        title="Competition settings"
+                        description="Optional identity fields (logo) used for downstream UI."
+                        values={{
+                          logoUrl: String((competition as any)?.metadata?.identity?.logo_url || ''),
+                          defaultLocation: String((competition as any)?.metadata?.identity?.default_location || ''),
+                        }}
+                        canEdit={Boolean(userCanEditProject && competition)}
+                        onSave={async (next) => {
+                          if (!competition?.id) throw new Error('Competition not loaded');
+
+                          const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(String(competition.id))}/`, {
+                            method: 'PATCH',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'X-CSRFToken': getCsrfToken(),
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                              metadata: {
+                                ...((competition as any)?.metadata || {}),
+                                identity: {
+                                  ...(((competition as any)?.metadata || {})?.identity || {}),
+                                  logo_url: String(next.logoUrl || '').trim() || null,
+                                  default_location: String(next.defaultLocation || '').trim() || null,
+                                },
+                              },
+                            }),
+                          });
+
+                          if (!res.ok) {
+                            const detail = await res.text().catch(() => '');
+                            throw new Error(detail || `Failed to save competition settings (${res.status})`);
+                          }
+
+                          const raw = await res.json().catch(() => null);
+                          const updated: any = (raw?.data?.data || raw?.data || raw) as any;
+                          setCompetition((prev: any) => ({ ...(prev as any), ...(updated as any) }));
+                        }}
+                      />
                     </div>
                   </div>
                 </>

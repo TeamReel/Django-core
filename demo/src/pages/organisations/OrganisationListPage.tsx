@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DefaultEmpty } from '@django-core/page-templates';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface Organisation {
   id: string;
@@ -24,7 +25,7 @@ export default function OrganisationListPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
 
     fetch(`${apiBaseUrl}/api/v1/organisations/`, {
       credentials: 'include',

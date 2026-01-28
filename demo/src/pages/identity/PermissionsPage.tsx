@@ -9,9 +9,9 @@ import {
   PageContent,
 } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
-import { Permission, Role } from '../../types';
 import AppShell from '../../components/AppShell';
 import { compactTableStyle, compactThStyle, compactTdStyle } from './detail/detailStyles';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 /**
  * T010 - Permissions Dashboard
@@ -22,8 +22,8 @@ import { compactTableStyle, compactThStyle, compactTdStyle } from './detail/deta
  * - Provides stakeholder-friendly explanations (per user stories 1-2)
  */
 export const PermissionsPage: React.FC = () => {
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [effectivePermissionKeys, setEffectivePermissionKeys] = useState<string[]>([]);
+  const [permissionsTree, setPermissionsTree] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
@@ -54,9 +54,10 @@ export const PermissionsPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch current user to determine role
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-        const userResponse = await fetch(`${baseUrl}/api/users/me/`, {
+        const baseUrl = getApiBaseUrl();
+
+        // Fetch current user (platform role: superadmin/admin/user)
+        const userResponse = await fetch(`${baseUrl}/api/v1/auth/me/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -70,8 +71,8 @@ export const PermissionsPage: React.FC = () => {
           setCurrentUserRole(userData.role);
         }
 
-        // Fetch permissions
-        const permissionsResponse = await fetch(`${baseUrl}/api/permissions/`, {
+        // Fetch effective hierarchical permissions for current user
+        const permissionsResponse = await fetch(`${baseUrl}/api/v1/permissions/current/`, {
           headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -81,25 +82,27 @@ export const PermissionsPage: React.FC = () => {
 
         if (permissionsResponse.ok) {
           const permissionsData = await permissionsResponse.json();
-          // Handle B13 response envelope
-          const permissionsList = permissionsData.data?.results || permissionsData.results || permissionsData.data || permissionsData || [];
-          setPermissions(Array.isArray(permissionsList) ? permissionsList : []);
-        }
+          const tree = permissionsData?.data || permissionsData;
+          setPermissionsTree(tree);
 
-        // Fetch roles
-        const rolesResponse = await fetch(`${baseUrl}/api/roles/`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
+          const keys: string[] = [];
+          if (Array.isArray(tree?.global)) {
+            keys.push(...tree.global);
+          }
+          const orgs = tree?.organizations || tree?.organisations;
+          if (orgs && typeof orgs === 'object') {
+            Object.values(orgs as any).forEach((orgNode: any) => {
+              if (Array.isArray(orgNode?.permissions)) keys.push(...orgNode.permissions);
+              if (orgNode?.projects && typeof orgNode.projects === 'object') {
+                Object.values(orgNode.projects).forEach((projectNode: any) => {
+                  if (Array.isArray(projectNode?.permissions)) keys.push(...projectNode.permissions);
+                });
+              }
+            });
+          }
 
-        if (rolesResponse.ok) {
-          const rolesData = await rolesResponse.json();
-          // Handle B13 response envelope
-          const rolesList = rolesData.data?.results || rolesData.results || rolesData.data || rolesData || [];
-          setRoles(Array.isArray(rolesList) ? rolesList : []);
+          const uniqueSorted = Array.from(new Set(keys.map((k) => String(k).trim()).filter(Boolean))).sort();
+          setEffectivePermissionKeys(uniqueSorted);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch permissions');
@@ -460,11 +463,7 @@ export const PermissionsPage: React.FC = () => {
     return value;
   };
 
-  const permissionApiKeys = new Set(
-    (Array.isArray(permissions) ? permissions : [])
-      .map((p: any) => String((p as any)?.key ?? (p as any)?.code ?? (p as any)?.name ?? p).trim())
-      .filter(Boolean),
-  );
+  const permissionApiKeys = new Set(effectivePermissionKeys);
   const expectedKeySet = new Set(expectedPermissionKeys);
   const missingFromApi = expectedPermissionKeys.filter((k) => permissionApiKeys.size > 0 && !permissionApiKeys.has(k));
   const unexpectedInApi = Array.from(permissionApiKeys).filter((k) => !expectedKeySet.has(k));
@@ -526,7 +525,7 @@ export const PermissionsPage: React.FC = () => {
           </Alert>
         )}
 
-        {permissions.length > 0 && (missingFromApi.length > 0 || unexpectedInApi.length > 0) ? (
+        {effectivePermissionKeys.length > 0 && (missingFromApi.length > 0 || unexpectedInApi.length > 0) ? (
           <Alert variant="info" className="mb-4" data-testid="permissions-config-mismatch">
             RBAC config check: {missingFromApi.length} expected permissions missing, {unexpectedInApi.length} unexpected.
           </Alert>

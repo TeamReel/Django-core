@@ -1231,6 +1231,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                 metadata: {
                   venue: payload.venue || 'Home',
                   is_home: (payload.venue || 'Home') === 'Home',
+                  ...(payload as any)?.metadata,
                 },
               }),
             });

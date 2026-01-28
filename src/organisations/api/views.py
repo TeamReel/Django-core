@@ -20,6 +20,7 @@ from organisations.ratelimit import check_rate_limit
 from .serializers import (
     OrganisationCreateSerializer,
     OrganisationListSerializer,
+    OrganisationPublicListSerializer,
     OrganisationSerializer,
 )
 
@@ -48,6 +49,31 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     pagination_class = OrganisationPagination
     lookup_field = "slug"
 
+    def _has_cross_org_view_permission(self) -> bool:
+        """Return True if user has org.view_all via any role assignment.
+
+        Note: This does not imply membership; it is intended for read-only
+        cross-organisation visibility scenarios.
+        """
+
+        user = getattr(self.request, "user", None)
+        if not user or not user.is_authenticated:
+            return False
+        if user.is_superuser:
+            return True
+
+        try:
+            from django.db.utils import OperationalError, ProgrammingError
+            from permissions.models import RoleAssignment
+
+            return RoleAssignment.objects.filter(
+                user=user,
+                role__permissions__permission="org.view_all",
+            ).exists()
+        except (ImportError, OperationalError, ProgrammingError):
+            # Fail closed if permissions app/db is unavailable/misconfigured.
+            return False
+
     def get_queryset(self):
         """
         Filter organisations to only those the user is a member of.
@@ -67,6 +93,15 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             queryset = (
                 Organisation.objects.all()
                 .exclude(name__contains="_del_")  # Exclude soft-deleted
+                .select_related("creator")
+                .prefetch_related("memberships", "projects")
+            )
+        elif self._has_cross_org_view_permission():
+            # Users with org.view_all can discover organisations cross-tenant.
+            # Keep the queryset broad; serializers will enforce payload safety.
+            queryset = (
+                Organisation.objects.all()
+                .exclude(name__contains="_del_")
                 .select_related("creator")
                 .prefetch_related("memberships", "projects")
             )
@@ -93,6 +128,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         if self.action == "create":
             return OrganisationCreateSerializer
         if self.action == "list":
+            if self._has_cross_org_view_permission() and not self.request.user.is_superuser:
+                return OrganisationPublicListSerializer
             return OrganisationListSerializer
         if self.action in ["update", "partial_update"]:
             return OrganisationCreateSerializer

@@ -22,6 +22,8 @@ export interface MatchCreatePayload {
   location?: string;
   description?: string;
 
+  metadata?: any;
+
   venue?: 'Home' | 'Away';
 
   opponent_project_id?: string;
@@ -109,10 +111,12 @@ export default function MatchCreateModal({
   };
 
   const [title, setTitle] = useState('');
+  const [titleTouched, setTitleTouched] = useState(false);
   const [matchDate, setMatchDate] = useState('');
   const [matchTime, setMatchTime] = useState('');
   const [venue, setVenue] = useState<'Home' | 'Away'>('Home');
   const [location, setLocation] = useState('');
+  const [locationTouched, setLocationTouched] = useState(false);
   const [description, setDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -149,9 +153,11 @@ export default function MatchCreateModal({
     if (!opened) return;
     setError(null);
     setTitle('');
+    setTitleTouched(false);
     setMatchDate('');
     setMatchTime('14:30');
     setLocation('');
+    setLocationTouched(false);
     setDescription('');
     setSelectedOrganisationId(String(initialOrganisationId || ''));
     setSelectedClubId(String(initialClubId || ''));
@@ -170,6 +176,113 @@ export default function MatchCreateModal({
     setRemoteClubs([]);
     setRemoteTeams([]);
   }, [opened, initialOrganisationId, initialClubId, initialTeamId, initialSeasonId, initialCompetitionId]);
+
+  const [projectDetailsById, setProjectDetailsById] = useState<Record<string, any>>({});
+
+  const getProjectIdentity = (p: any) => {
+    const identity = p?.metadata?.identity || {};
+    return {
+      name: String(p?.name || '').trim(),
+      logoUrl: String(identity?.logo_url || '').trim(),
+      defaultLocation: String(identity?.default_location || '').trim(),
+    };
+  };
+
+  useEffect(() => {
+    if (!opened) return;
+    let cancelled = false;
+    const abortController = new AbortController();
+
+    const load = async (projectId: string) => {
+      const key = String(projectId || '').trim();
+      if (!key) return;
+      if (projectDetailsById[key]) return;
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(key)}/`, {
+          credentials: 'include',
+          signal: abortController.signal,
+        });
+        if (!res.ok) return;
+        const raw = await res.json().catch(() => null);
+        const data = raw?.data?.data || raw?.data || raw;
+        if (!cancelled && data && typeof data === 'object') {
+          setProjectDetailsById((prev) => ({ ...prev, [key]: data }));
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    void load(String(selectedTeamId || ''));
+    void load(String(selectedOpponentTeamId || ''));
+
+    return () => {
+      cancelled = true;
+      abortController.abort();
+    };
+    // Intentionally omit projectDetailsById from deps to avoid refetch loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opened, apiBaseUrl, selectedTeamId, selectedOpponentTeamId]);
+
+  const selectedTeamDetail = useMemo(() => {
+    const key = String(selectedTeamId || '').trim();
+    return key ? projectDetailsById[key] : null;
+  }, [projectDetailsById, selectedTeamId]);
+
+  const selectedOpponentDetail = useMemo(() => {
+    const key = String(selectedOpponentTeamId || '').trim();
+    return key ? projectDetailsById[key] : null;
+  }, [projectDetailsById, selectedOpponentTeamId]);
+
+  const derived = useMemo(() => {
+    const our = getProjectIdentity(selectedTeamDetail);
+    const opp = getProjectIdentity(selectedOpponentDetail);
+
+    const home = venue === 'Home' ? our : opp;
+    const away = venue === 'Home' ? opp : our;
+
+    const titleDefault = home.name && away.name
+      ? (venue === 'Home' ? `${home.name} vs ${away.name}` : `${our.name || 'Team'} @ ${opp.name || 'Opponent'}`)
+      : '';
+
+    const locationDefault = venue === 'Home' ? home.defaultLocation : home.defaultLocation;
+
+    const season = (seasonOptions || []).find((s: any) => String(s?.id) === String(selectedSeasonId));
+    const competition = (competitionOptions || []).find((c: any) => String(c?.id) === String(selectedCompetitionId));
+
+    const metadata = {
+      identity: {
+        home_team_name: home.name || null,
+        home_team_logo_url: home.logoUrl || null,
+        away_team_name: away.name || null,
+        away_team_logo_url: away.logoUrl || null,
+        season_id: season?.id ? String(season.id) : null,
+        season_name: season?.name ? String(season.name) : null,
+        competition_id: competition?.id ? String(competition.id) : null,
+        competition_name: competition?.name ? String(competition.name) : null,
+      },
+    };
+
+    return {
+      titleDefault,
+      locationDefault,
+      metadata,
+    };
+  }, [venue, selectedTeamDetail, selectedOpponentDetail, seasonOptions, competitionOptions, selectedSeasonId, selectedCompetitionId]);
+
+  useEffect(() => {
+    if (!opened) return;
+    if (!titleTouched && !title.trim() && derived.titleDefault) {
+      setTitle(derived.titleDefault);
+    }
+  }, [opened, titleTouched, title, derived.titleDefault]);
+
+  useEffect(() => {
+    if (!opened) return;
+    if (!locationTouched && !location.trim() && derived.locationDefault) {
+      setLocation(derived.locationDefault);
+    }
+  }, [opened, locationTouched, location, derived.locationDefault]);
 
   // Load federations/organisations so user can select outside current page context.
   useEffect(() => {
@@ -615,8 +728,10 @@ export default function MatchCreateModal({
         title,
         start_time: start,
         end_time: end,
-        location: location || undefined,
+        location: (location || derived.locationDefault || '').trim() || undefined,
         description: description || undefined,
+
+        metadata: derived.metadata,
 
         venue,
         organisation_id: selectedOrganisationId,
@@ -626,9 +741,11 @@ export default function MatchCreateModal({
         period_id: selectedCompetitionId,
       });
       setTitle('');
+      setTitleTouched(false);
       setMatchDate('');
       setMatchTime('');
       setLocation('');
+      setLocationTouched(false);
       setDescription('');
       onClose();
     } catch (e) {
@@ -696,13 +813,6 @@ export default function MatchCreateModal({
               onChange={(e) => {
                 const next = (e.target.value === 'Away' ? 'Away' : 'Home') as 'Home' | 'Away';
                 setVenue(next);
-
-                // Friendly default: if title is empty and opponent selected, build a sensible match title.
-                if (!title.trim() && selectedTeamId && selectedOpponentTeamId) {
-                  const home = projectNameById(String(selectedTeamId)) || 'Team';
-                  const away = projectNameById(String(selectedOpponentTeamId)) || 'Opponent';
-                  setTitle(next === 'Home' ? `${home} vs ${away}` : `${home} @ ${away}`);
-                }
               }}
               disabled={isSaving}
               style={controlStyle(Boolean(isSaving))}
@@ -835,7 +945,7 @@ export default function MatchCreateModal({
                     const nextId = e.target.value;
                     setSelectedOpponentTeamId(nextId);
 
-                    if (!title.trim() && selectedTeamId && nextId) {
+                    if (!titleTouched && !title.trim() && selectedTeamId && nextId) {
                       const home = projectNameById(String(selectedTeamId)) || 'Home';
                       const away = projectNameById(String(nextId)) || 'Opponent';
                       setTitle(venue === 'Home' ? `${home} vs ${away}` : `${home} @ ${away}`);
@@ -865,7 +975,7 @@ export default function MatchCreateModal({
                     const nextId = e.target.value;
                     setSelectedOpponentTeamId(nextId);
 
-                    if (!title.trim() && selectedTeamId && nextId) {
+                    if (!titleTouched && !title.trim() && selectedTeamId && nextId) {
                       const home = projectNameById(String(selectedTeamId)) || 'Home';
                       const away = projectNameById(String(nextId)) || 'Opponent';
                       setTitle(venue === 'Home' ? `${home} vs ${away}` : `${home} @ ${away}`);
@@ -932,7 +1042,10 @@ export default function MatchCreateModal({
             <input
               id="match-create-title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitleTouched(true);
+                setTitle(e.target.value);
+              }}
               required
               disabled={isSaving}
               style={{
@@ -979,7 +1092,10 @@ export default function MatchCreateModal({
             <input
               id="match-create-location"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              onChange={(e) => {
+                setLocationTouched(true);
+                setLocation(e.target.value);
+              }}
               disabled={isSaving}
               style={{
                 ...controlStyle(Boolean(isSaving)),
