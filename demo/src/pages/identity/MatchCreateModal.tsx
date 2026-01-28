@@ -261,6 +261,42 @@ export default function MatchCreateModal({
     return key ? projectDetailsById[key] : null;
   }, [projectDetailsById, selectedOpponentTeamId]);
 
+  useEffect(() => {
+    if (!opened) return;
+
+    const resolvedClubId = !String(selectedClubId || '').trim() ? getParentProjectId(selectedTeamDetail) : null;
+    if (resolvedClubId && String(resolvedClubId) !== String(selectedClubId || '')) {
+      setSelectedClubId(String(resolvedClubId));
+    }
+
+    const resolvedOppClubId = !String(selectedOpponentClubId || '').trim() ? getParentProjectId(selectedOpponentDetail) : null;
+    if (resolvedOppClubId && String(resolvedOppClubId) !== String(selectedOpponentClubId || '')) {
+      setSelectedOpponentClubId(String(resolvedOppClubId));
+    }
+
+    const resolvedOrgId =
+      !String(selectedOrganisationId || '').trim() && selectedTeamDetail
+        ? String(
+            typeof (selectedTeamDetail as any)?.organisation === 'string'
+              ? (selectedTeamDetail as any).organisation
+              : (selectedTeamDetail as any)?.organisation?.id || ''
+          ).trim()
+        : '';
+
+    if (resolvedOrgId) {
+      setSelectedOrganisationId(resolvedOrgId);
+      if (!String(selectedOpponentOrganisationId || '').trim()) setSelectedOpponentOrganisationId(resolvedOrgId);
+    }
+  }, [
+    opened,
+    selectedTeamDetail,
+    selectedOpponentDetail,
+    selectedClubId,
+    selectedOpponentClubId,
+    selectedOrganisationId,
+    selectedOpponentOrganisationId,
+  ]);
+
   const resolvedOpponentClubId = useMemo(() => {
     const explicit = String(selectedOpponentClubId || '').trim();
     if (explicit) return explicit;
