@@ -3,33 +3,35 @@
  *
  * Displays a fixed bottom navigation bar on mobile with quick access to:
  * - Home (Dashboard)
- * - Search
- * - Create (Content creation)
- * - Notifications
- * - Profile
+ * - Directory (Browse all entities)
+ * - Create (Content creation - center prominent button)
+ * - Library (Content/Media)
+ * - More (Menu/sidebar toggle)
  *
  * Only visible on mobile (<640px)
  */
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Search, Plus, Bell, User } from 'lucide-react';
+import { Home, Folder, Plus, Library, Menu } from 'lucide-react';
 
 interface MobileBottomNavProps {
   /** Callback to open search/command palette */
   onOpenSearch?: () => void;
   /** Callback to open create modal */
   onOpenCreate?: () => void;
+  /** Callback to toggle sidebar/menu */
+  onToggleMenu?: () => void;
 }
 
-export default function MobileBottomNav({ onOpenSearch, onOpenCreate }: MobileBottomNavProps) {
+export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBottomNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
   const tabs = [
     { id: 'home', icon: Home, label: 'Home', path: '/dashboard' },
-    { id: 'search', icon: Search, label: 'Search', action: onOpenSearch },
+    { id: 'directory', icon: Folder, label: 'Directory', path: '/directory' },
     { id: 'create', icon: Plus, label: 'Create', action: onOpenCreate || (() => navigate('/content?action=create')) },
-    { id: 'notifications', icon: Bell, label: 'Alerts', path: '/notifications' },
-    { id: 'profile', icon: User, label: 'Me', path: '/preferences?tab=profile' },
+    { id: 'library', icon: Library, label: 'Library', path: '/content' },
+    { id: 'more', icon: Menu, label: 'More', action: onToggleMenu },
   ];
 
   const isActive = (tab: typeof tabs[0]) => {
@@ -39,6 +41,15 @@ export default function MobileBottomNav({ onOpenSearch, onOpenCreate }: MobileBo
 
     if (tabBasePath === '/dashboard') {
       return currentPath === '/' || currentPath === '/dashboard' || currentPath === '/recents' || currentPath === '/favorites';
+    }
+
+    if (tabBasePath === '/directory') {
+      return currentPath === '/directory' || currentPath.startsWith('/organisations') ||
+             currentPath.startsWith('/clubs') || currentPath.startsWith('/teams');
+    }
+
+    if (tabBasePath === '/content') {
+      return currentPath === '/content' || currentPath.startsWith('/content/');
     }
 
     return currentPath.startsWith(tabBasePath);

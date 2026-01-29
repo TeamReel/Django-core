@@ -318,107 +318,33 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
             <span>Credits</span>
           </button>
 
-          {/* Mobile-only menu items */}
-          {isMobile && (
-            <>
-              {/* Divider */}
-              <div
-                style={{
-                  height: '1px',
-                  backgroundColor: 'var(--app-border)',
-                  margin: '8px 0',
-                }}
-              />
-
-              <button
-                role="menuitem"
-                onClick={() => handleNavigate('/notifications')}
-                style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  textAlign: 'left',
-                  fontSize: '14px',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <span>🔔</span>
-                <span>Notifications</span>
-              </button>
-
-              <button
-                role="menuitem"
-                onClick={() => {
-                  setIsOpen(false);
-                  if (onOpenSearch) {
-                    onOpenSearch();
-                  } else {
-                    handleNavigate('/search');
-                  }
-                }}
-                style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  textAlign: 'left',
-                  fontSize: '14px',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <span>🔍</span>
-                <span>Search</span>
-              </button>
-
-              <button
-                role="menuitem"
-                onClick={toggleTheme}
-                style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  textAlign: 'left',
-                  fontSize: '14px',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <span>{mode === 'light' ? '🌙' : '☀️'}</span>
-                <span>{mode === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
-              </button>
-            </>
-          )}
+          {/* Theme toggle - always available */}
+          <button
+            role="menuitem"
+            onClick={toggleTheme}
+            style={{
+              width: '100%',
+              padding: '10px 16px',
+              backgroundColor: 'transparent',
+              border: 'none',
+              textAlign: 'left',
+              fontSize: '14px',
+              color: 'var(--app-text)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            <span>{mode === 'light' ? '🌙' : '☀️'}</span>
+            <span>{mode === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+          </button>
 
           {/* Divider */}
           <div

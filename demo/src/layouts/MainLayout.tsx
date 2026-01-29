@@ -113,7 +113,7 @@ export default function MainLayout() {
             overflowY: 'auto',
             overflowX: 'hidden',
             padding: isMobile ? '12px' : '24px',
-            paddingBottom: isMobile ? '80px' : '24px', // Extra space for bottom nav
+            paddingBottom: isMobile ? '80px' : '24px', // Extra space for bottom nav on mobile
             backgroundColor: 'var(--app-surface-1)',
             position: 'relative'
           }}
@@ -125,6 +125,7 @@ export default function MainLayout() {
         {isMobile && (
           <MobileBottomNav
             onOpenSearch={() => openSearchRef.current?.()}
+            onToggleMenu={toggleSidebar}
           />
         )}
       </div>
