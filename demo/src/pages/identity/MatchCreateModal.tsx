@@ -194,6 +194,21 @@ export default function MatchCreateModal({
     setRemoteTeams([]);
   }, [opened, initialOrganisationId, initialClubId, initialTeamId, initialSeasonId, initialCompetitionId]);
 
+  // If the page resolves season/competition ids asynchronously (slug -> UUID),
+  // the modal may open before initialSeasonId/initialCompetitionId are available.
+  // In team-context we still want these to be prefilled.
+  useEffect(() => {
+    if (!opened) return;
+    const next = String(initialSeasonId || '').trim();
+    if (!String(selectedSeasonId || '').trim() && next) setSelectedSeasonId(next);
+  }, [opened, initialSeasonId, selectedSeasonId]);
+
+  useEffect(() => {
+    if (!opened) return;
+    const next = String(initialCompetitionId || '').trim();
+    if (!String(selectedCompetitionId || '').trim() && next) setSelectedCompetitionId(next);
+  }, [opened, initialCompetitionId, selectedCompetitionId]);
+
   useEffect(() => {
     if (!opened) return;
     if (titleTouched) return;
@@ -1279,7 +1294,9 @@ export default function MatchCreateModal({
               Season
             </label>
             {isTeamContextMode && selectedSeasonId ? (
-              <div style={{ ...controlStyle(true), cursor: 'default' }}>{periodNameById(selectedSeasonId) || '—'}</div>
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>
+                {periodNameById(selectedSeasonId) || (loadingSeasons ? 'Loading…' : 'Loading…')}
+              </div>
             ) : (
               <select
                 id="match-create-season"
@@ -1305,7 +1322,9 @@ export default function MatchCreateModal({
               Competition
             </label>
             {isTeamContextMode && selectedCompetitionId ? (
-              <div style={{ ...controlStyle(true), cursor: 'default' }}>{periodNameById(selectedCompetitionId) || '—'}</div>
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>
+                {periodNameById(selectedCompetitionId) || (loadingCompetitions ? 'Loading…' : 'Loading…')}
+              </div>
             ) : (
               <select
                 id="match-create-competition"
