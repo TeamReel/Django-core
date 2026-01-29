@@ -946,6 +946,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         self._check_can_manage_members(instance.project)
 
         new_role = serializer.validated_data.get("role")
+        new_metadata = serializer.validated_data.get("metadata")
 
         if new_role and new_role != instance.role:
             role_hierarchy = {
@@ -967,6 +968,10 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
                 )
 
                 if promotion:
+                    # Metadata updates should not be blocked by a pending promotion.
+                    if new_metadata is not None:
+                        instance.metadata = new_metadata or {}
+                        instance.save(update_fields=["metadata"])
                     # Pending approval
                     return Response(
                         {
@@ -988,10 +993,16 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
                 )
                 instance.refresh_from_db()
 
+        if new_metadata is not None:
+            instance.metadata = new_metadata or {}
+            instance.save(update_fields=["metadata"])
+            instance.refresh_from_db()
+
         if getattr(instance, "_prefetched_objects_cache", None):
             instance._prefetched_objects_cache = {}
 
-        return Response(serializer.data)
+        # Re-serialize to reflect any changes applied above.
+        return Response(self.get_serializer(instance).data)
 
     def perform_destroy(self, instance):
         """Use service to remove member."""
