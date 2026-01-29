@@ -213,9 +213,11 @@ export default function MatchCreateModal({
     if (!opened) return;
     if (titleTouched) return;
     if (!selectedTeamId || !selectedOpponentTeamId) return;
-    const home = projectNameById(String(selectedTeamId)) || 'Home';
-    const away = projectNameById(String(selectedOpponentTeamId)) || 'Opponent';
-    const nextTitle = venue === 'Home' ? `${home} vs ${away}` : `${home} @ ${away}`;
+    const homeId = venue === 'Home' ? String(selectedTeamId) : String(selectedOpponentTeamId);
+    const awayId = venue === 'Home' ? String(selectedOpponentTeamId) : String(selectedTeamId);
+    const home = projectNameById(homeId) || 'Home';
+    const away = projectNameById(awayId) || 'Opponent';
+    const nextTitle = `${home} vs ${away}`;
     if (nextTitle && nextTitle !== title) setTitle(nextTitle);
   }, [opened, selectedTeamId, selectedOpponentTeamId, title, titleTouched, venue]);
 
@@ -381,9 +383,7 @@ export default function MatchCreateModal({
     const home = venue === 'Home' ? our : opp;
     const away = venue === 'Home' ? opp : our;
 
-    const titleDefault = home.name && away.name
-      ? (venue === 'Home' ? `${home.name} vs ${away.name}` : `${our.name || 'Team'} @ ${opp.name || 'Opponent'}`)
-      : '';
+    const titleDefault = home.name && away.name ? `${home.name} vs ${away.name}` : '';
 
     const homeClub = venue === 'Home' ? ourClub : oppClub;
     const locationDefault = (homeClub.defaultLocation || home.defaultLocation || '').trim();
@@ -1323,9 +1323,11 @@ export default function MatchCreateModal({
                     setSelectedOpponentTeamId(nextId);
 
                     if (!titleTouched && !title.trim() && selectedTeamId && nextId) {
-                      const home = projectNameById(String(selectedTeamId)) || 'Home';
-                      const away = projectNameById(String(nextId)) || 'Opponent';
-                      setTitle(venue === 'Home' ? `${home} vs ${away}` : `${home} @ ${away}`);
+                      const homeId = venue === 'Home' ? String(selectedTeamId) : String(nextId);
+                      const awayId = venue === 'Home' ? String(nextId) : String(selectedTeamId);
+                      const home = projectNameById(homeId) || 'Home';
+                      const away = projectNameById(awayId) || 'Opponent';
+                      setTitle(`${home} vs ${away}`);
                     }
                   }}
                   disabled={isSaving || loadingOpponentTeams || !selectedOpponentOrganisationId}
@@ -1353,9 +1355,11 @@ export default function MatchCreateModal({
                     setSelectedOpponentTeamId(nextId);
 
                     if (!titleTouched && !title.trim() && selectedTeamId && nextId) {
-                      const home = projectNameById(String(selectedTeamId)) || 'Home';
-                      const away = projectNameById(String(nextId)) || 'Opponent';
-                      setTitle(venue === 'Home' ? `${home} vs ${away}` : `${home} @ ${away}`);
+                      const homeId = venue === 'Home' ? String(selectedTeamId) : String(nextId);
+                      const awayId = venue === 'Home' ? String(nextId) : String(selectedTeamId);
+                      const home = projectNameById(homeId) || 'Home';
+                      const away = projectNameById(awayId) || 'Opponent';
+                      setTitle(`${home} vs ${away}`);
                     }
                   }}
                   disabled={isSaving || loadingOpponentTeams || !selectedOrganisationId}
