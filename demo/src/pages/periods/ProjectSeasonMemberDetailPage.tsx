@@ -64,30 +64,77 @@ function getUserDisplayName(membership: any): string {
   return name;
 }
 
-function readAssetsFromMembership(membership: any): {
-  kitProfilePhotoUrl: string;
-  kitFullBodyUrl: string;
-  kitIntro: string;
-  kitGoalCelebrationUrl: string;
-  oldProfilePhotoUrl: string;
-  oldFullBodyUrl: string;
-} {
-  const meta = (membership as any)?.metadata || {};
-  const tr = (meta as any)?.teamreel_assets || (meta as any)?.teamreelAssets || {};
-  const kit = tr?.kit || {};
-  const old = tr?.old || {};
+/**
+ * Media slot definitions for member profile.
+ * These will map to B35 MediaItem context relations when implemented.
+ */
+const MEDIA_SLOTS = [
+  { id: 'profile', label: 'Profile Photo', icon: '👤', description: 'Standard profile/headshot photo' },
+  { id: 'kit', label: 'In Tenue', icon: '👕', description: 'Player in team kit/uniform' },
+  { id: 'fullbody', label: 'Full Body', icon: '🧍', description: 'Full body photo in kit' },
+  { id: 'closeup', label: 'Close-up', icon: '🎯', description: 'Portrait close-up shot' },
+  { id: 'intro', label: 'Short Intro', icon: '🎬', description: 'Short video introduction' },
+  { id: 'celebration', label: 'Celebration', icon: '🎉', description: 'Goal celebration video/photo' },
+  { id: 'legacy', label: 'Legacy', icon: '📷', description: 'Old/nostalgic photo' },
+] as const;
 
-  return {
-    kitProfilePhotoUrl: String(kit?.profile_photo_url || '').trim(),
-    kitFullBodyUrl: String(kit?.full_body_url || '').trim(),
-    kitIntro: String(kit?.intro_text || '').trim(),
-    kitGoalCelebrationUrl: String(kit?.goal_celebration_url || '').trim(),
-    oldProfilePhotoUrl: String(old?.profile_photo_url || '').trim(),
-    oldFullBodyUrl: String(old?.full_body_url || '').trim(),
+type MediaSlotId = typeof MEDIA_SLOTS[number]['id'];
+
+type MemberMediaForm = {
+  [K in MediaSlotId]: {
+    url: string;
+    caption: string;
   };
+};
+
+function createEmptyMediaForm(): MemberMediaForm {
+  return MEDIA_SLOTS.reduce((acc, slot) => {
+    acc[slot.id] = { url: '', caption: '' };
+    return acc;
+  }, {} as MemberMediaForm);
 }
 
-function mergeAssetsIntoMetadata(existingMetadata: any, patch: ReturnType<typeof readAssetsFromMembership>): any {
+function readAssetsFromMembership(membership: any): MemberMediaForm {
+  const meta = (membership as any)?.metadata || {};
+  const tr = (meta as any)?.teamreel_assets || (meta as any)?.teamreelAssets || {};
+  const media = tr?.media || {};
+
+  // Also read legacy format for backwards compatibility
+  const legacyKit = tr?.kit || {};
+  const legacyOld = tr?.old || {};
+
+  const form = createEmptyMediaForm();
+
+  // Read new format first
+  for (const slot of MEDIA_SLOTS) {
+    const slotData = media[slot.id] || {};
+    form[slot.id] = {
+      url: String(slotData?.url || '').trim(),
+      caption: String(slotData?.caption || '').trim(),
+    };
+  }
+
+  // Migrate legacy format if new format is empty
+  if (!form.profile.url && legacyKit?.profile_photo_url) {
+    form.profile.url = String(legacyKit.profile_photo_url).trim();
+  }
+  if (!form.kit.url && legacyKit?.full_body_url) {
+    form.kit.url = String(legacyKit.full_body_url).trim();
+  }
+  if (!form.intro.caption && legacyKit?.intro_text) {
+    form.intro.caption = String(legacyKit.intro_text).trim();
+  }
+  if (!form.celebration.url && legacyKit?.goal_celebration_url) {
+    form.celebration.url = String(legacyKit.goal_celebration_url).trim();
+  }
+  if (!form.legacy.url && legacyOld?.profile_photo_url) {
+    form.legacy.url = String(legacyOld.profile_photo_url).trim();
+  }
+
+  return form;
+}
+
+function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm): any {
   const meta = existingMetadata && typeof existingMetadata === 'object' ? { ...existingMetadata } : {};
   const existingTeamReel =
     meta.teamreel_assets && typeof meta.teamreel_assets === 'object'
@@ -96,19 +143,29 @@ function mergeAssetsIntoMetadata(existingMetadata: any, patch: ReturnType<typeof
         ? meta.teamreelAssets
         : {};
 
+  // Build new media object
+  const media: Record<string, { url: string; caption: string }> = {};
+  for (const slot of MEDIA_SLOTS) {
+    media[slot.id] = {
+      url: form[slot.id]?.url || '',
+      caption: form[slot.id]?.caption || '',
+    };
+  }
+
+  // Keep legacy format for backwards compatibility
   const next = {
     ...existingTeamReel,
+    media,
+    // Legacy format (will be phased out)
     kit: {
-      ...(existingTeamReel?.kit || {}),
-      profile_photo_url: patch.kitProfilePhotoUrl || '',
-      full_body_url: patch.kitFullBodyUrl || '',
-      intro_text: patch.kitIntro || '',
-      goal_celebration_url: patch.kitGoalCelebrationUrl || '',
+      profile_photo_url: form.profile?.url || '',
+      full_body_url: form.kit?.url || '',
+      intro_text: form.intro?.caption || '',
+      goal_celebration_url: form.celebration?.url || '',
     },
     old: {
-      ...(existingTeamReel?.old || {}),
-      profile_photo_url: patch.oldProfilePhotoUrl || '',
-      full_body_url: patch.oldFullBodyUrl || '',
+      profile_photo_url: form.legacy?.url || '',
+      full_body_url: '',
     },
   };
 
@@ -244,9 +301,7 @@ export default function ProjectSeasonMemberDetailPage() {
 
   const userCanEditProject = canEditProject(permissionContext);
 
-  const [form, setForm] = useState(() =>
-    readAssetsFromMembership({ metadata: { teamreel_assets: { kit: {}, old: {} } } })
-  );
+  const [form, setForm] = useState<MemberMediaForm>(() => createEmptyMediaForm());
 
   useEffect(() => {
     if (!membership) return;
@@ -558,133 +613,174 @@ export default function ProjectSeasonMemberDetailPage() {
                   <Alert variant="error">{saveError}</Alert>
                 )}
 
+                {/* Overview Tab - Media completion matrix */}
                 {activeTab === 'overview' && (
                   <Card>
                     <div style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ fontSize: '16px', fontWeight: 800 }}>Season member profile</div>
+                        <div style={{ fontSize: '16px', fontWeight: 800 }}>Media Overview</div>
                         <Badge variant={userCanEditProject ? 'default' : 'info'}>
                           {userCanEditProject ? 'Editable' : 'Read-only'}
                         </Badge>
                       </div>
 
                       <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                        Stored on the season membership (per season/team), so the same person can have different assets next season.
+                        Track which media assets have been uploaded for this member's season profile.
                       </div>
 
-                      <div style={{ marginTop: '14px', display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-                        <div>
-                          <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Kit</div>
-                          <div style={{ fontSize: '13px', opacity: 0.85 }}>Profile photo: {form.kitProfilePhotoUrl || '—'}</div>
-                          <div style={{ fontSize: '13px', opacity: 0.85 }}>Full body: {form.kitFullBodyUrl || '—'}</div>
+                      <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                        {MEDIA_SLOTS.map((slot) => {
+                          const hasContent = Boolean(form[slot.id]?.url || form[slot.id]?.caption);
+                          return (
+                            <div
+                              key={slot.id}
+                              onClick={() => navigateToTab(slot.id)}
+                              style={{
+                                padding: '14px',
+                                borderRadius: '8px',
+                                border: `1px solid ${hasContent ? '#10b981' : 'var(--app-border)'}`,
+                                background: hasContent ? '#dcfce7' : 'var(--app-surface)',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '20px' }}>{slot.icon}</span>
+                                <span style={{ fontWeight: 600 }}>{slot.label}</span>
+                                <span style={{ marginLeft: 'auto', fontSize: '14px' }}>
+                                  {hasContent ? '✅' : '⬜'}
+                                </span>
+                              </div>
+                              <div style={{ marginTop: '6px', fontSize: '12px', opacity: 0.7 }}>
+                                {slot.description}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div style={{ marginTop: '20px', padding: '12px', background: 'var(--app-muted)', borderRadius: '8px' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 600 }}>
+                          Completion: {MEDIA_SLOTS.filter((s) => form[s.id]?.url || form[s.id]?.caption).length} / {MEDIA_SLOTS.length} media slots
                         </div>
-                        <div>
-                          <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Old</div>
-                          <div style={{ fontSize: '13px', opacity: 0.85 }}>Profile photo: {form.oldProfilePhotoUrl || '—'}</div>
-                          <div style={{ fontSize: '13px', opacity: 0.85 }}>Full body: {form.oldFullBodyUrl || '—'}</div>
+                        <div style={{ marginTop: '8px', height: '8px', background: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div
+                            style={{
+                              height: '100%',
+                              width: `${(MEDIA_SLOTS.filter((s) => form[s.id]?.url || form[s.id]?.caption).length / MEDIA_SLOTS.length) * 100}%`,
+                              background: '#10b981',
+                            }}
+                          />
                         </div>
                       </div>
                     </div>
                   </Card>
                 )}
 
-                {activeTab === 'kit' && (
-                  <Card>
+                {/* Dynamic media slot tabs */}
+                {MEDIA_SLOTS.map((slot) => activeTab === slot.id && (
+                  <Card key={slot.id}>
                     <div style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ fontSize: '16px', fontWeight: 800 }}>In tenue</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '24px' }}>{slot.icon}</span>
+                          <div style={{ fontSize: '16px', fontWeight: 800 }}>{slot.label}</div>
+                        </div>
                         <Badge variant={userCanEditProject ? 'default' : 'info'}>
                           {userCanEditProject ? 'Editable' : 'Read-only'}
                         </Badge>
                       </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginTop: '16px' }}>
+                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                        {slot.description}
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginTop: '20px' }}>
                         <div>
-                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Profile photo (kit) URL</div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>
+                            Media URL {slot.id === 'intro' || slot.id === 'celebration' ? '(image or video)' : '(image)'}
+                          </div>
                           <Input
-                            value={form.kitProfilePhotoUrl}
-                            onChange={(e) => setForm((prev) => ({ ...prev, kitProfilePhotoUrl: e.target.value }))}
-                            placeholder="https://…"
+                            value={form[slot.id]?.url || ''}
+                            onChange={(e) => setForm((prev) => ({
+                              ...prev,
+                              [slot.id]: { ...prev[slot.id], url: e.target.value }
+                            }))}
+                            placeholder="https://..."
                             disabled={!userCanEditProject}
                           />
                         </div>
+
                         <div>
-                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Full body (kit) URL</div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>
+                            Caption / Description
+                          </div>
                           <Input
-                            value={form.kitFullBodyUrl}
-                            onChange={(e) => setForm((prev) => ({ ...prev, kitFullBodyUrl: e.target.value }))}
-                            placeholder="https://…"
+                            value={form[slot.id]?.caption || ''}
+                            onChange={(e) => setForm((prev) => ({
+                              ...prev,
+                              [slot.id]: { ...prev[slot.id], caption: e.target.value }
+                            }))}
+                            placeholder="Optional caption..."
                             disabled={!userCanEditProject}
                           />
                         </div>
-                        <div>
-                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Short intro (kit)</div>
-                          <Input
-                            value={form.kitIntro}
-                            onChange={(e) => setForm((prev) => ({ ...prev, kitIntro: e.target.value }))}
-                            placeholder="Korte intro…"
-                            disabled={!userCanEditProject}
-                          />
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Goal celebration (kit) URL</div>
-                          <Input
-                            value={form.kitGoalCelebrationUrl}
-                            onChange={(e) => setForm((prev) => ({ ...prev, kitGoalCelebrationUrl: e.target.value }))}
-                            placeholder="https://…"
-                            disabled={!userCanEditProject}
-                          />
+
+                        {form[slot.id]?.url && (
+                          <div>
+                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Preview</div>
+                            <div style={{
+                              border: '1px solid var(--app-border)',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              background: '#f3f4f6',
+                              maxWidth: '400px',
+                            }}>
+                              {(slot.id === 'intro' || slot.id === 'celebration') && form[slot.id]?.url?.includes('.mp4') ? (
+                                <video
+                                  src={form[slot.id].url}
+                                  controls
+                                  style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
+                                />
+                              ) : (
+                                <img
+                                  src={form[slot.id].url}
+                                  alt={slot.label}
+                                  style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <div style={{
+                          padding: '24px',
+                          border: '2px dashed var(--app-border)',
+                          borderRadius: '8px',
+                          textAlign: 'center',
+                          opacity: userCanEditProject ? 1 : 0.5,
+                        }}>
+                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>📤</div>
+                          <div style={{ fontSize: '14px', fontWeight: 600 }}>Upload {slot.label}</div>
+                          <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>
+                            Drag & drop or click to upload
+                          </div>
+                          <div style={{ fontSize: '11px', opacity: 0.5, marginTop: '8px' }}>
+                            (File upload coming soon - use URL for now)
+                          </div>
                         </div>
                       </div>
 
                       {!userCanEditProject && (
-                        <div style={{ marginTop: '12px' }}>
-                          <Alert variant="info">You don’t have permission to edit this team.</Alert>
+                        <div style={{ marginTop: '16px' }}>
+                          <Alert variant="info">You don't have permission to edit this member's media.</Alert>
                         </div>
                       )}
                     </div>
                   </Card>
-                )}
-
-                {activeTab === 'old' && (
-                  <Card>
-                    <div style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ fontSize: '16px', fontWeight: 800 }}>Old</div>
-                        <Badge variant={userCanEditProject ? 'default' : 'info'}>
-                          {userCanEditProject ? 'Editable' : 'Read-only'}
-                        </Badge>
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginTop: '16px' }}>
-                        <div>
-                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Profile photo (old) URL</div>
-                          <Input
-                            value={form.oldProfilePhotoUrl}
-                            onChange={(e) => setForm((prev) => ({ ...prev, oldProfilePhotoUrl: e.target.value }))}
-                            placeholder="https://…"
-                            disabled={!userCanEditProject}
-                          />
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Full body (old) URL</div>
-                          <Input
-                            value={form.oldFullBodyUrl}
-                            onChange={(e) => setForm((prev) => ({ ...prev, oldFullBodyUrl: e.target.value }))}
-                            placeholder="https://…"
-                            disabled={!userCanEditProject}
-                          />
-                        </div>
-                      </div>
-
-                      {!userCanEditProject && (
-                        <div style={{ marginTop: '12px' }}>
-                          <Alert variant="info">You don’t have permission to edit this team.</Alert>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                )}
+                ))}
               </div>
 
               <div className="space-y-6">
@@ -719,6 +815,67 @@ export default function ProjectSeasonMemberDetailPage() {
                       ) : (
                         <div style={{ opacity: 0.7, fontSize: '13px' }}>Season link unavailable.</div>
                       )}
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Media status checklist */}
+                <Card>
+                  <div style={{ padding: '16px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 800, marginBottom: '12px' }}>Media Tabs</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <button
+                        type="button"
+                        onClick={() => navigateToTab('overview')}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 10px',
+                          background: activeTab === 'overview' ? 'var(--app-muted)' : 'transparent',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          width: '100%',
+                          textAlign: 'left',
+                          fontSize: '13px',
+                          fontWeight: activeTab === 'overview' ? 600 : 400,
+                        }}
+                      >
+                        <span>📊</span>
+                        <span>Overview</span>
+                      </button>
+                      {MEDIA_SLOTS.map((slot) => {
+                        const hasContent = Boolean(form[slot.id]?.url || form[slot.id]?.caption);
+                        const isActive = activeTab === slot.id;
+                        return (
+                          <button
+                            key={slot.id}
+                            type="button"
+                            onClick={() => navigateToTab(slot.id)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '8px 10px',
+                              background: isActive ? 'var(--app-muted)' : 'transparent',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              width: '100%',
+                              textAlign: 'left',
+                              fontSize: '13px',
+                              fontWeight: isActive ? 600 : 400,
+                            }}
+                          >
+                            <span>{slot.icon}</span>
+                            <span style={{ flex: 1 }}>{slot.label}</span>
+                            <span style={{ fontSize: '12px' }}>
+                              {hasContent ? '✅' : '⬜'}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </Card>
