@@ -1,0 +1,300 @@
+"""
+B31 Content Templates & Generation - Data Models
+
+This module defines the core data models for content template management,
+content generation tracking, and approval workflow.
+
+Models:
+- ContentTemplate: Reusable templates for AI content generation
+- ContentItem: Generated content instances with status tracking
+- ContentApproval: Approval workflow records
+
+Reference: kitty-specs/040-content-templates-generation/data-model.md
+"""
+
+from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+
+User = get_user_model()
+
+
+# ========== Enums ==========
+
+
+class TemplateType(models.TextChoices):
+    """Content template categories"""
+
+    PRE_MATCH = "pre_match", "Pre-Match"
+    DURING_MATCH = "during_match", "During Match"
+    POST_MATCH = "post_match", "Post-Match"
+    SEASON = "season", "Season Summary"
+    CUSTOM = "custom", "Custom"
+
+
+class ContentStatus(models.TextChoices):
+    """Content item generation and approval statuses"""
+
+    QUEUED = "queued", "Queued"
+    GENERATING = "generating", "Generating"
+    COMPLETED = "completed", "Completed"
+    FAILED = "failed", "Failed"
+    APPROVED = "approved", "Approved"
+    REJECTED = "rejected", "Rejected"
+    REVISION_REQUESTED = "revision_requested", "Revision Requested"
+
+
+class ApprovalStatus(models.TextChoices):
+    """Content approval decision statuses"""
+
+    PENDING = "pending", "Pending Review"
+    APPROVED = "approved", "Approved"
+    REJECTED = "rejected", "Rejected"
+    REVISION_REQUESTED = "revision_requested", "Revision Requested"
+
+
+# ========== Custom Managers ==========
+
+
+class ContentItemManager(models.Manager):
+    """Custom manager for ContentItem with soft-delete support"""
+
+    def active(self):
+        """Exclude soft-deleted items"""
+        return self.filter(deleted_at__isnull=True)
+
+    def for_project(self, project_id):
+        """Project-scoped active items"""
+        return self.active().filter(project_id=project_id)
+
+
+# ========== Models ==========
+
+
+class ContentTemplate(models.Model):
+    """Reusable template definition for AI content generation"""
+
+    name = models.CharField(
+        max_length=200, help_text="Template display name (e.g., 'Line-up Video')"
+    )
+    description = models.TextField(
+        null=True, blank=True, help_text="Template purpose and usage notes"
+    )
+    template_type = models.CharField(
+        max_length=50, choices=TemplateType.choices, db_index=True, help_text="Template category"
+    )
+    sport_type = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Sport identifier (links to B32, e.g., 'football')",
+    )
+    ai_workflow_id = models.CharField(
+        max_length=200, help_text="External AI system workflow/pipeline identifier"
+    )
+    template_settings = models.JSONField(
+        default=dict, help_text="AI-specific configuration (schema varies by workflow)"
+    )
+    timeout_minutes = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(1440)],
+        help_text="Generation timeout in minutes (NULL uses system default of 30)",
+    )
+    is_active = models.BooleanField(
+        default=True, db_index=True, help_text="Template availability flag"
+    )
+
+    # Foreign Keys
+    organisation = models.ForeignKey(
+        "organisations.Organisation",
+        on_delete=models.CASCADE,
+        related_name="content_templates",
+        help_text="Owning organization",
+    )
+    project = models.ForeignKey(
+        "projects.Project",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="content_templates",
+        help_text="Optional project scope (NULL = org-wide)",
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="created_templates",
+        help_text="Template creator",
+    )
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "content_generation_contenttemplate"
+        verbose_name = "Content Template"
+        verbose_name_plural = "Content Templates"
+        indexes = [
+            models.Index(fields=["is_active", "sport_type"], name="idx_template_active_sport"),
+            models.Index(fields=["organisation", "is_active"], name="idx_template_org_active"),
+            models.Index(fields=["name"], name="idx_template_name"),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organisation", "name"], name="unique_template_name_per_org"
+            )
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.template_type})"
+
+
+class ContentItem(models.Model):
+    """Generated content instance with status tracking"""
+
+    # Foreign Keys
+    template = models.ForeignKey(
+        ContentTemplate,
+        on_delete=models.PROTECT,
+        related_name="contentitem_set",
+        help_text="Source template",
+    )
+    project = models.ForeignKey(
+        "projects.Project",
+        on_delete=models.CASCADE,
+        related_name="content_items",
+        help_text="Project scope",
+    )
+    activity = models.ForeignKey(
+        "activities.Activity",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="content_items",
+        help_text="Optional linked activity (match/event via B30)",
+    )
+    output_file = models.ForeignKey(
+        "files.FileAsset",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="content_items",
+        help_text="Generated file (via B22)",
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="created_content_items",
+        help_text="Content creator",
+    )
+
+    # Status and Data
+    status = models.CharField(
+        max_length=30,
+        choices=ContentStatus.choices,
+        default=ContentStatus.QUEUED,
+        db_index=True,
+        help_text="Generation status",
+    )
+    input_data = models.JSONField(default=dict, help_text="User-provided generation inputs")
+    error_message = models.TextField(
+        null=True, blank=True, help_text="Failure details (populated when status='failed')"
+    )
+    metadata = models.JSONField(
+        default=dict, help_text="Additional tracking data (duration, retries, etc.)"
+    )
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(
+        null=True, blank=True, db_index=True, help_text="Soft-delete timestamp"
+    )
+
+    objects = ContentItemManager()
+
+    class Meta:
+        db_table = "content_generation_contentitem"
+        verbose_name = "Content Item"
+        verbose_name_plural = "Content Items"
+        indexes = [
+            models.Index(
+                fields=["project", "status", "deleted_at"], name="idx_item_project_status"
+            ),
+            models.Index(fields=["template", "activity", "status"], name="idx_item_duplicate"),
+            models.Index(fields=["status", "created_at"], name="idx_item_status_created"),
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Content #{self.id} - {self.template.name} ({self.status})"
+
+    def clean(self):
+        """Validate state transitions and field requirements"""
+        super().clean()
+
+        # Validation: output_file required when status='completed'
+        if self.status == ContentStatus.COMPLETED and not self.output_file:
+            raise models.ValidationError(
+                {"output_file": "Output file is required when status is completed"}
+            )
+
+        # Validation: error_message required when status='failed'
+        if self.status == ContentStatus.FAILED and not self.error_message:
+            raise models.ValidationError(
+                {"error_message": "Error message is required when status is failed"}
+            )
+
+    @property
+    def is_in_progress(self):
+        """Check if generation is currently running"""
+        return self.status in [ContentStatus.QUEUED, ContentStatus.GENERATING]
+
+
+class ContentApproval(models.Model):
+    """Review and approval workflow tracking"""
+
+    content_item = models.ForeignKey(
+        ContentItem,
+        on_delete=models.CASCADE,
+        related_name="contentapproval_set",
+        help_text="Related content item",
+    )
+    reviewer = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="content_approvals",
+        help_text="Approving/rejecting user",
+    )
+    status = models.CharField(
+        max_length=30, choices=ApprovalStatus.choices, db_index=True, help_text="Approval decision"
+    )
+    feedback_text = models.TextField(null=True, blank=True, help_text="Reviewer comments/notes")
+    reviewed_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = "content_generation_contentapproval"
+        verbose_name = "Content Approval"
+        verbose_name_plural = "Content Approvals"
+        indexes = [
+            models.Index(fields=["content_item", "reviewed_at"], name="idx_approval_item"),
+            models.Index(fields=["status", "reviewed_at"], name="idx_approval_status"),
+        ]
+        ordering = ["-reviewed_at"]
+
+    def __str__(self):
+        return f"Approval for Content #{self.content_item_id} - {self.status}"
+
+    def clean(self):
+        """Validate feedback requirements"""
+        super().clean()
+
+        # Validation: feedback required for rejected/revision_requested
+        if self.status in [ApprovalStatus.REJECTED, ApprovalStatus.REVISION_REQUESTED]:
+            if not self.feedback_text or not self.feedback_text.strip():
+                raise models.ValidationError(
+                    {"feedback_text": f"Feedback is required for {self.get_status_display()}"}
+                )
