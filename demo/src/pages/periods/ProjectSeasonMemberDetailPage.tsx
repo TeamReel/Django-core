@@ -148,6 +148,20 @@ export default function ProjectSeasonMemberDetailPage() {
     return `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
   }, [clubSlugOrId, isOrgRoutes, isTeamRoute, orgSlugOrId, projectSlugOrId]);
 
+  const activeTab = useMemo(() => {
+    const sp = new URLSearchParams(location.search);
+    const raw = String(sp.get('tab') || '').trim();
+    if (!raw) return 'overview';
+    return raw;
+  }, [location.search]);
+
+  const navigateToTab = (tabId: string) => {
+    const sp = new URLSearchParams(location.search);
+    sp.set('tab', tabId);
+    const next = sp.toString();
+    navigate(next ? `${location.pathname}?${next}` : location.pathname);
+  };
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -462,138 +476,220 @@ export default function ProjectSeasonMemberDetailPage() {
         {!loading && error && <Alert variant="error">{error}</Alert>}
 
         {!loading && !error && membership && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <div style={{ padding: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ fontSize: '16px', fontWeight: 800 }}>Season Profile Assets</div>
-                    <Badge variant={userCanEditProject ? 'default' : 'info'}>
-                      {userCanEditProject ? 'Editable' : 'Read-only'}
-                    </Badge>
-                  </div>
-
-                  <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                    Stored on the season membership (per season/team), so the same person can have different assets next season.
-                  </div>
-
-                  {saveError && (
-                    <div style={{ marginTop: '12px' }}>
-                      <Alert variant="error">{saveError}</Alert>
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px' }}>
-                    <div style={{ fontWeight: 700 }}>In tenue</div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-                      <div>
-                        <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Profile photo (kit) URL</div>
-                        <Input
-                          value={form.kitProfilePhotoUrl}
-                          onChange={(e) => setForm((prev) => ({ ...prev, kitProfilePhotoUrl: e.target.value }))}
-                          placeholder="https://…"
-                          disabled={!userCanEditProject}
-                        />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Full body (kit) URL</div>
-                        <Input
-                          value={form.kitFullBodyUrl}
-                          onChange={(e) => setForm((prev) => ({ ...prev, kitFullBodyUrl: e.target.value }))}
-                          placeholder="https://…"
-                          disabled={!userCanEditProject}
-                        />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Short intro (kit)</div>
-                        <Input
-                          value={form.kitIntro}
-                          onChange={(e) => setForm((prev) => ({ ...prev, kitIntro: e.target.value }))}
-                          placeholder="Korte intro…"
-                          disabled={!userCanEditProject}
-                        />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Goal celebration (kit) URL</div>
-                        <Input
-                          value={form.kitGoalCelebrationUrl}
-                          onChange={(e) => setForm((prev) => ({ ...prev, kitGoalCelebrationUrl: e.target.value }))}
-                          placeholder="https://…"
-                          disabled={!userCanEditProject}
-                        />
-                      </div>
-                    </div>
-
-                    <div style={{ fontWeight: 700, marginTop: '6px' }}>Old</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-                      <div>
-                        <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Profile photo (old) URL</div>
-                        <Input
-                          value={form.oldProfilePhotoUrl}
-                          onChange={(e) => setForm((prev) => ({ ...prev, oldProfilePhotoUrl: e.target.value }))}
-                          placeholder="https://…"
-                          disabled={!userCanEditProject}
-                        />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Full body (old) URL</div>
-                        <Input
-                          value={form.oldFullBodyUrl}
-                          onChange={(e) => setForm((prev) => ({ ...prev, oldFullBodyUrl: e.target.value }))}
-                          placeholder="https://…"
-                          disabled={!userCanEditProject}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {!userCanEditProject && (
-                    <div style={{ marginTop: '12px' }}>
-                      <Alert variant="info">You don’t have permission to edit this team.</Alert>
-                    </div>
-                  )}
-                </div>
-              </Card>
+          <>
+            <div
+              style={{
+                display: 'flex',
+                gap: '10px',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                marginBottom: '14px',
+                borderBottom: '1px solid var(--app-border)',
+                paddingBottom: '10px',
+              }}
+            >
+              {(
+                [
+                  { id: 'overview', label: 'Overview' },
+                  { id: 'kit', label: 'Kit' },
+                  { id: 'old', label: 'Old' },
+                ] as Array<{ id: string; label: string }>
+              ).map((t) => {
+                const isActive = activeTab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => navigateToTab(t.id)}
+                    style={{
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      border: isActive ? '1px solid var(--app-link)' : '1px solid transparent',
+                      background: isActive ? 'var(--app-surface-2)' : 'transparent',
+                      color: isActive ? 'var(--app-text)' : 'var(--app-muted-text)',
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="space-y-6">
-              <Card>
-                <div style={{ padding: '16px' }}>
-                  <div style={{ fontSize: '14px', fontWeight: 800, marginBottom: '8px' }}>Member</div>
-                  <div style={{ fontSize: '13px' }}>{getUserDisplayName(membership)}</div>
-                  <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <Badge variant="default">Membership: {String(membership?.id || '').slice(0, 8)}…</Badge>
-                    {season && <Badge variant="default">Season: {season.name}</Badge>}
-                  </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                {saveError && (
+                  <Alert variant="error">{saveError}</Alert>
+                )}
 
-                  <div style={{ marginTop: '14px' }}>
-                    <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Quick links</div>
-                    {seasonKeyForLinks ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <Link
-                          to={`${seasonsBasePath}/${seasonKeyForLinks}?tab=squad`}
-                          className="text-blue-600 hover:underline"
-                          style={{ textDecoration: 'none' }}
-                        >
-                          Season squad
-                        </Link>
-                        <Link
-                          to={`${seasonsBasePath}/${seasonKeyForLinks}?tab=content`}
-                          className="text-blue-600 hover:underline"
-                          style={{ textDecoration: 'none' }}
-                        >
-                          Season content
-                        </Link>
+                {activeTab === 'overview' && (
+                  <Card>
+                    <div style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ fontSize: '16px', fontWeight: 800 }}>Season member profile</div>
+                        <Badge variant={userCanEditProject ? 'default' : 'info'}>
+                          {userCanEditProject ? 'Editable' : 'Read-only'}
+                        </Badge>
                       </div>
-                    ) : (
-                      <div style={{ opacity: 0.7, fontSize: '13px' }}>Season link unavailable.</div>
-                    )}
+
+                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                        Stored on the season membership (per season/team), so the same person can have different assets next season.
+                      </div>
+
+                      <div style={{ marginTop: '14px', display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Kit</div>
+                          <div style={{ fontSize: '13px', opacity: 0.85 }}>Profile photo: {form.kitProfilePhotoUrl || '—'}</div>
+                          <div style={{ fontSize: '13px', opacity: 0.85 }}>Full body: {form.kitFullBodyUrl || '—'}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Old</div>
+                          <div style={{ fontSize: '13px', opacity: 0.85 }}>Profile photo: {form.oldProfilePhotoUrl || '—'}</div>
+                          <div style={{ fontSize: '13px', opacity: 0.85 }}>Full body: {form.oldFullBodyUrl || '—'}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                {activeTab === 'kit' && (
+                  <Card>
+                    <div style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ fontSize: '16px', fontWeight: 800 }}>In tenue</div>
+                        <Badge variant={userCanEditProject ? 'default' : 'info'}>
+                          {userCanEditProject ? 'Editable' : 'Read-only'}
+                        </Badge>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginTop: '16px' }}>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Profile photo (kit) URL</div>
+                          <Input
+                            value={form.kitProfilePhotoUrl}
+                            onChange={(e) => setForm((prev) => ({ ...prev, kitProfilePhotoUrl: e.target.value }))}
+                            placeholder="https://…"
+                            disabled={!userCanEditProject}
+                          />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Full body (kit) URL</div>
+                          <Input
+                            value={form.kitFullBodyUrl}
+                            onChange={(e) => setForm((prev) => ({ ...prev, kitFullBodyUrl: e.target.value }))}
+                            placeholder="https://…"
+                            disabled={!userCanEditProject}
+                          />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Short intro (kit)</div>
+                          <Input
+                            value={form.kitIntro}
+                            onChange={(e) => setForm((prev) => ({ ...prev, kitIntro: e.target.value }))}
+                            placeholder="Korte intro…"
+                            disabled={!userCanEditProject}
+                          />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Goal celebration (kit) URL</div>
+                          <Input
+                            value={form.kitGoalCelebrationUrl}
+                            onChange={(e) => setForm((prev) => ({ ...prev, kitGoalCelebrationUrl: e.target.value }))}
+                            placeholder="https://…"
+                            disabled={!userCanEditProject}
+                          />
+                        </div>
+                      </div>
+
+                      {!userCanEditProject && (
+                        <div style={{ marginTop: '12px' }}>
+                          <Alert variant="info">You don’t have permission to edit this team.</Alert>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                )}
+
+                {activeTab === 'old' && (
+                  <Card>
+                    <div style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ fontSize: '16px', fontWeight: 800 }}>Old</div>
+                        <Badge variant={userCanEditProject ? 'default' : 'info'}>
+                          {userCanEditProject ? 'Editable' : 'Read-only'}
+                        </Badge>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginTop: '16px' }}>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Profile photo (old) URL</div>
+                          <Input
+                            value={form.oldProfilePhotoUrl}
+                            onChange={(e) => setForm((prev) => ({ ...prev, oldProfilePhotoUrl: e.target.value }))}
+                            placeholder="https://…"
+                            disabled={!userCanEditProject}
+                          />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Full body (old) URL</div>
+                          <Input
+                            value={form.oldFullBodyUrl}
+                            onChange={(e) => setForm((prev) => ({ ...prev, oldFullBodyUrl: e.target.value }))}
+                            placeholder="https://…"
+                            disabled={!userCanEditProject}
+                          />
+                        </div>
+                      </div>
+
+                      {!userCanEditProject && (
+                        <div style={{ marginTop: '12px' }}>
+                          <Alert variant="info">You don’t have permission to edit this team.</Alert>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                )}
+              </div>
+
+              <div className="space-y-6">
+                <Card>
+                  <div style={{ padding: '16px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 800, marginBottom: '8px' }}>Member</div>
+                    <div style={{ fontSize: '13px' }}>{getUserDisplayName(membership)}</div>
+                    <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <Badge variant="default">Membership: {String(membership?.id || '').slice(0, 8)}…</Badge>
+                      {season && <Badge variant="default">Season: {season.name}</Badge>}
+                    </div>
+
+                    <div style={{ marginTop: '14px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Quick links</div>
+                      {seasonKeyForLinks ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <Link
+                            to={`${seasonsBasePath}/${seasonKeyForLinks}?tab=squad`}
+                            className="text-blue-600 hover:underline"
+                            style={{ textDecoration: 'none' }}
+                          >
+                            Season squad
+                          </Link>
+                          <Link
+                            to={`${seasonsBasePath}/${seasonKeyForLinks}?tab=content`}
+                            className="text-blue-600 hover:underline"
+                            style={{ textDecoration: 'none' }}
+                          >
+                            Season content
+                          </Link>
+                        </div>
+                      ) : (
+                        <div style={{ opacity: 0.7, fontSize: '13px' }}>Season link unavailable.</div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </PageContent>
     </AppShell>

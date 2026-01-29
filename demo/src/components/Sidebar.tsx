@@ -900,12 +900,15 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             ? matchDetailPath
             : (competitionDetailPath ? withTab(competitionDetailPath, 'matches') : (seasonKey ? withTab(seasonPath, 'matches') : matchesIndexPath));
 
+        const memberPath = seasonKey ? withTab(seasonPath, 'squad') : '/directory?tab=users';
+
         const federationLabel = 'Federation';
         const clubLabel = 'Club';
         const teamLabel = 'Team';
         const seasonLabel = 'Season';
         const competitionLabel = 'Competition';
         const matchLabel = 'Match';
+        const memberLabel = 'Member';
 
         const currentUserId = String((user as any)?.id || '').trim();
 
@@ -916,6 +919,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             { label: seasonLabel, path: seasonPath, icon: CalendarDays, visibility: 'everyone' },
             { label: competitionLabel, path: competitionPath, icon: Trophy, visibility: 'everyone' },
             { label: matchLabel, path: matchPath, icon: Timer, visibility: 'everyone' },
+            { label: memberLabel, path: memberPath, icon: Users, visibility: 'everyone' },
             ...(currentUserId ? [{ label: 'User', path: `/users/${encodeURIComponent(currentUserId)}`, icon: Users, visibility: 'everyone' as const }] : []),
         ];
     }, [location.pathname, orgSlug, clubName, teamName, resolvedAppContext, user]);
