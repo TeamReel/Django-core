@@ -610,9 +610,14 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 if (!isOrgRoute && looksLikeUuid(String(competitionId || '').trim())) {
                                     title = 'Member';
                                     items = [
-                                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
-                                    { label: 'Kit', path: makeTabUrl(baseUrl, 'kit'), icon: Shirt },
-                                    { label: 'Old', path: makeTabUrl(baseUrl, 'old'), icon: Timer },
+                                        { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                                        { label: 'Profile Photo', path: makeTabUrl(baseUrl, 'profile'), icon: UserCircle },
+                                        { label: 'In Tenue', path: makeTabUrl(baseUrl, 'kit'), icon: Shirt },
+                                        { label: 'Full Body', path: makeTabUrl(baseUrl, 'fullbody'), icon: Users },
+                                        { label: 'Close-up', path: makeTabUrl(baseUrl, 'closeup'), icon: Star },
+                                        { label: 'Short Intro', path: makeTabUrl(baseUrl, 'intro'), icon: Sparkles },
+                                        { label: 'Celebration', path: makeTabUrl(baseUrl, 'celebration'), icon: Trophy },
+                                        { label: 'Legacy', path: makeTabUrl(baseUrl, 'legacy'), icon: Timer },
                                     ];
                                     break;
                                 }
@@ -642,6 +647,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
                     { label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users },
+                    { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                 ];
                 break;
@@ -685,6 +691,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
                     { label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users },
+                    { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                 ];
                 break;

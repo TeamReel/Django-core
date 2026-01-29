@@ -818,67 +818,6 @@ export default function ProjectSeasonMemberDetailPage() {
                     </div>
                   </div>
                 </Card>
-
-                {/* Media status checklist */}
-                <Card>
-                  <div style={{ padding: '16px' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 800, marginBottom: '12px' }}>Media Tabs</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <button
-                        type="button"
-                        onClick={() => navigateToTab('overview')}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          padding: '8px 10px',
-                          background: activeTab === 'overview' ? 'var(--app-muted)' : 'transparent',
-                          border: 'none',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          width: '100%',
-                          textAlign: 'left',
-                          fontSize: '13px',
-                          fontWeight: activeTab === 'overview' ? 600 : 400,
-                        }}
-                      >
-                        <span>📊</span>
-                        <span>Overview</span>
-                      </button>
-                      {MEDIA_SLOTS.map((slot) => {
-                        const hasContent = Boolean(form[slot.id]?.url || form[slot.id]?.caption);
-                        const isActive = activeTab === slot.id;
-                        return (
-                          <button
-                            key={slot.id}
-                            type="button"
-                            onClick={() => navigateToTab(slot.id)}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              padding: '8px 10px',
-                              background: isActive ? 'var(--app-muted)' : 'transparent',
-                              border: 'none',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                              width: '100%',
-                              textAlign: 'left',
-                              fontSize: '13px',
-                              fontWeight: isActive ? 600 : 400,
-                            }}
-                          >
-                            <span>{slot.icon}</span>
-                            <span style={{ flex: 1 }}>{slot.label}</span>
-                            <span style={{ fontSize: '12px' }}>
-                              {hasContent ? '✅' : '⬜'}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </Card>
               </div>
             </div>
           </>
