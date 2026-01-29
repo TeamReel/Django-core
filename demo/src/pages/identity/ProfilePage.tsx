@@ -13,6 +13,7 @@ import {
 } from '@django-core/page-templates';
 import { User } from '../../types';
 import AppShell from '../../components/AppShell';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 function getCsrfToken(): string {
   const cookies = document.cookie.split(';');
@@ -48,7 +49,7 @@ export const ProfilePage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
         console.log('[ProfilePage] Fetching profile from:', `${apiBaseUrl}/api/v1/auth/me/`);
         const response = await fetch(`${apiBaseUrl}/api/v1/auth/me/`, {
           headers: {
@@ -97,7 +98,7 @@ export const ProfilePage: React.FC = () => {
       setSaveSuccess(false);
       setError(null);
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       const response = await fetch(`${apiBaseUrl}/api/v1/auth/profile/`, {
         method: 'PATCH',
         headers: {

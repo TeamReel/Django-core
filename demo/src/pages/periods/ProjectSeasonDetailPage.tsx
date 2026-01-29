@@ -1,6 +1,9 @@
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
+import { memberHasMedia, countFilledMediaSlots } from '../../utils/mediaHelpers';
+import { getApiBaseUrl } from '../../utils/apiBase';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import {
   PageContent,
@@ -62,33 +65,7 @@ type Organisation = {
   user_role?: 'admin' | 'member';
 };
 
-/**
- * Media slot definitions for member profiles - matches ProjectSeasonMemberDetailPage.
- */
-const MEDIA_SLOTS = [
-  { id: 'profile', label: 'Profile', icon: '👤' },
-  { id: 'kit', label: 'Tenue', icon: '👕' },
-  { id: 'fullbody', label: 'Full', icon: '🧍' },
-  { id: 'closeup', label: 'Close', icon: '🎯' },
-  { id: 'intro', label: 'Intro', icon: '🎬' },
-  { id: 'celebration', label: 'Celeb', icon: '🎉' },
-  { id: 'legacy', label: 'Legacy', icon: '📷' },
-] as const;
-
-type MediaSlotId = typeof MEDIA_SLOTS[number]['id'];
-
-/** Check if a membership has media content for a given slot */
-const memberHasMedia = (membership: any, slotId: MediaSlotId): boolean => {
-  const media = membership?.metadata?.teamreel_assets?.media;
-  if (!media) return false;
-  const slot = media[slotId];
-  return Boolean(slot?.url || slot?.caption);
-};
-
-/** Count how many media slots are filled for a membership */
-const countFilledMediaSlots = (membership: any): number => {
-  return MEDIA_SLOTS.filter((slot) => memberHasMedia(membership, slot.id)).length;
-};
+// MEDIA_SLOTS, memberHasMedia, countFilledMediaSlots imported from shared utils
 
 const getCsrfToken = (): string => {
   return (
@@ -132,7 +109,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const { user } = useAuth();
   const { context } = useContextSwitcher();
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const tableActionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => ({
     ...actionButtonStyle(tone),

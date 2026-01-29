@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef, type FormEvent } from 'react';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface User {
   id: string;
@@ -77,7 +78,7 @@ export default function UserEditModal({
   const [addingToOrg, setAddingToOrg] = useState(false);
   const [addingToProject, setAddingToProject] = useState(false);
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string }> = [
     { value: 'coach', label: 'Coach' },

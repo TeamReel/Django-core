@@ -16,6 +16,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 import { Project } from '../../types';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 export const ProjectEditPage: React.FC = () => {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ export const ProjectEditPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
 
         // Use nested route if we have org context
         const endpoint = resolvedOrg

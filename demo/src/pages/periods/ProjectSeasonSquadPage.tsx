@@ -6,6 +6,7 @@ import { BreadcrumbContextSwitcher, PageContent, PageHeader } from '@django-core
 import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
 import { Table } from '../../shims/design-system';
+import { getApiBaseUrl } from '../../utils/apiBase';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
@@ -287,7 +288,7 @@ export default function ProjectSeasonSquadPage() {
   const { user } = useAuth();
   const { context, organisations: myOrganisations } = useContextSwitcher();
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const orgSlugOrId = String(params.orgId || '').trim();
   const projectSlugOrId = String(params.projectId || '').trim();

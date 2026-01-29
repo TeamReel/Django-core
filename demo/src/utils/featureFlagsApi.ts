@@ -1,4 +1,5 @@
 import { FeatureFlag } from './featureFlagStorage';
+import { getApiBaseUrl } from './apiBase';
 
 const API_BASE = '/api/v1/settings/feature-flags';
 
@@ -14,8 +15,8 @@ export interface ApiFeatureFlag extends FeatureFlag {
 }
 
 export async function fetchFlags(orgId: string | null): Promise<ApiFeatureFlag[]> {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-  const url = new URL(`${baseUrl}${API_BASE}/resolve-all/`);
+  const baseUrl = getApiBaseUrl();
+  const url = new URL(`${baseUrl}${API_BASE}/resolve-all/`, window.location.origin);
   if (orgId) {
     url.searchParams.append('organisation_id', orgId);
   }
@@ -38,7 +39,7 @@ export async function fetchFlags(orgId: string | null): Promise<ApiFeatureFlag[]
 }
 
 export async function updateGlobalFlag(flagId: string, enabled: boolean): Promise<void> {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const baseUrl = getApiBaseUrl();
   const response = await fetch(`${baseUrl}${API_BASE}/${flagId}/`, {
     method: 'PATCH',
     headers: {
@@ -56,7 +57,7 @@ export async function updateGlobalFlag(flagId: string, enabled: boolean): Promis
 }
 
 export async function createOrgOverride(orgId: string, key: string, enabled: boolean): Promise<void> {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const baseUrl = getApiBaseUrl();
   const response = await fetch(`${baseUrl}${API_BASE}/`, {
     method: 'POST',
     headers: {
@@ -81,7 +82,7 @@ export async function createOrgOverride(orgId: string, key: string, enabled: boo
 export async function updateOrgOverride(overrideId: string, enabled: boolean): Promise<void> {
   debugLog('[featureFlagsApi] updateOrgOverride called:', { overrideId, enabled });
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const baseUrl = getApiBaseUrl();
   const url = `${baseUrl}${API_BASE}/${overrideId}/`;
   debugLog('[featureFlagsApi] Making PATCH request to:', url);
 
@@ -129,7 +130,7 @@ export async function updateOrgOverride(overrideId: string, enabled: boolean): P
 }
 
 export async function deleteOrgOverride(overrideId: string): Promise<void> {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const baseUrl = getApiBaseUrl();
   const response = await fetch(`${baseUrl}${API_BASE}/${overrideId}/`, {
     method: 'DELETE',
     headers: {
@@ -150,7 +151,7 @@ export async function seedDefaultFlags(): Promise<void> {
     { key: 'dark_mode', description: 'Enable dark mode theme support', enabled: true },
   ];
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const baseUrl = getApiBaseUrl();
 
   for (const flag of defaults) {
     // Check if exists first (optional, but good for idempotency if we had a check endpoint)

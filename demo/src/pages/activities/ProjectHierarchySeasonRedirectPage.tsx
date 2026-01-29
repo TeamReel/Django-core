@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { getApiBaseUrl } from '../../utils/apiBase';
 import SeasonDetailPage from '../identity/SeasonDetailPage';
 
 type Project = {
@@ -19,7 +20,7 @@ export default function ProjectHierarchySeasonRedirectPage() {
   }>();
 
   const location = useLocation();
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const orgSlugOrId = String(orgId || '').trim();
   const projectSlugOrId = String(projectId || '').trim();

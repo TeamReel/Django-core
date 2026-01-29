@@ -4,6 +4,7 @@ import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
+import { getApiBaseUrl } from '../../utils/apiBase';
 import { periodPathKey } from '../../utils/periodPath';
 
 type Period = {
@@ -36,7 +37,7 @@ export const ProjectSeasonsPage: React.FC = () => {
   const navigate = useNavigate();
   const { orgId, projectId, clubId } = useParams<{ orgId: string; projectId: string; clubId?: string }>();
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const [org, setOrg] = useState<Organisation | null>(null);
   const [project, setProject] = useState<Project | null>(null);

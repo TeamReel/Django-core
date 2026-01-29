@@ -17,6 +17,7 @@ import {
 import { Table } from '../../shims/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface UsageEvent {
   id: string;
@@ -107,7 +108,7 @@ export const UsageEventsPage: React.FC = () => {
       setError(null);
 
       // Build query params based on mode
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const baseUrl = getApiBaseUrl();
       let url = `${baseUrl}/api/v1/usage-events/`;
       const params = new URLSearchParams();
 
@@ -298,7 +299,7 @@ export const UsageEventsPage: React.FC = () => {
       if (!demoMode) {
         // Try to POST to backend
         const csrfToken = getCookie('csrftoken');
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = getApiBaseUrl();
         const response = await fetch(`${baseUrl}/api/v1/usage-events/`, {
           method: 'POST',
           headers: {

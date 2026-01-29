@@ -19,6 +19,7 @@ import {
     compactActionsStyle,
     actionButtonStyle
 } from '../../../utils/directoryStyles';
+import { getApiBaseUrl } from '../../../utils/apiBase';
 
 interface TeamsListProps {
   preselectedOrgId?: string;
@@ -98,7 +99,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
     // Fallback: resolve UUID -> slug via organisations list.
     let cancelled = false;
     const loadSlug = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=250`, { credentials: 'include' });
         if (!res.ok) return;
@@ -167,7 +168,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
     }
 
     const load = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const orgs = await fetchAllPages<any>(
           `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
@@ -188,7 +189,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
     const load = async () => {
       setIsLoading(true);
       setError(null);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
 
       const getSelectedOrgSlugForApi = () => {
         const selectedOrg = selectedOrgId
@@ -335,7 +336,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
 
   const handleDeleteProject = async (orgSlugOrId: string, teamId: string, teamName: string) => {
         if (!window.confirm(`Are you sure you want to delete ${teamName}?`)) return;
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
         try {
           // Note: Teams are projects but nested. The delete URL is same /organisations/:org/projects/:id/
           // Ensure we have correct org slug/id
@@ -646,7 +647,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
         onSave={async (projectData) => {
             if (!editProject) return;
             const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-            const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+            const baseUrl = getApiBaseUrl();
             const projectSlugOrId = (editProject as any).slug || editProject.id;
             const response = await fetch(`${baseUrl}/api/v1/projects/${projectSlugOrId}/?include_archived=true`, {
                 method: 'PATCH',
@@ -703,7 +704,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
             if (!clubId) throw new Error('Select a club first');
 
             const orgSlug = organisations.find((o) => String(o.id) === String(orgId))?.slug || orgId;
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const apiBaseUrl = getApiBaseUrl();
 
             const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/`, {
               method: 'POST',

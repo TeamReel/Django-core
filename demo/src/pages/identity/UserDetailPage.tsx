@@ -8,6 +8,7 @@ import LoadingState from '../../components/LoadingState';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { periodPathKey } from '../../utils/periodPath';
+import { getApiBaseUrl } from '../../utils/apiBase';
 import UserDetailModal from './UserDetailModal';
 import UserEditModal from './UserEditModal';
 import LinkUserModal from './LinkUserModal';
@@ -181,7 +182,7 @@ export const UserDetailPage: React.FC = () => {
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 import ClubOrganisationDetailPage from './ClubOrganisationDetailPage';
 
@@ -26,7 +27,7 @@ const looksLikeIdentifier = (value: string) => {
 export default function ClubDetailPage() {
   const { orgId, projectId } = useParams<{ orgId: string; projectId: string }>();
   const location = useLocation();
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const orgSlugOrId = String(orgId || '').trim();
   const clubSlugOrId = String(projectId || '').trim();

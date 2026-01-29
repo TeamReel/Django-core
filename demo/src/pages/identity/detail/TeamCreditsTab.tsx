@@ -9,6 +9,7 @@ import {
   compactTextTdStyle,
   compactThStyle,
 } from './detailStyles';
+import { getApiBaseUrl } from '../../../utils/apiBase';
 
 type TeamCreditsView = 'balance' | 'transactions';
 
@@ -98,8 +99,7 @@ export default function TeamCreditsTab(props: {
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
 
   const apiBaseUrl = useMemo(() => {
-    const raw = String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
-    return raw.replace(/\/+$/, '');
+    return getApiBaseUrl();
   }, []);
 
   const numericBalance = useMemo(() => {

@@ -4,6 +4,7 @@ import {
   Alert,
   Button,
 } from '@django-core/design-system';
+import { getApiBaseUrl } from '../../utils/apiBase';
 import {
   PageHeader,
   PageContent,
@@ -27,11 +28,8 @@ interface ApiDocsMeta {
 export const ApiDocsPage: React.FC = () => {
   const [meta, setMeta] = useState<ApiDocsMeta | null>(null);
 
-  // Determine Base URL
-  // Default to localhost:8000 if env var is missing (for local dev without .env)
-  // In production, VITE_API_BASE_URL must be set.
-  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-  const baseUrl = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+  // Determine Base URL (centralized utility handles env + fallbacks)
+  const baseUrl = getApiBaseUrl();
 
   useEffect(() => {
     // Try to fetch API schema to extract metadata

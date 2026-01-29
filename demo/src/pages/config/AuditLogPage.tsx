@@ -15,6 +15,7 @@ import {
   PageContent,
 } from '@django-core/page-templates';
 import { AuditEvent, ListResponse } from '../../types';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 /**
  * T012 - Audit Log Page
@@ -104,7 +105,7 @@ export const AuditLogPage: React.FC = () => {
         }
 
         // Use relative URL to leverage Vite proxy (handles cookies correctly)
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = getApiBaseUrl();
         const response = await fetch(
           `${baseUrl}/api/v1/activity/?${params.toString()}`,
           {
@@ -160,7 +161,7 @@ export const AuditLogPage: React.FC = () => {
     const connect = async () => {
       try {
         // Fetch WebSocket token via Vite proxy (handles cookies correctly)
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = getApiBaseUrl();
         const tokenResponse = await fetch(`${baseUrl}/api/ws/token/`, {
             credentials: 'include',
         });

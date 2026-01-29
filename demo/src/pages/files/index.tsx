@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileUpload, Card, Stack, Text, Button, Badge, Alert } from '@django-core/design-system';
 import type { FileUploadFile } from '@django-core/design-system';
 import AppShell from '../../components/AppShell';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface FileAsset {
   id: string;
@@ -82,7 +83,7 @@ const FilesPage: React.FC = () => {
   const fetchFiles = async () => {
     try {
       setLoading(true);
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const baseUrl = getApiBaseUrl();
       const response = await fetch(`${baseUrl}/api/v1/files/`, {
         headers: {
           'Content-Type': 'application/json',
@@ -136,7 +137,7 @@ const FilesPage: React.FC = () => {
 
         // Try API upload first
         try {
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const apiBaseUrl = getApiBaseUrl();
             const csrfToken = document.cookie
                 .split('; ')
                 .find(row => row.startsWith('csrftoken='))

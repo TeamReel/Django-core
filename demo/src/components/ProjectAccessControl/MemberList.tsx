@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 // @ts-ignore - Workspace dependencies
 import { fetchWithCSRF } from '@django-core/api-client';
 import { User } from '../../types';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface ProjectMembership {
   id: string;
@@ -34,7 +35,7 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
       setLoading(true);
       setError(null);
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const apiBaseUrl = getApiBaseUrl();
         // Use the nested endpoint if possible, or the direct one
         // The backend ProjectViewSet has a 'members' action on the detail route
         const response = await fetchWithCSRF(`${apiBaseUrl}/api/v1/projects/${projectId}/members/`);

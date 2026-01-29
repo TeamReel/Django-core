@@ -10,6 +10,8 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { canEditProject } from '../../utils/permissions';
 import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext, setActiveContext } from '../../utils/activeContext';
+import { MEDIA_SLOTS, MediaSlotId, MemberMediaForm } from '../../constants/mediaSlots';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 type Project = {
   id: string;
@@ -64,29 +66,11 @@ function getUserDisplayName(membership: any): string {
   return name;
 }
 
+// MEDIA_SLOTS, MediaSlotId, MemberMediaForm imported from ../../constants/mediaSlots
+
 /**
- * Media slot definitions for member profile.
- * These will map to B35 MediaItem context relations when implemented.
+ * Create empty media form - uses shared MEDIA_SLOTS
  */
-const MEDIA_SLOTS = [
-  { id: 'profile', label: 'Profile Photo', icon: '👤', description: 'Standard profile/headshot photo' },
-  { id: 'kit', label: 'In Tenue', icon: '👕', description: 'Player in team kit/uniform' },
-  { id: 'fullbody', label: 'Full Body', icon: '🧍', description: 'Full body photo in kit' },
-  { id: 'closeup', label: 'Close-up', icon: '🎯', description: 'Portrait close-up shot' },
-  { id: 'intro', label: 'Short Intro', icon: '🎬', description: 'Short video introduction' },
-  { id: 'celebration', label: 'Celebration', icon: '🎉', description: 'Goal celebration video/photo' },
-  { id: 'legacy', label: 'Legacy', icon: '📷', description: 'Old/nostalgic photo' },
-] as const;
-
-type MediaSlotId = typeof MEDIA_SLOTS[number]['id'];
-
-type MemberMediaForm = {
-  [K in MediaSlotId]: {
-    url: string;
-    caption: string;
-  };
-};
-
 function createEmptyMediaForm(): MemberMediaForm {
   return MEDIA_SLOTS.reduce((acc, slot) => {
     acc[slot.id] = { url: '', caption: '' };
@@ -94,6 +78,10 @@ function createEmptyMediaForm(): MemberMediaForm {
   }, {} as MemberMediaForm);
 }
 
+/**
+ * Read assets from membership with legacy format migration.
+ * This is specific to member detail page as it handles backwards compatibility.
+ */
 function readAssetsFromMembership(membership: any): MemberMediaForm {
   const meta = (membership as any)?.metadata || {};
   const tr = (meta as any)?.teamreel_assets || (meta as any)?.teamreelAssets || {};
@@ -180,7 +168,7 @@ export default function ProjectSeasonMemberDetailPage() {
   const { user } = useAuth();
   const { context } = useContextSwitcher();
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const orgSlugOrId = String((params as any).orgId || '').trim();
   const clubSlugOrId = String((params as any).clubId || '').trim();

@@ -6,6 +6,7 @@ import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
+import { getApiBaseUrl } from '../../../utils/apiBase';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import MatchDetailModal from '../MatchDetailModal';
 import MatchEditModal from '../MatchEditModal';
@@ -148,7 +149,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
     // Fallback: resolve UUID -> slug via organisations list (detail lookup_field is slug).
     let cancelled = false;
     const loadSlug = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=250`, { credentials: 'include' });
         if (!res.ok) return;
@@ -288,7 +289,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
     }
 
     const load = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const orgs = await fetchAllPages<any>(
           `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
@@ -309,7 +310,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
     const load = async () => {
       setIsLoading(true);
       setError(null);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
 
       try {
         const orgSlugForApi = getSelectedOrgSlugForApi();
@@ -432,7 +433,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
   // Fetch Seasons
   useEffect(() => {
     const loadSeasons = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const baseParams = new URLSearchParams();
         baseParams.set('page_size', '500');
@@ -524,7 +525,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
          return;
      }
      const loadCompetitions = async () => {
-         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+         const apiBaseUrl = getApiBaseUrl();
          try {
              const seasonIds = selectedSeasonIds;
              if (seasonIds.length === 0) {
@@ -597,7 +598,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
     const loadMatches = async () => {
       const seq = (loadMatchesSeqRef.current += 1);
       setMatchesLoading(true);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
 
       try {
         // On org-locked pages, do not run an initial unscoped query before selectedOrgId is set.
@@ -1173,7 +1174,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
               .find((row) => row.startsWith('csrftoken='))
               ?.split('=')[1];
 
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const apiBaseUrl = getApiBaseUrl();
             const res = await fetch(`${apiBaseUrl}/api/v1/activities/${editMatch.id}/`, {
               method: 'PATCH',
               headers: {
@@ -1203,7 +1204,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
           initialClubId={selectedClubId}
           initialTeamId={selectedTeamId}
           onCreate={async (payload) => {
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const apiBaseUrl = getApiBaseUrl();
             const csrfToken = getCsrfToken();
 
             const teamId = String(payload.project_id || '');

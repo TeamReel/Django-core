@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Badge, Button, Select } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
+import { getApiBaseUrl } from '../../../utils/apiBase';
 
 interface Member {
   id: string;
@@ -37,7 +38,7 @@ interface MemberListProps {
 export const MemberList: React.FC<MemberListProps> = ({
   projectId,
   initialMembers = [],
-  apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+  apiBaseUrl = getApiBaseUrl()
 }) => {
   const [members, setMembers] = useState<Member[]>(initialMembers);
   const [periods, setPeriods] = useState<Period[]>([]);

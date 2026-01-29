@@ -37,6 +37,7 @@ import ProfileAvatarDropdown from './ProfileAvatarDropdown';
 import { SearchBar } from './SearchBar';
 import Breadcrumbs from './Breadcrumbs';
 import CommandPalette from './CommandPalette';
+import { getApiBaseUrl } from '../utils/apiBase';
 
 interface NavGroup {
   id: string;
@@ -227,7 +228,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
     const fetchGlobalFlag = async () => {
       try {
         // Fetch flags without org context to get global values
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = getApiBaseUrl();
         const response = await fetch(`${baseUrl}/api/v1/settings/feature-flags/resolve-all/`, {
           headers: {
             'Content-Type': 'application/json',
@@ -301,7 +302,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
 
     const fetchUnreadCount = async () => {
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
         debugLog('[TopNavbar] Fetching notifications from:', `${apiBaseUrl}/api/v1/user-notifications/`);
         const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/`, {
           credentials: 'include',
@@ -360,7 +361,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
 
     const fetchBalance = async () => {
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
         const response = await fetch(
           `${apiBaseUrl}/api/v1/transactions/organizations/${encodeURIComponent(orgIdForMyBalance)}/balance/me/`,
           { credentials: 'include', signal: controller.signal }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { looksLikeUuid } from '../../../utils/periodPath';
+import { getApiBaseUrl } from '../../../utils/apiBase';
 
 type ResolvedOrgIdState = {
   orgId: string;
@@ -35,7 +36,7 @@ export const useResolvedOrgId = (orgIdOrSlug?: string): ResolvedOrgIdState => {
     const run = async () => {
       setState((prev) => ({ ...prev, orgId: k, loading: true, error: undefined }));
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
         const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(k)}/`, {
           credentials: 'include',
         });

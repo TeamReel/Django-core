@@ -6,6 +6,7 @@ import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
+import { getApiBaseUrl } from '../../../utils/apiBase';
 import { canDeleteProject, canEditProject } from '../../../utils/permissions';
 import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
@@ -99,7 +100,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
     }
 
     const load = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const orgs = await fetchAllPages<any>(
           `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
@@ -119,7 +120,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
     const load = async () => {
       setIsLoading(true);
       setError(null);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const [allClubs, allTeams] = await Promise.all([
           fetchAllPages<ProjectOption>(
@@ -195,7 +196,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
 
   const handleDeleteProject = async (orgSlugOrId: string, projectSlugOrId: string, projectName: string) => {
     if (!window.confirm(`Are you sure you want to delete ${projectName}?`)) return;
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
     try {
       const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, {
         method: 'DELETE',
@@ -455,7 +456,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
         onSave={async (projectData) => {
             if (!editProject) return;
             const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-            const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+            const baseUrl = getApiBaseUrl();
             const projectSlugOrId = (editProject as any).slug || editProject.id;
             const response = await fetch(`${baseUrl}/api/v1/projects/${projectSlugOrId}/?include_archived=true`, {
                 method: 'PATCH',
@@ -507,7 +508,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
           if (!orgId) throw new Error('Select a federation first');
 
           const orgSlug = organisations.find((o) => String(o.id) === String(orgId))?.slug || orgId;
-          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+          const apiBaseUrl = getApiBaseUrl();
 
           const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/`, {
             method: 'POST',

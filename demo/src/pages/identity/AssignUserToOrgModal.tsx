@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface Organisation {
     id: string | number;
@@ -46,7 +47,7 @@ export default function AssignUserToOrgModal({ opened, onClose, user, organisati
     try {
       setLoading(true);
       setError(null);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
 
       const csrfToken = document.cookie
         .split('; ')

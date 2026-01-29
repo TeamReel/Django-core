@@ -5,6 +5,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
 import type { AuditEvent } from '../../types';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 const unwrap = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
@@ -50,7 +51,7 @@ export const OrganisationAuditPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = getApiBaseUrl();
         const params = new URLSearchParams();
         params.set('limit', '200');
         params.set('offset', '0');

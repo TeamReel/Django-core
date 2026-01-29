@@ -5,6 +5,7 @@ import {
   Modal,
 } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface CreateUserModalProps {
   opened: boolean;
@@ -31,7 +32,7 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
     try {
       setLoading(true);
       setError(null);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
 
       const csrfToken = document.cookie
         .split('; ')

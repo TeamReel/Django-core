@@ -18,6 +18,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { createApiClient } from '@django-core/api-client';
 import { useAuth } from '@django-core/auth-ui';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface CreditsBalance {
   organisation_id: string;
@@ -151,7 +152,7 @@ export const CreditsPage: React.FC = () => {
       if (activeTab !== 'transactions' || !currentOrgId) return;
 
       setTransactionsLoading(true);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const apiBaseUrl = getApiBaseUrl();
       const client = createApiClient({ baseUrl: apiBaseUrl });
 
       try {
@@ -251,7 +252,7 @@ export const CreditsPage: React.FC = () => {
     if (scope !== 'org') return;
     if (!currentOrgId) return;
 
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    const apiBaseUrl = getApiBaseUrl();
     const client = createApiClient({ baseUrl: apiBaseUrl });
 
     try {
@@ -326,7 +327,7 @@ export const CreditsPage: React.FC = () => {
          }
       }
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const apiBaseUrl = getApiBaseUrl();
       const client = createApiClient({ baseUrl: apiBaseUrl });
 
       try {
@@ -379,7 +380,7 @@ export const CreditsPage: React.FC = () => {
         return;
       }
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const apiBaseUrl = getApiBaseUrl();
       const client = createApiClient({ baseUrl: apiBaseUrl });
 
       try {
@@ -427,7 +428,7 @@ export const CreditsPage: React.FC = () => {
         return;
       }
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const apiBaseUrl = getApiBaseUrl();
       const client = createApiClient({ baseUrl: apiBaseUrl });
 
       try {
@@ -482,7 +483,7 @@ export const CreditsPage: React.FC = () => {
     }
 
     // Create transaction via API
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    const apiBaseUrl = getApiBaseUrl();
     const client = createApiClient({ baseUrl: apiBaseUrl });
 
     try {

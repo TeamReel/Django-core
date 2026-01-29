@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import AppShell from '../components/AppShell';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, Button, Card } from '@django-core/design-system';
+import { getApiBaseUrl } from '../utils/apiBase';
 
 const debugLog = (...args: unknown[]) => {
   if (import.meta.env.DEV) console.log(...args);
@@ -58,7 +59,7 @@ export default function NotificationsPage() {
   }, [location.search, navigate]);
 
   const apiBaseUrl = useMemo(
-    () => import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+    () => getApiBaseUrl(),
     []
   );
 

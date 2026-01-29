@@ -11,6 +11,7 @@ import {
   PageHeader,
   PageContent,
 } from '@django-core/page-templates';
+import { getApiBaseUrl } from '../../utils/apiBase';
 // import AppShell from '../../components/AppShell';
 
 /**
@@ -159,7 +160,7 @@ export const SecurityPage: React.FC = () => {
         if (filterSeverity !== 'all') query.append('severity', filterSeverity);
         if (filterStatus !== 'all') query.append('status', filterStatus);
 
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = getApiBaseUrl();
         const response = await fetch(`${baseUrl}/api/security/events/?${query.toString()}`, {
           headers: {
             'Content-Type': 'application/json',

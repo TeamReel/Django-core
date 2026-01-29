@@ -5,6 +5,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { BreadcrumbContextSwitcher, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
 import { fetchAllPages } from '../utils/fetchAllPages';
 import { periodPathKey } from '../utils/periodPath';
+import { getApiBaseUrl } from '../utils/apiBase';
 
 const getPeriodType = (p: any): string => {
   const t = p?.type ?? p?.data?.type ?? p?.metadata?.type;
@@ -161,7 +162,7 @@ export default function Breadcrumbs() {
     const run = async () => {
       setLoadingUsers(true);
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
 
         // Always resolve the current user label (name/email) to avoid showing only the ID.
         let currentUserOption: BreadcrumbSwitcherOption | null = null;
@@ -224,7 +225,7 @@ export default function Breadcrumbs() {
 
     const fetchClubs = async () => {
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
         const res = await fetch(
           `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/?page_size=250&parent_project__isnull=true`,
           { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' }
@@ -258,7 +259,7 @@ export default function Breadcrumbs() {
       setLoadingTeams(true);
       setTeamOptions([]);
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
 
         // clubSlugOrId can be a slug; this endpoint filter expects an id.
         const resolvedClub = (clubOptions || []).find((o) => {
@@ -322,7 +323,7 @@ export default function Breadcrumbs() {
     const run = async () => {
       setLoadingSeasons(true);
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
 
         const projectRes = await fetch(
           `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/${encodeURIComponent(effectiveTeam)}/`,
@@ -379,7 +380,7 @@ export default function Breadcrumbs() {
     const run = async () => {
       setLoadingCompetitions(true);
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
 
         const projectRes = await fetch(
           `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/${encodeURIComponent(effectiveTeam)}/`,
@@ -450,7 +451,7 @@ export default function Breadcrumbs() {
     const run = async () => {
       setLoadingMatches(true);
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
 
         const projectRes = await fetch(
           `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/${encodeURIComponent(effectiveTeam)}/`,

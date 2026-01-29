@@ -6,6 +6,7 @@ import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
+import { getApiBaseUrl } from '../../../utils/apiBase';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import {
   compactTableStyle,
@@ -159,7 +160,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
     // Fallback: resolve UUID -> slug via organisations list (detail lookup_field is slug).
     let cancelled = false;
     const loadSlug = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=250`, { credentials: 'include' });
         if (!res.ok) return;
@@ -300,7 +301,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
     }
 
     const load = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const orgs = await fetchAllPages<any>(
           `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
@@ -320,7 +321,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
     const load = async () => {
       setIsLoading(true);
       setError(null);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
 
       try {
         const orgSlugForApi = getSelectedOrgSlugForApi();
@@ -381,7 +382,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
   // Fetch Seasons for Filter
   useEffect(() => {
     const loadSeasons = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const fetchSeasonsWithParams = async (params: URLSearchParams) => {
           const results = await fetchAllPages<any>(
@@ -519,7 +520,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
   useEffect(() => {
     const loadCompetitions = async () => {
       setCompetitionsLoading(true);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
 
       try {
         const explicitTeamScope = selectedTeamId ? [String(selectedTeamId)] : null;
@@ -703,7 +704,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
       ?.split('=')[1];
 
   const savePeriodEdits = async (periodId: string, payload: any) => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
     const response = await fetch(`${apiBaseUrl}/api/v1/periods/${periodId}/`, {
       method: 'PATCH',
       headers: {
@@ -729,7 +730,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
     project_id?: string;
     parent_period_id?: string;
   }) => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
 
     const orgId = String(payload.organisation_id || selectedOrgId || '');
     const teamId = String(payload.project_id || selectedTeamId || '');
@@ -838,7 +839,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
     if (!compId || !window.confirm(`Are you sure you want to delete competition "${compName}"?`)) {
         return;
     }
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
     try {
         const response = await fetch(`${apiBaseUrl}/api/v1/periods/${compId}/`, {
             method: 'DELETE',

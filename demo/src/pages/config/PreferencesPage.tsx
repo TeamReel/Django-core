@@ -230,7 +230,7 @@ export const PreferencesPage: React.FC = () => {
         setMyAuditLoading(true);
         setMyAuditError(null);
 
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = getApiBaseUrl();
         const params = new URLSearchParams();
         params.set('limit', '200');
         params.set('offset', '0');
@@ -751,7 +751,7 @@ export const PreferencesPage: React.FC = () => {
 
       // Fetch effective i18n preferences from backend (or demo data)
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = getApiBaseUrl();
         // Correct endpoint is /api/v1/preferences/me/ (mapped in config/urls.py)
         const response = await fetch(`${baseUrl}/api/v1/preferences/me/`, {
           headers: {
@@ -844,7 +844,7 @@ export const PreferencesPage: React.FC = () => {
       console.log('[PreferencesPage] Loading channel preferences for user ID:', userId);
 
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = getApiBaseUrl();
         const response = await fetch(`${baseUrl}/api/v1/contextual-notifications/preferences/?user=${userId}`, {
           headers: {
             'Content-Type': 'application/json',
@@ -991,7 +991,7 @@ export const PreferencesPage: React.FC = () => {
       }
 
       // Find existing preference ID for this combination
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const baseUrl = getApiBaseUrl();
       const response = await fetch(
         `${baseUrl}/api/v1/contextual-notifications/preferences/?user=${userId}&event_type=${eventType}&channel=${channel}`,
         {
@@ -1122,7 +1122,7 @@ export const PreferencesPage: React.FC = () => {
 
     // Save to backend (i18n preferences)
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const baseUrl = getApiBaseUrl();
       const getCsrfToken = () => {
         const match = document.cookie.match(/csrftoken=([^;]+)/);
         return match ? match[1] : '';
@@ -1370,7 +1370,7 @@ export const PreferencesPage: React.FC = () => {
                             setProfileSaving(true);
                             setProfileError(null);
 
-                            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                            const apiBaseUrl = getApiBaseUrl();
                             const response = await fetch(`${apiBaseUrl}/api/v1/auth/profile/`, {
                               method: 'PATCH',
                               headers: {
@@ -1498,7 +1498,7 @@ export const PreferencesPage: React.FC = () => {
                             setPasswordError(null);
                             setPasswordSuccess(false);
 
-                            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                            const apiBaseUrl = getApiBaseUrl();
                             const response = await fetch(`${apiBaseUrl}/api/v1/auth/change-password/`, {
                               method: 'POST',
                               headers: {
@@ -1605,7 +1605,7 @@ export const PreferencesPage: React.FC = () => {
                             setAvatarSaving(true);
                             setAvatarError(null);
 
-                            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                            const apiBaseUrl = getApiBaseUrl();
                             const formData = new FormData();
                             formData.append('avatar', avatarFile);
 

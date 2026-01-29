@@ -4,6 +4,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { fetchAllPages } from '../utils/fetchAllPages';
 import { periodPathKey } from '../utils/periodPath';
+import { getApiBaseUrl } from '../utils/apiBase';
 
 type AppProjectRow = {
   id: string | number;
@@ -309,7 +310,7 @@ export function useAppSelection() {
         console.log('[AppSelection] Triggered by:', { path: location.pathname });
     }
 
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
 
     const isUuid = (value: unknown) =>
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));

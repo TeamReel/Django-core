@@ -6,6 +6,7 @@ import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { periodPathKey } from '../../utils/periodPath';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface Participation {
   id: string;
@@ -86,7 +87,7 @@ export const MatchDetailPage: React.FC = () => {
   const [activatingContext, setActivatingContext] = useState(false);
   const [activeContext, setActiveContextState] = useState<any | null>(null);
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   // Load active context on mount
   useEffect(() => {

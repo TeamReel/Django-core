@@ -4,6 +4,7 @@ import {
   Input,
   Modal,
 } from '@django-core/design-system';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface InviteMemberModalProps {
   opened: boolean;
@@ -25,7 +26,7 @@ export default function InviteMemberModal({ opened, onClose, orgSlug, onInviteSu
     try {
       setLoading(true);
       setError(null);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
 
       const csrfToken = document.cookie
         .split('; ')

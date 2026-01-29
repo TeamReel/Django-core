@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Badge, Button } from '@django-core/design-system';
 import { useNavigate } from 'react-router-dom';
+import { getApiBaseUrl } from '../utils/apiBase';
 
 interface Match {
   id: string;
@@ -23,7 +24,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   useEffect(() => {
     // Determine how to filter for "my matches".

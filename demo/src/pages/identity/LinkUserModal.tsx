@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { fetchAllPages } from '../../utils/fetchAllPages';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 type Organisation = {
   id: string | number;
@@ -65,7 +66,7 @@ export default function LinkUserModal({
   const [error, setError] = useState<string | null>(null);
   const [successNote, setSuccessNote] = useState<string | null>(null);
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const getCsrfToken = () =>
     document.cookie

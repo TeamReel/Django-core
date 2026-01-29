@@ -18,6 +18,7 @@ import ProjectDetailModal from './ProjectDetailModal';
 import LoadingState from '../../components/LoadingState';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import WorkFilterBar, { OrganisationOption, ProjectOption } from '../work/WorkFilterBar';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 /**
  * T008 - Projects List Page
@@ -127,7 +128,7 @@ export const ProjectsPage: React.FC = () => {
     }
 
     const load = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=100`, { credentials: 'include' });
         if (!res.ok) {
@@ -154,7 +155,7 @@ export const ProjectsPage: React.FC = () => {
   // Club/Team options for filter dropdowns
   useEffect(() => {
     const load = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const [allClubs, allTeams] = await Promise.all([
           fetchAllPages<ProjectOption>(
@@ -189,7 +190,7 @@ export const ProjectsPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const apiBaseUrl = getApiBaseUrl();
 
       // Fetch org name if we have orgId from URL
       if (resolvedOrg) {
@@ -290,7 +291,7 @@ export const ProjectsPage: React.FC = () => {
     if (!selectedProject) return;
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
 
       // Get CSRF token
       const getCookie = (name: string) => {
@@ -446,7 +447,7 @@ export const ProjectsPage: React.FC = () => {
         return;
       }
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       // Always use nested route for delete (required for permissions)
       const endpoint = `${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/${projectSlug}/`;
 

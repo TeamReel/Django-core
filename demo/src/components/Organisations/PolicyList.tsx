@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Badge, Button, Alert } from '@django-core/design-system';
 import { useUserRole } from '../PermissionGuards';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface PolicyListProps {
   organisationId: string;
@@ -56,7 +57,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
     async function fetchPolicies() {
       try {
         setLoading(true);
-        const apiBaseUrl = String(import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+        const apiBaseUrl = getApiBaseUrl();
 
         const [balanceRes, notifRes] = await Promise.all([
           fetch(`${apiBaseUrl}/api/v1/transactions/balance-policies/organization/${encodeURIComponent(organisationId)}/`, {
@@ -116,7 +117,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
       setBalanceSaveError(null);
       setBalanceSaveSuccess(null);
 
-      const apiBaseUrl = String(import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+      const apiBaseUrl = getApiBaseUrl();
 
       const res = await fetch(
         `${apiBaseUrl}/api/v1/transactions/balance-policies/organization/${encodeURIComponent(organisationId)}/`,

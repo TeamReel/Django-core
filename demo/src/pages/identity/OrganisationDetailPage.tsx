@@ -46,6 +46,7 @@ import { SeasonsList } from './directory/SeasonsList';
 import { CompetitionsList } from './directory/CompetitionsList';
 import { MatchesList } from './directory/MatchesList';
 import { UsersList } from './directory/UsersList';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -484,7 +485,7 @@ export const OrganisationDetailPage: React.FC = () => {
   const orgSlugOrId = String(org?.slug || org?.id || currentOrgSlug || '');
 
   const getApiV1BaseUrl = () => {
-    const raw = String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+    const raw = getApiBaseUrl();
     return raw.endsWith('/api/v1') ? raw : `${raw}/api/v1`;
   };
 

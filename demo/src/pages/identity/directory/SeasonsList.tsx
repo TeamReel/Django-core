@@ -8,6 +8,7 @@ import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
+import { getApiBaseUrl } from '../../../utils/apiBase';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import PeriodDetailModal from '../PeriodDetailModal';
 import PeriodEditModal from '../PeriodEditModal';
@@ -169,7 +170,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
     }
 
     const load = async () => {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
         const orgs = await fetchAllPages<any>(
           `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
@@ -190,7 +191,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
     const load = async () => {
       setIsLoading(true);
       setError(null);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
 
       try {
         const [allClubs, allTeams] = await Promise.all([
@@ -221,7 +222,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
   useEffect(() => {
       const loadSeasons = async () => {
         setSeasonsLoading(true);
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
 
         try {
           const fetchPeriods = async (params: URLSearchParams) => {
@@ -416,7 +417,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
       ?.split('=')[1];
 
   const savePeriodEdits = async (periodId: string, payload: any) => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
     const response = await fetch(`${apiBaseUrl}/api/v1/periods/${periodId}/`, {
       method: 'PATCH',
       headers: {
@@ -441,7 +442,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
     organisation_id?: string;
     project_id?: string;
   }) => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
     const orgId = String(payload.organisation_id || selectedOrgId || '');
     const teamId = String(payload.project_id || selectedTeamId || '');
     if (!orgId) throw new Error('Select a federation first');
@@ -479,7 +480,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
     if (!seasonId || !window.confirm(`Are you sure you want to delete season "${seasonName}"?`)) {
       return;
     }
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
     try {
         const response = await fetch(`${apiBaseUrl}/api/v1/periods/${seasonId}/`, {
             method: 'DELETE',

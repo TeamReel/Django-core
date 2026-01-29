@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 type Transaction = {
   id: string;
@@ -62,10 +63,7 @@ export default function TransactionsPanel(props: {
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
-  const apiBaseUrl = useMemo(() => {
-    const raw = String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
-    return raw.replace(/\/+$/, '');
-  }, []);
+  const apiBaseUrl = getApiBaseUrl();
 
   const fetchList = async () => {
     setLoading(true);

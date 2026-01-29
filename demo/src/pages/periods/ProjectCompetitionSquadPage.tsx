@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
+import { getApiBaseUrl } from '../../utils/apiBase';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 
 type Organisation = { id: string; name: string; slug?: string };
@@ -32,7 +33,7 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
     clubId?: string;
   }>();
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const [org, setOrg] = useState<Organisation | null>(null);
   const [project, setProject] = useState<Project | null>(null);

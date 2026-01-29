@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 // import { useContextSwitcher } from '@django-core/context-switcher';
 import { DefaultEmpty } from '@django-core/page-templates';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface Project {
   id: string;
@@ -29,7 +30,7 @@ export default function ProjectListPage() {
   useEffect(() => {
     if (!orgId) return;
 
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
     fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/`, {
       credentials: 'include',
     })
@@ -41,7 +42,7 @@ export default function ProjectListPage() {
   useEffect(() => {
     if (!orgId) return;
 
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
 
     fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/projects/`, {
       credentials: 'include',

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface MatchActivity {
   id: string;
@@ -32,7 +33,7 @@ interface MatchEditModalProps {
 }
 
 export default function MatchEditModal({ opened, onClose, match, onSave, apiBaseUrl: apiBaseUrlProp }: MatchEditModalProps) {
-  const apiBaseUrl = apiBaseUrlProp || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = apiBaseUrlProp || getApiBaseUrl();
 
   const [title, setTitle] = useState('');
   const [titleTouched, setTitleTouched] = useState(false);

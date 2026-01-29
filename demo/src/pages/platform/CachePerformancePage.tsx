@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
+import { getApiBaseUrl } from '../../utils/apiBase';
 // import AppShell from '../../components/AppShell';
 import {
   LineChart,
@@ -59,7 +60,7 @@ export const CachePerformancePage: React.FC = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [benchmarkResult, setBenchmarkResult] = useState<BenchmarkResult | null>(null);
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const fetchMetrics = async () => {
     try {

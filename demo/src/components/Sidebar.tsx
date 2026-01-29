@@ -14,6 +14,7 @@ import { AppIcon } from './AppIcon';
 import { addRecent } from '../utils/navStorage';
 import { ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
 import { looksLikeUuid } from '../utils/periodPath';
+import { getApiBaseUrl } from '../utils/apiBase';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -225,7 +226,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
     // Deterministic Panel A defaults: build paths from API-backed slugs/keys.
     useEffect(() => {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
 
         if (!user) {
             setResolvedAppContext(null);

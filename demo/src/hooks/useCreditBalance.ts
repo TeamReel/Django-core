@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@django-core/auth-ui';
+import { getApiBaseUrl } from '../utils/apiBase';
 
 interface BalancePolicy {
   id: string;
@@ -32,7 +33,7 @@ export function useCreditBalance(organisationSlug?: string, organisationId?: str
     async function fetchData() {
       try {
         setLoading(true);
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const apiBaseUrl = getApiBaseUrl();
 
         // 1. Fetch Organisation for Balance
         const orgRes = await fetch(`${apiBaseUrl}/api/v1/organisations/${organisationSlug}/`, {

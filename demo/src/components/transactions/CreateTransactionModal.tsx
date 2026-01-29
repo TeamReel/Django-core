@@ -1,16 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Button } from '@django-core/design-system';
 import { createTeamreelDemoTransaction } from '../../utils/teamreelTransactions';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 export type WalletOption =
   | { kind: 'default'; label: string }
   | { kind: 'organization'; label: string }
   | { kind: 'project'; label: string; projectId: string | number }
   | { kind: 'me'; label: string };
-
-function normalizeApiBaseUrl(raw: string): string {
-  return String(raw || 'http://localhost:8000').replace(/\/+$/, '');
-}
 
 function defaultNotesForScope(scope: string): string {
   const s = String(scope || '').toLowerCase();
@@ -56,7 +53,7 @@ export default function CreateTransactionModal(props: {
     walletOptions,
   } = props;
 
-  const apiBaseUrl = useMemo(() => normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL), []);
+  const apiBaseUrl = getApiBaseUrl();
 
   const resolvedWalletOptions = useMemo<WalletOption[]>(() => {
     if (Array.isArray(walletOptions) && walletOptions.length > 0) return walletOptions;

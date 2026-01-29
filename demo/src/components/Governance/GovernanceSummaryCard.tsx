@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { useNavigate } from 'react-router-dom';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 type BalancePolicy = {
   id: string;
@@ -33,10 +34,7 @@ export default function GovernanceSummaryCard(props: {
 
   const navigate = useNavigate();
 
-  const apiBaseUrl = useMemo(() => {
-    const raw = String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
-    return raw.replace(/\/+$/, '');
-  }, []);
+  const apiBaseUrl = getApiBaseUrl();
 
   const [policy, setPolicy] = useState<BalancePolicy | null>(null);
   const [source, setSource] = useState<'project' | 'organization' | 'default' | null>(null);

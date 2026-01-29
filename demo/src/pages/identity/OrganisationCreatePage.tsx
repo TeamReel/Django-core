@@ -10,6 +10,7 @@ import {
   PageHeader,
   PageContent,
 } from '../../shims/page-templates';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 /**
  * Organisation Create Page
@@ -35,7 +36,7 @@ export const OrganisationCreatePage: React.FC = () => {
         .find(row => row.startsWith('csrftoken='))
         ?.split('=')[1];
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       const response = await fetch(`${apiBaseUrl}/api/v1/organisations/`, {
         method: 'POST',
         headers: {

@@ -5,6 +5,7 @@ import { BreadcrumbContextSwitcher, PageContent, PageHeader, type BreadcrumbSwit
 
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 import { SeasonsList } from './directory/SeasonsList';
 import { CompetitionsList } from './directory/CompetitionsList';
@@ -123,7 +124,7 @@ export default function TeamOrganisationDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const orgSlugOrId = String(orgId || '').trim();
   const clubSlugOrId = String(clubId || '').trim();

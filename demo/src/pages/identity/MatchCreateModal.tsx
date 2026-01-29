@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { fetchAllPages } from '../../utils/fetchAllPages';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 type OrgOption = { id: string; name: string; slug?: string };
 type ProjectOption = {
@@ -69,7 +70,7 @@ export default function MatchCreateModal({
   initialSeasonId = '',
   initialCompetitionId = '',
 }: MatchCreateModalProps) {
-  const apiBaseUrl = apiBaseUrlProp || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = apiBaseUrlProp || getApiBaseUrl();
   const isSeasonDetailMode = mode === 'season-detail';
   const isTeamContextMode = mode === 'team-context';
   const requireOpponent = !isSeasonDetailMode;
@@ -914,7 +915,7 @@ export default function MatchCreateModal({
     const load = async () => {
       setLoadingCompetitions(true);
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
         const params = new URLSearchParams();
         params.set('page_size', '250');
         params.set('parent_id', String(selectedSeasonId));

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '@django-core/theme-system';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { useUserRole } from '../hooks/useUserRole';
+import { getApiBaseUrl } from '../utils/apiBase';
 
 interface NotificationResponse {
   count: number;
@@ -37,7 +38,7 @@ export default function TopNavigation() {
 
     const fetchGlobalFlag = async () => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = getApiBaseUrl();
         const response = await fetch(`${baseUrl}/api/v1/settings/feature-flags/resolve-all/`, {
           headers: {
             'Content-Type': 'application/json',
@@ -129,7 +130,7 @@ export default function TopNavigation() {
 
     const fetchUnreadCount = async () => {
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
         const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/`, {
           credentials: 'include',
         });

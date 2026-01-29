@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getApiBaseUrl } from '../utils/apiBase';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -39,7 +40,7 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
     const fetchTransactions = async () => {
       try {
         setLoading(true);
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.teamreel.app';
+        const apiBaseUrl = getApiBaseUrl();
 
         const params = new URLSearchParams();
         if (organisation_id) params.append('organization_id', organisation_id);

@@ -4,6 +4,7 @@ import AppShell from '../../components/AppShell';
 import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Button, Card, Badge, Input, Alert, Spinner } from '@django-core/design-system';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 export function TasksPage() {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -23,7 +24,7 @@ export function TasksPage() {
         }
         setError(null);
 
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
         const response = await fetch(`${apiBaseUrl}/api/v1/tasks/`, {
           credentials: 'include',
           headers: {
@@ -230,7 +231,7 @@ export function NotificationsPage() {
       setLoading(true);
       setError(null);
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/`, {
         credentials: 'include',
         headers: {
@@ -263,7 +264,7 @@ export function NotificationsPage() {
     const newReadStatus = !currentReadStatus;
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
 
       // Get CSRF token
       const csrfToken = document.cookie
@@ -304,7 +305,7 @@ export function NotificationsPage() {
 
   const markAllAsRead = async () => {
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
       const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/mark-all-read/`, {
@@ -493,7 +494,7 @@ export function DeploymentPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+    const apiBase = getApiBaseUrl();
     const baseUrl = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
 
     fetch(`${baseUrl}/api/observability/demo-health/`)

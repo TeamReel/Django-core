@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { createApiClient } from '@django-core/api-client';
+import { getApiBaseUrl } from '../utils/apiBase';
 
 export interface SearchResult {
   id: string;
@@ -51,9 +52,8 @@ export function useSearch() {
     setError(null);
 
     try {
-      // Use VITE_API_BASE_URL if available, otherwise fallback to empty string (relative)
-      // Note: Other parts of the app seem to use https://api.teamreel.app/api/v1
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.teamreel.app';
+      // Use getApiBaseUrl() for consistent API base URL handling
+      const baseUrl = getApiBaseUrl();
       const api = createApiClient({ baseUrl });
 
       const params = new URLSearchParams({ q: query });
@@ -108,7 +108,7 @@ export function useSearch() {
       setError(null);
 
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://api.teamreel.app';
+        const baseUrl = getApiBaseUrl();
         const api = createApiClient({ baseUrl });
 
         let endpoint = '/api/v1/search/';

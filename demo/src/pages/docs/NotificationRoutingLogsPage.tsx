@@ -13,6 +13,7 @@ import {
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface RoutingLog {
   id: string;
@@ -83,7 +84,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
         setDemoMode(false);
 
         // Determine Base URL
-        const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+        const apiBase = getApiBaseUrl();
         const baseUrl = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
 
         // Build URL with org filter

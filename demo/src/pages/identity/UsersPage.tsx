@@ -12,6 +12,7 @@ import CreateUserModal from './CreateUserModal';
 import AssignUserToOrgModal from './AssignUserToOrgModal';
 import LinkUserModal from './LinkUserModal';
 import LoadingState from '../../components/LoadingState';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface User {
   id: string;
@@ -137,7 +138,7 @@ export default function UsersPage() {
   useEffect(() => {
       if (isSuperAdmin) {
           const fetchOrgs = async () => {
-              const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+              const apiBaseUrl = getApiBaseUrl();
               try {
                   console.log('[UsersPage] Fetching organisations from:', `${apiBaseUrl}/api/v1/organisations/?page_size=100`);
                   const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=100`, {
@@ -182,7 +183,7 @@ export default function UsersPage() {
   // Fetch ALL clubs (parent_project=null only) for filter dropdown
   useEffect(() => {
       const fetchClubs = async () => {
-          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+          const apiBaseUrl = getApiBaseUrl();
           try {
               // Fetch ONLY parent projects (clubs) - backend filter for efficiency
               const initialUrl = `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`;
@@ -201,7 +202,7 @@ export default function UsersPage() {
   // Fetch ALL teams (parent_project!=null only) for filter dropdown
   useEffect(() => {
       const fetchTeams = async () => {
-          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+          const apiBaseUrl = getApiBaseUrl();
           try {
               // Fetch ONLY child projects (teams) - backend filter for efficiency
               const initialUrl = `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`;
@@ -220,7 +221,7 @@ export default function UsersPage() {
   // Fetch ALL available roles from RBAC system for filter dropdown
   useEffect(() => {
       const fetchRoles = async () => {
-          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+          const apiBaseUrl = getApiBaseUrl();
           try {
               const response = await fetch(`${apiBaseUrl}/api/v1/permissions/roles/`, {
                   credentials: 'include',
@@ -353,7 +354,7 @@ export default function UsersPage() {
         const params = new URLSearchParams();
         params.append('page', pageNumber.toString());
         params.append('page_size', limit.toString());
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const apiBaseUrl = getApiBaseUrl();
 
     try {
       let url = '';
@@ -495,7 +496,7 @@ export default function UsersPage() {
   const handleSaveUser = async (updatedData: Partial<User>) => {
       if (!editingUser) return;
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       try {
           const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${editingUser.id}/`, {
               method: 'PATCH',
@@ -988,7 +989,7 @@ export default function UsersPage() {
                                 onClick={async () => {
                                     if (!window.confirm(`Are you sure you want to delete user ${user.email}? This action cannot be undone.`)) return;
                                     try {
-                                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                        const apiBaseUrl = getApiBaseUrl();
                                         const csrfToken = getCookie('csrftoken');
 
                                         const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${user.id}/`, {
@@ -1090,7 +1091,7 @@ export default function UsersPage() {
                                             onClick={async () => {
                                                 if (!window.confirm(`Remove ${user.email} from organisation?`)) return;
                                                 try {
-                                                    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                                    const apiBaseUrl = getApiBaseUrl();
                                                     const csrfToken = getCookie('csrftoken');
 
                                                     const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${effectiveOrgSlugForActions}/members/${orgMembershipId}/`, {

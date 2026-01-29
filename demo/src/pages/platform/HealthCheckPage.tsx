@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { getApiBaseUrl } from '../../utils/apiBase';
 // import AppShell from '../../components/AppShell';
 
 interface DemoHealthResponse {
@@ -28,10 +29,7 @@ export const HealthCheckPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Use VITE_API_BASE_URL if available, otherwise fallback to relative path
-    const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-    // Ensure no double slash if apiBase ends with /
-    const baseUrl = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+    const baseUrl = getApiBaseUrl();
 
     fetch(`${baseUrl}/api/observability/demo-health/`)
       .then(r => {

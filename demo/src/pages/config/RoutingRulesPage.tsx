@@ -14,6 +14,7 @@ import {
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface RoutingRule {
   id: number;
@@ -68,7 +69,7 @@ export const RoutingRulesPage: React.FC = () => {
     window.location.reload();
   };
 
-  const apiBaseUrl = useMemo(() => String(import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, ''), []);
+  const apiBaseUrl = getApiBaseUrl();
 
   const [rules, setRules] = useState<RoutingRule[]>([]);
   const [loading, setLoading] = useState(true);

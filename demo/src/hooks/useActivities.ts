@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@django-core/auth-ui';
+import { getApiBaseUrl } from '../utils/apiBase';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -36,7 +37,7 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
     async function fetchActivities() {
       try {
         setLoading(true);
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const apiBaseUrl = getApiBaseUrl();
 
         const params = new URLSearchParams();
         if (limit) params.append('limit', String(limit));

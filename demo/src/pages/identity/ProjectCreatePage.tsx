@@ -14,6 +14,7 @@ import {
 } from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 export const ProjectCreatePage: React.FC = () => {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ export const ProjectCreatePage: React.FC = () => {
         .find(row => row.startsWith('csrftoken='))
         ?.split('=')[1];
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/`, {
         method: 'POST',
         headers: {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 type OrgOption = { id: string; name: string; slug?: string };
 type ProjectOption = {
@@ -173,7 +174,7 @@ export default function PeriodCreateModal({
     const load = async () => {
       setSeasonsLoading(true);
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
         const params = new URLSearchParams();
         params.set('page_size', '250');
         params.set('parent_id', 'null');

@@ -4,6 +4,7 @@ import { Alert, Button } from '@django-core/design-system';
 import { PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
+import { getApiBaseUrl } from '../../utils/apiBase';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 
 const getEnvelopeData = <T,>(raw: any): T => (raw?.data ?? raw) as T;
@@ -21,7 +22,7 @@ export default function LegacyMatchRedirectPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   const [status, setStatus] = useState<'loading' | 'redirected' | 'fallback'>('loading');
   const [error, setError] = useState<string | null>(null);

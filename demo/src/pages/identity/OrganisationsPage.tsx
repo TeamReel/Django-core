@@ -22,6 +22,7 @@ import { canPerformAction } from '../../utils/permissions';
 import OrganisationDetailModal from './OrganisationDetailModal';
 import OrganisationEditModal from './OrganisationEditModal';
 import OrganisationCreateModal from './OrganisationCreateModal';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 /**
  * T006 - Organisations List Page
@@ -78,7 +79,7 @@ export const OrganisationsPage: React.FC = () => {
           params.append('search', search);
         }
 
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = getApiBaseUrl();
         const response = await fetch(
           `${baseUrl}/api/v1/organisations/?${params.toString()}`,
           {
@@ -121,7 +122,7 @@ export const OrganisationsPage: React.FC = () => {
         .find(row => row.startsWith('csrftoken='))
         ?.split('=')[1];
 
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const baseUrl = getApiBaseUrl();
       const response = await fetch(`${baseUrl}/api/v1/organisations/${id}/`, {
         method: 'DELETE',
         headers: {
@@ -406,7 +407,7 @@ export const OrganisationsPage: React.FC = () => {
             .find(row => row.startsWith('csrftoken='))
             ?.split('=')[1];
 
-          const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+          const baseUrl = getApiBaseUrl();
           const response = await fetch(`${baseUrl}/api/v1/organisations/${editOrganisation.slug}/`, {
             method: 'PATCH',
             headers: {
@@ -434,7 +435,7 @@ export const OrganisationsPage: React.FC = () => {
             .find((row) => row.startsWith('csrftoken='))
             ?.split('=')[1];
 
-          const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+          const baseUrl = getApiBaseUrl();
           const response = await fetch(`${baseUrl}/api/v1/organisations/`, {
             method: 'POST',
             headers: {

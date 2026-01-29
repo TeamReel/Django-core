@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 interface AuditEvent {
   id: string;
@@ -34,7 +35,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
     async function fetchAuditData() {
       try {
         setLoading(true);
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const apiBaseUrl = getApiBaseUrl();
 
         const params = new URLSearchParams();
         if (limit) params.append('limit', String(limit));

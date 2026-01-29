@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Badge, Button } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 import { useNavigate } from 'react-router-dom';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 
 interface Match {
@@ -34,7 +35,7 @@ interface ProjectMatchesProps {
 
 export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
   projectId,
-  apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+  apiBaseUrl = getApiBaseUrl()
 }) => {
   const navigate = useNavigate();
   const [matches, setMatches] = useState<Match[]>([]);

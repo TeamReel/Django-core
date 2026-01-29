@@ -3,6 +3,7 @@ import { Card, Alert, Button } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 type Period = {
   id: string;
@@ -50,7 +51,7 @@ export const MembershipsPage: React.FC = () => {
     return firstOrgId;
   }, [context, organisations]);
 
-  const apiBaseUrl = useMemo(() => import.meta.env.VITE_API_BASE_URL || '', []);
+  const apiBaseUrl = getApiBaseUrl();
 
   const [seasons, setSeasons] = useState<Period[]>([]);
   const [seasonsLoading, setSeasonsLoading] = useState(false);

@@ -14,6 +14,7 @@ import {
 } from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import LoadingState from '../../components/LoadingState';
+import { getApiBaseUrl } from '../../utils/apiBase';
 
 export const MemberDetailPage: React.FC = () => {
   const { id, memberId } = useParams<{ id: string; memberId: string }>();
@@ -87,7 +88,7 @@ export const MemberDetailPage: React.FC = () => {
       }
 
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
         const url = `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/?page_size=100`;
         console.log('[MemberDetailPage] Fetching org members from:', url);
 
@@ -125,7 +126,7 @@ export const MemberDetailPage: React.FC = () => {
     const fetchMember = async () => {
       try {
         setLoading(true);
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const apiBaseUrl = getApiBaseUrl();
         const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
         const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/${memberId}/`, {
@@ -167,7 +168,7 @@ export const MemberDetailPage: React.FC = () => {
   const handleSave = async () => {
       try {
           setSaving(true);
-          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+          const apiBaseUrl = getApiBaseUrl();
           const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
           const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/${memberId}/`, {

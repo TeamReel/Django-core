@@ -16,6 +16,7 @@ import {
     compactActionsStyle,
     actionButtonStyle
 } from '../../../utils/directoryStyles';
+import { getApiBaseUrl } from '../../../utils/apiBase';
 
 
 // Reusing existing modals from parent folder
@@ -199,7 +200,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
         }
 
         const load = async () => {
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const apiBaseUrl = getApiBaseUrl();
             try {
                 const orgs = await fetchAllPages<any>(
                     `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
@@ -218,7 +219,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
     // Fetch Clubs/Teams options
     useEffect(() => {
         const load = async () => {
-            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+            const apiBaseUrl = getApiBaseUrl();
 
             // Scope club/team options to a single organisation to avoid fetching
             // every project in the system (which makes this page slow).
@@ -1197,7 +1198,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                             }
                                                             if (!window.confirm(`Remove ${usernameLabel} from ${orgName}?`)) return;
 
-                                                            const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+                                                            const apiBaseUrl = getApiBaseUrl();
                                                             const csrfToken = getCsrfToken();
 
                                                             const res = await fetch(

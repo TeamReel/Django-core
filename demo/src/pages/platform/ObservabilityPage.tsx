@@ -11,6 +11,7 @@ import {
 } from '@django-core/page-templates';
 // Removed usePolling import - using direct useEffect instead
 import { ObservabilityCharts } from '../../components/ObservabilityCharts';
+import { getApiBaseUrl } from '../../utils/apiBase';
 import type { ObservabilityMetrics } from '../../types/chart';
 // import AppShell from '../../components/AppShell';
 
@@ -54,7 +55,7 @@ export const ObservabilityPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = getApiBaseUrl();
       console.log('[ObservabilityPage] Fetching metrics from:', `${apiBaseUrl}/api/observability/metrics/`);
       const response = await fetch(`${apiBaseUrl}/api/observability/metrics/`, {
         headers: {
