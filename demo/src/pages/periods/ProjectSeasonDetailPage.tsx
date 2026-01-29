@@ -328,7 +328,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'transactions']);
+    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'media', 'transactions']);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
 
@@ -1471,6 +1471,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           >
                             View Squad
                           </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                            onClick={() => navigateToTab('media')}
+                          >
+                            📸 Media Matrix
+                          </Button>
                         </div>
                       </Card>
 
@@ -2509,114 +2517,117 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     )}
                   </div>
                     </Card>
-
-                    {/* Media Completion Matrix */}
-                    <Card style={{ marginTop: '24px' }}>
-                      <div style={{ padding: '16px 16px 0 16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>📸 Media Completion Matrix</h3>
-                          <Badge variant="default">
-                            {members.filter((m) => countFilledMediaSlots(m) === MEDIA_SLOTS.length).length} / {members.length} Complete
-                          </Badge>
-                        </div>
-                        <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
-                          Overview of media assets uploaded per squad member. Click a member to edit their media.
-                        </div>
-                      </div>
-
-                      <div style={{ padding: '16px' }}>
-                        {membersLoading ? (
-                          <Alert variant="info">Loading squad media status…</Alert>
-                        ) : members.length === 0 ? (
-                          <Alert variant="info">No squad members to show media status for.</Alert>
-                        ) : (
-                          <div className="overflow-x-auto">
-                            <Table style={compactTableStyle}>
-                              <thead>
-                                <tr>
-                                  <th style={{ ...compactThStyle, position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>Member</th>
-                                  {MEDIA_SLOTS.map((slot) => (
-                                    <th key={slot.id} style={{ ...compactThStyle, textAlign: 'center', minWidth: '60px' }} title={slot.label}>
-                                      <span style={{ fontSize: '16px' }}>{slot.icon}</span>
-                                    </th>
-                                  ))}
-                                  <th style={{ ...compactThStyle, textAlign: 'center' }}>Score</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {members.map((m: any) => {
-                                  const memberUser = m.user || m;
-                                  const name =
-                                    memberUser.name ||
-                                    `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
-                                    memberUser.email ||
-                                    '—';
-                                  const membershipId = String(m.id || '').trim();
-                                  const href = memberDetailHref(membershipId);
-                                  const filledCount = countFilledMediaSlots(m);
-                                  const isComplete = filledCount === MEDIA_SLOTS.length;
-
-                                  return (
-                                    <tr key={String(m.id)}>
-                                      <td style={{ ...compactTextTdStyle, position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>
-                                        {href ? (
-                                          <Link
-                                            to={href}
-                                            className="text-blue-600 hover:underline"
-                                            style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
-                                          >
-                                            {name}
-                                          </Link>
-                                        ) : (
-                                          name
-                                        )}
-                                      </td>
-                                      {MEDIA_SLOTS.map((slot) => {
-                                        const hasMedia = memberHasMedia(m, slot.id);
-                                        return (
-                                          <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
-                                            {href ? (
-                                              <Link
-                                                to={`${href}?tab=${slot.id}`}
-                                                style={{ textDecoration: 'none' }}
-                                                title={`Edit ${slot.label}`}
-                                              >
-                                                <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span>
-                                              </Link>
-                                            ) : (
-                                              <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span>
-                                            )}
-                                          </td>
-                                        );
-                                      })}
-                                      <td style={{ ...compactTdStyle, textAlign: 'center' }}>
-                                        <Badge variant={isComplete ? 'success' : filledCount > 0 ? 'warning' : 'default'}>
-                                          {filledCount}/{MEDIA_SLOTS.length}
-                                        </Badge>
-                                      </td>
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </Table>
-                          </div>
-                        )}
-
-                        {/* Legend */}
-                        <div style={{ marginTop: '16px', padding: '12px', background: 'var(--app-muted)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>Legend</div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '12px' }}>
-                            {MEDIA_SLOTS.map((slot) => (
-                              <div key={slot.id} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <span>{slot.icon}</span>
-                                <span style={{ opacity: 0.8 }}>{slot.label}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
                   </div>
+                </div>
+              )}
+
+              {activeTab === 'media' && (
+                <div className="grid grid-cols-1 gap-6">
+                  <Card>
+                    <div style={{ padding: '16px 16px 0 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>📸 Media Completion Matrix</h3>
+                        <Badge variant="default">
+                          {members.filter((m) => countFilledMediaSlots(m) === MEDIA_SLOTS.length).length} / {members.length} Complete
+                        </Badge>
+                      </div>
+                      <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
+                        Overview of media assets uploaded per squad member. Click a member to edit their media.
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '16px' }}>
+                      {membersLoading ? (
+                        <Alert variant="info">Loading squad media status…</Alert>
+                      ) : members.length === 0 ? (
+                        <Alert variant="info">No squad members to show media status for.</Alert>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <Table style={compactTableStyle}>
+                            <thead>
+                              <tr>
+                                <th style={{ ...compactThStyle, position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>Member</th>
+                                {MEDIA_SLOTS.map((slot) => (
+                                  <th key={slot.id} style={{ ...compactThStyle, textAlign: 'center', minWidth: '60px' }} title={slot.label}>
+                                    <span style={{ fontSize: '16px' }}>{slot.icon}</span>
+                                  </th>
+                                ))}
+                                <th style={{ ...compactThStyle, textAlign: 'center' }}>Score</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {members.map((m: any) => {
+                                const memberUser = m.user || m;
+                                const name =
+                                  memberUser.name ||
+                                  `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
+                                  memberUser.email ||
+                                  '—';
+                                const membershipId = String(m.id || '').trim();
+                                const href = memberDetailHref(membershipId);
+                                const filledCount = countFilledMediaSlots(m);
+                                const isComplete = filledCount === MEDIA_SLOTS.length;
+
+                                return (
+                                  <tr key={String(m.id)}>
+                                    <td style={{ ...compactTextTdStyle, position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>
+                                      {href ? (
+                                        <Link
+                                          to={href}
+                                          className="text-blue-600 hover:underline"
+                                          style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
+                                        >
+                                          {name}
+                                        </Link>
+                                      ) : (
+                                        name
+                                      )}
+                                    </td>
+                                    {MEDIA_SLOTS.map((slot) => {
+                                      const hasMedia = memberHasMedia(m, slot.id);
+                                      return (
+                                        <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
+                                          {href ? (
+                                            <Link
+                                              to={`${href}?tab=${slot.id}`}
+                                              style={{ textDecoration: 'none' }}
+                                              title={`Edit ${slot.label}`}
+                                            >
+                                              <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span>
+                                            </Link>
+                                          ) : (
+                                            <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span>
+                                          )}
+                                        </td>
+                                      );
+                                    })}
+                                    <td style={{ ...compactTdStyle, textAlign: 'center' }}>
+                                      <Badge variant={isComplete ? 'success' : filledCount > 0 ? 'warning' : 'default'}>
+                                        {filledCount}/{MEDIA_SLOTS.length}
+                                      </Badge>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </Table>
+                        </div>
+                      )}
+
+                      {/* Legend */}
+                      <div style={{ marginTop: '16px', padding: '12px', background: 'var(--app-muted)', borderRadius: '8px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>Legend</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '12px' }}>
+                          {MEDIA_SLOTS.map((slot) => (
+                            <div key={slot.id} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span>{slot.icon}</span>
+                              <span style={{ opacity: 0.8 }}>{slot.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
                 </div>
               )}
 
