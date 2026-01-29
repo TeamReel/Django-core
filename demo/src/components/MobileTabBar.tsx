@@ -1,12 +1,15 @@
 /**
- * MobileTabBar - Horizontal scrollable tab bar for mobile detail pages
+ * MobileTabBar - Dropdown tab switcher for mobile detail pages
  *
- * Displays tabs in a horizontally scrollable strip for mobile navigation
- * on detail pages (Organisation, Club, Team, Season, etc.)
+ * Displays current tab with a dropdown to switch between tabs.
+ * Much cleaner than horizontal scrolling tabs.
  *
  * Only visible on mobile (<640px)
  */
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { ChevronDown, Check } from 'lucide-react';
+import { AppIcon } from './AppIcon';
 
 export interface MobileTab {
   id: string;
@@ -24,58 +27,174 @@ interface MobileTabBarProps {
 export default function MobileTabBar({ tabs, activeTab, basePath }: MobileTabBarProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const currentTab = tabs.find(t => t.id === activeTab) || tabs[0];
 
   const handleTabClick = (tabId: string) => {
     const base = basePath || location.pathname;
     const params = new URLSearchParams(location.search);
-    params.set('tab', tabId);
-    navigate(`${base}?${params.toString()}`);
+    if (tabId === 'overview') {
+      params.delete('tab');
+    } else {
+      params.set('tab', tabId);
+    }
+    const qs = params.toString();
+    navigate(qs ? `${base}?${qs}` : base);
+    setIsOpen(false);
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  // Close on route change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname, location.search]);
 
   return (
     <div
+      ref={dropdownRef}
       className="mobile-tab-bar"
       style={{
-        display: 'flex',
-        gap: '4px',
-        overflowX: 'auto',
-        overflowY: 'hidden',
-        padding: '8px 0',
+        position: 'relative',
         marginBottom: '12px',
-        borderBottom: '1px solid var(--app-border)',
-        WebkitOverflowScrolling: 'touch',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
       }}
     >
-      {tabs.map((tab) => {
-        const isActive = activeTab === tab.id;
-        return (
-          <button
-            key={tab.id}
-            onClick={() => handleTabClick(tab.id)}
+      {/* Current Tab Button - triggers dropdown */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          width: '100%',
+          padding: '12px 16px',
+          backgroundColor: 'var(--app-surface)',
+          border: '1px solid var(--app-border)',
+          borderRadius: '10px',
+          cursor: 'pointer',
+          transition: 'all 0.15s ease',
+          boxShadow: isOpen ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 14px',
-              backgroundColor: isActive ? 'var(--app-primary)' : 'var(--app-surface-secondary)',
-              color: isActive ? '#fff' : 'var(--app-text)',
-              border: 'none',
-              borderRadius: '20px',
-              fontSize: '13px',
-              fontWeight: isActive ? 600 : 500,
-              whiteSpace: 'nowrap',
-              cursor: 'pointer',
-              flexShrink: 0,
-              transition: 'all 0.15s ease',
+              fontSize: '11px',
+              fontWeight: 500,
+              color: 'var(--app-muted-text)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
             }}
           >
-            {tab.icon}
-            <span>{tab.label}</span>
-          </button>
-        );
-      })}
+            Section
+          </span>
+          <span
+            style={{
+              fontSize: '15px',
+              fontWeight: 600,
+              color: 'var(--app-text)',
+            }}
+          >
+            {currentTab?.label || 'Select'}
+          </span>
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: 'var(--app-primary)',
+          }}
+        >
+          <span style={{ fontSize: '12px', fontWeight: 500 }}>
+            {tabs.length} options
+          </span>
+          <AppIcon
+            icon={ChevronDown}
+            size={18}
+            style={{
+              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease',
+            }}
+          />
+        </div>
+      </button>
+
+      {/* Dropdown Menu */}
+      {isOpen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 4px)',
+            left: 0,
+            right: 0,
+            backgroundColor: 'var(--app-surface)',
+            border: '1px solid var(--app-border)',
+            borderRadius: '10px',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
+            zIndex: 100,
+            maxHeight: '300px',
+            overflowY: 'auto',
+          }}
+        >
+          {tabs.map((tab, index) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleTabClick(tab.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  padding: '14px 16px',
+                  backgroundColor: isActive ? 'var(--app-surface-secondary)' : 'transparent',
+                  border: 'none',
+                  borderBottom: index < tabs.length - 1 ? '1px solid var(--app-border)' : 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.1s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'var(--app-surface-hover)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = isActive ? 'var(--app-surface-secondary)' : 'transparent';
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '15px',
+                    fontWeight: isActive ? 600 : 500,
+                    color: isActive ? 'var(--app-primary)' : 'var(--app-text)',
+                  }}
+                >
+                  {tab.label}
+                </span>
+                {isActive && (
+                  <AppIcon icon={Check} size={18} style={{ color: 'var(--app-primary)' }} />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

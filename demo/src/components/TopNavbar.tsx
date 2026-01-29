@@ -531,7 +531,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               }}
               aria-label="Toggle menu"
             >
-              <Menu size={24} strokeWidth={2} />
+              <Menu size={20} strokeWidth={2} />
             </button>
           )}
 
