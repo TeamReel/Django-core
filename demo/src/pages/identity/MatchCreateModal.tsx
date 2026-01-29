@@ -739,7 +739,7 @@ export default function MatchCreateModal({
 
   useEffect(() => {
     if (!opened) return;
-    if (!isSeasonDetailMode) return;
+    if (!isSeasonDetailMode && !isTeamContextMode) return;
 
     const orgId = String(selectedOpponentOrganisationId || '').trim();
     if (!orgId) {
@@ -778,7 +778,7 @@ export default function MatchCreateModal({
       cancelled = true;
       abortController.abort();
     };
-  }, [opened, isSeasonDetailMode, apiBaseUrl, selectedOpponentOrganisationId]);
+  }, [opened, isSeasonDetailMode, isTeamContextMode, apiBaseUrl, selectedOpponentOrganisationId]);
 
   const combineDateTime = (date: string, time: string): string | null => {
     if (!date || !time) return null;
@@ -856,7 +856,7 @@ export default function MatchCreateModal({
 
   useEffect(() => {
     if (!opened) return;
-    if (!selectedOrganisationId || !selectedClubId || !selectedTeamId) {
+    if (!selectedOrganisationId || !selectedTeamId) {
       setSeasonOptions([]);
       setSelectedSeasonId('');
       setCompetitionOptions([]);
@@ -894,7 +894,7 @@ export default function MatchCreateModal({
     };
 
     load();
-  }, [opened, selectedOrganisationId, selectedClubId, selectedTeamId]);
+  }, [opened, selectedOrganisationId, selectedTeamId]);
 
   useEffect(() => {
     if (!opened) return;
@@ -957,12 +957,15 @@ export default function MatchCreateModal({
     setError(null);
 
     try {
+      const effectiveSeasonIdForCreate = String(selectedSeasonId || initialSeasonId || '').trim();
+      const effectiveCompetitionIdForCreate = String(selectedCompetitionId || initialCompetitionId || '').trim();
+
       if (!selectedOrganisationId) throw new Error('Select a federation first.');
       if (!resolvedClubId) throw new Error('Select a club first.');
       if (!selectedTeamId) throw new Error('Select a team first.');
       if (requireOpponent && !selectedOpponentTeamId) throw new Error('Select an opponent first.');
-      if (!selectedSeasonId) throw new Error('Select a season first.');
-      if (!selectedCompetitionId) throw new Error('Select a competition first.');
+      if (!effectiveSeasonIdForCreate) throw new Error('Select a season first.');
+      if (!effectiveCompetitionIdForCreate) throw new Error('Select a competition first.');
 
       const start = combineDateTime(matchDate, matchTime);
       if (!start) throw new Error('Select a match date and time.');
@@ -1016,8 +1019,8 @@ export default function MatchCreateModal({
         organisation_id: selectedOrganisationId,
         project_id: selectedTeamId,
         opponent_project_id: selectedOpponentTeamId || undefined,
-        season_id: selectedSeasonId,
-        period_id: selectedCompetitionId,
+        season_id: effectiveSeasonIdForCreate,
+        period_id: effectiveCompetitionIdForCreate,
       });
       setTitle('');
       setTitleTouched(false);
@@ -1087,22 +1090,27 @@ export default function MatchCreateModal({
 
         <form onSubmit={handleCreate}>
           <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-venue">
-              Venue
+            <label style={{ fontWeight: 600 }} htmlFor="match-create-title">
+              Title
             </label>
-            <select
-              id="match-create-venue"
-              value={venue}
-              onChange={(e) => {
-                const next = (e.target.value === 'Away' ? 'Away' : 'Home') as 'Home' | 'Away';
-                setVenue(next);
-              }}
-              disabled={isSaving}
-              style={controlStyle(Boolean(isSaving))}
-            >
-              <option value="Home">Home</option>
-              <option value="Away">Away</option>
-            </select>
+            {isTeamContextMode ? (
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>{title || derived.titleDefault || '—'}</div>
+            ) : (
+              <input
+                id="match-create-title"
+                value={title}
+                onChange={(e) => {
+                  setTitleTouched(true);
+                  setTitle(e.target.value);
+                }}
+                required
+                disabled={isSaving}
+                style={{
+                  ...controlStyle(Boolean(isSaving)),
+                  cursor: isSaving ? 'not-allowed' : 'text',
+                }}
+              />
+            )}
 
             <label style={{ fontWeight: 600 }} htmlFor="match-create-org">
               Federation
@@ -1183,7 +1191,81 @@ export default function MatchCreateModal({
               </select>
             )}
 
-            {isSeasonDetailMode ? (
+            <label style={{ fontWeight: 600 }} htmlFor="match-create-season">
+              Season
+            </label>
+            {isTeamContextMode ? (
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>
+                {periodNameById(String(selectedSeasonId || initialSeasonId || '')) || 'Loading…'}
+              </div>
+            ) : (
+              <select
+                id="match-create-season"
+                value={selectedSeasonId}
+                onChange={(e) => {
+                  setSelectedSeasonId(e.target.value);
+                  setSelectedCompetitionId('');
+                }}
+                disabled={isSaving || loadingSeasons || isSeasonDetailMode}
+                required
+                style={controlStyle(Boolean(isSaving || loadingSeasons || isSeasonDetailMode))}
+              >
+                <option value="">{loadingSeasons ? 'Loading seasons…' : 'Select season…'}</option>
+                {seasonOptions.map((s) => (
+                  <option key={String(s.id)} value={String(s.id)}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <label style={{ fontWeight: 600 }} htmlFor="match-create-competition">
+              Competition
+            </label>
+            {isTeamContextMode ? (
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>
+                {periodNameById(String(selectedCompetitionId || initialCompetitionId || '')) || 'Loading…'}
+              </div>
+            ) : (
+              <select
+                id="match-create-competition"
+                value={selectedCompetitionId}
+                onChange={(e) => setSelectedCompetitionId(e.target.value)}
+                disabled={isSaving || loadingCompetitions}
+                required
+                style={controlStyle(Boolean(isSaving || loadingCompetitions))}
+              >
+                <option value="">{loadingCompetitions ? 'Loading competitions…' : 'Select competition…'}</option>
+                {competitionOptions.map((c) => (
+                  <option key={String(c.id)} value={String(c.id)}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <label style={{ fontWeight: 600 }} htmlFor="match-create-location">
+              Location
+            </label>
+            {isTeamContextMode ? (
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>{(location || derived.locationDefault || '').trim() || '—'}</div>
+            ) : (
+              <input
+                id="match-create-location"
+                value={location}
+                onChange={(e) => {
+                  setLocationTouched(true);
+                  setLocation(e.target.value);
+                }}
+                disabled={isSaving}
+                style={{
+                  ...controlStyle(Boolean(isSaving)),
+                  cursor: isSaving ? 'not-allowed' : 'text',
+                }}
+              />
+            )}
+
+            {(isSeasonDetailMode || isTeamContextMode) ? (
               <>
                 <label style={{ fontWeight: 600 }} htmlFor="match-create-opponent-org">
                   Opponent Federation
@@ -1250,7 +1332,7 @@ export default function MatchCreateModal({
                   required={requireOpponent}
                   style={controlStyle(Boolean(isSaving || loadingOpponentTeams || !selectedOpponentOrganisationId))}
                 >
-                  <option value="">{loadingOpponentTeams ? 'Loading opponents…' : '(Optional) Select opponent team…'}</option>
+                  <option value="">{loadingOpponentTeams ? 'Loading opponents…' : 'Select opponent…'}</option>
                   {opponentTeamOptions.map((t) => (
                     <option key={String(t.id)} value={String(t.id)}>
                       {t.name}
@@ -1290,80 +1372,22 @@ export default function MatchCreateModal({
               </>
             )}
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-season">
-              Season
+            <label style={{ fontWeight: 600 }} htmlFor="match-create-venue">
+              Venue
             </label>
-            {isTeamContextMode && selectedSeasonId ? (
-              <div style={{ ...controlStyle(true), cursor: 'default' }}>
-                {periodNameById(selectedSeasonId) || (loadingSeasons ? 'Loading…' : 'Loading…')}
-              </div>
-            ) : (
-              <select
-                id="match-create-season"
-                value={selectedSeasonId}
-                onChange={(e) => {
-                  setSelectedSeasonId(e.target.value);
-                  setSelectedCompetitionId('');
-                }}
-                disabled={isSaving || loadingSeasons || isSeasonDetailMode}
-                required
-                style={controlStyle(Boolean(isSaving || loadingSeasons || isSeasonDetailMode))}
-              >
-                <option value="">{loadingSeasons ? 'Loading seasons…' : 'Select season…'}</option>
-                {seasonOptions.map((s) => (
-                  <option key={String(s.id)} value={String(s.id)}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            )}
-
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-competition">
-              Competition
-            </label>
-            {isTeamContextMode && selectedCompetitionId ? (
-              <div style={{ ...controlStyle(true), cursor: 'default' }}>
-                {periodNameById(selectedCompetitionId) || (loadingCompetitions ? 'Loading…' : 'Loading…')}
-              </div>
-            ) : (
-              <select
-                id="match-create-competition"
-                value={selectedCompetitionId}
-                onChange={(e) => setSelectedCompetitionId(e.target.value)}
-                disabled={isSaving || loadingCompetitions}
-                required
-                style={controlStyle(Boolean(isSaving || loadingCompetitions))}
-              >
-                <option value="">{loadingCompetitions ? 'Loading competitions…' : 'Select competition…'}</option>
-                {competitionOptions.map((c) => (
-                  <option key={String(c.id)} value={String(c.id)}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            )}
-
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-title">
-              Title
-            </label>
-            {isTeamContextMode ? (
-              <div style={{ ...controlStyle(true), cursor: 'default' }}>{title || derived.titleDefault || '—'}</div>
-            ) : (
-              <input
-                id="match-create-title"
-                value={title}
-                onChange={(e) => {
-                  setTitleTouched(true);
-                  setTitle(e.target.value);
-                }}
-                required
-                disabled={isSaving}
-                style={{
-                  ...controlStyle(Boolean(isSaving)),
-                  cursor: isSaving ? 'not-allowed' : 'text',
-                }}
-              />
-            )}
+            <select
+              id="match-create-venue"
+              value={venue}
+              onChange={(e) => {
+                const next = (e.target.value === 'Away' ? 'Away' : 'Home') as 'Home' | 'Away';
+                setVenue(next);
+              }}
+              disabled={isSaving}
+              style={controlStyle(Boolean(isSaving))}
+            >
+              <option value="Home">Home</option>
+              <option value="Away">Away</option>
+            </select>
 
             <label style={{ fontWeight: 600 }} htmlFor="match-create-date">
               Date
@@ -1396,27 +1420,6 @@ export default function MatchCreateModal({
                 cursor: isSaving ? 'not-allowed' : 'text',
               }}
             />
-
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-location">
-              Location
-            </label>
-            {isTeamContextMode ? (
-              <div style={{ ...controlStyle(true), cursor: 'default' }}>{(location || derived.locationDefault || '').trim() || '—'}</div>
-            ) : (
-              <input
-                id="match-create-location"
-                value={location}
-                onChange={(e) => {
-                  setLocationTouched(true);
-                  setLocation(e.target.value);
-                }}
-                disabled={isSaving}
-                style={{
-                  ...controlStyle(Boolean(isSaving)),
-                  cursor: isSaving ? 'not-allowed' : 'text',
-                }}
-              />
-            )}
 
             <label style={{ fontWeight: 600 }} htmlFor="match-create-description">
               Description
