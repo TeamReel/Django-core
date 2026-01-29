@@ -141,10 +141,10 @@ export default function TransactionsPanel(props: {
           <Table style={{ width: '100%' }}>
             <thead>
               <tr>
-                <th style={{ textAlign: 'left', padding: '8px 10px', fontSize: '12px', opacity: 0.8 }}>When</th>
-                <th style={{ textAlign: 'left', padding: '8px 10px', fontSize: '12px', opacity: 0.8 }}>Type</th>
-                <th style={{ textAlign: 'right', padding: '8px 10px', fontSize: '12px', opacity: 0.8 }}>Amount</th>
-                <th style={{ textAlign: 'left', padding: '8px 10px', fontSize: '12px', opacity: 0.8 }}>Notes</th>
+                <th style={{ textAlign: 'left', padding: '8px 6px', fontSize: '12px', opacity: 0.8 }}>When</th>
+                <th style={{ textAlign: 'right', padding: '8px 6px', fontSize: '12px', opacity: 0.8 }}>Amount</th>
+                <th className="hide-mobile" style={{ textAlign: 'left', padding: '8px 6px', fontSize: '12px', opacity: 0.8 }}>Type</th>
+                <th className="hide-mobile" style={{ textAlign: 'left', padding: '8px 6px', fontSize: '12px', opacity: 0.8 }}>Notes</th>
               </tr>
             </thead>
             <tbody>
@@ -152,16 +152,16 @@ export default function TransactionsPanel(props: {
                 const amount = Number(t.amount);
                 return (
                   <tr key={t.id}>
-                    <td style={{ padding: '8px 10px', fontSize: '13px', whiteSpace: 'nowrap' }}>{formatDateTime(t.timestamp)}</td>
-                    <td style={{ padding: '8px 10px', fontSize: '13px' }}>
+                    <td style={{ padding: '8px 6px', fontSize: '13px', whiteSpace: 'nowrap' }}>{formatDateTime(t.timestamp)}</td>
+                    <td style={{ padding: '8px 6px', fontSize: '13px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: amountColor(amount) }}>
+                      {t.amount}
+                    </td>
+                    <td className="hide-mobile" style={{ padding: '8px 6px', fontSize: '13px' }}>
                       <Badge variant={String(t.source_type).toLowerCase() === 'usage_event' ? 'primary' : 'default'}>
                         {sourceTypeLabel(t.source_type)}
                       </Badge>
                     </td>
-                    <td style={{ padding: '8px 10px', fontSize: '13px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: amountColor(amount) }}>
-                      {t.amount}
-                    </td>
-                    <td style={{ padding: '8px 10px', fontSize: '13px' }}>{t.notes || '—'}</td>
+                    <td className="hide-mobile" style={{ padding: '8px 6px', fontSize: '13px' }}>{t.notes || '—'}</td>
                   </tr>
                 );
               })}

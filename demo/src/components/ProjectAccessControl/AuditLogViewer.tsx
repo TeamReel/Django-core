@@ -80,35 +80,34 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ projectId }) => 
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead style={{ backgroundColor: '#f9f9f9' }}>
               <tr style={{ textAlign: 'left' }}>
-                <th style={{ padding: '12px', borderBottom: '1px solid #eee' }}>Action</th>
-                <th style={{ padding: '12px', borderBottom: '1px solid #eee' }}>User</th>
-                <th style={{ padding: '12px', borderBottom: '1px solid #eee' }}>Details</th>
-                <th style={{ padding: '12px', borderBottom: '1px solid #eee' }}>Time</th>
+                <th style={{ padding: '10px 8px', borderBottom: '1px solid #eee' }}>Action</th>
+                <th style={{ padding: '10px 8px', borderBottom: '1px solid #eee' }}>User</th>
+                <th className="hide-mobile" style={{ padding: '10px 8px', borderBottom: '1px solid #eee' }}>Details</th>
+                <th className="hide-mobile" style={{ padding: '10px 8px', borderBottom: '1px solid #eee' }}>Time</th>
               </tr>
             </thead>
             <tbody>
               {filteredEvents.map((event) => (
                 <tr key={event.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '12px' }}>
+                  <td style={{ padding: '10px 8px' }}>
                     <span style={{
-                      padding: '4px 8px',
+                      padding: '2px 6px',
                       borderRadius: '4px',
-                      fontSize: '0.85em',
+                      fontSize: '11px',
                       backgroundColor: event.action === 'member_removed' ? '#ffebee' : '#e3f2fd',
                       color: event.action === 'member_removed' ? '#c62828' : '#1565c0'
                     }}>
                       {event.action.replace('_', ' ').toUpperCase()}
                     </span>
                   </td>
-                  <td style={{ padding: '12px' }}>
+                  <td style={{ padding: '10px 8px', fontSize: '13px' }}>
                     <div>{event.actor.name}</div>
-                    <div style={{ fontSize: '0.8em', color: '#666' }}>{event.actor.email}</div>
                   </td>
-                  <td style={{ padding: '12px' }}>
+                  <td className="hide-mobile" style={{ padding: '10px 8px', fontSize: '13px' }}>
                     <div>{event.details}</div>
-                    <div style={{ fontSize: '0.8em', color: '#666' }}>Target: {event.target.name}</div>
+                    <div style={{ fontSize: '11px', color: '#666' }}>Target: {event.target.name}</div>
                   </td>
-                  <td style={{ padding: '12px', color: '#666', fontSize: '0.9em' }}>
+                  <td className="hide-mobile" style={{ padding: '10px 8px', color: '#666', fontSize: '12px' }}>
                     {event.timestamp}
                   </td>
                 </tr>

@@ -83,11 +83,11 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
         <thead style={{ backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)' }}>
           <tr style={{ textAlign: 'left' }}>
-            <th style={{ padding: '12px', borderBottom: '1px solid var(--app-border)' }}>Time</th>
-            <th style={{ padding: '12px', borderBottom: '1px solid var(--app-border)' }}>Actor</th>
-            <th style={{ padding: '12px', borderBottom: '1px solid var(--app-border)' }}>Action</th>
-            <th style={{ padding: '12px', borderBottom: '1px solid var(--app-border)' }}>Resource</th>
-            <th style={{ padding: '12px', borderBottom: '1px solid var(--app-border)' }}>IP Address</th>
+            <th style={{ padding: '10px 8px', borderBottom: '1px solid var(--app-border)' }}>Time</th>
+            <th style={{ padding: '10px 8px', borderBottom: '1px solid var(--app-border)' }}>Action</th>
+            <th className="hide-mobile" style={{ padding: '10px 8px', borderBottom: '1px solid var(--app-border)' }}>Actor</th>
+            <th className="hide-mobile" style={{ padding: '10px 8px', borderBottom: '1px solid var(--app-border)' }}>Resource</th>
+            <th className="hide-mobile hide-tablet" style={{ padding: '10px 8px', borderBottom: '1px solid var(--app-border)' }}>IP</th>
           </tr>
         </thead>
         <tbody>
@@ -100,28 +100,27 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
           ) : (
             events.map((event) => (
               <tr key={event.id} style={{ borderBottom: '1px solid var(--app-border)', color: 'var(--app-text)' }}>
-                <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
-                  {new Date(event.timestamp).toLocaleString()}
+                <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', fontSize: '12px' }}>
+                  {new Date(event.timestamp).toLocaleDateString()}
                 </td>
-                <td style={{ padding: '12px' }}>
-                  {event.actor?.email || 'System'}
-                </td>
-                <td style={{ padding: '12px' }}>
+                <td style={{ padding: '10px 8px' }}>
                   <span style={{
-                    padding: '2px 8px',
+                    padding: '2px 6px',
                     borderRadius: '12px',
                     backgroundColor: 'var(--app-surface-2)',
-                    fontSize: '12px',
+                    fontSize: '11px',
                     fontWeight: 500
                   }}>
                     {event.action.toUpperCase()}
                   </span>
                 </td>
-                <td style={{ padding: '12px' }}>
-                   {event.resource_type}
-                   {/* Could expand "target" JSON here if needed */}
+                <td className="hide-mobile" style={{ padding: '10px 8px', fontSize: '13px' }}>
+                  {event.actor?.email || 'System'}
                 </td>
-                <td style={{ padding: '12px', fontFamily: 'monospace' }}>
+                <td className="hide-mobile" style={{ padding: '10px 8px', fontSize: '13px' }}>
+                   {event.resource_type}
+                </td>
+                <td className="hide-mobile hide-tablet" style={{ padding: '10px 8px', fontFamily: 'monospace', fontSize: '12px' }}>
                   {event.remote_ip}
                 </td>
               </tr>

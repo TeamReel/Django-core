@@ -138,9 +138,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Activity Feed and Welcome row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '24px', marginBottom: '32px' }}>
-          {/* Main Welcome Card - 8 cols */}
-          <div style={{ gridColumn: 'span 8' }}>
+        <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px', marginBottom: '32px' }}>
+          {/* Main Welcome Card */}
+          <div className="dashboard-main">
             <div style={{
               padding: '24px',
               backgroundColor: 'var(--app-surface)',
@@ -148,61 +148,65 @@ export default function DashboardPage() {
               border: '1px solid var(--app-border)',
               color: 'var(--app-text)'
             }}>
-              <h2 style={{ fontSize: '24px', marginTop: 0 }}>
+              <h2 style={{ fontSize: '20px', marginTop: 0 }}>
                 {context.organisation ? context.organisation.name : 'Select an Organisation'}
               </h2>
               {context.organisation ? (
                 <div>
-                   <p style={{ opacity: 0.8 }}>
-                     You are currently viewing the dashboard for <strong>{context.organisation.name}</strong>.
+                   <p style={{ opacity: 0.8, fontSize: '14px' }}>
+                     Viewing <strong>{context.organisation.name}</strong>.
                    </p>
 
-                   {/* Stats Row */}
-                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginTop: '24px' }}>
-                      <div style={{ textAlign: 'center', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{(context.organisation as any).clubs_count || (context.organisation as any).project_count || 0}</div>
-                          <div style={{ fontSize: '13px', opacity: 0.7 }}>Clubs</div>
+                   {/* Stats Row - 2x2 on mobile */}
+                   <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginTop: '16px' }}>
+                      <div style={{ textAlign: 'center', padding: '12px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{(context.organisation as any).clubs_count || (context.organisation as any).project_count || 0}</div>
+                          <div style={{ fontSize: '12px', opacity: 0.7 }}>Clubs</div>
                       </div>
-                      <div style={{ textAlign: 'center', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{(context.organisation as any).teams_count || 0}</div>
-                          <div style={{ fontSize: '13px', opacity: 0.7 }}>Teams</div>
+                      <div style={{ textAlign: 'center', padding: '12px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{(context.organisation as any).teams_count || 0}</div>
+                          <div style={{ fontSize: '12px', opacity: 0.7 }}>Teams</div>
                       </div>
-                      <div style={{ textAlign: 'center', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{(context.organisation as any).matches_count || 0}</div>
-                          <div style={{ fontSize: '13px', opacity: 0.7 }}>Matches</div>
+                      <div style={{ textAlign: 'center', padding: '12px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{(context.organisation as any).matches_count || 0}</div>
+                          <div style={{ fontSize: '12px', opacity: 0.7 }}>Matches</div>
                       </div>
-                      <div style={{ textAlign: 'center', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{(context.organisation as any).member_count || 0}</div>
-                          <div style={{ fontSize: '13px', opacity: 0.7 }}>Members</div>
+                      <div style={{ textAlign: 'center', padding: '12px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
+                          <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{(context.organisation as any).member_count || 0}</div>
+                          <div style={{ fontSize: '12px', opacity: 0.7 }}>Members</div>
                       </div>
                    </div>
-                   <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                   <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
                      <Link
                        to={`/organisations/${context.organisation.slug}/projects`}
                        style={{
-                         padding: '10px 20px',
+                         padding: '10px 16px',
                          backgroundColor: '#007bff',
                          color: 'white',
                          textDecoration: 'none',
                          borderRadius: '4px',
-                         fontWeight: 500
+                         fontWeight: 500,
+                         fontSize: '14px',
+                         flex: '1 1 auto'
                        }}
                      >
-                       View Projects
+                       Projects
                      </Link>
                      <Link
                        to={`/organisations/${context.organisation.slug}`}
                        style={{
-                         padding: '10px 20px',
+                         padding: '10px 16px',
                          backgroundColor: 'var(--app-surface-2)',
                          color: 'var(--app-text)',
                          border: '1px solid var(--app-border)',
                          textDecoration: 'none',
                          borderRadius: '4px',
-                         fontWeight: 500
+                         fontWeight: 500,
+                         fontSize: '14px',
+                         flex: '1 1 auto'
                        }}
                      >
-                       Manage Team
+                       Team
                      </Link>
                    </div>
                 </div>
@@ -215,37 +219,37 @@ export default function DashboardPage() {
 
             <div style={{ marginTop: '24px' }}>
               <UpcomingMatchesWidget />
-              <h3 style={{ color: 'var(--app-text)', fontSize: '18px' }}>Your Profile</h3>
+              <h3 style={{ color: 'var(--app-text)', fontSize: '16px' }}>Your Profile</h3>
               <div style={{
-                padding: '16px',
+                padding: '12px',
                 backgroundColor: 'var(--app-surface-2)',
                 borderRadius: '8px',
                 border: '1px solid var(--app-border)',
                 color: 'var(--app-text)'
               }}>
-                <div style={{ display: 'flex', gap: '24px' }}>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                    <div>
-                     <div style={{ fontSize: '12px', opacity: 0.6, textTransform: 'uppercase' }}>Name</div>
-                     <div style={{ fontWeight: 500 }}>{user?.first_name || 'Not set'}</div>
+                     <div style={{ fontSize: '11px', opacity: 0.6, textTransform: 'uppercase' }}>Name</div>
+                     <div style={{ fontWeight: 500, fontSize: '14px' }}>{user?.first_name || 'Not set'}</div>
                    </div>
                    <div>
-                     <div style={{ fontSize: '12px', opacity: 0.6, textTransform: 'uppercase' }}>Email</div>
-                     <div style={{ fontWeight: 500 }}>{user?.email}</div>
+                     <div style={{ fontSize: '11px', opacity: 0.6, textTransform: 'uppercase' }}>Email</div>
+                     <div style={{ fontWeight: 500, fontSize: '14px' }}>{user?.email}</div>
                    </div>
-                   <div>
-                     <div style={{ fontSize: '12px', opacity: 0.6, textTransform: 'uppercase' }}>Role</div>
-                     <div style={{ fontWeight: 500 }}>{(user as any)?.role || 'Member'}</div>
+                   <div className="hide-mobile">
+                     <div style={{ fontSize: '11px', opacity: 0.6, textTransform: 'uppercase' }}>Role</div>
+                     <div style={{ fontWeight: 500, fontSize: '14px' }}>{(user as any)?.role || 'Member'}</div>
                    </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Activity Sidebar - 4 cols */}
-          <div style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Activity Sidebar */}
+          <div className="dashboard-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
              <ActivityFeed
                 title="Upcoming Activities"
-                limit={10}
+                limit={5}
                 {...activityFilterProps}
              />
 
@@ -253,7 +257,7 @@ export default function DashboardPage() {
              {context.organisation?.id && (
                <TransactionWidget
                  organisationId={context.organisation.id.toString()}
-                 limit={5}
+                 limit={3}
                />
              )}
           </div>

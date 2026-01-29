@@ -537,16 +537,116 @@ header [role="alert"] {
 }
 
 /* --- Responsive Tables --- */
-@media (max-width: 767px) {
-  /* Make tables horizontally scrollable */
-  .table-responsive {
+@media (max-width: 639px) {
+  /* Make ALL tables scroll horizontally on mobile */
+  table {
+    display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
   }
 
-  table {
-    min-width: 600px;
+  /* Hide less important table columns on mobile */
+  table th.hide-mobile,
+  table td.hide-mobile,
+  table th:nth-child(n+4),
+  table td:nth-child(n+4) {
+    display: none !important;
   }
+
+  /* Compact table cells */
+  table th,
+  table td {
+    padding: 8px 6px !important;
+    font-size: 13px !important;
+  }
+
+  /* Keep first 3 columns visible and prevent text wrap */
+  table th:nth-child(-n+3),
+  table td:nth-child(-n+3) {
+    display: table-cell !important;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* --- Mobile Grid Overrides (fix 12-column grids) --- */
+@media (max-width: 639px) {
+  /* Force any grid to single column on mobile */
+  [style*="gridTemplateColumns"],
+  [style*="grid-template-columns"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  /* Override span-based grid children */
+  [style*="gridColumn"],
+  [style*="grid-column"] {
+    width: 100% !important;
+  }
+
+  /* Stats grids: 2 columns instead of 4 */
+  [style*="repeat(4, 1fr)"] {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+
+/* --- Mobile-friendly card layout for lists --- */
+@media (max-width: 639px) {
+  /* Compact list items */
+  .list-item,
+  [class*="ListItem"],
+  li {
+    padding: 12px !important;
+  }
+
+  /* Reduce avatar/icon sizes */
+  [style*="width: 32px"][style*="height: 32px"],
+  [style*="width:32px"][style*="height:32px"] {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 12px !important;
+  }
+
+  /* Hide email in user lists, show only name */
+  .user-email,
+  [style*="fontSize: '0.8em'"][style*="color: '#666'"],
+  [style*="fontSize:'0.8em'"][style*="color:'#666'"] {
+    display: none !important;
+  }
+
+  /* Compact badges */
+  [style*="padding: '4px 8px'"],
+  [style*="padding:'4px 8px'"] {
+    padding: 2px 6px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* --- Horizontal scroll prevention --- */
+@media (max-width: 639px) {
+  body,
+  #root,
+  main {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+
+  /* Prevent any element from causing horizontal overflow */
+  * {
+    max-width: 100%;
+  }
+
+  /* Exception for tables which can scroll */
+  table,
+  table * {
+    max-width: none;
+  }
+}
 
   /* Stack table cells on very small screens if needed */
   .table-stack td,
@@ -630,6 +730,23 @@ header [role="alert"] {
   .page-header-actions button {
     flex: 1;
     min-width: 100px;
+  }
+
+  /* Compact page titles */
+  h1 {
+    font-size: 1.25rem !important;
+    margin-bottom: 12px !important;
+  }
+
+  h2 {
+    font-size: 1.1rem !important;
+  }
+
+  /* Hide breadcrumbs on mobile - take up too much space */
+  nav[aria-label="breadcrumb"],
+  .breadcrumb,
+  [class*="Breadcrumb"] {
+    display: none !important;
   }
 }
 
@@ -725,5 +842,37 @@ header [role="alert"] {
   .touch-target {
     min-width: 44px;
     min-height: 44px;
+  }
+}
+
+/* =============================================================================
+   DASHBOARD RESPONSIVE LAYOUT
+   ============================================================================= */
+.dashboard-grid {
+  display: grid;
+  gap: 24px;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .dashboard-main {
+    order: 1;
+  }
+
+  .dashboard-sidebar {
+    order: 2;
+  }
+}
+
+@media (max-width: 1023px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-sidebar {
+    order: -1; /* Show activity first on mobile/tablet */
   }
 }

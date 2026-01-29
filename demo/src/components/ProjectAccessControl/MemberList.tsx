@@ -88,53 +88,54 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
   }
 
   return (
-    <div className="member-list-container" style={{ padding: '20px' }}>
+    <div className="member-list-container" style={{ padding: '16px' }}>
       <h3>Project Members</h3>
       <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
         <thead>
           <tr style={{ borderBottom: '1px solid #eee', textAlign: 'left' }}>
-            <th style={{ padding: '10px' }}>User</th>
-            <th style={{ padding: '10px' }}>Role</th>
-            <th style={{ padding: '10px' }}>Joined</th>
-            <th style={{ padding: '10px' }}>Actions</th>
+            <th style={{ padding: '8px 6px' }}>User</th>
+            <th style={{ padding: '8px 6px' }}>Role</th>
+            <th className="hide-mobile" style={{ padding: '8px 6px' }}>Joined</th>
+            <th style={{ padding: '8px 6px' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {members.map((member) => (
             <tr key={member.id} style={{ borderBottom: '1px solid #eee' }}>
-              <td style={{ padding: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#ddd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <td style={{ padding: '8px 6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', flexShrink: 0 }}>
                     {member.user.name.charAt(0)}
                   </div>
-                  <div>
-                    <div style={{ fontWeight: 'bold' }}>{member.user.name}</div>
-                    <div style={{ fontSize: '0.8em', color: '#666' }}>{member.user.email}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{member.user.name}</div>
+                    <div className="hide-mobile" style={{ fontSize: '11px', color: '#666' }}>{member.user.email}</div>
                   </div>
                 </div>
               </td>
-              <td style={{ padding: '10px' }}>
+              <td style={{ padding: '8px 6px' }}>
                 <span style={{
-                  padding: '4px 8px',
+                  padding: '2px 6px',
                   borderRadius: '12px',
                   backgroundColor: member.role === 'admin' ? '#e3f2fd' : '#f5f5f5',
                   color: member.role === 'admin' ? '#1976d2' : '#333',
-                  fontSize: '0.9em'
+                  fontSize: '11px'
                 }}>
                   {member.role}
                 </span>
               </td>
-              <td style={{ padding: '10px' }}>{member.joined_at}</td>
-              <td style={{ padding: '10px' }}>
+              <td className="hide-mobile" style={{ padding: '8px 6px', fontSize: '12px' }}>{member.joined_at}</td>
+              <td style={{ padding: '8px 6px' }}>
                 <button
                   onClick={() => handleRemoveClick(member)}
                   style={{
-                    padding: '6px 12px',
+                    padding: '4px 8px',
                     backgroundColor: '#ffebee',
                     color: '#c62828',
                     border: 'none',
                     borderRadius: '4px',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    fontSize: '12px'
                   }}
                 >
                   Remove
