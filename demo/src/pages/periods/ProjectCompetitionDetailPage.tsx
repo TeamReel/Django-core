@@ -16,6 +16,7 @@ import MatchEditModal from '../identity/MatchEditModal';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import ProjectSeasonMemberDetailPage from './ProjectSeasonMemberDetailPage';
+import MobileTabBar from '../../components/MobileTabBar';
 import {
   actionButtonStyle,
   ActionTone,
@@ -1738,6 +1739,17 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
               </button>
             </div>
           }
+        />
+
+        {/* Mobile Tab Bar */}
+        <MobileTabBar
+          tabs={[
+            { id: 'overview', label: 'Overview' },
+            { id: 'hierarchy', label: 'Hierarchy' },
+            { id: 'matches', label: 'Matches' },
+            { id: 'users', label: 'Users' },
+          ]}
+          activeTab={activeTab}
         />
 
         <PageContent>

@@ -47,6 +47,7 @@ import { CompetitionsList } from './directory/CompetitionsList';
 import { MatchesList } from './directory/MatchesList';
 import { UsersList } from './directory/UsersList';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import MobileTabBar from '../../components/MobileTabBar';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -1647,6 +1648,21 @@ export const OrganisationDetailPage: React.FC = () => {
             )}
           </div>
         }
+      />
+
+      {/* Mobile Tab Bar */}
+      <MobileTabBar
+        tabs={[
+          { id: 'overview', label: 'Overview' },
+          { id: 'hierarchy', label: 'Hierarchy' },
+          { id: 'clubs', label: 'Clubs' },
+          { id: 'teams', label: 'Teams' },
+          { id: 'seasons', label: 'Seasons' },
+          { id: 'competitions', label: 'Competitions' },
+          { id: 'matches', label: 'Matches' },
+          { id: 'users', label: 'Users' },
+        ]}
+        activeTab={activeTab}
       />
 
       <PageContent>

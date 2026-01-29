@@ -25,6 +25,7 @@ import { fetchAllPages } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
+import MobileTabBar from '../../components/MobileTabBar';
 import {
   actionButtonStyle,
   type ActionTone,
@@ -1220,6 +1221,20 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           currentUserId={Number((user as any)?.id)}
           chargedUserId={null}
           walletOptions={seasonWalletOptions}
+        />
+
+        {/* Mobile Tab Bar */}
+        <MobileTabBar
+          tabs={[
+            { id: 'overview', label: 'Overview' },
+            { id: 'content', label: 'Content' },
+            { id: 'hierarchy', label: 'Hierarchy' },
+            { id: 'competitions', label: 'Competitions' },
+            { id: 'matches', label: 'Matches' },
+            { id: 'squad', label: 'Squad' },
+            { id: 'media', label: 'Media' },
+          ]}
+          activeTab={activeTab}
         />
 
         <PageContent>

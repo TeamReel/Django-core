@@ -13,6 +13,7 @@ import { MatchesList } from './directory/MatchesList';
 import { UsersList } from './directory/UsersList';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
+import MobileTabBar from '../../components/MobileTabBar';
 
 const getCsrfToken = (): string => {
   try {
@@ -782,6 +783,20 @@ export default function TeamOrganisationDetailPage() {
               </Button>
             </div>
           }
+        />
+
+        {/* Mobile Tab Bar */}
+        <MobileTabBar
+          tabs={[
+            { id: 'overview', label: 'Overview' },
+            { id: 'hierarchy', label: 'Hierarchy' },
+            { id: 'seasons', label: 'Seasons' },
+            { id: 'competitions', label: 'Competitions' },
+            { id: 'matches', label: 'Matches' },
+            { id: 'members', label: 'Squad' },
+            { id: 'balance', label: 'Balance' },
+          ]}
+          activeTab={activeTabFromUrl}
         />
 
         <PageContent>
