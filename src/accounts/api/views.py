@@ -1051,7 +1051,7 @@ def auth_active_context(request):
         # We may need to enforce invariants (create/sync membership) even on reads.
         with transaction.atomic():
             ctx = (
-                UserActiveContext.objects.select_for_update()
+                UserActiveContext.objects.select_for_update(of=("self",))
                 .select_related(
                     "organisation",
                     "club",
@@ -1146,7 +1146,7 @@ def auth_active_context(request):
         )
 
     with transaction.atomic():
-        ctx, _ = UserActiveContext.objects.select_for_update().get_or_create(user=user)
+        ctx, _ = UserActiveContext.objects.select_for_update(of=("self",)).get_or_create(user=user)
 
         if kind == "clear":
             ctx.organisation = None
