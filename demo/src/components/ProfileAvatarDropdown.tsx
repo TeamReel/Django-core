@@ -7,32 +7,44 @@
  * - Keyboard accessible (Enter/Space to open, Escape to close)
  * - Click outside to close
  * - Focus management
+ * - On mobile: includes extra items (Notifications, Theme, Language, Search)
  *
  * Menu structure:
  * 1. Header with user name and email (optional)
  * 2. My Profile → /profile
  * 3. Preferences → /preferences
  * 4. Credits → /credits
- * 5. Divider
- * 6. Sign out
+ * 5. [Mobile only] Notifications, Theme, Language, Search
+ * 6. Divider
+ * 7. Sign out
  */
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, useSignOut } from '@django-core/auth-ui';
+import { useTheme } from '@django-core/theme-system';
 
 interface ProfileAvatarDropdownProps {
   /** Optional callback after logout */
   onLogout?: () => void;
+  /** Is mobile view - shows extra menu items */
+  isMobile?: boolean;
 }
 
-export default function ProfileAvatarDropdown({ onLogout }: ProfileAvatarDropdownProps) {
+export default function ProfileAvatarDropdown({ onLogout, isMobile }: ProfileAvatarDropdownProps) {
   const { user } = useAuth();
   const { signOut, loading: signOutLoading } = useSignOut();
+  const { mode, setTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const toggleTheme = () => {
+    const newMode = mode === 'light' ? 'dark' : 'light';
+    setTheme({ mode: newMode });
+    setIsOpen(false);
+  };
 
   // Get user initials from name or email
   const getInitials = (): string => {
@@ -303,6 +315,101 @@ export default function ProfileAvatarDropdown({ onLogout }: ProfileAvatarDropdow
             <span>💳</span>
             <span>Credits</span>
           </button>
+
+          {/* Mobile-only menu items */}
+          {isMobile && (
+            <>
+              {/* Divider */}
+              <div
+                style={{
+                  height: '1px',
+                  backgroundColor: 'var(--app-border)',
+                  margin: '8px 0',
+                }}
+              />
+
+              <button
+                role="menuitem"
+                onClick={() => handleNavigate('/notifications')}
+                style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  textAlign: 'left',
+                  fontSize: '14px',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <span>🔔</span>
+                <span>Notifications</span>
+              </button>
+
+              <button
+                role="menuitem"
+                onClick={() => handleNavigate('/search')}
+                style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  textAlign: 'left',
+                  fontSize: '14px',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <span>🔍</span>
+                <span>Search</span>
+              </button>
+
+              <button
+                role="menuitem"
+                onClick={toggleTheme}
+                style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  textAlign: 'left',
+                  fontSize: '14px',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <span>{mode === 'light' ? '🌙' : '☀️'}</span>
+                <span>{mode === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+              </button>
+            </>
+          )}
 
           {/* Divider */}
           <div

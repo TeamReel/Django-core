@@ -495,11 +495,11 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile }: 
       }}>
         <div style={{
           maxWidth: '100%',
-          padding: '0 24px',
+          padding: isMobile ? '0 12px' : '0 24px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '16px',
+          gap: isMobile ? '8px' : '16px',
           height: '56px',
         }}>
           {/* Mobile Menu Button - Hamburger for sidebar toggle */}
@@ -697,42 +697,47 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile }: 
 
           {/* Right side: User controls */}
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* Search Bar */}
-            <div
-              className={`nav-search-container${navSearchHasQuery ? ' has-query' : ''}`}
-              style={{
-                flex: '1 1 360px',
-                minWidth: '220px',
-                maxWidth: '560px',
-              }}
-            >
-              <SearchBar
-                placeholder="Search..."
-                onQueryChange={(q) => setNavSearchHasQuery(Boolean(String(q || '').trim()))}
-              />
-            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '16px' }}>
+            {/* Search Bar - hidden on mobile */}
+            {!isMobile && (
+              <div
+                className={`nav-search-container${navSearchHasQuery ? ' has-query' : ''}`}
+                style={{
+                  flex: '1 1 360px',
+                  minWidth: '220px',
+                  maxWidth: '560px',
+                }}
+              >
+                <SearchBar
+                  placeholder="Search..."
+                  onQueryChange={(q) => setNavSearchHasQuery(Boolean(String(q || '').trim()))}
+                />
+              </div>
+            )}
 
-            {/* Quick Switcher */}
-            <button
-              type="button"
-              onClick={() => setCommandOpen(true)}
-              className="nav-icon-button"
-              title="Quick switch"
-              aria-label="Quick switch"
-              style={{
-                padding: '8px 10px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                borderRadius: 10,
-              }}
-            >
-              <AppIcon icon={Command} size={18} />
-              <span style={{ fontSize: 13, fontWeight: 800 }}>Quick switch</span>
-            </button>
+            {/* Quick Switcher - hidden on mobile */}
+            {!isMobile && (
+              <button
+                type="button"
+                onClick={() => setCommandOpen(true)}
+                className="nav-icon-button"
+                title="Quick switch"
+                aria-label="Quick switch"
+                style={{
+                  padding: '8px 10px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  borderRadius: 10,
+                }}
+              >
+                <AppIcon icon={Command} size={18} />
+                <span style={{ fontSize: 13, fontWeight: 800 }}>Quick switch</span>
+              </button>
+            )}
 
-            {/* + Create CTA (main action opens Content Library) */}
+            {/* + Create CTA (main action opens Content Library) - hidden on mobile */}
+            {!isMobile && (
             <div ref={createMenuRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
               <button
                 type="button"
@@ -833,9 +838,10 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile }: 
                 </div>
               )}
             </div>
+            )}
 
-            {/* Theme Toggle - for superadmin: check global flag only, for others: check resolved flag (with org overrides) */}
-            {(isSystemAdmin ? themeToggleGlobalEnabled : themeToggleEnabled) && (
+            {/* Theme Toggle - hidden on mobile, for superadmin: check global flag only, for others: check resolved flag (with org overrides) */}
+            {!isMobile && (isSystemAdmin ? themeToggleGlobalEnabled : themeToggleEnabled) && (
               <button
                 onClick={toggleTheme}
                 className="nav-icon-button"
@@ -852,7 +858,8 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile }: 
               </button>
             )}
 
-            {/* Language Switcher */}
+            {/* Language Switcher - hidden on mobile */}
+            {!isMobile && (
             <div className="language-menu-container" style={{ position: 'relative' }}>
               <button
                 onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
@@ -920,8 +927,9 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile }: 
                 </div>
               )}
             </div>
+            )}
 
-            {/* Notification Icon */}
+            {/* Notification Icon - always visible */}
             <button
               onClick={() => navigate('/notifications')}
               className="nav-right-fixed nav-icon-button"
@@ -955,8 +963,8 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile }: 
               )}
             </button>
 
-            {/* Credits / Transactions Icon */}
-            {user ? (
+            {/* Credits / Transactions Icon - hidden on mobile */}
+            {!isMobile && user ? (
               <button
                 className="nav-credits-button nav-icon-button"
                 onClick={() => {
@@ -997,9 +1005,9 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile }: 
               </button>
             ) : null}
 
-            {/* Profile Avatar Dropdown */}
+            {/* Profile Avatar Dropdown - pass isMobile for expanded menu */}
             <div className="nav-right-fixed" style={{ flexShrink: 0 }}>
-              <ProfileAvatarDropdown />
+              <ProfileAvatarDropdown isMobile={isMobile} />
             </div>
           </div>
           ) : (
