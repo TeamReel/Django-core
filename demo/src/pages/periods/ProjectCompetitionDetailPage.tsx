@@ -10,6 +10,7 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { canEditProject } from '../../utils/permissions';
 import PeriodDetailModal from '../identity/PeriodDetailModal';
 import PeriodEditModal from '../identity/PeriodEditModal';
+import MatchCreateModal from '../identity/MatchCreateModal';
 import MatchEditModal from '../identity/MatchEditModal';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
@@ -520,7 +521,7 @@ function CreateUserHelpModal({
   );
 }
 
-function MatchCreateModal({
+function CompetitionLegacyMatchCreateModal({
   opened,
   onClose,
   onCreate,
@@ -1014,6 +1015,20 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
         setOrg(orgJson);
         setProject(projectJson);
+
+        // Prefer canonical team URLs with slug instead of numeric id.
+        if (isTeamRoute) {
+          const teamSlug = String((projectJson as any)?.slug || '').trim();
+          if (teamSlug && String(projectSlugOrId || '').trim() !== teamSlug) {
+            const qs = location.search || '';
+            navigate(
+              `/${encodeURIComponent(orgSlugOrId)}/${encodeURIComponent(clubSlugOrId)}/${encodeURIComponent(teamSlug)}/${encodeURIComponent(
+                effectiveSeasonId
+              )}/${encodeURIComponent(effectiveCompetitionId)}${qs}`,
+              { replace: true }
+            );
+          }
+        }
 
         if (isTeamRoute && clubRes && (clubRes as any).ok) {
           try {
@@ -2056,13 +2071,15 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
               <MatchCreateModal
                 opened={isMatchCreateModalOpen}
                 onClose={() => setIsMatchCreateModalOpen(false)}
-                onCreate={async (payload) => {
-                  await createMatchInCompetition(payload);
-                }}
                 apiBaseUrl={apiBaseUrl}
-                organisationId={String((org as any)?.id || '')}
-                teamId={String((project as any)?.id || '')}
-                teamName={String((project as any)?.name || '')}
+                initialOrganisationId={String((org as any)?.id || '')}
+                initialClubId={String((club as any)?.id || '')}
+                initialTeamId={String((project as any)?.id || '')}
+                initialSeasonId={String(resolvedSeasonId || (season as any)?.id || '')}
+                initialCompetitionId={String(resolvedCompetitionId || (competition as any)?.id || '')}
+                onCreate={async (payload) => {
+                  await createMatchInCompetition(payload as any);
+                }}
               />
 
               <MembershipDetailModal
