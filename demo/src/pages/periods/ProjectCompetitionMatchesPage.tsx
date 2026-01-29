@@ -135,8 +135,8 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
         const rawProject: any = await projectRes.json();
         const rawCompetition: any = await competitionRes.json();
 
-        const orgJson: Organisation = rawOrg?.data || rawOrg;
-        const projectJson: Project = rawProject?.data || rawProject;
+        const orgJson: Organisation = rawOrg?.data?.data || rawOrg?.data || rawOrg;
+        const projectJson: Project = rawProject?.data?.data || rawProject?.data || rawProject;
         const competitionJson: Period = rawCompetition?.data || rawCompetition;
         setOrg(orgJson);
         setProject(projectJson);

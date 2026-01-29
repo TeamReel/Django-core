@@ -1010,8 +1010,8 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         const rawOrg: any = await orgRes.json();
         const rawProject: any = await projectRes.json();
 
-        const orgJson: Organisation = rawOrg?.data || rawOrg;
-        const projectJson: Project = rawProject?.data || rawProject;
+        const orgJson: Organisation = rawOrg?.data?.data || rawOrg?.data || rawOrg;
+        const projectJson: Project = rawProject?.data?.data || rawProject?.data || rawProject;
 
         setOrg(orgJson);
         setProject(projectJson);
@@ -1033,7 +1033,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         if (isTeamRoute && clubRes && (clubRes as any).ok) {
           try {
             const rawClub: any = await (clubRes as any).json();
-            setClub(rawClub?.data || rawClub);
+            setClub(rawClub?.data?.data || rawClub?.data || rawClub);
           } catch {
             // ignore
           }
@@ -1063,7 +1063,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         });
         if (!seasonRes.ok) throw new Error('Failed to load season');
         const rawSeason: any = await seasonRes.json();
-        const seasonJson: Period = rawSeason?.data || rawSeason;
+        const seasonJson: Period = rawSeason?.data?.data || rawSeason?.data || rawSeason;
         setSeason(seasonJson);
 
         const desiredSeasonKey = periodPathKey(seasonJson);
@@ -1104,7 +1104,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         });
         if (!competitionRes.ok) throw new Error('Failed to load competition');
         const rawCompetition: any = await competitionRes.json();
-        const competitionJson: Period = rawCompetition?.data || rawCompetition;
+        const competitionJson: Period = rawCompetition?.data?.data || rawCompetition?.data || rawCompetition;
         setCompetition(competitionJson);
 
         const desiredCompetitionKey = periodPathKey(competitionJson);

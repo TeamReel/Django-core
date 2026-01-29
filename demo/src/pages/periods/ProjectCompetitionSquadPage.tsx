@@ -129,7 +129,7 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
         const rawProject: any = await projectRes.json();
         const rawCompetition: any = await competitionRes.json();
 
-        const projectJson: Project = rawProject?.data || rawProject;
+        const projectJson: Project = rawProject?.data?.data || rawProject?.data || rawProject;
 
         // Resolve season UUID from URL param (UUID or slugified name)
         const periodsRes = await fetch(

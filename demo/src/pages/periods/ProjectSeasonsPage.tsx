@@ -111,8 +111,8 @@ export const ProjectSeasonsPage: React.FC = () => {
         const rawOrg: any = await orgRes.json();
         const rawProject: any = await projectRes.json();
 
-        const orgJson: Organisation = rawOrg?.data || rawOrg;
-        const projectJson: Project = rawProject?.data || rawProject;
+        const orgJson: Organisation = rawOrg?.data?.data || rawOrg?.data || rawOrg;
+        const projectJson: Project = rawProject?.data?.data || rawProject?.data || rawProject;
 
         setOrg(orgJson);
         setProject(projectJson);
