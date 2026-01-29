@@ -153,6 +153,14 @@ export default function MatchCreateModal({
   const [loadingClubs, setLoadingClubs] = useState(false);
   const [loadingTeams, setLoadingTeams] = useState(false);
 
+  const clubsOptions = useMemo(() => {
+    return remoteClubs.length ? remoteClubs : clubs;
+  }, [remoteClubs, clubs]);
+
+  const teamsOptions = useMemo(() => {
+    return remoteTeams.length ? remoteTeams : teams;
+  }, [remoteTeams, teams]);
+
   useEffect(() => {
     if (!opened) return;
     setError(null);
@@ -202,7 +210,7 @@ export default function MatchCreateModal({
     return {
       name: String(p?.name || '').trim(),
       logoUrl: String(identity?.logo_url || '').trim(),
-      defaultLocation: String(identity?.default_location || '').trim(),
+      defaultLocation: String(identity?.default_location ?? identity?.defaultLocation ?? '').trim(),
     };
   };
 
@@ -238,9 +246,16 @@ export default function MatchCreateModal({
         return oppTeam ? String(getParentProjectId(oppTeam) || '') : '';
       })();
 
+    const resolvedClubId =
+      String(selectedClubId || '').trim() ||
+      (() => {
+        const teamFromList = (teamsOptions || []).find((t) => String(t?.id) === String(selectedTeamId));
+        return teamFromList ? String(getParentProjectId(teamFromList) || '') : '';
+      })();
+
     void load(String(selectedTeamId || ''));
     void load(String(selectedOpponentTeamId || ''));
-    void load(String(selectedClubId || ''));
+    void load(String(resolvedClubId || ''));
     void load(String(resolvedOpponentClubId || ''));
 
     return () => {
@@ -249,7 +264,7 @@ export default function MatchCreateModal({
     };
     // Intentionally omit projectDetailsById from deps to avoid refetch loops.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [opened, apiBaseUrl, selectedTeamId, selectedOpponentTeamId, selectedClubId, selectedOpponentClubId, opponentTeams]);
+  }, [opened, apiBaseUrl, selectedTeamId, selectedOpponentTeamId, selectedClubId, selectedOpponentClubId, opponentTeams, teamsOptions]);
 
   const selectedTeamDetail = useMemo(() => {
     const key = String(selectedTeamId || '').trim();
@@ -264,7 +279,13 @@ export default function MatchCreateModal({
   useEffect(() => {
     if (!opened) return;
 
-    const resolvedClubId = !String(selectedClubId || '').trim() ? getParentProjectId(selectedTeamDetail) : null;
+    const resolvedClubId =
+      !String(selectedClubId || '').trim()
+        ? ((): string | null => {
+            const fromList = (teamsOptions || []).find((t) => String(t?.id) === String(selectedTeamId));
+            return getParentProjectId(fromList || selectedTeamDetail);
+          })()
+        : null;
     if (resolvedClubId && String(resolvedClubId) !== String(selectedClubId || '')) {
       setSelectedClubId(String(resolvedClubId));
     }
@@ -291,11 +312,21 @@ export default function MatchCreateModal({
     opened,
     selectedTeamDetail,
     selectedOpponentDetail,
+    selectedTeamId,
     selectedClubId,
     selectedOpponentClubId,
     selectedOrganisationId,
     selectedOpponentOrganisationId,
+    teamsOptions,
   ]);
+
+  const resolvedClubId = useMemo(() => {
+    const explicit = String(selectedClubId || '').trim();
+    if (explicit) return explicit;
+    const fromList = (teamsOptions || []).find((t) => String(t?.id) === String(selectedTeamId));
+    const from = fromList || selectedTeamDetail;
+    return from ? String(getParentProjectId(from) || '').trim() : '';
+  }, [selectedClubId, teamsOptions, selectedTeamId, selectedTeamDetail]);
 
   const resolvedOpponentClubId = useMemo(() => {
     const explicit = String(selectedOpponentClubId || '').trim();
@@ -305,9 +336,9 @@ export default function MatchCreateModal({
   }, [selectedOpponentClubId, opponentTeams, selectedOpponentTeamId]);
 
   const selectedClubDetail = useMemo(() => {
-    const key = String(selectedClubId || '').trim();
+    const key = String(resolvedClubId || '').trim();
     return key ? projectDetailsById[key] : null;
-  }, [projectDetailsById, selectedClubId]);
+  }, [projectDetailsById, resolvedClubId]);
 
   const selectedOpponentClubDetail = useMemo(() => {
     const key = String(resolvedOpponentClubId || '').trim();
@@ -348,7 +379,7 @@ export default function MatchCreateModal({
       teamreel: {
         match_context: {
           organisation_id: selectedOrganisationId ? String(selectedOrganisationId) : null,
-          club_id: selectedClubId ? String(selectedClubId) : null,
+          club_id: resolvedClubId ? String(resolvedClubId) : null,
           team_id: selectedTeamId ? String(selectedTeamId) : null,
           opponent_organisation_id: (selectedOpponentOrganisationId || selectedOrganisationId)
             ? String(selectedOpponentOrganisationId || selectedOrganisationId)
@@ -416,6 +447,7 @@ export default function MatchCreateModal({
     selectedOpponentOrganisationId,
     selectedOpponentTeamId,
     resolvedOpponentClubId,
+    resolvedClubId,
   ]);
 
   useEffect(() => {
@@ -581,14 +613,6 @@ export default function MatchCreateModal({
       abortController.abort();
     };
   }, [opened, apiBaseUrl, selectedClubId, selectedOrganisationId, selectedOrganisationSlug]);
-
-  const clubsOptions = useMemo(() => {
-    return remoteClubs.length ? remoteClubs : clubs;
-  }, [remoteClubs, clubs]);
-
-  const teamsOptions = useMemo(() => {
-    return remoteTeams.length ? remoteTeams : teams;
-  }, [remoteTeams, teams]);
 
   const sortedOrganisations = useMemo(() => {
     return [...organisationsOptions].sort((a, b) => a.name.localeCompare(b.name));
@@ -891,7 +915,7 @@ export default function MatchCreateModal({
 
     try {
       if (!selectedOrganisationId) throw new Error('Select a federation first.');
-      if (!selectedClubId) throw new Error('Select a club first.');
+      if (!resolvedClubId) throw new Error('Select a club first.');
       if (!selectedTeamId) throw new Error('Select a team first.');
       if (requireOpponent && !selectedOpponentTeamId) throw new Error('Select an opponent first.');
       if (!selectedSeasonId) throw new Error('Select a season first.');
