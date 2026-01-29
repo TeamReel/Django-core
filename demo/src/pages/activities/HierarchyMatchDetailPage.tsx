@@ -1606,44 +1606,6 @@ export default function HierarchyMatchDetailPage() {
         />
 
         <PageContent>
-          <div
-            style={{
-              display: 'flex',
-              gap: '6px',
-              borderBottom: '2px solid var(--app-border)',
-              marginBottom: '24px',
-              flexWrap: 'wrap',
-            }}
-          >
-            {([
-              { id: 'overview', label: 'Overview' },
-              { id: 'content', label: 'Content' },
-              { id: 'lineup', label: 'Lineup' },
-              { id: 'transactions', label: 'Transactions' },
-              { id: 'details', label: 'Details' },
-            ] as const).map((t) => {
-              const isActive = activeTab === t.id;
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => navigateToTab(t.id)}
-                  style={{
-                    padding: '10px 14px',
-                    border: 'none',
-                    background: isActive ? 'var(--app-surface)' : 'transparent',
-                    borderBottom: isActive ? '3px solid var(--app-primary)' : '3px solid transparent',
-                    cursor: 'pointer',
-                    fontWeight: isActive ? 600 : 500,
-                    color: isActive ? 'var(--app-text)' : 'var(--app-muted-text)',
-                    borderRadius: '6px 6px 0 0',
-                  }}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-
           {activeTab === 'overview' && (
             <>
               <Card className="mb-6">

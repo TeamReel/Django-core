@@ -642,11 +642,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 title = 'Match';
                                 items = [
                                         { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
-                                        { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
-                                        { label: 'Match', path: makeTabUrl(baseUrl, 'match'), icon: Timer },
-                                        { label: 'Lineup', path: makeTabUrl(baseUrl, 'lineup'), icon: Users },
-                                        { label: 'Date', path: makeTabUrl(baseUrl, 'date'), icon: CalendarDays },
-                                        { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
+                                    { label: 'Lineup', path: makeTabUrl(baseUrl, 'lineup'), icon: Users },
+                                    { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                                    { label: 'Details', path: makeTabUrl(baseUrl, 'details'), icon: Globe },
                                 ];
                                 break;
                         }
