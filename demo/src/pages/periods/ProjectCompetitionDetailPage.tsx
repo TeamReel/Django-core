@@ -888,7 +888,9 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   // - Competition childId is a slug (e.g. "eredivisie")
   // - Member childId is a UUID membership id
   // When the last segment is a UUID, treat it as a season-member detail page.
-  if (looksLikeUuid(String(competitionId || '').trim())) {
+  // IMPORTANT: do not do this for /organisations/... routes because competitionId may be UUID there.
+  const isOrgRoute = location.pathname.startsWith('/organisations/');
+  if (!isOrgRoute && looksLikeUuid(String(competitionId || '').trim())) {
     return <ProjectSeasonMemberDetailPage />;
   }
 
