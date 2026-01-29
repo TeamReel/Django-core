@@ -138,6 +138,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [membersError, setMembersError] = useState<string | null>(null);
   const [membersReloadToken, setMembersReloadToken] = useState(0);
 
+  const [thenNowSearch, setThenNowSearch] = useState('');
+  const [thenNowSelectedUserIds, setThenNowSelectedUserIds] = useState<Set<string>>(new Set());
+  const [thenNowLayout, setThenNowLayout] = useState<'morph' | 'side-by-side'>('morph');
+
   const [teamRoster, setTeamRoster] = useState<any[]>([]);
   const [teamRosterLoading, setTeamRosterLoading] = useState(false);
   const [teamRosterError, setTeamRosterError] = useState<string | null>(null);
@@ -705,6 +709,48 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       return next;
     });
   };
+
+  const toggleThenNowUser = (userId: string) => {
+    const key = String(userId || '').trim();
+    if (!key) return;
+
+    setThenNowSelectedUserIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+        return next;
+      }
+
+      // Limit to 5 (as per UX spec).
+      if (next.size >= 5) return next;
+      next.add(key);
+      return next;
+    });
+  };
+
+  const thenNowCandidates = useMemo(() => {
+    const q = String(thenNowSearch || '').trim().toLowerCase();
+    const list = (members || []).map((m: any) => {
+      const userId = getUserId(m);
+      const label = getUserLabel(m);
+      const roles = getFunctionalRolesForUser(userId);
+      const position = String(m?.metadata?.position || '').trim();
+      const shirt = String(m?.metadata?.shirt_number ?? '').trim();
+      return { userId, name: label.name, email: label.email, roles, position, shirt };
+    });
+
+    const filtered = q
+      ? list.filter((x) => {
+          const roles = (x.roles || []).join(' ');
+          const hay = `${x.name} ${x.email} ${x.position} ${x.shirt} ${roles}`.toLowerCase();
+          return hay.includes(q);
+        })
+      : list;
+
+    return filtered
+      .filter((x) => x.userId)
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+  }, [members, thenNowSearch, getFunctionalRolesForUser]);
 
   const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
@@ -1464,18 +1510,171 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           <div>
                             <div style={{ fontSize: '16px', fontWeight: 800 }}>Then &amp; Now</div>
                             <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                              Compare start vs end of the season (e.g. squad evolution, performance, or a visual montage).
+                              Season-wide player content (not tied to a match). Pick up to 5 players and generate either a morph video
+                              (then → now) or a side-by-side montage.
                             </div>
                           </div>
-                          <Button variant="primary" onClick={() => navigate('/studio/create')}>
-                            Generate
-                          </Button>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <Button
+                              variant={thenNowLayout === 'morph' ? 'primary' : 'secondary'}
+                              onClick={() => setThenNowLayout('morph')}
+                            >
+                              Morph
+                            </Button>
+                            <Button
+                              variant={thenNowLayout === 'side-by-side' ? 'primary' : 'secondary'}
+                              onClick={() => setThenNowLayout('side-by-side')}
+                            >
+                              Side-by-side
+                            </Button>
+                            <Button
+                              variant="primary"
+                              disabled={thenNowSelectedUserIds.size === 0}
+                              onClick={() => {
+                                const params = new URLSearchParams();
+                                params.set('scope', 'season');
+                                if (resolvedSeasonId || effectiveSeasonId) params.set('seasonId', String(resolvedSeasonId || effectiveSeasonId));
+                                params.set('mode', 'then-now');
+                                params.set('layout', thenNowLayout);
+                                params.set('playerIds', Array.from(thenNowSelectedUserIds.values()).join(','));
+                                navigate(`/studio/create?${params.toString()}`);
+                              }}
+                            >
+                              Generate
+                            </Button>
+                          </div>
                         </div>
 
                         <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           <Badge variant="default">Season: {season?.name || '—'}</Badge>
                           <Badge variant="default">Competitions: {competitions.length}</Badge>
                           <Badge variant="default">Matches: {matchesLoading ? 'Loading…' : String(matches.length)}</Badge>
+                          <Badge variant="default">Players: {thenNowSelectedUserIds.size}/5</Badge>
+                        </div>
+
+                        <div style={{ marginTop: '14px', borderTop: '1px solid var(--app-border)', paddingTop: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                            <div>
+                              <div style={{ fontWeight: 800, marginBottom: 6 }}>Pick players</div>
+                              <div style={{ opacity: 0.75, fontSize: 13 }}>
+                                Select 1–5 players from this season squad. “Then” and “Now” photos will come from player assets
+                                (later: Media Day).
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                              <Button
+                                variant="secondary"
+                                onClick={() => setThenNowSelectedUserIds(new Set())}
+                                disabled={thenNowSelectedUserIds.size === 0}
+                              >
+                                Clear
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                onClick={() => {
+                                  const firstFive = thenNowCandidates
+                                    .map((x) => x.userId)
+                                    .filter(Boolean)
+                                    .slice(0, 5);
+                                  setThenNowSelectedUserIds(new Set(firstFive));
+                                }}
+                                disabled={thenNowCandidates.length === 0}
+                              >
+                                Auto pick 5
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div style={{ marginTop: '10px' }}>
+                            <Input
+                              value={thenNowSearch}
+                              onChange={(e) => setThenNowSearch((e.target as any).value)}
+                              placeholder="Search players…"
+                            />
+                          </div>
+
+                          <div
+                            style={{
+                              marginTop: '10px',
+                              border: '1px solid var(--app-border)',
+                              borderRadius: '10px',
+                              padding: '10px',
+                              maxHeight: '260px',
+                              overflow: 'auto',
+                              background: 'var(--app-surface-2)',
+                            }}
+                          >
+                            {membersLoading ? (
+                              <div style={{ opacity: 0.75, fontSize: 13 }}>Loading squad…</div>
+                            ) : membersError ? (
+                              <div style={{ color: 'var(--app-danger, #d32f2f)', fontSize: 13 }}>{membersError}</div>
+                            ) : thenNowCandidates.length === 0 ? (
+                              <div style={{ opacity: 0.75, fontSize: 13 }}>No players found.</div>
+                            ) : (
+                              <div style={{ display: 'grid', gap: '8px' }}>
+                                {thenNowCandidates.slice(0, 50).map((p) => {
+                                  const checked = thenNowSelectedUserIds.has(String(p.userId));
+                                  const roles = (p.roles || []).filter(Boolean).slice(0, 3);
+                                  const subtitleParts = [p.position ? `Pos: ${p.position}` : '', p.shirt ? `#${p.shirt}` : '']
+                                    .filter(Boolean)
+                                    .join(' • ');
+                                  return (
+                                    <label
+                                      key={p.userId}
+                                      style={{
+                                        display: 'flex',
+                                        alignItems: 'flex-start',
+                                        gap: '10px',
+                                        padding: '8px 10px',
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--app-border)',
+                                        background: 'var(--app-surface)',
+                                        cursor: thenNowSelectedUserIds.size >= 5 && !checked ? 'not-allowed' : 'pointer',
+                                        opacity: thenNowSelectedUserIds.size >= 5 && !checked ? 0.6 : 1,
+                                      }}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={checked}
+                                        disabled={thenNowSelectedUserIds.size >= 5 && !checked}
+                                        onChange={() => toggleThenNowUser(String(p.userId))}
+                                        style={{ marginTop: '2px' }}
+                                      />
+                                      <div style={{ minWidth: 0 }}>
+                                        <div style={{ fontWeight: 700, lineHeight: 1.2 }}>{p.name}</div>
+                                        <div style={{ opacity: 0.75, fontSize: 12, marginTop: 2 }}>
+                                          {subtitleParts || p.email}
+                                        </div>
+                                        {roles.length > 0 && (
+                                          <div style={{ marginTop: 6, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                            {roles.map((r) => (
+                                              <span
+                                                key={r}
+                                                style={{
+                                                  fontSize: 11,
+                                                  padding: '2px 8px',
+                                                  borderRadius: 999,
+                                                  border: '1px solid var(--app-border)',
+                                                  background: 'var(--app-surface-2)',
+                                                }}
+                                              >
+                                                {r}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </label>
+                                  );
+                                })}
+                                {thenNowCandidates.length > 50 && (
+                                  <div style={{ opacity: 0.7, fontSize: 12, padding: '4px 2px' }}>
+                                    Showing first 50 results. Refine search to narrow down.
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </Card>
