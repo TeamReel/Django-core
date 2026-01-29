@@ -6,8 +6,9 @@
 # See docs/railway/RAILWAY_SETUP.md section 6 for instructions.
 
 # Web server (Gunicorn with production settings)
-# This is the default process type that Railway runs automatically
-web: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 120
+# This is the default process type that Railway runs automatically.
+# IMPORTANT: ensure migrations run in production so new DB columns exist.
+web: python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 120
 
 # Celery Beat scheduler (metrics collection every 10 minutes)
 # SETUP REQUIRED: Create a separate Railway service with custom start command
