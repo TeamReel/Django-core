@@ -1,12 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
 import TopNavbar from '../components/TopNavbar';
 import Sidebar from '../components/Sidebar';
+import MobileBottomNav from '../components/MobileBottomNav';
 
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const openSearchRef = useRef<(() => void) | null>(null);
+
+  // Store the openSearch function from TopNavbar
+  const handleOpenSearchRef = useCallback((openSearch: () => void) => {
+    openSearchRef.current = openSearch;
+  }, []);
 
   // Detect screen size
   useEffect(() => {
@@ -94,6 +101,7 @@ export default function MainLayout() {
             isSidebarOpen={sidebarOpen}
             onToggleSidebar={toggleSidebar}
             isMobile={isMobile}
+            onOpenSearchRef={handleOpenSearchRef}
           />
         </div>
 
@@ -105,12 +113,20 @@ export default function MainLayout() {
             overflowY: 'auto',
             overflowX: 'hidden',
             padding: isMobile ? '12px' : '24px',
+            paddingBottom: isMobile ? '80px' : '24px', // Extra space for bottom nav
             backgroundColor: 'var(--app-surface-1)',
             position: 'relative'
           }}
         >
           <Outlet />
         </main>
+
+        {/* Mobile Bottom Navigation */}
+        {isMobile && (
+          <MobileBottomNav
+            onOpenSearch={() => openSearchRef.current?.()}
+          />
+        )}
       </div>
     </div>
   );

@@ -28,9 +28,11 @@ interface ProfileAvatarDropdownProps {
   onLogout?: () => void;
   /** Is mobile view - shows extra menu items */
   isMobile?: boolean;
+  /** Callback to open search/command palette */
+  onOpenSearch?: () => void;
 }
 
-export default function ProfileAvatarDropdown({ onLogout, isMobile }: ProfileAvatarDropdownProps) {
+export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch }: ProfileAvatarDropdownProps) {
   const { user } = useAuth();
   const { signOut, loading: signOutLoading } = useSignOut();
   const { mode, setTheme } = useTheme();
@@ -357,7 +359,14 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile }: ProfileAva
 
               <button
                 role="menuitem"
-                onClick={() => handleNavigate('/search')}
+                onClick={() => {
+                  setIsOpen(false);
+                  if (onOpenSearch) {
+                    onOpenSearch();
+                  } else {
+                    handleNavigate('/search');
+                  }
+                }}
                 style={{
                   width: '100%',
                   padding: '10px 16px',

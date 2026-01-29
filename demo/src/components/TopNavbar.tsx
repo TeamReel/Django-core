@@ -66,9 +66,11 @@ interface TopNavbarProps {
   isSidebarOpen?: boolean;
   onToggleSidebar?: () => void;
   isMobile?: boolean;
+  /** Callback to receive the openSearch function reference */
+  onOpenSearchRef?: (openSearch: () => void) => void;
 }
 
-export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile }: TopNavbarProps) {
+export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, onOpenSearchRef }: TopNavbarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -92,6 +94,13 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile }: 
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const createMenuRef = useRef<HTMLDivElement | null>(null);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Provide openSearch function to parent via callback ref
+  useEffect(() => {
+    if (onOpenSearchRef) {
+      onOpenSearchRef(() => setCommandOpen(true));
+    }
+  }, [onOpenSearchRef]);
 
   const showBreadcrumbs = !(
     location.pathname.startsWith('/notifications') ||
@@ -505,23 +514,24 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile }: 
           {/* Mobile Menu Button - Hamburger for sidebar toggle */}
           {isMobile && (
             <button
-              className="mobile-menu-button nav-icon-button"
+              className="mobile-menu-button"
               onClick={onToggleSidebar}
               style={{
                 display: 'flex',
                 background: 'transparent',
-                fontSize: '24px',
                 cursor: 'pointer',
                 color: 'var(--app-text)',
-                padding: '8px',
-                marginRight: '8px',
+                padding: '10px',
                 border: 'none',
                 alignItems: 'center',
                 justifyContent: 'center',
+                minWidth: '44px',
+                minHeight: '44px',
+                borderRadius: '8px',
               }}
               aria-label="Toggle menu"
             >
-              <AppIcon icon={Menu} size={24} />
+              <Menu size={28} strokeWidth={2.5} />
             </button>
           )}
 
@@ -1007,7 +1017,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile }: 
 
             {/* Profile Avatar Dropdown - pass isMobile for expanded menu */}
             <div className="nav-right-fixed" style={{ flexShrink: 0 }}>
-              <ProfileAvatarDropdown isMobile={isMobile} />
+              <ProfileAvatarDropdown isMobile={isMobile} onOpenSearch={() => setCommandOpen(true)} />
             </div>
           </div>
           ) : (
