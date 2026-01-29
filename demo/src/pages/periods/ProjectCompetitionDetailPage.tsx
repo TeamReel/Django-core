@@ -14,6 +14,7 @@ import MatchCreateModal from '../identity/MatchCreateModal';
 import MatchEditModal from '../identity/MatchEditModal';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
+import ProjectSeasonMemberDetailPage from './ProjectSeasonMemberDetailPage';
 import {
   actionButtonStyle,
   ActionTone,
@@ -881,6 +882,15 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     competitionId: string;
     clubId?: string;
   }>();
+
+  // TeamReel hierarchy under a season has multiple child types.
+  // In canonical team routes we use a single segment: /:org/:club/:team/:season/:childId
+  // - Competition childId is a slug (e.g. "eredivisie")
+  // - Member childId is a UUID membership id
+  // When the last segment is a UUID, treat it as a season-member detail page.
+  if (looksLikeUuid(String(competitionId || '').trim())) {
+    return <ProjectSeasonMemberDetailPage />;
+  }
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 

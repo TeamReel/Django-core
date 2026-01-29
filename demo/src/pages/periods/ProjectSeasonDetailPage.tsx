@@ -1716,7 +1716,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       <Input
                         value={hierarchySearch}
                         onChange={(e) => setHierarchySearch(e.target.value)}
-                        placeholder="Filter competitions/matches"
+                        placeholder="Filter competitions/matches/members"
                         style={{ width: '240px' }}
                       />
                       <Button variant="secondary" size="sm" onClick={() => setHierarchySearch('')}>
@@ -2002,6 +2002,79 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             );
                           })}
                         </>
+                      );
+                    })()
+                  )}
+
+                  <h3 className="text-lg font-semibold mb-4" style={{ marginTop: '1.5rem' }}>
+                    Hierarchy: Members
+                  </h3>
+                  {membersLoading ? (
+                    <Alert variant="info">Loading members…</Alert>
+                  ) : members.length === 0 ? (
+                    <Alert variant="info">No members found in this season.</Alert>
+                  ) : (
+                    (() => {
+                      const normalized = hierarchySearch.trim().toLowerCase();
+                      const filtered = !normalized
+                        ? members
+                        : members.filter((m: any) => {
+                            const u = m?.user || m;
+                            const name =
+                              String(u?.name || '').toLowerCase() ||
+                              `${String(u?.first_name || '').toLowerCase()} ${String(u?.last_name || '').toLowerCase()}`.trim();
+                            const email = String(u?.email || '').toLowerCase();
+                            return name.includes(normalized) || email.includes(normalized) || String(m?.id || '').toLowerCase().includes(normalized);
+                          });
+
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {filtered.slice(0, 100).map((m: any) => {
+                            const membershipId = String(m?.id || '').trim();
+                            const u = m?.user || m;
+                            const label =
+                              String(u?.name || '').trim() ||
+                              `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim() ||
+                              String(u?.email || '').trim() ||
+                              'Member';
+
+                            return (
+                              <div
+                                key={membershipId}
+                                style={{
+                                  padding: '10px 12px',
+                                  border: '1px solid var(--app-border)',
+                                  borderRadius: '6px',
+                                  backgroundColor: 'var(--app-surface)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  gap: '10px',
+                                  flexWrap: 'wrap',
+                                }}
+                              >
+                                <div style={{ minWidth: 0 }}>
+                                  <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
+                                  <div style={{ opacity: 0.7, fontSize: '12px' }}>{String(u?.email || '').trim() || '—'}</div>
+                                </div>
+
+                                {membershipId ? (
+                                  <Link
+                                    to={`${seasonsBasePath}/${seasonPathKey}/${encodeURIComponent(membershipId)}`}
+                                    className="text-blue-600 hover:underline"
+                                    style={{ textDecoration: 'none', fontWeight: 600 }}
+                                  >
+                                    Edit profile
+                                  </Link>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+
+                          {filtered.length > 100 && (
+                            <Alert variant="info">Showing first 100 members. Refine your filter to see more.</Alert>
+                          )}
+                        </div>
                       );
                     })()
                   )}
