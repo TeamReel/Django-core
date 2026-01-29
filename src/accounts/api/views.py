@@ -877,6 +877,58 @@ def auth_active_context(request):
             "period": period_payload(getattr(m, "period", None)),
         }
 
+    def user_has_org(org) -> bool:
+        if not org:
+            return False
+        # Superusers have access to everything
+        if user.is_superuser:
+            return True
+        # Check direct organisation membership
+        if OrganisationMembership.objects.filter(
+            user=user, organisation=org, is_active=True
+        ).exists():
+            return True
+        # Check indirect membership via projects
+        has_project_membership = (
+            ProjectMembership.objects.active().filter(user=user, project__organisation=org).exists()
+        )
+        if not has_project_membership:
+            # Debug log
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.info(
+                f"User {user.id} ({user.email}) has no access to org {org.id} ({org.name}). "
+                f"Checking project memberships..."
+            )
+            # Show which projects the user has access to
+            user_projects = list(
+                ProjectMembership.objects.active()
+                .filter(user=user)
+                .values_list("project__id", "project__name", "project__organisation__id")
+            )
+            logger.info(f"User's projects: {user_projects}")
+        return has_project_membership
+
+    def user_has_project(project: Project) -> bool:
+        if not project:
+            return False
+        # Superusers have access to everything
+        if user.is_superuser:
+            return True
+        # Direct project membership
+        if ProjectMembership.objects.active().filter(user=user, project=project).exists():
+            return True
+        # Organisation membership (federation admins)
+        if (
+            project.organisation
+            and OrganisationMembership.objects.filter(
+                user=user, organisation=project.organisation, is_active=True
+            ).exists()
+        ):
+            return True
+        return False
+
     def resolve_current_user_membership(team: Project | None, season: Period | None):
         if not team:
             return None
@@ -900,13 +952,52 @@ def auth_active_context(request):
 
         return qs.first()
 
+    def ensure_current_user_membership(team: Project | None, season: Period | None):
+        """Create/sync the current user's membership for this team+season.
+
+        TeamReel rule: selecting an active season implies an active membership.
+        We only do this when the user already has access to the project.
+        """
+        if not team or not season:
+            return None
+
+        if not user_has_project(team):
+            return None
+
+        membership = (
+            ProjectMembership.objects.active()
+            .select_related("user", "project", "period")
+            .filter(project=team, user=user)
+            .first()
+        )
+        if membership:
+            if getattr(membership, "period_id", None) != getattr(season, "id", None):
+                membership.period = season
+                membership.save(update_fields=["period", "updated_at"])
+            return membership
+
+        return ProjectMembership.objects.create(
+            project=team,
+            user=user,
+            period=season,
+            role=ProjectMembership.Role.VIEWER,
+            assignment_reason=ProjectMembership.AssignmentReason.ORG_DEFAULT,
+        )
+
     def sync_membership_for_context(ctx: UserActiveContext | None) -> ProjectMembership | None:
         """Enforce TeamReel rule: active membership follows active team/season for *this* user."""
         if not ctx:
             return None
         team = getattr(ctx, "team", None)
         season = getattr(ctx, "season", None)
-        return resolve_current_user_membership(team, season)
+        membership = resolve_current_user_membership(team, season)
+        if membership:
+            return membership
+
+        # If the user can access the project but has no membership row yet, create one.
+        # This supports federation/org admins who are browsing a team/season but still
+        # need a stable "Member" detail context.
+        return ensure_current_user_membership(team, season)
 
     def resolve_membership_from_context(ctx: UserActiveContext | None):
         if not ctx:
@@ -917,6 +1008,13 @@ def auth_active_context(request):
         team = getattr(ctx, "team", None)
         season = getattr(ctx, "season", None)
         if season or team:
+            # For active seasons, enforce the invariant by ensuring a membership exists.
+            # (This is a small, intentional side-effect on GET to keep frontend navigation deterministic.)
+            if team and season:
+                ensured = ensure_current_user_membership(team, season)
+                if ensured and user_has_project(getattr(ensured, "project", None)):
+                    return ensured
+
             derived = resolve_current_user_membership(team, season)
             if derived and user_has_project(getattr(derived, "project", None)):
                 return derived
@@ -931,29 +1029,41 @@ def auth_active_context(request):
         return None
 
     if request.method == "GET":
-        ctx = (
-            UserActiveContext.objects.select_related(
-                "organisation",
-                "club",
-                "team",
-                "season",
-                "competition",
-                "match",
-                "match__period",
-                "match__project",
-                "team__parent_project",
-                "membership",
-                "membership__user",
-                "membership__project",
-                "membership__period",
-                "membership__project__parent_project",
-                "membership__project__organisation",
+        # We may need to enforce invariants (create/sync membership) even on reads.
+        with transaction.atomic():
+            ctx = (
+                UserActiveContext.objects.select_for_update()
+                .select_related(
+                    "organisation",
+                    "club",
+                    "team",
+                    "season",
+                    "competition",
+                    "match",
+                    "match__period",
+                    "match__project",
+                    "team__parent_project",
+                    "membership",
+                    "membership__user",
+                    "membership__project",
+                    "membership__period",
+                    "membership__project__parent_project",
+                    "membership__project__organisation",
+                )
+                .filter(user=user)
+                .first()
             )
-            .filter(user=user)
-            .first()
-        )
 
-        membership = resolve_membership_from_context(ctx)
+            membership = resolve_membership_from_context(ctx)
+
+            if (
+                ctx
+                and membership
+                and getattr(ctx, "membership_id", None) != getattr(membership, "id", None)
+            ):
+                ctx.membership = membership
+                ctx.save(update_fields=["membership", "updated_at"])
+
         return Response(
             {
                 "updated_at": ctx.updated_at.isoformat() if ctx else None,
@@ -1015,58 +1125,6 @@ def auth_active_context(request):
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
-
-    def user_has_org(org) -> bool:
-        if not org:
-            return False
-        # Superusers have access to everything
-        if user.is_superuser:
-            return True
-        # Check direct organisation membership
-        if OrganisationMembership.objects.filter(
-            user=user, organisation=org, is_active=True
-        ).exists():
-            return True
-        # Check indirect membership via projects
-        has_project_membership = (
-            ProjectMembership.objects.active().filter(user=user, project__organisation=org).exists()
-        )
-        if not has_project_membership:
-            # Debug log
-            import logging
-
-            logger = logging.getLogger(__name__)
-            logger.info(
-                f"User {user.id} ({user.email}) has no access to org {org.id} ({org.name}). "
-                f"Checking project memberships..."
-            )
-            # Show which projects the user has access to
-            user_projects = list(
-                ProjectMembership.objects.active()
-                .filter(user=user)
-                .values_list("project__id", "project__name", "project__organisation__id")
-            )
-            logger.info(f"User's projects: {user_projects}")
-        return has_project_membership
-
-    def user_has_project(project: Project) -> bool:
-        if not project:
-            return False
-        # Superusers have access to everything
-        if user.is_superuser:
-            return True
-        # Direct project membership
-        if ProjectMembership.objects.active().filter(user=user, project=project).exists():
-            return True
-        # Organisation membership (federation admins)
-        if (
-            project.organisation
-            and OrganisationMembership.objects.filter(
-                user=user, organisation=project.organisation, is_active=True
-            ).exists()
-        ):
-            return True
-        return False
 
     with transaction.atomic():
         ctx, _ = UserActiveContext.objects.select_for_update().get_or_create(user=user)

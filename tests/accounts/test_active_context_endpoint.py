@@ -17,6 +17,7 @@ from rest_framework import status
 from accounts.models import User
 from activities.models import Activity, Period
 from organisations.models import Organisation
+from organisations.models import Membership as OrganisationMembership
 from projects.models import Project
 from projects.models.project_membership import ProjectMembership
 
@@ -231,6 +232,68 @@ class TestAuthActiveContextEndpoint:
         assert payload["membership"]["user"]["id"] == str(regular_user.id)
         assert payload["membership"]["project"]["id"] == str(team.id)
         assert payload["membership"]["period"]["id"] == str(season.id)
+
+    def test_patch_set_season_creates_membership_when_missing(
+        self, authenticated_client, regular_user
+    ):
+        org = Organisation.objects.create(name="KNVB", creator=regular_user)
+        OrganisationMembership.objects.create(
+            user=regular_user,
+            organisation=org,
+            role="admin",
+            is_active=True,
+        )
+
+        club = Project.objects.create(
+            organisation=org,
+            creator=regular_user,
+            name="Ajax",
+            slug="ajax",
+            parent_project=None,
+        )
+        team = Project.objects.create(
+            organisation=org,
+            creator=regular_user,
+            name="Heren 1",
+            slug="heren-1",
+            parent_project=club,
+        )
+
+        today = timezone.localdate()
+        season = Period.objects.create(
+            organisation=org,
+            project=team,
+            parent_period=None,
+            name="Seizoen 2024/2025",
+            start_date=today - timedelta(days=10),
+            end_date=today + timedelta(days=200),
+        )
+
+        assert (
+            ProjectMembership.objects.active().filter(project=team, user=regular_user).count() == 0
+        )
+
+        patch = authenticated_client.patch(
+            "/api/v1/auth/active-context/",
+            data={"kind": "season", "id": str(season.id)},
+            format="json",
+        )
+
+        assert patch.status_code == status.HTTP_200_OK
+        body = patch.json()
+        assert body["status"] == "success"
+        payload = body["data"]
+
+        assert payload["team"]["id"] == str(team.id)
+        assert payload["season"]["id"] == str(season.id)
+        assert payload["membership"] is not None
+        assert payload["membership"]["user"]["id"] == str(regular_user.id)
+        assert payload["membership"]["project"]["id"] == str(team.id)
+        assert payload["membership"]["period"]["id"] == str(season.id)
+
+        assert (
+            ProjectMembership.objects.active().filter(project=team, user=regular_user).count() == 1
+        )
 
     def test_patch_set_membership_for_other_user_is_denied(
         self, authenticated_client, regular_user
