@@ -542,46 +542,6 @@ export default function ProjectSeasonMemberDetailPage() {
 
         {!loading && !error && membership && (
           <>
-            <div
-              style={{
-                display: 'flex',
-                gap: '10px',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                marginBottom: '14px',
-                borderBottom: '1px solid var(--app-border)',
-                paddingBottom: '10px',
-              }}
-            >
-              {(
-                [
-                  { id: 'overview', label: 'Overview' },
-                  { id: 'kit', label: 'Kit' },
-                  { id: 'old', label: 'Old' },
-                ] as Array<{ id: string; label: string }>
-              ).map((t) => {
-                const isActive = activeTab === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => navigateToTab(t.id)}
-                    style={{
-                      padding: '8px 10px',
-                      borderRadius: '8px',
-                      border: isActive ? '1px solid var(--app-link)' : '1px solid transparent',
-                      background: isActive ? 'var(--app-surface-2)' : 'transparent',
-                      color: isActive ? 'var(--app-text)' : 'var(--app-muted-text)',
-                      fontWeight: isActive ? 700 : 500,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {t.label}
-                  </button>
-                );
-              })}
-            </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
                 {saveError && (

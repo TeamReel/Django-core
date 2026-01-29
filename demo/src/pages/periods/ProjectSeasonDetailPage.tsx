@@ -1196,50 +1196,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             <Card><div style={{ padding: '16px' }}>Loading...</div></Card>
           ) : (
             <>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '10px',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  marginBottom: '14px',
-                  borderBottom: '1px solid var(--app-border)',
-                  paddingBottom: '10px',
-                }}
-              >
-                {(
-                  [
-                    { id: 'overview', label: 'Overview' },
-                    { id: 'content', label: 'Content' },
-                    { id: 'competitions', label: 'Competitions' },
-                    { id: 'matches', label: 'Matches' },
-                    { id: 'squad', label: 'Squad' },
-                    { id: 'transactions', label: 'Transactions' },
-                    { id: 'hierarchy', label: 'Hierarchy' },
-                  ] as Array<{ id: string; label: string }>
-                ).map((t) => {
-                  const isActive = activeTab === t.id;
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => navigateToTab(t.id)}
-                      style={{
-                        padding: '8px 10px',
-                        borderRadius: '8px',
-                        border: isActive ? '1px solid var(--app-link)' : '1px solid transparent',
-                        background: isActive ? 'var(--app-surface-2)' : 'transparent',
-                        color: isActive ? 'var(--app-text)' : 'var(--app-muted-text)',
-                        fontWeight: isActive ? 700 : 500,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {t.label}
-                    </button>
-                  );
-                })}
-              </div>
-
               {activeTab === 'overview' && (
                 <>
                   {/* Top Stats Row */}

@@ -13,6 +13,7 @@ import { useAppSelection } from '../hooks/useAppSelection';
 import { AppIcon } from './AppIcon';
 import { addRecent } from '../utils/navStorage';
 import { ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
+import { looksLikeUuid } from '../utils/periodPath';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -317,6 +318,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
   // --- PANEL B LOGIC (New) ---
   const panelBConfig = useMemo(() => {
         const path = location.pathname;
+      const isOrgRoute = path.startsWith('/organisations/');
 
         // Notifications has its own top navbar entry; keep Panel B hidden here.
         if (path.startsWith('/notifications')) {
@@ -580,6 +582,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 title = 'Season';
                 items = [
                     { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
@@ -601,13 +604,26 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     ? `/organisations/${orgId}/${clubId}/${projectId}/${seasonId}/${competitionId}`
                                     : `/${orgId}/${clubId}/${projectId}/${seasonId}/${competitionId}`;
 
+                                // Member detail pages share the same route shape as competition detail pages.
+                                // Only treat UUID last segments as "Member" for vanity routes (NOT /organisations/...)
+                                // to avoid ambiguity where competition IDs can be UUIDs.
+                                if (!isOrgRoute && looksLikeUuid(String(competitionId || '').trim())) {
+                                    title = 'Member';
+                                    items = [
+                                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                                    { label: 'Kit', path: makeTabUrl(baseUrl, 'kit'), icon: Shirt },
+                                    { label: 'Old', path: makeTabUrl(baseUrl, 'old'), icon: Timer },
+                                    ];
+                                    break;
+                                }
+
                                 title = 'Competition';
                                 items = [
-                                        { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
-                                        { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
-                                        { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
-                                        { label: 'Users', path: makeTabUrl(baseUrl, 'users'), icon: Users },
-                                        { label: 'Audit', path: makeTabUrl(baseUrl, 'audit'), icon: Scroll },
+                                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                                    { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
+                                    { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
+                                    { label: 'Users', path: makeTabUrl(baseUrl, 'users'), icon: Users },
+                                    { label: 'Audit', path: makeTabUrl(baseUrl, 'audit'), icon: Scroll },
                                 ];
                                 break;
                         }
@@ -621,6 +637,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 title = 'Season';
                 items = [
                     { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
@@ -663,6 +680,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 title = 'Season';
                 items = [
                     { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
@@ -854,7 +872,17 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         const seasonKey = String(resolvedAppContext?.season?.key || '').trim();
         const competitionKey = String(resolvedAppContext?.competition?.key || '').trim();
         const matchKey = String(resolvedAppContext?.match?.key || '').trim();
-        const membershipId = String(resolvedAppContext?.membership?.id || '').trim();
+        // If membership isn't in active context yet, infer it when we are on a vanity member detail route.
+        // NOTE: do not infer on /organisations/... routes to avoid UUID competitionId ambiguity.
+        const inferredMembershipId = (() => {
+            if (String(path || '').startsWith('/organisations/')) return '';
+            // Vanity hierarchy paths: /:org/:club/:team/:season/:child
+            if (segs.length < 5) return '';
+            const candidate = String(segs[4] || '').trim();
+            return looksLikeUuid(candidate) ? candidate : '';
+        })();
+
+        const membershipId = String(resolvedAppContext?.membership?.id || inferredMembershipId || '').trim();
 
         const withTab = (rawPath: string, tab: string): string => {
             const safePath = String(rawPath || '').trim();
