@@ -976,13 +976,32 @@ def auth_active_context(request):
                 membership.save(update_fields=["period", "updated_at"])
             return membership
 
-        return ProjectMembership.objects.create(
-            project=team,
-            user=user,
-            period=season,
-            role=ProjectMembership.Role.VIEWER,
-            assignment_reason=ProjectMembership.AssignmentReason.ORG_DEFAULT,
-        )
+        # This endpoint is called by multiple frontend components on page load.
+        # Avoid 500s if two requests attempt to create the membership concurrently.
+        from django.db import IntegrityError
+
+        try:
+            return ProjectMembership.objects.create(
+                project=team,
+                user=user,
+                period=season,
+                role=ProjectMembership.Role.VIEWER,
+                assignment_reason=ProjectMembership.AssignmentReason.ORG_DEFAULT,
+            )
+        except IntegrityError:
+            existing = (
+                ProjectMembership.objects.active()
+                .select_related("user", "project", "period")
+                .filter(project=team, user=user)
+                .first()
+            )
+            if not existing:
+                return None
+
+            if getattr(existing, "period_id", None) != getattr(season, "id", None):
+                existing.period = season
+                existing.save(update_fields=["period", "updated_at"])
+            return existing
 
     def sync_membership_for_context(ctx: UserActiveContext | None) -> ProjectMembership | None:
         """Enforce TeamReel rule: active membership follows active team/season for *this* user."""
