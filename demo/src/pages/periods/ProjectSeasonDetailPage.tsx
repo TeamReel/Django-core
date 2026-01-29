@@ -327,47 +327,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     return String(mine?.id || '').trim();
   }, [currentUserId, members]);
 
-  // Keep Active Context aligned with the page when possible (enables Sidebar "Member" deep-linking).
-  useEffect(() => {
-    const seasonUuid = String(resolvedSeasonId || '').trim();
-    if (!seasonUuid) return;
-
-    // Prefer setting membership (it also derives team/season/org), but only when we're in a team vanity route.
-    const membershipId = String(mySeasonMembershipId || '').trim();
-    const hasMembershipAlready = Boolean(String(activeContext?.membership?.id || '').trim());
-
-    const activeSeasonId = String(activeContext?.season?.id || '').trim();
-    const seasonMatchesOrEmpty = !activeSeasonId || activeSeasonId === seasonUuid;
-
-    if (isTeamRoute && membershipId && !hasMembershipAlready && seasonMatchesOrEmpty) {
-      void (async () => {
-        try {
-          await setActiveContext('membership', membershipId);
-          const ctx = await getActiveContext();
-          setActiveContextState(ctx);
-        } catch {
-          // ignore (non-blocking)
-        }
-      })();
-      return;
-    }
-
-    // Fallback: ensure season is at least active.
-    const hasSeasonAlready = activeSeasonId === seasonUuid;
-    if (!hasSeasonAlready) {
-      void (async () => {
-        try {
-          await setActiveContext('season', seasonUuid);
-          const ctx = await getActiveContext();
-          setActiveContextState(ctx);
-        } catch {
-          // ignore (non-blocking)
-        }
-      })();
-    }
-  }, [activeContext?.membership?.id, activeContext?.season?.id, isTeamRoute, mySeasonMembershipId, resolvedSeasonId]);
-
-
 
   const savePeriodEdits = async (periodToEdit: any, patch: any) => {
     const periodId = String(periodToEdit?.id || '').trim();

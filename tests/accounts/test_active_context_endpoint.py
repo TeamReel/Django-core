@@ -14,6 +14,7 @@ import pytest
 from django.utils import timezone
 from rest_framework import status
 
+from accounts.models import User
 from activities.models import Activity, Period
 from organisations.models import Organisation
 from projects.models import Project
@@ -174,3 +175,100 @@ class TestAuthActiveContextEndpoint:
         assert payload["competition"] is None
         assert payload["match"] is None
         assert payload["membership"] is None
+
+    def test_patch_set_season_sets_membership_for_current_user(
+        self, authenticated_client, regular_user
+    ):
+        org = Organisation.objects.create(name="KNVB", creator=regular_user)
+        club = Project.objects.create(
+            organisation=org,
+            creator=regular_user,
+            name="Ajax",
+            slug="ajax",
+            parent_project=None,
+        )
+        team = Project.objects.create(
+            organisation=org,
+            creator=regular_user,
+            name="Heren 1",
+            slug="heren-1",
+            parent_project=club,
+        )
+
+        today = timezone.localdate()
+        season = Period.objects.create(
+            organisation=org,
+            project=team,
+            parent_period=None,
+            name="Seizoen 2024/2025",
+            start_date=today - timedelta(days=10),
+            end_date=today + timedelta(days=200),
+        )
+
+        # Membership is unique per (project, user). Attach it to this season.
+        season_membership = ProjectMembership.objects.create(
+            project=team,
+            user=regular_user,
+            role="viewer",
+            period=season,
+        )
+
+        patch = authenticated_client.patch(
+            "/api/v1/auth/active-context/",
+            data={"kind": "season", "id": str(season.id)},
+            format="json",
+        )
+
+        assert patch.status_code == status.HTTP_200_OK
+        body = patch.json()
+        assert body["status"] == "success"
+        payload = body["data"]
+
+        assert payload["team"]["id"] == str(team.id)
+        assert payload["season"]["id"] == str(season.id)
+        assert payload["membership"] is not None
+        assert payload["membership"]["id"] == str(season_membership.id)
+        assert payload["membership"]["user"]["id"] == str(regular_user.id)
+        assert payload["membership"]["project"]["id"] == str(team.id)
+        assert payload["membership"]["period"]["id"] == str(season.id)
+
+    def test_patch_set_membership_for_other_user_is_denied(
+        self, authenticated_client, regular_user
+    ):
+        other_user = User.objects.create_user(
+            email="other@example.com",
+            password="password123",
+            first_name="Other",
+            last_name="User",
+        )
+        org = Organisation.objects.create(name="KNVB", creator=regular_user)
+        club = Project.objects.create(
+            organisation=org,
+            creator=regular_user,
+            name="Ajax",
+            slug="ajax",
+            parent_project=None,
+        )
+        team = Project.objects.create(
+            organisation=org,
+            creator=regular_user,
+            name="Heren 1",
+            slug="heren-1",
+            parent_project=club,
+        )
+
+        # Ensure requester has access to the team.
+        ProjectMembership.objects.create(project=team, user=regular_user, role="viewer")
+        other_membership = ProjectMembership.objects.create(
+            project=team, user=other_user, role="viewer"
+        )
+
+        patch = authenticated_client.patch(
+            "/api/v1/auth/active-context/",
+            data={"kind": "membership", "id": str(other_membership.id)},
+            format="json",
+        )
+        assert patch.status_code == status.HTTP_403_FORBIDDEN
+        body = patch.json()
+        assert body["status"] == "error"
+        assert body["error"]["code"] == "permission_denied"

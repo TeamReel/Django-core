@@ -900,9 +900,26 @@ def auth_active_context(request):
 
         return qs.first()
 
+    def sync_membership_for_context(ctx: UserActiveContext | None) -> ProjectMembership | None:
+        """Enforce TeamReel rule: active membership follows active team/season for *this* user."""
+        if not ctx:
+            return None
+        team = getattr(ctx, "team", None)
+        season = getattr(ctx, "season", None)
+        return resolve_current_user_membership(team, season)
+
     def resolve_membership_from_context(ctx: UserActiveContext | None):
         if not ctx:
             return None
+
+        # If a season is active, membership must follow team+season (current user).
+        # We do not allow a stored membership from another season to "win".
+        team = getattr(ctx, "team", None)
+        season = getattr(ctx, "season", None)
+        if season or team:
+            derived = resolve_current_user_membership(team, season)
+            if derived and user_has_project(getattr(derived, "project", None)):
+                return derived
 
         stored = getattr(ctx, "membership", None)
         if stored:
@@ -911,11 +928,6 @@ def auth_active_context(request):
                 return stored
             return None
 
-        team = getattr(ctx, "team", None)
-        season = getattr(ctx, "season", None)
-        derived = resolve_current_user_membership(team, season)
-        if derived and user_has_project(getattr(derived, "project", None)):
-            return derived
         return None
 
     if request.method == "GET":
@@ -1191,7 +1203,7 @@ def auth_active_context(request):
             ctx.season = None
             ctx.competition = None
             ctx.match = None
-            ctx.membership = None
+            ctx.membership = sync_membership_for_context(ctx)
             ctx.save(
                 update_fields=[
                     "organisation",
@@ -1248,7 +1260,20 @@ def auth_active_context(request):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
-            ctx.membership = membership
+            # Active context membership is always *your* membership.
+            if str(getattr(membership, "user_id", "")) != str(user.id):
+                return Response(
+                    {
+                        "status": "error",
+                        "error": {
+                            "code": "permission_denied",
+                            "message": "You can only set your own membership as active context.",
+                            "details": {},
+                        },
+                        "meta": {"timestamp": timezone.now().isoformat()},
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
             ctx.team = membership_project
             ctx.club = getattr(membership_project, "parent_project", None)
@@ -1266,6 +1291,7 @@ def auth_active_context(request):
 
             ctx.competition = None
             ctx.match = None
+            ctx.membership = sync_membership_for_context(ctx)
             ctx.save(
                 update_fields=[
                     "organisation",
@@ -1344,7 +1370,7 @@ def auth_active_context(request):
                 ctx.season = getattr(period, "parent_period", None)
 
             ctx.match = None
-            ctx.membership = None
+            ctx.membership = sync_membership_for_context(ctx)
             ctx.save(
                 update_fields=[
                     "organisation",
@@ -1415,7 +1441,7 @@ def auth_active_context(request):
             ctx.season = (
                 getattr(ctx.competition, "parent_period", None) if ctx.competition else None
             )
-            ctx.membership = None
+            ctx.membership = sync_membership_for_context(ctx)
             ctx.save(
                 update_fields=[
                     "organisation",

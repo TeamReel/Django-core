@@ -484,6 +484,12 @@ export default function ProjectSeasonMemberDetailPage() {
                 !!membership &&
                 String(activeContext?.membership?.id ?? '') === String((membership as any)?.id ?? '');
 
+              const canMakeActive =
+                !!membership &&
+                String((membership as any)?.user?.id ?? '') &&
+                String((user as any)?.id ?? '') &&
+                String((membership as any)?.user?.id ?? '') === String((user as any)?.id ?? '');
+
               return (
                 <button
                   type="button"
@@ -499,7 +505,7 @@ export default function ProjectSeasonMemberDetailPage() {
                       setActivatingContext(false);
                     }
                   }}
-                  disabled={activatingContext || isActive}
+                  disabled={!canMakeActive || activatingContext || isActive}
                   style={{
                     padding: '6px 12px',
                     borderRadius: 8,
@@ -507,10 +513,14 @@ export default function ProjectSeasonMemberDetailPage() {
                     background: isActive ? '#dcfce7' : 'var(--app-surface)',
                     color: isActive ? '#166534' : 'var(--app-text)',
                     fontWeight: isActive ? 600 : 500,
-                    opacity: activatingContext || isActive ? 0.8 : 1,
-                    cursor: activatingContext || isActive ? 'not-allowed' : 'pointer',
+                    opacity: !canMakeActive || activatingContext || isActive ? 0.8 : 1,
+                    cursor: !canMakeActive || activatingContext || isActive ? 'not-allowed' : 'pointer',
                   }}
-                  title="Set this member as your active context"
+                  title={
+                    canMakeActive
+                      ? 'Set this member as your active context'
+                      : 'You can only set your own membership as active context'
+                  }
                 >
                   {isActive ? '✓ Active Context' : 'Make active'}
                 </button>
