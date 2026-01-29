@@ -288,6 +288,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   const seasonPathKey = periodPathKey(season as any) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
 
+  const memberDetailHref = (membershipId: string): string => {
+    const mid = String(membershipId || '').trim();
+    if (!mid) return '';
+    // Member detail is only supported on vanity team routes.
+    if (!isTeamRoute) return '';
+    if (!seasonPathKey) return '';
+    return `${seasonsBasePath}/${seasonPathKey}/${encodeURIComponent(mid)}`;
+  };
+
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
@@ -306,6 +315,57 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
     navigate(`${seasonsBasePath}/${seasonKeyOrId}?tab=${encodeURIComponent(tabId)}`);
   };
+
+  const currentUserId = String((user as any)?.id || '').trim();
+  const mySeasonMembershipId = useMemo(() => {
+    if (!currentUserId) return '';
+    const mine = (members || []).find((m: any) => {
+      const u = m?.user || m;
+      const id = u?.id ?? m?.user_id;
+      return String(id || '').trim() === currentUserId;
+    });
+    return String(mine?.id || '').trim();
+  }, [currentUserId, members]);
+
+  // Keep Active Context aligned with the page when possible (enables Sidebar "Member" deep-linking).
+  useEffect(() => {
+    const seasonUuid = String(resolvedSeasonId || '').trim();
+    if (!seasonUuid) return;
+
+    // Prefer setting membership (it also derives team/season/org), but only when we're in a team vanity route.
+    const membershipId = String(mySeasonMembershipId || '').trim();
+    const hasMembershipAlready = Boolean(String(activeContext?.membership?.id || '').trim());
+
+    const activeSeasonId = String(activeContext?.season?.id || '').trim();
+    const seasonMatchesOrEmpty = !activeSeasonId || activeSeasonId === seasonUuid;
+
+    if (isTeamRoute && membershipId && !hasMembershipAlready && seasonMatchesOrEmpty) {
+      void (async () => {
+        try {
+          await setActiveContext('membership', membershipId);
+          const ctx = await getActiveContext();
+          setActiveContextState(ctx);
+        } catch {
+          // ignore (non-blocking)
+        }
+      })();
+      return;
+    }
+
+    // Fallback: ensure season is at least active.
+    const hasSeasonAlready = activeSeasonId === seasonUuid;
+    if (!hasSeasonAlready) {
+      void (async () => {
+        try {
+          await setActiveContext('season', seasonUuid);
+          const ctx = await getActiveContext();
+          setActiveContextState(ctx);
+        } catch {
+          // ignore (non-blocking)
+        }
+      })();
+    }
+  }, [activeContext?.membership?.id, activeContext?.season?.id, isTeamRoute, mySeasonMembershipId, resolvedSeasonId]);
 
 
 
@@ -1059,6 +1119,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           title={season ? season.name : 'Season'}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {(() => {
+                const href = memberDetailHref(mySeasonMembershipId);
+                if (!href) return null;
+                return (
+                  <Button variant="secondary" onClick={() => navigate(href)}>
+                    My member profile
+                  </Button>
+                );
+              })()}
               {(() => {
                 const isActive = !!season && String(activeContext?.season?.id ?? '') === String((season as any)?.id ?? '');
                 return (
@@ -2296,6 +2365,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     const shirtNumber = m.metadata?.shirt_number ?? '';
                                     const membershipId = String(m.id || '').trim();
                                     const checked = Boolean(membershipId && selectedSquadMembershipIds.has(membershipId));
+                                    const href = memberDetailHref(membershipId);
 
                                     return (
                                       <tr key={membershipId}>
@@ -2310,7 +2380,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             }}
                                           />
                                         </td>
-                                        <td style={compactTextTdStyle}>{name}</td>
+                                        <td style={compactTextTdStyle}>
+                                          {href ? (
+                                            <Link
+                                              to={href}
+                                              className="text-blue-600 hover:underline"
+                                              style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
+                                            >
+                                              {name}
+                                            </Link>
+                                          ) : (
+                                            name
+                                          )}
+                                        </td>
                                         <td style={compactTextTdStyle}>{email}</td>
                                         <td style={compactTdStyle}>
                                           <Badge variant={role === 'admin' ? 'warning' : 'default'}>
@@ -2390,10 +2472,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   const functionalRoles = getFunctionalRolesFromMembership(m);
                                   const position = m.metadata?.position || '—';
                                   const shirtNumber = m.metadata?.shirt_number ?? '';
+                                  const membershipId = String(m.id || '').trim();
+                                  const href = memberDetailHref(membershipId);
 
                                   return (
                                     <tr key={String(m.id || email)}>
-                                      <td style={compactTextTdStyle}>{name}</td>
+                                      <td style={compactTextTdStyle}>
+                                        {href ? (
+                                          <Link
+                                            to={href}
+                                            className="text-blue-600 hover:underline"
+                                            style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
+                                          >
+                                            {name}
+                                          </Link>
+                                        ) : (
+                                          name
+                                        )}
+                                      </td>
                                       <td style={compactTextTdStyle}>{email}</td>
                                       <td style={compactTdStyle}>
                                         <Badge variant={role === 'admin' ? 'warning' : 'default'}>
