@@ -517,11 +517,12 @@ export default function ProjectSeasonMemberDetailPage() {
 
   return (
     <AppShell>
+      <div className="has-mobile-action-bar">
       <PageHeader
         title={title}
         breadcrumbs={breadcrumbs as any}
         actions={
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="hide-mobile" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {(() => {
               const isActive =
                 !!membership &&
@@ -811,6 +812,31 @@ export default function ProjectSeasonMemberDetailPage() {
           </>
         )}
       </PageContent>
+      </div>
+
+      {/* Mobile sticky action bar */}
+      {!loading && !error && membership && userCanEditProject && (
+        <div className="mobile-action-bar show-mobile-only">
+          <Button
+            variant="primary"
+            onClick={save}
+            disabled={saving}
+            style={{ flex: 2 }}
+          >
+            {saving ? 'Saving…' : '💾 Save'}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              if (!seasonKeyForLinks) return;
+              navigate(`${seasonsBasePath}/${seasonKeyForLinks}?tab=squad`);
+            }}
+            style={{ flex: 1 }}
+          >
+            ← Squad
+          </Button>
+        </div>
+      )}
     </AppShell>
   );
 }

@@ -267,7 +267,7 @@ export const MatchDetailPage: React.FC = () => {
 
   return (
     <>
-      <div>
+      <div className="has-mobile-action-bar">
         <PageHeader
           title={match.title}
           breadcrumbs={([
@@ -310,7 +310,7 @@ export const MatchDetailPage: React.FC = () => {
             { label: match.title || 'Match', current: true },
           ].filter(Boolean) as any[])}
           actions={
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <div className="hide-mobile" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
               {(() => {
                 const isActive = !!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
                 return (
@@ -337,12 +337,12 @@ export const MatchDetailPage: React.FC = () => {
                       opacity: activatingContext || isActive ? 0.8 : 1,
                     }}
                   >
-                    {isActive ? '✓ Active Context' : 'Make active'}
+                    {isActive ? '✓ Active' : 'Make active'}
                   </Button>
                 );
               })()}
               <Button onClick={() => navigate(`/studio/create?context=${match.id}`)}>
-                ✨ Generate Content (AI)
+                ✨ Create Content
               </Button>
             </div>
           }
@@ -427,6 +427,35 @@ export const MatchDetailPage: React.FC = () => {
           </div>
 
         </PageContent>
+      </div>
+
+      {/* Mobile sticky action bar */}
+      <div className="mobile-action-bar show-mobile-only">
+        <Button
+          variant="primary"
+          onClick={() => navigate(`/studio/create?context=${match.id}`)}
+          style={{ flex: 2 }}
+        >
+          ✨ Create Content
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={async () => {
+            if (!match) return;
+            try {
+              setActivatingContext(true);
+              await setActiveContext('match', String(match.id));
+              const context = await getActiveContext();
+              setActiveContextState(context);
+            } finally {
+              setActivatingContext(false);
+            }
+          }}
+          disabled={activatingContext}
+          style={{ flex: 1 }}
+        >
+          {activatingContext ? '...' : '📌'}
+        </Button>
       </div>
     </>
   );
