@@ -849,6 +849,75 @@ def auth_active_context(request):
             "start_time": activity.start_time,
         }
 
+    def user_label(u) -> str:
+        if not u:
+            return ""
+        name = str(getattr(u, "name", "") or "").strip()
+        if name:
+            return name
+        first = str(getattr(u, "first_name", "") or "").strip()
+        last = str(getattr(u, "last_name", "") or "").strip()
+        full = f"{first} {last}".strip()
+        if full:
+            return full
+        return str(getattr(u, "email", "") or "").strip()
+
+    def membership_payload(m: ProjectMembership | None):
+        if not m:
+            return None
+        return {
+            "id": str(m.id),
+            "role": str(getattr(m, "role", "") or ""),
+            "user": {
+                "id": str(getattr(getattr(m, "user", None), "id", "") or ""),
+                "name": user_label(getattr(m, "user", None)),
+                "email": str(getattr(getattr(m, "user", None), "email", "") or ""),
+            },
+            "project": project_payload(getattr(m, "project", None)),
+            "period": period_payload(getattr(m, "period", None)),
+        }
+
+    def resolve_current_user_membership(team: Project | None, season: Period | None):
+        if not team:
+            return None
+
+        qs = (
+            ProjectMembership.objects.active()
+            .select_related(
+                "user",
+                "project",
+                "project__parent_project",
+                "project__organisation",
+                "period",
+            )
+            .filter(project=team, user=user)
+        )
+
+        if season:
+            exact = qs.filter(period=season).first()
+            if exact:
+                return exact
+
+        return qs.first()
+
+    def resolve_membership_from_context(ctx: UserActiveContext | None):
+        if not ctx:
+            return None
+
+        stored = getattr(ctx, "membership", None)
+        if stored:
+            project = getattr(stored, "project", None)
+            if project and user_has_project(project):
+                return stored
+            return None
+
+        team = getattr(ctx, "team", None)
+        season = getattr(ctx, "season", None)
+        derived = resolve_current_user_membership(team, season)
+        if derived and user_has_project(getattr(derived, "project", None)):
+            return derived
+        return None
+
     if request.method == "GET":
         ctx = (
             UserActiveContext.objects.select_related(
@@ -861,10 +930,18 @@ def auth_active_context(request):
                 "match__period",
                 "match__project",
                 "team__parent_project",
+                "membership",
+                "membership__user",
+                "membership__project",
+                "membership__period",
+                "membership__project__parent_project",
+                "membership__project__organisation",
             )
             .filter(user=user)
             .first()
         )
+
+        membership = resolve_membership_from_context(ctx)
         return Response(
             {
                 "updated_at": ctx.updated_at.isoformat() if ctx else None,
@@ -876,6 +953,7 @@ def auth_active_context(request):
                 "season": period_payload(getattr(ctx, "season", None) if ctx else None),
                 "competition": period_payload(getattr(ctx, "competition", None) if ctx else None),
                 "match": match_payload(getattr(ctx, "match", None) if ctx else None),
+                "membership": membership_payload(membership),
             },
             status=status.HTTP_200_OK,
         )
@@ -884,7 +962,16 @@ def auth_active_context(request):
     raw_id = request.data.get("id")
     identifier = str(raw_id or "").strip()
 
-    valid_kinds = {"organisation", "club", "team", "season", "competition", "match", "clear"}
+    valid_kinds = {
+        "organisation",
+        "club",
+        "team",
+        "season",
+        "competition",
+        "match",
+        "membership",
+        "clear",
+    }
     if kind not in valid_kinds:
         return Response(
             {
@@ -894,7 +981,7 @@ def auth_active_context(request):
                     "message": "Invalid kind",
                     "details": {
                         "kind": [
-                            "Must be one of organisation, club, team, season, competition, match, clear"
+                            "Must be one of organisation, club, team, season, competition, match, membership, clear"
                         ]
                     },
                 },
@@ -979,6 +1066,7 @@ def auth_active_context(request):
             ctx.season = None
             ctx.competition = None
             ctx.match = None
+            ctx.membership = None
             ctx.save(
                 update_fields=[
                     "organisation",
@@ -987,6 +1075,7 @@ def auth_active_context(request):
                     "season",
                     "competition",
                     "match",
+                    "membership",
                     "updated_at",
                 ]
             )
@@ -1022,6 +1111,7 @@ def auth_active_context(request):
             ctx.season = None
             ctx.competition = None
             ctx.match = None
+            ctx.membership = None
             ctx.save(
                 update_fields=[
                     "organisation",
@@ -1030,6 +1120,7 @@ def auth_active_context(request):
                     "season",
                     "competition",
                     "match",
+                    "membership",
                     "updated_at",
                 ]
             )
@@ -1100,6 +1191,7 @@ def auth_active_context(request):
             ctx.season = None
             ctx.competition = None
             ctx.match = None
+            ctx.membership = None
             ctx.save(
                 update_fields=[
                     "organisation",
@@ -1108,6 +1200,81 @@ def auth_active_context(request):
                     "season",
                     "competition",
                     "match",
+                    "membership",
+                    "updated_at",
+                ]
+            )
+
+        elif kind == "membership":
+            membership = (
+                ProjectMembership.objects.active()
+                .select_related(
+                    "user",
+                    "project",
+                    "project__parent_project",
+                    "project__organisation",
+                    "period",
+                    "period__parent_period",
+                )
+                .filter(id=identifier)
+                .first()
+            )
+            if not membership:
+                return Response(
+                    {
+                        "status": "error",
+                        "error": {
+                            "code": "not_found",
+                            "message": "Membership not found",
+                            "details": {},
+                        },
+                        "meta": {"timestamp": timezone.now().isoformat()},
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            membership_project = getattr(membership, "project", None)
+            if not membership_project or not user_has_project(membership_project):
+                return Response(
+                    {
+                        "status": "error",
+                        "error": {
+                            "code": "permission_denied",
+                            "message": "You do not have access to this membership.",
+                            "details": {},
+                        },
+                        "meta": {"timestamp": timezone.now().isoformat()},
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            ctx.membership = membership
+
+            ctx.team = membership_project
+            ctx.club = getattr(membership_project, "parent_project", None)
+            ctx.organisation = getattr(membership_project, "organisation", None) or getattr(
+                ctx.club, "organisation", None
+            )
+
+            member_period = getattr(membership, "period", None)
+            if member_period is None:
+                ctx.season = None
+            elif getattr(member_period, "parent_period_id", None) is None:
+                ctx.season = member_period
+            else:
+                ctx.season = getattr(member_period, "parent_period", None)
+
+            ctx.competition = None
+            ctx.match = None
+            ctx.save(
+                update_fields=[
+                    "organisation",
+                    "club",
+                    "team",
+                    "season",
+                    "competition",
+                    "match",
+                    "membership",
                     "updated_at",
                 ]
             )
@@ -1177,6 +1344,7 @@ def auth_active_context(request):
                 ctx.season = getattr(period, "parent_period", None)
 
             ctx.match = None
+            ctx.membership = None
             ctx.save(
                 update_fields=[
                     "organisation",
@@ -1185,6 +1353,7 @@ def auth_active_context(request):
                     "season",
                     "competition",
                     "match",
+                    "membership",
                     "updated_at",
                 ]
             )
@@ -1246,6 +1415,7 @@ def auth_active_context(request):
             ctx.season = (
                 getattr(ctx.competition, "parent_period", None) if ctx.competition else None
             )
+            ctx.membership = None
             ctx.save(
                 update_fields=[
                     "organisation",
@@ -1254,6 +1424,7 @@ def auth_active_context(request):
                     "season",
                     "competition",
                     "match",
+                    "membership",
                     "updated_at",
                 ]
             )
@@ -1266,10 +1437,18 @@ def auth_active_context(request):
             "season",
             "competition",
             "match",
+            "membership",
+            "membership__user",
+            "membership__project",
+            "membership__period",
+            "membership__project__parent_project",
+            "membership__project__organisation",
         )
         .filter(user=user)
         .first()
     )
+
+    membership = resolve_membership_from_context(ctx)
 
     return Response(
         {
@@ -1282,6 +1461,7 @@ def auth_active_context(request):
             "season": period_payload(getattr(ctx, "season", None) if ctx else None),
             "competition": period_payload(getattr(ctx, "competition", None) if ctx else None),
             "match": match_payload(getattr(ctx, "match", None) if ctx else None),
+            "membership": membership_payload(membership),
         },
         status=status.HTTP_200_OK,
     )

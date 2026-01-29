@@ -46,6 +46,7 @@ class TestAuthActiveContextEndpoint:
         assert payload["season"] is None
         assert payload["competition"] is None
         assert payload["match"] is None
+        assert payload["membership"] is None
 
     def test_patch_set_match_sets_full_context_and_affects_default_context(
         self, authenticated_client, regular_user
@@ -113,6 +114,11 @@ class TestAuthActiveContextEndpoint:
         assert patch_payload["competition"]["id"] == str(competition.id)
         assert patch_payload["match"]["id"] == str(match.id)
 
+        # Membership is derived for the current user in the active team (and season when possible).
+        assert patch_payload["membership"] is not None
+        assert patch_payload["membership"]["project"]["id"] == str(team.id)
+        assert patch_payload["membership"]["user"]["id"] == str(regular_user.id)
+
         # Now default-context should prefer the persisted active match.
         default_resp = authenticated_client.get("/api/v1/auth/default-context/")
         assert default_resp.status_code == status.HTTP_200_OK
@@ -167,3 +173,4 @@ class TestAuthActiveContextEndpoint:
         assert payload["season"] is None
         assert payload["competition"] is None
         assert payload["match"] is None
+        assert payload["membership"] is None

@@ -9,6 +9,7 @@ import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { canEditProject } from '../../utils/permissions';
+import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext, setActiveContext } from '../../utils/activeContext';
 
 type Project = {
   id: string;
@@ -176,6 +177,33 @@ export default function ProjectSeasonMemberDetailPage() {
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const [activeContext, setActiveContextState] = useState<any | null>(null);
+  const [activatingContext, setActivatingContext] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const ctx = await getActiveContext();
+        if (!cancelled) setActiveContextState(ctx);
+      } catch {
+        if (!cancelled) setActiveContextState(null);
+      }
+    };
+
+    const onChanged = () => {
+      void load();
+    };
+
+    void load();
+    window.addEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, onChanged);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, onChanged);
+    };
+  }, []);
 
   const userRole = String((user as any)?.role || '').toLowerCase();
   const isSuperAdmin =
@@ -451,6 +479,43 @@ export default function ProjectSeasonMemberDetailPage() {
         breadcrumbs={breadcrumbs as any}
         actions={
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {(() => {
+              const isActive =
+                !!membership &&
+                String(activeContext?.membership?.id ?? '') === String((membership as any)?.id ?? '');
+
+              return (
+                <button
+                  type="button"
+                  className="app-action-button"
+                  onClick={async () => {
+                    if (!membership || isActive) return;
+                    try {
+                      setActivatingContext(true);
+                      await setActiveContext('membership', String((membership as any).id));
+                      const ctx = await getActiveContext();
+                      setActiveContextState(ctx);
+                    } finally {
+                      setActivatingContext(false);
+                    }
+                  }}
+                  disabled={activatingContext || isActive}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 8,
+                    border: isActive ? '1px solid #10b981' : '1px solid var(--app-border)',
+                    background: isActive ? '#dcfce7' : 'var(--app-surface)',
+                    color: isActive ? '#166534' : 'var(--app-text)',
+                    fontWeight: isActive ? 600 : 500,
+                    opacity: activatingContext || isActive ? 0.8 : 1,
+                    cursor: activatingContext || isActive ? 'not-allowed' : 'pointer',
+                  }}
+                  title="Set this member as your active context"
+                >
+                  {isActive ? '✓ Active Context' : 'Make active'}
+                </button>
+              );
+            })()}
             <Button
               variant="secondary"
               onClick={() => {

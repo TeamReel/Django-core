@@ -7,6 +7,7 @@ export type ActiveContextKind =
   | 'season'
   | 'competition'
   | 'match'
+  | 'membership'
   | 'clear';
 
 export const ACTIVE_CONTEXT_CHANGED_EVENT = 'activeContextChanged';

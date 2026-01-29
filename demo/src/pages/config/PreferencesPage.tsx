@@ -1671,8 +1671,37 @@ export const PreferencesPage: React.FC = () => {
                     <h3 className="text-lg font-semibold mb-0">Active context</h3>
                   </div>
                   <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
-                    Your current Federation → Club → Team → Season → Competition → Match selection used for sidebar defaults.
+                    Your current Federation → Club → Team → Season → Competition → Match → Member selection used for sidebar defaults.
                   </div>
+
+                  {(() => {
+                    const membership = (activeContext as any)?.membership;
+                    const membershipId = String(membership?.id || '').trim();
+                    const memberName = String(membership?.user?.name || membership?.user?.email || '').trim();
+                    const orgSlug = String((activeContext as any)?.organisation?.slug || '').trim();
+                    const clubSlug = String((activeContext as any)?.club?.slug || '').trim();
+                    const teamSlug = String((activeContext as any)?.team?.slug || '').trim();
+                    const seasonKey = String((activeContext as any)?.season?.key || '').trim();
+
+                    if (!membershipId) return null;
+                    const canLink = Boolean(orgSlug && clubSlug && teamSlug && seasonKey);
+                    const href = canLink
+                      ? `/${encodeURIComponent(orgSlug)}/${encodeURIComponent(clubSlug)}/${encodeURIComponent(teamSlug)}/${encodeURIComponent(seasonKey)}/${encodeURIComponent(membershipId)}`
+                      : '';
+
+                    return (
+                      <div style={{ marginBottom: 12 }}>
+                        <div className="text-sm" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                          <Badge variant="default">Member: {memberName || membershipId.slice(0, 8) + '…'}</Badge>
+                          {canLink && (
+                            <a href={href} className="text-blue-600 hover:underline" style={{ fontSize: 13, textDecoration: 'none' }}>
+                              Open member profile
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {activeContextError && <Alert variant="error" style={{ marginBottom: 12 }}>{activeContextError}</Alert>}
 

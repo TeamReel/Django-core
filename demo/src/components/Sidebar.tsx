@@ -104,6 +104,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         season: { id: string; key: string; name: string | null } | null;
         competition: { id: string; key: string; name: string | null } | null;
         match: { id: string; key: string; label: string | null } | null;
+        membership: { id: string } | null;
     };
 
     const [resolvedAppContext, setResolvedAppContext] = useState<ResolvedAppContext | null>(null);
@@ -284,6 +285,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                   key: String(payload.match.slug || payload.match.key || payload.match.id),
                                   label: (payload.match.title ?? null) as string | null,
                               }
+                            : null,
+                        membership: payload?.membership?.id
+                            ? { id: String(payload.membership.id) }
                             : null,
                     });
                 }
@@ -850,6 +854,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         const seasonKey = String(resolvedAppContext?.season?.key || '').trim();
         const competitionKey = String(resolvedAppContext?.competition?.key || '').trim();
         const matchKey = String(resolvedAppContext?.match?.key || '').trim();
+        const membershipId = String(resolvedAppContext?.membership?.id || '').trim();
 
         const withTab = (rawPath: string, tab: string): string => {
             const safePath = String(rawPath || '').trim();
@@ -900,7 +905,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             ? matchDetailPath
             : (competitionDetailPath ? withTab(competitionDetailPath, 'matches') : (seasonKey ? withTab(seasonPath, 'matches') : matchesIndexPath));
 
-        const memberPath = seasonKey ? withTab(seasonPath, 'squad') : '/directory?tab=users';
+        const memberDetailPath = orgId && clubSlug && teamSlug && seasonKey && membershipId
+            ? `${seasonPath}/${membershipId}`
+            : '';
+
+        const memberPath = memberDetailPath
+            ? memberDetailPath
+            : (seasonKey ? withTab(seasonPath, 'squad') : '/directory?tab=users');
 
         const federationLabel = 'Federation';
         const clubLabel = 'Club';

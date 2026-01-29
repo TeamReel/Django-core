@@ -139,6 +139,14 @@ class UserActiveContext(models.Model):
         related_name="+",
     )
 
+    membership = models.ForeignKey(
+        "projects.ProjectMembership",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -148,6 +156,7 @@ class UserActiveContext(models.Model):
             models.Index(fields=["organisation"]),
             models.Index(fields=["club"]),
             models.Index(fields=["team"]),
+            models.Index(fields=["membership"]),
         ]
 
     def __str__(self) -> str:
