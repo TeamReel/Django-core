@@ -287,7 +287,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'hierarchy', 'competitions', 'matches', 'squad', 'transactions']);
+    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'transactions']);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
 
@@ -961,7 +961,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   // Fetch matches only when the user is on a tab that actually needs them.
   useEffect(() => {
-    const needsMatches = activeTab === 'hierarchy' || activeTab === 'matches' || activeTab === 'competitions';
+    const needsMatches =
+      activeTab === 'hierarchy' ||
+      activeTab === 'matches' ||
+      activeTab === 'competitions' ||
+      activeTab === 'content';
     if (!needsMatches) return;
     const projectNumericId = String((project as any)?.id || '').trim();
     const seasonUuid = String(resolvedSeasonId || '').trim();
@@ -1146,6 +1150,50 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             <Card><div style={{ padding: '16px' }}>Loading...</div></Card>
           ) : (
             <>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '10px',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  marginBottom: '14px',
+                  borderBottom: '1px solid var(--app-border)',
+                  paddingBottom: '10px',
+                }}
+              >
+                {(
+                  [
+                    { id: 'overview', label: 'Overview' },
+                    { id: 'content', label: 'Content' },
+                    { id: 'competitions', label: 'Competitions' },
+                    { id: 'matches', label: 'Matches' },
+                    { id: 'squad', label: 'Squad' },
+                    { id: 'transactions', label: 'Transactions' },
+                    { id: 'hierarchy', label: 'Hierarchy' },
+                  ] as Array<{ id: string; label: string }>
+                ).map((t) => {
+                  const isActive = activeTab === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => navigateToTab(t.id)}
+                      style={{
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        border: isActive ? '1px solid var(--app-link)' : '1px solid transparent',
+                        background: isActive ? 'var(--app-surface-2)' : 'transparent',
+                        color: isActive ? 'var(--app-text)' : 'var(--app-muted-text)',
+                        fontWeight: isActive ? 700 : 500,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+
               {activeTab === 'overview' && (
                 <>
                   {/* Top Stats Row */}
@@ -1389,6 +1437,66 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     </div>
                   </div>
                 </>
+              )}
+
+              {activeTab === 'content' && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2 space-y-6">
+                    <Card>
+                      <div style={{ padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                          <div>
+                            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>Season Content</h3>
+                            <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                              Create season-wide stories (recaps, highlights, then &amp; now) across all matches.
+                            </div>
+                          </div>
+                          <Button variant="secondary" onClick={() => navigate('/studio/create')}>
+                            Open AI Studio
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+
+                    <Card>
+                      <div style={{ padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                          <div>
+                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Then &amp; Now</div>
+                            <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                              Compare start vs end of the season (e.g. squad evolution, performance, or a visual montage).
+                            </div>
+                          </div>
+                          <Button variant="primary" onClick={() => navigate('/studio/create')}>
+                            Generate
+                          </Button>
+                        </div>
+
+                        <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <Badge variant="default">Season: {season?.name || '—'}</Badge>
+                          <Badge variant="default">Competitions: {competitions.length}</Badge>
+                          <Badge variant="default">Matches: {matchesLoading ? 'Loading…' : String(matches.length)}</Badge>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+
+                  <div className="space-y-6">
+                    <Card>
+                      <div style={{ padding: '16px' }}>
+                        <div style={{ fontSize: '16px', fontWeight: 800, marginBottom: '6px' }}>Coming soon</div>
+                        <div style={{ opacity: 0.75, fontSize: '13px' }}>
+                          This tab will expand into a season “slot system” (pre/mid/post-season) as the content modules land.
+                        </div>
+                        <div style={{ marginTop: '12px' }}>
+                          <Button variant="secondary" onClick={() => navigate('/content')}>
+                            Content Library
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                </div>
               )}
 
               {activeTab === 'hierarchy' && (
