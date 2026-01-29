@@ -1,2 +1,179 @@
-# B31 Content Generation - Serializers
-# This file will contain DRF serializers for ContentTemplate, ContentItem, ContentApproval
+"""
+B31 Content Templates & Generation - DRF Serializers
+
+Serializers for ContentTemplate, ContentItem, and ContentApproval models
+with nested relationships and validation logic.
+"""
+
+from rest_framework import serializers
+
+from .models import ContentApproval, ContentItem, ContentTemplate
+
+
+class ContentTemplateSerializer(serializers.ModelSerializer):
+    """Serializer for ContentTemplate model"""
+
+    created_by_detail = serializers.SerializerMethodField()
+    project_detail = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ContentTemplate
+        fields = [
+            "id",
+            "name",
+            "description",
+            "template_type",
+            "sport_type",
+            "ai_workflow_id",
+            "template_settings",
+            "timeout_minutes",
+            "is_active",
+            "organisation",
+            "project",
+            "project_detail",
+            "created_by",
+            "created_by_detail",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["created_by", "created_at", "updated_at"]
+
+    def get_created_by_detail(self, obj):
+        if obj.created_by:
+            return {"id": obj.created_by.id, "username": obj.created_by.username}
+        return None
+
+    def get_project_detail(self, obj):
+        if obj.project:
+            return {"id": obj.project.id, "name": obj.project.name}
+        return None
+
+
+class ContentItemSerializer(serializers.ModelSerializer):
+    """Serializer for ContentItem with nested relationships"""
+
+    template = serializers.PrimaryKeyRelatedField(
+        queryset=ContentTemplate.objects.filter(is_active=True)
+    )
+    template_detail = serializers.SerializerMethodField()
+    activity_detail = serializers.SerializerMethodField()
+    output_file_detail = serializers.SerializerMethodField()
+    created_by_detail = serializers.SerializerMethodField()
+    approval_history = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ContentItem
+        fields = [
+            "id",
+            "template",
+            "template_detail",
+            "project",
+            "activity",
+            "activity_detail",
+            "status",
+            "input_data",
+            "output_file",
+            "output_file_detail",
+            "error_message",
+            "metadata",
+            "created_by",
+            "created_by_detail",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+            "approval_history",
+        ]
+        read_only_fields = [
+            "status",
+            "output_file",
+            "error_message",
+            "metadata",
+            "created_by",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+        ]
+
+    def get_template_detail(self, obj):
+        return {
+            "id": obj.template.id,
+            "name": obj.template.name,
+            "template_type": obj.template.template_type,
+        }
+
+    def get_activity_detail(self, obj):
+        if obj.activity:
+            return {"id": obj.activity.id, "name": obj.activity.name}
+        return None
+
+    def get_output_file_detail(self, obj):
+        if obj.output_file:
+            return {
+                "id": obj.output_file.id,
+                "url": obj.output_file.file.url if obj.output_file.file else None,
+                "file_size": obj.output_file.file_size,
+                "mime_type": obj.output_file.mime_type,
+            }
+        return None
+
+    def get_created_by_detail(self, obj):
+        return {"id": obj.created_by.id, "username": obj.created_by.username}
+
+    def get_approval_history(self, obj):
+        approvals = obj.contentapproval_set.all().order_by("-reviewed_at")
+        return ContentApprovalSerializer(approvals, many=True).data
+
+    def validate_template(self, value):
+        """Ensure template is active"""
+        if not value.is_active:
+            raise serializers.ValidationError("Template is not active")
+        return value
+
+    def validate_input_data(self, value):
+        """Basic validation - schema validation can be added per template type"""
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("input_data must be a valid JSON object")
+        return value
+
+
+class ContentApprovalSerializer(serializers.ModelSerializer):
+    """Serializer for ContentApproval model"""
+
+    reviewer_detail = serializers.SerializerMethodField()
+    content_item_detail = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ContentApproval
+        fields = [
+            "id",
+            "content_item",
+            "content_item_detail",
+            "reviewer",
+            "reviewer_detail",
+            "status",
+            "feedback_text",
+            "reviewed_at",
+        ]
+        read_only_fields = ["reviewer", "reviewed_at"]
+
+    def get_reviewer_detail(self, obj):
+        return {"id": obj.reviewer.id, "username": obj.reviewer.username}
+
+    def get_content_item_detail(self, obj):
+        return {
+            "id": obj.content_item.id,
+            "template_name": obj.content_item.template.name,
+            "status": obj.content_item.status,
+        }
+
+    def validate(self, attrs):
+        """Ensure feedback is provided for rejected/revision_requested"""
+        status = attrs.get("status")
+        feedback = attrs.get("feedback_text", "").strip()
+
+        if status in ["rejected", "revision_requested"] and not feedback:
+            raise serializers.ValidationError(
+                {"feedback_text": f"Feedback is required for {status}"}
+            )
+
+        return attrs
