@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
   LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder,
-      Bell, CreditCard, UserCircle, Star
+      Bell, CreditCard, UserCircle, Star, PanelLeftClose, PanelLeft
 } from 'lucide-react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -1008,47 +1008,52 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             position: 'relative'
         }}
       >
-        {/* Collapse/Expand Toggle - hidden on mobile */}
-        <button
-            onClick={toggle}
-            title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-            aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-            className="hide-mobile"
-            style={{
-                position: 'absolute',
-                top: 14,
-                right: -14,
-                width: 28,
-                height: 28,
-                borderRadius: 999,
-                backgroundColor: 'var(--app-surface)',
-                border: '1px solid var(--app-border)',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                cursor: 'pointer',
-                color: 'var(--sidebar-a-text)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 2001,
-                opacity: 0.95,
-            }}
-            onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '1';
-            }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '0.95';
-            }}
-        >
-            <span style={{ fontSize: 16, lineHeight: 1 }}>{isOpen ? '«' : '»'}</span>
-        </button>
+        {/* Expand button shown when collapsed - click anywhere on collapsed sidebar or this button */}
+        {!isOpen && (
+          <button
+              onClick={toggle}
+              title="Expand Sidebar"
+              aria-label="Expand Sidebar"
+              className="hide-mobile"
+              style={{
+                  position: 'absolute',
+                  bottom: 16,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: 40,
+                  height: 32,
+                  borderRadius: 6,
+                  backgroundColor: 'var(--app-surface-secondary)',
+                  border: '1px solid var(--app-border)',
+                  cursor: 'pointer',
+                  color: 'var(--sidebar-a-text)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 10,
+                  opacity: 0.8,
+                  transition: 'opacity 0.15s, background-color 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                  e.currentTarget.style.backgroundColor = 'var(--app-surface-hover)';
+              }}
+              onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '0.8';
+                  e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
+              }}
+          >
+              <AppIcon icon={PanelLeft} size={16} />
+          </button>
+        )}
 
-        {/* LOGO AREA */}
+        {/* LOGO AREA with Collapse Button */}
         <div style={{
             height: 64,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: isOpen ? 'space-between' : 'center',
-            padding: isOpen ? '0 12px 0 20px' : '0',
+            justifyContent: 'space-between',
+            padding: isOpen ? '0 8px 0 20px' : '0 8px',
             borderBottom: '1px solid var(--sidebar-a-border)',
             marginBottom: 16
         }}>
@@ -1060,10 +1065,42 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     <span style={{ marginLeft: 12, fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em', color: 'var(--sidebar-a-text)' }}>TeamReel</span>
                 </div>
              ) : (
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)', margin: '0 auto' }}>
                     <AppIcon icon={Command} size={24} />
                 </span>
              )}
+
+             {/* Collapse/Expand Button - inside header, hidden on mobile */}
+             <button
+                onClick={toggle}
+                title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+                aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+                className="hide-mobile sidebar-collapse-btn"
+                style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 6,
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--sidebar-a-text)',
+                    display: isOpen ? 'flex' : 'none',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: 0.6,
+                    transition: 'opacity 0.15s, background-color 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '1';
+                    e.currentTarget.style.backgroundColor = 'var(--app-surface-hover)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '0.6';
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+            >
+                <AppIcon icon={isOpen ? PanelLeftClose : PanelLeft} size={18} />
+            </button>
         </div>
 
 
