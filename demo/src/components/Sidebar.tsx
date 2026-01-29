@@ -1013,7 +1013,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             onClick={toggle}
             title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
             aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-            className="hide-mobile"
+            className="sidebar-collapse-button"
             style={{
                 position: 'absolute',
                 top: 12,

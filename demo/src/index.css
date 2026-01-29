@@ -502,10 +502,19 @@ header [role="alert"] {
   }
 }
 
+/* Sidebar collapse button - only show on desktop/tablet */
+.sidebar-collapse-button {
+  display: flex;
+}
+
 @media (max-width: 639px) {
   /* Mobile: Sidebar becomes slide-out drawer */
   .mobile-menu-button {
     display: flex !important;
+  }
+
+  .sidebar-collapse-button {
+    display: none !important;
   }
 
   .sidebar-container {
@@ -791,7 +800,7 @@ header [role="alert"] {
 }
 
 .hide-desktop {
-  display: none;
+  display: none !important;
 }
 
 .show-mobile-only {
