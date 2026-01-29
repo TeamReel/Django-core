@@ -39,7 +39,7 @@ interface MatchCreateModalProps {
   onClose: () => void;
   onCreate: (payload: MatchCreatePayload) => Promise<void>;
 
-  mode?: 'default' | 'season-detail';
+  mode?: 'default' | 'season-detail' | 'team-context';
 
   apiBaseUrl?: string;
 
@@ -71,6 +71,7 @@ export default function MatchCreateModal({
 }: MatchCreateModalProps) {
   const apiBaseUrl = apiBaseUrlProp || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
   const isSeasonDetailMode = mode === 'season-detail';
+  const isTeamContextMode = mode === 'team-context';
   const requireOpponent = !isSeasonDetailMode;
 
   const controlStyle = (disabled: boolean) => ({
@@ -192,6 +193,16 @@ export default function MatchCreateModal({
     setRemoteClubs([]);
     setRemoteTeams([]);
   }, [opened, initialOrganisationId, initialClubId, initialTeamId, initialSeasonId, initialCompetitionId]);
+
+  useEffect(() => {
+    if (!opened) return;
+    if (titleTouched) return;
+    if (!selectedTeamId || !selectedOpponentTeamId) return;
+    const home = projectNameById(String(selectedTeamId)) || 'Home';
+    const away = projectNameById(String(selectedOpponentTeamId)) || 'Opponent';
+    const nextTitle = venue === 'Home' ? `${home} vs ${away}` : `${home} @ ${away}`;
+    if (nextTitle && nextTitle !== title) setTitle(nextTitle);
+  }, [opened, selectedTeamId, selectedOpponentTeamId, title, titleTouched, venue]);
 
   const [projectDetailsById, setProjectDetailsById] = useState<Record<string, any>>({});
 
@@ -779,6 +790,23 @@ export default function MatchCreateModal({
     return null;
   };
 
+  const orgNameById = (id: string): string | null => {
+    const key = String(id || '').trim();
+    if (!key) return null;
+    const found = (sortedOrganisations || []).find((o) => String(o.id) === key);
+    return found?.name ? String(found.name) : null;
+  };
+
+  const periodNameById = (id: string): string | null => {
+    const key = String(id || '').trim();
+    if (!key) return null;
+    const foundSeason = (seasonOptions || []).find((p) => String(p.id) === key);
+    if (foundSeason?.name) return String(foundSeason.name);
+    const foundCompetition = (competitionOptions || []).find((p) => String(p.id) === key);
+    if (foundCompetition?.name) return String(foundCompetition.name);
+    return null;
+  };
+
   useEffect(() => {
     if (!opened) return;
     const orgId = String((selectedOpponentOrganisationId || selectedOrganisationId) || '').trim();
@@ -1064,69 +1092,81 @@ export default function MatchCreateModal({
             <label style={{ fontWeight: 600 }} htmlFor="match-create-org">
               Federation
             </label>
-            <select
-              id="match-create-org"
-              value={selectedOrganisationId}
-              onChange={(e) => {
-                setSelectedOrganisationId(e.target.value);
-                setSelectedOpponentOrganisationId(e.target.value);
-                setSelectedOpponentClubId('');
-                setSelectedClubId('');
-                setSelectedTeamId('');
-                setSelectedOpponentTeamId('');
-                setSelectedSeasonId('');
-                setSelectedCompetitionId('');
-                setOpponentTeams([]);
-              }}
-              disabled={isSaving || isSeasonDetailMode}
-              required
-              style={controlStyle(Boolean(isSaving || isSeasonDetailMode))}
-            >
-              <option value="">Select federation…</option>
-              {sortedOrganisations.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.name}
-                </option>
-              ))}
-            </select>
+            {isTeamContextMode && selectedOrganisationId ? (
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>{orgNameById(selectedOrganisationId) || '—'}</div>
+            ) : (
+              <select
+                id="match-create-org"
+                value={selectedOrganisationId}
+                onChange={(e) => {
+                  setSelectedOrganisationId(e.target.value);
+                  setSelectedOpponentOrganisationId(e.target.value);
+                  setSelectedOpponentClubId('');
+                  setSelectedClubId('');
+                  setSelectedTeamId('');
+                  setSelectedOpponentTeamId('');
+                  setSelectedSeasonId('');
+                  setSelectedCompetitionId('');
+                  setOpponentTeams([]);
+                }}
+                disabled={isSaving || isSeasonDetailMode}
+                required
+                style={controlStyle(Boolean(isSaving || isSeasonDetailMode))}
+              >
+                <option value="">Select federation…</option>
+                {sortedOrganisations.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
             <label style={{ fontWeight: 600 }} htmlFor="match-create-club">
               Club
             </label>
-            <select
-              id="match-create-club"
-              value={selectedClubId}
-              onChange={(e) => applyClubSelection(e.target.value)}
-              disabled={isSaving || isSeasonDetailMode}
-              required
-              style={controlStyle(Boolean(isSaving || isSeasonDetailMode))}
-            >
-              <option value="">Select club…</option>
-              {filteredClubs.map((c) => (
-                <option key={String(c.id)} value={String(c.id)}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            {isTeamContextMode && resolvedClubId ? (
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>{projectNameById(resolvedClubId) || '—'}</div>
+            ) : (
+              <select
+                id="match-create-club"
+                value={selectedClubId}
+                onChange={(e) => applyClubSelection(e.target.value)}
+                disabled={isSaving || isSeasonDetailMode}
+                required
+                style={controlStyle(Boolean(isSaving || isSeasonDetailMode))}
+              >
+                <option value="">Select club…</option>
+                {filteredClubs.map((c) => (
+                  <option key={String(c.id)} value={String(c.id)}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
             <label style={{ fontWeight: 600 }} htmlFor="match-create-team">
               Team
             </label>
-            <select
-              id="match-create-team"
-              value={selectedTeamId}
-              onChange={(e) => applyTeamSelection(e.target.value)}
-              disabled={isSaving || isSeasonDetailMode}
-              required
-              style={controlStyle(Boolean(isSaving || isSeasonDetailMode))}
-            >
-              <option value="">Select team…</option>
-              {filteredTeams.map((t) => (
-                <option key={String(t.id)} value={String(t.id)}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+            {isTeamContextMode && selectedTeamId ? (
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>{projectNameById(selectedTeamId) || '—'}</div>
+            ) : (
+              <select
+                id="match-create-team"
+                value={selectedTeamId}
+                onChange={(e) => applyTeamSelection(e.target.value)}
+                disabled={isSaving || isSeasonDetailMode}
+                required
+                style={controlStyle(Boolean(isSaving || isSeasonDetailMode))}
+              >
+                <option value="">Select team…</option>
+                {filteredTeams.map((t) => (
+                  <option key={String(t.id)} value={String(t.id)}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
             {isSeasonDetailMode ? (
               <>
@@ -1238,61 +1278,73 @@ export default function MatchCreateModal({
             <label style={{ fontWeight: 600 }} htmlFor="match-create-season">
               Season
             </label>
-            <select
-              id="match-create-season"
-              value={selectedSeasonId}
-              onChange={(e) => {
-                setSelectedSeasonId(e.target.value);
-                setSelectedCompetitionId('');
-              }}
-              disabled={isSaving || loadingSeasons || isSeasonDetailMode}
-              required
-              style={controlStyle(Boolean(isSaving || loadingSeasons || isSeasonDetailMode))}
-            >
-              <option value="">{loadingSeasons ? 'Loading seasons…' : 'Select season…'}</option>
-              {seasonOptions.map((s) => (
-                <option key={String(s.id)} value={String(s.id)}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+            {isTeamContextMode && selectedSeasonId ? (
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>{periodNameById(selectedSeasonId) || '—'}</div>
+            ) : (
+              <select
+                id="match-create-season"
+                value={selectedSeasonId}
+                onChange={(e) => {
+                  setSelectedSeasonId(e.target.value);
+                  setSelectedCompetitionId('');
+                }}
+                disabled={isSaving || loadingSeasons || isSeasonDetailMode}
+                required
+                style={controlStyle(Boolean(isSaving || loadingSeasons || isSeasonDetailMode))}
+              >
+                <option value="">{loadingSeasons ? 'Loading seasons…' : 'Select season…'}</option>
+                {seasonOptions.map((s) => (
+                  <option key={String(s.id)} value={String(s.id)}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
             <label style={{ fontWeight: 600 }} htmlFor="match-create-competition">
               Competition
             </label>
-            <select
-              id="match-create-competition"
-              value={selectedCompetitionId}
-              onChange={(e) => setSelectedCompetitionId(e.target.value)}
-              disabled={isSaving || loadingCompetitions}
-              required
-              style={controlStyle(Boolean(isSaving || loadingCompetitions))}
-            >
-              <option value="">{loadingCompetitions ? 'Loading competitions…' : 'Select competition…'}</option>
-              {competitionOptions.map((c) => (
-                <option key={String(c.id)} value={String(c.id)}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            {isTeamContextMode && selectedCompetitionId ? (
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>{periodNameById(selectedCompetitionId) || '—'}</div>
+            ) : (
+              <select
+                id="match-create-competition"
+                value={selectedCompetitionId}
+                onChange={(e) => setSelectedCompetitionId(e.target.value)}
+                disabled={isSaving || loadingCompetitions}
+                required
+                style={controlStyle(Boolean(isSaving || loadingCompetitions))}
+              >
+                <option value="">{loadingCompetitions ? 'Loading competitions…' : 'Select competition…'}</option>
+                {competitionOptions.map((c) => (
+                  <option key={String(c.id)} value={String(c.id)}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
             <label style={{ fontWeight: 600 }} htmlFor="match-create-title">
               Title
             </label>
-            <input
-              id="match-create-title"
-              value={title}
-              onChange={(e) => {
-                setTitleTouched(true);
-                setTitle(e.target.value);
-              }}
-              required
-              disabled={isSaving}
-              style={{
-                ...controlStyle(Boolean(isSaving)),
-                cursor: isSaving ? 'not-allowed' : 'text',
-              }}
-            />
+            {isTeamContextMode ? (
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>{title || derived.titleDefault || '—'}</div>
+            ) : (
+              <input
+                id="match-create-title"
+                value={title}
+                onChange={(e) => {
+                  setTitleTouched(true);
+                  setTitle(e.target.value);
+                }}
+                required
+                disabled={isSaving}
+                style={{
+                  ...controlStyle(Boolean(isSaving)),
+                  cursor: isSaving ? 'not-allowed' : 'text',
+                }}
+              />
+            )}
 
             <label style={{ fontWeight: 600 }} htmlFor="match-create-date">
               Date
@@ -1329,38 +1381,46 @@ export default function MatchCreateModal({
             <label style={{ fontWeight: 600 }} htmlFor="match-create-location">
               Location
             </label>
-            <input
-              id="match-create-location"
-              value={location}
-              onChange={(e) => {
-                setLocationTouched(true);
-                setLocation(e.target.value);
-              }}
-              disabled={isSaving}
-              style={{
-                ...controlStyle(Boolean(isSaving)),
-                cursor: isSaving ? 'not-allowed' : 'text',
-              }}
-            />
+            {isTeamContextMode ? (
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>{(location || derived.locationDefault || '').trim() || '—'}</div>
+            ) : (
+              <input
+                id="match-create-location"
+                value={location}
+                onChange={(e) => {
+                  setLocationTouched(true);
+                  setLocation(e.target.value);
+                }}
+                disabled={isSaving}
+                style={{
+                  ...controlStyle(Boolean(isSaving)),
+                  cursor: isSaving ? 'not-allowed' : 'text',
+                }}
+              />
+            )}
 
             <label style={{ fontWeight: 600 }} htmlFor="match-create-description">
               Description
             </label>
-            <textarea
-              id="match-create-description"
-              value={description}
-              onChange={(e) => {
-                setDescriptionTouched(true);
-                setDescription(e.target.value);
-              }}
-              rows={5}
-              disabled={isSaving}
-              style={{
-                ...controlStyle(Boolean(isSaving)),
-                cursor: isSaving ? 'not-allowed' : 'text',
-                resize: 'vertical',
-              }}
-            />
+            {isTeamContextMode ? (
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>{(description || derived.descriptionDefault || '').trim() || '—'}</div>
+            ) : (
+              <textarea
+                id="match-create-description"
+                value={description}
+                onChange={(e) => {
+                  setDescriptionTouched(true);
+                  setDescription(e.target.value);
+                }}
+                rows={5}
+                disabled={isSaving}
+                style={{
+                  ...controlStyle(Boolean(isSaving)),
+                  cursor: isSaving ? 'not-allowed' : 'text',
+                  resize: 'vertical',
+                }}
+              />
+            )}
           </div>
 
           {error && <div style={{ marginTop: '12px', color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}

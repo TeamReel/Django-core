@@ -2071,6 +2071,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
               <MatchCreateModal
                 opened={isMatchCreateModalOpen}
                 onClose={() => setIsMatchCreateModalOpen(false)}
+                mode={isTeamRoute ? 'team-context' : 'default'}
                 apiBaseUrl={apiBaseUrl}
                 initialOrganisationId={String((org as any)?.id || '')}
                 initialClubId={String((club as any)?.id || '')}
