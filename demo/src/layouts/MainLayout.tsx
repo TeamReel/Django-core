@@ -5,32 +5,79 @@ import Sidebar from '../components/Sidebar';
 
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Load sidebar state from localStorage on mount
+  // Detect screen size
   useEffect(() => {
-    const savedState = localStorage.getItem('sidebar-collapsed');
-    if (savedState !== null) {
-      setSidebarOpen(savedState !== 'true');
-    }
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 640;
+      const tablet = window.innerWidth < 1024;
+      setIsMobile(mobile);
+
+      // Auto-collapse sidebar on tablet, hide on mobile
+      if (mobile) {
+        setSidebarOpen(false);
+      } else if (tablet) {
+        setSidebarOpen(false);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Load sidebar state from localStorage on mount (only for desktop)
+  useEffect(() => {
+    if (!isMobile && window.innerWidth >= 1024) {
+      const savedState = localStorage.getItem('sidebar-collapsed');
+      if (savedState !== null) {
+        setSidebarOpen(savedState !== 'true');
+      }
+    }
+  }, [isMobile]);
+
   const toggleSidebar = () => {
-    const newState = !sidebarOpen;
-    setSidebarOpen(newState);
-    localStorage.setItem('sidebar-collapsed', String(!newState));
+    if (isMobile) {
+      setMobileMenuOpen(!mobileMenuOpen);
+    } else {
+      const newState = !sidebarOpen;
+      setSidebarOpen(newState);
+      localStorage.setItem('sidebar-collapsed', String(!newState));
+    }
+  };
+
+  // Close mobile menu when clicking overlay
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
   };
 
   return (
     <div style={{
       display: 'flex',
-      flexDirection: 'row', // Changed to row for Sidebar-first layout
+      flexDirection: 'row',
       height: '100vh',
       backgroundColor: 'var(--app-bg)',
       color: 'var(--app-text)',
       overflow: 'hidden'
     }}>
-      {/* Sidebar on the left, full height */}
-      <Sidebar isOpen={sidebarOpen} toggle={toggleSidebar} />
+      {/* Mobile Overlay */}
+      {isMobile && mobileMenuOpen && (
+        <div
+          className="sidebar-overlay active"
+          onClick={closeMobileMenu}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`sidebar-container ${isMobile && mobileMenuOpen ? 'mobile-open' : ''}`}>
+        <Sidebar
+          isOpen={isMobile ? true : sidebarOpen}
+          toggle={isMobile ? closeMobileMenu : toggleSidebar}
+        />
+      </div>
 
       {/* Main Content Column (Navbar + Page) */}
       <div style={{
@@ -38,21 +85,30 @@ export default function MainLayout() {
         flexDirection: 'column',
         flex: 1,
         minWidth: 0,
-        position: 'relative'
+        position: 'relative',
+        width: '100%'
       }}>
         {/* TopNavbar */}
         <div style={{ flexShrink: 0, zIndex: 100 }}>
-          <TopNavbar isSidebarOpen={sidebarOpen} onToggleSidebar={toggleSidebar} />
+          <TopNavbar
+            isSidebarOpen={sidebarOpen}
+            onToggleSidebar={toggleSidebar}
+            isMobile={isMobile}
+          />
         </div>
 
         {/* Main Content Area */}
-        <main style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '24px',
-          backgroundColor: 'var(--app-surface-1)',
-          position: 'relative'
-        }}>
+        <main
+          className="main-content"
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            padding: isMobile ? '12px' : '24px',
+            backgroundColor: 'var(--app-surface-1)',
+            position: 'relative'
+          }}
+        >
           <Outlet />
         </main>
       </div>

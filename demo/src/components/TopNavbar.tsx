@@ -62,7 +62,13 @@ interface NotificationResponse {
 
 const navGroups: NavGroup[] = [];
 
-export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSidebarOpen?: boolean; onToggleSidebar?: () => void }) {
+interface TopNavbarProps {
+  isSidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
+  isMobile?: boolean;
+}
+
+export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile }: TopNavbarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -496,23 +502,28 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar }: { isSideba
           gap: '16px',
           height: '56px',
         }}>
-          {/* Mobile Menu Button */}
-          <button
-            className="mobile-menu-button nav-icon-button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{
-              display: 'none',
-              background: 'transparent',
-              fontSize: '24px',
-              cursor: 'pointer',
-              color: 'var(--app-text)',
-              padding: '8px',
-              marginRight: '8px',
-            }}
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <AppIcon icon={X} size={24} /> : <AppIcon icon={Menu} size={24} />}
-          </button>
+          {/* Mobile Menu Button - Hamburger for sidebar toggle */}
+          {isMobile && (
+            <button
+              className="mobile-menu-button nav-icon-button"
+              onClick={onToggleSidebar}
+              style={{
+                display: 'flex',
+                background: 'transparent',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: 'var(--app-text)',
+                padding: '8px',
+                marginRight: '8px',
+                border: 'none',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              aria-label="Toggle menu"
+            >
+              <AppIcon icon={Menu} size={24} />
+            </button>
+          )}
 
           {/* Left side: Navigation items */}
           <div style={{

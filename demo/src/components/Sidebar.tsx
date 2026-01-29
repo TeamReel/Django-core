@@ -994,6 +994,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
           Use a simpler visual for Panel B: Light/Gray background. */}
 
       <aside
+        className="sidebar-panel-a"
         style={{
             zIndex: 20, // Higher than Panel B
             width: isOpen ? 240 : 72,
@@ -1007,11 +1008,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             position: 'relative'
         }}
       >
-        {/* Collapse/Expand Toggle (Top-right edge of Panels A+B) */}
+        {/* Collapse/Expand Toggle - hidden on mobile */}
         <button
             onClick={toggle}
             title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
             aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+            className="hide-mobile"
             style={{
                 position: 'absolute',
                 top: 14,
@@ -1210,6 +1212,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       {/* --- PANEL B: SECONDARY CONTEXT SIDEBAR --- */}
       {panelBConfig && (
         <aside
+            className="sidebar-panel-b"
             style={{
                 width: 220, // Fixed width for panel B
                 backgroundColor: 'var(--sidebar-b-bg)',

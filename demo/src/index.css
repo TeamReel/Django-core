@@ -435,3 +435,295 @@ h1, h2, h3, h4, h5, h6 {
 header [role="alert"] {
   display: none !important;
 }
+
+/* =============================================================================
+   RESPONSIVE UTILITIES
+   Mobile-first approach: base styles for mobile, then enhance for larger screens
+   ============================================================================= */
+
+/* Breakpoints:
+   - Mobile: < 640px
+   - Tablet: 640px - 1023px
+   - Desktop: >= 1024px
+*/
+
+/* --- Mobile Navigation Overlay --- */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 80;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+/* --- Mobile Menu Button --- */
+.mobile-menu-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--app-text);
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.mobile-menu-button:hover {
+  background-color: var(--app-surface-2);
+}
+
+/* --- Responsive Sidebar --- */
+@media (max-width: 1023px) {
+  /* Tablet: Sidebar collapses to icons only by default */
+  .sidebar-panel-a {
+    width: 72px !important;
+  }
+
+  .sidebar-panel-b {
+    display: none !important;
+  }
+
+  .sidebar-text {
+    display: none !important;
+  }
+}
+
+@media (max-width: 639px) {
+  /* Mobile: Sidebar becomes slide-out drawer */
+  .mobile-menu-button {
+    display: flex !important;
+  }
+
+  .sidebar-container {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 90;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease-in-out;
+  }
+
+  .sidebar-container.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-panel-a {
+    width: 240px !important;
+  }
+
+  .sidebar-text {
+    display: block !important;
+  }
+
+  /* Main content takes full width on mobile */
+  .main-content {
+    padding: 16px !important;
+  }
+
+  /* Reduce padding on mobile */
+  main {
+    padding: 12px !important;
+  }
+}
+
+/* --- Responsive Tables --- */
+@media (max-width: 767px) {
+  /* Make tables horizontally scrollable */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 600px;
+  }
+
+  /* Stack table cells on very small screens if needed */
+  .table-stack td,
+  .table-stack th {
+    display: block;
+    width: 100%;
+  }
+}
+
+/* --- Responsive Cards --- */
+@media (max-width: 639px) {
+  /* Cards take full width on mobile */
+  [class*="Card"],
+  [class*="card"] {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+  }
+}
+
+/* --- Responsive Grid Layouts --- */
+.responsive-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+@media (max-width: 639px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* --- Responsive Flex Layouts --- */
+.responsive-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+@media (max-width: 639px) {
+  .responsive-flex {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* --- Responsive Typography --- */
+@media (max-width: 639px) {
+  h1 {
+    font-size: 1.5rem !important;
+  }
+
+  h2 {
+    font-size: 1.25rem !important;
+  }
+
+  h3 {
+    font-size: 1.1rem !important;
+  }
+}
+
+/* --- Responsive Page Headers --- */
+@media (max-width: 639px) {
+  .page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .page-header-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .page-header-actions button {
+    flex: 1;
+    min-width: 100px;
+  }
+}
+
+/* --- Responsive Modals --- */
+@media (max-width: 639px) {
+  [role="dialog"],
+  .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    max-height: 100vh !important;
+    height: 100vh !important;
+  }
+}
+
+/* --- Responsive Form Controls --- */
+@media (max-width: 639px) {
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    min-height: 44px; /* Touch-friendly size */
+  }
+
+  button {
+    min-height: 44px; /* Touch-friendly size */
+    padding: 12px 16px !important;
+  }
+}
+
+/* --- Hide on Mobile/Tablet/Desktop utilities --- */
+.hide-mobile {
+  display: block;
+}
+
+.hide-tablet {
+  display: block;
+}
+
+.hide-desktop {
+  display: none;
+}
+
+.show-mobile-only {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .hide-mobile {
+    display: none !important;
+  }
+
+  .show-mobile-only {
+    display: block !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hide-tablet {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}
+
+/* --- Responsive Spacing Utilities --- */
+@media (max-width: 639px) {
+  .p-responsive {
+    padding: 12px !important;
+  }
+
+  .m-responsive {
+    margin: 12px !important;
+  }
+
+  .gap-responsive {
+    gap: 12px !important;
+  }
+}
+
+/* --- Touch-friendly Interactive Elements --- */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  button:hover,
+  a:hover {
+    opacity: 1;
+  }
+
+  /* Larger touch targets */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
