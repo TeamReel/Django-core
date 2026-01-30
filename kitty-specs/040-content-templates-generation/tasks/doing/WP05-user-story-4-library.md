@@ -1,11 +1,23 @@
 ---
 work_package_id: WP05
 title: User Story 4 - Content Library
-lane: planned
+lane: doing
 subtasks: [T028, T029, T030, T031, T032]
 priority: P2
 estimated_effort: 1 day
 dependencies: [WP02]
+assignee: github-copilot
+agent: github-copilot
+shell_pid: "$PID"
+history:
+  - date: 2026-01-29
+    action: created
+    author: spec-kitty
+  - date: 2026-01-30T07:05:00Z
+    action: moved_to_doing
+    author: github-copilot
+    shell_pid: "$PID"
+    note: "Started WP05: Content Library implementation"
 ---
 
 # WP05: Content Library Browsing
