@@ -73,6 +73,8 @@ INSTALLED_APPS = [
     "scaffolding",
     # B30: Activities & Period Hierarchy
     "activities.apps.ActivitiesConfig",
+    # B31: Content Templates & Generation
+    "src.content_generation.apps.ContentGenerationConfig",
 ]
 
 MIDDLEWARE = [

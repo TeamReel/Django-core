@@ -110,6 +110,14 @@ CELERY_BEAT_SCHEDULE = {
             "expires": 300,  # Task expires if not run within 5 minutes
         },
     },
+    # B31: Cleanup expired content daily at 2:15 AM UTC
+    "cleanup-expired-content": {
+        "task": "src.content_generation.tasks.cleanup_expired_content",
+        "schedule": crontab(hour=2, minute=15),  # Daily at 2:15 AM UTC
+        "options": {
+            "expires": 3600,  # Task expires if not run within 1 hour
+        },
+    },
 }
 
 # Beat Scheduler Settings
