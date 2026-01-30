@@ -71,6 +71,17 @@ export function useSports(): UseSportsReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const normalizeSportsList = (payload: unknown): Sport[] => {
+    if (Array.isArray(payload)) return payload as Sport[];
+
+    const p = payload as any;
+    if (Array.isArray(p?.results)) return p.results as Sport[];
+    if (Array.isArray(p?.data)) return p.data as Sport[];
+    if (Array.isArray(p?.data?.results)) return p.data.results as Sport[];
+    if (Array.isArray(p?.data?.data)) return p.data.data as Sport[];
+    return [];
+  };
+
   const fetchSports = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -89,8 +100,7 @@ export function useSports(): UseSportsReturn {
       }
 
       const data = await response.json();
-      // Handle paginated response or direct array
-      const sportsList = data.results || data;
+      const sportsList = normalizeSportsList(data);
       setSports(sportsList);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to fetch sports";
