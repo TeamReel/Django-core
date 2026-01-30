@@ -391,8 +391,15 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
     // Sport category filter
     if (sportFilter !== 'all') {
       list = list.filter((match) => {
-        const org = organisations.find(o => String(o.id) === String((match as any).organisation?.id || (match as any).organisation_id));
-        return (org as any)?.sport?.id === sportFilter;
+        const nestedOrg = (match as any)?.organisation;
+        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.sport?.id : undefined;
+        if (nestedSportId) return String(nestedSportId) === String(sportFilter);
+
+        const orgId =
+          (nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.id : nestedOrg) ||
+          (match as any)?.organisation_id;
+        const org = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
+        return String((org as any)?.sport?.id || '') === String(sportFilter);
       });
     }
 
@@ -1018,7 +1025,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                     )}
                     {!teamLocked && <th style={{ ...compactThStyle, width: '15%' }}>Team</th>}
                     <th style={{ ...compactThStyle, width: '15%' }}>Season</th>
-                    <th style={{ ...compactThStyle, width: 'auto' }}>Competition</th>
+                    <th style={{ ...compactThStyle, width: '18%' }}>Competition</th>
                     <th style={{ ...compactThStyle, width: '10%' }}>Sport</th>
                     <th style={{ ...compactThStyle, width: '12%' }}>Sport Variant</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Match</th>

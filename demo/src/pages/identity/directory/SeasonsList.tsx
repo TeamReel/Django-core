@@ -526,8 +526,15 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
     if (sportFilter !== 'all') {
       // Filter by organisation's sport
       list = list.filter((season) => {
-        const org = organisations.find(o => String(o.id) === String((season as any).organisation?.id || (season as any).organisation_id));
-        return (org as any)?.sport?.id === sportFilter;
+        const nestedOrg = (season as any)?.organisation;
+        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.sport?.id : undefined;
+        if (nestedSportId) return String(nestedSportId) === String(sportFilter);
+
+        const orgId =
+          (nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.id : nestedOrg) ||
+          (season as any)?.organisation_id;
+        const org = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
+        return String((org as any)?.sport?.id || '') === String(sportFilter);
       });
     }
 

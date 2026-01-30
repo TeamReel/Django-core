@@ -782,8 +782,15 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
     }
     if (sportFilter !== 'all') {
       list = list.filter((comp) => {
-        const org = organisations.find(o => String(o.id) === String((comp as any).organisation?.id || (comp as any).organisation_id));
-        return (org as any)?.sport?.id === sportFilter;
+        const nestedOrg = (comp as any)?.organisation;
+        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.sport?.id : undefined;
+        if (nestedSportId) return String(nestedSportId) === String(sportFilter);
+
+        const orgId =
+          (nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.id : nestedOrg) ||
+          (comp as any)?.organisation_id;
+        const org = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
+        return String((org as any)?.sport?.id || '') === String(sportFilter);
       });
     }
     if (variantFilter !== 'all') {

@@ -3,6 +3,7 @@ import React from 'react';
 export const compactTableStyle: React.CSSProperties = {
   tableLayout: 'fixed',
   width: '100%',
+  minWidth: '1200px',
   borderCollapse: 'collapse',
   fontSize: '13px' // Slightly smaller for compactness
 };
@@ -12,14 +13,19 @@ export const compactThStyle: React.CSSProperties = {
   fontSize: '0.8rem',
   textAlign: 'left',
   borderBottom: '2px solid var(--app-border)',
-  whiteSpace: 'nowrap'
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis'
 };
 
 export const compactTdStyle: React.CSSProperties = {
   padding: '4px 8px',
   fontSize: '0.85rem',
   verticalAlign: 'middle',
-  borderBottom: '1px solid var(--app-border)'
+  borderBottom: '1px solid var(--app-border)',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis'
 };
 
 export const compactTextTdStyle: React.CSSProperties = {

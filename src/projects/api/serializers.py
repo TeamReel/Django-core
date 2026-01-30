@@ -145,7 +145,19 @@ class OrganisationNestedSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     name = serializers.CharField()
     slug = serializers.CharField()
+    sport = serializers.SerializerMethodField()
     user_role = serializers.SerializerMethodField()
+
+    def get_sport(self, obj):
+        """Return nested sport representation (category-level)."""
+        if getattr(obj, "sport", None):
+            return {
+                "id": str(obj.sport.id),
+                "name": obj.sport.name,
+                "slug": obj.sport.slug,
+                "sport_icon": obj.sport.sport_icon,
+            }
+        return None
 
     def get_user_role(self, obj):
         """Return current user's role in this organisation, or None."""

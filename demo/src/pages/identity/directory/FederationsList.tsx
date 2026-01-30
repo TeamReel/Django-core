@@ -22,19 +22,26 @@ import type { Organisation } from '../../../types';
 const compactTableStyle: React.CSSProperties = {
   tableLayout: 'fixed',
   width: '100%',
+  minWidth: '1200px',
   borderCollapse: 'collapse'
 };
 const compactThStyle: React.CSSProperties = {
   padding: '6px 8px',
   fontSize: '0.8rem',
   textAlign: 'left',
-  borderBottom: '2px solid var(--app-border)'
+  borderBottom: '2px solid var(--app-border)',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis'
 };
 const compactTdStyle: React.CSSProperties = {
   padding: '6px 8px',
   fontSize: '0.85rem',
   verticalAlign: 'middle',
-  borderBottom: '1px solid #eee'
+  borderBottom: '1px solid #eee',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis'
 };
 const compactTextTdStyle: React.CSSProperties = {
   ...compactTdStyle,
