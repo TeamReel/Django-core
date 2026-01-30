@@ -1,11 +1,19 @@
 ---
 work_package_id: WP08
 title: Deployment & Operations
-lane: planned
+lane: doing
 subtasks: [T042, T043, T044, T045]
 priority: P3
 estimated_effort: 1 day
 dependencies: [WP01, WP02, WP03, WP07]
+assignee: github-copilot
+agent: github-copilot
+shell_pid: "$PID"
+history:
+  - date: 2026-01-30T08:00:00Z
+    action: moved_to_doing
+    author: github-copilot
+    note: "Started WP08: Deployment & Operations"
 ---
 
 # WP08: Deployment & Operations

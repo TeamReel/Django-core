@@ -7,8 +7,9 @@ class ContentGenerationConfig(AppConfig):
     verbose_name = "Content Generation"
 
     def ready(self):
-        """Register audit event types and connect signals."""
+        """Register audit event types, health check, and connect signals."""
         self._register_audit_event_types()
+        self._register_health_check()
         self._connect_signals()
 
     def _register_audit_event_types(self):
@@ -60,6 +61,12 @@ class ContentGenerationConfig(AppConfig):
         except ImportError:
             # B09 Audit module not installed, skip registration
             pass
+
+    def _register_health_check(self):
+        """Register content generation health check with B25 observability."""
+        from .health import register_health_check
+
+        register_health_check()
 
     def _connect_signals(self):
         """Connect post_save/post_delete signals for audit logging."""

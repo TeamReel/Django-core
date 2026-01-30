@@ -56,7 +56,19 @@ def generate_content_task(self, content_item_id: int):
 
         # Broadcast status update via WebSocket
         broadcast_content_status(item.id, item.status, progress_percent=0)
-        logger.info(f"Started generation for ContentItem {item.id}")
+        logger.info(
+            "Content generation started",
+            extra={
+                "context": {
+                    "item_id": item.id,
+                    "template_id": item.template_id,
+                    "template_name": item.template.name,
+                    "user_id": item.created_by_id,
+                    "project_id": item.project_id,
+                    "task_id": self.request.id,
+                }
+            },
+        )
 
         # Call AI workflow (stub for now - will integrate B34 in future)
         ai_output = call_ai_workflow(
@@ -92,7 +104,18 @@ def generate_content_task(self, content_item_id: int):
 
         # Broadcast completion
         broadcast_content_status(item.id, item.status, progress_percent=100)
-        logger.info(f"Completed generation for ContentItem {item.id} in {duration:.2f}s")
+        logger.info(
+            "Content generation completed",
+            extra={
+                "context": {
+                    "item_id": item.id,
+                    "template_id": item.template_id,
+                    "duration_seconds": duration,
+                    "output_file_id": output_file.id,
+                    "task_id": self.request.id,
+                }
+            },
+        )
 
         # Send notification (B17)
         try:
@@ -108,7 +131,15 @@ def generate_content_task(self, content_item_id: int):
 
     except SoftTimeLimitExceeded:
         # Handle timeout
-        logger.error(f"ContentItem {content_item_id} exceeded timeout")
+        logger.error(
+            "Content generation timed out",
+            extra={
+                "context": {
+                    "item_id": content_item_id,
+                    "task_id": self.request.id,
+                }
+            },
+        )
         item = ContentItem.objects.get(id=content_item_id)
         item.status = ContentStatus.FAILED
         item.error_message = "Generation timed out"
@@ -126,7 +157,16 @@ def generate_content_task(self, content_item_id: int):
 
     except Exception as e:
         # Handle general failure
-        logger.exception(f"ContentItem {content_item_id} failed with error: {e}")
+        logger.exception(
+            "Content generation failed",
+            extra={
+                "context": {
+                    "item_id": content_item_id,
+                    "error": str(e),
+                    "task_id": self.request.id,
+                }
+            },
+        )
         try:
             item = ContentItem.objects.get(id=content_item_id)
             item.status = ContentStatus.FAILED
@@ -324,7 +364,10 @@ def cleanup_expired_content():
     now = timezone.now()
     total_deleted = 0
 
-    logger.info("Starting content retention cleanup task")
+    logger.info(
+        "Content retention cleanup started",
+        extra={"context": {"task": "cleanup_expired_content"}},
+    )
 
     for org in Organisation.objects.all():
         org_deleted = 0
@@ -341,7 +384,17 @@ def cleanup_expired_content():
             ).update(deleted_at=now)
             org_deleted += failed_count
             if failed_count:
-                logger.info(f"Soft-deleted {failed_count} failed items for org {org.id}")
+                logger.info(
+                    "Soft-deleted failed content items",
+                    extra={
+                        "context": {
+                            "organisation_id": org.id,
+                            "status": "failed",
+                            "count": failed_count,
+                            "retention_days": failed_days,
+                        }
+                    },
+                )
 
         # Process rejected content
         rejected_days = get_retention_days(ContentStatus.REJECTED, org)
@@ -355,9 +408,22 @@ def cleanup_expired_content():
             ).update(deleted_at=now)
             org_deleted += rejected_count
             if rejected_count:
-                logger.info(f"Soft-deleted {rejected_count} rejected items for org {org.id}")
+                logger.info(
+                    "Soft-deleted rejected content items",
+                    extra={
+                        "context": {
+                            "organisation_id": org.id,
+                            "status": "rejected",
+                            "count": rejected_count,
+                            "retention_days": rejected_days,
+                        }
+                    },
+                )
 
         total_deleted += org_deleted
 
-    logger.info(f"Content cleanup complete: {total_deleted} items soft-deleted")
+    logger.info(
+        "Content retention cleanup completed",
+        extra={"context": {"total_deleted": total_deleted}},
+    )
     return {"deleted_count": total_deleted}
