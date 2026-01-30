@@ -1,17 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSports } from '../../hooks/useSports';
-
-interface Organisation {
-  id: string;
-  name: string;
-  slug?: string;
-  description?: string;
-  is_active?: boolean;
-  sport?: {
-    id: string;
-    name: string;
-  } | null;
-}
+import type { Organisation } from '../../types';
 
 interface OrganisationEditModalProps {
   opened: boolean;
