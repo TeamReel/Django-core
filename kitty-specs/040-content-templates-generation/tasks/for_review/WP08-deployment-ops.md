@@ -1,7 +1,7 @@
 ---
 work_package_id: WP08
 title: Deployment & Operations
-lane: doing
+lane: for_review
 subtasks: [T042, T043, T044, T045]
 priority: P3
 estimated_effort: 1 day
@@ -14,6 +14,10 @@ history:
     action: moved_to_doing
     author: github-copilot
     note: "Started WP08: Deployment & Operations"
+  - date: 2026-01-30T08:05:00Z
+    action: moved_to_for_review
+    author: github-copilot
+    note: "WP08 complete: T042-T045 implemented (Celery Beat, health check, logging, Procfile)"
 ---
 
 # WP08: Deployment & Operations
