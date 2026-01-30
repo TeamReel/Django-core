@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import type { Organisation as SharedOrganisation } from '../../types';
 
-interface Organisation {
-    id: string | number;
-    name: string;
-    slug?: string;
-}
+type OrganisationOption = Pick<SharedOrganisation, 'id' | 'name' | 'slug'>;
 
 interface User {
     id: string;
@@ -18,7 +15,7 @@ interface AssignUserToOrgModalProps {
   opened: boolean;
   onClose: () => void;
   user: User | null;
-  organisations: Organisation[];
+  organisations: OrganisationOption[];
   onSuccess: () => void;
 }
 

@@ -2,25 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DefaultEmpty } from '@django-core/page-templates';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import type { Organisation } from '../../types';
 
-interface Organisation {
-  id: string;
+type OrganisationCard = Organisation & {
   slug: string;
-  name: string;
-  description?: string;
-
-  // Counts from API
-  member_count?: number;
-  project_count?: number;
-  clubs_count?: number;
-  teams_count?: number;
   total_players_count?: number;
-  seasons_count?: number;
-  matches_count?: number;
-}
+};
 
 export default function OrganisationListPage() {
-  const [organisations, setOrganisations] = useState<Organisation[]>([]);
+  const [organisations, setOrganisations] = useState<OrganisationCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,13 +33,13 @@ export default function OrganisationListPage() {
         // 1. Array directly: [...]
         // 2. B13 envelope: { data: [...] }
         // 3. DRF pagination: { results: [...] }
-        let orgs = [];
+        let orgs: OrganisationCard[] = [];
         if (Array.isArray(data)) {
-          orgs = data;
+          orgs = data as OrganisationCard[];
         } else if (Array.isArray(data.data)) {
-          orgs = data.data;
+          orgs = data.data as OrganisationCard[];
         } else if (Array.isArray(data.results)) {
-          orgs = data.results;
+          orgs = data.results as OrganisationCard[];
         }
 
         setOrganisations(orgs);

@@ -16,6 +16,7 @@ import OrganisationEditModal from '../OrganisationEditModal';
 import OrganisationCreateModal from '../OrganisationCreateModal';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import { useSports } from '../../../hooks/useSports';
+import type { Organisation } from '../../../types';
 
 // Table styling constants
 const compactTableStyle: React.CSSProperties = {
@@ -72,17 +73,6 @@ const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
   }
   return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
 };
-
-interface Organisation {
-  id: string;
-  name: string;
-  slug?: string;
-  is_active?: boolean;
-  credit_balance?: number;
-  member_count?: number;
-  project_count?: number;
-  sport?: { id: string; name: string; slug: string; sport_icon: string } | null;
-}
 
 export const FederationsList: React.FC = () => {
   const navigate = useNavigate();

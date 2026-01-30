@@ -13,6 +13,7 @@ import AssignUserToOrgModal from './AssignUserToOrgModal';
 import LinkUserModal from './LinkUserModal';
 import LoadingState from '../../components/LoadingState';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import type { Organisation as SharedOrganisation } from '../../types';
 
 interface User {
   id: string;
@@ -24,11 +25,7 @@ interface User {
   organisations?: { id: string; name: string; slug: string; role: string }[];
 }
 
-interface Organisation {
-    id: string;
-    name: string;
-    slug: string;
-}
+type OrganisationOption = Pick<SharedOrganisation, 'id' | 'name' | 'slug'>;
 
 type ProjectOption = {
     id: string | number;
@@ -70,7 +67,7 @@ export default function UsersPage() {
     };
 
   // Filters
-  const [organisations, setOrganisations] = useState<Organisation[]>([]);
+    const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
     const [clubs, setClubs] = useState<ProjectOption[]>([]); // All clubs
     const [teams, setTeams] = useState<ProjectOption[]>([]); // All teams
   const [availableRoles, setAvailableRoles] = useState<string[]>([]); // All roles from RBAC

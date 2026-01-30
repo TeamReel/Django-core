@@ -1,15 +1,5 @@
 import { Badge } from '@django-core/design-system';
-
-interface Organisation {
-  id: string;
-  name: string;
-  slug?: string;
-  description?: string;
-  is_active?: boolean;
-  credit_balance?: number;
-  member_count?: number;
-  project_count?: number;
-}
+import type { Organisation } from '../../types';
 
 interface OrganisationDetailModalProps {
   opened: boolean;

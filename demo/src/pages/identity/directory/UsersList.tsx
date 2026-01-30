@@ -17,6 +17,7 @@ import {
     actionButtonStyle
 } from '../../../utils/directoryStyles';
 import { getApiBaseUrl } from '../../../utils/apiBase';
+import type { Organisation as SharedOrganisation } from '../../../types';
 
 
 // Reusing existing modals from parent folder
@@ -46,11 +47,7 @@ const TEAMREEL_ROLE_RANK: Record<string, number> = {
 
 const ADMIN_LIKE_PROJECT_ROLES = new Set(['owner', 'admin', 'manager', 'coach']);
 
-interface Organisation {
-    id: string;
-    name: string;
-    slug: string;
-}
+type OrganisationOption = Pick<SharedOrganisation, 'id' | 'name' | 'slug'>;
 
 type ProjectOption = {
     id: string | number;
@@ -107,7 +104,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
     const [error, setError] = useState<string | null>(null);
 
     // Filters
-    const [organisations, setOrganisations] = useState<Organisation[]>([]);
+    const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
     const [clubs, setClubs] = useState<ProjectOption[]>([]);
     const [teams, setTeams] = useState<ProjectOption[]>([]);
     const [availableRoles] = useState<string[]>([
