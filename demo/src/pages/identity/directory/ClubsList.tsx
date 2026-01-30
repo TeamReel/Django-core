@@ -405,11 +405,11 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
                       )}
                       <td style={compactTextTdStyle}>
                         <a
-                          href={`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`}
+                          href={`/${orgSlugOrId}/${clubSlugOrId}`}
                           className="text-blue-600 hover:underline"
                           onClick={(e) => {
                             e.preventDefault();
-                            navigate(`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`);
+                            navigate(`/${orgSlugOrId}/${clubSlugOrId}`);
                           }}
                         >
                           {club.name}

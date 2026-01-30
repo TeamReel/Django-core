@@ -168,7 +168,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
 
   useEffect(() => {
     if (!isSuperAdmin) {
-      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug })));
+      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug, sport: (o as any).sport, sport_variants_count: (o as any).sport_variants_count })));
       return;
     }
 
@@ -180,7 +180,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
           { credentials: 'include' },
           { ttlMs: 120_000, bypass: refreshKey > 0 },
         );
-        setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
+        setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug, sport: o.sport, sport_variants_count: o.sport_variants_count })));
       } catch {
         // ignore
       }
@@ -810,9 +810,12 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                         ? `/organisations/${orgForRowRoutes}/projects/${teamSlugOrId}`
                         : null;
 
-                    const seasonDetailPath = (orgForRowRoutes && teamSlugOrId && seasonSlugOrId)
-                      ? `/organisations/${orgForRowRoutes}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
-                      : null;
+                    // Use canonical vanity path when club is available: /:org/:club/:team/:season
+                    const seasonDetailPath = (orgForRowRoutes && clubSlugOrId && teamSlugOrId && seasonSlugOrId)
+                      ? `/${orgForRowRoutes}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`
+                      : (orgForRowRoutes && teamSlugOrId && seasonSlugOrId)
+                        ? `/organisations/${orgForRowRoutes}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
+                        : null;
 
                     // Use activities_count for matches if available, else 0
                     const matchesCount = (season as any).matches_count ?? season.activities_count ?? 0;

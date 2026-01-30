@@ -1045,11 +1045,11 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                     const club = clubs.find((c) => String(c.id) === String(clubId));
                     const clubName = club?.name || '-';
 
-                    // Organisation
+                    // Organisation - resolve slug from lookup list to avoid UUIDs in URLs
                     const orgId = selectedOrgId || m.organisation?.id || (club as any)?.organisation || (teamObj as any)?.organisation;
                     const org = organisations.find((o) => String(o.id) === String(orgId));
                     const orgName = m.organisation?.name || org?.name || '-';
-                    const orgSlug = m.organisation?.slug || (org as any)?.slug;
+                    const orgSlugResolved = org?.slug || m.organisation?.slug;
 
                     const competition = m.period;
                     const compName = competition?.name || '-';
@@ -1062,9 +1062,8 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                       return start.getTime() >= Date.now();
                     })();
 
-                    // Link Targets
-                    // Prefer locked/context slug if available and safe.
-                    const orgTarget = lockedOrgSlug || orgSlug || (selectedOrgId && !isUuid(selectedOrgId) ? selectedOrgId : undefined) || orgId || selectedOrgId;
+                    // Link Targets - prefer slugs from lookup lists over raw UUIDs
+                    const orgTarget = lockedOrgSlug || orgSlugResolved || orgId;
                     const clubTarget = (club as any)?.slug || clubId;
                     const teamTarget = (teamObj as any)?.slug || teamId;
                     const seasonTarget = season?.slug || season?.id;

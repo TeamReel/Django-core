@@ -1119,7 +1119,6 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                     const org = comp.organisation;
                     const project = comp.project;
                     const orgId = typeof org === 'object' ? org?.id : org;
-                    const orgSlug = typeof org === 'object' ? (org as any)?.slug : undefined;
                     const orgName = typeof org === 'string' ? org : org?.name || '-';
                     const teamId = typeof project === 'object' ? project?.id : project;
                     const teamSlug = typeof project === 'object' ? (project as any)?.slug : undefined;
@@ -1134,11 +1133,15 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                     // Use matches_count
                     const matchesCount = comp.matches_count || 0;
 
-                    // Link URL logic
-                    const orgSlugOrId = lockedOrgSlug || orgSlug || (selectedOrgId && !isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : undefined) || orgId;
+                    // Link URL logic - resolve slugs from lookup lists to avoid UUIDs in URLs
+                    const orgFromList = orgId ? organisations.find(o => String(o.id) === String(orgId)) : undefined;
+                    const orgSlugResolved = orgFromList?.slug || (typeof org === 'object' ? (org as any)?.slug : undefined);
+                    const orgSlugOrId = lockedOrgSlug || orgSlugResolved || orgId;
                     const clubSlugOrId = (club as any)?.slug || clubId;
-                    const teamSlugOrId = teamSlug || teamId;
+                    const teamSlugResolved = (teamObj as any)?.slug || teamSlug;
+                    const teamSlugOrId = teamSlugResolved || teamId;
                     const seasonSlugOrId = seasonSlug || seasonId;
+                    const compSlugOrId = comp.slug || comp.id;
                     const teamBasePath = clubSlugOrId
                       ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`
                       : `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}`;
@@ -1149,11 +1152,11 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                           <td style={compactTextTdStyle}>
                             {orgId ? (
                               <a
-                                href={`/organisations/${orgSlug || orgId}`}
+                                href={`/organisations/${orgSlugOrId}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/organisations/${orgSlug || orgId}`);
+                                  navigate(`/organisations/${orgSlugOrId}`);
                                 }}
                               >
                                 {orgName}
