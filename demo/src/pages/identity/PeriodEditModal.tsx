@@ -83,7 +83,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
     end_date: (resolvedPeriod as any)?.end_date,
   });
 
-  // Populate form when modal opens with valid period data
+  // Single effect to handle both reset (when closed) and populate (when opened with period)
   useEffect(() => {
     if (!opened) {
       // Reset when closed
@@ -97,24 +97,21 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
       setError(null);
       return;
     }
-  }, [opened]);
 
-  // Separately populate form when resolvedPeriod becomes available (while modal is open)
-  useEffect(() => {
-    if (!opened || !resolvedPeriod) return;
+    // Populate form with period data when opened
+    if (resolvedPeriod) {
+      setName(resolvedPeriod.name ?? '');
+      setDescription(resolvedPeriod.description ?? '');
+      setStartDate(resolvedPeriod.start_date ?? '');
+      setEndDate(resolvedPeriod.end_date ?? '');
+      const data = (resolvedPeriod as any).data ?? (resolvedPeriod as any).metadata ?? {};
+      setType(String((data as any)?.type ?? ''));
 
-    // Populate form with period data
-    setName(resolvedPeriod.name ?? '');
-    setDescription(resolvedPeriod.description ?? '');
-    setStartDate(resolvedPeriod.start_date ?? '');
-    setEndDate(resolvedPeriod.end_date ?? '');
-    const data = (resolvedPeriod as any).data ?? (resolvedPeriod as any).metadata ?? {};
-    setType(String((data as any)?.type ?? ''));
-
-    const currentSportId = String((resolvedPeriod as any)?.sport_id ?? (resolvedPeriod as any)?.sport?.id ?? '').trim();
-    setSelectedSportId(currentSportId);
-    setInitialSportId(currentSportId);
-    setError(null);
+      const currentSportId = String((resolvedPeriod as any)?.sport_id ?? (resolvedPeriod as any)?.sport?.id ?? '').trim();
+      setSelectedSportId(currentSportId);
+      setInitialSportId(currentSportId);
+      setError(null);
+    }
   }, [opened, periodKey, resolvedPeriod]);
 
   if (!opened || !resolvedPeriod) return null;

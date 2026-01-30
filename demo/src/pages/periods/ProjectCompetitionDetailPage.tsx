@@ -1191,6 +1191,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         periodToEdit?.uuid ||
         periodToEdit?.data?.id ||
         periodToEdit?.data?.data?.id ||
+        resolvedCompetitionId ||
         ''
     ).trim();
     if (!periodId) throw new Error('Missing period id');
