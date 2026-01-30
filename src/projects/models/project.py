@@ -1,5 +1,9 @@
 """Models for Projects & Workspaces Management."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
+
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
@@ -7,6 +11,9 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from ..managers import ActiveProjectManager, AllProjectManager
+
+if TYPE_CHECKING:
+    from sport_configuration.models import Sport
 
 
 class Project(models.Model):
@@ -71,6 +78,16 @@ class Project(models.Model):
         blank=True,
         related_name="children",
         help_text="Parent project (e.g., Club for a Team). NULL = root level.",
+    )
+
+    # B32: Sport Configuration
+    sport = models.ForeignKey(
+        "sport_configuration.Sport",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="projects",
+        help_text="Sport/discipline for this project. Teams can inherit from parent club.",
     )
 
     # Master data storage
@@ -148,6 +165,19 @@ class Project(models.Model):
             "api_v1:organisation-projects-detail",
             kwargs={"organisation_id": self.organisation.slug, "slug": self.slug},
         )
+
+    def get_sport(self) -> Optional["Sport"]:
+        """
+        Return sport with fallback to parent project (club).
+
+        Teams can inherit sport from their parent club if not explicitly set.
+        Returns None if no sport is assigned at any level.
+        """
+        if self.sport_id:
+            return self.sport
+        if self.parent_project_id:
+            return self.parent_project.get_sport()
+        return None
 
     def _generate_unique_slug(self, base_slug: str = None) -> str:
         """
