@@ -1,13 +1,13 @@
 ---
 work_package_id: WP07
 title: Integrations & Polish
-lane: for_review
+lane: "done"
 subtasks: [T036, T037, T038, T039, T040, T041]
 priority: P2
 estimated_effort: 1-2 days
 dependencies: [WP02, WP03, WP04, WP05, WP06]
 assignee: github-copilot
-agent: github-copilot
+agent: "github-copilot"
 shell_pid: "$PID"
 history:
   - date: 2026-01-30T07:47:00Z
@@ -189,3 +189,7 @@ class ContentItemViewSet(viewsets.ModelViewSet):
 - [ ] Cleanup task soft-deletes expired items
 - [ ] Error messages clear and consistent
 - [ ] Query performance <2s for 1000 items
+
+## Activity Log
+
+- 2026-01-30T08:07:06Z – github-copilot – shell_pid=$PID – lane=done – Review APPROVED: All T036-T041 criteria met
