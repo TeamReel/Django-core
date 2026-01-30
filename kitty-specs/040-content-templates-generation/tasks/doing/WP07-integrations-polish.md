@@ -1,11 +1,19 @@
 ---
 work_package_id: WP07
 title: Integrations & Polish
-lane: planned
+lane: doing
 subtasks: [T036, T037, T038, T039, T040, T041]
 priority: P2
 estimated_effort: 1-2 days
 dependencies: [WP02, WP03, WP04, WP05, WP06]
+assignee: github-copilot
+agent: github-copilot
+shell_pid: "$PID"
+history:
+  - date: 2026-01-30T07:47:00Z
+    action: moved_to_doing
+    author: github-copilot
+    note: "Started WP07: Integrations & Polish"
 ---
 
 # WP07: Integrations & Polish
