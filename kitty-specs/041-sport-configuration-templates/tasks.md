@@ -20,22 +20,22 @@
 
 ---
 
-## Work Package WP01: Django App Scaffold & Models (Priority: P0)
+## Work Package WP01: Django App Scaffold & Models (Priority: P0) ✅ DONE
 
 **Goal**: Create `sport_configuration` Django app with Sport, SportConfiguration, and OutfitConfiguration models.
 **Independent Test**: Models can be created via Django shell; migrations run successfully; model tests pass.
-**Prompt**: `tasks/planned/WP01-django-app-scaffold-and-models.md`
+**Prompt**: `tasks/done/WP01-django-app-scaffold-and-models.md`
 
 ### Included Subtasks
-- [ ] T001 Create Django app `src/sport_configuration/` with standard structure
-- [ ] T002 [P] Create `Sport` model with name, slug, federation_metadata, sport_icon, is_active
-- [ ] T003 [P] Create `SportConfiguration` model (1:1 with Sport) with team sizes, positions, formations
-- [ ] T004 [P] Create `OutfitConfiguration` model with project FK, outfit_type, colors, sponsor_config
-- [ ] T005 Add `sport` FK to Project model with `get_sport()` fallback method
-- [ ] T006 Create and run migrations for all models
-- [ ] T007 [P] Register models in Django admin
-- [ ] T008 [P] Create app README.md
-- [ ] T009 **Write `tests/sport_configuration/test_models.py`** (≥90% coverage per Constitution Art. IV)
+- [x] T001 Create Django app `src/sport_configuration/` with standard structure
+- [x] T002 [P] Create `Sport` model with name, slug, federation_metadata, sport_icon, is_active
+- [x] T003 [P] Create `SportConfiguration` model (1:1 with Sport) with team sizes, positions, formations
+- [x] T004 [P] Create `OutfitConfiguration` model with project FK, outfit_type, colors, sponsor_config
+- [x] T005 Add `sport` FK to Project model with `get_sport()` fallback method
+- [x] T006 Create and run migrations for all models
+- [x] T007 [P] Register models in Django admin
+- [x] T008 [P] Create app README.md
+- [x] T009 **Write `tests/sport_configuration/test_models.py`** (≥90% coverage per Constitution Art. IV)
 
 ### Constitutional Alignment
 - Principle II (Architecture): Single responsibility app for sport configuration
