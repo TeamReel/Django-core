@@ -151,6 +151,212 @@ class ContentItemViewSet(viewsets.ModelViewSet):
 
         return Response({"id": item.id, "status": item.status, "message": "Generation re-queued"})
 
+    @action(detail=True, methods=["post"], url_path="approve")
+    def approve(self, request, pk=None):
+        """
+        Approve completed content.
+
+        Creates ContentApproval with status='approved' and updates
+        ContentItem status to 'approved'. Sends B17 notification.
+        """
+        item = self.get_object()
+
+        # Validate content is completed
+        if item.status != ContentStatus.COMPLETED:
+            return Response(
+                {
+                    "error": (
+                        f'Cannot approve content with status "{item.status}". '
+                        "Only completed content can be approved."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Create approval record
+        approval = ContentApproval.objects.create(
+            content_item=item,
+            reviewer=request.user,
+            status="approved",
+            feedback_text=request.data.get("feedback_text", ""),
+        )
+
+        # Update ContentItem status
+        item.status = ContentStatus.APPROVED
+        item.save()
+
+        # Send B17 notification
+        from .tasks import send_notification_b17
+
+        try:
+            send_notification_b17(
+                user=item.created_by,
+                notification_type="content_approved",
+                message=(
+                    f"Your content '{item.template.name}' has been approved "
+                    f"by {request.user.username}"
+                ),
+                related_object_type="ContentItem",
+                related_object_id=item.id,
+            )
+        except Exception as e:
+            # Log but don't fail the approval
+            import logging
+
+            logging.warning(f"Failed to send approval notification: {e}")
+
+        return Response(
+            {
+                "id": item.id,
+                "status": item.status,
+                "approval_id": approval.id,
+                "message": "Content approved successfully",
+            }
+        )
+
+    @action(detail=True, methods=["post"], url_path="reject")
+    def reject(self, request, pk=None):
+        """
+        Reject completed content with feedback.
+
+        Requires feedback_text. Creates ContentApproval with status='rejected'
+        and updates ContentItem status to 'rejected'. Sends B17 notification.
+        """
+        item = self.get_object()
+
+        # Validate content is completed
+        if item.status != ContentStatus.COMPLETED:
+            return Response(
+                {
+                    "error": (
+                        f'Cannot reject content with status "{item.status}". '
+                        "Only completed content can be rejected."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validate feedback is provided
+        feedback_text = request.data.get("feedback_text", "").strip()
+        if not feedback_text:
+            return Response(
+                {"error": "feedback_text is required when rejecting content"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Create approval record
+        approval = ContentApproval.objects.create(
+            content_item=item,
+            reviewer=request.user,
+            status="rejected",
+            feedback_text=feedback_text,
+        )
+
+        # Update ContentItem status
+        item.status = ContentStatus.REJECTED
+        item.save()
+
+        # Send B17 notification
+        from .tasks import send_notification_b17
+
+        try:
+            send_notification_b17(
+                user=item.created_by,
+                notification_type="content_rejected",
+                message=(
+                    f"Your content '{item.template.name}' was rejected "
+                    f"by {request.user.username}: {feedback_text}"
+                ),
+                related_object_type="ContentItem",
+                related_object_id=item.id,
+            )
+        except Exception as e:
+            import logging
+
+            logging.warning(f"Failed to send rejection notification: {e}")
+
+        return Response(
+            {
+                "id": item.id,
+                "status": item.status,
+                "approval_id": approval.id,
+                "feedback": feedback_text,
+                "message": "Content rejected",
+            }
+        )
+
+    @action(detail=True, methods=["post"], url_path="request-revision")
+    def request_revision(self, request, pk=None):
+        """
+        Request revision for completed content with feedback.
+
+        Requires feedback_text. Creates ContentApproval with
+        status='revision_requested' and updates ContentItem status.
+        Sends B17 notification.
+        """
+        item = self.get_object()
+
+        # Validate content is completed
+        if item.status != ContentStatus.COMPLETED:
+            return Response(
+                {
+                    "error": (
+                        f'Cannot request revision for content with status "{item.status}". '
+                        "Only completed content can have revision requested."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validate feedback is provided
+        feedback_text = request.data.get("feedback_text", "").strip()
+        if not feedback_text:
+            return Response(
+                {"error": "feedback_text is required when requesting revision"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Create approval record
+        approval = ContentApproval.objects.create(
+            content_item=item,
+            reviewer=request.user,
+            status="revision_requested",
+            feedback_text=feedback_text,
+        )
+
+        # Update ContentItem status
+        item.status = ContentStatus.REVISION_REQUESTED
+        item.save()
+
+        # Send B17 notification
+        from .tasks import send_notification_b17
+
+        try:
+            send_notification_b17(
+                user=item.created_by,
+                notification_type="content_revision_requested",
+                message=(
+                    f"Revision requested for '{item.template.name}' "
+                    f"by {request.user.username}: {feedback_text}"
+                ),
+                related_object_type="ContentItem",
+                related_object_id=item.id,
+            )
+        except Exception as e:
+            import logging
+
+            logging.warning(f"Failed to send revision request notification: {e}")
+
+        return Response(
+            {
+                "id": item.id,
+                "status": item.status,
+                "approval_id": approval.id,
+                "feedback": feedback_text,
+                "message": "Revision requested",
+            }
+        )
+
 
 class ContentApprovalViewSet(viewsets.ModelViewSet):
     """
