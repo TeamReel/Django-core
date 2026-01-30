@@ -127,6 +127,14 @@ class ContentTemplate(models.Model):
         related_name="created_templates",
         help_text="Template creator",
     )
+    sport = models.ForeignKey(
+        "sport_configuration.Sport",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="content_templates",
+        help_text="Filter templates by sport. Null = universal template.",
+    )
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

@@ -41,9 +41,10 @@ class ContentTemplateFilter(filters.FilterSet):
     """
     Filter for ContentTemplate queries.
 
-    Supports filtering by sport_type, is_active, project, organisation, and template_type.
+    Supports filtering by sport, sport_type, is_active, project, organisation, and template_type.
     """
 
+    sport = filters.NumberFilter(field_name="sport")
     sport_type = filters.CharFilter(field_name="sport_type")
     is_active = filters.BooleanFilter(field_name="is_active")
     project = filters.NumberFilter(field_name="project")
@@ -52,7 +53,7 @@ class ContentTemplateFilter(filters.FilterSet):
 
     class Meta:
         model = ContentTemplate
-        fields = ["sport_type", "is_active", "project", "organisation", "template_type"]
+        fields = ["sport", "sport_type", "is_active", "project", "organisation", "template_type"]
 
 
 class ContentItemFilter(filters.FilterSet):

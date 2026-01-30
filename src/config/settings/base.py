@@ -75,6 +75,8 @@ INSTALLED_APPS = [
     "activities.apps.ActivitiesConfig",
     # B31: Content Templates & Generation
     "src.content_generation.apps.ContentGenerationConfig",
+    # B32: Sport Configuration & Templates
+    "sport_configuration.apps.SportConfigurationConfig",
 ]
 
 MIDDLEWARE = [
