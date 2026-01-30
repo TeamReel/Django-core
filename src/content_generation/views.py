@@ -5,9 +5,11 @@ API views for ContentTemplate, ContentItem, and ContentApproval with custom acti
 for duplicate detection, status polling, and retry logic.
 """
 
+from django.http import HttpResponseRedirect
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from .models import ContentApproval, ContentItem, ContentStatus, ContentTemplate
@@ -16,6 +18,18 @@ from .serializers import (
     ContentItemSerializer,
     ContentTemplateSerializer,
 )
+
+
+class ContentItemPagination(PageNumberPagination):
+    """
+    Pagination for ContentItem list views.
+
+    Supports page_size parameter with default of 50 and max of 200.
+    """
+
+    page_size = 50
+    page_size_query_param = "page_size"
+    max_page_size = 200
 
 
 class ContentTemplateFilter(filters.FilterSet):
@@ -34,6 +48,35 @@ class ContentTemplateFilter(filters.FilterSet):
     class Meta:
         model = ContentTemplate
         fields = ["sport_type", "is_active", "project", "organisation", "template_type"]
+
+
+class ContentItemFilter(filters.FilterSet):
+    """
+    Filter for ContentItem queries.
+
+    Supports filtering by project, status, template, activity, and created_by.
+    Includes date range filters for created_at.
+    """
+
+    project = filters.NumberFilter(field_name="project")
+    status = filters.CharFilter(field_name="status")
+    template = filters.NumberFilter(field_name="template")
+    activity = filters.NumberFilter(field_name="activity")
+    created_by = filters.NumberFilter(field_name="created_by")
+    created_at_after = filters.DateTimeFilter(field_name="created_at", lookup_expr="gte")
+    created_at_before = filters.DateTimeFilter(field_name="created_at", lookup_expr="lte")
+
+    class Meta:
+        model = ContentItem
+        fields = [
+            "project",
+            "status",
+            "template",
+            "activity",
+            "created_by",
+            "created_at_after",
+            "created_at_before",
+        ]
 
 
 class ContentTemplateViewSet(viewsets.ModelViewSet):
@@ -77,10 +120,14 @@ class ContentItemViewSet(viewsets.ModelViewSet):
     """
     ViewSet for ContentItem management with duplicate detection,
     status polling, and retry functionality.
+
+    Supports pagination (default 50, max 200) and filtering by
+    project, status, template, activity, created_by, and date range.
     """
 
     serializer_class = ContentItemSerializer
-    filterset_fields = ["project", "status", "template", "activity"]
+    pagination_class = ContentItemPagination
+    filterset_class = ContentItemFilter
 
     def get_queryset(self):
         return ContentItem.objects.active().select_related(
@@ -397,6 +444,25 @@ class ContentItemViewSet(viewsets.ModelViewSet):
                 "message": "Revision requested",
             }
         )
+
+    @action(detail=True, methods=["get"], url_path="download")
+    def download(self, request, pk=None):
+        """
+        Download the output file for a completed content item.
+
+        Redirects to the file URL if output_file exists.
+        Returns 404 if no output file is available.
+        """
+        item = self.get_object()
+
+        if not item.output_file or not item.output_file.file:
+            return Response(
+                {"error": "No output file available for this content item"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Redirect to the file URL
+        return HttpResponseRedirect(item.output_file.file.url)
 
 
 class ContentApprovalViewSet(viewsets.ModelViewSet):

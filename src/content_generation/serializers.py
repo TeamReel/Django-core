@@ -98,6 +98,7 @@ class ContentItemSerializer(serializers.ModelSerializer):
     output_file_detail = serializers.SerializerMethodField()
     created_by_detail = serializers.SerializerMethodField()
     approval_history = serializers.SerializerMethodField()
+    thumbnail_url = serializers.SerializerMethodField()
 
     class Meta:
         model = ContentItem
@@ -112,6 +113,7 @@ class ContentItemSerializer(serializers.ModelSerializer):
             "input_data",
             "output_file",
             "output_file_detail",
+            "thumbnail_url",
             "error_message",
             "metadata",
             "created_by",
@@ -160,6 +162,12 @@ class ContentItemSerializer(serializers.ModelSerializer):
     def get_approval_history(self, obj):
         approvals = obj.contentapproval_set.all().order_by("-reviewed_at")
         return ContentApprovalSerializer(approvals, many=True).data
+
+    def get_thumbnail_url(self, obj):
+        """Return thumbnail URL from output_file if available."""
+        if obj.output_file and hasattr(obj.output_file, "thumbnail") and obj.output_file.thumbnail:
+            return obj.output_file.thumbnail.url
+        return None
 
     def validate_template(self, value):
         """Ensure template is active"""
