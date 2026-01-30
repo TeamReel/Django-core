@@ -74,14 +74,15 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
   }, [period]);
 
   // Reset form state whenever modal opens or period changes
-  // Use JSON.stringify on period to detect deep changes (not just reference)
-  const periodKey = JSON.stringify({
-    id: (resolvedPeriod as any)?.id,
-    name: (resolvedPeriod as any)?.name,
-    description: (resolvedPeriod as any)?.description,
-    start_date: (resolvedPeriod as any)?.start_date,
-    end_date: (resolvedPeriod as any)?.end_date,
-  });
+  // Use JSON.stringify on the original period prop to detect changes
+  const periodKey = useMemo(() => JSON.stringify({
+    id: (period as any)?.id,
+    name: (period as any)?.name,
+    description: (period as any)?.description,
+    start_date: (period as any)?.start_date,
+    end_date: (period as any)?.end_date,
+    sport_id: (period as any)?.sport_id ?? (period as any)?.sport?.id,
+  }), [period]);
 
   // Single effect to handle both reset (when closed) and populate (when opened with period)
   useEffect(() => {
@@ -100,6 +101,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
 
     // Populate form with period data when opened
     if (resolvedPeriod) {
+      console.log('[PeriodEditModal] Populating form with:', resolvedPeriod);
       setName(resolvedPeriod.name ?? '');
       setDescription(resolvedPeriod.description ?? '');
       setStartDate(resolvedPeriod.start_date ?? '');
@@ -112,7 +114,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
       setInitialSportId(currentSportId);
       setError(null);
     }
-  }, [opened, periodKey, resolvedPeriod]);
+  }, [opened, periodKey]);
 
   if (!opened || !resolvedPeriod) return null;
 
