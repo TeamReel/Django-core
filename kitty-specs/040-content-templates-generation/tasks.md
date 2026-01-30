@@ -205,12 +205,12 @@ Implement template CRUD operations: list/filter templates by sport, create/updat
 
 ### Included Subtasks
 
-- [ ] **T022** - Create `ContentTemplateSerializer` with template_settings validation, nested organisation/project
-- [ ] **T023** - Implement `ContentTemplateViewSet` with list/retrieve/create/update/delete actions
-- [ ] **T024** - Add query filters: `?sport_type=`, `?is_active=`, `?project=`
-- [ ] **T025** - Implement soft-delete protection (DELETE fails if ContentItems exist)
-- [ ] **T026** - Create data migration to seed 2-3 initial templates (Line-up Video, Match Highlights)
-- [ ] **T027** - Add B32 Sport Config integration for sport_type validation
+- [x] **T022** - Create `ContentTemplateSerializer` with template_settings validation, nested organisation/project
+- [x] **T023** - Implement `ContentTemplateViewSet` with list/retrieve/create/update/delete actions
+- [x] **T024** - Add query filters: `?sport_type=`, `?is_active=`, `?project=`
+- [x] **T025** - Implement soft-delete protection (DELETE fails if ContentItems exist)
+- [x] **T026** - Create data migration to seed 2-3 initial templates (Line-up Video, Match Highlights)
+- [x] **T027** - Add B32 Sport Config integration for sport_type validation
 
 ### Implementation Sketch
 
