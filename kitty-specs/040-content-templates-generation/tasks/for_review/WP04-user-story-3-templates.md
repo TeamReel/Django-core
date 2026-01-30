@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: User Story 3 - Template Management
-lane: doing
+lane: for_review
 subtasks:
   - T022
   - T023
@@ -24,6 +24,11 @@ history:
     author: github-copilot
     shell_pid: "$PID"
     note: "Started WP04: User Story 3 - Template Management implementation"
+  - date: 2026-01-30T07:01:00Z
+    action: completed
+    author: github-copilot
+    commit_sha: 5fe5539e
+    note: "Completed WP04: Template CRUD with filters, delete protection, seed migration"
 ---
 
 # WP04: User Story 3 - Template Management
