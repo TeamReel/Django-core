@@ -5,6 +5,7 @@ API views for ContentTemplate, ContentItem, and ContentApproval with custom acti
 for duplicate detection, status polling, and retry logic.
 """
 
+from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -17,19 +18,59 @@ from .serializers import (
 )
 
 
+class ContentTemplateFilter(filters.FilterSet):
+    """
+    Filter for ContentTemplate queries.
+
+    Supports filtering by sport_type, is_active, project, organisation, and template_type.
+    """
+
+    sport_type = filters.CharFilter(field_name="sport_type")
+    is_active = filters.BooleanFilter(field_name="is_active")
+    project = filters.NumberFilter(field_name="project")
+    organisation = filters.NumberFilter(field_name="organisation")
+    template_type = filters.CharFilter(field_name="template_type")
+
+    class Meta:
+        model = ContentTemplate
+        fields = ["sport_type", "is_active", "project", "organisation", "template_type"]
+
+
 class ContentTemplateViewSet(viewsets.ModelViewSet):
     """
     ViewSet for ContentTemplate management
 
     List, create, retrieve, update, and delete content templates.
+    Includes delete protection for templates with existing ContentItems.
     """
 
     queryset = ContentTemplate.objects.select_related("organisation", "project", "created_by")
     serializer_class = ContentTemplateSerializer
-    filterset_fields = ["template_type", "sport_type", "is_active", "organisation", "project"]
+    filterset_class = ContentTemplateFilter
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Override delete to prevent deletion of templates with existing ContentItems.
+
+        Returns 400 Bad Request if the template has any associated content items.
+        """
+        template = self.get_object()
+
+        # Check if any ContentItems exist (including soft-deleted)
+        content_items_count = template.contentitem_set.count()
+        if content_items_count > 0:
+            return Response(
+                {
+                    "error": "Cannot delete template with existing content items",
+                    "content_items_count": content_items_count,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return super().destroy(request, *args, **kwargs)
 
 
 class ContentItemViewSet(viewsets.ModelViewSet):

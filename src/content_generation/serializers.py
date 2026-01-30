@@ -14,6 +14,7 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
     """Serializer for ContentTemplate model"""
 
     created_by_detail = serializers.SerializerMethodField()
+    organisation_detail = serializers.SerializerMethodField()
     project_detail = serializers.SerializerMethodField()
 
     class Meta:
@@ -29,6 +30,7 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
             "timeout_minutes",
             "is_active",
             "organisation",
+            "organisation_detail",
             "project",
             "project_detail",
             "created_by",
@@ -43,10 +45,46 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
             return {"id": obj.created_by.id, "username": obj.created_by.username}
         return None
 
+    def get_organisation_detail(self, obj):
+        if obj.organisation:
+            return {"id": obj.organisation.id, "name": obj.organisation.name}
+        return None
+
     def get_project_detail(self, obj):
         if obj.project:
             return {"id": obj.project.id, "name": obj.project.name}
         return None
+
+    def validate_timeout_minutes(self, value):
+        """Validate timeout is within reasonable bounds (1-1440 minutes / 24 hours)"""
+        if value is not None and (value < 1 or value > 1440):
+            raise serializers.ValidationError(
+                "Timeout must be between 1 and 1440 minutes (24 hours)"
+            )
+        return value
+
+    def validate_template_settings(self, value):
+        """Validate template_settings is a valid JSON object"""
+        if value is not None and not isinstance(value, dict):
+            raise serializers.ValidationError("template_settings must be a valid JSON object")
+        return value
+
+    def validate_sport_type(self, value):
+        """
+        Validate sport_type against B32 Sport Config if available.
+
+        Falls back to accepting any value if B32 is not installed.
+        """
+        if value:
+            try:
+                from src.sport_config.models import SportType
+
+                if not SportType.objects.filter(code=value).exists():
+                    raise serializers.ValidationError(f"Invalid sport_type: {value}")
+            except ImportError:
+                # B32 not installed, skip validation
+                pass
+        return value
 
 
 class ContentItemSerializer(serializers.ModelSerializer):
