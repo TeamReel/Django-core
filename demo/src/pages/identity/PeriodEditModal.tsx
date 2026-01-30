@@ -16,6 +16,7 @@ interface PeriodEditModalProps {
   onClose: () => void;
   period: PeriodLike | null;
   showSportVariant?: boolean;
+  showDates?: boolean;
   onSave: (payload: {
     name?: string;
     description?: string;
@@ -26,7 +27,7 @@ interface PeriodEditModalProps {
   }) => Promise<void>;
 }
 
-export default function PeriodEditModal({ opened, onClose, period, onSave, showSportVariant = true }: PeriodEditModalProps) {
+export default function PeriodEditModal({ opened, onClose, period, onSave, showSportVariant = true, showDates = true }: PeriodEditModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -47,8 +48,8 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
 
     const looksLikePeriod = (obj: any): boolean => {
       if (!obj || typeof obj !== 'object') return false;
-      // Heuristics: real Period objects have at least an id+name or date fields.
-      if (obj.id && (obj.name || obj.start_date || obj.end_date)) return true;
+      // Heuristics: real Period objects have id+name, or date fields.
+      if (obj.id && obj.name) return true;
       if (obj.name && (obj.start_date || obj.end_date)) return true;
       if (obj.start_date || obj.end_date) return true;
       return false;
@@ -212,45 +213,47 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontWeight: 600 }} htmlFor="period-start">
-                Start (YYYY-MM-DD)
-              </label>
-              <input
-                id="period-start"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                placeholder="YYYY-MM-DD"
-                style={{
-                  padding: '8px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                }}
-              />
-            </div>
+          {showDates && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontWeight: 600 }} htmlFor="period-start">
+                  Start (YYYY-MM-DD)
+                </label>
+                <input
+                  id="period-start"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  placeholder="YYYY-MM-DD"
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-surface-2)',
+                    color: 'var(--app-text)',
+                  }}
+                />
+              </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontWeight: 600 }} htmlFor="period-end">
-                End (YYYY-MM-DD)
-              </label>
-              <input
-                id="period-end"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                placeholder="YYYY-MM-DD"
-                style={{
-                  padding: '8px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                }}
-              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontWeight: 600 }} htmlFor="period-end">
+                  End (YYYY-MM-DD)
+                </label>
+                <input
+                  id="period-end"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  placeholder="YYYY-MM-DD"
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-surface-2)',
+                    color: 'var(--app-text)',
+                  }}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <label style={{ fontWeight: 600 }} htmlFor="period-type">

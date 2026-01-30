@@ -2102,6 +2102,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 opened={isPeriodEditModalOpen}
                 onClose={() => setIsPeriodEditModalOpen(false)}
                 period={selectedEditPeriod}
+                showDates={false}
                 onSave={async (patch) => {
                   if (!selectedEditPeriod) return;
                   await savePeriodEdits(selectedEditPeriod, patch);
