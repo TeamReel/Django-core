@@ -167,27 +167,35 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
   }, [isSuperAdmin, searchParams, clubLocked, preselectedOrgId]);
 
   useEffect(() => {
-    if (!isSuperAdmin) {
-      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug, sport: (o as any).sport, sport_variants_count: (o as any).sport_variants_count })));
-      return;
-    }
-
+    // Always fetch organisations from API to get sport data (context-switcher doesn't include it)
     const load = async () => {
       const apiBaseUrl = getApiBaseUrl();
       try {
+        // If not superAdmin, filter to only org IDs the user has access to
+        const myOrgIds = myOrganisations.map(o => String(o.id));
+        const baseUrl = `${apiBaseUrl}/api/v1/organisations/?page_size=100`;
+        const url = isSuperAdmin ? baseUrl : baseUrl;  // API returns only accessible orgs anyway
+
         const orgs = await fetchAllPages<any>(
-          `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
+          url,
           { credentials: 'include' },
           { ttlMs: 120_000, bypass: refreshKey > 0 },
         );
-        setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug, sport: o.sport, sport_variants_count: o.sport_variants_count })));
+
+        // For non-superadmin, filter to only their orgs (API should already do this, but be safe)
+        const filteredOrgs = isSuperAdmin
+          ? orgs
+          : (orgs || []).filter((o: any) => myOrgIds.includes(String(o.id)));
+
+        setOrganisations((filteredOrgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug, sport: o.sport, sport_variants_count: o.sport_variants_count })));
       } catch {
-        // ignore
+        // Fallback to context data if API fails
+        setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug, sport: (o as any).sport, sport_variants_count: (o as any).sport_variants_count })));
       }
     };
 
     load();
-  }, [isSuperAdmin, myOrganisations]);
+  }, [isSuperAdmin, myOrganisations, refreshKey]);
 
   // Fetch filter options
   useEffect(() => {

@@ -8,6 +8,7 @@ import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../../utils/apiBase';
+import { periodPathKey } from '../../../utils/periodPath';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import MatchDetailModal from '../MatchDetailModal';
 import MatchEditModal from '../MatchEditModal';
@@ -287,22 +288,27 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
   }, [selectedSeasonName, seasonOptions]);
 
   useEffect(() => {
-    if (!isSuperAdmin) {
-      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug })));
-      return;
-    }
-
+    // Always fetch organisations from API to get sport data (context-switcher doesn't include it)
     const load = async () => {
       const apiBaseUrl = getApiBaseUrl();
       try {
+        const myOrgIds = myOrganisations.map(o => String(o.id));
+
         const orgs = await fetchAllPages<any>(
           `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
           { credentials: 'include' },
           { ttlMs: 120_000, bypass: refreshKey > 0 },
         );
-        setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
+
+        // For non-superadmin, filter to only their orgs (API should already do this, but be safe)
+        const filteredOrgs = isSuperAdmin
+          ? orgs
+          : (orgs || []).filter((o: any) => myOrgIds.includes(String(o.id)));
+
+        setOrganisations((filteredOrgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug, sport: o.sport, sport_variants_count: o.sport_variants_count })));
       } catch {
-        // ignore
+        // Fallback to context data if API fails
+        setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug, sport: (o as any).sport })));
       }
     };
 
@@ -1066,13 +1072,13 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                     const orgTarget = lockedOrgSlug || orgSlugResolved || orgId;
                     const clubTarget = (club as any)?.slug || clubId;
                     const teamTarget = (teamObj as any)?.slug || teamId;
-                    // Look up season/competition from loaded arrays to get slugs
+                    // Use periodPathKey to generate slug from name (Period model has no slug field)
                     const seasonId = season?.id;
                     const seasonFromList = seasonId ? seasons.find(s => String(s.id) === String(seasonId)) : undefined;
-                    const seasonTarget = seasonFromList?.slug || season?.slug || seasonId;
+                    const seasonTarget = periodPathKey(seasonFromList || season) || seasonId;
                     const compId = competition?.id;
                     const compFromList = compId ? competitions.find(c => String(c.id) === String(compId)) : undefined;
-                    const compTarget = compFromList?.slug || competition?.slug || compId;
+                    const compTarget = periodPathKey(compFromList || competition) || compId;
 
                     // Use canonical vanity path when club is available
                     const teamBasePath = clubTarget

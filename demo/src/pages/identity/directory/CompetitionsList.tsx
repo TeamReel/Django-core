@@ -8,6 +8,7 @@ import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../../utils/apiBase';
+import { periodPathKey } from '../../../utils/periodPath';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import {
   compactTableStyle,
@@ -300,27 +301,32 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
   }, [selectedSeasonName, seasonOptions, seasons]);
 
   useEffect(() => {
-    if (!isSuperAdmin) {
-      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug })));
-      return;
-    }
-
+    // Always fetch organisations from API to get sport data (context-switcher doesn't include it)
     const load = async () => {
       const apiBaseUrl = getApiBaseUrl();
       try {
+        const myOrgIds = myOrganisations.map(o => String(o.id));
+
         const orgs = await fetchAllPages<any>(
           `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
           { credentials: 'include' },
           { ttlMs: 120_000, bypass: refreshKey > 0 },
         );
-        setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
+
+        // For non-superadmin, filter to only their orgs (API should already do this, but be safe)
+        const filteredOrgs = isSuperAdmin
+          ? orgs
+          : (orgs || []).filter((o: any) => myOrgIds.includes(String(o.id)));
+
+        setOrganisations((filteredOrgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug, sport: o.sport, sport_variants_count: o.sport_variants_count })));
       } catch {
-        // ignore
+        // Fallback to context data if API fails
+        setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug, sport: (o as any).sport })));
       }
     };
 
     load();
-  }, [isSuperAdmin, myOrganisations]);
+  }, [isSuperAdmin, myOrganisations, refreshKey]);
 
   useEffect(() => {
     const load = async () => {
@@ -1146,11 +1152,10 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                     const clubSlugOrId = (club as any)?.slug || clubId;
                     const teamSlugResolved = (teamObj as any)?.slug || teamSlug;
                     const teamSlugOrId = teamSlugResolved || teamId;
-                    // Look up season from seasons array to get slug
+                    // Use periodPathKey to generate slug from name (Period model has no slug field)
                     const seasonFromList = seasonId ? seasons.find(s => String(s.id) === String(seasonId)) : undefined;
-                    const seasonSlugResolved = (seasonFromList as any)?.slug || comp.parent_period?.slug;
-                    const seasonSlugOrId = seasonSlugResolved || seasonId;
-                    const compSlugOrId = comp.slug || comp.id;
+                    const seasonSlugOrId = periodPathKey(seasonFromList || comp.parent_period) || seasonId;
+                    const compSlugOrId = periodPathKey(comp) || comp.id;
                     const teamBasePath = clubSlugOrId
                       ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`
                       : `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}`;
@@ -1225,12 +1230,12 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                         </td>
                         <td style={compactTextTdStyle}>
                             <a
-                          href={`${teamBasePath}/${seasonSlugOrId}/${comp.slug || comp.id}`}
+                          href={`${teamBasePath}/${seasonSlugOrId}/${compSlugOrId}`}
                             className="text-blue-600 hover:underline"
                             onClick={(e) => {
                                 e.preventDefault();
                                 navigate(
-                            `${teamBasePath}/${seasonSlugOrId}/${comp.slug || comp.id}`,
+                            `${teamBasePath}/${seasonSlugOrId}/${compSlugOrId}`,
                                 );
                             }}
                             >
