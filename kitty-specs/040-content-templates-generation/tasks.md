@@ -86,14 +86,14 @@ Implement the complete content generation flow: create ContentItem from template
 
 ### Included Subtasks
 
-- [ ] **T007** - Create `ContentItemSerializer` with nested template/activity/output_file, input_data validation
-- [ ] **T008** - Implement `ContentItemViewSet` with create action, duplicate detection warning logic
-- [ ] **T009** - Implement custom `@action` for `/items/{id}/status/` (polling endpoint)
-- [ ] **T010** - Implement custom `@action` for `/items/{id}/retry/` (re-queue failed generation)
-- [ ] **T011** - Create Celery task `generate_content_task` in `tasks.py` with timeout support, error handling
-- [ ] **T012** - Integrate B23 WebSocket consumer for real-time status broadcast (subscribe/unsubscribe)
-- [ ] **T013** - Add B22 FileAsset storage integration for output files (upload, thumbnail generation)
-- [ ] **T014** - Implement B17 notification triggers (on completion, on failure)
+- [x] **T007** - Create `ContentItemSerializer` with nested template/activity/output_file, input_data validation
+- [x] **T008** - Implement `ContentItemViewSet` with create action, duplicate detection warning logic
+- [x] **T009** - Implement custom `@action` for `/items/{id}/status/` (polling endpoint)
+- [x] **T010** - Implement custom `@action` for `/items/{id}/retry/` (re-queue failed generation)
+- [x] **T011** - Create Celery task `generate_content_task` in `tasks.py` with timeout support, error handling
+- [x] **T012** - Integrate B23 WebSocket consumer for real-time status broadcast (subscribe/unsubscribe)
+- [x] **T013** - Add B22 FileAsset storage integration for output files (upload, thumbnail generation)
+- [x] **T014** - Implement B17 notification triggers (on completion, on failure)
 
 ### Implementation Sketch
 
@@ -125,9 +125,9 @@ Implement the complete content generation flow: create ContentItem from template
 
 ### Success Criteria
 
-- [ ] `POST /api/v1/content-generation/items/` creates ContentItem with status "queued"
-- [ ] Duplicate detection returns 200 with warning payload (not 409 error)
-- [ ] Celery task processes queued item, updates status to "generating" → "completed"
+- [x] `POST /api/v1/content-generation/items/` creates ContentItem with status "queued"
+- [x] Duplicate detection returns 200 with warning payload (not 409 error)
+- [x] Celery task processes queued item, updates status to "generating" → "completed"
 - [ ] WebSocket broadcasts status updates to subscribed clients
 - [ ] Failed generation stores error_message, allows retry via `POST /items/{id}/retry/`
 - [ ] B17 notification sent on completion
