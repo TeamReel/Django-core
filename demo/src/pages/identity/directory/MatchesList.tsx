@@ -394,18 +394,26 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
       }
     }
 
-    // Sport category filter
+    // Sport category filter - match organisation's sport category
     if (sportFilter !== 'all') {
       list = list.filter((match) => {
+        // Try to get sport from match's period first (competition-level sport)
+        const periodSportId = (match as any)?.period?.sport?.id;
+        const periodSportCategoryId = (match as any)?.period?.sport?.parent_sport_id || periodSportId;
+        if (periodSportCategoryId && String(periodSportCategoryId) === String(sportFilter)) return true;
+
+        // Fallback: get sport from organisation (organisation-level category)
         const nestedOrg = (match as any)?.organisation;
         const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.sport?.id : undefined;
-        if (nestedSportId) return String(nestedSportId) === String(sportFilter);
+        if (nestedSportId && String(nestedSportId) === String(sportFilter)) return true;
 
+        // Last fallback: look up organisation in loaded list
         const orgId =
           (nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.id : nestedOrg) ||
           (match as any)?.organisation_id;
         const org = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
-        return String((org as any)?.sport?.id || '') === String(sportFilter);
+        const orgSportId = (org as any)?.sport?.id;
+        return orgSportId && String(orgSportId) === String(sportFilter);
       });
     }
 

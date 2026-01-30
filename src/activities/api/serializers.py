@@ -288,7 +288,7 @@ class ActivitySerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def get_organisation(self, obj):
-        """Return nested organisation representation"""
+        """Return nested organisation representation with sport data"""
         # Try to get org from project first, then period
         org = None
         if obj.project:
@@ -297,7 +297,16 @@ class ActivitySerializer(serializers.ModelSerializer):
             org = obj.period.organisation
 
         if org:
-            return {"id": str(org.id), "name": org.name, "slug": org.slug}
+            result = {"id": str(org.id), "name": org.name, "slug": org.slug}
+            # Include sport for filtering support
+            if org.sport:
+                result["sport"] = {
+                    "id": str(org.sport.id),
+                    "name": org.sport.name,
+                    "slug": org.sport.slug,
+                    "sport_icon": org.sport.sport_icon,
+                }
+            return result
         return None
 
     def get_project(self, obj):
