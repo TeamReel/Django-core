@@ -592,10 +592,17 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
             ? teams.map((t) => String((t as any).id)).filter(Boolean)
             : null;
 
+        // For global view (no filters), use all loaded teams for scoping
+        const teamIdsGlobal =
+          !selectedOrgId && !selectedClubId && !selectedTeamId && teams.length > 0
+            ? teams.map((t) => String((t as any).id)).filter(Boolean)
+            : null;
+
         const scopedTeamIds =
           explicitTeamScope ||
           (clubTeamIds && clubTeamIds.length > 0 ? clubTeamIds : null) ||
-          (teamIdsForOrg && teamIdsForOrg.length > 0 ? teamIdsForOrg : null);
+          (teamIdsForOrg && teamIdsForOrg.length > 0 ? teamIdsForOrg : null) ||
+          (teamIdsGlobal && teamIdsGlobal.length > 0 ? teamIdsGlobal : null);
 
         // When scoped to a federation and periods are team-scoped, we must have the org teams
         // loaded to avoid falling back to organisation_id (which is often null on periods).
