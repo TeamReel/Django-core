@@ -9,14 +9,17 @@ Routes:
 
 from rest_framework.routers import DefaultRouter
 
-from sport_configuration.views import OutfitConfigurationViewSet, SportViewSet
+from sport_configuration.views import (
+    OutfitConfigurationViewSet,
+    SportViewSet,
+    ValidationViewSet,
+)
 
 # Create router for sport_configuration API
 router = DefaultRouter()
 router.register(r"sports", SportViewSet, basename="sport")
 router.register(r"outfits", OutfitConfigurationViewSet, basename="outfit")
-
-# ValidationViewSet registered in WP05
+router.register(r"validation", ValidationViewSet, basename="validation")
 
 app_name = "sport_configuration"
 urlpatterns = router.urls

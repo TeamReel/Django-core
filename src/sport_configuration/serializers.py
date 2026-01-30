@@ -264,3 +264,62 @@ class OutfitConfigurationCreateSerializer(serializers.ModelSerializer):
             )
 
         return data
+
+
+# ==============================================================================
+# Validation Serializers (WP05)
+# ==============================================================================
+
+
+class ValidationIssueSerializer(serializers.Serializer):
+    """
+    Serializer for individual validation issues.
+
+    Maps to the ValidationIssue dataclass from services.validation.
+    """
+
+    code = serializers.CharField()
+    message = serializers.CharField()
+    level = serializers.CharField()
+    field = serializers.CharField(allow_null=True)
+    context = serializers.DictField(required=False, default=dict)
+
+
+class ValidationResultSerializer(serializers.Serializer):
+    """
+    Serializer for validation results.
+
+    Maps to the ValidationResult dataclass from services.validation.
+    """
+
+    is_valid = serializers.BooleanField()
+    has_errors = serializers.BooleanField()
+    has_warnings = serializers.BooleanField()
+    issues = ValidationIssueSerializer(many=True)
+
+
+class TeamSizeValidationRequestSerializer(serializers.Serializer):
+    """Request serializer for team size validation."""
+
+    sport_slug = serializers.SlugField()
+    player_count = serializers.IntegerField(min_value=0)
+
+
+class PositionsValidationRequestSerializer(serializers.Serializer):
+    """Request serializer for positions validation."""
+
+    sport_slug = serializers.SlugField()
+    positions = serializers.ListField(child=serializers.CharField())
+
+
+class FormationValidationRequestSerializer(serializers.Serializer):
+    """Request serializer for formation validation."""
+
+    sport_slug = serializers.SlugField()
+    formation = serializers.CharField()
+
+
+class ProjectValidationRequestSerializer(serializers.Serializer):
+    """Request serializer for full project validation."""
+
+    project_id = serializers.IntegerField()

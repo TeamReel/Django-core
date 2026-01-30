@@ -18,14 +18,20 @@ from rest_framework.response import Response
 
 from sport_configuration.models import OutfitConfiguration, Sport
 from sport_configuration.serializers import (
+    FormationValidationRequestSerializer,
     OutfitConfigurationCreateSerializer,
     OutfitConfigurationSerializer,
+    PositionsValidationRequestSerializer,
+    ProjectValidationRequestSerializer,
     SportConfigurationSerializer,
     SportConfigurationUpdateSerializer,
     SportCreateSerializer,
     SportSerializer,
+    TeamSizeValidationRequestSerializer,
+    ValidationResultSerializer,
 )
 from sport_configuration.services import OutfitLookupService
+from sport_configuration.services.validation import SportValidationService
 
 if TYPE_CHECKING:
     from rest_framework.request import Request
@@ -291,3 +297,174 @@ class OutfitConfigurationViewSet(viewsets.ModelViewSet):
             context={"project": project, "request": request},
         )
         return Response(serializer.data)
+
+
+@extend_schema_view(
+    team_size=extend_schema(
+        summary="Validate team size against sport constraints",
+        description=(
+            "Validates if the given player count is within the allowed range "
+            "for the specified sport. Returns validation issues if any."
+        ),
+        request=TeamSizeValidationRequestSerializer,
+        responses={200: ValidationResultSerializer},
+        tags=["validation"],
+    ),
+    positions=extend_schema(
+        summary="Validate positions against sport definition",
+        description=(
+            "Validates if the given positions are defined for the specified sport. "
+            "Unknown positions are returned as warnings (advisory, not blocking)."
+        ),
+        request=PositionsValidationRequestSerializer,
+        responses={200: ValidationResultSerializer},
+        tags=["validation"],
+    ),
+    formation=extend_schema(
+        summary="Validate formation against sport definition",
+        description=(
+            "Validates if the given formation is defined for the specified sport. "
+            "Unknown formations are returned as warnings (advisory, not blocking)."
+        ),
+        request=FormationValidationRequestSerializer,
+        responses={200: ValidationResultSerializer},
+        tags=["validation"],
+    ),
+    project=extend_schema(
+        summary="Validate project sport configuration",
+        description=(
+            "Validates the complete sport configuration for a project, "
+            "including team size and assigned player positions."
+        ),
+        request=ProjectValidationRequestSerializer,
+        responses={200: ValidationResultSerializer},
+        tags=["validation"],
+    ),
+)
+class ValidationViewSet(viewsets.ViewSet):
+    """
+    ViewSet for sport configuration validation endpoints.
+
+    All validations are advisory - they return warnings/errors but don't block
+    operations. This follows the CL-1 constraint (advisory validation model).
+
+    Endpoints:
+    - POST /validation/team_size/ - Validate team size against sport constraints
+    - POST /validation/positions/ - Validate positions against sport definition
+    - POST /validation/formation/ - Validate formation against sport definition
+    - POST /validation/project/ - Validate project sport configuration
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _get_sport_config(self, sport_slug: str):
+        """
+        Get sport configuration by slug.
+
+        Returns tuple of (sport_config, error_response).
+        If error_response is not None, return it directly.
+        """
+        try:
+            sport = Sport.objects.select_related("configuration").get(slug=sport_slug)
+            return sport.configuration, None
+        except Sport.DoesNotExist:
+            return None, Response(
+                {"error": f"Sport '{sport_slug}' not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+    def _serialize_result(self, result) -> dict:
+        """Convert ValidationResult dataclass to serializable dict."""
+        return {
+            "is_valid": result.is_valid,
+            "has_errors": result.has_errors,
+            "has_warnings": result.has_warnings,
+            "issues": [
+                {
+                    "code": issue.code,
+                    "message": issue.message,
+                    "level": issue.level.value,
+                    "field": issue.field_name,
+                    "context": issue.context,
+                }
+                for issue in result.issues
+            ],
+        }
+
+    @action(detail=False, methods=["post"])
+    def team_size(self, request: Request) -> Response:
+        """Validate team size against sport constraints."""
+        serializer = TeamSizeValidationRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        sport_slug = serializer.validated_data["sport_slug"]
+        player_count = serializer.validated_data["player_count"]
+
+        sport_config, error_response = self._get_sport_config(sport_slug)
+        if error_response:
+            return error_response
+
+        validator = SportValidationService()
+        result = validator.validate_team_size(sport_config, player_count)
+
+        return Response(self._serialize_result(result))
+
+    @action(detail=False, methods=["post"])
+    def positions(self, request: Request) -> Response:
+        """Validate positions against sport definition."""
+        serializer = PositionsValidationRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        sport_slug = serializer.validated_data["sport_slug"]
+        positions_list = serializer.validated_data["positions"]
+
+        sport_config, error_response = self._get_sport_config(sport_slug)
+        if error_response:
+            return error_response
+
+        validator = SportValidationService()
+        result = validator.validate_positions(sport_config, positions_list)
+
+        return Response(self._serialize_result(result))
+
+    @action(detail=False, methods=["post"])
+    def formation(self, request: Request) -> Response:
+        """Validate formation against sport definition."""
+        serializer = FormationValidationRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        sport_slug = serializer.validated_data["sport_slug"]
+        formation_name = serializer.validated_data["formation"]
+
+        sport_config, error_response = self._get_sport_config(sport_slug)
+        if error_response:
+            return error_response
+
+        validator = SportValidationService()
+        result = validator.validate_formation(sport_config, formation_name)
+
+        return Response(self._serialize_result(result))
+
+    @action(detail=False, methods=["post"])
+    def project(self, request: Request) -> Response:
+        """Validate project sport configuration."""
+        serializer = ProjectValidationRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        project_id = serializer.validated_data["project_id"]
+
+        # Import here to avoid circular imports
+        from projects.models import Project
+
+        try:
+            project = Project.objects.get(pk=project_id)
+        except Project.DoesNotExist:
+            return Response(
+                {"error": "Project not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        validator = SportValidationService()
+        result = validator.validate_project(project)
+
+        return Response(self._serialize_result(result))
