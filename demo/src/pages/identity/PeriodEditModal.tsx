@@ -82,9 +82,10 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
     end_date: (resolvedPeriod as any)?.end_date,
   });
 
+  // Populate form when modal opens with valid period data
   useEffect(() => {
-    if (!opened || !resolvedPeriod) {
-      // Reset to empty when closed
+    if (!opened) {
+      // Reset when closed
       setName('');
       setDescription('');
       setStartDate('');
@@ -95,6 +96,12 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
       setError(null);
       return;
     }
+  }, [opened]);
+
+  // Separately populate form when resolvedPeriod becomes available (while modal is open)
+  useEffect(() => {
+    if (!opened || !resolvedPeriod) return;
+
     // Populate form with period data
     setName(resolvedPeriod.name ?? '');
     setDescription(resolvedPeriod.description ?? '');
@@ -107,7 +114,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
     setSelectedSportId(currentSportId);
     setInitialSportId(currentSportId);
     setError(null);
-  }, [opened, periodKey]);
+  }, [opened, periodKey, resolvedPeriod]);
 
   if (!opened || !resolvedPeriod) return null;
 

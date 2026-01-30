@@ -2981,6 +2981,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             setSelectedEditPeriod(null);
           }}
           period={selectedEditPeriod}
+          showSportVariant={false}
           onSave={async (payload) => {
             if (!selectedEditPeriod) return;
             await savePeriodEdits(selectedEditPeriod, payload);
