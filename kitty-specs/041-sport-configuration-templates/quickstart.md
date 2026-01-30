@@ -111,43 +111,58 @@ OutfitConfiguration.objects.create(
 ### 4. Lookup Outfit with Fallback
 
 ```python
-from sport_configuration.services.outfit_lookup import OutfitLookupService
+from sport_configuration.services.outfits import OutfitLookupService
 
 service = OutfitLookupService()
 
 # Get outfit for team (returns own or inherited from club)
 outfit = service.get_outfit(ajax_1, 'home')
-print(outfit.colors)  # Ajax club colors
+if outfit:
+    print(outfit.colors)  # Ajax club colors
 
-# Check source
+# Get all outfits with inheritance
 all_outfits = service.get_all_outfits(ajax_1)
-# Returns: {'home': <OutfitConfig source='inherited'>, ...}
+# Returns: {'home': <OutfitConfig>, 'away': <OutfitConfig>, ...}
+# Team's own configs override parent club's (child wins)
+
+# Get resolved outfit data for API (includes source info)
+resolved = service.get_resolved_outfit_data(ajax_1, 'home')
+# Returns: {'outfit_type': 'home', 'colors': {...}, 'source': 'inherited', ...}
 ```
 
-### 5. Validate Lineup
+### 5. Validate Team Composition
 
 ```python
 from sport_configuration.services.validation import SportValidationService
+from sport_configuration.models import SportConfiguration
 
 service = SportValidationService()
 sport_config = SportConfiguration.objects.get(sport__slug='football_11v11')
 
-lineup = [
-    {"player_id": "...", "position": "GK"},
-    {"player_id": "...", "position": "CB"},
-    # ... 9 more players (total 11)
-]
-
-result = service.validate_lineup(sport_config, lineup)
+# Validate team size (advisory warnings, not blocking per CL-1)
+result = service.validate_team_size(sport_config, player_count=10)
 
 if result.is_valid:
-    print("✅ Lineup valid")
+    print("✅ Validation passed")
 else:
-    for error in result.errors:
-        print(f"❌ {error.field}: {error.message}")
+    for issue in result.errors:
+        print(f"❌ {issue.field_name}: {issue.message}")
 
+# Check for advisory warnings (team below minimum)
 for warning in result.warnings:
-    print(f"⚠️ {warning.field}: {warning.message}")
+    print(f"⚠️ {warning.code}: {warning.message}")
+# "⚠️ TEAM_TOO_SMALL: Team has 10 players, minimum is 11"
+
+# Validate positions
+positions_result = service.validate_positions(
+    sport_config,
+    positions=["GK", "LB", "CB", "UNKNOWN"]
+)
+# Returns warning for UNKNOWN position
+
+# Validate formation
+formation_result = service.validate_formation(sport_config, "4-3-3")
+# Returns is_valid=True for known formations
 ```
 
 ## API Endpoints
@@ -156,10 +171,26 @@ for warning in result.warnings:
 |--------|----------|-------------|
 | GET | `/api/v1/sports/` | List all sports |
 | GET | `/api/v1/sports/{slug}/` | Get sport with config |
-| GET | `/api/v1/projects/{id}/outfits/` | List project outfits |
-| POST | `/api/v1/validation/lineup/` | Validate lineup |
+| GET | `/api/v1/sports/{slug}/configuration/` | Get sport configuration |
+| GET | `/api/v1/outfits/` | List outfit configurations |
+| POST | `/api/v1/outfits/` | Create outfit configuration |
+| GET | `/api/v1/outfits/resolved/` | Get outfit with inheritance |
+| POST | `/api/v1/validation/team-size/` | Validate team size |
+| POST | `/api/v1/validation/positions/` | Validate positions |
+| POST | `/api/v1/validation/formation/` | Validate formation |
+| POST | `/api/v1/validation/project/` | Validate project configuration |
 
 See [contracts/sport-config-api.yaml](contracts/sport-config-api.yaml) for full OpenAPI spec.
+
+## Management Commands
+
+```bash
+# Load seed data (idempotent - safe to run multiple times)
+python manage.py seed_sports
+
+# Clear and reload seed data
+python manage.py seed_sports --clear
+```
 
 ## Demo Pages
 

@@ -124,7 +124,29 @@ SportConfiguration    Project ◄──────── OutfitConfiguration
 
 - **B07 Projects**: Sport FK on Project model
 - **B30 Activities** (optional): Activity periods can be sport-aware
-- **B31 Content Templates** (optional): Templates can be filtered by sport
+- **B31 Content Templates** (optional): Templates can be filtered by sport FK
+
+## Seed Data
+
+Load sample sports for development/demo environments:
+
+```bash
+# Load/update sport data (idempotent)
+python manage.py seed_sports
+
+# Clear and reload
+python manage.py seed_sports --clear
+```
+
+This creates configurations for:
+- Football (11v11)
+- Futsal (5v5)
+- Handball
+- Basketball
+- Volleyball
+- Rugby Union
+- Ice Hockey
+- Field Hockey
 
 ## Usage Examples
 
@@ -163,6 +185,51 @@ outfit = OutfitConfiguration.objects.filter(
 ).order_by("project_id").first()  # Team's own takes precedence if exists
 ```
 
+### Using the Validation Service
+
+```python
+from sport_configuration.services import SportValidationService
+from sport_configuration.models import Sport
+
+sport = Sport.objects.select_related("configuration").get(slug="football-11")
+config = sport.configuration
+service = SportValidationService()
+
+# Validate team size (returns advisory warnings, not errors)
+result = service.validate_team_size(config, player_count=10)
+if not result.is_valid:
+    for issue in result.issues:
+        print(f"[{issue.level}] {issue.message}")  # [warning] Team size 10 is below minimum 11
+
+# Validate positions
+result = service.validate_positions(config, positions=["GK", "LB", "CB", "UNKNOWN"])
+# Returns warning for UNKNOWN position
+
+# Validate formation
+result = service.validate_formation(config, formation="4-3-3")
+# Returns valid for known formations
+```
+
+### Using the Outfit Lookup Service
+
+```python
+from sport_configuration.services import OutfitLookupService
+from projects.models import Project
+
+service = OutfitLookupService()
+team = Project.objects.get(slug="team-u19")
+
+# Get outfit with inheritance fallback (team → club)
+outfit, source = service.get_outfit(team, "home")
+if outfit:
+    print(f"Colors: {outfit.colors}, Source: {source}")  # source = "inherited" or "own"
+
+# Get all resolved outfits for a project
+outfits = service.get_all_outfits(team)
+for outfit_type, (outfit, source) in outfits.items():
+    print(f"{outfit_type}: {outfit.colors if outfit else 'N/A'} ({source})")
+```
+
 ## API Endpoints
 
 See `contracts/sport-config-api.yaml` for OpenAPI specification.
@@ -179,6 +246,43 @@ See `contracts/sport-config-api.yaml` for OpenAPI specification.
 | `/api/v1/validation/team-size/` | POST | Validate team size |
 | `/api/v1/validation/positions/` | POST | Validate player positions |
 | `/api/v1/validation/formation/` | POST | Validate formation |
+
+### API Examples (curl)
+
+```bash
+# List all sports
+curl -X GET "http://localhost:8000/api/v1/sports/" \
+  -H "Authorization: Bearer <token>"
+
+# Get sport configuration
+curl -X GET "http://localhost:8000/api/v1/sports/football-11/configuration/" \
+  -H "Authorization: Bearer <token>"
+
+# Validate team size
+curl -X POST "http://localhost:8000/api/v1/validation/team-size/" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"sport_slug": "football-11", "player_count": 10}'
+
+# Response (advisory warning, not blocking error):
+# {"is_valid": false, "has_errors": false, "has_warnings": true, "issues": [...]}
+
+# Validate positions
+curl -X POST "http://localhost:8000/api/v1/validation/positions/" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"sport_slug": "football-11", "positions": ["GK", "LB", "CB"]}'
+
+# Create outfit configuration
+curl -X POST "http://localhost:8000/api/v1/outfits/" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project": 1,
+    "outfit_type": "home",
+    "colors": {"primary": "#FF0000", "secondary": "#FFFFFF"}
+  }'
+```
 
 ## Testing
 

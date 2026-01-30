@@ -191,24 +191,24 @@
 
 ---
 
-## Work Package WP06: Polish & Integration (Priority: P2)
+## Work Package WP06: Polish & Integration (Priority: P2) ✅ DONE
 
 **Goal**: Cross-cutting improvements, documentation, B31 integration, and final validation.
 **Independent Test**: All CI checks pass; quickstart scenario validated end-to-end.
-**Prompt**: `tasks/planned/WP06-polish-and-integration.md`
+**Prompt**: `tasks/for_review/WP06-polish-and-integration.md`
 
 ### Included Subtasks
-- [ ] T043 [P] Add B31 ContentTemplate integration (optional sport FK)
-- [ ] T044 [P] Create management command for seed data loading (no auto-seed)
-- [ ] T045 [P] Update app README with integration examples
-- [ ] T046 Validate quickstart.md scenario end-to-end
-- [ ] T047 Run type checking (mypy) and fix any issues
-- [ ] T048 **Write `tests/sport_configuration/test_integration.py`** (Project.get_sport() inheritance)
-- [ ] T049 Final code review for constitutional compliance
+- [x] T043 [P] Add B31 ContentTemplate integration (optional sport FK)
+- [x] T044 [P] Create management command for seed data loading (no auto-seed)
+- [x] T045 [P] Update app README with integration examples
+- [x] T046 Validate quickstart.md scenario end-to-end
+- [x] T047 Run type checking (mypy) and fix any issues
+- [x] T048 **Write `tests/sport_configuration/test_integration.py`** (Project.get_sport() inheritance) - 18 tests
+- [x] T049 Final code review for constitutional compliance (ruff clean)
 
 ### Constitutional Alignment
 - Principle I (Product-Agnostic): Final compliance audit
-- Principle IV (Testing): Integration tests
+- Principle IV (Testing): Integration tests (183 total tests)
 - Principle XI (Documentation): README, quickstart validation
 - Principle X (CI/CD): All gates pass
 

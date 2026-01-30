@@ -16,6 +16,7 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
     created_by_detail = serializers.SerializerMethodField()
     organisation_detail = serializers.SerializerMethodField()
     project_detail = serializers.SerializerMethodField()
+    sport_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = ContentTemplate
@@ -25,6 +26,8 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
             "description",
             "template_type",
             "sport_type",
+            "sport",
+            "sport_detail",
             "ai_workflow_id",
             "template_settings",
             "timeout_minutes",
@@ -53,6 +56,11 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
     def get_project_detail(self, obj):
         if obj.project:
             return {"id": obj.project.id, "name": obj.project.name}
+        return None
+
+    def get_sport_detail(self, obj):
+        if obj.sport:
+            return {"id": obj.sport.id, "name": obj.sport.name, "slug": obj.sport.slug}
         return None
 
     def validate_timeout_minutes(self, value):

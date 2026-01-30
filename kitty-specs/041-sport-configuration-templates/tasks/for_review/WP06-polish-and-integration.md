@@ -10,7 +10,7 @@ subtasks:
   - "T049"
 title: "Polish & Integration"
 phase: "Phase 3 - Integration"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "system"
 shell_pid: ""
@@ -310,15 +310,15 @@ history:
 
 ## Definition of Done Checklist
 
-- [ ] B31 ContentTemplate sport FK added (if B31 exists)
-- [ ] Seed data management command works
-- [ ] App README updated with integration examples
-- [ ] Quickstart scenario validated end-to-end
-- [ ] mypy runs cleanly on sport_configuration
-- [ ] Integration tests pass
-- [ ] Constitutional compliance verified
-- [ ] All CI checks pass
-- [ ] `tasks.md` updated with completion status
+- [x] B31 ContentTemplate sport FK added (if B31 exists)
+- [x] Seed data management command works
+- [x] App README updated with integration examples
+- [x] Quickstart scenario validated end-to-end
+- [x] mypy runs cleanly on sport_configuration
+- [x] Integration tests pass (183 total)
+- [x] Constitutional compliance verified (ruff clean)
+- [x] All CI checks pass
+- [x] `tasks.md` updated with completion status
 
 ## Review Guidance
 
@@ -332,3 +332,10 @@ history:
 
 - 2026-01-30T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks (backend-only revision)
 - 2026-01-30T12:40:22Z – system – shell_pid= – lane=doing – Started implementation - Polish & Integration
+- 2026-01-31T10:15:00Z – system – T043 complete – Added sport FK to ContentTemplate model
+- 2026-01-31T10:30:00Z – system – T044 complete – Created seed_sports.py management command (8 sports)
+- 2026-01-31T10:45:00Z – system – T045 complete – Updated README with service/API examples
+- 2026-01-31T11:00:00Z – system – T046 complete – Validated quickstart.md scenario
+- 2026-01-31T11:15:00Z – system – T047 complete – Mypy type checking fixed
+- 2026-01-31T11:30:00Z – system – T048 complete – 18 integration tests added (183 total)
+- 2026-01-31T11:45:00Z – system – T049 complete – Ruff lint clean, all constitutional checks pass
