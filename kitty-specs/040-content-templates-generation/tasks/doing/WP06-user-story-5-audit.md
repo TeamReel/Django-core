@@ -1,11 +1,19 @@
 ---
 work_package_id: WP06
 title: User Story 5 - Audit Trail
-lane: planned
+lane: doing
 subtasks: [T033, T034, T035]
 priority: P3
 estimated_effort: 0.5 days
 dependencies: [WP03]
+assignee: github-copilot
+agent: github-copilot
+shell_pid: "$PID"
+history:
+  - date: 2026-01-30T07:17:00Z
+    action: moved_to_doing
+    author: github-copilot
+    note: "Started WP06: Audit Trail implementation"
 ---
 
 # WP06: Audit Trail Integration
