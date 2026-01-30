@@ -3,12 +3,15 @@ B31 Content Generation - Celery Tasks
 
 Async tasks for content generation with timeout support, error handling,
 status updates via WebSocket, and B22/B17 integrations.
+
+Also includes retention cleanup task integrating with B10 Feature Flags.
 """
 
 import logging
 import tempfile
 import time
-from typing import Any, Dict
+from datetime import timedelta
+from typing import Any, Dict, Optional
 
 from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
@@ -245,3 +248,116 @@ def send_notification_b17(
     #     related_object_type=related_object_type,
     #     related_object_id=related_object_id
     # )
+
+
+# ========== Retention & Cleanup (T037, T038) ==========
+
+
+def get_retention_days(status: str, organisation) -> Optional[int]:
+    """
+    Get retention days for content based on status and org settings.
+
+    Uses B10 Feature Flags for org-configurable retention policies.
+    Defaults:
+    - failed: 30 days
+    - rejected: 90 days
+    - approved/completed: None (indefinite retention)
+
+    Args:
+        status: ContentItem status
+        organisation: Organisation to check settings for
+
+    Returns:
+        Number of days to retain, or None for indefinite retention
+    """
+    defaults = {
+        ContentStatus.FAILED: 30,
+        ContentStatus.REJECTED: 90,
+    }
+
+    # Get default based on status
+    default_days = defaults.get(status)
+    if default_days is None:
+        return None  # Indefinite retention for approved/completed
+
+    # Try to get org-specific setting from B10 Feature Flags
+    try:
+        from src.settings.models import ScopeType, Setting
+
+        # Check for org-scoped setting
+        setting_key = f"content_retention_{status}_days"
+        setting = Setting.objects.filter(
+            key=setting_key,
+            scope_type=ScopeType.ORGANISATION,
+            organisation=organisation,
+        ).first()
+
+        if setting and setting.value:
+            return int(setting.value.get("value", default_days))
+
+    except ImportError:
+        logger.debug("B10 Settings module not available, using defaults")
+    except Exception as e:
+        logger.warning(f"Error fetching retention setting: {e}")
+
+    return default_days
+
+
+@shared_task
+def cleanup_expired_content():
+    """
+    Celery task to soft-delete expired ContentItems based on retention policy.
+
+    Runs per-organisation to respect org-specific retention settings.
+    Should be scheduled daily (e.g., 2 AM) via Celery Beat.
+
+    Example Celery Beat config (settings.py):
+        CELERY_BEAT_SCHEDULE = {
+            'cleanup-expired-content': {
+                'task': 'src.content_generation.tasks.cleanup_expired_content',
+                'schedule': crontab(hour=2, minute=0),
+            },
+        }
+    """
+    from src.organisations.models import Organisation
+
+    now = timezone.now()
+    total_deleted = 0
+
+    logger.info("Starting content retention cleanup task")
+
+    for org in Organisation.objects.all():
+        org_deleted = 0
+
+        # Process failed content
+        failed_days = get_retention_days(ContentStatus.FAILED, org)
+        if failed_days:
+            failed_cutoff = now - timedelta(days=failed_days)
+            failed_count = ContentItem.objects.filter(
+                project__organisation=org,
+                status=ContentStatus.FAILED,
+                deleted_at__isnull=True,
+                created_at__lt=failed_cutoff,
+            ).update(deleted_at=now)
+            org_deleted += failed_count
+            if failed_count:
+                logger.info(f"Soft-deleted {failed_count} failed items for org {org.id}")
+
+        # Process rejected content
+        rejected_days = get_retention_days(ContentStatus.REJECTED, org)
+        if rejected_days:
+            rejected_cutoff = now - timedelta(days=rejected_days)
+            rejected_count = ContentItem.objects.filter(
+                project__organisation=org,
+                status=ContentStatus.REJECTED,
+                deleted_at__isnull=True,
+                updated_at__lt=rejected_cutoff,
+            ).update(deleted_at=now)
+            org_deleted += rejected_count
+            if rejected_count:
+                logger.info(f"Soft-deleted {rejected_count} rejected items for org {org.id}")
+
+        total_deleted += org_deleted
+
+    logger.info(f"Content cleanup complete: {total_deleted} items soft-deleted")
+    return {"deleted_count": total_deleted}

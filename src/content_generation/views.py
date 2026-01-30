@@ -13,6 +13,11 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from .models import ContentApproval, ContentItem, ContentStatus, ContentTemplate
+from .permissions import (
+    ContentApprovalPermissionMixin,
+    ContentItemPermissionMixin,
+    ContentTemplatePermissionMixin,
+)
 from .serializers import (
     ContentApprovalSerializer,
     ContentItemSerializer,
@@ -79,12 +84,13 @@ class ContentItemFilter(filters.FilterSet):
         ]
 
 
-class ContentTemplateViewSet(viewsets.ModelViewSet):
+class ContentTemplateViewSet(ContentTemplatePermissionMixin, viewsets.ModelViewSet):
     """
     ViewSet for ContentTemplate management
 
     List, create, retrieve, update, and delete content templates.
     Includes delete protection for templates with existing ContentItems.
+    Requires content.manage_templates permission.
     """
 
     queryset = ContentTemplate.objects.select_related("organisation", "project", "created_by")
@@ -116,13 +122,19 @@ class ContentTemplateViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class ContentItemViewSet(viewsets.ModelViewSet):
+class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
     """
     ViewSet for ContentItem management with duplicate detection,
     status polling, and retry functionality.
 
     Supports pagination (default 50, max 200) and filtering by
     project, status, template, activity, created_by, and date range.
+
+    Permissions:
+    - list/retrieve/get_status: content.view_library
+    - create/retry: content.generate_content
+    - approve/reject/request_revision: content.approve_content
+    - download: content.download_content
     """
 
     serializer_class = ContentItemSerializer
@@ -130,8 +142,10 @@ class ContentItemViewSet(viewsets.ModelViewSet):
     filterset_class = ContentItemFilter
 
     def get_queryset(self):
-        return ContentItem.objects.active().select_related(
-            "template", "project", "activity", "output_file", "created_by"
+        return (
+            ContentItem.objects.active()
+            .select_related("template", "project", "activity", "output_file", "created_by")
+            .prefetch_related("contentapproval_set")
         )
 
     def create(self, request, *args, **kwargs):
@@ -465,11 +479,15 @@ class ContentItemViewSet(viewsets.ModelViewSet):
         return HttpResponseRedirect(item.output_file.file.url)
 
 
-class ContentApprovalViewSet(viewsets.ModelViewSet):
+class ContentApprovalViewSet(ContentApprovalPermissionMixin, viewsets.ModelViewSet):
     """
     ViewSet for ContentApproval management
 
     Create, retrieve, and list approval records.
+
+    Permissions:
+    - list/retrieve: content.view_library
+    - create/update/delete: content.approve_content
     """
 
     queryset = ContentApproval.objects.select_related(
