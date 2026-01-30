@@ -7,7 +7,6 @@ Coverage target: ≥90% per Constitution Art. IV.
 import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-
 from sport_configuration.models import OutfitConfiguration, Sport, SportConfiguration
 
 
