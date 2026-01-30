@@ -6,7 +6,7 @@ interface Project {
   slug?: string;
   name: string;
   description?: string;
-  is_active: boolean;
+  is_active?: boolean;
 }
 
 interface ProjectEditModalProps {
@@ -26,7 +26,7 @@ export default function ProjectEditModal({ opened, onClose, project, onSave }: P
       setFormData({
         name: project.name,
         description: project.description,
-        is_active: project.is_active,
+        is_active: Boolean(project.is_active),
       });
       setError(null);
     }

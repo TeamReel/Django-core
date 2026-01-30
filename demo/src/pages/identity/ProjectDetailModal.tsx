@@ -5,10 +5,11 @@ interface Project {
   id: string;
   name: string;
   description?: string;
-  is_active: boolean;
+  is_active?: boolean;
   organisation?: {
-    id: string;
-    name: string;
+    id?: string;
+    name?: string;
+    slug?: string;
   };
   member_count?: number;
 }
@@ -69,7 +70,7 @@ export default function ProjectDetailModal({ opened, onClose, project }: Project
               {project.organisation && (
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Organisation</label>
-                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{project.organisation.name}</div>
+                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{project.organisation.name || project.organisation.slug || project.organisation.id || '—'}</div>
                 </div>
               )}
 
