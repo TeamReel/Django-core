@@ -49,7 +49,7 @@ export interface Organisation {
     name: string;
     slug: string;
     sport_icon: string;
-  };
+  } | null;
   metadata?: {
     type?: string;
     country?: string;
