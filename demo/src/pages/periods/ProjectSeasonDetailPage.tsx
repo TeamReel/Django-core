@@ -1260,7 +1260,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   {(() => {
                     const nestedSport = (season as any)?.sport as any;
                     const byId = season?.sport_id ? getSportById(String(season.sport_id)) : undefined;
-                    const resolvedSport: any = nestedSport || byId || null;
+                    // Fallback to organisation sport if season has no sport
+                    const orgSport = (org as any)?.sport as any;
+                    const resolvedSport: any = nestedSport || byId || orgSport || null;
                     const icon = resolvedSport?.sport_icon as string | null | undefined;
                     const isImageIcon = typeof icon === 'string' && /^(https?:\/\/|\/|data:)/i.test(icon);
 
