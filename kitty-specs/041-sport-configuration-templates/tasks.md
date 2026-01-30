@@ -91,22 +91,22 @@
 
 ---
 
-## Work Package WP03: API Endpoints - Sports & Configuration (Priority: P1) 🎯 MVP
+## Work Package WP03: API Endpoints - Sports & Configuration (Priority: P1) ✅ DONE
 
 **Goal**: Deliver REST API for Sport and SportConfiguration CRUD operations (User Story 1).
 **Independent Test**: API endpoints respond correctly via curl/Postman; OpenAPI spec matches; API tests pass.
-**Prompt**: `tasks/planned/WP03-api-sports-configuration.md`
+**Prompt**: `tasks/done/WP03-api-sports-configuration.md`
 
 ### Included Subtasks
-- [ ] T019 [P] Create `SportSerializer` with nested configuration
-- [ ] T020 [P] Create `SportConfigurationSerializer`
-- [ ] T021 Implement `SportViewSet` with list, retrieve, create, update actions
-- [ ] T022 Implement sport configuration nested endpoint (`/sports/{slug}/configuration/`)
-- [ ] T023 Add URL routing in `src/sport_configuration/urls.py`
-- [ ] T024 Register URLs in main `urls.py`
-- [ ] T025 Add pagination and filtering (is_active, search)
-- [ ] T026 Add OpenAPI schema annotations (`@extend_schema`)
-- [ ] T027 **Write `tests/sport_configuration/test_api_sports.py`** (≥85% coverage)
+- [x] T019 [P] Create `SportSerializer` with nested configuration
+- [x] T020 [P] Create `SportConfigurationSerializer`
+- [x] T021 Implement `SportViewSet` with list, retrieve, create, update actions
+- [x] T022 Implement sport configuration nested endpoint (`/sports/{slug}/configuration/`)
+- [x] T023 Add URL routing in `src/sport_configuration/urls.py`
+- [x] T024 Register URLs in main `urls.py`
+- [x] T025 Add pagination and filtering (is_active, search)
+- [x] T026 Add OpenAPI schema annotations (`@extend_schema`)
+- [x] T027 **Write `tests/sport_configuration/test_api_sports.py`** (≥85% coverage)
 
 ### Constitutional Alignment
 - Principle IV (Testing): API tests with ≥85% coverage

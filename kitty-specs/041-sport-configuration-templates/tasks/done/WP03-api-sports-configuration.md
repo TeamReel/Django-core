@@ -10,12 +10,12 @@ subtasks:
   - "T021"
 title: "API: Sports & Configuration"
 phase: "Phase 2 - API Layer"
-lane: "for_review"
+lane: "done"
 assignee: ""
-agent: "claude"
+agent: "claude-reviewer"
 shell_pid: "28336"
-review_status: ""
-reviewed_by: ""
+review_status: "approved without changes"
+reviewed_by: "claude-reviewer"
 history:
   - timestamp: "2026-01-30T12:00:00Z"
     lane: "planned"
@@ -362,3 +362,4 @@ history:
 - 2026-01-30T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2026-01-30T10:06:38Z – claude – shell_pid=28336 – lane=doing – Started implementation
 - 2026-01-30T10:22:25Z – claude – shell_pid=28336 – lane=for_review – Implementation complete - 116 tests passing
+- 2026-01-30T10:28:18Z – claude-reviewer – shell_pid=28336 – lane=done – APPROVED: All DoD criteria met, 116 tests passing, ruff clean
