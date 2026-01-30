@@ -1,7 +1,7 @@
 ---
 work_package_id: WP05
 title: User Story 4 - Content Library
-lane: doing
+lane: for_review
 subtasks: [T028, T029, T030, T031, T032]
 priority: P2
 estimated_effort: 1 day
@@ -18,6 +18,10 @@ history:
     author: github-copilot
     shell_pid: "$PID"
     note: "Started WP05: Content Library implementation"
+  - date: 2026-01-30T07:12:00Z
+    action: moved_to_for_review
+    author: github-copilot
+    note: "Completed T028-T032: Pagination, filters, download action, thumbnail URL"
 ---
 
 # WP05: Content Library Browsing
