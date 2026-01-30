@@ -1122,7 +1122,6 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                   })
                   .map((comp) => {
                     const seasonId = (comp as any).parent_period_id || comp.parent_period?.id;
-                    const seasonSlug = comp.parent_period?.slug;
                     const org = comp.organisation;
                     const project = comp.project;
                     const orgId = typeof org === 'object' ? org?.id : org;
@@ -1147,7 +1146,10 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                     const clubSlugOrId = (club as any)?.slug || clubId;
                     const teamSlugResolved = (teamObj as any)?.slug || teamSlug;
                     const teamSlugOrId = teamSlugResolved || teamId;
-                    const seasonSlugOrId = seasonSlug || seasonId;
+                    // Look up season from seasons array to get slug
+                    const seasonFromList = seasonId ? seasons.find(s => String(s.id) === String(seasonId)) : undefined;
+                    const seasonSlugResolved = (seasonFromList as any)?.slug || comp.parent_period?.slug;
+                    const seasonSlugOrId = seasonSlugResolved || seasonId;
                     const compSlugOrId = comp.slug || comp.id;
                     const teamBasePath = clubSlugOrId
                       ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`

@@ -1066,11 +1066,17 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                     const orgTarget = lockedOrgSlug || orgSlugResolved || orgId;
                     const clubTarget = (club as any)?.slug || clubId;
                     const teamTarget = (teamObj as any)?.slug || teamId;
-                    const seasonTarget = season?.slug || season?.id;
-                    const compTarget = competition?.slug || competition?.id;
+                    // Look up season/competition from loaded arrays to get slugs
+                    const seasonId = season?.id;
+                    const seasonFromList = seasonId ? seasons.find(s => String(s.id) === String(seasonId)) : undefined;
+                    const seasonTarget = seasonFromList?.slug || season?.slug || seasonId;
+                    const compId = competition?.id;
+                    const compFromList = compId ? competitions.find(c => String(c.id) === String(compId)) : undefined;
+                    const compTarget = compFromList?.slug || competition?.slug || compId;
 
+                    // Use canonical vanity path when club is available
                     const teamBasePath = clubTarget
-                      ? `/organisations/${orgTarget}/projects/${clubTarget}/teams/${teamTarget}`
+                      ? `/${orgTarget}/${clubTarget}/${teamTarget}`
                       : `/organisations/${orgTarget}/projects/${teamTarget}`;
 
                     return (
@@ -1095,11 +1101,11 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                           <td style={compactTextTdStyle}>
                             {clubId ? (
                               <a
-                            href={`/organisations/${orgTarget}/projects/${clubTarget}`}
+                            href={`/${orgTarget}/${clubTarget}`}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                            navigate(`/organisations/${orgTarget}/projects/${clubTarget}`);
+                            navigate(`/${orgTarget}/${clubTarget}`);
                               }}
                               >
                               {clubName}
