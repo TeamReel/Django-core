@@ -126,21 +126,21 @@
 
 ---
 
-## Work Package WP04: API Endpoints - Outfit Configuration (Priority: P1)
+## Work Package WP04: API Endpoints - Outfit Configuration (Priority: P1) ✅
 
 **Goal**: Deliver REST API for OutfitConfiguration with inheritance-aware responses (User Story 2).
 **Independent Test**: Outfit API returns inherited outfits correctly; CRUD operations work; API tests pass.
-**Prompt**: `tasks/planned/WP04-api-outfit-configuration.md`
+**Prompt**: `tasks/done/WP04-api-outfit-configuration.md`
 
 ### Included Subtasks
-- [ ] T028 Create `OutfitConfigurationSerializer` with source indicator (own/inherited)
-- [ ] T029 Create `OutfitConfigurationCreateSerializer` with validation
-- [ ] T030 Implement `OutfitConfigurationViewSet` scoped to project
-- [ ] T031 Implement `/outfits/resolved/` endpoint with inheritance fallback
-- [ ] T032 Add outfit type validation against sport configuration
-- [ ] T033 Add URL routing for outfit endpoints
-- [ ] T034 Add OpenAPI schema annotations
-- [ ] T035 **Write `tests/sport_configuration/test_api_outfits.py`** (≥85% coverage)
+- [x] T028 Create `OutfitConfigurationSerializer` with source indicator (own/inherited)
+- [x] T029 Create `OutfitConfigurationCreateSerializer` with validation
+- [x] T030 Implement `OutfitConfigurationViewSet` scoped to project
+- [x] T031 Implement `/outfits/resolved/` endpoint with inheritance fallback
+- [x] T032 Add outfit type validation against sport configuration
+- [x] T033 Add URL routing for outfit endpoints
+- [x] T034 Add OpenAPI schema annotations
+- [x] T035 **Write `tests/sport_configuration/test_api_outfits.py`** (≥85% coverage)
 
 ### Constitutional Alignment
 - Principle IV (Testing): API tests with ≥85% coverage
