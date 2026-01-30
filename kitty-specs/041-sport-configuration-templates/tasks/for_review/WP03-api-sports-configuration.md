@@ -10,7 +10,7 @@ subtasks:
   - "T021"
 title: "API: Sports & Configuration"
 phase: "Phase 2 - API Layer"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "28336"
@@ -361,3 +361,4 @@ history:
 
 - 2026-01-30T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2026-01-30T10:06:38Z – claude – shell_pid=28336 – lane=doing – Started implementation
+- 2026-01-30T10:22:25Z – claude – shell_pid=28336 – lane=for_review – Implementation complete - 116 tests passing
