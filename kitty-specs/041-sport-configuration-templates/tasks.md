@@ -56,22 +56,22 @@
 
 ---
 
-## Work Package WP02: Service Layer (Priority: P0)
+## Work Package WP02: Service Layer (Priority: P0) ✅ DONE
 
 **Goal**: Implement SportValidationService and OutfitLookupService with business logic.
 **Independent Test**: Services can validate team size/positions and lookup outfits via Django shell; service tests pass.
-**Prompt**: `tasks/planned/WP02-service-layer.md`
+**Prompt**: `tasks/done/WP02-service-layer.md`
 
 ### Included Subtasks
-- [ ] T010 Create `services/` directory structure
-- [ ] T011 [P] Create `ValidationResult` dataclass with errors/warnings structure
-- [ ] T012 [P] Implement `SportValidationService` with team size validation (warn, not block)
-- [ ] T013 [P] Implement position validation with flexible schema (warnings for non-standard)
-- [ ] T014 [P] Implement formation validation
-- [ ] T015 [P] Implement `OutfitLookupService` with Club→Team fallback
-- [ ] T016 Add type hints and docstrings to all service methods
-- [ ] T017 **Write `tests/sport_configuration/test_validation_service.py`** (≥85% coverage)
-- [ ] T018 **Write `tests/sport_configuration/test_outfit_service.py`** (≥85% coverage)
+- [x] T010 Create `services/` directory structure
+- [x] T011 [P] Create `ValidationResult` dataclass with errors/warnings structure
+- [x] T012 [P] Implement `SportValidationService` with team size validation (warn, not block)
+- [x] T013 [P] Implement position validation with flexible schema (warnings for non-standard)
+- [x] T014 [P] Implement formation validation
+- [x] T015 [P] Implement `OutfitLookupService` with Club→Team fallback
+- [x] T016 Add type hints and docstrings to all service methods
+- [x] T017 **Write `tests/sport_configuration/test_validation_service.py`** (≥85% coverage)
+- [x] T018 **Write `tests/sport_configuration/test_outfit_service.py`** (≥85% coverage)
 
 ### Constitutional Alignment
 - Principle II (Architecture): Service layer separates business logic from views
