@@ -25,14 +25,9 @@
 - **Visual workflow builder** (optional, future): UI to design workflows
 - **Integration**: Audit trail (B09), notifications (B16), background tasks (B15)
 
-**Demo Requirements**:
-- 🔄 **Approval Workflow** (`/demo/workflows/approval`):
-  - Document approval flow (draft → submitted → approved/rejected)
-  - Current state indicator (visual progress bar)
-  - Transition buttons (e.g., "Submit for Approval", "Approve", "Reject")
-  - History (list of past transitions with timestamps)
-  - Permission checks (only admins see "Approve" button)
-  - Tests: create document → submit → approve → verify state changes
+**Scope**: 🔧 **Backend Only** (Django app + REST API + tests + README)
+- No frontend/demo page required per Constitution
+- Frontend integration is downstream product responsibility
 
 **Status**: 🚧 ROADMAP
 
@@ -50,12 +45,7 @@ Generic workflow/state machine for business processes (approvals, status transit
 - Action hooks (on_enter, on_exit, on_transition)
 - Integration (B09 audit, B16 notifications, B15 tasks)
 
-[demo requirements]
-Demo page: /demo/workflows/approval
-- Document approval flow (draft → submitted → approved/rejected)
-- State indicator (progress bar)
-- Transition buttons (submit, approve, reject)
-- History (past transitions)
-- Permission checks
-- Tests: create → submit → approve → verify state
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
 ```

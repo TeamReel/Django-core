@@ -13,11 +13,11 @@
 - Scheduling via B15 (daily/weekly/monthly)
 - Email delivery via B16, storage via B22
 
-**Demo Requirements**:
--  **Reports Page** (`/demo/reports`): Select report type  date range  format  generate (async)  download
-- Tests: generate report  download  verify content
+**Scope**: 🔧 **Backend Only** (Django app + REST API + tests + README)
+- No frontend/demo page required per Constitution
+- Frontend integration is downstream product responsibility
 
-**Status**:  ROADMAP
+**Status**: 🚧 ROADMAP
 
 **Specify Prompt**:
 ```
@@ -33,13 +33,7 @@ Generate PDF/Excel reports and data exports with templates and scheduling.
 - Scheduling (daily/weekly/monthly)
 - Integration (B15 tasks, B16 email, B22 storage)
 
-[demo requirements]
-Demo page: /demo/reports
-- Report type selector
-- Date range picker
-- Format selector (PDF/Excel/CSV)
-- Generate button (async)
-- Download link
-- Scheduled reports list
-- Tests: generate report  download  verify content
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
 ```

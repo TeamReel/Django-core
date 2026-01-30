@@ -43,16 +43,9 @@
   - Refund on failure (configurable)
 - **Integration**: B15 (tasks), B11 (credits), B33 (brand tokens), B35 (output storage)
 
-**Demo Requirements**:
-- 🤖 **AI Studio** (`/demo/pipelines`):
-  - Template selector (dropdown: Match Report, Line-up Video, etc.)
-  - Dynamic form builder (generates inputs from template.input_schema)
-  - Generate button (submits GenerationRequest)
-  - Job status tracker (pending → processing → completed with progress %)
-  - Output preview (image/video player, text display)
-  - Download button (when completed)
-  - Job history (list of past generations with retry option)
-  - Tests: select template → fill inputs → generate → track status → view output
+**Scope**: 🔧 **Backend Only** (Django app + REST API + tests + README)
+- No frontend/demo page required per Constitution
+- Frontend integration is downstream product responsibility
 
 **Status**: 🛫 ROADMAP
 
@@ -72,12 +65,9 @@ AI content generation factory - job lifecycle management, pipeline routing, asyn
 - Credit deduction (B11)
 - Integration (B33 brand, B35 storage)
 
-[demo requirements]
-Demo page: /demo/pipelines
-- Template selector
-- Dynamic form (from input schema)
-- Generate button
-- Job status tracker (real-time)
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
 - Output preview
 - Job history with retry
 - Tests: select → generate → track → view output

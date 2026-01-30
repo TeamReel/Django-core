@@ -34,8 +34,8 @@ The project is divided into **18 Development Phases**. Click a phase to see its 
 
 ### Extended Capabilities (Planned)
 *   **[Phase 9: Backend Infrastructure](phases/phase-09-backend-infrastructure.md)** (Modules 034-038) ✅
-*   **[Phase 10: Frontend & Visual Development](phases/phase-10-frontend-and-visual-development.md)** (Modules 039-041) 📋
-*   **[Phase 11: Workflows & Payments](phases/phase-11-workflows-and-payments.md)** (Modules 042-044) 📋
+*   **[Phase 10: Content Engine Core](phases/phase-10-content-engine-core.md)** (Modules 039-044) 🚧
+*   **[Phase 11: Frontend & Visual Development](phases/phase-11-frontend-and-visual-development.md)** (Modules 045-047) 📋
 *   **[Phase 12: Advanced UI](phases/phase-12-advanced-ui.md)** (Modules 045-048) 📋
 *   **[Phase 13: Data Foundations Part 1](phases/phase-13-data-foundations-part-1.md)** (Modules 049-053) 📋
 *   **[Phase 14: Data Foundations Part 2](phases/phase-14-data-foundations-part-2.md)** (Modules 054-058) 📋

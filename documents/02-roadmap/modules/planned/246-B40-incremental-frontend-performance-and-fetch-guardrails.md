@@ -45,11 +45,9 @@
   - `frontend_fetch_max_items_default`
   - `frontend_optimistic_create_enabled`
 
-**Demo Requirements**:
-- Create Club/Team voelt instant: nieuwe item verschijnt meteen zonder refresh.
-- Geen “pagination-walk”: match/activity lookups blijven binnen 1 page / top-N.
-- Club detail toont alleen teams onder die club (geen org-wide fallback).
-- Observability (minimaal): een debug view of console summary die per page de top 5 requests + counts toont.
+**Scope**: 🔧 **Backend Only** (Django app + REST API + tests + README)
+- No frontend/demo page required per Constitution
+- Frontend integration is downstream product responsibility
 
 **Status**: 🚧 ROADMAP
 
@@ -71,9 +69,7 @@ Add default-on performance guardrails and a consistent optimistic UX pattern for
 - Full rewrite of the frontend architecture
 - Breaking changes to existing API contracts
 
-[demo requirements]
-- Create club/team shows instant UI updates
-- No pagination-walk beyond configured caps
-- Club pages never show org-wide teams
-- Minimal request summary available for troubleshooting
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
 ```

@@ -23,15 +23,9 @@
   - Frontend applies styles dynamically
 - **Integration**: B22 (file storage), B34 (AI uses brand tokens), B06/B07 (org/project)
 
-**Demo Requirements**:
-- 🎨 **Brand Manager** (`/demo/brand`):
-  - Brand profile editor (name, active toggle)
-  - Design token list (add/edit key-value pairs)
-  - Color picker (for color tokens)
-  - Asset uploader (logos, watermarks)
-  - Preview panel (shows applied brand)
-  - Project inheritance toggle (use org brand vs custom)
-  - Tests: create brand → set colors → upload logo → preview → apply to project
+**Scope**: 🔧 **Backend Only** (Django app + REST API + tests + README)
+- No frontend/demo page required per Constitution
+- Frontend integration is downstream product responsibility
 
 **Status**: 🚧 ROADMAP
 
@@ -50,12 +44,7 @@ Centralized brand identity management - design tokens and assets as data.
 - Token API (frontend consumption)
 - Integration (B22 files, B34 AI, B06/B07)
 
-[demo requirements]
-Demo page: /demo/brand
-- Brand profile editor
-- Design token manager
-- Asset uploader
-- Preview panel
-- Project inheritance
-- Tests: create → configure → upload → preview
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
 ```

@@ -52,10 +52,9 @@ Voorbeelden:
   - `search_hierarchy_max_nodes`
   - `search_hierarchy_anchor_types` (prioriteitlijst)
 
-**Demo Requirements**:
-- UI: zoek op “Ajax” en toon een extra sectie **Hierarchy** met Seasons → Competitions → Matches.
-- Navigatie: click op match node moet naar match detail route gaan.
-- Fallback: als geen duidelijke anchor gevonden is, toon alleen keyword results.
+**Scope**: 🔧 **Backend Only** (Django app + REST API + tests + README)
+- No frontend/demo page required per Constitution
+- Frontend integration is downstream product responsibility
 
 **Status**: 🚧 ROADMAP
 
@@ -73,9 +72,7 @@ Extend global search with an optional, product-agnostic hierarchy/related-result
 - Permission-safe: never leak cross-tenant data
 - Guardrails: configurable max depth/nodes and per-level limits
 
-[demo requirements]
-Search “Ajax” shows:
-- Hierarchy: Seasons → Competitions → Matches
-- Clicking a match navigates to match detail
-- If no confident anchor: show only keyword results
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
 ```

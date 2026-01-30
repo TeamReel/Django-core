@@ -42,17 +42,9 @@
   - Videos: Extract frame at 50% timestamp
 - **Integration**: B22 (storage), B30 (activities), B34 (generated content auto-linked), B24 (search)
 
-**Demo Requirements**:
-- 📚 **Media Library** (`/demo/library`):
-  - Grid view (thumbnails with overlay info)
-  - List view (table with metadata)
-  - Upload button (with drag-drop zone)
-  - Search bar (instant search across titles, tags)
-  - Filter sidebar (by type, project, date, tag)
-  - Media detail modal (full metadata, edit tags, add relations)
-  - Collection manager (create, add items, view)
-  - Bulk actions (tag multiple, add to collection, delete)
-  - Tests: upload → tag → link to activity → search → find item
+**Scope**: 🔧 **Backend Only** (Django app + REST API + tests + README)
+- No frontend/demo page required per Constitution
+- Frontend integration is downstream product responsibility
 
 **Status**: 🛫 ROADMAP
 
@@ -72,12 +64,9 @@ Digital Asset Management - rich metadata, tagging, context relations, smart sear
 - Thumbnail generation
 - Auto-link B34 generated content
 
-[demo requirements]
-Demo page: /demo/library
-- Grid/list views
-- Upload with drag-drop
-- Search & filter sidebar
-- Media detail editor
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
 - Collection manager
 - Bulk actions
 - Tests: upload → tag → link → search

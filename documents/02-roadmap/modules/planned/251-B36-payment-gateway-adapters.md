@@ -25,15 +25,9 @@
 - **Credit purchase flow**: Package selection → payment → credit addition (B11)
 - **Integration**: B09 (audit), B11 (credits), B38 (receipts)
 
-**Demo Requirements**:
-- 💳 **Payment Page** (`/demo/payments`):
-  - Credit packages (100/500/1000 credits, €10/€40/€80)
-  - Stripe Elements card input (test mode: 4242 4242 4242 4242)
-  - Payment button (intent → capture)
-  - Success/error messages
-  - Transaction history
-  - Receipt download (PDF)
-  - Tests: select package → enter test card → pay → verify credits
+**Scope**: 🔧 **Backend Only** (Django app + REST API + tests + README)
+- No frontend/demo page required per Constitution
+- Frontend integration is downstream product responsibility
 
 **Status**: 🚧 ROADMAP
 
@@ -51,12 +45,7 @@ Multi-gateway payment integration (Stripe, PayPal) with webhook handling.
 - Webhook handling + signature verification
 - Credit purchase flow (B11)
 
-[demo requirements]
-Demo page: /demo/payments
-- Credit packages
-- Stripe Elements card input
-- Payment flow
-- Transaction history
-- Receipt download
-- Tests: purchase → verify payment → check balance
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
 ```

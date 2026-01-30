@@ -53,11 +53,9 @@
   - `navigation_recents_max_items`
   - `navigation_recents_retention_days`
 
-**Demo Requirements**:
-- `/recents` toont items die **na refresh** en **op andere device** terugkomen (zelfde user).
-- `/favorites` idem; togglen werkt direct (optimistic) en is persistent.
-- Permissions: user A ziet nooit nav-state van user B.
-- Guardrail: recents capped op max N; older items verdwijnen.
+**Scope**: 🔧 **Backend Only** (Django app + REST API + tests + README)
+- No frontend/demo page required per Constitution
+- Frontend integration is downstream product responsibility
 
 **Status**: 🚧 ROADMAP
 
@@ -76,9 +74,7 @@ Server-backed recents & favorites (user navigation state) with safe defaults, li
 - Guardrails: max items + optional retention TTL
 - Frontend sync strategy: optimistic local cache + backend source-of-truth
 
-[demo requirements]
-- Recents/Favorites persist after refresh
-- Persist across devices for same user
-- Max N cap enforced
-- Tests: permissions and basic CRUD
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
 ```
