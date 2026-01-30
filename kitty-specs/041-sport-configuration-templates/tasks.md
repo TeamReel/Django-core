@@ -159,20 +159,20 @@
 
 ---
 
-## Work Package WP05: Validation API Endpoint (Priority: P1)
+## Work Package WP05: Validation API Endpoint (Priority: P1) ✅ DONE
 
 **Goal**: Deliver team size, position, and formation validation endpoints (User Story 3).
 **Independent Test**: Validation endpoint returns correct warnings for test inputs; API tests pass.
-**Prompt**: `tasks/planned/WP05-validation-api-endpoint.md`
+**Prompt**: `tasks/done/WP05-validation-api-endpoint.md`
 
 ### Included Subtasks
-- [ ] T036 [P] Create `ValidationResultSerializer` for structured errors/warnings
-- [ ] T037 [P] Create request serializers (TeamSize, Positions, Formation)
-- [ ] T038 Create `ValidationViewSet` with team_size, positions, formation actions
-- [ ] T039 Wire validation views to SportValidationService
-- [ ] T040 Add URL routing for validation endpoints
-- [ ] T041 Add OpenAPI schema annotations with examples
-- [ ] T042 **Write `tests/sport_configuration/test_api_validation.py`** (≥85% coverage)
+- [x] T036 [P] Create `ValidationResultSerializer` for structured errors/warnings
+- [x] T037 [P] Create request serializers (TeamSize, Positions, Formation)
+- [x] T038 Create `ValidationViewSet` with team_size, positions, formation actions
+- [x] T039 Wire validation views to SportValidationService
+- [x] T040 Add URL routing for validation endpoints
+- [x] T041 Add OpenAPI schema annotations with examples
+- [x] T042 **Write `tests/sport_configuration/test_api_validation.py`** (≥85% coverage)
 
 ### Constitutional Alignment
 - Principle IV (Testing): API tests with ≥85% coverage
