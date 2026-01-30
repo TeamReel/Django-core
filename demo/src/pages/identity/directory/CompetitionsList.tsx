@@ -1156,6 +1156,12 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                     const seasonFromList = seasonId ? seasons.find(s => String(s.id) === String(seasonId)) : undefined;
                     const seasonSlugOrId = periodPathKey(seasonFromList || comp.parent_period) || seasonId;
                     const compSlugOrId = periodPathKey(comp) || comp.id;
+
+                    // Sport display: prefer comp.sport, fallback to org sport
+                    const orgSport = (orgFromList as any)?.sport;
+                    const compSport = (comp as any).sport;
+                    const sportDisplay = compSport || orgSport;
+
                     const teamBasePath = clubSlugOrId
                       ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`
                       : `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}`;
@@ -1243,17 +1249,17 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                             </a>
                         </td>
                         <td style={compactTdStyle}>
-                          {(comp as any).sport?.category_name ? (
-                            <span style={{ fontSize: '12px' }}>{(comp as any).sport.category_name}</span>
+                          {sportDisplay?.category_name ? (
+                            <span style={{ fontSize: '12px' }}>{sportDisplay.category_name}</span>
                           ) : (
                             <span style={{ color: 'var(--app-muted-text)' }}>—</span>
                           )}
                         </td>
                         <td style={compactTdStyle}>
-                          {(comp as any).sport ? (
+                          {sportDisplay ? (
                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <span>{(comp as any).sport.sport_icon}</span>
-                              <span style={{ fontSize: '12px' }}>{(comp as any).sport.name}</span>
+                              <span>{sportDisplay.sport_icon}</span>
+                              <span style={{ fontSize: '12px' }}>{sportDisplay.name}</span>
                             </span>
                           ) : (
                             <span style={{ color: 'var(--app-muted-text)' }}>—</span>

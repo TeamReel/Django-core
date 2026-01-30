@@ -150,15 +150,22 @@ class PeriodSerializer(serializers.ModelSerializer):
     def get_sport(self, obj):
         """Return nested sport representation (for competition-level sport variant)"""
         if obj.sport:
+            # For variants, include category icon as fallback (variants often don't have their own icon)
+            category_icon = (
+                obj.sport.category.sport_icon
+                if obj.sport.is_variant and obj.sport.category
+                else None
+            )
             return {
                 "id": str(obj.sport.id),
                 "name": obj.sport.name,
                 "slug": obj.sport.slug,
-                "sport_icon": obj.sport.sport_icon,
+                "sport_icon": obj.sport.sport_icon or category_icon,
                 "is_variant": obj.sport.is_variant,
                 "category_name": obj.sport.category.name
                 if obj.sport.is_variant and obj.sport.category
                 else None,
+                "category_icon": category_icon,
             }
         return None
 
