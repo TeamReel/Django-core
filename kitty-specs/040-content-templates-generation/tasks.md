@@ -147,13 +147,13 @@ Implement the approval workflow: review completed content, approve/reject/reques
 
 ### Included Subtasks
 
-- [ ] **T015** - Create `ContentApprovalSerializer` with reviewer, feedback_text, status validation
-- [ ] **T016** - Implement `ContentApprovalViewSet` with create action, self-approval check (if B10 flag enabled)
-- [ ] **T017** - Implement custom `@action` on ContentItemViewSet: `POST /items/{id}/approve/`
-- [ ] **T018** - Implement custom `@action` on ContentItemViewSet: `POST /items/{id}/reject/` (feedback required)
-- [ ] **T019** - Implement custom `@action` on ContentItemViewSet: `POST /items/{id}/request-revision/` (feedback required)
-- [ ] **T020** - Update ContentItem status on approval creation (status sync logic)
-- [ ] **T021** - Integrate B17 notifications (notify creator on approve/reject/revision)
+- [x] **T015** - Create `ContentApprovalSerializer` with reviewer, feedback_text, status validation
+- [x] **T016** - Implement `ContentApprovalViewSet` with create action, self-approval check (if B10 flag enabled)
+- [x] **T017** - Implement custom `@action` on ContentItemViewSet: `POST /items/{id}/approve/`
+- [x] **T018** - Implement custom `@action` on ContentItemViewSet: `POST /items/{id}/reject/` (feedback required)
+- [x] **T019** - Implement custom `@action` on ContentItemViewSet: `POST /items/{id}/request-revision/` (feedback required)
+- [x] **T020** - Update ContentItem status on approval creation (status sync logic)
+- [x] **T021** - Integrate B17 notifications (notify creator on approve/reject/revision)
 
 ### Implementation Sketch
 
