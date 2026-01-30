@@ -1089,6 +1089,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                     {!teamLocked && <th style={{ ...compactThStyle, width: '12%' }}>Team</th>}
                     <th style={{ ...compactThStyle, width: '12%' }}>Season</th>
                     <th style={{ ...compactThStyle, width: '20%' }}>Competition</th>
+                  <th style={{ ...compactThStyle, width: '12%' }}>Sport</th>
                   <th style={{ ...compactThStyle, width: '12%' }}>Sport Variant</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Squad</th>
@@ -1216,6 +1217,13 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                             >
                             {comp.name}
                             </a>
+                        </td>
+                        <td style={compactTdStyle}>
+                          {(comp as any).sport?.category_name ? (
+                            <span style={{ fontSize: '12px' }}>{(comp as any).sport.category_name}</span>
+                          ) : (
+                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                          )}
                         </td>
                         <td style={compactTdStyle}>
                           {(comp as any).sport ? (

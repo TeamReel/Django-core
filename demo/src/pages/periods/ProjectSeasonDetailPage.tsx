@@ -26,6 +26,7 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import MobileTabBar from '../../components/MobileTabBar';
+import { useSports } from '../../hooks/useSports';
 import {
   actionButtonStyle,
   type ActionTone,
@@ -46,6 +47,13 @@ type Period = {
   children_count?: number;
   matches_count?: number;
   children_matches_count?: number;
+  sport_id?: string | number | null;
+  sport?: {
+    id: string | number;
+    name: string;
+    sport_icon?: string | null;
+    category_name?: string | null;
+  } | null;
 };
 
 type ListResponse<T> = {
@@ -109,6 +117,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const { orgId, projectId, seasonId, clubId } = useParams<{ orgId: string; projectId: string; seasonId: string; clubId?: string }>();
   const { user } = useAuth();
   const { context } = useContextSwitcher();
+
+  const { getSportById } = useSports();
 
   const apiBaseUrl = getApiBaseUrl();
 
@@ -355,7 +365,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     }
 
     const raw = await res.json().catch(() => null);
-    const updated = (raw as any)?.data || raw || { ...periodToEdit, ...patch };
+    const server = (raw as any)?.data || raw;
+    const updated = server && typeof server === 'object' ? { ...periodToEdit, ...patch, ...(server as any) } : { ...periodToEdit, ...patch };
     if (String(updated?.id) === String(season?.id)) {
       setSeason((prev) => (prev ? ({ ...(prev as any), ...(updated as any) } as any) : (updated as any)));
     }
@@ -1246,13 +1257,42 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             <>
               {activeTab === 'overview' && (
                 <>
+                  {(() => {
+                    const nestedSport = (season as any)?.sport as any;
+                    const byId = season?.sport_id ? getSportById(String(season.sport_id)) : undefined;
+                    const resolvedSport: any = nestedSport || byId || null;
+                    const icon = resolvedSport?.sport_icon as string | null | undefined;
+                    const isImageIcon = typeof icon === 'string' && /^(https?:\/\/|\/|data:)/i.test(icon);
+
+                    return (
+                      <>
                   {/* Top Stats Row */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
                     <Card style={{ padding: '16px' }}>
                       <div className="text-sm font-medium text-gray-500">Dates</div>
                       <div className="text-sm font-semibold mt-1">
                         {season?.start_date ? new Date(season.start_date).toLocaleDateString() : '—'} –{' '}
                         {season?.end_date ? new Date(season.end_date).toLocaleDateString() : '—'}
+                      </div>
+                    </Card>
+                    <Card style={{ padding: '16px' }}>
+                      <div className="text-sm font-medium text-gray-500">Sport Variant</div>
+                      <div className="text-sm font-semibold mt-1" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {icon ? (
+                          isImageIcon ? (
+                            <img
+                              src={icon}
+                              alt={resolvedSport?.name || 'Sport'}
+                              style={{ width: 18, height: 18, borderRadius: 4, objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <span aria-hidden style={{ fontSize: 16, lineHeight: 1 }}>{icon}</span>
+                          )
+                        ) : null}
+                        <span>{resolvedSport?.name || '—'}</span>
+                        {resolvedSport?.category_name ? (
+                          <span className="text-xs text-gray-500">({resolvedSport.category_name})</span>
+                        ) : null}
                       </div>
                     </Card>
                     <Card style={{ padding: '16px' }}>
@@ -1268,6 +1308,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       <div className="text-2xl font-bold mt-1">{members.length}</div>
                     </Card>
                   </div>
+                      </>
+                    );
+                  })()}
 
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left Column: Overview content */}

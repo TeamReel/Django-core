@@ -41,7 +41,7 @@ class PeriodSerializer(serializers.ModelSerializer):
     organisation_id = serializers.UUIDField(write_only=True)
     project_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     parent_period_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
-    sport_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    sport_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Period

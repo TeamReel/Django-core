@@ -187,6 +187,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     seasons_count = serializers.SerializerMethodField()
     competitions_count = serializers.SerializerMethodField()
     matches_count = serializers.SerializerMethodField()
+    sport_variants_count = serializers.SerializerMethodField()
     parent_id = serializers.UUIDField(source="parent_project.id", allow_null=True, read_only=True)
     parent_name = serializers.CharField(
         source="parent_project.name", allow_null=True, read_only=True
@@ -209,6 +210,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "seasons_count",
             "competitions_count",
             "matches_count",
+            "sport_variants_count",
             "parent_id",
             "parent_name",
         ]
@@ -240,6 +242,22 @@ class ProjectListSerializer(serializers.ModelSerializer):
         return Activity.objects.filter(
             Q(project=obj) | Q(project__parent_project=obj), activity_type="match"
         ).count()
+
+    def get_sport_variants_count(self, obj):
+        """Return count of distinct sport variants used in this project scope.
+
+        For clubs (parent projects), this includes all child teams.
+        """
+        return (
+            Period.objects.filter(
+                Q(project=obj) | Q(project__parent_project=obj),
+                sport__isnull=False,
+                sport__parent_sport__isnull=False,
+            )
+            .values_list("sport_id", flat=True)
+            .distinct()
+            .count()
+        )
 
 
 class ProjectPublicListSerializer(serializers.ModelSerializer):

@@ -751,6 +751,8 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                     )}
                     {!teamLocked && <th style={{ ...compactThStyle, width: '140px' }}>Team</th>}
                     <th style={{ ...compactThStyle, width: '260px' }}>Season</th>
+                  <th style={{ ...compactThStyle, width: '140px' }}>Sport</th>
+                  <th style={{ ...compactThStyle, width: '90px' }}>Variant</th>
                   <th style={{ ...compactThStyle, width: '110px' }}>Competition</th>
                   <th style={{ ...compactThStyle, width: '100px' }}>Match</th>
                     <th style={{ ...compactThStyle, width: '90px' }}>Squad</th>
@@ -784,6 +786,12 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                     const orgFromList = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
                     const rowOrgSlugOrId = String(orgFromList?.slug || (org as any)?.slug || orgId || '').trim();
                     const orgForRowRoutes = rowOrgSlugOrId || orgKeyForRoutes;
+
+                    const orgSport = (orgFromList as any)?.sport || (org as any)?.sport;
+                    const sportCategoryName = (season as any).sport?.category_name;
+                    const sportDisplay = sportCategoryName
+                      ? { name: sportCategoryName, sport_icon: (season as any).sport?.sport_icon }
+                      : orgSport;
 
                     const clubSlugOrId = (clubObj as any)?.slug || clubId;
                     const teamSlugOrId = (teamObj as any)?.slug || String(teamId || '').trim();
@@ -891,6 +899,21 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                               {season.name}
                             </button>
                           )}
+                        </td>
+
+                        <td style={compactTdStyle}>
+                          {sportDisplay ? (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span>{sportDisplay.sport_icon}</span>
+                              <span style={{ fontSize: '12px' }}>{sportDisplay.name}</span>
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                          )}
+                        </td>
+
+                        <td style={compactTdStyle}>
+                          <Badge variant="default">{(season as any).sport ? 1 : 0}</Badge>
                         </td>
                         <td style={compactTdStyle}>
                             <Badge variant="default">

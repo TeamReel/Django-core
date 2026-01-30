@@ -91,6 +91,8 @@ class OrganisationListSerializer(serializers.ModelSerializer):
     seasons_count = serializers.SerializerMethodField()
     competitions_count = serializers.SerializerMethodField()
     matches_count = serializers.SerializerMethodField()
+    sport = serializers.SerializerMethodField()
+    sport_variants_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Organisation
@@ -99,6 +101,8 @@ class OrganisationListSerializer(serializers.ModelSerializer):
             "name",
             "slug",
             "is_active",
+            "sport",
+            "sport_variants_count",
             "member_count",
             "project_count",
             "user_role",
@@ -111,6 +115,30 @@ class OrganisationListSerializer(serializers.ModelSerializer):
             "matches_count",
         ]
         read_only_fields = fields
+
+    def get_sport(self, obj):
+        """Return nested sport representation (category-level)."""
+        if obj.sport:
+            return {
+                "id": str(obj.sport.id),
+                "name": obj.sport.name,
+                "slug": obj.sport.slug,
+                "sport_icon": obj.sport.sport_icon,
+            }
+        return None
+
+    def get_sport_variants_count(self, obj):
+        """Return count of distinct sport variants used in this organisation."""
+        return (
+            Period.objects.filter(
+                organisation=obj,
+                sport__isnull=False,
+                sport__parent_sport__isnull=False,
+            )
+            .values_list("sport_id", flat=True)
+            .distinct()
+            .count()
+        )
 
     def get_member_count(self, obj):
         """Return count of active members (direct org + project members)."""
@@ -282,10 +310,10 @@ class OrganisationCreateSerializer(serializers.ModelSerializer):
     Validates:
     - name: 3-100 chars, unique, alphanumeric + spaces/hyphens/underscores
     - description: optional
-    - sport_id: optional UUID for sport category
+    - sport_id: optional integer id for sport category
     """
 
-    sport_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    sport_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Organisation

@@ -333,6 +333,8 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
                     <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
                   )}
                   <th style={{ ...compactThStyle, width: '20%' }}>Club</th>
+                  <th style={{ ...compactThStyle, width: '12%' }}>Sport</th>
+                  <th style={{ ...compactThStyle, width: '8%' }}>Variant</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Teams</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
@@ -360,6 +362,8 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
                     selectedOrg?.id ||
                     selectedOrgId;
                   const clubSlugOrId = club.slug || club.id;
+
+                  const orgSport = (club.organisation as any)?.sport || (orgFromList as any)?.sport;
 
                   // Calculate teams count for this club from teams data
                   const teamsForClub = teams.filter((t: any) => {
@@ -403,6 +407,19 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
                         >
                           {club.name}
                         </a>
+                      </td>
+                      <td style={compactTdStyle}>
+                        {orgSport ? (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span>{orgSport.sport_icon}</span>
+                            <span style={{ fontSize: '12px' }}>{orgSport.name}</span>
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                        )}
+                      </td>
+                      <td style={compactTdStyle}>
+                        <Badge variant="default">{(club as any).sport_variants_count || 0}</Badge>
                       </td>
                       <td style={compactTdStyle}>
                         <Badge variant="default">{teamsCount}</Badge>

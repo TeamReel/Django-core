@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSports } from '../../hooks/useSports';
 
 export interface PeriodLike {
   id: string;
@@ -14,23 +15,29 @@ interface PeriodEditModalProps {
   opened: boolean;
   onClose: () => void;
   period: PeriodLike | null;
+  showSportVariant?: boolean;
   onSave: (payload: {
     name?: string;
     description?: string;
     start_date?: string;
     end_date?: string;
     data?: Record<string, any>;
+    sport_id?: string | null;
   }) => Promise<void>;
 }
 
-export default function PeriodEditModal({ opened, onClose, period, onSave }: PeriodEditModalProps) {
+export default function PeriodEditModal({ opened, onClose, period, onSave, showSportVariant = true }: PeriodEditModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [type, setType] = useState('');
+  const [selectedSportId, setSelectedSportId] = useState('');
+  const [initialSportId, setInitialSportId] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { variants, loading: sportsLoading } = useSports();
 
   useEffect(() => {
     if (!opened || !period) return;
@@ -40,6 +47,10 @@ export default function PeriodEditModal({ opened, onClose, period, onSave }: Per
     setEndDate(period.end_date ?? '');
     const data = (period as any).data ?? (period as any).metadata ?? {};
     setType(String((data as any)?.type ?? ''));
+
+    const currentSportId = String((period as any)?.sport_id ?? (period as any)?.sport?.id ?? '').trim();
+    setSelectedSportId(currentSportId);
+    setInitialSportId(currentSportId);
     setError(null);
   }, [opened, period]);
 
@@ -59,6 +70,10 @@ export default function PeriodEditModal({ opened, onClose, period, onSave }: Per
       // Keep existing metadata but update its "type" when provided.
       if (type !== '') {
         payload.data = { ...(period as any).data, type };
+      }
+
+      if (showSportVariant && selectedSportId !== initialSportId) {
+        payload.sport_id = selectedSportId ? selectedSportId : null;
       }
 
       await onSave(payload);
@@ -193,6 +208,34 @@ export default function PeriodEditModal({ opened, onClose, period, onSave }: Per
               }}
             />
           </div>
+
+          {showSportVariant && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontWeight: 600 }} htmlFor="period-sport">
+                Sport Variant
+              </label>
+              <select
+                id="period-sport"
+                value={selectedSportId}
+                onChange={(e) => setSelectedSportId(e.target.value)}
+                disabled={saving || sportsLoading}
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                }}
+              >
+                <option value="">— Select sport variant —</option>
+                {variants.map((sport) => (
+                  <option key={sport.id} value={sport.id}>
+                    {sport.sport_icon} {sport.name} {sport.category_name ? `(${sport.category_name})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <label style={{ fontWeight: 600 }} htmlFor="period-description">

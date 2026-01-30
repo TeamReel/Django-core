@@ -513,6 +513,8 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
                         <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
                       )}
                       <th style={{ ...compactThStyle, width: '18%' }}>Team</th>
+                      <th style={{ ...compactThStyle, width: '12%' }}>Sport</th>
+                      <th style={{ ...compactThStyle, width: '8%' }}>Variant</th>
                       <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
                       <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
                       <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
@@ -528,6 +530,8 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
                     const orgFromList = orgIdFromProject
                       ? organisations.find((o) => String(o.id) === String(orgIdFromProject))
                       : undefined;
+
+                    const orgSport = (team.organisation as any)?.sport || (orgFromList as any)?.sport;
 
                     // Priority: Explicit slug > List slug > Locked/Context slug > ID
                     const contextSlug = lockedOrgSlug || (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : undefined);
@@ -604,6 +608,21 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
                           ) : (
                             team.name
                           )}
+                        </td>
+
+                        <td style={compactTdStyle}>
+                          {orgSport ? (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span>{orgSport.sport_icon}</span>
+                              <span style={{ fontSize: '12px' }}>{orgSport.name}</span>
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                          )}
+                        </td>
+
+                        <td style={compactTdStyle}>
+                          <Badge variant="default">{(team as any).sport_variants_count || 0}</Badge>
                         </td>
 
                         <td style={compactTdStyle}>

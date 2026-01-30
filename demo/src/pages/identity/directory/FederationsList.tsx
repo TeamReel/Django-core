@@ -285,6 +285,7 @@ export const FederationsList: React.FC = () => {
                       Federation {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                     </th>
                     <th style={{ ...compactThStyle, width: '10%' }}>Sport</th>
+                    <th style={{ ...compactThStyle, width: '6%' }}>Variant</th>
                     <th onClick={() => handleSort('project_count')} style={{ ...compactThStyle, cursor: 'pointer', width: '6%' }}>
                       Club {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
@@ -331,6 +332,9 @@ export const FederationsList: React.FC = () => {
                           ) : (
                             <span style={{ color: 'var(--app-muted-text)' }}>—</span>
                           )}
+                        </td>
+                        <td style={compactTdStyle}>
+                          <Badge variant="default">{(org as any).sport_variants_count || 0}</Badge>
                         </td>
                         <td style={compactTdStyle}>
                           <Badge variant="default">

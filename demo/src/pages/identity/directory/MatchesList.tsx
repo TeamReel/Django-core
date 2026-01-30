@@ -1020,6 +1020,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                     <th style={{ ...compactThStyle, width: '15%' }}>Season</th>
                     <th style={{ ...compactThStyle, width: 'auto' }}>Competition</th>
                     <th style={{ ...compactThStyle, width: '10%' }}>Sport</th>
+                    <th style={{ ...compactThStyle, width: '12%' }}>Sport Variant</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Match</th>
                     <th style={{ ...compactThStyle, width: '8%' }}>Squad</th>
                     <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
@@ -1148,6 +1149,13 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                                 </a>
                               ) : compName}
                             </td>
+                        <td style={compactTdStyle}>
+                          {(m as any).period?.sport?.category_name ? (
+                            <span style={{ fontSize: '11px' }}>{(m as any).period.sport.category_name}</span>
+                          ) : (
+                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                          )}
+                        </td>
                         <td style={compactTdStyle}>
                           {(m as any).period?.sport ? (
                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
