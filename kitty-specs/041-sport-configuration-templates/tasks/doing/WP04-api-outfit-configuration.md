@@ -9,10 +9,10 @@ subtasks:
   - "T027"
 title: "API: Outfit Configuration"
 phase: "Phase 2 - API Layer"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "28336"
 review_status: ""
 reviewed_by: ""
 history:
@@ -352,3 +352,4 @@ history:
 ## Activity Log
 
 - 2026-01-30T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2026-01-30T10:46:18Z – claude – shell_pid=28336 – lane=doing – Started implementation of Outfit Configuration API

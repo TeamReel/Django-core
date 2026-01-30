@@ -1,15 +1,19 @@
 """
 Serializers for B32 Sport Configuration API.
 
-Provides DRF serializers for Sport and SportConfiguration resources.
-OutfitConfiguration serializers are implemented in WP04.
+Provides DRF serializers for Sport, SportConfiguration, and OutfitConfiguration resources.
 """
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from rest_framework import serializers
 
-from sport_configuration.models import Sport, SportConfiguration
+from sport_configuration.models import OutfitConfiguration, Sport, SportConfiguration
+
+if TYPE_CHECKING:
+    from projects.models import Project
 
 
 class SportConfigurationSerializer(serializers.ModelSerializer):
@@ -140,3 +144,123 @@ class SportConfigurationUpdateSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+# ==============================================================================
+# Outfit Configuration Serializers (WP04)
+# ==============================================================================
+
+
+class OutfitConfigurationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for OutfitConfiguration with inheritance indicators.
+
+    Includes `inherited` field to indicate if config comes from parent project
+    and `source_project_name` to identify the source.
+    """
+
+    inherited = serializers.SerializerMethodField()
+    source_project_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OutfitConfiguration
+        fields = [
+            "id",
+            "project",
+            "outfit_type",
+            "colors",
+            "sponsor_config",
+            "number_font",
+            "badge_position",
+            "metadata",
+            "is_active",
+            "inherited",
+            "source_project_name",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "inherited",
+            "source_project_name",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_inherited(self, obj: OutfitConfiguration) -> bool:
+        """
+        Check if this config is inherited from a parent project.
+
+        Returns True if the config's project differs from the request context project.
+        """
+        request_project: Project | None = self.context.get("project")
+        if request_project:
+            return obj.project_id != request_project.id
+        return False
+
+    def get_source_project_name(self, obj: OutfitConfiguration) -> str:
+        """Return the name of the project that owns this configuration."""
+        return obj.project.name if obj.project else ""
+
+
+class OutfitConfigurationCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating and updating OutfitConfiguration.
+
+    Handles validation of unique_together constraint (project + outfit_type).
+    """
+
+    class Meta:
+        model = OutfitConfiguration
+        fields = [
+            "id",
+            "project",
+            "outfit_type",
+            "colors",
+            "sponsor_config",
+            "number_font",
+            "badge_position",
+            "metadata",
+            "is_active",
+        ]
+        read_only_fields = ["id"]
+
+    def validate(self, data: dict) -> dict:
+        """
+        Validate unique_together constraint for project + outfit_type.
+
+        Ensures no duplicate outfit types exist for the same project.
+        """
+        project = data.get("project")
+        outfit_type = data.get("outfit_type")
+
+        # Handle update case - need to exclude current instance
+        if self.instance:
+            project = project or self.instance.project
+            outfit_type = outfit_type or self.instance.outfit_type
+
+            exists = (
+                OutfitConfiguration.objects.filter(
+                    project=project,
+                    outfit_type=outfit_type,
+                )
+                .exclude(pk=self.instance.pk)
+                .exists()
+            )
+        else:
+            # Create case
+            exists = OutfitConfiguration.objects.filter(
+                project=project,
+                outfit_type=outfit_type,
+            ).exists()
+
+        if exists:
+            raise serializers.ValidationError(
+                {
+                    "outfit_type": (
+                        "Outfit configuration for this type already exists in this project."
+                    )
+                }
+            )
+
+        return data
