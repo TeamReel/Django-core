@@ -1,7 +1,7 @@
 ---
 work_package_id: WP04
 title: User Story 3 - Template Management
-lane: planned
+lane: doing
 subtasks:
   - T022
   - T023
@@ -12,10 +12,18 @@ subtasks:
 priority: P2
 estimated_effort: 1-2 days
 dependencies: [WP01]
+assignee: github-copilot
+agent: github-copilot
+shell_pid: "$PID"
 history:
   - date: 2026-01-29
     action: created
     author: spec-kitty
+  - date: 2026-01-30T06:58:00Z
+    action: moved_to_doing
+    author: github-copilot
+    shell_pid: "$PID"
+    note: "Started WP04: User Story 3 - Template Management implementation"
 ---
 
 # WP04: User Story 3 - Template Management
