@@ -15,6 +15,8 @@ import { UsersList } from './directory/UsersList';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import MobileTabBar from '../../components/MobileTabBar';
+import ProjectEditModal from './ProjectEditModal';
+import ProjectDetailModal from './ProjectDetailModal';
 
 type Organisation = {
   id: string;
@@ -117,6 +119,8 @@ export default function ClubOrganisationDetailPage() {
   const [club, setClub] = useState<Project | null>(null);
   const [activeContext, setActiveContextState] = useState<any | null>(null);
   const [activatingContext, setActivatingContext] = useState(false);
+  const [isProjectEditModalOpen, setIsProjectEditModalOpen] = useState(false);
+  const [isProjectDetailModalOpen, setIsProjectDetailModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -1003,6 +1007,41 @@ export default function ClubOrganisationDetailPage() {
               <Button variant="secondary" size="sm" onClick={() => navigate(backToOrgHref)}>
                 Back
               </Button>
+              <Button variant="secondary" size="sm" onClick={() => setIsProjectDetailModalOpen(true)}>
+                View
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => setIsProjectEditModalOpen(true)}>
+                Edit
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => navigate('/audit')}>
+                Audit
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={async () => {
+                  if (!club) return;
+                  if (!window.confirm(`Are you sure you want to delete club ${club.name}?`)) return;
+                  try {
+                    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/`, {
+                      method: 'DELETE',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(),
+                      },
+                      credentials: 'include',
+                    });
+                    if (!res.ok) throw new Error('Failed to delete club');
+                    navigate(backToOrgHref);
+                  } catch (e) {
+                    console.error('Delete failed:', e);
+                    alert('Failed to delete club');
+                  }
+                }}
+                style={{ color: '#dc2626' }}
+              >
+                Delete
+              </Button>
             </div>
           }
         />
@@ -1469,6 +1508,34 @@ export default function ClubOrganisationDetailPage() {
           )}
         </PageContent>
       </div>
+
+      <ProjectDetailModal
+        opened={isProjectDetailModalOpen}
+        onClose={() => setIsProjectDetailModalOpen(false)}
+        project={club}
+      />
+
+      <ProjectEditModal
+        opened={isProjectEditModalOpen}
+        onClose={() => setIsProjectEditModalOpen(false)}
+        project={club}
+        onSave={async (projectData) => {
+          if (!club) return;
+          const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            credentials: 'include',
+            body: JSON.stringify(projectData),
+          });
+          if (!res.ok) throw new Error('Failed to save club');
+          const raw = await res.json().catch(() => null);
+          const updated = (raw as any)?.data || raw || { ...club, ...projectData };
+          setClub(updated);
+        }}
+      />
     </>
   );
 }

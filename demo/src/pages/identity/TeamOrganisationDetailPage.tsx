@@ -14,6 +14,8 @@ import { UsersList } from './directory/UsersList';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import MobileTabBar from '../../components/MobileTabBar';
+import ProjectEditModal from './ProjectEditModal';
+import ProjectDetailModal from './ProjectDetailModal';
 
 const getCsrfToken = (): string => {
   try {
@@ -162,6 +164,8 @@ export default function TeamOrganisationDetailPage() {
 
   const [activatingContext, setActivatingContext] = useState(false);
   const [activeContext, setActiveContextState] = useState<any | null>(null);
+  const [isProjectEditModalOpen, setIsProjectEditModalOpen] = useState(false);
+  const [isProjectDetailModalOpen, setIsProjectDetailModalOpen] = useState(false);
 
   const [clubTeamsForSwitcher, setClubTeamsForSwitcher] = useState<Project[]>([]);
   const [clubTeamsForSwitcherLoading, setClubTeamsForSwitcherLoading] = useState(false);
@@ -781,6 +785,41 @@ export default function TeamOrganisationDetailPage() {
               <Button variant="secondary" size="sm" onClick={() => navigate(backToClubHref)}>
                 Back
               </Button>
+              <Button variant="secondary" size="sm" onClick={() => setIsProjectDetailModalOpen(true)}>
+                View
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => setIsProjectEditModalOpen(true)}>
+                Edit
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => navigate('/audit')}>
+                Audit
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={async () => {
+                  if (!team) return;
+                  if (!window.confirm(`Are you sure you want to delete team ${team.name}?`)) return;
+                  try {
+                    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
+                      method: 'DELETE',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(),
+                      },
+                      credentials: 'include',
+                    });
+                    if (!res.ok) throw new Error('Failed to delete team');
+                    navigate(backToClubHref);
+                  } catch (e) {
+                    console.error('Delete failed:', e);
+                    alert('Failed to delete team');
+                  }
+                }}
+                style={{ color: '#dc2626' }}
+              >
+                Delete
+              </Button>
             </div>
           }
         />
@@ -1256,6 +1295,34 @@ export default function TeamOrganisationDetailPage() {
           )}
         </PageContent>
       </div>
+
+      <ProjectDetailModal
+        opened={isProjectDetailModalOpen}
+        onClose={() => setIsProjectDetailModalOpen(false)}
+        project={team}
+      />
+
+      <ProjectEditModal
+        opened={isProjectEditModalOpen}
+        onClose={() => setIsProjectEditModalOpen(false)}
+        project={team}
+        onSave={async (projectData) => {
+          if (!team) return;
+          const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            credentials: 'include',
+            body: JSON.stringify(projectData),
+          });
+          if (!res.ok) throw new Error('Failed to save team');
+          const raw = await res.json().catch(() => null);
+          const updated = (raw as any)?.data || raw || { ...team, ...projectData };
+          setTeam(updated);
+        }}
+      />
     </>
   );
 }
