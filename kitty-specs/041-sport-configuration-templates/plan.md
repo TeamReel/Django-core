@@ -35,7 +35,7 @@ Sport-specific configuration for team sizes, player positions, outfit variants, 
 | CL-2 | Position schema | Flexible with warnings | Clubs use custom positions (CDM, CAM, etc.) |
 | PL-1 | Project-Sport relationship | FK on Club AND Team | Teams can have different disciplines (zaal vs veld) |
 | PL-2 | OutfitConfiguration scope | Club defaults + Team overrides | DRY + flexibility (80/20) |
-| PL-3 | Demo frontend scope | Full (4 pages) | Complete spec = complete implementation |
+| PL-3 | Demo frontend scope | Backend only | No demo pages - API only (user decision) |
 
 ## Constitution Check
 
@@ -172,38 +172,15 @@ src/
 tests/
 ├── sport_configuration/
 │   ├── test_models.py
-│   ├── test_api.py
-│   ├── test_serializers.py
+│   ├── test_api_sports.py
+│   ├── test_api_outfits.py
+│   ├── test_api_validation.py
 │   ├── test_validation_service.py
-│   └── test_outfit_lookup.py
+│   ├── test_outfit_service.py
+│   └── test_integration.py
 ```
 
-### Source Code (Frontend Demo)
-
-```
-demo/src/
-├── pages/
-│   └── sport-config/
-│       ├── SportsPage.tsx         # /demo/sport-config/sports
-│       ├── OutfitsPage.tsx        # /demo/sport-config/outfits
-│       ├── PositionsPage.tsx      # /demo/sport-config/positions
-│       └── ValidationPage.tsx     # /demo/sport-config/validate
-├── components/
-│   └── sport-config/
-│       ├── SportList.tsx
-│       ├── SportForm.tsx
-│       ├── OutfitDesigner.tsx
-│       ├── ColorPicker.tsx
-│       ├── PositionEditor.tsx
-│       └── ValidationPreview.tsx
-└── api/
-    └── sportConfig.ts             # API client hooks
-```
-
-**Structure Decision**: Web application with Django backend (new `sport_configuration` app) and React frontend (new demo pages under `/sport-config/`).
-
-## Complexity Tracking
-
+**Structure Decision**: Backend-only implementation with Django `sport_configuration` app. No frontend demo pages (user decision: PL-3).
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
 | [e.g., 4th project] | [current need] | [why 3 projects insufficient] |

@@ -101,7 +101,7 @@ As a platform administrator, I want to define position schemas per sport, so tha
 - Each sport has exactly one SportConfiguration
 
 ### FR-2: Sport Configuration
-- System shall store per-sport: team_size_min, team_size_max, starting_players, max_substitutes
+- System shall store per-sport: team_size_min, team_size_max, max_substitutes
 - System shall store positions as JSON array with abbreviation and full name
 - System shall store formation_defaults (e.g., "4-3-3", "4-4-2")
 - System shall store outfit_types applicable to the sport (e.g., goalkeeper only for sports with GK position)
@@ -131,11 +131,14 @@ As a platform administrator, I want to define position schemas per sport, so tha
 - Activity-linked content inherits sport context
 
 ### FR-7: API Endpoints
-- GET/POST /api/v1/sports/ - List/create sports (admin only create)
-- GET/PATCH /api/v1/sports/{id}/ - Retrieve/update sport
-- GET/POST /api/v1/sport-configurations/ - Sport configurations
-- GET/POST /api/v1/outfit-configurations/ - Project outfit configurations
-- POST /api/v1/validation/lineup/ - Validate lineup against sport rules
+- GET/POST /api/v1/sports/ - List/create sports (staff only create)
+- GET/PATCH /api/v1/sports/{slug}/ - Retrieve/update sport by slug
+- GET/PATCH /api/v1/sports/{slug}/configuration/ - Sport configuration (nested)
+- GET/POST /api/v1/outfits/ - Project outfit configurations
+- GET /api/v1/outfits/resolved/?project={id} - Resolved outfits with inheritance
+- POST /api/v1/validation/team_size/ - Validate team size
+- POST /api/v1/validation/positions/ - Validate positions
+- POST /api/v1/validation/formation/ - Validate formation
 
 ## Success Criteria *(mandatory)*
 
@@ -158,7 +161,6 @@ As a platform administrator, I want to define position schemas per sport, so tha
 - sport: OneToOneField(Sport)
 - team_size_min: PositiveIntegerField
 - team_size_max: PositiveIntegerField
-- starting_players: PositiveIntegerField
 - max_substitutes: PositiveIntegerField
 - positions: JSONField (array of {abbr, name, is_required})
 - formation_defaults: JSONField (array of formation strings)
@@ -214,10 +216,10 @@ As a platform administrator, I want to define position schemas per sport, so tha
 **Decision**: **Club defaults + Team overrides** - OutfitConfiguration can be on Club or Team level with fallback lookup.
 **Rationale**: DRY (80% teams use club colors) + flexibility (20% need overrides like youth teams).
 
-### PL-3: Demo Frontend Scope
-**Question**: How many demo pages?
-**Decision**: **Full scope** - all 4 pages (Sports, Outfits, Positions, Validation).
-**Rationale**: Complete spec = complete implementation. Demo pages are executable documentation.
+### PL-3: Frontend Scope
+**Question**: Include demo frontend pages?
+**Decision**: **Backend only** - no demo frontend pages.
+**Rationale**: Focus on API completeness. Frontend can be added later if needed.
 
 ## Assumptions
 
