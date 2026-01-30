@@ -44,10 +44,31 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
   const resolvedPeriod: any = useMemo(() => {
     if (!period) return null;
     const candidate: any = period;
-    const inner: any = candidate?.data;
-    if (!candidate?.id && inner && typeof inner === 'object' && inner.id) {
-      return inner;
-    }
+
+    const looksLikePeriod = (obj: any): boolean => {
+      if (!obj || typeof obj !== 'object') return false;
+      // Heuristics: real Period objects have at least an id+name or date fields.
+      if (obj.id && (obj.name || obj.start_date || obj.end_date)) return true;
+      if (obj.name && (obj.start_date || obj.end_date)) return true;
+      if (obj.start_date || obj.end_date) return true;
+      return false;
+    };
+
+    // Common wrappers we’ve seen:
+    // - { data: { ...period } }
+    // - { data: { data: { ...period } } }
+    // - { id: <something>, data: { ...period } }  (id present but fields live under data)
+    const d1: any = candidate?.data;
+    const d2: any = candidate?.data?.data;
+
+    // If candidate already looks correct, keep it.
+    if (looksLikePeriod(candidate)) return candidate;
+
+    // If candidate doesn't look like a period, but nested objects do, unwrap.
+    if (looksLikePeriod(d2)) return d2;
+    if (looksLikePeriod(d1)) return d1;
+
+    // Fallback to whatever we got.
     return candidate;
   }, [period]);
 
