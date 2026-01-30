@@ -38,4 +38,6 @@ urlpatterns = [
     path(
         "content-generation/", include("src.content_generation.urls")
     ),  # /api/v1/content-generation/ (B31)
+    # B32: Sport Configuration & Templates
+    path("", include("sport_configuration.urls")),  # /api/v1/sports/
 ]
