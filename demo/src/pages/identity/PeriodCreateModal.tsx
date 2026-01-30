@@ -76,9 +76,6 @@ export default function PeriodCreateModal({
   const [selectedSportId, setSelectedSportId] = useState('');
 
   const { variants, loading: sportsLoading } = useSports();
-  const [endDate, setEndDate] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const [selectedOrganisationId, setSelectedOrganisationId] = useState('');
   const [selectedClubId, setSelectedClubId] = useState('');

@@ -1322,12 +1322,13 @@ export const OrganisationDetailPage: React.FC = () => {
     }
   };
 
-  const saveOrganisationEdits = async (orgData: Partial<Organisation>) => {
+  const saveOrganisationEdits = async (orgData: Partial<Organisation> & { sport_id?: string | null }) => {
     if (!org) throw new Error('Missing organisation');
 
     const apiV1BaseUrl = getApiV1BaseUrl();
     const patch: any = { ...orgData };
     delete patch.slug;
+    delete patch.sport; // Remove nested sport object, use sport_id instead
 
     const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
       method: 'PATCH',
