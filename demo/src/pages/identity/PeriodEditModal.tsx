@@ -40,6 +40,51 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
 
   const { variants, loading: sportsLoading } = useSports();
 
+  const firstNonEmptyString = (...values: any[]): string => {
+    for (const v of values) {
+      const s = String(v ?? '').trim();
+      if (s) return s;
+    }
+    return '';
+  };
+
+  const extractPeriodName = (p: any): string =>
+    firstNonEmptyString(
+      p?.name,
+      p?.title,
+      p?.label,
+      p?.data?.name,
+      p?.data?.data?.name,
+      p?.metadata?.name,
+      p?.metadata?.identity?.name,
+    );
+
+  const extractPeriodDescription = (p: any): string =>
+    firstNonEmptyString(
+      p?.description,
+      p?.data?.description,
+      p?.data?.data?.description,
+      p?.metadata?.description,
+    );
+
+  const extractPeriodType = (p: any): string =>
+    firstNonEmptyString(
+      p?.type,
+      p?.data?.type,
+      p?.data?.data?.type,
+      p?.metadata?.type,
+    );
+
+  const extractSportId = (p: any): string =>
+    firstNonEmptyString(
+      p?.sport_id,
+      p?.sport?.id,
+      p?.data?.sport_id,
+      p?.data?.sport?.id,
+      p?.data?.data?.sport_id,
+      p?.data?.data?.sport?.id,
+    );
+
   // Some endpoints/pages pass a wrapped API response shape like { data: { ...periodFields } }.
   // Detect that and unwrap it so the form pre-fills correctly.
   const resolvedPeriod: any = useMemo(() => {
@@ -48,10 +93,21 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
 
     const looksLikePeriod = (obj: any): boolean => {
       if (!obj || typeof obj !== 'object') return false;
-      // Heuristics: real Period objects have id+name, or date fields.
-      if (obj.id && obj.name) return true;
-      if (obj.name && (obj.start_date || obj.end_date)) return true;
-      if (obj.start_date || obj.end_date) return true;
+      // Heuristics: Period objects have an id, and at least some period-ish fields.
+      const hasId = obj.id != null;
+      const hasAnyFields =
+        obj.name != null ||
+        obj.description != null ||
+        obj.start_date != null ||
+        obj.end_date != null ||
+        obj.sport_id != null ||
+        obj.sport != null;
+      if (hasId && hasAnyFields) return true;
+
+      // Sometimes we only get name + any other period fields.
+      const hasName = obj.name != null;
+      const hasOther = obj.description != null || obj.start_date != null || obj.end_date != null || obj.sport_id != null || obj.sport != null;
+      if (hasName && hasOther) return true;
       return false;
     };
 
@@ -61,11 +117,13 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
     // - { id: <something>, data: { ...period } }  (id present but fields live under data)
     const d1: any = candidate?.data;
     const d2: any = candidate?.data?.data;
+    const d3: any = candidate?.data?.data?.data;
 
     // If candidate already looks correct, keep it.
     if (looksLikePeriod(candidate)) return candidate;
 
     // If candidate doesn't look like a period, but nested objects do, unwrap.
+    if (looksLikePeriod(d3)) return d3;
     if (looksLikePeriod(d2)) return d2;
     if (looksLikePeriod(d1)) return d1;
 
@@ -101,15 +159,13 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
 
     // Populate form with period data when opened
     if (resolvedPeriod) {
-      console.log('[PeriodEditModal] Populating form with:', resolvedPeriod);
-      setName(resolvedPeriod.name ?? '');
-      setDescription(resolvedPeriod.description ?? '');
+      setName(extractPeriodName(resolvedPeriod));
+      setDescription(extractPeriodDescription(resolvedPeriod));
       setStartDate(resolvedPeriod.start_date ?? '');
       setEndDate(resolvedPeriod.end_date ?? '');
-      const data = (resolvedPeriod as any).data ?? (resolvedPeriod as any).metadata ?? {};
-      setType(String((data as any)?.type ?? ''));
+      setType(extractPeriodType(resolvedPeriod));
 
-      const currentSportId = String((resolvedPeriod as any)?.sport_id ?? (resolvedPeriod as any)?.sport?.id ?? '').trim();
+      const currentSportId = extractSportId(resolvedPeriod);
       setSelectedSportId(currentSportId);
       setInitialSportId(currentSportId);
       setError(null);
