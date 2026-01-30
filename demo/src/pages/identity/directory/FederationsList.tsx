@@ -15,6 +15,7 @@ import OrganisationDetailModal from '../OrganisationDetailModal';
 import OrganisationEditModal from '../OrganisationEditModal';
 import OrganisationCreateModal from '../OrganisationCreateModal';
 import { getApiBaseUrl } from '../../../utils/apiBase';
+import { useSports } from '../../../hooks/useSports';
 
 // Table styling constants
 const compactTableStyle: React.CSSProperties = {
@@ -80,6 +81,7 @@ interface Organisation {
   credit_balance?: number;
   member_count?: number;
   project_count?: number;
+  sport?: { id: string; name: string; slug: string; sport_icon: string } | null;
 }
 
 export const FederationsList: React.FC = () => {
@@ -91,9 +93,11 @@ export const FederationsList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const { categories } = useSports();
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>('active');
+  const [sportFilter, setSportFilter] = useState<string>('all');
 
   // Modal state
   const [detailOrganisation, setDetailOrganisation] = useState<Organisation | null>(null);
@@ -217,10 +221,28 @@ export const FederationsList: React.FC = () => {
           <option value="active">Status: Active</option>
           <option value="inactive">Status: Inactive</option>
         </select>
+        <select
+          value={sportFilter}
+          onChange={(e) => setSportFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Sport: All</option>
+          {categories.map((sport) => (
+            <option key={sport.id} value={sport.id}>
+              {sport.sport_icon} {sport.name}
+            </option>
+          ))}
+        </select>
         <Button
           variant="secondary"
           size="md"
-          onClick={() => setStatusFilter('all')}
+          onClick={() => { setStatusFilter('all'); setSportFilter('all'); }}
           style={{ marginLeft: 'auto' }}
         >
           Clear
@@ -251,6 +273,9 @@ export const FederationsList: React.FC = () => {
         } else if (statusFilter === 'inactive') {
           filteredOrganisations = filteredOrganisations.filter(org => org.is_active === false);
         }
+        if (sportFilter !== 'all') {
+          filteredOrganisations = filteredOrganisations.filter(org => org.sport?.id === sportFilter);
+        }
 
         if (filteredOrganisations.length === 0) {
           return (
@@ -266,19 +291,20 @@ export const FederationsList: React.FC = () => {
               <Table style={compactTableStyle}>
                 <thead>
                   <tr>
-                    <th onClick={() => handleSort('name')} style={{ ...compactThStyle, cursor: 'pointer', width: '20%' }}>
+                    <th onClick={() => handleSort('name')} style={{ ...compactThStyle, cursor: 'pointer', width: '18%' }}>
                       Federation {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th onClick={() => handleSort('project_count')} style={{ ...compactThStyle, cursor: 'pointer', width: '8%' }}>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Sport</th>
+                    <th onClick={() => handleSort('project_count')} style={{ ...compactThStyle, cursor: 'pointer', width: '6%' }}>
                       Club {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
+                    <th style={{ ...compactThStyle, width: '6%' }}>Season</th>
                     <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
-                    <th onClick={() => handleSort('member_count')} style={{ ...compactThStyle, cursor: 'pointer', width: '8%' }}>
+                    <th style={{ ...compactThStyle, width: '6%' }}>Match</th>
+                    <th onClick={() => handleSort('member_count')} style={{ ...compactThStyle, cursor: 'pointer', width: '6%' }}>
                       Users {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Status</th>
                     <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
                   </tr>
                 </thead>
@@ -305,6 +331,16 @@ export const FederationsList: React.FC = () => {
                           >
                             {org.name}
                           </span>
+                        </td>
+                        <td style={compactTdStyle}>
+                          {org.sport ? (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span>{org.sport.sport_icon}</span>
+                              <span style={{ fontSize: '12px' }}>{org.sport.name}</span>
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                          )}
                         </td>
                         <td style={compactTdStyle}>
                           <Badge variant="default">

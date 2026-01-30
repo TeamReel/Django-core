@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { periodPathKey } from '../../../utils/periodPath';
+import { useSports } from '../../../hooks/useSports';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Alert, Card, Button, Badge } from '@django-core/design-system';
@@ -65,6 +66,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { context, organisations: myOrganisations } = useContextSwitcher();
+  const { categories } = useSports();
 
   const userRole = String((user as any)?.role || '').toLowerCase();
   const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
@@ -97,6 +99,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
   const [selectedClubId, setSelectedClubId] = useState<string>(preselectedClubId || '');
   const [selectedTeamId, setSelectedTeamId] = useState<string>(preselectedTeamId || '');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sportFilter, setSportFilter] = useState<string>('all');
 
   const [seasons, setSeasons] = useState<Period[]>([]);
   const [seasonsLoading, setSeasonsLoading] = useState(false);
@@ -503,22 +506,33 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
 
   const filteredSeasons = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
+    let list = seasons;
+
     if (statusFilter === 'active') {
-      return seasons.filter((s) => {
+      list = list.filter((s) => {
         const start = s.start_date || '0000-00-00';
         const end = s.end_date || '9999-99-99';
         return today >= start && today <= end;
       });
     }
     if (statusFilter === 'inactive') {
-      return seasons.filter((s) => {
+      list = list.filter((s) => {
         const start = s.start_date || '0000-00-00';
         const end = s.end_date || '9999-99-99';
         return !(today >= start && today <= end);
       });
     }
-    return seasons;
-  }, [seasons, statusFilter]);
+
+    if (sportFilter !== 'all') {
+      // Filter by organisation's sport
+      list = list.filter((season) => {
+        const org = organisations.find(o => String(o.id) === String((season as any).organisation?.id || (season as any).organisation_id));
+        return (org as any)?.sport?.id === sportFilter;
+      });
+    }
+
+    return list;
+  }, [seasons, statusFilter, sportFilter, organisations]);
 
   const sortedSeasons = useMemo(() => {
     const sortKey = (value: unknown) => {
@@ -670,6 +684,24 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
           <option value="active">Status: Active</option>
           <option value="inactive">Status: Inactive</option>
         </select>
+        <select
+          value={sportFilter}
+          onChange={(e) => setSportFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Sport: All</option>
+          {categories.map((sport) => (
+            <option key={sport.id} value={sport.id}>
+              {sport.sport_icon} {sport.name}
+            </option>
+          ))}
+        </select>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <Button
             variant="secondary"
@@ -678,6 +710,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
               if (!clubLocked) setSelectedClubId('');
               if (!teamLocked) setSelectedTeamId('');
               setStatusFilter('all');
+              setSportFilter('all');
               if (isSuperAdmin) setSelectedOrgId('');
             }}
           >

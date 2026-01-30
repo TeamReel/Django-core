@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
+import { useSports } from '../../../hooks/useSports';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
@@ -53,7 +54,10 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
   const orgLocked = Boolean(preselectedOrgId);
   const [selectedOrgId, setSelectedOrgId] = useState<string>(preselectedOrgId || '');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sportFilter, setSportFilter] = useState<string>('all');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
+
+  const { categories } = useSports();
 
   const permissionContext = useMemo(
     () => ({
@@ -180,6 +184,13 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
       list = list.filter((c: any) => c.is_active === false);
     }
 
+    if (sportFilter !== 'all') {
+      list = list.filter((club) => {
+        const org = organisations.find(o => String(o.id) === String(club.organisation));
+        return (org as any)?.sport?.id === sportFilter;
+      });
+    }
+
     if (selectedClubId) {
       list = list.filter((c) => String(c.id) === String(selectedClubId));
     }
@@ -192,7 +203,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
     });
 
     return list;
-  }, [clubs, organisations, selectedOrgId, statusFilter, selectedClubId]);
+  }, [clubs, organisations, selectedOrgId, statusFilter, sportFilter, selectedClubId]);
 
   const handleDeleteProject = async (orgSlugOrId: string, projectSlugOrId: string, projectName: string) => {
     if (!window.confirm(`Are you sure you want to delete ${projectName}?`)) return;
@@ -261,11 +272,30 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
           <option value="active">Status: Active</option>
           <option value="inactive">Status: Inactive</option>
         </select>
+        <select
+          value={sportFilter}
+          onChange={(e) => setSportFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Sport: All</option>
+          {categories.map((sport) => (
+            <option key={sport.id} value={sport.id}>
+              {sport.sport_icon} {sport.name}
+            </option>
+          ))}
+        </select>
         <Button
           variant="secondary"
           size="md"
           onClick={() => {
             setStatusFilter('all');
+            setSportFilter('all');
             setSelectedClubId('');
             if (isSuperAdmin) setSelectedOrgId('');
           }}

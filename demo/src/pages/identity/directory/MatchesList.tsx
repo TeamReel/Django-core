@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
+import { useSports } from '../../../hooks/useSports';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
@@ -85,10 +86,13 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
   const [selectedSeasonName, setSelectedSeasonName] = useState<string>('');
   const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sportFilter, setSportFilter] = useState<string>('all');
+  const [variantFilter, setVariantFilter] = useState<string>('all');
 
   const [seasons, setSeasons] = useState<any[]>([]);
   const [competitions, setCompetitions] = useState<any[]>([]);
 
+  const { categories, variants, getVariantsForCategory } = useSports();
 
   const [matches, setMatches] = useState<Activity[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
@@ -367,20 +371,38 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
   }, [context.organisation?.slug, organisations, refreshKey, selectedOrgId, orgLocked, lockedOrgSlug]);
 
   const filteredMatches = useMemo(() => {
-    if (statusFilter === 'all') return matches;
-    const now = new Date();
-    const isUpcoming = (m: Activity) => {
-      if (!m.start_time) return false;
-      const dt = new Date(m.start_time);
-      return dt.getTime() >= now.getTime();
-    };
-    if (statusFilter === 'active') {
-      // Upcoming matches
-      return matches.filter(isUpcoming);
+    let list = matches;
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      const now = new Date();
+      const isUpcoming = (m: Activity) => {
+        if (!m.start_time) return false;
+        const dt = new Date(m.start_time);
+        return dt.getTime() >= now.getTime();
+      };
+      if (statusFilter === 'active') {
+        list = list.filter(isUpcoming);
+      } else {
+        list = list.filter((m) => !isUpcoming(m));
+      }
     }
-    // Past matches
-    return matches.filter((m) => !isUpcoming(m));
-  }, [matches, statusFilter]);
+
+    // Sport category filter
+    if (sportFilter !== 'all') {
+      list = list.filter((match) => {
+        const org = organisations.find(o => String(o.id) === String((match as any).organisation?.id || (match as any).organisation_id));
+        return (org as any)?.sport?.id === sportFilter;
+      });
+    }
+
+    // Sport variant filter
+    if (variantFilter !== 'all') {
+      list = list.filter((match) => (match as any).period?.sport?.id === variantFilter);
+    }
+
+    return list;
+  }, [matches, statusFilter, sportFilter, variantFilter, organisations]);
 
   const sortedMatches = useMemo(() => {
     const sortKey = (value: unknown) => {
@@ -882,6 +904,44 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
           <option value="inactive">Status: Inactive</option>
         </select>
 
+        <select
+          value={sportFilter}
+          onChange={(e) => { setSportFilter(e.target.value); setVariantFilter('all'); }}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Sport: All</option>
+          {categories.map((sport) => (
+            <option key={sport.id} value={sport.id}>
+              {sport.sport_icon} {sport.name}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={variantFilter}
+          onChange={(e) => setVariantFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Variant: All</option>
+          {(sportFilter !== 'all' ? getVariantsForCategory(sportFilter) : variants).map((sport) => (
+            <option key={sport.id} value={sport.id}>
+              {sport.sport_icon} {sport.name}
+            </option>
+          ))}
+        </select>
+
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
             Showing {matchesMaxItems ?? 'all'}
@@ -914,6 +974,8 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
               setSelectedSeasonName('');
               setSelectedCompetitionId('');
               setStatusFilter('all');
+              setSportFilter('all');
+              setVariantFilter('all');
               if (isSuperAdmin) setSelectedOrgId('');
             }}
           >
@@ -957,6 +1019,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                     {!teamLocked && <th style={{ ...compactThStyle, width: '15%' }}>Team</th>}
                     <th style={{ ...compactThStyle, width: '15%' }}>Season</th>
                     <th style={{ ...compactThStyle, width: 'auto' }}>Competition</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Sport</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Match</th>
                     <th style={{ ...compactThStyle, width: '8%' }}>Squad</th>
                     <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
@@ -1085,6 +1148,16 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                                 </a>
                               ) : compName}
                             </td>
+                        <td style={compactTdStyle}>
+                          {(m as any).period?.sport ? (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span>{(m as any).period.sport.sport_icon}</span>
+                              <span style={{ fontSize: '11px' }}>{(m as any).period.sport.name}</span>
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                          )}
+                        </td>
                         <td style={compactTextTdStyle}>
                             {(() => {
                               const matchKey = (m as any).slug || m.id;

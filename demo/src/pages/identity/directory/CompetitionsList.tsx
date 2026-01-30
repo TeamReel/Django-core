@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { useSports } from '../../../hooks/useSports';
 import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
@@ -182,6 +183,10 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
   }, [orgLocked, preselectedOrgId, organisations]);
   const [selectedSeasonName, setSelectedSeasonName] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sportFilter, setSportFilter] = useState<string>('all');
+  const [variantFilter, setVariantFilter] = useState<string>('all');
+
+  const { categories, variants, getVariantsForCategory } = useSports();
 
   const [seasons, setSeasons] = useState<Period[]>([]);
   const [competitions, setCompetitions] = useState<Period[]>([]);
@@ -768,14 +773,24 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
   };
 
   const filteredCompetitions = useMemo(() => {
+    let list = [...competitions];
     if (statusFilter === 'active') {
-      return competitions.filter(isPeriodActive);
+      list = list.filter(isPeriodActive);
     }
     if (statusFilter === 'inactive') {
-      return competitions.filter((c) => !isPeriodActive(c));
+      list = list.filter((c) => !isPeriodActive(c));
     }
-    return competitions;
-  }, [competitions, statusFilter]);
+    if (sportFilter !== 'all') {
+      list = list.filter((comp) => {
+        const org = organisations.find(o => String(o.id) === String((comp as any).organisation?.id || (comp as any).organisation_id));
+        return (org as any)?.sport?.id === sportFilter;
+      });
+    }
+    if (variantFilter !== 'all') {
+      list = list.filter((comp) => (comp as any).sport?.id === variantFilter);
+    }
+    return list;
+  }, [competitions, statusFilter, sportFilter, variantFilter, organisations]);
 
   const sortedCompetitions = useMemo(() => {
     const sortKey = (value: unknown) => {
@@ -984,6 +999,42 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
           <option value="active">Status: Active</option>
           <option value="inactive">Status: Inactive</option>
         </select>
+        <select
+          value={sportFilter}
+          onChange={(e) => { setSportFilter(e.target.value); setVariantFilter('all'); }}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Sport: All</option>
+          {categories.map((sport) => (
+            <option key={sport.id} value={sport.id}>
+              {sport.sport_icon} {sport.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={variantFilter}
+          onChange={(e) => setVariantFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Variant: All</option>
+          {(sportFilter !== 'all' ? getVariantsForCategory(sportFilter) : variants).map((sport) => (
+            <option key={sport.id} value={sport.id}>
+              {sport.sport_icon} {sport.name}
+            </option>
+          ))}
+        </select>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <Button
             variant="secondary"
@@ -993,6 +1044,8 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
               if (!teamLocked) setSelectedTeamId('');
               setSelectedSeasonName('');
               setStatusFilter('all');
+              setSportFilter('all');
+              setVariantFilter('all');
               if (isSuperAdmin) setSelectedOrgId('');
             }}
           >
@@ -1036,6 +1089,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                     {!teamLocked && <th style={{ ...compactThStyle, width: '12%' }}>Team</th>}
                     <th style={{ ...compactThStyle, width: '12%' }}>Season</th>
                     <th style={{ ...compactThStyle, width: '20%' }}>Competition</th>
+                  <th style={{ ...compactThStyle, width: '12%' }}>Sport Variant</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Squad</th>
                   <th style={{ ...compactThStyle, width: '8%' }}>Status</th>
@@ -1162,6 +1216,16 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                             >
                             {comp.name}
                             </a>
+                        </td>
+                        <td style={compactTdStyle}>
+                          {(comp as any).sport ? (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span>{(comp as any).sport.sport_icon}</span>
+                              <span style={{ fontSize: '12px' }}>{(comp as any).sport.name}</span>
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                          )}
                         </td>
                         <td style={compactTdStyle}>
                             <Badge variant="default">

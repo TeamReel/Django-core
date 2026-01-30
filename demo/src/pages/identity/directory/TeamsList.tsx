@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
+import { useSports } from '../../../hooks/useSports';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
@@ -57,6 +58,9 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
   const [selectedClubId, setSelectedClubId] = useState<string>(preselectedClubId || '');
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sportFilter, setSportFilter] = useState<string>('all');
+
+  const { categories } = useSports();
 
   const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
   const isUuid = (value: unknown) =>
@@ -322,6 +326,13 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
         list = list.filter((c: any) => c.is_active === false);
       }
 
+      if (sportFilter !== 'all') {
+        list = list.filter((team) => {
+          const org = organisations.find(o => String(o.id) === String((team as any).organisation || (team as any).organisation_id));
+          return (org as any)?.sport?.id === sportFilter;
+        });
+      }
+
       // Alphabetical: Federation, Club, Team
       list.sort((a: any, b: any) => {
         const byFederation = sortKey(getFederationName(a)).localeCompare(sortKey(getFederationName(b)));
@@ -332,7 +343,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
       });
 
       return list;
-  }, [teams, selectedOrgId, selectedClubId, selectedTeamId, statusFilter, organisations]);
+  }, [teams, selectedOrgId, selectedClubId, selectedTeamId, statusFilter, sportFilter, organisations]);
 
   const handleDeleteProject = async (orgSlugOrId: string, teamId: string, teamName: string) => {
         if (!window.confirm(`Are you sure you want to delete ${teamName}?`)) return;
@@ -436,12 +447,31 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
           <option value="active">Status: Active</option>
           <option value="inactive">Status: Inactive</option>
         </select>
+        <select
+          value={sportFilter}
+          onChange={(e) => setSportFilter(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Sport: All</option>
+          {categories.map((sport) => (
+            <option key={sport.id} value={sport.id}>
+              {sport.sport_icon} {sport.name}
+            </option>
+          ))}
+        </select>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <Button
             variant="secondary"
             size="md"
             onClick={() => {
               setStatusFilter('all');
+              setSportFilter('all');
               if (!clubLocked) setSelectedClubId('');
               setSelectedTeamId('');
               if (isSuperAdmin) setSelectedOrgId('');
