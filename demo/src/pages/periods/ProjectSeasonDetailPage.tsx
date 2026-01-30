@@ -1258,11 +1258,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               {activeTab === 'overview' && (
                 <>
                   {(() => {
+                    // Season shows its own sport VARIANT only (not org category as fallback)
                     const nestedSport = (season as any)?.sport as any;
                     const byId = season?.sport_id ? getSportById(String(season.sport_id)) : undefined;
-                    // Fallback to organisation sport if season has no sport
-                    const orgSport = (org as any)?.sport as any;
-                    const resolvedSport: any = nestedSport || byId || orgSport || null;
+                    const resolvedSport: any = nestedSport || byId || null;
                     const icon = resolvedSport?.sport_icon as string | null | undefined;
                     const isImageIcon = typeof icon === 'string' && /^(https?:\/\/|\/|data:)/i.test(icon);
 

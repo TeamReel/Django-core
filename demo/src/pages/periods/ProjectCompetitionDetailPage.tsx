@@ -1810,22 +1810,19 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                     <Card style={{ padding: '16px' }}>
                       <div className="text-sm font-medium text-gray-500">Sport Variant</div>
                       <div className="text-sm font-semibold mt-1" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        {(() => {
-                          // Prefer competition's sport, fallback to organisation's sport
-                          const sportDisplay = competition?.sport || (org as any)?.sport;
-                          if (!sportDisplay) return <span style={{ color: 'var(--app-muted-text)' }}>—</span>;
-                          return (
-                            <>
-                              <span>{sportDisplay.sport_icon}</span>
-                              <span>{sportDisplay.name}</span>
-                              {(competition?.sport as any)?.category_name && (
-                                <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                                  ({(competition?.sport as any).category_name})
-                                </span>
-                              )}
-                            </>
-                          );
-                        })()}
+                        {competition?.sport ? (
+                          <>
+                            <span>{competition.sport.sport_icon}</span>
+                            <span>{competition.sport.name}</span>
+                            {competition.sport.category_name && (
+                              <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                                ({competition.sport.category_name})
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                        )}
                       </div>
                     </Card>
                   </div>

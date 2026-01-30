@@ -1157,10 +1157,10 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                     const seasonSlugOrId = periodPathKey(seasonFromList || comp.parent_period) || seasonId;
                     const compSlugOrId = periodPathKey(comp) || comp.id;
 
-                    // Sport display: prefer comp.sport, fallback to org sport
-                    const orgSport = (orgFromList as any)?.sport;
+                    // Competition shows its own sport VARIANT only (not org category as fallback)
+                    // If competition has no sport variant assigned, show "—"
                     const compSport = (comp as any).sport;
-                    const sportDisplay = compSport || orgSport;
+                    const sportDisplay = compSport || null;
 
                     const teamBasePath = clubSlugOrId
                       ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`

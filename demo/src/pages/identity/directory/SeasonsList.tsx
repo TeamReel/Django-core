@@ -802,11 +802,12 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                     const rowOrgSlugOrId = String(orgFromList?.slug || (org as any)?.slug || orgId || '').trim();
                     const orgForRowRoutes = rowOrgSlugOrId || orgKeyForRoutes;
 
-                    const orgSport = (orgFromList as any)?.sport || (org as any)?.sport;
-                    const sportCategoryName = (season as any).sport?.category_name;
-                    const sportDisplay = sportCategoryName
-                      ? { name: sportCategoryName, sport_icon: (season as any).sport?.sport_icon }
-                      : orgSport;
+                    // Season shows its own sport VARIANT only (not org category as fallback)
+                    // If season has no sport variant assigned, show "—"
+                    const seasonSport = (season as any).sport;
+                    const sportDisplay = seasonSport
+                      ? { name: seasonSport.name, sport_icon: seasonSport.sport_icon, category_name: seasonSport.category_name }
+                      : null;
 
                     const clubSlugOrId = (clubObj as any)?.slug || clubId;
                     const teamSlugOrId = (teamObj as any)?.slug || String(teamId || '').trim();
@@ -920,6 +921,14 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                         </td>
 
                         <td style={compactTdStyle}>
+                          {sportDisplay?.category_name ? (
+                            <span style={{ fontSize: '12px' }}>{sportDisplay.category_name}</span>
+                          ) : (
+                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                          )}
+                        </td>
+
+                        <td style={compactTdStyle}>
                           {sportDisplay ? (
                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <span>{sportDisplay.sport_icon}</span>
@@ -928,10 +937,6 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                           ) : (
                             <span style={{ color: 'var(--app-muted-text)' }}>—</span>
                           )}
-                        </td>
-
-                        <td style={compactTdStyle}>
-                          <Badge variant="default">{(season as any).sport ? 1 : 0}</Badge>
                         </td>
                         <td style={compactTdStyle}>
                             <Badge variant="default">
