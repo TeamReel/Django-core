@@ -1345,9 +1345,29 @@ export const OrganisationDetailPage: React.FC = () => {
       throw new Error(detail || `Failed to update organisation (${response.status})`);
     }
 
+    // PATCH responses are sometimes lightweight and may omit nested fields like `sport`.
+    // Refetch to ensure the details card updates immediately without a full page refresh.
     const raw = await response.json().catch(() => null);
     const updatedOrg = (raw as any)?.data || raw;
     if (updatedOrg) setOrg(updatedOrg);
+
+    invalidateFetchAllPagesCache();
+    try {
+      const refreshedRes = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+      if (refreshedRes.ok) {
+        const refreshedRaw = await refreshedRes.json().catch(() => null);
+        const refreshed = (refreshedRaw as any)?.data || refreshedRaw;
+        if (refreshed) setOrg(refreshed);
+      }
+    } catch {
+      // Best-effort; leave optimistic state if refresh fails.
+    }
   };
 
   // Lazy load members only when Users tab is active (performance optimization)

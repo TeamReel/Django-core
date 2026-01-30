@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSports } from '../../hooks/useSports';
 
 export interface PeriodLike {
@@ -39,22 +39,34 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
 
   const { variants, loading: sportsLoading } = useSports();
 
+  // Some endpoints/pages pass a wrapped API response shape like { data: { ...periodFields } }.
+  // Detect that and unwrap it so the form pre-fills correctly.
+  const resolvedPeriod: any = useMemo(() => {
+    if (!period) return null;
+    const candidate: any = period;
+    const inner: any = candidate?.data;
+    if (!candidate?.id && inner && typeof inner === 'object' && inner.id) {
+      return inner;
+    }
+    return candidate;
+  }, [period]);
+
   useEffect(() => {
-    if (!opened || !period) return;
-    setName(period.name ?? '');
-    setDescription(period.description ?? '');
-    setStartDate(period.start_date ?? '');
-    setEndDate(period.end_date ?? '');
-    const data = (period as any).data ?? (period as any).metadata ?? {};
+    if (!opened || !resolvedPeriod) return;
+    setName(resolvedPeriod.name ?? '');
+    setDescription(resolvedPeriod.description ?? '');
+    setStartDate(resolvedPeriod.start_date ?? '');
+    setEndDate(resolvedPeriod.end_date ?? '');
+    const data = (resolvedPeriod as any).data ?? (resolvedPeriod as any).metadata ?? {};
     setType(String((data as any)?.type ?? ''));
 
-    const currentSportId = String((period as any)?.sport_id ?? (period as any)?.sport?.id ?? '').trim();
+    const currentSportId = String((resolvedPeriod as any)?.sport_id ?? (resolvedPeriod as any)?.sport?.id ?? '').trim();
     setSelectedSportId(currentSportId);
     setInitialSportId(currentSportId);
     setError(null);
-  }, [opened, period]);
+  }, [opened, resolvedPeriod]);
 
-  if (!opened || !period) return null;
+  if (!opened || !resolvedPeriod) return null;
 
   async function handleSave() {
     setSaving(true);
@@ -69,7 +81,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
 
       // Keep existing metadata but update its "type" when provided.
       if (type !== '') {
-        payload.data = { ...(period as any).data, type };
+        payload.data = { ...(resolvedPeriod as any).data, type };
       }
 
       if (showSportVariant && selectedSportId !== initialSportId) {

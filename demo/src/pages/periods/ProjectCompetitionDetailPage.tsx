@@ -1179,7 +1179,14 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   }, [competition, matches.length]);
 
   const savePeriodEdits = async (periodToEdit: any, patch: any) => {
-    const periodId = String(periodToEdit?.id || '').trim();
+    const periodId = String(
+      periodToEdit?.id ||
+        periodToEdit?.period_id ||
+        periodToEdit?.uuid ||
+        periodToEdit?.data?.id ||
+        periodToEdit?.data?.data?.id ||
+        ''
+    ).trim();
     if (!periodId) throw new Error('Missing period id');
 
     const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(periodId)}/`, {
@@ -1203,6 +1210,13 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     if (String(updated?.id) === String(competition?.id)) {
       setCompetition((prev) => (prev ? ({ ...(prev as any), ...(updated as any) } as any) : (updated as any)));
     }
+
+    // Keep the edit modal source object aligned with server response so reopening shows correct values.
+    setSelectedEditPeriod((prev: any) => {
+      const prevId = String(prev?.id || prev?.data?.id || '').trim();
+      const nextId = String(updated?.id || updated?.data?.id || '').trim();
+      return prevId && nextId && prevId === nextId ? updated : prev;
+    });
   };
 
   const saveMatchEdits = async (matchToEdit: any, patch: any) => {
