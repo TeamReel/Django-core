@@ -68,6 +68,16 @@ class Organisation(models.Model):
         help_text="Allow users in this organisation to toggle between light and dark themes",
     )
 
+    # Sport category (e.g., Football, Handball) - organisation-wide setting
+    sport = models.ForeignKey(
+        "sport_configuration.Sport",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="organisations",
+        help_text="Primary sport category for this organisation (e.g., Football, Handball)",
+    )
+
     # Master data storage
     metadata = models.JSONField(
         default=dict,

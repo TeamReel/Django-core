@@ -26,6 +26,16 @@ class Period(models.Model):
         - Organisation → Season → Month → Week
         - Fiscal Year → Quarter → Month
         - Academic Year → Semester → Period
+
+    Sport Hierarchy (TeamReel):
+        - Season: usually no sport (inherits from team)
+        - Competition: specific sport variant (e.g., Football 11v11, Futsal 5v5)
+
+        This allows a team to participate in multiple formats within one season:
+        - Ajax 1 → Season 2024/2025
+            - Eredivisie (Football 11v11)
+            - KNVB Beker (Football 11v11)
+            - Summer Tournament (Football 7v7)
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -47,6 +57,14 @@ class Period(models.Model):
         null=True,
         blank=True,
         help_text="Parent in hierarchy. NULL = root period.",
+    )
+    sport = models.ForeignKey(
+        "sport_configuration.Sport",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="periods",
+        help_text="Sport variant for this period (typically set on Competition, not Season).",
     )
     name = models.CharField(max_length=200, help_text='Display name (e.g., "Seizoen 2023/2024")')
     description = models.TextField(blank=True, default="")

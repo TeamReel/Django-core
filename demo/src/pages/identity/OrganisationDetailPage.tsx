@@ -1824,6 +1824,19 @@ export const OrganisationDetailPage: React.FC = () => {
                   <div className="text-base text-gray-900 mt-1">{org?.name || '—'}</div>
                 </div>
                 <div>
+                  <div className="text-sm font-medium text-gray-500">Sport</div>
+                  <div className="text-base text-gray-900 mt-1" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {org?.sport ? (
+                      <>
+                        <span>{org.sport.sport_icon}</span>
+                        <span>{org.sport.name}</span>
+                      </>
+                    ) : (
+                      '—'
+                    )}
+                  </div>
+                </div>
+                <div>
                   <div className="text-sm font-medium text-gray-500">Type</div>
                   <div className="text-base text-gray-900 mt-1">{org?.metadata?.type || '—'}</div>
                 </div>

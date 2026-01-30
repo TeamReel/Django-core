@@ -207,6 +207,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
     admin_count = serializers.SerializerMethodField()
     project_count = serializers.SerializerMethodField()
     user_role = serializers.SerializerMethodField()
+    sport = serializers.SerializerMethodField()
 
     class Meta:
         model = Organisation
@@ -224,9 +225,21 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "project_count",
             "user_role",
             "enable_theme_toggle",
+            "sport",
             "metadata",
         ]
         read_only_fields = fields
+
+    def get_sport(self, obj):
+        """Return nested sport representation (category-level)."""
+        if obj.sport:
+            return {
+                "id": str(obj.sport.id),
+                "name": obj.sport.name,
+                "slug": obj.sport.slug,
+                "sport_icon": obj.sport.sport_icon,
+            }
+        return None
 
     def get_member_count(self, obj):
         """Return count of active members (direct org + project members)."""
@@ -269,7 +282,10 @@ class OrganisationCreateSerializer(serializers.ModelSerializer):
     Validates:
     - name: 3-100 chars, unique, alphanumeric + spaces/hyphens/underscores
     - description: optional
+    - sport_id: optional UUID for sport category
     """
+
+    sport_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Organisation
@@ -280,6 +296,7 @@ class OrganisationCreateSerializer(serializers.ModelSerializer):
             "description",
             "is_active",
             "enable_theme_toggle",
+            "sport_id",
             "metadata",
         ]
         read_only_fields = ["id", "slug"]

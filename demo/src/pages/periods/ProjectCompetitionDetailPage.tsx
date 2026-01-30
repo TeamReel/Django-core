@@ -37,6 +37,14 @@ type Period = {
   children_count?: number;
   matches_count?: number;
   children_matches_count?: number;
+  sport?: {
+    id: string;
+    name: string;
+    slug: string;
+    sport_icon: string;
+    is_variant: boolean;
+    category_name: string | null;
+  } | null;
 };
 
 type Project = {
@@ -1780,9 +1788,21 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                       <div className="text-2xl font-bold mt-1">{members.length}</div>
                     </Card>
                     <Card style={{ padding: '16px' }}>
-                      <div className="text-sm font-medium text-gray-500">Status</div>
-                      <div className="text-sm font-semibold mt-1">
-                        <Badge variant="default">Competition</Badge>
+                      <div className="text-sm font-medium text-gray-500">Sport Variant</div>
+                      <div className="text-sm font-semibold mt-1" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {competition?.sport ? (
+                          <>
+                            <span>{competition.sport.sport_icon}</span>
+                            <span>{competition.sport.name}</span>
+                            {competition.sport.category_name && (
+                              <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                                ({competition.sport.category_name})
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                        )}
                       </div>
                     </Card>
                   </div>

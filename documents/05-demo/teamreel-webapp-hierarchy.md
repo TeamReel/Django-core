@@ -73,7 +73,15 @@ graph TD
 - **Model:** `Project`
 - **Club:** `parent_project = NULL`
 - **Team:** `parent_project = <club>`
+- **Sport:** `sport = <Sport>` (FK, inherited: team erft van club indien niet gezet)
 - **Belangrijk:** In TeamReel hebben clubs meestal **0 directe memberships**; memberships horen op team.
+
+### 3.2b Sport Configuration (B32)
+- **Model:** `Sport`, `SportConfiguration`, `OutfitConfiguration`
+- **Sport:** Defines sport type (Football 11v11, Futsal 5v5, etc.)
+- **SportConfiguration:** Team sizes, positions, formations per sport
+- **OutfitConfiguration:** Club/team colors (home, away, goalkeeper)
+- **Inheritance:** Team erft sport + outfit van Club indien niet expliciet gezet
 
 ### 3.3 Seasons & Competitions (Periods)
 - **Model:** `Period`
@@ -89,6 +97,14 @@ graph TD
 - **Model:** `Activity`
 - **Match:** `project = <team>` en `period = <competition>` en `activity_type = 'match'`
 - **Aanbevolen:** `opponent_project_id` als FK voor tegenstander-selectie (cross-club read).
+
+### 3.6 Content Generation (B31)
+- **Model:** `ContentTemplate`, `ContentItem`, `ContentApproval`
+- **ContentTemplate:** Herbruikbare templates (Pre-Match Post, Line-up Video, etc.)
+  - Kan sport-specifiek zijn via `sport` FK
+  - Types: `pre_match`, `during_match`, `post_match`, `promotional`, `announcement`
+- **ContentItem:** Gegenereerde content instantie (gekoppeld aan template + match)
+- **ContentApproval:** Review workflow voor content (draft → review → approved/rejected)
 
 ---
 
@@ -132,7 +148,8 @@ Deze URL’s zijn bedoeld als richtlijn voor een “echte” webapp (navigatie v
 - Search
 - Organisations (Bonds)
 - Clubs & Teams
-- Content + Create Content
+- **Content Studio** (B31: templates, generated items, approvals)
+- **Sport Settings** (B32: sport config, outfits - admin only)
 - Notifications
 - Profile
 

@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { useSports } from '../../hooks/useSports';
 
 interface OrganisationCreateModalProps {
   opened: boolean;
   onClose: () => void;
-  onCreate: (orgData: { name: string; description?: string }) => Promise<void>;
+  onCreate: (orgData: { name: string; description?: string; sport_id?: string | null }) => Promise<void>;
 }
 
 export default function OrganisationCreateModal({
@@ -13,15 +14,18 @@ export default function OrganisationCreateModal({
 }: OrganisationCreateModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [sportId, setSportId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const { categories, loading: sportsLoading } = useSports();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      await onCreate({ name, description });
+      await onCreate({ name, description, sport_id: sportId });
       setName('');
       setDescription('');
+      setSportId(null);
       onClose();
     } catch (error) {
       console.error(error);
@@ -118,6 +122,39 @@ export default function OrganisationCreateModal({
                 }}
                 disabled={saving}
               />
+            </div>
+
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '4px',
+                  fontWeight: 500,
+                  color: 'var(--app-text)',
+                }}
+              >
+                Sport
+              </label>
+              <select
+                value={sportId || ''}
+                onChange={(e) => setSportId(e.target.value || null)}
+                disabled={saving || sportsLoading}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-input-bg)',
+                  color: 'var(--app-text)',
+                }}
+              >
+                <option value="">— Select sport —</option>
+                {categories.map((sport) => (
+                  <option key={sport.id} value={sport.id}>
+                    {sport.sport_icon} {sport.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

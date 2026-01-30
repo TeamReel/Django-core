@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSports } from '../../hooks/useSports';
 
 interface Organisation {
   id: string;
@@ -6,18 +7,23 @@ interface Organisation {
   slug?: string;
   description?: string;
   is_active?: boolean;
+  sport?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 interface OrganisationEditModalProps {
   opened: boolean;
   onClose: () => void;
   organisation: Organisation | null;
-  onSave: (orgData: Partial<Organisation>) => Promise<void>;
+  onSave: (orgData: Partial<Organisation> & { sport_id?: string | null }) => Promise<void>;
 }
 
 export default function OrganisationEditModal({ opened, onClose, organisation, onSave }: OrganisationEditModalProps) {
-  const [formData, setFormData] = useState<Partial<Organisation>>({});
+  const [formData, setFormData] = useState<Partial<Organisation> & { sport_id?: string | null }>({});
   const [saving, setSaving] = useState(false);
+  const { categories, loading: sportsLoading } = useSports();
 
   useEffect(() => {
     if (organisation) {
@@ -26,6 +32,7 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
         slug: organisation.slug,
         description: organisation.description,
         is_active: organisation.is_active,
+        sport_id: organisation.sport?.id || null,
       });
     }
   }, [organisation]);
@@ -134,6 +141,30 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
                 />
                 Active
               </label>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500, color: 'var(--app-text)' }}>Sport</label>
+              <select
+                value={formData.sport_id || ''}
+                onChange={(e) => setFormData({ ...formData, sport_id: e.target.value || null })}
+                disabled={sportsLoading}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-input-bg)',
+                  color: 'var(--app-text)'
+                }}
+              >
+                <option value="">— No sport selected —</option>
+                {categories.map((sport) => (
+                  <option key={sport.id} value={sport.id}>
+                    {sport.sport_icon} {sport.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

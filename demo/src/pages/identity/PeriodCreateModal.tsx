@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { useSports } from '../../hooks/useSports';
 
 type OrgOption = { id: string; name: string; slug?: string };
 type ProjectOption = {
@@ -23,6 +24,7 @@ export interface PeriodCreatePayload {
   organisation_id?: string;
   project_id?: string;
   parent_period_id?: string;
+  sport_id?: string;
 }
 
 interface PeriodCreateModalProps {
@@ -39,6 +41,7 @@ interface PeriodCreateModalProps {
   requireClub?: boolean;
   requireTeam?: boolean;
   requireSeason?: boolean;
+  showSportVariant?: boolean;
 
   initialOrganisationId?: string;
   initialClubId?: string;
@@ -58,6 +61,7 @@ export default function PeriodCreateModal({
   requireClub = false,
   requireTeam = false,
   requireSeason = false,
+  showSportVariant = false,
   initialOrganisationId = '',
   initialClubId = '',
   initialTeamId = '',
@@ -66,6 +70,12 @@ export default function PeriodCreateModal({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedSportId, setSelectedSportId] = useState('');
+
+  const { variants, loading: sportsLoading } = useSports();
   const [endDate, setEndDate] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -242,11 +252,13 @@ export default function PeriodCreateModal({
         organisation_id: selectedOrganisationId || undefined,
         project_id: selectedTeamId || undefined,
         parent_period_id: selectedSeasonId || undefined,
+        sport_id: showSportVariant && selectedSportId ? selectedSportId : undefined,
       });
       setName('');
       setDescription('');
       setStartDate('');
       setEndDate('');
+      setSelectedSportId('');
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create');
@@ -511,6 +523,34 @@ export default function PeriodCreateModal({
                 resize: 'vertical',
               }}
             />
+
+            {showSportVariant && (
+              <>
+                <label style={{ fontWeight: 600 }} htmlFor="period-create-sport">
+                  Sport Variant
+                </label>
+                <select
+                  id="period-create-sport"
+                  value={selectedSportId}
+                  onChange={(e) => setSelectedSportId(e.target.value)}
+                  disabled={saving || sportsLoading}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-surface-2)',
+                    color: 'var(--app-text)',
+                  }}
+                >
+                  <option value="">— Select sport variant —</option>
+                  {variants.map((sport) => (
+                    <option key={sport.id} value={sport.id}>
+                      {sport.sport_icon} {sport.name} {sport.category_name ? `(${sport.category_name})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
           </div>
 
           {error && <div style={{ marginTop: '12px', color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}

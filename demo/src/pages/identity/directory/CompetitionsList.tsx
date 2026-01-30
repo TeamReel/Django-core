@@ -1227,6 +1227,7 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
         requireClub
         requireTeam
         requireSeason
+        showSportVariant
         initialOrganisationId={selectedOrgId}
         initialClubId={selectedClubId}
         initialTeamId={selectedTeamId}

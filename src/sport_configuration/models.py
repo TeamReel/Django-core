@@ -3,6 +3,18 @@ Models for B32 Sport Configuration & Templates.
 
 This module provides sport-specific configuration for team sizes, player positions,
 outfit variants, and template validation rules. Supports multi-sport platforms.
+
+Hierarchy:
+- SportCategory (Organisation level): "Football", "Handball", "Basketball"
+- Sport (Team level): "Football 11v11", "Futsal 5v5", "Football 7v7"
+
+Example:
+    KNVB (Organisation)
+    └── sport_category: Football ⚽
+        └── Ajax (Club)
+            ├── Ajax 1 → sport: Football 11v11
+            ├── Ajax Futsal → sport: Futsal 5v5
+            └── Ajax U10 → sport: Football 7v7
 """
 
 from __future__ import annotations
@@ -13,20 +25,32 @@ from django.db import models
 
 class Sport(models.Model):
     """
-    Platform-wide sport/discipline definition.
+    Sport definition with optional parent for hierarchical structure.
 
-    Master data for sport types like Football 11v11, Futsal, Handball, Basketball, etc.
-    Each sport has associated configuration rules (team size, positions, formations).
+    Two-level hierarchy:
+    - Category (parent_sport=NULL): "Football", "Handball", "Basketball"
+    - Variant (parent_sport=Category): "Football 11v11", "Futsal 5v5", "Football 7v7"
+
+    Categories are assigned at Organisation level.
+    Variants are assigned at Team level.
     """
 
     name = models.CharField(
         max_length=100,
-        help_text="Human-readable sport name (e.g., 'Football 11v11')",
+        help_text="Human-readable sport name (e.g., 'Football' or 'Football 11v11')",
     )
     slug = models.SlugField(
         max_length=100,
         unique=True,
-        help_text="URL-safe identifier (e.g., 'football-11')",
+        help_text="URL-safe identifier (e.g., 'football' or 'football-11v11')",
+    )
+    parent_sport = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="variants",
+        help_text="Parent sport category. NULL = this is a category, SET = this is a variant",
     )
     federation_metadata = models.JSONField(
         default=dict,
@@ -52,25 +76,51 @@ class Sport(models.Model):
         ordering = ["name"]
         verbose_name = "Sport"
         verbose_name_plural = "Sports"
+        indexes = [
+            models.Index(fields=["parent_sport"], name="idx_sport_parent"),
+        ]
 
     def __str__(self) -> str:
         """Return human-readable string representation."""
         return self.name
 
+    @property
+    def is_category(self) -> bool:
+        """Return True if this is a sport category (no parent)."""
+        return self.parent_sport is None
+
+    @property
+    def is_variant(self) -> bool:
+        """Return True if this is a sport variant (has parent)."""
+        return self.parent_sport is not None
+
+    @property
+    def category(self) -> "Sport":
+        """Return the category (self if category, parent if variant)."""
+        return self.parent_sport if self.parent_sport else self
+
+    def get_all_variants(self) -> models.QuerySet["Sport"]:
+        """Return all variants if this is a category, empty if variant."""
+        if self.is_category:
+            return self.variants.filter(is_active=True)
+        return Sport.objects.none()
+
 
 class SportConfiguration(models.Model):
     """
-    Configuration rules for a specific sport.
+    Configuration rules for a specific sport variant.
 
     Defines team composition rules, player positions, formations, and outfit types.
-    Has a 1:1 relationship with Sport.
+    Has a 1:1 relationship with Sport (typically only variants have configurations).
+
+    Categories may have a default configuration that variants can override.
     """
 
     sport = models.OneToOneField(
         Sport,
         on_delete=models.CASCADE,
         related_name="configuration",
-        help_text="Sport this configuration applies to",
+        help_text="Sport (variant) this configuration applies to",
     )
     team_size_min = models.PositiveIntegerField(
         default=1,
@@ -99,6 +149,24 @@ class SportConfiguration(models.Model):
     has_goalkeeper = models.BooleanField(
         default=True,
         help_text="Whether this sport has a designated goalkeeper",
+    )
+    # Variant-specific rules
+    pitch_type = models.CharField(
+        max_length=50,
+        default="outdoor_large",
+        help_text="Pitch type: outdoor_large, outdoor_small, indoor, court",
+    )
+    has_corner_kicks = models.BooleanField(
+        default=True,
+        help_text="Whether this variant has corner kicks (False for futsal)",
+    )
+    has_offside = models.BooleanField(
+        default=True,
+        help_text="Whether offside rule applies (False for some variants)",
+    )
+    match_duration_minutes = models.PositiveIntegerField(
+        default=90,
+        help_text="Standard match duration in minutes",
     )
     metadata = models.JSONField(
         default=dict,

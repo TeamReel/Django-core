@@ -44,6 +44,12 @@ export interface Organisation {
   updated_at?: string;
   logo_url?: string;
   user_role?: 'admin' | 'member';
+  sport?: {
+    id: string;
+    name: string;
+    slug: string;
+    sport_icon: string;
+  };
   metadata?: {
     type?: string;
     country?: string;

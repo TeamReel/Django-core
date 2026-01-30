@@ -51,6 +51,12 @@ class SportSerializer(serializers.ModelSerializer):
     """
 
     configuration = SportConfigurationSerializer(read_only=True)
+    parent_sport_id = serializers.PrimaryKeyRelatedField(
+        source="parent_sport", queryset=Sport.objects.all(), required=False, allow_null=True
+    )
+    is_category = serializers.SerializerMethodField()
+    is_variant = serializers.SerializerMethodField()
+    category_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Sport
@@ -59,13 +65,36 @@ class SportSerializer(serializers.ModelSerializer):
             "name",
             "slug",
             "sport_icon",
+            "parent_sport_id",
+            "is_category",
+            "is_variant",
+            "category_name",
             "federation_metadata",
             "is_active",
             "configuration",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "is_category",
+            "is_variant",
+            "category_name",
+        ]
+
+    def get_is_category(self, obj: Sport) -> bool:
+        """Returns True if this sport is a category (no parent)."""
+        return obj.is_category
+
+    def get_is_variant(self, obj: Sport) -> bool:
+        """Returns True if this sport is a variant (has parent)."""
+        return obj.is_variant
+
+    def get_category_name(self, obj: Sport) -> str | None:
+        """Returns the parent category name if this is a variant."""
+        return obj.category.name if obj.is_variant and obj.category else None
 
 
 class SportCreateSerializer(serializers.ModelSerializer):

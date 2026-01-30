@@ -2985,6 +2985,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           requireClub
           requireTeam
           requireSeason
+          showSportVariant
           initialOrganisationId={String(org?.id || '')}
           initialClubId={String((club as any)?.id || '')}
           initialTeamId={String((project as any)?.id || '')}
@@ -3012,6 +3013,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 description: payload.description,
                 start_date: payload.start_date,
                 end_date: payload.end_date,
+                sport_id: payload.sport_id || undefined,
                 metadata: { type: 'competition' },
               }),
             });

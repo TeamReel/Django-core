@@ -62,10 +62,12 @@ Represents the main institutional entity.
 Represents the specific squad or functional unit (e.g., First Team, U21, Women's Team).
 *   **Model:** `Project` (with `parent_project` set to Club)
 *   **Parent:** Club Project
+*   **Sport:** `sport` FK to `Sport` (inherits from Club if not set)
 *   **Examples:** `Ajax 1`, `Bayern München 1. Mannschaft`, `Inter Milan 1a Squadra`.
 *   **Key Characteristics:**
     *   This is the primary "Work Unit".
     *   Seasons and Memberships are attached here.
+    *   Sport configuration drives template availability and validation.
 *   **Metadata (Required):**
     *   `team_type`: `"field_11v11"`, `"field_8v8"`, `"field_6v6"`, `"futsal"`, `"basketball_5v5"` (CRITICAL: Drives template availability. e.g. No corner kicks in futsal; smaller pitch image for 6v6).
     *   `gender`: `"male"`, `"female"`, `"mixed"`.
@@ -84,22 +86,101 @@ The main time-bound container for a yearly campaign.
 Specific contexts within a season (League, Cup, Friendly).
 *   **Model:** `Period` (with `parent_period` set to Season)
 *   **Parent:** Season Period
-*   **Examples:** `Eredivisie` (NL), `Bundesliga` (DE), `KNVB Beker`.
+*   **Sport:** `sport` FK to `Sport` (variant) - **THIS IS WHERE SPORT VARIANT LIVES**
+*   **Examples:** `Eredivisie` (NL), `Bundesliga` (DE), `KNVB Beker`, `Summer 7v7 Tournament`.
 *   **Metadata:**
-    *   `type`: `"league"`, `"cup"`, `"friendly"`.
+    *   `type`: `"league"`, `"cup"`, `"friendly"`, `"tournament"`.
 *   **Key Characteristics:**
     *   Matches are linked to this specific period context.
+    *   Sport variant determines which templates are available.
+    *   Same team can have different sport variants across competitions!
 
 ### Level 6: Match (Activity)
 The actual event.
 *   **Model:** `Activity`
 *   **Linked Project:** The Team (e.g., Ajax 1)
 *   **Linked Period:** The Competition (e.g., Eredivisie)
+*   **Sport:** Inherited from Competition's `sport` field
 *   **Key Fields:**
     *   `title`: `"Ajax vs PSV"`
     *   `activity_type`: `"match"`
     *   `start_time`: Timezone-aware datetime.
     *   `metadata`: Contains scores, home/away flags, etc.
+
+### Level 7: Sport Configuration (B32)
+Defines sport-specific rules, positions, formations, and outfit types.
+
+**Hierarchical Structure:**
+```
+SportCategory (Organisation level)     SportVariant (Competition level)
+────────────────────────────────────────────────────────────────────────
+Football ⚽                         →  Football 11v11, Futsal 5v5, Football 7v7
+Handball 🤾                         →  Indoor Handball
+Basketball 🏀                       →  Basketball 5v5
+Hockey 🏒                           →  Ice Hockey, Field Hockey
+```
+
+*   **Models:** `Sport`, `SportConfiguration`, `OutfitConfiguration`
+*   **Sport (Category):** Main sport type, assigned at Organisation level
+    *   `parent_sport = NULL`
+    *   Examples: Football, Handball, Basketball
+*   **Sport (Variant):** Specific discipline, assigned at **Competition level**
+    *   `parent_sport = <Category>`
+    *   Examples: Football 11v11, Futsal 5v5, Football 7v7
+*   **SportConfiguration:** Rules per variant (only variants have configs):
+    *   `team_size_min`, `team_size_max`, `max_substitutes`
+    *   `positions`: ["GK", "LB", "CB", "RB", "CM", "LW", "RW", "ST", ...]
+    *   `formations`: {"4-3-3": {...}, "4-4-2": {...}}
+    *   `outfit_types`: ["home", "away", "goalkeeper", "third_kit"]
+    *   `pitch_type`: "outdoor_large", "outdoor_small", "indoor", "court"
+    *   `has_corner_kicks`: True/False (False for futsal)
+    *   `has_offside`: True/False
+    *   `match_duration_minutes`: 90, 40, 50, etc.
+*   **OutfitConfiguration:** Club/Team specific colors:
+    *   `outfit_type`: "home", "away", "goalkeeper"
+    *   `colors`: {"primary": "#FFFFFF", "secondary": "#000000"}
+    *   Inheritance: Team erft van Club indien niet expliciet gezet
+
+**Hierarchy Application (Sport Variant on Competition):**
+```
+Organisation (KNVB)
+    └── Implicit sport_category via clubs: Football ⚽
+
+Club (Ajax)
+    └── OutfitConfigurations: home/away/goalkeeper
+
+Team (Ajax 1)
+    └── Season 2024/2025
+          │
+          ├── Competition: Eredivisie
+          │     └── sport: Football 11v11 ⚽
+          │     └── Matches use 11v11 templates
+          │
+          ├── Competition: KNVB Beker
+          │     └── sport: Football 11v11 ⚽
+          │     └── Matches use 11v11 templates
+          │
+          └── Competition: Summer Tournament 7v7
+                └── sport: Football 7v7 ⚽
+                └── Matches use 7v7 templates (no offside stats!)
+```
+
+**Key Benefit:** Same team can participate in different formats within one season!
+
+### Level 8: Content Generation (B31)
+Templates and generated content for matches and teams.
+*   **Model:** `ContentTemplate`, `ContentItem`, `ContentApproval`
+*   **ContentTemplate:** Reusable content blueprints
+    *   `template_type`: "pre_match", "during_match", "post_match", "promotional"
+    *   `sport`: Optional FK - sport-specific templates
+    *   `tone`: "professional", "exciting", "casual"
+    *   `content_template`: Jinja2/Django template string
+*   **ContentItem:** Generated content instance
+    *   Links to: `template`, `project` (team), `activity` (match)
+    *   `status`: "draft", "pending_review", "approved", "rejected", "published"
+    *   `generated_content`: The actual rendered content
+*   **ContentApproval:** Review workflow
+    *   `reviewer`, `status`, `feedback_text`
 
 ---
 

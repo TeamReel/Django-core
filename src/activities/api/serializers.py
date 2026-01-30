@@ -20,6 +20,7 @@ class PeriodSerializer(serializers.ModelSerializer):
     project = serializers.SerializerMethodField()
     parent_period = serializers.SerializerMethodField()
     created_by = serializers.SerializerMethodField()
+    sport = serializers.SerializerMethodField()
 
     # Annotated counts (populated by ViewSet queryset annotation). These are
     # SerializerMethodFields so missing annotations never crash production.
@@ -40,6 +41,7 @@ class PeriodSerializer(serializers.ModelSerializer):
     organisation_id = serializers.UUIDField(write_only=True)
     project_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
     parent_period_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    sport_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Period
@@ -51,6 +53,8 @@ class PeriodSerializer(serializers.ModelSerializer):
             "project_id",
             "parent_period",
             "parent_period_id",
+            "sport",
+            "sport_id",
             "name",
             "description",
             "start_date",
@@ -140,6 +144,21 @@ class PeriodSerializer(serializers.ModelSerializer):
             return {
                 "id": str(obj.created_by.id),
                 "name": obj.created_by.get_full_name() or obj.created_by.email,
+            }
+        return None
+
+    def get_sport(self, obj):
+        """Return nested sport representation (for competition-level sport variant)"""
+        if obj.sport:
+            return {
+                "id": str(obj.sport.id),
+                "name": obj.sport.name,
+                "slug": obj.sport.slug,
+                "sport_icon": obj.sport.sport_icon,
+                "is_variant": obj.sport.is_variant,
+                "category_name": obj.sport.category.name
+                if obj.sport.is_variant and obj.sport.category
+                else None,
             }
         return None
 
