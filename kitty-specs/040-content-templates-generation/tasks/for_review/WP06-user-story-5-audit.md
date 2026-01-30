@@ -1,7 +1,7 @@
 ---
 work_package_id: WP06
 title: User Story 5 - Audit Trail
-lane: doing
+lane: for_review
 subtasks: [T033, T034, T035]
 priority: P3
 estimated_effort: 0.5 days
@@ -14,6 +14,10 @@ history:
     action: moved_to_doing
     author: github-copilot
     note: "Started WP06: Audit Trail implementation"
+  - date: 2026-01-30T07:21:00Z
+    action: moved_to_for_review
+    author: github-copilot
+    note: "Completed T033-T035: Audit signals and event types registered"
 ---
 
 # WP06: Audit Trail Integration
