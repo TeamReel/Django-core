@@ -1,9 +1,21 @@
 """
-Service layer for B32 Sport Configuration.
+Sport configuration services.
 
-This module will contain:
-- SportValidationService: Team size, position, and formation validation
-- OutfitLookupService: Outfit retrieval with Club→Team fallback
-
-Implemented in WP02.
+Provides validation and lookup services for sport configurations.
 """
+
+from .outfits import OutfitLookupService
+from .validation import (
+    SportValidationService,
+    ValidationIssue,
+    ValidationLevel,
+    ValidationResult,
+)
+
+__all__ = [
+    "ValidationLevel",
+    "ValidationIssue",
+    "ValidationResult",
+    "SportValidationService",
+    "OutfitLookupService",
+]
