@@ -44,8 +44,11 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
 
   // Filter variants by organisation sport category if provided
   const filteredVariants = useMemo(() => {
-    if (!organisationSportId) return variants;
-    return getVariantsForCategory(organisationSportId);
+    const categoryId = String(organisationSportId || '').trim();
+    if (!categoryId) return variants;
+    const filtered = getVariantsForCategory(categoryId);
+    // If no variants found for category, fall back to all variants
+    return filtered.length > 0 ? filtered : variants;
   }, [variants, organisationSportId, getVariantsForCategory]);
 
   const firstNonEmptyString = (...values: any[]): string => {

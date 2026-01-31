@@ -93,7 +93,7 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             queryset = (
                 Organisation.objects.all()
                 .exclude(name__contains="_del_")  # Exclude soft-deleted
-                .select_related("creator")
+                .select_related("creator", "sport")
                 .prefetch_related("memberships", "projects")
             )
         elif self._has_cross_org_view_permission():
@@ -102,7 +102,7 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             queryset = (
                 Organisation.objects.all()
                 .exclude(name__contains="_del_")
-                .select_related("creator")
+                .select_related("creator", "sport")
                 .prefetch_related("memberships", "projects")
             )
         else:
@@ -111,7 +111,7 @@ class OrganisationViewSet(viewsets.ModelViewSet):
                     memberships__user=self.request.user, memberships__is_active=True
                 )
                 .exclude(name__contains="_del_")  # Exclude soft-deleted
-                .select_related("creator")
+                .select_related("creator", "sport")
                 .prefetch_related("memberships", "projects")
                 .distinct()
             )

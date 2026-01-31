@@ -124,7 +124,9 @@ export function useSports(): UseSportsReturn {
   // Get variants for a specific category
   const getVariantsForCategory = useCallback(
     (categoryId: string): Sport[] => {
-      return sports.filter((sport) => sport.parent_sport_id === categoryId);
+      if (!categoryId) return [];
+      const normalizedCategoryId = String(categoryId).trim();
+      return sports.filter((sport) => String(sport.parent_sport_id || '').trim() === normalizedCategoryId);
     },
     [sports]
   );
