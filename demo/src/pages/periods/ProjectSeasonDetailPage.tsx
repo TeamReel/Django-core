@@ -3305,35 +3305,36 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           >
             <div
               style={{
-                backgroundColor: 'white',
+                backgroundColor: '#1e293b',
                 padding: '32px',
                 borderRadius: '8px',
                 maxWidth: '600px',
                 width: '90%',
                 maxHeight: '90vh',
                 overflow: 'auto',
+                color: '#f1f5f9',
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 style={{ marginTop: 0, marginBottom: '24px', fontSize: '24px', fontWeight: 600 }}>
+              <h2 style={{ marginTop: 0, marginBottom: '24px', fontSize: '24px', fontWeight: 600, color: '#f1f5f9' }}>
                 Edit Member Roles
               </h2>
 
               <div style={{ marginBottom: '24px' }}>
-                <div style={{ marginBottom: '16px' }}>
-                  <strong>Name:</strong>{' '}
+                <div style={{ marginBottom: '16px', color: '#e2e8f0' }}>
+                  <strong style={{ color: '#cbd5e1' }}>Name:</strong>{' '}
                   {selectedEditMember.user?.name ||
                     `${selectedEditMember.user?.first_name || ''} ${selectedEditMember.user?.last_name || ''}`.trim() ||
                     selectedEditMember.user?.email ||
                     '—'}
                 </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <strong>Email:</strong> {selectedEditMember.user?.email || '—'}
+                <div style={{ marginBottom: '16px', color: '#e2e8f0' }}>
+                  <strong style={{ color: '#cbd5e1' }}>Email:</strong> {selectedEditMember.user?.email || '—'}
                 </div>
               </div>
 
               <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', marginBottom: '12px', fontWeight: 600 }}>
+                <label style={{ display: 'block', marginBottom: '12px', fontWeight: 600, color: '#f1f5f9' }}>
                   Functional Roles
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
@@ -3349,11 +3350,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           alignItems: 'center',
                           gap: '8px',
                           padding: '12px',
-                          border: '1px solid #e5e7eb',
+                          border: '1px solid #475569',
                           borderRadius: '6px',
                           cursor: 'pointer',
-                          backgroundColor: isChecked ? '#eff6ff' : 'white',
-                          borderColor: isChecked ? '#3b82f6' : '#e5e7eb',
+                          backgroundColor: isChecked ? '#1e40af' : '#334155',
+                          borderColor: isChecked ? '#3b82f6' : '#475569',
                         }}
                       >
                         <input
@@ -3380,7 +3381,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           }}
                           style={{ cursor: 'pointer' }}
                         />
-                        <span style={{ textTransform: 'capitalize' }}>{role}</span>
+                        <span style={{ textTransform: 'capitalize', color: '#f1f5f9' }}>{role}</span>
                       </label>
                     );
                   })}
@@ -3393,8 +3394,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   style={{
                     padding: '10px 20px',
                     borderRadius: '6px',
-                    border: '1px solid #e5e7eb',
-                    backgroundColor: 'white',
+                    border: '1px solid #475569',
+                    backgroundColor: '#334155',
+                    color: '#f1f5f9',
                     cursor: 'pointer',
                     fontSize: '14px',
                   }}

@@ -213,14 +213,20 @@ export default function ContentGenerationModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    // Try to get project ID from matchData or season
+    // Try to get project ID and season ID
     const projectId = matchData?.project?.id || season?.project_id;
+    const seasonId = season?.id;
     if (!projectId) return;
 
     const fetchSeasonSquad = async () => {
       try {
-        // Fetch project members instead of period participations
-        const response = await fetch(`${getApiBaseUrl()}/api/v1/projects/${projectId}/members/`, {
+        // Fetch season-specific project members (filtered by period_id)
+        let url = `${getApiBaseUrl()}/api/v1/projects/${projectId}/members/`;
+        if (seasonId) {
+          url += `?period_id=${seasonId}`;
+        }
+
+        const response = await fetch(url, {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -236,7 +242,7 @@ export default function ContentGenerationModal({
     };
 
     fetchSeasonSquad();
-  }, [isOpen, matchData?.project?.id, season?.project_id]);
+  }, [isOpen, matchData?.project?.id, season?.project_id, season?.id]);
 
   // Reset state when opening
   useEffect(() => {
