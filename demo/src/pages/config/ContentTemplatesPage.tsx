@@ -240,12 +240,18 @@ export default function ContentTemplatesPage() {
 
         if (templatesRes.ok) {
           const data = await templatesRes.json();
-          setTemplates(data.results || data || []);
+          // Handle both paginated ({results: []}) and non-paginated ([]) responses
+          const templateList = Array.isArray(data) ? data : (data.results || []);
+          setTemplates(templateList);
+        } else {
+          console.error('Templates fetch failed:', templatesRes.status, await templatesRes.text());
+          setTemplates([]);
         }
 
         if (sportsRes.ok) {
           const data = await sportsRes.json();
-          setSports(data.results || data || []);
+          const sportList = Array.isArray(data) ? data : (data.results || []);
+          setSports(sportList);
         }
       } catch (e) {
         console.error('Failed to fetch data:', e);
