@@ -238,6 +238,9 @@ export default function ContentTemplatesPage() {
   const [editingTemplate, setEditingTemplate] = useState<ContentTemplate | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Modal tab state
+  const [modalTab, setModalTab] = useState<'basic' | 'requirements'>('basic');
+
   // Edit form state
   const [editForm, setEditForm] = useState({
     name: '',
@@ -245,26 +248,35 @@ export default function ContentTemplatesPage() {
     template_type: 'pre_match',
     template_subtype: '',
     sport: null as number | null,
-    formation: null as number | null,
+    sport_category: null as number | null,
+    formation_code: '',  // Free text field for formation code like "4-3-3"
     style_variant: '',
     ai_workflow_id: '',
     is_active: true,
+    input_requirements: {} as Record<string, any>,
   });
 
   // Update form when editing template changes
   useEffect(() => {
     if (editingTemplate) {
+      // Find sport category from sport
+      const currentSport = sports.find(s => s.id === editingTemplate.sport);
+      const categoryId = currentSport?.parent_sport_id || (currentSport?.is_category ? currentSport.id : null);
+
       setEditForm({
         name: editingTemplate.name,
         description: editingTemplate.description || '',
         template_type: editingTemplate.template_type,
         template_subtype: editingTemplate.template_subtype || '',
         sport: editingTemplate.sport,
-        formation: editingTemplate.formation,
+        sport_category: categoryId,
+        formation_code: editingTemplate.formation_detail?.code || '',
         style_variant: editingTemplate.style_variant || '',
         ai_workflow_id: editingTemplate.ai_workflow_id,
         is_active: editingTemplate.is_active,
+        input_requirements: editingTemplate.input_requirements || {},
       });
+      setModalTab('basic');
     } else {
       setEditForm({
         name: '',
@@ -272,11 +284,14 @@ export default function ContentTemplatesPage() {
         template_type: 'pre_match',
         template_subtype: '',
         sport: null,
-        formation: null,
+        sport_category: null,
+        formation_code: '',
         style_variant: '',
         ai_workflow_id: '',
         is_active: true,
+        input_requirements: {},
       });
+      setModalTab('basic');
     }
   }, [editingTemplate]);
 
@@ -363,8 +378,19 @@ export default function ContentTemplatesPage() {
   }, [sports]);
 
   // Get variants for a specific sport category
-  const getVariantsForCategory = (categoryId: number) => {
+  const getVariantsForCategory = (categoryId: number | null) => {
+    if (!categoryId) return [];
     return sportCategories.variants.filter(v => v.parent_sport_id === categoryId);
+  };
+
+  // Get subtypes for selected template type (cascading filter)
+  const getSubtypesForType = (templateType: string): { value: string; label: string }[] => {
+    const category = TEMPLATE_CATEGORIES.find(c => c.types?.includes(templateType));
+    if (!category?.subtypes) return [];
+    return category.subtypes.map(st => ({
+      value: st,
+      label: SUBTYPE_LABELS[st] || st,
+    }));
   };
 
   // Get formations for selected sport (sport_id from Formation matches Sport id)
@@ -494,6 +520,15 @@ export default function ContentTemplatesPage() {
         ? `${apiBaseUrl}/api/v1/content-generation/templates/${editingTemplate.id}/`
         : `${apiBaseUrl}/api/v1/content-generation/templates/`;
 
+      // Find formation ID by code if provided
+      let formationId: number | null = null;
+      if (editForm.formation_code) {
+        const matchingFormation = formationsForSelectedSport.find(
+          f => f.code.toLowerCase() === editForm.formation_code.toLowerCase()
+        );
+        formationId = matchingFormation?.id || null;
+      }
+
       const res = await fetch(url, {
         method: isEditing ? 'PATCH' : 'POST',
         headers: {
@@ -507,10 +542,11 @@ export default function ContentTemplatesPage() {
           template_type: editForm.template_type,
           template_subtype: editForm.template_subtype || null,
           sport: editForm.sport,
-          formation: editForm.formation,
+          formation: formationId,
           style_variant: editForm.style_variant || null,
           ai_workflow_id: editForm.ai_workflow_id || null,
           is_active: editForm.is_active,
+          input_requirements: editForm.input_requirements,
         }),
       });
 
@@ -800,239 +836,502 @@ export default function ContentTemplatesPage() {
           }}
         >
           <Card
-            style={{ width: '600px', maxHeight: '90vh', overflow: 'auto' }}
+            style={{ width: '700px', maxHeight: '90vh', overflow: 'auto' }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ marginBottom: '20px' }}>
+            <h2 style={{ marginBottom: '16px' }}>
               {editingTemplate ? 'Edit Template' : 'Create Template'}
             </h2>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* Name */}
-              <div>
-                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
-                  Name *
-                </label>
-                <Input
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  placeholder="e.g., Lineup 4-3-3 - Modern"
-                />
-              </div>
+            {/* Modal Tabs */}
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', borderBottom: '1px solid var(--app-border)' }}>
+              <button
+                onClick={() => setModalTab('basic')}
+                style={{
+                  padding: '10px 20px',
+                  border: 'none',
+                  background: modalTab === 'basic' ? 'var(--app-primary)' : 'transparent',
+                  color: modalTab === 'basic' ? 'white' : 'var(--app-text)',
+                  borderRadius: '6px 6px 0 0',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                }}
+              >
+                📝 Basic Info
+              </button>
+              <button
+                onClick={() => setModalTab('requirements')}
+                style={{
+                  padding: '10px 20px',
+                  border: 'none',
+                  background: modalTab === 'requirements' ? 'var(--app-primary)' : 'transparent',
+                  color: modalTab === 'requirements' ? 'white' : 'var(--app-text)',
+                  borderRadius: '6px 6px 0 0',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                }}
+              >
+                📋 Input Requirements
+              </button>
+            </div>
 
-              {/* Description */}
-              <div>
-                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
-                  Description
-                </label>
-                <textarea
-                  value={editForm.description}
-                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  placeholder="Template description..."
-                  rows={3}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-bg)',
-                    color: 'var(--app-text)',
-                    fontSize: '14px',
-                    resize: 'vertical',
-                  }}
-                />
-              </div>
-
-              {/* Template Type & Subtype - side by side */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            {/* Basic Info Tab */}
+            {modalTab === 'basic' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Name */}
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
-                    Type *
-                  </label>
-                  <select
-                    value={editForm.template_type}
-                    onChange={(e) => setEditForm({ ...editForm, template_type: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      border: '1px solid var(--app-border)',
-                      backgroundColor: 'var(--app-bg)',
-                      color: 'var(--app-text)',
-                      fontSize: '14px',
-                    }}
-                  >
-                    <option value="pre_match">Pre Match</option>
-                    <option value="post_match">Post Match</option>
-                    <option value="announcement">Announcement</option>
-                    <option value="promotion">Promotion</option>
-                    <option value="social">Social</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
-                    Subtype
-                  </label>
-                  <select
-                    value={editForm.template_subtype}
-                    onChange={(e) => setEditForm({ ...editForm, template_subtype: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      border: '1px solid var(--app-border)',
-                      backgroundColor: 'var(--app-bg)',
-                      color: 'var(--app-text)',
-                      fontSize: '14px',
-                    }}
-                  >
-                    <option value="">-- None --</option>
-                    <option value="lineup">Lineup</option>
-                    <option value="flyer">Flyer</option>
-                    <option value="score">Score</option>
-                    <option value="stats">Stats</option>
-                    <option value="highlight">Highlight</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Sport Category & Variant - side by side */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
-                    Sport Category
-                  </label>
-                  <select
-                    value={sports.find(s => s.id === editForm.sport)?.parent_sport_id || editForm.sport || ''}
-                    onChange={(e) => {
-                      const categoryId = e.target.value ? Number(e.target.value) : null;
-                      // When category changes, reset sport to first variant of that category
-                      const variants = categoryId ? getVariantsForCategory(categoryId) : [];
-                      const firstVariant = variants[0];
-                      setEditForm({
-                        ...editForm,
-                        sport: firstVariant?.id || categoryId,
-                        formation: null, // Reset formation when sport changes
-                      });
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      border: '1px solid var(--app-border)',
-                      backgroundColor: 'var(--app-bg)',
-                      color: 'var(--app-text)',
-                      fontSize: '14px',
-                    }}
-                  >
-                    <option value="">-- Select Sport --</option>
-                    {sportCategories.categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
-                    Sport Variant
-                  </label>
-                  <select
-                    value={editForm.sport || ''}
-                    onChange={(e) => setEditForm({
-                      ...editForm,
-                      sport: e.target.value ? Number(e.target.value) : null,
-                      formation: null, // Reset formation when sport changes
-                    })}
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      border: '1px solid var(--app-border)',
-                      backgroundColor: 'var(--app-bg)',
-                      color: 'var(--app-text)',
-                      fontSize: '14px',
-                    }}
-                  >
-                    <option value="">-- Select Variant --</option>
-                    {/* Show variants for currently selected sport's category */}
-                    {(() => {
-                      const currentSport = sports.find(s => s.id === editForm.sport);
-                      const categoryId = currentSport?.parent_sport_id || currentSport?.id;
-                      const variants = categoryId ? getVariantsForCategory(categoryId) : sportCategories.variants;
-                      return variants.map(v => (
-                        <option key={v.id} value={v.id}>{v.name}</option>
-                      ));
-                    })()}
-                  </select>
-                </div>
-              </div>
-
-              {/* Formation & Style - side by side */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
-                    Formation
-                  </label>
-                  <select
-                    value={editForm.formation || ''}
-                    onChange={(e) => setEditForm({
-                      ...editForm,
-                      formation: e.target.value ? Number(e.target.value) : null,
-                    })}
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      borderRadius: '6px',
-                      border: '1px solid var(--app-border)',
-                      backgroundColor: 'var(--app-bg)',
-                      color: 'var(--app-text)',
-                      fontSize: '14px',
-                    }}
-                  >
-                    <option value="">-- No Formation --</option>
-                    {formationsForSelectedSport.map(f => (
-                      <option key={f.id} value={f.id}>{f.code} - {f.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
-                    Style Variant
+                    Name *
                   </label>
                   <Input
-                    value={editForm.style_variant}
-                    onChange={(e) => setEditForm({ ...editForm, style_variant: e.target.value })}
-                    placeholder="e.g., Modern, Classic, Bold"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    placeholder="e.g., Lineup 4-3-3 - Modern"
                   />
                 </div>
-              </div>
 
-              {/* AI Workflow ID */}
-              <div>
-                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
-                  AI Workflow ID
-                </label>
-                <Input
-                  value={editForm.ai_workflow_id}
-                  onChange={(e) => setEditForm({ ...editForm, ai_workflow_id: e.target.value })}
-                  placeholder="e.g., wf_lineup_433_modern"
-                />
-              </div>
+                {/* Description */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    Description
+                  </label>
+                  <textarea
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    placeholder="Template description..."
+                    rows={2}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--app-border)',
+                      backgroundColor: 'var(--app-bg)',
+                      color: 'var(--app-text)',
+                      fontSize: '14px',
+                      resize: 'vertical',
+                    }}
+                  />
+                </div>
 
-              {/* Active Toggle */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input
-                  type="checkbox"
-                  id="is_active"
-                  checked={editForm.is_active}
-                  onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })}
-                  style={{ width: '18px', height: '18px' }}
-                />
-                <label htmlFor="is_active" style={{ fontWeight: 500 }}>Active</label>
+                {/* Template Type & Subtype - cascading */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                      Type *
+                    </label>
+                    <select
+                      value={editForm.template_type}
+                      onChange={(e) => {
+                        const newType = e.target.value;
+                        const availableSubtypes = getSubtypesForType(newType);
+                        // Reset subtype if not available in new type
+                        const subtypeStillValid = availableSubtypes.some(st => st.value === editForm.template_subtype);
+                        setEditForm({
+                          ...editForm,
+                          template_type: newType,
+                          template_subtype: subtypeStillValid ? editForm.template_subtype : '',
+                        });
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--app-border)',
+                        backgroundColor: 'var(--app-bg)',
+                        color: 'var(--app-text)',
+                        fontSize: '14px',
+                      }}
+                    >
+                      <option value="pre_match">Pre Match</option>
+                      <option value="during_match">During Match</option>
+                      <option value="post_match">Post Match</option>
+                      <option value="season">Season</option>
+                      <option value="member">Member</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                      Subtype
+                    </label>
+                    <select
+                      value={editForm.template_subtype}
+                      onChange={(e) => setEditForm({ ...editForm, template_subtype: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--app-border)',
+                        backgroundColor: 'var(--app-bg)',
+                        color: 'var(--app-text)',
+                        fontSize: '14px',
+                      }}
+                    >
+                      <option value="">-- None --</option>
+                      {getSubtypesForType(editForm.template_type).map(st => (
+                        <option key={st.value} value={st.value}>{st.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Sport Category & Variant - cascading */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                      Sport Category
+                    </label>
+                    <select
+                      value={editForm.sport_category || ''}
+                      onChange={(e) => {
+                        const categoryId = e.target.value ? Number(e.target.value) : null;
+                        // When category changes, show variants but don't auto-select
+                        setEditForm({
+                          ...editForm,
+                          sport_category: categoryId,
+                          sport: null, // Reset variant
+                          formation_code: '', // Reset formation
+                        });
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--app-border)',
+                        backgroundColor: 'var(--app-bg)',
+                        color: 'var(--app-text)',
+                        fontSize: '14px',
+                      }}
+                    >
+                      <option value="">-- Select Sport --</option>
+                      {sportCategories.categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                      Sport Variant
+                    </label>
+                    <select
+                      value={editForm.sport || ''}
+                      onChange={(e) => setEditForm({
+                        ...editForm,
+                        sport: e.target.value ? Number(e.target.value) : null,
+                        formation_code: '', // Reset formation when sport changes
+                      })}
+                      disabled={!editForm.sport_category}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--app-border)',
+                        backgroundColor: !editForm.sport_category ? 'var(--app-bg-muted)' : 'var(--app-bg)',
+                        color: 'var(--app-text)',
+                        fontSize: '14px',
+                        opacity: !editForm.sport_category ? 0.6 : 1,
+                      }}
+                    >
+                      <option value="">-- Select Variant --</option>
+                      {getVariantsForCategory(editForm.sport_category).map(v => (
+                        <option key={v.id} value={v.id}>{v.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Formation & Style - formation is now free text */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                      Formation Code
+                    </label>
+                    <Input
+                      value={editForm.formation_code}
+                      onChange={(e) => setEditForm({ ...editForm, formation_code: e.target.value })}
+                      placeholder="e.g., 4-3-3, 4-4-2, 3-5-2"
+                    />
+                    {editForm.formation_code && formationsForSelectedSport.length > 0 && (
+                      <div style={{ fontSize: '12px', color: 'var(--app-text-muted)', marginTop: '4px' }}>
+                        {formationsForSelectedSport.some(f => f.code.toLowerCase() === editForm.formation_code.toLowerCase())
+                          ? '✓ Matches existing formation'
+                          : '⚠ New formation code (will be created)'}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                      Style Variant
+                    </label>
+                    <Input
+                      value={editForm.style_variant}
+                      onChange={(e) => setEditForm({ ...editForm, style_variant: e.target.value })}
+                      placeholder="e.g., Modern, Classic, Bold"
+                    />
+                  </div>
+                </div>
+
+                {/* AI Workflow ID */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    AI Workflow ID
+                  </label>
+                  <Input
+                    value={editForm.ai_workflow_id}
+                    onChange={(e) => setEditForm({ ...editForm, ai_workflow_id: e.target.value })}
+                    placeholder="e.g., wf_lineup_433_modern"
+                  />
+                </div>
+
+                {/* Active Toggle */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="checkbox"
+                    id="is_active"
+                    checked={editForm.is_active}
+                    onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })}
+                    style={{ width: '18px', height: '18px' }}
+                  />
+                  <label htmlFor="is_active" style={{ fontWeight: 500 }}>Active</label>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Input Requirements Tab */}
+            {modalTab === 'requirements' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <p style={{ color: 'var(--app-text-muted)', margin: 0 }}>
+                  Define what inputs are required for this template to generate content.
+                </p>
+
+                {/* Players Section */}
+                <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', padding: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <input
+                      type="checkbox"
+                      id="req_players"
+                      checked={!!editForm.input_requirements?.players}
+                      onChange={(e) => {
+                        const newReqs = { ...editForm.input_requirements };
+                        if (e.target.checked) {
+                          newReqs.players = { use_formation: true, min_count: 1 };
+                        } else {
+                          delete newReqs.players;
+                        }
+                        setEditForm({ ...editForm, input_requirements: newReqs });
+                      }}
+                      style={{ width: '18px', height: '18px' }}
+                    />
+                    <label htmlFor="req_players" style={{ fontWeight: 600, fontSize: '15px' }}>
+                      👥 Players Required
+                    </label>
+                  </div>
+                  {editForm.input_requirements?.players && (
+                    <div style={{ marginLeft: '26px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="checkbox"
+                          checked={editForm.input_requirements.players.use_formation !== false}
+                          onChange={(e) => {
+                            const newReqs = { ...editForm.input_requirements };
+                            newReqs.players = { ...newReqs.players, use_formation: e.target.checked };
+                            setEditForm({ ...editForm, input_requirements: newReqs });
+                          }}
+                        />
+                        Use formation positions
+                      </label>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          Min:
+                          <input
+                            type="number"
+                            min="1"
+                            max="30"
+                            value={editForm.input_requirements.players.min_count || 1}
+                            onChange={(e) => {
+                              const newReqs = { ...editForm.input_requirements };
+                              newReqs.players = { ...newReqs.players, min_count: parseInt(e.target.value) || 1 };
+                              setEditForm({ ...editForm, input_requirements: newReqs });
+                            }}
+                            style={{ width: '60px', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--app-border)' }}
+                          />
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          Max:
+                          <input
+                            type="number"
+                            min="1"
+                            max="30"
+                            value={editForm.input_requirements.players.max_count || 11}
+                            onChange={(e) => {
+                              const newReqs = { ...editForm.input_requirements };
+                              newReqs.players = { ...newReqs.players, max_count: parseInt(e.target.value) || 11 };
+                              setEditForm({ ...editForm, input_requirements: newReqs });
+                            }}
+                            style={{ width: '60px', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--app-border)' }}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Staff Section */}
+                <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', padding: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <input
+                      type="checkbox"
+                      id="req_staff"
+                      checked={!!editForm.input_requirements?.staff}
+                      onChange={(e) => {
+                        const newReqs = { ...editForm.input_requirements };
+                        if (e.target.checked) {
+                          newReqs.staff = [{ role: 'head_coach', required: true, count: 1 }];
+                        } else {
+                          delete newReqs.staff;
+                        }
+                        setEditForm({ ...editForm, input_requirements: newReqs });
+                      }}
+                      style={{ width: '18px', height: '18px' }}
+                    />
+                    <label htmlFor="req_staff" style={{ fontWeight: 600, fontSize: '15px' }}>
+                      👔 Staff Required
+                    </label>
+                  </div>
+                  {editForm.input_requirements?.staff && (
+                    <div style={{ marginLeft: '26px', color: 'var(--app-text-muted)', fontSize: '13px' }}>
+                      Coach and staff members will be included
+                    </div>
+                  )}
+                </div>
+
+                {/* Match Data Section */}
+                <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', padding: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <input
+                      type="checkbox"
+                      id="req_match"
+                      checked={!!editForm.input_requirements?.match_data}
+                      onChange={(e) => {
+                        const newReqs = { ...editForm.input_requirements };
+                        if (e.target.checked) {
+                          newReqs.match_data = { required: ['opponent', 'date', 'time', 'venue'] };
+                        } else {
+                          delete newReqs.match_data;
+                        }
+                        setEditForm({ ...editForm, input_requirements: newReqs });
+                      }}
+                      style={{ width: '18px', height: '18px' }}
+                    />
+                    <label htmlFor="req_match" style={{ fontWeight: 600, fontSize: '15px' }}>
+                      ⚽ Match Data Required
+                    </label>
+                  </div>
+                  {editForm.input_requirements?.match_data && (
+                    <div style={{ marginLeft: '26px', color: 'var(--app-text-muted)', fontSize: '13px' }}>
+                      Opponent, date, time, venue information
+                    </div>
+                  )}
+                </div>
+
+                {/* Organisation Assets Section */}
+                <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', padding: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <input
+                      type="checkbox"
+                      id="req_org_assets"
+                      checked={!!editForm.input_requirements?.organisation_assets}
+                      onChange={(e) => {
+                        const newReqs = { ...editForm.input_requirements };
+                        if (e.target.checked) {
+                          newReqs.organisation_assets = {
+                            required: [{ type: 'logo', label: 'Club Logo' }],
+                          };
+                        } else {
+                          delete newReqs.organisation_assets;
+                        }
+                        setEditForm({ ...editForm, input_requirements: newReqs });
+                      }}
+                      style={{ width: '18px', height: '18px' }}
+                    />
+                    <label htmlFor="req_org_assets" style={{ fontWeight: 600, fontSize: '15px' }}>
+                      🏢 Organisation Assets Required
+                    </label>
+                  </div>
+                  {editForm.input_requirements?.organisation_assets && (
+                    <div style={{ marginLeft: '26px', color: 'var(--app-text-muted)', fontSize: '13px' }}>
+                      Club logo and branding assets
+                    </div>
+                  )}
+                </div>
+
+                {/* Output Settings */}
+                <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', padding: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontWeight: 600, fontSize: '15px' }}>
+                    📤 Output Format
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px' }}>Type</label>
+                      <select
+                        value={editForm.input_requirements?.output?.type || 'image'}
+                        onChange={(e) => {
+                          const newReqs = { ...editForm.input_requirements };
+                          newReqs.output = { ...newReqs.output, type: e.target.value, format: e.target.value === 'image' ? 'png' : 'mp4' };
+                          setEditForm({ ...editForm, input_requirements: newReqs });
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '6px 10px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--app-border)',
+                          backgroundColor: 'var(--app-bg)',
+                          color: 'var(--app-text)',
+                        }}
+                      >
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px' }}>Aspect Ratio</label>
+                      <select
+                        value={editForm.input_requirements?.output?.dimensions?.aspect_ratio || '9:16'}
+                        onChange={(e) => {
+                          const newReqs = { ...editForm.input_requirements };
+                          const ratio = e.target.value;
+                          let width = 1080, height = 1920;
+                          if (ratio === '1:1') { width = 1080; height = 1080; }
+                          else if (ratio === '16:9') { width = 1920; height = 1080; }
+                          else if (ratio === '4:5') { width = 1080; height = 1350; }
+                          newReqs.output = {
+                            ...newReqs.output,
+                            dimensions: { width, height, aspect_ratio: ratio },
+                          };
+                          setEditForm({ ...editForm, input_requirements: newReqs });
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '6px 10px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--app-border)',
+                          backgroundColor: 'var(--app-bg)',
+                          color: 'var(--app-text)',
+                        }}
+                      >
+                        <option value="9:16">9:16 (Story/Reels)</option>
+                        <option value="1:1">1:1 (Square)</option>
+                        <option value="16:9">16:9 (Landscape)</option>
+                        <option value="4:5">4:5 (Portrait)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '24px' }}>
