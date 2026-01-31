@@ -1143,8 +1143,8 @@ export default function ContentTemplatesPage() {
                   {/* Functional Roles Grid */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {/* Keeper */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'center' }}>
-                      <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'start' }}>
+                      <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px', paddingTop: '6px' }}>
                         🧤 Goalkeeper
                       </label>
                       <select
@@ -1159,7 +1159,7 @@ export default function ContentTemplatesPage() {
                             newReqs.members.goalkeeper = {
                               ...newReqs.members.goalkeeper,
                               count,
-                              asset_type: newReqs.members.goalkeeper?.asset_type || 'in_tenue',
+                              asset_types: newReqs.members.goalkeeper?.asset_types || ['in_tenue'],
                             };
                           }
                           setEditForm({ ...editForm, input_requirements: newReqs });
@@ -1168,32 +1168,54 @@ export default function ContentTemplatesPage() {
                       >
                         {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
-                      <select
-                        value={editForm.input_requirements?.members?.goalkeeper?.asset_type || 'in_tenue'}
-                        onChange={(e) => {
-                          const newReqs = { ...editForm.input_requirements };
-                          if (!newReqs.members) newReqs.members = {};
-                          if (newReqs.members.goalkeeper) {
-                            newReqs.members.goalkeeper.asset_type = e.target.value;
-                            setEditForm({ ...editForm, input_requirements: newReqs });
-                          }
-                        }}
-                        disabled={!editForm.input_requirements?.members?.goalkeeper?.count}
-                        style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)', opacity: !editForm.input_requirements?.members?.goalkeeper?.count ? 0.5 : 1 }}
-                      >
-                        <option value="profile_photo">Profile Photo</option>
-                        <option value="in_tenue">In Tenue</option>
-                        <option value="full_body">Full Body</option>
-                        <option value="close_up">Close-up</option>
-                        <option value="short_intro">Short Intro</option>
-                        <option value="celebration">Celebration</option>
-                        <option value="legacy">Legacy</option>
-                      </select>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {['profile_photo', 'in_tenue', 'full_body', 'close_up', 'short_intro', 'celebration', 'legacy'].map(assetType => {
+                          const isChecked = editForm.input_requirements?.members?.goalkeeper?.asset_types?.includes(assetType) ?? false;
+                          const isDisabled = !editForm.input_requirements?.members?.goalkeeper?.count;
+                          return (
+                            <label
+                              key={assetType}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                border: `1px solid ${isChecked ? 'var(--app-primary, #3b82f6)' : 'var(--app-border)'}`,
+                                backgroundColor: isChecked ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                opacity: isDisabled ? 0.5 : 1,
+                                fontSize: '13px',
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                disabled={isDisabled}
+                                onChange={(e) => {
+                                  const newReqs = { ...editForm.input_requirements };
+                                  if (newReqs.members?.goalkeeper) {
+                                    const currentTypes = newReqs.members.goalkeeper.asset_types || [];
+                                    if (e.target.checked) {
+                                      newReqs.members.goalkeeper.asset_types = [...currentTypes, assetType];
+                                    } else {
+                                      newReqs.members.goalkeeper.asset_types = currentTypes.filter(t => t !== assetType);
+                                    }
+                                    setEditForm({ ...editForm, input_requirements: newReqs });
+                                  }
+                                }}
+                                style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+                              />
+                              {assetType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     {/* Players */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'center' }}>
-                      <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'start' }}>
+                      <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px', paddingTop: '6px' }}>
                         ⚽ Players
                       </label>
                       <select
@@ -1208,7 +1230,7 @@ export default function ContentTemplatesPage() {
                             newReqs.members.player = {
                               ...newReqs.members.player,
                               count,
-                              asset_type: newReqs.members.player?.asset_type || 'in_tenue',
+                              asset_types: newReqs.members.player?.asset_types || ['in_tenue'],
                             };
                           }
                           setEditForm({ ...editForm, input_requirements: newReqs });
@@ -1217,32 +1239,54 @@ export default function ContentTemplatesPage() {
                       >
                         {[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
-                      <select
-                        value={editForm.input_requirements?.members?.player?.asset_type || 'in_tenue'}
-                        onChange={(e) => {
-                          const newReqs = { ...editForm.input_requirements };
-                          if (!newReqs.members) newReqs.members = {};
-                          if (newReqs.members.player) {
-                            newReqs.members.player.asset_type = e.target.value;
-                            setEditForm({ ...editForm, input_requirements: newReqs });
-                          }
-                        }}
-                        disabled={!editForm.input_requirements?.members?.player?.count}
-                        style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)', opacity: !editForm.input_requirements?.members?.player?.count ? 0.5 : 1 }}
-                      >
-                        <option value="profile_photo">Profile Photo</option>
-                        <option value="in_tenue">In Tenue</option>
-                        <option value="full_body">Full Body</option>
-                        <option value="close_up">Close-up</option>
-                        <option value="short_intro">Short Intro</option>
-                        <option value="celebration">Celebration</option>
-                        <option value="legacy">Legacy</option>
-                      </select>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {['profile_photo', 'in_tenue', 'full_body', 'close_up', 'short_intro', 'celebration', 'legacy'].map(assetType => {
+                          const isChecked = editForm.input_requirements?.members?.player?.asset_types?.includes(assetType) ?? false;
+                          const isDisabled = !editForm.input_requirements?.members?.player?.count;
+                          return (
+                            <label
+                              key={assetType}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                border: `1px solid ${isChecked ? 'var(--app-primary, #3b82f6)' : 'var(--app-border)'}`,
+                                backgroundColor: isChecked ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                opacity: isDisabled ? 0.5 : 1,
+                                fontSize: '13px',
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                disabled={isDisabled}
+                                onChange={(e) => {
+                                  const newReqs = { ...editForm.input_requirements };
+                                  if (newReqs.members?.player) {
+                                    const currentTypes = newReqs.members.player.asset_types || [];
+                                    if (e.target.checked) {
+                                      newReqs.members.player.asset_types = [...currentTypes, assetType];
+                                    } else {
+                                      newReqs.members.player.asset_types = currentTypes.filter(t => t !== assetType);
+                                    }
+                                    setEditForm({ ...editForm, input_requirements: newReqs });
+                                  }
+                                }}
+                                style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+                              />
+                              {assetType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     {/* Coach */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'center' }}>
-                      <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'start' }}>
+                      <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px', paddingTop: '6px' }}>
                         👔 Coach
                       </label>
                       <select
@@ -1257,7 +1301,7 @@ export default function ContentTemplatesPage() {
                             newReqs.members.coach = {
                               ...newReqs.members.coach,
                               count,
-                              asset_type: newReqs.members.coach?.asset_type || 'profile_photo',
+                              asset_types: newReqs.members.coach?.asset_types || ['profile_photo'],
                             };
                           }
                           setEditForm({ ...editForm, input_requirements: newReqs });
@@ -1266,32 +1310,54 @@ export default function ContentTemplatesPage() {
                       >
                         {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
-                      <select
-                        value={editForm.input_requirements?.members?.coach?.asset_type || 'profile_photo'}
-                        onChange={(e) => {
-                          const newReqs = { ...editForm.input_requirements };
-                          if (!newReqs.members) newReqs.members = {};
-                          if (newReqs.members.coach) {
-                            newReqs.members.coach.asset_type = e.target.value;
-                            setEditForm({ ...editForm, input_requirements: newReqs });
-                          }
-                        }}
-                        disabled={!editForm.input_requirements?.members?.coach?.count}
-                        style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)', opacity: !editForm.input_requirements?.members?.coach?.count ? 0.5 : 1 }}
-                      >
-                        <option value="profile_photo">Profile Photo</option>
-                        <option value="in_tenue">In Tenue</option>
-                        <option value="full_body">Full Body</option>
-                        <option value="close_up">Close-up</option>
-                        <option value="short_intro">Short Intro</option>
-                        <option value="celebration">Celebration</option>
-                        <option value="legacy">Legacy</option>
-                      </select>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {['profile_photo', 'in_tenue', 'full_body', 'close_up', 'short_intro', 'celebration', 'legacy'].map(assetType => {
+                          const isChecked = editForm.input_requirements?.members?.coach?.asset_types?.includes(assetType) ?? false;
+                          const isDisabled = !editForm.input_requirements?.members?.coach?.count;
+                          return (
+                            <label
+                              key={assetType}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                border: `1px solid ${isChecked ? 'var(--app-primary, #3b82f6)' : 'var(--app-border)'}`,
+                                backgroundColor: isChecked ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                opacity: isDisabled ? 0.5 : 1,
+                                fontSize: '13px',
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                disabled={isDisabled}
+                                onChange={(e) => {
+                                  const newReqs = { ...editForm.input_requirements };
+                                  if (newReqs.members?.coach) {
+                                    const currentTypes = newReqs.members.coach.asset_types || [];
+                                    if (e.target.checked) {
+                                      newReqs.members.coach.asset_types = [...currentTypes, assetType];
+                                    } else {
+                                      newReqs.members.coach.asset_types = currentTypes.filter(t => t !== assetType);
+                                    }
+                                    setEditForm({ ...editForm, input_requirements: newReqs });
+                                  }
+                                }}
+                                style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+                              />
+                              {assetType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     {/* Assistant */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'center' }}>
-                      <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'start' }}>
+                      <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px', paddingTop: '6px' }}>
                         📋 Assistant
                       </label>
                       <select
@@ -1306,7 +1372,7 @@ export default function ContentTemplatesPage() {
                             newReqs.members.assistant = {
                               ...newReqs.members.assistant,
                               count,
-                              asset_type: newReqs.members.assistant?.asset_type || 'profile_photo',
+                              asset_types: newReqs.members.assistant?.asset_types || ['profile_photo'],
                             };
                           }
                           setEditForm({ ...editForm, input_requirements: newReqs });
@@ -1315,27 +1381,49 @@ export default function ContentTemplatesPage() {
                       >
                         {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
-                      <select
-                        value={editForm.input_requirements?.members?.assistant?.asset_type || 'profile_photo'}
-                        onChange={(e) => {
-                          const newReqs = { ...editForm.input_requirements };
-                          if (!newReqs.members) newReqs.members = {};
-                          if (newReqs.members.assistant) {
-                            newReqs.members.assistant.asset_type = e.target.value;
-                            setEditForm({ ...editForm, input_requirements: newReqs });
-                          }
-                        }}
-                        disabled={!editForm.input_requirements?.members?.assistant?.count}
-                        style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)', opacity: !editForm.input_requirements?.members?.assistant?.count ? 0.5 : 1 }}
-                      >
-                        <option value="profile_photo">Profile Photo</option>
-                        <option value="in_tenue">In Tenue</option>
-                        <option value="full_body">Full Body</option>
-                        <option value="close_up">Close-up</option>
-                        <option value="short_intro">Short Intro</option>
-                        <option value="celebration">Celebration</option>
-                        <option value="legacy">Legacy</option>
-                      </select>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {['profile_photo', 'in_tenue', 'full_body', 'close_up', 'short_intro', 'celebration', 'legacy'].map(assetType => {
+                          const isChecked = editForm.input_requirements?.members?.assistant?.asset_types?.includes(assetType) ?? false;
+                          const isDisabled = !editForm.input_requirements?.members?.assistant?.count;
+                          return (
+                            <label
+                              key={assetType}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                border: `1px solid ${isChecked ? 'var(--app-primary, #3b82f6)' : 'var(--app-border)'}`,
+                                backgroundColor: isChecked ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                opacity: isDisabled ? 0.5 : 1,
+                                fontSize: '13px',
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                disabled={isDisabled}
+                                onChange={(e) => {
+                                  const newReqs = { ...editForm.input_requirements };
+                                  if (newReqs.members?.assistant) {
+                                    const currentTypes = newReqs.members.assistant.asset_types || [];
+                                    if (e.target.checked) {
+                                      newReqs.members.assistant.asset_types = [...currentTypes, assetType];
+                                    } else {
+                                      newReqs.members.assistant.asset_types = currentTypes.filter(t => t !== assetType);
+                                    }
+                                    setEditForm({ ...editForm, input_requirements: newReqs });
+                                  }
+                                }}
+                                style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+                              />
+                              {assetType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 

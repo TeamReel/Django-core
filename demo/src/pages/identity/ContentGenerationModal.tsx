@@ -27,10 +27,10 @@ export interface ContentTemplate {
   formation_detail?: { code: string; name: string } | null;
   input_requirements?: {
     members?: {
-      goalkeeper?: { count: number; asset_type: string };
-      player?: { count: number; asset_type: string };
-      coach?: { count: number; asset_type: string };
-      assistant?: { count: number; asset_type: string };
+      goalkeeper?: { count: number; asset_types?: string[] };
+      player?: { count: number; asset_types?: string[] };
+      coach?: { count: number; asset_types?: string[] };
+      assistant?: { count: number; asset_types?: string[] };
       use_formation?: boolean;
     };
     match_data?: { required: string[] };
@@ -580,7 +580,8 @@ export default function ContentGenerationModal({
                     if (!req || typeof req === 'boolean' || !req.count) return null;
 
                     const selected = selectedMembers[role];
-                    const assetTypeLabel = req.asset_type ? ASSET_TYPE_LABELS[req.asset_type] || req.asset_type : null;
+                    const assetTypes = req.asset_types || [];
+                    const assetLabels = assetTypes.map(t => ASSET_TYPE_LABELS[t] || t);
 
                     return (
                       <div key={role} className="flex items-center gap-2">
@@ -591,8 +592,8 @@ export default function ContentGenerationModal({
                         </div>
                         <div className="flex-1">
                           <div className="text-sm font-medium">{renderRoleLabel(role)}</div>
-                          {assetTypeLabel && (
-                            <div className="text-xs text-gray-500">{assetTypeLabel}</div>
+                          {assetLabels.length > 0 && (
+                            <div className="text-xs text-gray-500">{assetLabels.join(', ')}</div>
                           )}
                         </div>
                       </div>
@@ -618,7 +619,8 @@ export default function ContentGenerationModal({
 
                 const available = participationsByRole[role] || [];
                 const selected = selectedMembers[role];
-                const assetTypeLabel = req.asset_type ? ASSET_TYPE_LABELS[req.asset_type] || req.asset_type : null;
+                const assetTypes = req.asset_types || [];
+                const assetLabels = assetTypes.map(t => ASSET_TYPE_LABELS[t] || t);
 
                 return (
                   <div key={role} className="border border-gray-300 rounded-lg p-5 shadow-sm">
@@ -633,8 +635,12 @@ export default function ContentGenerationModal({
                           {selected.length} / {req.count} selected
                         </span>
                       </div>
-                      {assetTypeLabel && (
-                        <Badge variant="info" size="sm">📸 {assetTypeLabel}</Badge>
+                      {assetLabels.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {assetLabels.map((label, idx) => (
+                            <Badge key={idx} variant="info" size="sm">📸 {label}</Badge>
+                          ))}
+                        </div>
                       )}
                     </div>
 
