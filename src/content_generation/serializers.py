@@ -93,6 +93,12 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("template_settings must be a valid JSON object")
         return value
 
+    def validate_input_requirements(self, value):
+        """Validate input_requirements is a valid JSON object"""
+        if value is not None and not isinstance(value, dict):
+            raise serializers.ValidationError("input_requirements must be a valid JSON object")
+        return value if value is not None else {}
+
     def validate_sport_type(self, value):
         """
         Validate sport_type against B32 Sport Config if available.
