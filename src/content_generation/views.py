@@ -122,6 +122,38 @@ class ContentTemplateViewSet(ContentTemplatePermissionMixin, viewsets.ModelViewS
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
+    def update(self, request, *args, **kwargs):
+        """Override update to catch and expose errors for debugging."""
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.info(f"ContentTemplateViewSet.update() called with data: {request.data}")
+
+        try:
+            return super().update(request, *args, **kwargs)
+        except Exception as e:
+            logger.exception(f"ContentTemplateViewSet.update() FAILED: {e}")
+            # Re-raise as a validation error so it gets properly formatted
+            from rest_framework.exceptions import ValidationError
+
+            raise ValidationError({"detail": str(e), "error_type": type(e).__name__})
+
+    def partial_update(self, request, *args, **kwargs):
+        """Override partial_update to catch and expose errors for debugging."""
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.info(f"ContentTemplateViewSet.partial_update() called with data: {request.data}")
+
+        try:
+            return super().partial_update(request, *args, **kwargs)
+        except Exception as e:
+            logger.exception(f"ContentTemplateViewSet.partial_update() FAILED: {e}")
+            # Re-raise as a validation error so it gets properly formatted
+            from rest_framework.exceptions import ValidationError
+
+            raise ValidationError({"detail": str(e), "error_type": type(e).__name__})
+
     def destroy(self, request, *args, **kwargs):
         """
         Override delete to prevent deletion of templates with existing ContentItems.
