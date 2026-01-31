@@ -78,8 +78,16 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
         except Exception:
             pass
 
-        # Legacy metadata hints.
+        # Read functional_roles from metadata (primary source for squad page edits)
         meta = getattr(obj, "metadata", None) or {}
+        fr_list = meta.get("functional_roles")
+        if isinstance(fr_list, list):
+            for role_raw in fr_list:
+                role_str = str(role_raw or "").strip().lower()
+                if role_str:
+                    roles.add(role_str)
+
+        # Legacy metadata hints (team_role, character_role).
         for key in ("team_role", "character_role"):
             raw = str(meta.get(key, "") or "").strip().lower()
             if not raw:
