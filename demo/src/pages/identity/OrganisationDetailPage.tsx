@@ -1609,63 +1609,26 @@ export const OrganisationDetailPage: React.FC = () => {
                 </button>
               );
             })()}
-            <button
-              onClick={() => navigate('/federations')}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '4px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 500,
-              }}
-            >
+            <Button variant="secondary" size="sm" onClick={() => navigate('/federations')}>
               Back
-            </button>
-            <button
-              onClick={() => setIsOrgDetailModalOpen(true)}
-              type="button"
-              className="app-action-button"
-              style={{
-                ...actionButtonStyle('primary'),
-                padding: '6px 12px',
-                fontWeight: 500,
-              }}
-            >
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => setIsOrgDetailModalOpen(true)}>
               View
-            </button>
+            </Button>
             {userCanEditOrg && (
-              <button
-                type="button"
-                className="app-action-button"
-                onClick={() => setIsOrgEditModalOpen(true)}
-                style={{
-                  ...actionButtonStyle('warning'),
-                  padding: '6px 12px',
-                  fontWeight: 500,
-                }}
-              >
+              <Button variant="secondary" size="sm" onClick={() => setIsOrgEditModalOpen(true)}>
                 Edit
-              </button>
+              </Button>
             )}
             {userCanEditOrg && (
-              <button
-                type="button"
-                className="app-action-button"
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={handleDelete}
                 disabled={deleteLoading}
-                style={{
-                  ...actionButtonStyle('danger'),
-                  padding: '6px 12px',
-                  fontWeight: 500,
-                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
-                  opacity: deleteLoading ? 0.6 : 1,
-                }}
               >
                 {deleteLoading ? 'Deleting...' : 'Delete'}
-              </button>
+              </Button>
             )}
           </div>
         }

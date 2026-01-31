@@ -202,18 +202,22 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
             )
           : null;
 
+        // If user selected an org but we can't find it in the list yet,
+        // wait for organisations to load rather than falling back to context org.
+        if (selectedOrgId && !selectedOrg) {
+          return '';
+        }
+
         if (orgLocked) {
           return (
             selectedOrg?.slug ||
             lockedOrgSlug ||
-            (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
             ''
           );
         }
         return (
           selectedOrg?.slug ||
-          (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
-          context.organisation?.slug ||
+          (!selectedOrgId ? context.organisation?.slug : '') ||
           ''
         );
       };

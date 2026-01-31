@@ -204,8 +204,41 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
       setError(null);
       const apiBaseUrl = getApiBaseUrl();
 
+      // Resolve org slug for API call
+      const selectedOrg = selectedOrgId
+        ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
+        : null;
+
+      // If user selected an org but we can't find it yet, wait
+      if (selectedOrgId && !selectedOrg) {
+        setClubs([]);
+        setTeams([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const orgSlugForApi = selectedOrg?.slug || '';
+
       try {
-        const [allClubs, allTeams] = await Promise.all([
+        if (orgSlugForApi) {
+          // Org-scoped fetch
+          const [allClubs, allTeams] = await Promise.all([
+            fetchAllPages<ProjectOption>(
+              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=500&parent_project__isnull=true`,
+              { credentials: 'include' },
+              { ttlMs: 120_000, bypass: refreshKey > 0 },
+            ),
+            fetchAllPages<ProjectOption>(
+              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=2000&parent_project__isnull=false`,
+              { credentials: 'include' },
+              { ttlMs: 120_000, bypass: refreshKey > 0 },
+            ),
+          ]);
+          setClubs(allClubs);
+          setTeams(allTeams);
+        } else {
+          // Global fetch only when no org is selected (superadmin view)
+          const [allClubs, allTeams] = await Promise.all([
             fetchAllPages<ProjectOption>(
               `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
               { credentials: 'include' },
@@ -216,9 +249,10 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
               { credentials: 'include' },
               { ttlMs: 120_000, bypass: refreshKey > 0 },
             ),
-        ]);
-        setClubs(allClubs);
-        setTeams(allTeams);
+          ]);
+          setClubs(allClubs);
+          setTeams(allTeams);
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load teams');
       } finally {
@@ -227,7 +261,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
     };
 
     load();
-  }, []);
+  }, [refreshKey, selectedOrgId, organisations]);
 
   // Fetch seasons
   useEffect(() => {

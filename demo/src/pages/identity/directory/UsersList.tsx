@@ -151,7 +151,8 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
         const selectedOrg = selectedOrgId
             ? organisations.find(o => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
             : null;
-        return selectedOrg?.slug || context.organisation?.slug || selectedOrgId;
+        // Only use context org when no explicit selection was made
+        return selectedOrg?.slug || (!selectedOrgId ? context.organisation?.slug : '') || selectedOrgId;
     };
 
     const isUuid = (value: unknown) =>
@@ -223,10 +224,20 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
             const selectedOrg = selectedOrgId
                 ? organisations.find(o => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
                 : null;
+
+            // If user selected an org by ID but we can't find it in the list yet,
+            // wait for organisations to load rather than falling back to context org.
+            if (selectedOrgId && !selectedOrg) {
+                // Org was selected but not found - wait for orgs to load
+                setClubs([]);
+                setTeams([]);
+                return;
+            }
+
+            // Only use context org when no explicit selection was made
             const orgSlugForApi =
                 selectedOrg?.slug ||
-                (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
-                context.organisation?.slug ||
+                (!selectedOrgId ? context.organisation?.slug : '') ||
                 '';
 
             if (!orgSlugForApi) {
@@ -280,18 +291,17 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                 params.set('include_project_membership_details', 'true');
 
                 // Use the organisations/:slug/members/ endpoint.
-                // Prefer the selected org; fall back to the active context org.
+                // Only use context org when no explicit selection was made.
                 let orgSlug =
                     selectedOrg?.slug ||
-                    (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
-                    context.organisation?.slug ||
-                    (organisations.length > 0 ? organisations[0].slug : undefined);
+                    (!selectedOrgId ? context.organisation?.slug : '') ||
+                    '';
 
-                if (!orgSlug && !isSuperAdmin) {
-                     // Should have context check earlier, but safety first
-                     setUsers([]);
-                     setIsLoading(false);
-                     return;
+                // If user selected an org but we couldn't resolve it, wait
+                if (selectedOrgId && !selectedOrg) {
+                    setUsers([]);
+                    setIsLoading(false);
+                    return;
                 }
 
                 // If superadmin has NO org selected, we can't use the org-scoped endpoint easily without a slug.

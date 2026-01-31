@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Alert, Badge, Card, Input } from '@django-core/design-system';
+import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 
 import AppShell from '../../components/AppShell';
@@ -954,30 +954,15 @@ export const UserDetailPage: React.FC = () => {
             >
               Add to…
             </button>
-            <button
-              type="button"
-              className="app-action-button"
-              onClick={() => setIsViewModalOpen(true)}
-              style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '92px' }}
-            >
+            <Button variant="secondary" size="sm" onClick={() => setIsViewModalOpen(true)}>
               View
-            </button>
-            <button
-              type="button"
-              className="app-action-button"
-              onClick={() => setIsEditModalOpen(true)}
-              style={{ ...actionButtonStyle('warning'), padding: '8px 16px', fontSize: '14px', minWidth: '92px' }}
-            >
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => setIsEditModalOpen(true)}>
               Edit
-            </button>
-            <button
-              type="button"
-              className="app-action-button"
-              onClick={handleDeleteUser}
-              style={{ ...actionButtonStyle('danger'), padding: '8px 16px', fontSize: '14px', minWidth: '92px' }}
-            >
+            </Button>
+            <Button variant="secondary" size="sm" onClick={handleDeleteUser}>
               Delete
-            </button>
+            </Button>
           </div>
         }
       />

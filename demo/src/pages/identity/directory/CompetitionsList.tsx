@@ -208,21 +208,25 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
         )
       : null;
 
+    // If user selected an org by ID but we can't find it in the list yet,
+    // wait for organisations to load rather than falling back to context org.
+    if (selectedOrgId && !selectedOrg) {
+      return '';
+    }
+
     // On org-locked pages, do not fall back to context organisation.
     // Context can change asynchronously and would cause cross-org reloads.
     if (orgLocked) {
       return (
         selectedOrg?.slug ||
         lockedOrgSlug ||
-        (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
         ''
       );
     }
 
     return (
       selectedOrg?.slug ||
-      (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
-      context.organisation?.slug ||
+      (!selectedOrgId ? context.organisation?.slug : '') ||
       ''
     );
   };

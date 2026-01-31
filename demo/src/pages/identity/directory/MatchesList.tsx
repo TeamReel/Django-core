@@ -192,19 +192,23 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
       ? organisations.find((o) => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
       : null;
 
+    // If user selected an org by ID but we can't find it in the list yet,
+    // wait for organisations to load rather than falling back to context org.
+    if (selectedOrgId && !selectedOrg) {
+      return '';
+    }
+
     if (orgLocked) {
       return (
         (selectedOrg as any)?.slug ||
         lockedOrgSlug ||
-        (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
         ''
       );
     }
 
     return (
       (selectedOrg as any)?.slug ||
-      (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : '') ||
-      context.organisation?.slug ||
+      (!selectedOrgId ? context.organisation?.slug : '') ||
       ''
     );
   };
@@ -379,6 +383,20 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
   const filteredMatches = useMemo(() => {
     let list = matches;
 
+    // Client-side club/team filtering (safety net for race conditions)
+    if (selectedTeamId) {
+      list = list.filter((m) => String((m as any)?.project?.id) === String(selectedTeamId));
+    } else if (selectedClubId && teams.length > 0) {
+      const clubTeamIds = new Set(
+        teams
+          .filter((t) => getTeamParentId(t) === String(selectedClubId))
+          .map((t) => String(t.id))
+      );
+      if (clubTeamIds.size > 0) {
+        list = list.filter((m) => clubTeamIds.has(String((m as any)?.project?.id)));
+      }
+    }
+
     // Status filter
     if (statusFilter !== 'all') {
       const now = new Date();
@@ -423,7 +441,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
     }
 
     return list;
-  }, [matches, statusFilter, sportFilter, variantFilter, organisations]);
+  }, [matches, statusFilter, sportFilter, variantFilter, organisations, selectedTeamId, selectedClubId, teams]);
 
   const sortedMatches = useMemo(() => {
     const sortKey = (value: unknown) => {

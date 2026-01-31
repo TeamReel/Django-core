@@ -315,7 +315,8 @@ export const MatchDetailPage: React.FC = () => {
                 const isActive = !!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
                 return (
                   <Button
-                    variant={isActive ? 'primary' : 'secondary'}
+                    variant="secondary"
+                    size="sm"
                     onClick={async () => {
                       if (!match || isActive) return;
                       try {
@@ -341,7 +342,10 @@ export const MatchDetailPage: React.FC = () => {
                   </Button>
                 );
               })()}
-              <Button onClick={() => navigate(`/studio/create?context=${match.id}`)}>
+              <Button variant="secondary" size="sm" onClick={() => navigate(-1)}>
+                Back
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => navigate(`/studio/create?context=${match.id}`)}>
                 ✨ Create Content
               </Button>
             </div>
