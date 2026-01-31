@@ -3413,9 +3413,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       }
 
                       const functionalRoles = getFunctionalRolesFromMembership(selectedEditMember);
+                      const projectIdForApi = String((project as any)?.id || '').trim();
+
+                      if (!projectIdForApi) {
+                        alert('Project ID not found');
+                        return;
+                      }
 
                       const res = await fetch(
-                        `${apiBaseUrl}/api/v1/activities/participations/${encodeURIComponent(membershipId)}/`,
+                        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForApi)}/members/${encodeURIComponent(membershipId)}/`,
                         {
                           method: 'PATCH',
                           headers: {
