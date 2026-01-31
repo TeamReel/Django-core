@@ -23,7 +23,7 @@ export interface ContentTemplate {
   is_active?: boolean;
   credits_required?: number;
   sport?: number | null;
-  sport_detail?: { id: number; name: string; slug?: string } | null;
+  sport_detail?: { id: number; name: string; slug?: string; parent_sport_id?: number | null } | null;
   formation_detail?: { code: string; name: string } | null;
   input_requirements?: {
     members?: {
