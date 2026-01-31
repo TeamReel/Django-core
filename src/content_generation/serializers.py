@@ -117,9 +117,13 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
             f"ContentTemplateSerializer.update() called for {instance.id} with data: {validated_data}"
         )
         try:
-            result = super().update(instance, validated_data)
+            # Handle each field explicitly to catch specific errors
+            for attr, value in validated_data.items():
+                logger.info(f"Setting {attr} = {value} (type: {type(value).__name__})")
+                setattr(instance, attr, value)
+            instance.save()
             logger.info(f"ContentTemplateSerializer.update() succeeded for {instance.id}")
-            return result
+            return instance
         except Exception as e:
             logger.exception(f"ContentTemplateSerializer.update() FAILED for {instance.id}: {e}")
             raise
@@ -132,9 +136,9 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
         """
         if value:
             try:
-                from src.sport_config.models import SportType
+                from sport_configuration.models import Sport
 
-                if not SportType.objects.filter(code=value).exists():
+                if not Sport.objects.filter(slug=value).exists():
                     raise serializers.ValidationError(f"Invalid sport_type: {value}")
             except ImportError:
                 # B32 not installed, skip validation
