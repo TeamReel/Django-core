@@ -217,6 +217,7 @@ class FormationSerializer(serializers.ModelSerializer):
         required=False,
     )
     sport_name = serializers.CharField(source="sport_config.sport.name", read_only=True)
+    sport_id = serializers.IntegerField(source="sport_config.sport.id", read_only=True)
 
     class Meta:
         model = Formation
@@ -225,6 +226,7 @@ class FormationSerializer(serializers.ModelSerializer):
             "sport_config",
             "sport_config_id",
             "sport_name",
+            "sport_id",
             "code",
             "name",
             "positions",
@@ -236,7 +238,14 @@ class FormationSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "sport_config", "sport_name", "created_at", "updated_at"]
+        read_only_fields = [
+            "id",
+            "sport_config",
+            "sport_name",
+            "sport_id",
+            "created_at",
+            "updated_at",
+        ]
 
 
 # ==============================================================================

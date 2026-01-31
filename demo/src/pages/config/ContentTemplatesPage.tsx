@@ -201,6 +201,18 @@ interface Sport {
   name: string;
   slug: string;
   is_category: boolean;
+  is_variant: boolean;
+  parent_sport_id: number | null;
+  category_name: string | null;
+}
+
+interface Formation {
+  id: number;
+  code: string;
+  name: string;
+  sport_config: number;
+  sport_name: string;
+  sport_id: number;
 }
 
 export default function ContentTemplatesPage() {
@@ -210,6 +222,7 @@ export default function ContentTemplatesPage() {
 
   const [templates, setTemplates] = useState<ContentTemplate[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
+  const [formations, setFormations] = useState<Formation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -223,19 +236,65 @@ export default function ContentTemplatesPage() {
   // Modal state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<ContentTemplate | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  // Load templates and sports (global templates, no organisation filter)
+  // Edit form state
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    template_type: 'pre_match',
+    template_subtype: '',
+    sport: null as number | null,
+    formation: null as number | null,
+    style_variant: '',
+    ai_workflow_id: '',
+    is_active: true,
+  });
+
+  // Update form when editing template changes
+  useEffect(() => {
+    if (editingTemplate) {
+      setEditForm({
+        name: editingTemplate.name,
+        description: editingTemplate.description || '',
+        template_type: editingTemplate.template_type,
+        template_subtype: editingTemplate.template_subtype || '',
+        sport: editingTemplate.sport,
+        formation: editingTemplate.formation,
+        style_variant: editingTemplate.style_variant || '',
+        ai_workflow_id: editingTemplate.ai_workflow_id,
+        is_active: editingTemplate.is_active,
+      });
+    } else {
+      setEditForm({
+        name: '',
+        description: '',
+        template_type: 'pre_match',
+        template_subtype: '',
+        sport: null,
+        formation: null,
+        style_variant: '',
+        ai_workflow_id: '',
+        is_active: true,
+      });
+    }
+  }, [editingTemplate]);
+
+  // Load templates, sports and formations (global templates, no organisation filter)
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const [templatesRes, sportsRes] = await Promise.all([
+        const [templatesRes, sportsRes, formationsRes] = await Promise.all([
           fetch(`${apiBaseUrl}/api/v1/content-generation/templates/`, {
             credentials: 'include',
           }),
           fetch(`${apiBaseUrl}/api/v1/sports/`, {
+            credentials: 'include',
+          }),
+          fetch(`${apiBaseUrl}/api/v1/formations/`, {
             credentials: 'include',
           }),
         ]);
@@ -272,6 +331,19 @@ export default function ContentTemplatesPage() {
           }
           setSports(sportList);
         }
+
+        if (formationsRes.ok) {
+          const response = await formationsRes.json();
+          let formationList: Formation[] = [];
+          if (Array.isArray(response)) {
+            formationList = response;
+          } else if (response.data?.data && Array.isArray(response.data.data)) {
+            formationList = response.data.data;
+          } else if (response.results && Array.isArray(response.results)) {
+            formationList = response.results;
+          }
+          setFormations(formationList);
+        }
       } catch (e) {
         console.error('Failed to fetch data:', e);
         setError('Failed to load templates');
@@ -283,15 +355,33 @@ export default function ContentTemplatesPage() {
     fetchData();
   }, [apiBaseUrl]);
 
+  // Group sports by category (parent) and variants (children)
+  const sportCategories = useMemo(() => {
+    const categories = sports.filter(s => s.is_category);
+    const variants = sports.filter(s => s.is_variant);
+    return { categories, variants };
+  }, [sports]);
+
+  // Get variants for a specific sport category
+  const getVariantsForCategory = (categoryId: number) => {
+    return sportCategories.variants.filter(v => v.parent_sport_id === categoryId);
+  };
+
+  // Get formations for selected sport (sport_id from Formation matches Sport id)
+  const formationsForSelectedSport = useMemo(() => {
+    if (!editForm.sport) return formations;
+    return formations.filter(f => f.sport_id === editForm.sport);
+  }, [formations, editForm.sport]);
+
   // Get unique formations and styles from templates for filter dropdowns
   const availableFormations = useMemo(() => {
-    const formations = new Map<string, { code: string; name: string }>();
+    const formationMap = new Map<string, { code: string; name: string }>();
     templates.forEach(t => {
       if (t.formation_detail) {
-        formations.set(t.formation_detail.code, t.formation_detail);
+        formationMap.set(t.formation_detail.code, t.formation_detail);
       }
     });
-    return Array.from(formations.values());
+    return Array.from(formationMap.values());
   }, [templates]);
 
   const availableStyles = useMemo(() => {
@@ -392,6 +482,61 @@ export default function ContentTemplatesPage() {
       }
     } catch (e) {
       console.error('Failed to delete template:', e);
+    }
+  };
+
+  // Save template (create or update)
+  const handleSaveTemplate = async () => {
+    setSaving(true);
+    try {
+      const isEditing = !!editingTemplate;
+      const url = isEditing
+        ? `${apiBaseUrl}/api/v1/content-generation/templates/${editingTemplate.id}/`
+        : `${apiBaseUrl}/api/v1/content-generation/templates/`;
+
+      const res = await fetch(url, {
+        method: isEditing ? 'PATCH' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: editForm.name,
+          description: editForm.description || null,
+          template_type: editForm.template_type,
+          template_subtype: editForm.template_subtype || null,
+          sport: editForm.sport,
+          formation: editForm.formation,
+          style_variant: editForm.style_variant || null,
+          ai_workflow_id: editForm.ai_workflow_id || null,
+          is_active: editForm.is_active,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Handle nested response format
+        const saved = data?.data?.data || data?.data || data;
+
+        if (isEditing) {
+          setTemplates(prev => prev.map(t => t.id === saved.id ? saved : t));
+        } else {
+          setTemplates(prev => [...prev, saved]);
+        }
+
+        setIsCreateModalOpen(false);
+        setEditingTemplate(null);
+      } else {
+        const errorData = await res.json();
+        console.error('Failed to save template:', errorData);
+        alert(`Failed to save: ${JSON.stringify(errorData)}`);
+      }
+    } catch (e) {
+      console.error('Failed to save template:', e);
+      alert('Failed to save template');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -634,7 +779,7 @@ export default function ContentTemplatesPage() {
             </Card>
       </PageContent>
 
-      {/* TODO: Create/Edit Modal */}
+      {/* Create/Edit Modal */}
       {(isCreateModalOpen || editingTemplate) && (
         <div
           style={{
@@ -655,32 +800,258 @@ export default function ContentTemplatesPage() {
           }}
         >
           <Card
-            style={{ width: '500px', maxHeight: '80vh', overflow: 'auto' }}
+            style={{ width: '600px', maxHeight: '90vh', overflow: 'auto' }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ marginBottom: '16px' }}>
+            <h2 style={{ marginBottom: '20px' }}>
               {editingTemplate ? 'Edit Template' : 'Create Template'}
             </h2>
-            <p style={{ color: 'var(--app-text-muted)', marginBottom: '16px' }}>
-              Template editor coming soon. For now, use the Django admin.
-            </p>
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Name */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                  Name *
+                </label>
+                <Input
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  placeholder="e.g., Lineup 4-3-3 - Modern"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                  Description
+                </label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  placeholder="Template description..."
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--app-border)',
+                    backgroundColor: 'var(--app-bg)',
+                    color: 'var(--app-text)',
+                    fontSize: '14px',
+                    resize: 'vertical',
+                  }}
+                />
+              </div>
+
+              {/* Template Type & Subtype - side by side */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    Type *
+                  </label>
+                  <select
+                    value={editForm.template_type}
+                    onChange={(e) => setEditForm({ ...editForm, template_type: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--app-border)',
+                      backgroundColor: 'var(--app-bg)',
+                      color: 'var(--app-text)',
+                      fontSize: '14px',
+                    }}
+                  >
+                    <option value="pre_match">Pre Match</option>
+                    <option value="post_match">Post Match</option>
+                    <option value="announcement">Announcement</option>
+                    <option value="promotion">Promotion</option>
+                    <option value="social">Social</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    Subtype
+                  </label>
+                  <select
+                    value={editForm.template_subtype}
+                    onChange={(e) => setEditForm({ ...editForm, template_subtype: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--app-border)',
+                      backgroundColor: 'var(--app-bg)',
+                      color: 'var(--app-text)',
+                      fontSize: '14px',
+                    }}
+                  >
+                    <option value="">-- None --</option>
+                    <option value="lineup">Lineup</option>
+                    <option value="flyer">Flyer</option>
+                    <option value="score">Score</option>
+                    <option value="stats">Stats</option>
+                    <option value="highlight">Highlight</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Sport Category & Variant - side by side */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    Sport Category
+                  </label>
+                  <select
+                    value={sports.find(s => s.id === editForm.sport)?.parent_sport_id || editForm.sport || ''}
+                    onChange={(e) => {
+                      const categoryId = e.target.value ? Number(e.target.value) : null;
+                      // When category changes, reset sport to first variant of that category
+                      const variants = categoryId ? getVariantsForCategory(categoryId) : [];
+                      const firstVariant = variants[0];
+                      setEditForm({
+                        ...editForm,
+                        sport: firstVariant?.id || categoryId,
+                        formation: null, // Reset formation when sport changes
+                      });
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--app-border)',
+                      backgroundColor: 'var(--app-bg)',
+                      color: 'var(--app-text)',
+                      fontSize: '14px',
+                    }}
+                  >
+                    <option value="">-- Select Sport --</option>
+                    {sportCategories.categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    Sport Variant
+                  </label>
+                  <select
+                    value={editForm.sport || ''}
+                    onChange={(e) => setEditForm({
+                      ...editForm,
+                      sport: e.target.value ? Number(e.target.value) : null,
+                      formation: null, // Reset formation when sport changes
+                    })}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--app-border)',
+                      backgroundColor: 'var(--app-bg)',
+                      color: 'var(--app-text)',
+                      fontSize: '14px',
+                    }}
+                  >
+                    <option value="">-- Select Variant --</option>
+                    {/* Show variants for currently selected sport's category */}
+                    {(() => {
+                      const currentSport = sports.find(s => s.id === editForm.sport);
+                      const categoryId = currentSport?.parent_sport_id || currentSport?.id;
+                      const variants = categoryId ? getVariantsForCategory(categoryId) : sportCategories.variants;
+                      return variants.map(v => (
+                        <option key={v.id} value={v.id}>{v.name}</option>
+                      ));
+                    })()}
+                  </select>
+                </div>
+              </div>
+
+              {/* Formation & Style - side by side */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    Formation
+                  </label>
+                  <select
+                    value={editForm.formation || ''}
+                    onChange={(e) => setEditForm({
+                      ...editForm,
+                      formation: e.target.value ? Number(e.target.value) : null,
+                    })}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--app-border)',
+                      backgroundColor: 'var(--app-bg)',
+                      color: 'var(--app-text)',
+                      fontSize: '14px',
+                    }}
+                  >
+                    <option value="">-- No Formation --</option>
+                    {formationsForSelectedSport.map(f => (
+                      <option key={f.id} value={f.id}>{f.code} - {f.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    Style Variant
+                  </label>
+                  <Input
+                    value={editForm.style_variant}
+                    onChange={(e) => setEditForm({ ...editForm, style_variant: e.target.value })}
+                    placeholder="e.g., Modern, Classic, Bold"
+                  />
+                </div>
+              </div>
+
+              {/* AI Workflow ID */}
+              <div>
+                <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                  AI Workflow ID
+                </label>
+                <Input
+                  value={editForm.ai_workflow_id}
+                  onChange={(e) => setEditForm({ ...editForm, ai_workflow_id: e.target.value })}
+                  placeholder="e.g., wf_lineup_433_modern"
+                />
+              </div>
+
+              {/* Active Toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={editForm.is_active}
+                  onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })}
+                  style={{ width: '18px', height: '18px' }}
+                />
+                <label htmlFor="is_active" style={{ fontWeight: 500 }}>Active</label>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '24px' }}>
               <Button
                 variant="secondary"
                 onClick={() => {
                   setIsCreateModalOpen(false);
                   setEditingTemplate(null);
                 }}
+                disabled={saving}
               >
-                Close
+                Cancel
               </Button>
               <Button
                 variant="primary"
-                onClick={() => {
-                  window.open('/admin/content_generation/contenttemplate/', '_blank');
-                }}
+                onClick={handleSaveTemplate}
+                disabled={saving || !editForm.name}
               >
-                Open Django Admin
+                {saving ? 'Saving...' : (editingTemplate ? 'Save Changes' : 'Create Template')}
               </Button>
             </div>
           </Card>
