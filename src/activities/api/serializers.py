@@ -162,6 +162,7 @@ class PeriodSerializer(serializers.ModelSerializer):
                 "slug": obj.sport.slug,
                 "sport_icon": obj.sport.sport_icon or category_icon,
                 "is_variant": obj.sport.is_variant,
+                "parent_sport_id": obj.sport.parent_sport_id,
                 "category_name": obj.sport.category.name
                 if obj.sport.is_variant and obj.sport.category
                 else None,
