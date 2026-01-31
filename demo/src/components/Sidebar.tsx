@@ -583,11 +583,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 title = 'Season';
                 items = [
                     { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
-                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
                     { label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users },
+                    { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
+                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                 ];
                 break;
@@ -643,12 +644,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 title = 'Season';
                 items = [
                     { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
-                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
                     { label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users },
                     { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
+                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                 ];
                 break;
@@ -687,12 +688,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 title = 'Season';
                 items = [
                     { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
-                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
                     { label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users },
                     { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
+                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                 ];
                 break;
