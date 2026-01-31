@@ -1689,8 +1689,9 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
               {(() => {
                 const isActive = !!competition && String(activeContext?.competition?.id ?? '') === String((competition as any)?.id ?? '');
                 return (
-                  <button
-                    type="button"
+                  <Button
+                    variant={isActive ? 'primary' : 'secondary'}
+                    size="sm"
                     onClick={async () => {
                       if (!competition || isActive) return;
                       try {
@@ -1703,62 +1704,54 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                       }
                     }}
                     disabled={activatingContext || (isActive ?? false)}
-                    style={{
-                      ...backButtonStyle,
-                      border: isActive ? '1px solid #10b981' : backButtonStyle.border,
-                      background: isActive ? '#dcfce7' : backButtonStyle.background,
-                      color: isActive ? '#166534' : backButtonStyle.color,
-                      fontWeight: isActive ? 600 : backButtonStyle.fontWeight,
-                      cursor: activatingContext || isActive ? 'not-allowed' : backButtonStyle.cursor,
-                      opacity: activatingContext || isActive ? 0.8 : 1,
-                    }}
                     title="Set this competition as your active context"
+                    style={{
+                      backgroundColor: isActive ? '#dcfce7' : undefined,
+                      color: isActive ? '#166534' : undefined,
+                      border: isActive ? '1px solid #10b981' : undefined,
+                      cursor: activatingContext || isActive ? 'not-allowed' : 'pointer',
+                      opacity: activatingContext || isActive ? 0.8 : 1,
+                      fontWeight: isActive ? 600 : undefined,
+                    }}
                   >
                     {isActive ? '✓ Active Context' : 'Make active'}
-                  </button>
+                  </Button>
                 );
               })()}
-              <button
-                type="button"
-                onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}
-                style={backButtonStyle}
-              >
+              <Button variant="secondary" size="sm" onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}>
                 Back to Season
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsMatchCreateModalOpen(true)}
-                style={{ ...actionButtonStyle('primary'), padding: '6px 12px', fontWeight: 500 }}
-              >
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => setIsMatchCreateModalOpen(true)}>
                 Create Match
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   setSelectedDetailPeriod(competition);
                   setIsPeriodDetailModalOpen(true);
                 }}
-                style={actionButtonStyle('primary')}
               >
                 View
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   setSelectedEditPeriod(competition);
                   setIsPeriodEditModalOpen(true);
                 }}
-                style={actionButtonStyle('warning')}
               >
                 Edit
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={deleteCompetition}
-                style={actionButtonStyle('danger')}
+                style={{ color: '#dc2626' }}
               >
                 Delete
-              </button>
+              </Button>
             </div>
           }
         />

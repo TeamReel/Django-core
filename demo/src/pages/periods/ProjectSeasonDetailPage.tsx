@@ -1101,8 +1101,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               {(() => {
                 const isActive = !!season && String(activeContext?.season?.id ?? '') === String((season as any)?.id ?? '');
                 return (
-                  <button
-                    type="button"
+                  <Button
+                    variant={isActive ? 'primary' : 'secondary'}
+                    size="sm"
                     onClick={async () => {
                       if (!season || isActive) return;
                       try {
@@ -1115,53 +1116,49 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       }
                     }}
                     disabled={activatingContext || (isActive ?? false)}
-                    style={{
-                      ...backButtonStyle,
-                      border: isActive ? '1px solid #10b981' : backButtonStyle.border,
-                      background: isActive ? '#dcfce7' : backButtonStyle.background,
-                      color: isActive ? '#166534' : backButtonStyle.color,
-                      fontWeight: isActive ? 600 : backButtonStyle.fontWeight,
-                      cursor: activatingContext || isActive ? 'not-allowed' : backButtonStyle.cursor,
-                      opacity: activatingContext || isActive ? 0.8 : 1,
-                    }}
                     title="Set this season as your active context"
+                    style={{
+                      backgroundColor: isActive ? '#dcfce7' : undefined,
+                      color: isActive ? '#166534' : undefined,
+                      border: isActive ? '1px solid #10b981' : undefined,
+                      cursor: activatingContext || isActive ? 'not-allowed' : 'pointer',
+                      opacity: activatingContext || isActive ? 0.8 : 1,
+                      fontWeight: isActive ? 600 : undefined,
+                    }}
                   >
                     {isActive ? '✓ Active Context' : 'Make active'}
-                  </button>
+                  </Button>
                 );
               })()}
-              <button
-                type="button"
-                onClick={() => navigate(seasonsBasePath)}
-                style={backButtonStyle}
-              >
+              <Button variant="secondary" size="sm" onClick={() => navigate(seasonsBasePath)}>
                 Back
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   setSelectedDetailPeriod(season);
                   setIsPeriodDetailModalOpen(true);
                 }}
-                style={actionButtonStyle('primary')}
               >
                 View
-              </button>
+              </Button>
               {userCanEditProject && (
-                <button
-                  type="button"
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => {
                     setSelectedEditPeriod(season);
                     setIsPeriodEditModalOpen(true);
                   }}
-                  style={actionButtonStyle('warning')}
                 >
                   Edit
-                </button>
+                </Button>
               )}
               {userCanDeleteProject && (
-                <button
-                  type="button"
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={async () => {
                     if (!window.confirm(`Are you sure you want to delete season ${season?.name}?`)) return;
                     try {
@@ -1187,10 +1184,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       alert('Error deleting season');
                     }
                   }}
-                  style={actionButtonStyle('danger')}
+                  style={{ color: '#dc2626' }}
                 >
                   Delete
-                </button>
+                </Button>
               )}
 
               {userCanEditProject && (
