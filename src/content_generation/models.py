@@ -44,8 +44,8 @@ class TemplateSubtype(models.TextChoices):
     # During-Match templates
     GOAL = "goal", "Goal Celebration"
     SCORE_UPDATE = "score_update", "Score Update"
-    END_SCORE = "end_score", "Final Score"
     # Post-Match templates
+    END_SCORE = "end_score", "Final Score"
     MATCH_SUMMARY = "match_summary", "Match Summary"
     HIGHLIGHTS = "highlights", "Highlights Reel"
     # Season templates

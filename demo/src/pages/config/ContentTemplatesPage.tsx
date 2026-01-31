@@ -38,14 +38,14 @@ const TEMPLATE_CATEGORIES = [
     label: 'During Match',
     icon: '⚽',
     types: ['during_match'],
-    subtypes: ['goal', 'score_update', 'end_score'],
+    subtypes: ['goal', 'score_update'],
   },
   {
     id: 'post_match',
     label: 'Post-Match',
     icon: '🏆',
     types: ['post_match'],
-    subtypes: ['match_summary', 'highlights'],
+    subtypes: ['end_score', 'match_summary', 'highlights'],
   },
   {
     id: 'member',
