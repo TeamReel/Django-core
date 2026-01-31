@@ -1584,7 +1584,7 @@ export default function HierarchyMatchDetailPage() {
               </button>
               <button
                 type="button"
-                onClick={() => navigate(`/studio/create?context=${match.id}`)}
+                onClick={() => openContentModal()}
                 style={{
                   padding: '6px 12px',
                   borderRadius: '4px',
