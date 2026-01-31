@@ -247,7 +247,17 @@ export default function ContentGenerationModal({
         if (response.ok) {
           const data = await response.json();
           console.log('✅ API Response:', data);
-          const members = data?.data?.results || data?.results || data?.data || data || [];
+          // Handle paginated response structure from /api/v1/projects/{id}/members/
+          let members = [];
+          if (data?.data?.results && Array.isArray(data.data.results)) {
+            members = data.data.results;
+          } else if (data?.results && Array.isArray(data.results)) {
+            members = data.results;
+          } else if (Array.isArray(data?.data)) {
+            members = data.data;
+          } else if (Array.isArray(data)) {
+            members = data;
+          }
           console.log('👥 Extracted members:', members.length, members);
           const grouped = groupParticipationsByRole(members);
           console.log('📊 Grouped by role:', grouped);

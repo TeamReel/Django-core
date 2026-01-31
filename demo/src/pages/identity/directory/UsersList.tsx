@@ -1056,7 +1056,8 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                     const isDirectMembership = Boolean(membershipId) && isUuid(membershipId) && !source;
 
                                     // Team members can also be deleted (different API endpoint)
-                                    const isTeamMember = teamLocked && Boolean(membershipId) && isUuid(membershipId);
+                                    // Accept both UUID and pm:* format membershipIds
+                                    const isTeamMember = teamLocked && Boolean(membershipId) && (isUuid(membershipId) || String(membershipId).startsWith('pm:'));
 
                                     // Debug logging
                                     if (teamLocked) {
