@@ -1718,32 +1718,47 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                   </button>
                 );
               })()}
-              <Button variant="secondary" size="sm" onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}>
+              <button
+                type="button"
+                onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}
+                style={backButtonStyle}
+              >
                 Back to Season
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => setIsMatchCreateModalOpen(true)}>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsMatchCreateModalOpen(true)}
+                style={{ ...actionButtonStyle('primary'), padding: '6px 12px', fontWeight: 500 }}
+              >
                 Create Match
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => {
-                setSelectedDetailPeriod(competition);
-                setIsPeriodDetailModalOpen(true);
-              }}>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedDetailPeriod(competition);
+                  setIsPeriodDetailModalOpen(true);
+                }}
+                style={actionButtonStyle('primary')}
+              >
                 View
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => {
-                setSelectedEditPeriod(competition);
-                setIsPeriodEditModalOpen(true);
-              }}>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedEditPeriod(competition);
+                  setIsPeriodEditModalOpen(true);
+                }}
+                style={actionButtonStyle('warning')}
+              >
                 Edit
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
+              </button>
+              <button
+                type="button"
                 onClick={deleteCompetition}
-                style={{ color: '#dc2626' }}
+                style={actionButtonStyle('danger')}
               >
                 Delete
-              </Button>
+              </button>
             </div>
           }
         />

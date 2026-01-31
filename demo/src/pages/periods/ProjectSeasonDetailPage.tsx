@@ -1130,27 +1130,38 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   </button>
                 );
               })()}
-              <Button variant="secondary" size="sm" onClick={() => navigate(seasonsBasePath)}>
+              <button
+                type="button"
+                onClick={() => navigate(seasonsBasePath)}
+                style={backButtonStyle}
+              >
                 Back
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => {
-                setSelectedDetailPeriod(season);
-                setIsPeriodDetailModalOpen(true);
-              }}>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedDetailPeriod(season);
+                  setIsPeriodDetailModalOpen(true);
+                }}
+                style={actionButtonStyle('primary')}
+              >
                 View
-              </Button>
+              </button>
               {userCanEditProject && (
-                <Button variant="secondary" size="sm" onClick={() => {
-                  setSelectedEditPeriod(season);
-                  setIsPeriodEditModalOpen(true);
-                }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedEditPeriod(season);
+                    setIsPeriodEditModalOpen(true);
+                  }}
+                  style={actionButtonStyle('warning')}
+                >
                   Edit
-                </Button>
+                </button>
               )}
               {userCanDeleteProject && (
-                <Button
-                  variant="secondary"
-                  size="sm"
+                <button
+                  type="button"
                   onClick={async () => {
                     if (!window.confirm(`Are you sure you want to delete season ${season?.name}?`)) return;
                     try {
@@ -1176,10 +1187,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       alert('Error deleting season');
                     }
                   }}
-                  style={{ color: '#dc2626' }}
+                  style={actionButtonStyle('danger')}
                 >
                   Delete
-                </Button>
+                </button>
               )}
 
               {userCanEditProject && (
@@ -1213,11 +1224,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         <MobileTabBar
           tabs={[
             { id: 'overview', label: 'Overview' },
-            { id: 'content', label: 'Content' },
             { id: 'hierarchy', label: 'Hierarchy' },
             { id: 'competitions', label: 'Competitions' },
             { id: 'matches', label: 'Matches' },
             { id: 'squad', label: 'Squad' },
+            { id: 'content', label: 'Content' },
             { id: 'media', label: 'Media' },
           ]}
           activeTab={activeTab}
@@ -1275,6 +1286,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <thead>
                                 <tr>
                                   <th style={compactThStyle}>Competition</th>
+                                  <th style={compactThStyle}>Sport Variant</th>
                                   <th style={compactThStyle}>Matches</th>
                                   <th style={compactThStyle} className="text-right"></th>
                                 </tr>
@@ -1294,6 +1306,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       >
                                         {competition.name}
                                       </Link>
+                                    </td>
+                                    <td style={compactTdStyle}>
+                                      {competition.sport ? (
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                          <span>{competition.sport.sport_icon}</span>
+                                          <span style={{ fontSize: '12px' }}>{competition.sport.name}</span>
+                                        </span>
+                                      ) : (
+                                        <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                                      )}
                                     </td>
                                     <td style={compactTdStyle}>
                                       <Badge variant="default">{getMatchCountForCompetition(competition)}</Badge>
@@ -2636,6 +2658,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         <thead>
                           <tr>
                             <th style={compactThStyle}>Competition</th>
+                            <th style={compactThStyle}>Sport Variant</th>
                             <th style={compactThStyle}>Dates</th>
                             <th style={compactThStyle}>Matches</th>
                             <th style={compactThStyle}>Participants</th>
@@ -2657,6 +2680,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 >
                                   {competition.name}
                                 </Link>
+                              </td>
+                              <td style={compactTdStyle}>
+                                {competition.sport ? (
+                                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <span>{competition.sport.sport_icon}</span>
+                                    <span style={{ fontSize: '12px' }}>{competition.sport.name}</span>
+                                  </span>
+                                ) : (
+                                  <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                                )}
                               </td>
                               <td style={compactTextTdStyle}>
                                 {new Date(competition.start_date).toLocaleDateString()} –{' '}

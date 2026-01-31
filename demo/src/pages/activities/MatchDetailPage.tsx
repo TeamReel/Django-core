@@ -7,6 +7,7 @@ import { Table } from '../../shims/design-system';
 import { periodPathKey } from '../../utils/periodPath';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { actionButtonStyle } from '../../utils/directoryStyles';
 
 interface Participation {
   id: string;
@@ -313,10 +314,19 @@ export const MatchDetailPage: React.FC = () => {
             <div className="hide-mobile" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
               {(() => {
                 const isActive = !!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
+                const backButtonStyle: React.CSSProperties = {
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                };
                 return (
-                  <Button
-                    variant="secondary"
-                    size="sm"
+                  <button
+                    type="button"
                     onClick={async () => {
                       if (!match || isActive) return;
                       try {
@@ -331,23 +341,42 @@ export const MatchDetailPage: React.FC = () => {
                     disabled={activatingContext || isActive}
                     title="Set this match as your active context"
                     style={{
-                      backgroundColor: isActive ? '#dcfce7' : undefined,
-                      color: isActive ? '#166534' : undefined,
-                      border: isActive ? '1px solid #10b981' : undefined,
-                      fontWeight: isActive ? 600 : undefined,
+                      ...backButtonStyle,
+                      backgroundColor: isActive ? '#dcfce7' : backButtonStyle.backgroundColor,
+                      color: isActive ? '#166534' : backButtonStyle.color,
+                      border: isActive ? '1px solid #10b981' : backButtonStyle.border,
+                      fontWeight: isActive ? 600 : backButtonStyle.fontWeight,
+                      cursor: activatingContext || isActive ? 'not-allowed' : backButtonStyle.cursor,
                       opacity: activatingContext || isActive ? 0.8 : 1,
                     }}
                   >
                     {isActive ? '✓ Active' : 'Make active'}
-                  </Button>
+                  </button>
                 );
               })()}
-              <Button variant="secondary" size="sm" onClick={() => navigate(-1)}>
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
+              >
                 Back
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => navigate(`/studio/create?context=${match.id}`)}>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(`/studio/create?context=${match.id}`)}
+                style={{ ...actionButtonStyle('primary'), padding: '6px 12px', fontWeight: 500 }}
+              >
                 ✨ Create Content
-              </Button>
+              </button>
             </div>
           }
         />
