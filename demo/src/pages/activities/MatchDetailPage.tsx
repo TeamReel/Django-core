@@ -207,9 +207,12 @@ export default function HierarchyMatchDetailPage() {
 
     setTemplatesLoading(true);
     try {
+      // Fetch templates filtered by organisation (includes global templates)
       const params = new URLSearchParams();
       params.append('is_active', 'true');
-      params.append('sport', String(org.sport.id));
+      if (org?.id) {
+        params.append('organisation', String(org.id));
+      }
 
       const response = await fetch(`${getApiBaseUrl()}/api/v1/content-generation/templates/?${params.toString()}`, {
         credentials: 'include',
@@ -220,19 +223,40 @@ export default function HierarchyMatchDetailPage() {
         const data = await response.json();
         // Handle envelope format: { status: 'success', data: { results: [...] } }
         const rawResults = data?.data?.results || data?.results || data?.data || data || [];
-        const results: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
+        const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
 
-        console.log('[Content] Fetched templates for sport', org.sport.id, ':', results.length, 'templates');
-        console.log('[Content] Template subtypes:', results.map(t => ({ name: t.name, subtype: t.template_subtype })));
+        console.log('[Content] Org sport:', org.sport?.name, '(id:', org.sport?.id, ')');
+        console.log('[Content] All templates fetched:', allTemplates.length);
 
-        // Group templates by subtype - use both exact match and contains match
+        // Filter templates that match the org's sport (or have no sport = universal)
+        // Also include templates where sport matches parent sport
+        const sportId = org.sport.id;
+        const matchingTemplates = allTemplates.filter(t => {
+          // Template has no sport = universal, include it
+          if (!t.sport) return true;
+          // Template sport matches org sport directly
+          if (t.sport === sportId) return true;
+          // Template sport_detail matches by ID
+          if (t.sport_detail?.id === sportId) return true;
+          return false;
+        });
+
+        console.log('[Content] Matching templates for sport:', matchingTemplates.length);
+        console.log('[Content] Template details:', matchingTemplates.map(t => ({
+          name: t.name,
+          type: t.template_type,
+          subtype: t.template_subtype,
+          sport: t.sport_detail?.name || t.sport || 'universal'
+        })));
+
+        // Group templates by subtype
         const grouped: Record<string, ContentTemplate[]> = {};
-        results.forEach(t => {
+        matchingTemplates.forEach(t => {
           const subtype = t.template_subtype || t.template_type;
           if (!grouped[subtype]) grouped[subtype] = [];
           grouped[subtype].push(t);
         });
-        console.log('[Content] Grouped templates:', Object.keys(grouped));
+        console.log('[Content] Grouped by subtype:', Object.keys(grouped));
         setAvailableTemplates(grouped);
       }
     } catch (err) {
@@ -240,7 +264,7 @@ export default function HierarchyMatchDetailPage() {
     } finally {
       setTemplatesLoading(false);
     }
-  }, [org?.sport?.id]);
+  }, [org?.sport?.id, org?.id]);
 
   // Fetch templates when sport is available
   useEffect(() => {
