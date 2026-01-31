@@ -93,7 +93,6 @@ import NotificationRoutingLogsPage from './pages/docs/NotificationRoutingLogsPag
 import NotificationsPage from './pages/NotificationsPage';
 import RoutingRulesPage from './pages/config/RoutingRulesPage';
 import MatchDetailPage from './pages/activities/MatchDetailPage';
-import HierarchyMatchDetailPage from './pages/activities/HierarchyMatchDetailPage';
 import ProjectHierarchyMatchRedirectPage from './pages/activities/ProjectHierarchyMatchRedirectPage';
 import ProjectHierarchySeasonRedirectPage from './pages/activities/ProjectHierarchySeasonRedirectPage';
 import ProjectHierarchyCompetitionRedirectPage from './pages/activities/ProjectHierarchyCompetitionRedirectPage';
@@ -796,7 +795,7 @@ export default function App() {
         path="/:orgId/:clubId/:projectId/:seasonId/:competitionId/:matchId"
         element={
           <ProtectedRoute>
-            <HierarchyMatchDetailPage />
+            <MatchDetailPage />
           </ProtectedRoute>
         }
       />
@@ -837,7 +836,7 @@ export default function App() {
         path="/organisations/:orgId/:clubId/:projectId/:seasonId/:competitionId/:matchId"
         element={
           <ProtectedRoute>
-            <HierarchyMatchDetailPage />
+            <MatchDetailPage />
           </ProtectedRoute>
         }
       />
