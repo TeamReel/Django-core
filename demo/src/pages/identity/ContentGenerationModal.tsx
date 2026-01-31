@@ -219,8 +219,8 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
   };
 
   const handleMemberToggle = (role: string, memberId: string) => {
-    const req = selectedTemplate?.input_requirements?.members?.[role as keyof typeof selectedTemplate.input_requirements.members];
-    const maxCount = req?.count || 0;
+    const req = selectedTemplate?.input_requirements?.members?.[role as 'goalkeeper' | 'player' | 'coach' | 'assistant'];
+    const maxCount = (req && typeof req !== 'boolean' && req.count) || 0;
 
     setSelectedMembers(prev => {
       const current = prev[role] || [];
@@ -360,7 +360,7 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
                               <Badge variant="info" size="sm">{template.template_subtype}</Badge>
                             )}
                             {template.style_variant && (
-                              <Badge variant="secondary" size="sm">{template.style_variant}</Badge>
+                              <Badge variant="success" size="sm">{template.style_variant}</Badge>
                             )}
                             <span className="text-xs text-gray-500 ml-auto">
                               💎 {template.credits_required ?? 1} credit{(template.credits_required ?? 1) !== 1 ? 's' : ''}
@@ -406,7 +406,7 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
                         </span>
                       </div>
                       {assetTypeLabel && (
-                        <Badge variant="secondary" size="sm">Asset: {assetTypeLabel}</Badge>
+                        <Badge variant="info" size="sm">Asset: {assetTypeLabel}</Badge>
                       )}
                     </div>
 
