@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from .models import OutfitConfiguration, Sport, SportConfiguration
+from .models import Formation, OutfitConfiguration, Sport, SportConfiguration
 
 
 @admin.register(Sport)
@@ -74,6 +74,36 @@ class OutfitConfigurationAdmin(admin.ModelAdmin):
         (None, {"fields": ("project", "outfit_type", "is_active")}),
         ("Colors & Styling", {"fields": ("colors", "number_font", "badge_position")}),
         ("Sponsors", {"fields": ("sponsor_config",), "classes": ("collapse",)}),
+        ("Additional", {"fields": ("metadata",), "classes": ("collapse",)}),
+        (
+            "Timestamps",
+            {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
+        ),
+    )
+
+
+@admin.register(Formation)
+class FormationAdmin(admin.ModelAdmin):
+    """Admin interface for Formation model."""
+
+    list_display = [
+        "code",
+        "name",
+        "sport_config",
+        "is_default",
+        "is_active",
+        "display_order",
+    ]
+    list_filter = ["is_active", "is_default", "sport_config__sport"]
+    list_select_related = ["sport_config", "sport_config__sport"]
+    search_fields = ["code", "name", "sport_config__sport__name"]
+    readonly_fields = ["created_at", "updated_at"]
+    ordering = ["sport_config", "display_order", "code"]
+
+    fieldsets = (
+        (None, {"fields": ("sport_config", "code", "name", "description")}),
+        ("Positions", {"fields": ("positions",)}),
+        ("Settings", {"fields": ("is_default", "is_active", "display_order")}),
         ("Additional", {"fields": ("metadata",), "classes": ("collapse",)}),
         (
             "Timestamps",

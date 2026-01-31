@@ -198,6 +198,100 @@ class SportConfiguration(models.Model):
             )
 
 
+class Formation(models.Model):
+    """
+    Formation definition for a specific sport configuration.
+
+    Defines player positioning templates (e.g., 4-3-3, 4-4-2 for football).
+    Each formation belongs to a SportConfiguration and can have multiple
+    ContentTemplates with different visual styles.
+
+    Example:
+        SportConfiguration (Football 11v11)
+        └── Formation (4-3-3)
+            ├── ContentTemplate (4-3-3 Modern Style)
+            ├── ContentTemplate (4-3-3 Classic Style)
+            └── ContentTemplate (4-3-3 Neon Style)
+    """
+
+    sport_config = models.ForeignKey(
+        SportConfiguration,
+        on_delete=models.CASCADE,
+        related_name="formation_set",
+        help_text="Sport configuration this formation belongs to",
+    )
+    code = models.CharField(
+        max_length=20,
+        help_text="Formation code (e.g., '4-3-3', '4-4-2', '3-5-2')",
+    )
+    name = models.CharField(
+        max_length=100,
+        help_text="Display name (e.g., '4-3-3 Attacking')",
+    )
+    positions = models.JSONField(
+        default=list,
+        help_text="Position slots: [{'slot': 1, 'position': 'GK', 'x': 50, 'y': 90}, ...]",
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="Formation description and tactical notes",
+    )
+    is_default = models.BooleanField(
+        default=False,
+        help_text="Whether this is the default formation for this sport",
+    )
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True,
+        help_text="Whether this formation is available for selection",
+    )
+    display_order = models.PositiveIntegerField(
+        default=0,
+        help_text="Order in formation picker (lower = first)",
+    )
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Additional formation metadata (AI hints, visualization settings)",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "sport_configuration"
+        db_table = "sport_configuration_formation"
+        ordering = ["sport_config", "display_order", "code"]
+        verbose_name = "Formation"
+        verbose_name_plural = "Formations"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["sport_config", "code"],
+                name="unique_formation_code_per_sport",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["sport_config", "is_active"], name="idx_formation_sport_active"),
+        ]
+
+    def __str__(self) -> str:
+        """Return human-readable string representation."""
+        return f"{self.sport_config.sport.name} - {self.name}"
+
+    def clean(self) -> None:
+        """Validate formation constraints."""
+        super().clean()
+        # Ensure only one default per sport config
+        if self.is_default:
+            existing_default = Formation.objects.filter(
+                sport_config=self.sport_config,
+                is_default=True,
+            ).exclude(pk=self.pk)
+            if existing_default.exists():
+                raise ValidationError(
+                    {"is_default": "Another formation is already set as default for this sport."}
+                )
+
+
 class OutfitConfiguration(models.Model):
     """
     Outfit configuration for a project (club or team).

@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 from rest_framework import serializers
 
-from sport_configuration.models import OutfitConfiguration, Sport, SportConfiguration
+from sport_configuration.models import Formation, OutfitConfiguration, Sport, SportConfiguration
 
 if TYPE_CHECKING:
     from projects.models import Project
@@ -173,6 +173,70 @@ class SportConfigurationUpdateSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+# ==============================================================================
+# Formation Serializers
+# ==============================================================================
+
+
+class FormationListSerializer(serializers.ModelSerializer):
+    """
+    Lightweight serializer for Formation listing.
+
+    Used in dropdowns and selection lists.
+    """
+
+    sport_name = serializers.CharField(source="sport_config.sport.name", read_only=True)
+
+    class Meta:
+        model = Formation
+        fields = [
+            "id",
+            "code",
+            "name",
+            "sport_name",
+            "is_default",
+            "is_active",
+            "display_order",
+        ]
+        read_only_fields = ["id", "sport_name"]
+
+
+class FormationSerializer(serializers.ModelSerializer):
+    """
+    Full serializer for Formation with positions and metadata.
+
+    Used for detail views and creation/editing.
+    """
+
+    sport_config_id = serializers.PrimaryKeyRelatedField(
+        source="sport_config",
+        queryset=SportConfiguration.objects.all(),
+        write_only=True,
+        required=False,
+    )
+    sport_name = serializers.CharField(source="sport_config.sport.name", read_only=True)
+
+    class Meta:
+        model = Formation
+        fields = [
+            "id",
+            "sport_config",
+            "sport_config_id",
+            "sport_name",
+            "code",
+            "name",
+            "positions",
+            "description",
+            "is_default",
+            "is_active",
+            "display_order",
+            "metadata",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "sport_config", "sport_name", "created_at", "updated_at"]
 
 
 # ==============================================================================

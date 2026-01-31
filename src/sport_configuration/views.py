@@ -16,8 +16,10 @@ from rest_framework.decorators import action
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 
-from sport_configuration.models import OutfitConfiguration, Sport
+from sport_configuration.models import Formation, OutfitConfiguration, Sport
 from sport_configuration.serializers import (
+    FormationListSerializer,
+    FormationSerializer,
     FormationValidationRequestSerializer,
     OutfitConfigurationCreateSerializer,
     OutfitConfigurationSerializer,
@@ -468,3 +470,70 @@ class ValidationViewSet(viewsets.ViewSet):
         result = validator.validate_project(project)
 
         return Response(self._serialize_result(result))
+
+
+# ==============================================================================
+# Formation ViewSet
+# ==============================================================================
+
+
+@extend_schema_view(
+    list=extend_schema(
+        summary="List formations",
+        description="Returns formations for a sport configuration. "
+        "Filter by sport_config to get formations for a specific sport.",
+        tags=["Formations"],
+    ),
+    retrieve=extend_schema(
+        summary="Get formation details",
+        description="Returns a single formation with positions and metadata.",
+        tags=["Formations"],
+    ),
+    create=extend_schema(
+        summary="Create a formation",
+        description="Creates a new formation for a sport configuration. Staff only.",
+        tags=["Formations"],
+    ),
+    update=extend_schema(
+        summary="Update a formation",
+        description="Updates formation details. Staff only.",
+        tags=["Formations"],
+    ),
+    partial_update=extend_schema(
+        summary="Partially update a formation",
+        description="Partially updates formation details. Staff only.",
+        tags=["Formations"],
+    ),
+    destroy=extend_schema(
+        summary="Delete a formation",
+        description="Deletes a formation. Staff only.",
+        tags=["Formations"],
+    ),
+)
+class FormationViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Formation CRUD operations.
+
+    Provides:
+    - GET /formations/ - List all formations (filterable by sport_config)
+    - POST /formations/ - Create formation (staff only)
+    - GET /formations/{id}/ - Retrieve formation
+    - PUT/PATCH /formations/{id}/ - Update formation (staff only)
+    - DELETE /formations/{id}/ - Delete formation (staff only)
+    """
+
+    permission_classes = [IsStaffOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["sport_config", "is_active", "is_default"]
+
+    def get_queryset(self):
+        """Return formations with optimized queries."""
+        return Formation.objects.select_related("sport_config", "sport_config__sport").filter(
+            is_active=True
+        )
+
+    def get_serializer_class(self):
+        """Return appropriate serializer based on action."""
+        if self.action == "list":
+            return FormationListSerializer
+        return FormationSerializer

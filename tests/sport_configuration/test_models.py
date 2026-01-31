@@ -7,7 +7,7 @@ Coverage target: ≥90% per Constitution Art. IV.
 import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from sport_configuration.models import OutfitConfiguration, Sport, SportConfiguration
+from sport_configuration.models import Formation, OutfitConfiguration, Sport, SportConfiguration
 
 
 @pytest.mark.django_db
@@ -172,6 +172,117 @@ class TestSportConfigurationModel:
         """Sport.configuration returns the associated configuration."""
         config = SportConfiguration.objects.create(sport=sport)
         assert sport.configuration == config
+
+
+@pytest.mark.django_db
+class TestFormationModel:
+    """Test cases for Formation model."""
+
+    @pytest.fixture
+    def sport_config(self):
+        """Create a sport with configuration for testing."""
+        sport = Sport.objects.create(name="Football 11v11", slug="football-11v11-form")
+        return SportConfiguration.objects.create(
+            sport=sport,
+            team_size_max=11,
+            positions=["GK", "LB", "CB", "CB", "RB", "CM", "CM", "CM", "LW", "ST", "RW"],
+        )
+
+    def test_create_formation_minimal(self, sport_config):
+        """Formation can be created with minimal required fields."""
+        formation = Formation.objects.create(
+            sport_config=sport_config,
+            code="4-3-3",
+            name="4-3-3",
+        )
+        assert formation.pk is not None
+        assert formation.code == "4-3-3"
+        assert formation.is_active is True
+        assert formation.is_default is False
+        assert formation.positions == []
+
+    def test_create_formation_full(self, sport_config):
+        """Formation can be created with all fields."""
+        positions = [
+            {"slot": 1, "position": "GK", "x": 50, "y": 90},
+            {"slot": 2, "position": "LB", "x": 15, "y": 70},
+            {"slot": 3, "position": "CB", "x": 35, "y": 75},
+            {"slot": 4, "position": "CB", "x": 65, "y": 75},
+            {"slot": 5, "position": "RB", "x": 85, "y": 70},
+        ]
+        formation = Formation.objects.create(
+            sport_config=sport_config,
+            code="4-4-2",
+            name="4-4-2 Diamond",
+            positions=positions,
+            description="Classic 4-4-2 with diamond midfield",
+            is_default=True,
+            display_order=1,
+            metadata={"style": "defensive"},
+        )
+        assert formation.positions == positions
+        assert formation.description == "Classic 4-4-2 with diamond midfield"
+        assert formation.is_default is True
+        assert formation.metadata == {"style": "defensive"}
+
+    def test_formation_str(self, sport_config):
+        """Formation __str__ returns sport name and formation name."""
+        formation = Formation.objects.create(
+            sport_config=sport_config,
+            code="3-5-2",
+            name="3-5-2 Attacking",
+        )
+        assert str(formation) == "Football 11v11 - 3-5-2 Attacking"
+
+    def test_formation_code_unique_per_sport(self, sport_config):
+        """Formation code must be unique within a sport configuration."""
+        Formation.objects.create(
+            sport_config=sport_config,
+            code="4-3-3",
+            name="4-3-3",
+        )
+        with pytest.raises(IntegrityError):
+            Formation.objects.create(
+                sport_config=sport_config,
+                code="4-3-3",
+                name="4-3-3 Variant",
+            )
+
+    def test_formation_same_code_different_sport(self, sport_config):
+        """Same formation code can exist in different sport configurations."""
+        Formation.objects.create(
+            sport_config=sport_config,
+            code="4-3-3",
+            name="4-3-3 Football",
+        )
+        # Create another sport
+        futsal = Sport.objects.create(name="Futsal 5v5", slug="futsal-5v5-form")
+        futsal_config = SportConfiguration.objects.create(sport=futsal, team_size_max=5)
+
+        # Same code should work for different sport
+        formation2 = Formation.objects.create(
+            sport_config=futsal_config,
+            code="4-3-3",  # Not really valid for futsal but allowed in DB
+            name="4-3-3 Style",
+        )
+        assert formation2.pk is not None
+
+    def test_formation_ordering(self, sport_config):
+        """Formations are ordered by sport_config, display_order, code."""
+        Formation.objects.create(
+            sport_config=sport_config, code="4-4-2", name="4-4-2", display_order=2
+        )
+        Formation.objects.create(
+            sport_config=sport_config, code="3-5-2", name="3-5-2", display_order=1
+        )
+        Formation.objects.create(
+            sport_config=sport_config, code="4-3-3", name="4-3-3", display_order=3
+        )
+
+        formations = list(
+            Formation.objects.filter(sport_config=sport_config).values_list("code", flat=True)
+        )
+        assert formations == ["3-5-2", "4-4-2", "4-3-3"]
 
 
 @pytest.mark.django_db

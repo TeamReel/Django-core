@@ -171,6 +171,20 @@ class ContentTemplate(models.Model):
         related_name="content_templates",
         help_text="Filter templates by sport. Null = universal template.",
     )
+    formation = models.ForeignKey(
+        "sport_configuration.Formation",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="content_templates",
+        help_text="Formation this template is designed for (e.g., 4-3-3). Only for lineup templates.",
+    )
+    style_variant = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="Visual style variant name (e.g., 'Modern', 'Classic', 'Neon')",
+    )
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
