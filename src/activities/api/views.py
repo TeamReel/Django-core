@@ -157,7 +157,7 @@ class PeriodViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Period.objects.select_related(
-        "organisation", "project", "parent_period", "created_by", "sport", "sport__category"
+        "organisation", "project", "parent_period", "created_by", "sport", "sport__parent_sport"
     ).order_by("start_date", "name")
     serializer_class = PeriodSerializer
     permission_classes = [PeriodPermission]
