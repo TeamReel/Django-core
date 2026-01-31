@@ -230,10 +230,19 @@ export default function HierarchyMatchDetailPage() {
           if (!t.sport) return true;
           // If org has no sport, only include universal templates
           if (!sportId) return false;
-          // Template sport matches org sport directly
+          // Template sport matches org sport directly (exact match)
           if (t.sport === sportId) return true;
           // Template sport_detail matches by ID
           if (t.sport_detail?.id === sportId) return true;
+
+          // IMPORTANT: Match if template has a sport VARIANT and org has the CATEGORY
+          // Example: Template=Football 11v11 (variant), Org=Football (category)
+          // Check if template's sport parent matches org's sport
+          if (t.sport_detail?.parent_sport_id === sportId) return true;
+
+          // Or if org has a variant and template has the category
+          if (org?.sport?.parent_sport_id && t.sport === org.sport.parent_sport_id) return true;
+
           return false;
         });
 

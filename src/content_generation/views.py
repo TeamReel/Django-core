@@ -42,9 +42,10 @@ class ContentTemplateFilter(filters.FilterSet):
     Filter for ContentTemplate queries.
 
     Supports filtering by sport, sport_type, is_active, project, organisation, and template_type.
+    Sport filter matches both exact ID and parent-child relationships (category-variant).
     """
 
-    sport = filters.NumberFilter(field_name="sport")
+    sport = filters.NumberFilter(method="filter_sport")
     sport_type = filters.CharFilter(field_name="sport_type")
     is_active = filters.BooleanFilter(field_name="is_active")
     project = filters.NumberFilter(field_name="project")
@@ -54,6 +55,43 @@ class ContentTemplateFilter(filters.FilterSet):
     class Meta:
         model = ContentTemplate
         fields = ["sport", "sport_type", "is_active", "project", "organisation", "template_type"]
+
+    def filter_sport(self, queryset, name, value):
+        """
+        Filter templates by sport, including variants.
+
+        If searching for a category (parent_sport=NULL), include all variants.
+        If searching for a variant, also include templates with the category.
+
+        Example: If org has "Football" (category), show templates for:
+        - Football (exact match)
+        - Football 11v11 (variant of Football)
+        - Football 7v7 (variant of Football)
+        """
+        from django.db.models import Q
+        from sport_configuration.models import Sport
+
+        if not value:
+            return queryset
+
+        try:
+            sport = Sport.objects.get(id=value)
+        except Sport.DoesNotExist:
+            return queryset.none()
+
+        # Build query: exact match OR template's sport is a variant of searched sport OR vice versa
+        query = Q(sport=sport)
+
+        # If searched sport is a category, include all its variants
+        if sport.is_category:
+            variant_ids = sport.variants.values_list("id", flat=True)
+            query |= Q(sport_id__in=variant_ids)
+
+        # If searched sport is a variant, include the category
+        if sport.is_variant and sport.parent_sport:
+            query |= Q(sport=sport.parent_sport)
+
+        return queryset.filter(query)
 
 
 class ContentItemFilter(filters.FilterSet):
