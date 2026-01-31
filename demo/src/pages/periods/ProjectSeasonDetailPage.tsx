@@ -3421,6 +3421,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         return;
                       }
 
+                      // Check if membershipId is a valid UUID
+                      const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(membershipId);
+
+                      console.log('💾 Member data check:', {
+                        membershipId,
+                        isValidUuid,
+                        memberData: selectedEditMember,
+                        user: {
+                          id: (selectedEditMember as any)?.user?.id,
+                          email: (selectedEditMember as any)?.user?.email,
+                        },
+                      });
+
+                      if (!isValidUuid) {
+                        alert(`Cannot save: Invalid membership ID format (${membershipId}). This member may need to be re-added to the squad.`);
+                        return;
+                      }
+
                       const functionalRoles = getFunctionalRolesFromMembership(selectedEditMember);
                       const projectIdForApi = String((project as any)?.id || '').trim();
 
