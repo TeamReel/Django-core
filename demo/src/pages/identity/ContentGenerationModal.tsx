@@ -614,7 +614,7 @@ export default function ContentGenerationModal({
                 )}
               </div>
 
-              {/* Member Selection */}
+              {/* Member Selection - Compact Dropdown Layout */}
               {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map(role => {
                 const req = selectedTemplate.input_requirements?.members?.[role];
                 if (!req || typeof req === 'boolean' || !req.count) return null;
@@ -625,16 +625,16 @@ export default function ContentGenerationModal({
                 const assetLabels = assetTypes.map(t => ASSET_TYPE_LABELS[t] || t);
 
                 return (
-                  <div key={role} className="border border-gray-300 rounded-lg p-5 shadow-sm">
-                    <div className="flex justify-between items-center mb-4">
-                      <div>
-                        <span className="font-semibold text-lg">{renderRoleLabel(role)}</span>
-                        <span className={`text-sm ml-3 px-2 py-1 rounded-full ${
+                  <div key={role} className="border border-gray-300 rounded-lg p-4 shadow-sm">
+                    <div className="flex justify-between items-center mb-3 pb-3 border-b">
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold text-base">{renderRoleLabel(role)}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
                           selected.length === req.count
                             ? 'bg-green-100 text-green-700 font-medium'
                             : 'bg-yellow-50 text-yellow-700'
                         }`}>
-                          {selected.length} / {req.count} selected
+                          {selected.length} / {req.count}
                         </span>
                       </div>
                       {assetLabels.length > 0 && (
@@ -647,48 +647,52 @@ export default function ContentGenerationModal({
                     </div>
 
                     {available.length === 0 ? (
-                      <div className="text-sm text-gray-500 italic p-6 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+                      <div className="text-sm text-gray-500 italic p-4 bg-yellow-50 border border-yellow-200 rounded text-center">
                         ⚠️ No {role}s found in match lineup. Add players to the lineup first.
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                        {available.map(p => {
-                          const isSelected = selected.includes(p.id);
-                          const canSelect = isSelected || selected.length < req.count;
-                          const memberName = p.member?.user_name ||
-                            `${p.member?.first_name || ''} ${p.member?.last_name || ''}`.trim() ||
-                            'Unknown';
+                      <div className="space-y-2">
+                        {Array.from({ length: req.count }).map((_, idx) => {
+                          const currentSelection = selected[idx];
+                          const currentMember = available.find(p => p.id === currentSelection);
 
                           return (
-                            <div
-                              key={p.id}
-                              onClick={() => canSelect && handleMemberToggle(role, p.id)}
-                              className={`
-                                relative flex flex-col items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all
-                                ${isSelected
-                                  ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 shadow-md'
-                                  : canSelect
-                                    ? 'border-gray-200 hover:border-blue-300 hover:bg-gray-50 hover:shadow-sm'
-                                    : 'border-gray-100 opacity-40 cursor-not-allowed'
-                                }
-                              `}
-                            >
-                              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium overflow-hidden flex-shrink-0">
-                                {p.member?.avatar_url ? (
-                                  <img src={p.member.avatar_url} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                  memberName.charAt(0).toUpperCase()
-                                )}
-                              </div>
-                              <div className="text-center w-full">
-                                <div className="text-sm font-medium truncate">{memberName}</div>
-                                {p.data?.jersey_number && (
-                                  <div className="text-xs text-gray-500 font-semibold">#{p.data.jersey_number}</div>
-                                )}
-                              </div>
-                              {isSelected && (
-                                <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">✓</div>
-                              )}
+                            <div key={idx} className="grid grid-cols-[80px_1fr] gap-3 items-center">
+                              <label className="text-sm text-gray-600 font-medium">
+                                {role === 'player' ? `Player ${idx + 1}` : `${renderRoleLabel(role)} ${idx + 1}`}
+                              </label>
+                              <select
+                                value={currentSelection || ''}
+                                onChange={(e) => {
+                                  const newSelected = [...selected];
+                                  if (e.target.value) {
+                                    newSelected[idx] = e.target.value;
+                                  } else {
+                                    newSelected.splice(idx, 1);
+                                  }
+                                  setSelectedMembers({ ...selectedMembers, [role]: newSelected.filter(Boolean) });
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              >
+                                <option value="">Select {role}...</option>
+                                {available.map(p => {
+                                  const memberName = p.member?.user_name ||
+                                    `${p.member?.first_name || ''} ${p.member?.last_name || ''}`.trim() ||
+                                    'Unknown';
+                                  const isAlreadySelected = selected.includes(p.id) && p.id !== currentSelection;
+                                  const jerseyNumber = p.data?.jersey_number;
+
+                                  return (
+                                    <option
+                                      key={p.id}
+                                      value={p.id}
+                                      disabled={isAlreadySelected}
+                                    >
+                                      {jerseyNumber ? `#${jerseyNumber} - ` : ''}{memberName}{isAlreadySelected ? ' (already selected)' : ''}
+                                    </option>
+                                  );
+                                })}
+                              </select>
                             </div>
                           );
                         })}
