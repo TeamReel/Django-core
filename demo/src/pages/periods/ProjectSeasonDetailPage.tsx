@@ -3420,6 +3420,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         return;
                       }
 
+                      console.log('💾 Saving member roles:', {
+                        membershipId,
+                        projectId: projectIdForApi,
+                        functionalRoles,
+                        url: `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForApi)}/members/${encodeURIComponent(membershipId)}/`,
+                      });
+
                       const res = await fetch(
                         `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForApi)}/members/${encodeURIComponent(membershipId)}/`,
                         {
@@ -3437,8 +3444,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                       if (!res.ok) {
                         const text = await res.text();
+                        console.error('❌ Save failed:', text);
                         throw new Error(text || 'Failed to update member');
                       }
+
+                      const responseData = await res.json();
+                      console.log('✅ Save response:', responseData);
 
                       // Update local state
                       setMembers((prev) =>
