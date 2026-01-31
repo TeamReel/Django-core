@@ -216,7 +216,18 @@ export default function ContentGenerationModal({
     // Try to get project ID and season ID
     const projectId = matchData?.project?.id || season?.project_id;
     const seasonId = season?.id;
-    if (!projectId) return;
+
+    console.log('🔍 ContentGenerationModal - Fetching members:', {
+      projectId,
+      seasonId,
+      matchData,
+      season,
+    });
+
+    if (!projectId) {
+      console.warn('❌ No projectId found for fetching members');
+      return;
+    }
 
     const fetchSeasonSquad = async () => {
       try {
@@ -226,6 +237,8 @@ export default function ContentGenerationModal({
           url += `?period_id=${seasonId}`;
         }
 
+        console.log('📡 Fetching from URL:', url);
+
         const response = await fetch(url, {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -233,8 +246,14 @@ export default function ContentGenerationModal({
 
         if (response.ok) {
           const data = await response.json();
+          console.log('✅ API Response:', data);
           const members = data?.data?.results || data?.results || data?.data || data || [];
-          setSeasonSquad(groupParticipationsByRole(members));
+          console.log('👥 Extracted members:', members.length, members);
+          const grouped = groupParticipationsByRole(members);
+          console.log('📊 Grouped by role:', grouped);
+          setSeasonSquad(grouped);
+        } else {
+          console.error('❌ API Error:', response.status, await response.text());
         }
       } catch (err) {
         console.error('Error fetching season squad:', err);
