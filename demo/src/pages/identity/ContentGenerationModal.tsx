@@ -41,44 +41,45 @@ export interface ContentTemplate {
 
 // Content type definitions - exported for use in other components
 // Organized by template_type, with items having template_subtype
+// Labels match backend TemplateSubtype choices
 export const CONTENT_TYPES = {
   pre_match: {
     label: 'Pre-match',
     items: [
-      { id: 'flyer', label: 'Flyer', sublabel: 'Announcement', icon: '📣', subtype: 'flyer' },
-      { id: 'lineup', label: 'Lineup', sublabel: 'Starting XI', icon: '📋', subtype: 'lineup' },
-      { id: 'walkon', label: 'Walk-on', sublabel: 'Kickoff', icon: '🚶', subtype: 'walkon' },
-      { id: 'anthem', label: 'Anthem', sublabel: 'National anthem', icon: '🎵', subtype: 'anthem' },
+      { id: 'flyer', label: 'Match Flyer', icon: '📣', subtype: 'flyer' },
+      { id: 'lineup', label: 'Lineup Announcement', icon: '📋', subtype: 'lineup' },
+      { id: 'walkon', label: 'Walk-on Video', icon: '🚶', subtype: 'walkon' },
+      { id: 'anthem', label: 'Anthem Video', icon: '🎵', subtype: 'anthem' },
     ],
   },
   during_match: {
     label: 'During match',
     items: [
-      { id: 'goal', label: 'Goal', sublabel: 'Celebration', icon: '⚽', subtype: 'goal' },
-      { id: 'score_update', label: 'Score', sublabel: 'Update', icon: '🔢', subtype: 'score_update' },
+      { id: 'goal', label: 'Goal Celebration', icon: '⚽', subtype: 'goal' },
+      { id: 'score_update', label: 'Score Update', icon: '🔢', subtype: 'score_update' },
     ],
   },
   post_match: {
     label: 'Post-match',
     items: [
-      { id: 'end_score', label: 'Final Score', sublabel: 'Full-time', icon: '🏁', subtype: 'end_score' },
-      { id: 'match_summary', label: 'Summary', sublabel: 'Recap', icon: '📊', subtype: 'match_summary' },
-      { id: 'highlights', label: 'Highlights', sublabel: 'Best moments', icon: '🎬', subtype: 'highlights' },
+      { id: 'end_score', label: 'Final Score', icon: '🏁', subtype: 'end_score' },
+      { id: 'match_summary', label: 'Match Summary', icon: '📊', subtype: 'match_summary' },
+      { id: 'highlights', label: 'Highlights Reel', icon: '🎬', subtype: 'highlights' },
     ],
   },
   season: {
     label: 'Season',
     items: [
-      { id: 'transformation', label: 'Then vs Now', sublabel: 'Transformation', icon: '🔄', subtype: 'transformation' },
-      { id: 'season_recap', label: 'Recap', sublabel: 'Season highlights', icon: '📅', subtype: 'season_recap' },
+      { id: 'transformation', label: 'Then vs Now', icon: '🔄', subtype: 'transformation' },
+      { id: 'season_recap', label: 'Season Recap', icon: '📅', subtype: 'season_recap' },
     ],
   },
   member: {
     label: 'Member',
     items: [
-      { id: 'member_intro', label: 'Intro', sublabel: 'Short intro', icon: '👋', subtype: 'member_intro' },
-      { id: 'member_closeup', label: 'Closeup', sublabel: 'Portrait', icon: '📸', subtype: 'member_closeup' },
-      { id: 'member_celebration', label: 'Celebration', sublabel: 'Personal', icon: '🎉', subtype: 'member_celebration' },
+      { id: 'member_intro', label: 'Short Intro', icon: '👋', subtype: 'member_intro' },
+      { id: 'member_closeup', label: 'Closeup Video', icon: '📸', subtype: 'member_closeup' },
+      { id: 'member_celebration', label: 'Personal Celebration', icon: '🎉', subtype: 'member_celebration' },
     ],
   },
 };

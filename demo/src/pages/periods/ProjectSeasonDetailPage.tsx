@@ -1645,18 +1645,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             </div>
                             <div style={{
                               fontWeight: 600,
-                              fontSize: '12px',
+                              fontSize: '11px',
                               color: hasTemplate ? 'var(--app-text)' : 'var(--app-muted-text)',
-                              lineHeight: 1.2,
+                              lineHeight: 1.3,
+                              textAlign: 'center',
                             }}>
                               {item.label}
-                            </div>
-                            <div style={{
-                              fontSize: '10px',
-                              color: 'var(--app-muted-text)',
-                              marginTop: '2px',
-                            }}>
-                              {item.sublabel}
                             </div>
                             {hasTemplate && matchedTemplate && (
                               <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
