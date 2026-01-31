@@ -20,7 +20,7 @@ type Organisation = {
   id: string;
   name: string;
   slug?: string;
-  sport?: { id: number; name: string; slug?: string; sport_icon?: string } | null;
+  sport?: { id: number; name: string; slug?: string; sport_icon?: string; parent_sport_id?: number | null } | null;
 };
 type Project = { id: string; name: string; slug?: string };
 
@@ -103,7 +103,7 @@ type Period = {
   id: string;
   name: string;
   parent_period?: { id: string; name: string } | null;
-  sport?: { id: number; name: string; slug?: string } | null;
+  sport?: { id: number; name: string; slug?: string; sport_icon?: string; parent_sport_id?: number | null } | null;
 };
 
 const looksLikeIdentifier = (value: string) => {
