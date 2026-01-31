@@ -226,11 +226,10 @@ export default function HierarchyMatchDetailPage() {
       const data = await response.json();
         console.log('[Content] Full API response:', data);
         console.log('[Content] data.data:', data?.data);
-        console.log('[Content] data.data.results:', data?.data?.results);
-        console.log('[Content] data.results:', data?.results);
+        console.log('[Content] data.data.data:', data?.data?.data);
 
-        // Handle envelope format: { status: 'success', data: { results: [...] } }
-        const rawResults = data?.data?.results || data?.results || data?.data || data || [];
+        // Handle envelope format: { status: 'success', data: { data: [...] } }
+        const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
         const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
 
         // Use COMPETITION sport (variant) for filtering, fallback to org sport (category)
