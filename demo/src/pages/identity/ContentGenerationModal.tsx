@@ -666,10 +666,25 @@ export default function ContentGenerationModal({
                         const currentSelection = selected[idx];
                         const currentMember = available.find(p => p.id === currentSelection);
 
+                        // Calculate position number based on role
+                        let positionLabel = '';
+                        if (role === 'goalkeeper') {
+                          positionLabel = 'Goalkeeper #1';
+                        } else if (role === 'player') {
+                          // Players start at #2 (after goalkeeper #1)
+                          positionLabel = `Player #${idx + 2}`;
+                        } else if (role === 'coach') {
+                          positionLabel = idx === 0 ? 'Coach' : `Coach ${idx + 1}`;
+                        } else if (role === 'assistant') {
+                          positionLabel = idx === 0 ? 'Assistant' : `Assistant ${idx + 1}`;
+                        } else {
+                          positionLabel = `${renderRoleLabel(role)} ${idx + 1}`;
+                        }
+
                         return (
-                          <div key={idx} className="grid grid-cols-[80px_1fr] gap-3 items-center">
+                          <div key={idx} className="grid grid-cols-[120px_1fr] gap-3 items-center">
                             <label className="text-sm text-gray-600 font-medium">
-                              {role === 'player' ? `Player ${idx + 1}` : `${renderRoleLabel(role)} ${idx + 1}`}
+                              {positionLabel}
                             </label>
                             <select
                               value={currentSelection || ''}
