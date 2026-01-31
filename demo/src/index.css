@@ -257,7 +257,7 @@ button.app-action-button,
 button.app-action-button[type="button"],
 button.app-action-button[type="submit"] {
   border: 1px solid currentColor !important;
-  background-color: var(--app-surface) !important;
+  background-color: transparent !important;
   box-shadow: none !important;
   opacity: 1 !important;
 }
