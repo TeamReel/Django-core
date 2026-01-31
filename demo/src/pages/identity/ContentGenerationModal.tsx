@@ -2,8 +2,45 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button, Badge } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 
-// Content type definitions with icons and labels
-const CONTENT_TYPES = {
+// Asset type labels
+const ASSET_TYPE_LABELS: Record<string, string> = {
+  profile_photo: 'Profile Photo',
+  in_tenue: 'In Tenue',
+  full_body: 'Full Body',
+  close_up: 'Close-up',
+  short_intro: 'Short Intro',
+  celebration: 'Celebration',
+  legacy: 'Legacy',
+};
+
+export interface ContentTemplate {
+  id: number;
+  name: string;
+  description: string | null;
+  template_type: string;
+  template_subtype: string | null;
+  style_variant: string | null;
+  is_active?: boolean;
+  credits_required?: number;
+  sport?: number | null;
+  sport_detail?: { id: number; name: string; slug?: string } | null;
+  formation_detail?: { code: string; name: string } | null;
+  input_requirements?: {
+    members?: {
+      goalkeeper?: { count: number; asset_type: string };
+      player?: { count: number; asset_type: string };
+      coach?: { count: number; asset_type: string };
+      assistant?: { count: number; asset_type: string };
+      use_formation?: boolean;
+    };
+    match_data?: { required: string[] };
+    organisation_assets?: { required: Array<{ type: string; label: string }> };
+    output?: { type: string; format: string; dimensions?: { width: number; height: number; aspect_ratio: string } };
+  };
+}
+
+// Content type definitions - exported for use in other components
+export const CONTENT_TYPES = {
   pre_match: {
     label: 'Pre-match',
     items: [
@@ -31,43 +68,6 @@ const CONTENT_TYPES = {
     ],
   },
 };
-
-// Asset type labels
-const ASSET_TYPE_LABELS: Record<string, string> = {
-  profile_photo: 'Profile Photo',
-  in_tenue: 'In Tenue',
-  full_body: 'Full Body',
-  close_up: 'Close-up',
-  short_intro: 'Short Intro',
-  celebration: 'Celebration',
-  legacy: 'Legacy',
-};
-
-interface ContentTemplate {
-  id: number;
-  name: string;
-  description: string | null;
-  template_type: string;
-  template_subtype: string | null;
-  style_variant: string | null;
-  is_active?: boolean;
-  credits_required?: number;
-  sport?: number | null;
-  sport_detail?: { id: number; name: string; slug?: string } | null;
-  formation_detail?: { code: string; name: string } | null;
-  input_requirements?: {
-    members?: {
-      goalkeeper?: { count: number; asset_type: string };
-      player?: { count: number; asset_type: string };
-      coach?: { count: number; asset_type: string };
-      assistant?: { count: number; asset_type: string };
-      use_formation?: boolean;
-    };
-    match_data?: { required: string[] };
-    organisation_assets?: { required: Array<{ type: string; label: string }> };
-    output?: { type: string; format: string; dimensions?: { width: number; height: number; aspect_ratio: string } };
-  };
-}
 
 interface Participation {
   id: string;
@@ -102,6 +102,10 @@ interface ContentGenerationModalProps {
     location?: string;
   } | null;
   organisationSport?: { id: number | string; name: string; slug?: string } | null;
+  /** Pre-selected template - skips type/template selection */
+  template?: ContentTemplate | null;
+  /** Content type label for header */
+  contentTypeLabel?: string;
 }
 
 // Group participations by functional role
@@ -130,6 +134,8 @@ export default function ContentGenerationModal({
   onClose,
   matchData,
   organisationSport,
+  template: initialTemplate,
+  contentTypeLabel,
 }: ContentGenerationModalProps) {
   const [step, setStep] = useState<'type' | 'template' | 'members' | 'generating' | 'success'>('type');
   const [selectedType, setSelectedType] = useState<{ type: string; subtype: string; label: string } | null>(null);
@@ -156,15 +162,36 @@ export default function ContentGenerationModal({
   // Reset state when opening
   useEffect(() => {
     if (isOpen) {
-      setStep('type');
-      setSelectedType(null);
-      setSelectedTemplate(null);
       setProgress(0);
       setSelectedMembers({ goalkeeper: [], player: [], coach: [], assistant: [] });
       setTemplates([]);
       setError(null);
+
+      // If template is provided, skip to members step
+      if (initialTemplate) {
+        setSelectedTemplate(initialTemplate);
+        setSelectedType({ type: initialTemplate.template_type, subtype: initialTemplate.template_subtype || '', label: contentTypeLabel || initialTemplate.name });
+
+        // Check if template requires member selection
+        const needsMembers = initialTemplate.input_requirements?.members &&
+          Object.entries(initialTemplate.input_requirements.members).some(([key, val]) =>
+            key !== 'use_formation' && val && typeof val !== 'boolean' && val.count > 0
+          );
+
+        if (needsMembers) {
+          setStep('members');
+        } else {
+          // No members needed, go directly to generate
+          setStep('generating');
+          setTimeout(() => handleGenerateInternal(), 100);
+        }
+      } else {
+        setStep('type');
+        setSelectedType(null);
+        setSelectedTemplate(null);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, initialTemplate, contentTypeLabel]);
 
   // Fetch templates when content type is selected
   const fetchTemplates = async (templateType: string, templateSubtype: string) => {
@@ -285,8 +312,7 @@ export default function ContentGenerationModal({
     });
   };
 
-  const handleGenerate = () => {
-    if (!selectedTemplate) return;
+  const handleGenerateInternal = () => {
     setStep('generating');
 
     // Simulate generation
@@ -302,7 +328,18 @@ export default function ContentGenerationModal({
     }, 400);
   };
 
+  const handleGenerate = () => {
+    if (!selectedTemplate) return;
+    handleGenerateInternal();
+  };
+
   const handleBack = () => {
+    // If we started with a template, just close the modal
+    if (initialTemplate) {
+      onClose();
+      return;
+    }
+
     if (step === 'template') {
       setStep('type');
       setSelectedType(null);
@@ -353,7 +390,7 @@ export default function ContentGenerationModal({
             <h2 className="text-xl font-bold m-0">
               {step === 'type' && 'Create Content'}
               {step === 'template' && `Select ${selectedType?.label} Template`}
-              {step === 'members' && 'Select Members'}
+              {step === 'members' && `Create ${contentTypeLabel || selectedType?.label || 'Content'}`}
               {step === 'generating' && 'Generating...'}
               {step === 'success' && 'Content Ready!'}
             </h2>
@@ -369,8 +406,8 @@ export default function ContentGenerationModal({
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
         </div>
 
-        {/* Progress indicator */}
-        {(step === 'type' || step === 'template' || step === 'members') && (
+        {/* Progress indicator - only show for multi-step flow */}
+        {!initialTemplate && (step === 'type' || step === 'template' || step === 'members') && (
           <div className="flex items-center gap-2 mb-4 text-sm">
             <span className={`px-3 py-1 rounded-full ${step === 'type' ? 'bg-blue-100 text-blue-700 font-medium' : 'bg-gray-100 text-gray-500'}`}>
               1. Content Type

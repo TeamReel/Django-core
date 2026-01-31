@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
@@ -12,7 +12,7 @@ import CreateTransactionModal, { type WalletOption } from '../../components/tran
 import { useAuth } from '@django-core/auth-ui';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import MatchEditModal from '../identity/MatchEditModal';
-import ContentGenerationModal from '../identity/ContentGenerationModal';
+import ContentGenerationModal, { CONTENT_TYPES, type ContentTemplate } from '../identity/ContentGenerationModal';
 import { actionButtonStyle } from '../identity/detail/detailStyles';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 
@@ -184,10 +184,64 @@ export default function HierarchyMatchDetailPage() {
 
   // B31 Content Generation
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
+  const [selectedContentTypeLabel, setSelectedContentTypeLabel] = useState<string>('');
+  const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
+  const [templatesLoading, setTemplatesLoading] = useState(false);
 
-  const openContentModal = () => {
+  const openContentModal = (template?: ContentTemplate, label?: string) => {
+    setSelectedTemplate(template || null);
+    setSelectedContentTypeLabel(label || '');
     setIsContentModalOpen(true);
   };
+
+  const closeContentModal = () => {
+    setIsContentModalOpen(false);
+    setSelectedTemplate(null);
+    setSelectedContentTypeLabel('');
+  };
+
+  // Fetch available templates for all content types
+  const fetchAvailableTemplates = useCallback(async () => {
+    if (!org?.sport?.id) return;
+
+    setTemplatesLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('is_active', 'true');
+      params.append('sport', String(org.sport.id));
+
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/content-generation/templates/?${params.toString()}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const results: ContentTemplate[] = data.results || data || [];
+
+        // Group templates by subtype
+        const grouped: Record<string, ContentTemplate[]> = {};
+        results.forEach(t => {
+          const key = t.template_subtype || t.template_type;
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(t);
+        });
+        setAvailableTemplates(grouped);
+      }
+    } catch (err) {
+      console.error('Error fetching templates:', err);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  }, [org?.sport?.id]);
+
+  // Fetch templates when sport is available
+  useEffect(() => {
+    if (org?.sport?.id) {
+      fetchAvailableTemplates();
+    }
+  }, [org?.sport?.id, fetchAvailableTemplates]);
 
   const matchWalletOptions = useMemo<WalletOption[]>(() => {
     const opts: WalletOption[] = [{ kind: 'default', label: 'Default (recommended)' }];
@@ -1653,9 +1707,11 @@ export default function HierarchyMatchDetailPage() {
 
         <ContentGenerationModal
             isOpen={isContentModalOpen}
-            onClose={() => setIsContentModalOpen(false)}
+            onClose={closeContentModal}
             matchData={match}
             organisationSport={org?.sport}
+            template={selectedTemplate}
+            contentTypeLabel={selectedContentTypeLabel}
         />
 
         <PageContent>
@@ -1759,23 +1815,54 @@ export default function HierarchyMatchDetailPage() {
 
           {activeTab === 'content' && (
             <div style={{ display: 'grid', gap: '16px' }}>
-              <Card title="Content Generation">
-                <div className="text-center py-8">
-                  <div className="text-5xl mb-4">🎨</div>
-                  <h3 className="text-lg font-semibold mb-2">Create Match Content</h3>
-                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                    Generate professional graphics for your match - lineup, flyers, score updates and more.
-                  </p>
-                  <Button onClick={() => openContentModal()} size="lg">
-                    + Create Content
-                  </Button>
-                  {org?.sport && (
-                    <div className="mt-4 text-sm text-gray-500">
-                      Templates will be filtered for: <Badge variant="info" size="sm">⚽ {org.sport.name}</Badge>
-                    </div>
+              {/* Sport info header */}
+              {org?.sport && (
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-500">
+                    Templates for: <Badge variant="info" size="sm">⚽ {org.sport.name}</Badge>
+                  </div>
+                  {templatesLoading && (
+                    <div className="text-sm text-gray-400">Loading templates...</div>
                   )}
                 </div>
-              </Card>
+              )}
+
+              {/* Content type tiles grouped by category */}
+              {Object.entries(CONTENT_TYPES).map(([categoryKey, category]) => (
+                <Card key={categoryKey} title={category.label}>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {category.items.map(item => {
+                      const templates = availableTemplates[item.subtype] || [];
+                      const hasTemplate = templates.length > 0;
+                      const template = templates[0]; // Use first matching template
+
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => hasTemplate && openContentModal(template, item.label)}
+                          title={hasTemplate ? `Create ${item.label}` : `No ${item.label} template available`}
+                          className={`
+                            p-4 border rounded flex flex-col items-center justify-center text-center transition-all border-dashed
+                            ${hasTemplate
+                              ? 'bg-gray-50 border-gray-300 cursor-pointer hover:bg-white hover:border-blue-400 hover:shadow-sm'
+                              : 'bg-gray-100 border-gray-200 opacity-50 cursor-not-allowed'
+                            }
+                          `}
+                        >
+                          <div className={`text-2xl mb-2 ${!hasTemplate ? 'grayscale' : ''}`}>{item.icon}</div>
+                          <div className={`font-semibold text-sm ${!hasTemplate ? 'text-gray-400' : ''}`}>{item.label}</div>
+                          <div className="text-xs text-gray-500 mt-1">{item.sublabel}</div>
+                          {hasTemplate ? (
+                            <Badge variant="success" size="sm" className="mt-2">Ready</Badge>
+                          ) : (
+                            <Badge variant="default" size="sm" className="mt-2">No template</Badge>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              ))}
 
               <Card title="Generated Content">
                 <div className="text-center py-8 text-gray-400">
