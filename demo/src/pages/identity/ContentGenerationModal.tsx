@@ -384,8 +384,10 @@ export default function ContentGenerationModal({
         justifyContent: 'center',
         zIndex: 1100,
       }}
+      onClick={onClose}
     >
       <div
+        onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: 'var(--app-surface, white)',
           padding: '24px',
