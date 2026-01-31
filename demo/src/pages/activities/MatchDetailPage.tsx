@@ -1820,6 +1820,11 @@ export default function HierarchyMatchDetailPage() {
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-500">
                     Templates for: <Badge variant="info" size="sm">⚽ {org.sport.name}</Badge>
+                    {match?.metadata?.formation && (
+                      <Badge variant="default" size="sm" style={{ marginLeft: '8px' }}>
+                        Formation: {match.metadata.formation}
+                      </Badge>
+                    )}
                   </div>
                   {templatesLoading && (
                     <div className="text-sm text-gray-400">Loading templates...</div>
@@ -1827,42 +1832,114 @@ export default function HierarchyMatchDetailPage() {
                 </div>
               )}
 
-              {/* Content type tiles grouped by category */}
-              {Object.entries(CONTENT_TYPES).map(([categoryKey, category]) => (
-                <Card key={categoryKey} title={category.label}>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {category.items.map(item => {
-                      const templates = availableTemplates[item.subtype] || [];
-                      const hasTemplate = templates.length > 0;
-                      const template = templates[0]; // Use first matching template
+              {/* Flat grid of all content types */}
+              <Card title="Content Types">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {Object.entries(CONTENT_TYPES).flatMap(([categoryKey, category]) =>
+                    category.items.map(item => {
+                      // Get all templates for this subtype
+                      let templates = availableTemplates[item.subtype] || [];
+                      let matchedTemplate: ContentTemplate | undefined;
+
+                      // Special handling for lineup: match on formation
+                      if (item.subtype === 'lineup' && templates.length > 0) {
+                        const matchFormation = match?.metadata?.formation; // e.g. "4-3-3"
+                        if (matchFormation) {
+                          // Try to find template with matching formation
+                          matchedTemplate = templates.find(t =>
+                            t.formation_detail?.code === matchFormation ||
+                            t.name.toLowerCase().includes(matchFormation.toLowerCase().replace(/-/g, ''))
+                          );
+                        }
+                        // Fallback to first template if no formation match
+                        if (!matchedTemplate) {
+                          matchedTemplate = templates[0];
+                        }
+                      } else {
+                        matchedTemplate = templates[0];
+                      }
+
+                      const hasTemplate = !!matchedTemplate;
 
                       return (
                         <div
-                          key={item.id}
-                          onClick={() => hasTemplate && openContentModal(template, item.label)}
-                          title={hasTemplate ? `Create ${item.label}` : `No ${item.label} template available`}
-                          className={`
-                            p-4 border rounded flex flex-col items-center justify-center text-center transition-all border-dashed
-                            ${hasTemplate
-                              ? 'bg-gray-50 border-gray-300 cursor-pointer hover:bg-white hover:border-blue-400 hover:shadow-sm'
-                              : 'bg-gray-100 border-gray-200 opacity-50 cursor-not-allowed'
+                          key={`${categoryKey}-${item.id}`}
+                          onClick={() => hasTemplate && openContentModal(matchedTemplate, item.label)}
+                          title={hasTemplate
+                            ? `Create ${item.label}${matchedTemplate?.style_variant ? ` (${matchedTemplate.style_variant})` : ''}`
+                            : `No ${item.label} template available`
+                          }
+                          style={{
+                            padding: '16px',
+                            border: hasTemplate ? '1px solid var(--app-border)' : '1px dashed var(--app-border)',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            textAlign: 'center',
+                            cursor: hasTemplate ? 'pointer' : 'not-allowed',
+                            opacity: hasTemplate ? 1 : 0.5,
+                            backgroundColor: hasTemplate ? 'var(--app-card-bg)' : 'var(--app-bg)',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (hasTemplate) {
+                              e.currentTarget.style.borderColor = 'var(--app-primary)';
+                              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
                             }
-                          `}
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = 'var(--app-border)';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
                         >
-                          <div className={`text-2xl mb-2 ${!hasTemplate ? 'grayscale' : ''}`}>{item.icon}</div>
-                          <div className={`font-semibold text-sm ${!hasTemplate ? 'text-gray-400' : ''}`}>{item.label}</div>
-                          <div className="text-xs text-gray-500 mt-1">{item.sublabel}</div>
-                          {hasTemplate ? (
-                            <Badge variant="success" size="sm" className="mt-2">Ready</Badge>
-                          ) : (
-                            <Badge variant="default" size="sm" className="mt-2">No template</Badge>
+                          <div style={{
+                            fontSize: '24px',
+                            marginBottom: '8px',
+                            filter: hasTemplate ? 'none' : 'grayscale(100%)',
+                          }}>
+                            {item.icon}
+                          </div>
+                          <div style={{
+                            fontWeight: 600,
+                            fontSize: '14px',
+                            color: hasTemplate ? 'var(--app-text)' : 'var(--app-muted-text)',
+                          }}>
+                            {item.label}
+                          </div>
+                          <div style={{
+                            fontSize: '11px',
+                            color: 'var(--app-muted-text)',
+                            marginTop: '2px',
+                          }}>
+                            {item.sublabel}
+                          </div>
+                          {/* Show template details */}
+                          {hasTemplate && matchedTemplate && (
+                            <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                              {matchedTemplate.style_variant && (
+                                <Badge variant="info" size="sm">{matchedTemplate.style_variant}</Badge>
+                              )}
+                              {matchedTemplate.formation_detail && (
+                                <Badge variant="default" size="sm">{matchedTemplate.formation_detail.code}</Badge>
+                              )}
+                              {matchedTemplate.credits_required && matchedTemplate.credits_required > 0 && (
+                                <span style={{ fontSize: '10px', color: 'var(--app-muted-text)' }}>
+                                  {matchedTemplate.credits_required} credits
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {!hasTemplate && (
+                            <Badge variant="default" size="sm" style={{ marginTop: '8px' }}>No template</Badge>
                           )}
                         </div>
                       );
-                    })}
-                  </div>
-                </Card>
-              ))}
+                    })
+                  )}
+                </div>
+              </Card>
 
               <Card title="Generated Content">
                 <div className="text-center py-8 text-gray-400">
