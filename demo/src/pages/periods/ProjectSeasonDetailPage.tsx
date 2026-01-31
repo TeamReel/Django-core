@@ -1,5 +1,5 @@
-import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
 import { memberHasMedia, countFilledMediaSlots } from '../../utils/mediaHelpers';
@@ -20,6 +20,7 @@ import PeriodCreateModal from '../identity/PeriodCreateModal';
 import MatchCreateModal from '../identity/MatchCreateModal';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import SeasonSquadAddMemberModal from '../identity/SeasonSquadAddMemberModal';
+import ContentGenerationModal, { CONTENT_TYPES, type ContentTemplate } from '../identity/ContentGenerationModal';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
@@ -202,6 +203,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
   const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
 
+  // Content generation state
+  const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [isContentModalOpen, setIsContentModalOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
+  const [selectedContentTypeLabel, setSelectedContentTypeLabel] = useState('');
+
   const seasonWalletOptions = useMemo<WalletOption[]>(() => {
     const opts: WalletOption[] = [{ kind: 'default', label: 'Default (recommended)' }];
     opts.push({ kind: 'organization', label: 'Federation/Organisation wallet' });
@@ -211,6 +219,73 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     opts.push({ kind: 'me', label: 'My user wallet' });
     return opts;
   }, [project?.id]);
+
+  // Content generation helpers
+  const openContentModal = (template: ContentTemplate, typeLabel: string) => {
+    setSelectedTemplate(template);
+    setSelectedContentTypeLabel(typeLabel);
+    setIsContentModalOpen(true);
+  };
+
+  const closeContentModal = () => {
+    setIsContentModalOpen(false);
+    setSelectedTemplate(null);
+    setSelectedContentTypeLabel('');
+  };
+
+  // Fetch available templates for season content types
+  const fetchAvailableTemplates = useCallback(async () => {
+    if (!org?.sport?.id) return;
+
+    setTemplatesLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('is_active', 'true');
+      if (org?.id) {
+        params.append('organisation', String(org.id));
+      }
+
+      const response = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?${params.toString()}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const rawResults = data?.data?.results || data?.results || data?.data || data || [];
+        const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
+
+        // Filter templates that match the org's sport (or have no sport = universal)
+        const sportId = org.sport.id;
+        const matchingTemplates = allTemplates.filter(t => {
+          if (!t.sport) return true;
+          if (t.sport === sportId) return true;
+          if (t.sport_detail?.id === sportId) return true;
+          return false;
+        });
+
+        // Group templates by subtype
+        const grouped: Record<string, ContentTemplate[]> = {};
+        matchingTemplates.forEach(t => {
+          const subtype = t.template_subtype || t.template_type;
+          if (!grouped[subtype]) grouped[subtype] = [];
+          grouped[subtype].push(t);
+        });
+        setAvailableTemplates(grouped);
+      }
+    } catch (err) {
+      console.error('Error fetching templates:', err);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  }, [org?.sport?.id, org?.id, apiBaseUrl]);
+
+  // Fetch templates when sport is available
+  useEffect(() => {
+    if (org?.sport?.id) {
+      fetchAvailableTemplates();
+    }
+  }, [org?.sport?.id, fetchAvailableTemplates]);
 
   const orgSlugOrId = orgId || '';
   const projectSlugOrId = projectId || '';
@@ -637,8 +712,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       u?.name ||
       `${u?.first_name || ''} ${u?.last_name || ''}`.trim() ||
       String(u?.email || '').trim() ||
-      '—';
-    const email = String(u?.email || '').trim() || '—';
+      'â€”';
+    const email = String(u?.email || '').trim() || 'â€”';
     return { name, email };
   };
 
@@ -1125,7 +1200,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       fontWeight: isActive ? 600 : undefined,
                     }}
                   >
-                    {isActive ? '✓ Active Context' : 'Make active'}
+                    {isActive ? 'âœ“ Active Context' : 'Make active'}
                   </Button>
                 );
               })()}
@@ -1244,8 +1319,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     <Card style={{ padding: '16px' }}>
                       <div className="text-sm font-medium text-gray-500">Dates</div>
                       <div className="text-sm font-semibold mt-1">
-                        {season?.start_date ? new Date(season.start_date).toLocaleDateString() : '—'} –{' '}
-                        {season?.end_date ? new Date(season.end_date).toLocaleDateString() : '—'}
+                        {season?.start_date ? new Date(season.start_date).toLocaleDateString() : 'â€”'} â€“{' '}
+                        {season?.end_date ? new Date(season.end_date).toLocaleDateString() : 'â€”'}
                       </div>
                     </Card>
                     <Card style={{ padding: '16px' }}>
@@ -1273,7 +1348,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           </Button>
                         </div>
                         {competitionsLoading ? (
-                          <div className="text-sm text-gray-500 py-4 text-center">Loading competitions…</div>
+                          <div className="text-sm text-gray-500 py-4 text-center">Loading competitionsâ€¦</div>
                         ) : competitions.length === 0 ? (
                           <div className="text-sm text-gray-500 py-4 text-center">No competitions in this season.</div>
                         ) : (
@@ -1310,7 +1385,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                           <span style={{ fontSize: '12px' }}>{competition.sport.name}</span>
                                         </span>
                                       ) : (
-                                        <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                                        <span style={{ color: 'var(--app-muted-text)' }}>â€”</span>
                                       )}
                                     </td>
                                     <td style={compactTdStyle}>
@@ -1473,7 +1548,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             style={{ width: '100%', justifyContent: 'flex-start' }}
                             onClick={() => navigateToTab('media')}
                           >
-                            📸 Media Matrix
+                            ðŸ“¸ Media Matrix
                           </Button>
                         </div>
                       </Card>
@@ -1502,32 +1577,117 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               )}
 
               {activeTab === 'content' && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 space-y-6">
-                    <Card>
-                      <div style={{ padding: '16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                          <div>
-                            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>Season Content</h3>
-                            <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                              Create season-wide stories (recaps, highlights, then &amp; now) across all matches.
-                            </div>
-                          </div>
-                          <Button variant="secondary" onClick={() => navigate('/studio/create')}>
-                            Open AI Studio
-                          </Button>
-                        </div>
+                <div style={{ display: 'grid', gap: '16px' }}>
+                  {/* Sport info header */}
+                  {org?.sport && (
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-500">
+                        Templates for: <Badge variant="info" size="sm">âš½ {org.sport.name}</Badge>
                       </div>
-                    </Card>
+                      {templatesLoading && (
+                        <div className="text-sm text-gray-400">Loading templates...</div>
+                      )}
+                    </div>
+                  )}
 
-                    <Card>
+                  {/* Season content types */}
+                  <Card title="Season Content">
+                    <div style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '12px',
+                    }}>
+                      {CONTENT_TYPES.season?.items.map(item => {
+                        const templates = availableTemplates[item.subtype] || [];
+                        const matchedTemplate = templates[0];
+                        const hasTemplate = !!matchedTemplate;
+
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => hasTemplate && openContentModal(matchedTemplate, item.label)}
+                            title={hasTemplate
+                              ? `Create ${item.label}${matchedTemplate?.style_variant ? ` (${matchedTemplate.style_variant})` : ''}`
+                              : `No ${item.label} template available`
+                            }
+                            style={{
+                              width: '100px',
+                              padding: '12px 8px',
+                              border: hasTemplate ? '1px solid var(--app-border)' : '1px dashed var(--app-border)',
+                              borderRadius: '8px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              textAlign: 'center',
+                              cursor: hasTemplate ? 'pointer' : 'not-allowed',
+                              opacity: hasTemplate ? 1 : 0.5,
+                              backgroundColor: hasTemplate ? 'var(--app-card-bg)' : 'var(--app-bg)',
+                              transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              if (hasTemplate) {
+                                e.currentTarget.style.borderColor = 'var(--app-primary)';
+                                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--app-border)';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                          >
+                            <div style={{
+                              fontSize: '20px',
+                              marginBottom: '4px',
+                              filter: hasTemplate ? 'none' : 'grayscale(100%)',
+                            }}>
+                              {item.icon}
+                            </div>
+                            <div style={{
+                              fontWeight: 600,
+                              fontSize: '12px',
+                              color: hasTemplate ? 'var(--app-text)' : 'var(--app-muted-text)',
+                              lineHeight: 1.2,
+                            }}>
+                              {item.label}
+                            </div>
+                            <div style={{
+                              fontSize: '10px',
+                              color: 'var(--app-muted-text)',
+                              marginTop: '2px',
+                            }}>
+                              {item.sublabel}
+                            </div>
+                            {hasTemplate && matchedTemplate && (
+                              <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
+                                {matchedTemplate.style_variant && (
+                                  <Badge variant="info" size="sm" style={{ fontSize: '9px', padding: '2px 4px' }}>{matchedTemplate.style_variant}</Badge>
+                                )}
+                                {matchedTemplate.credits_required && matchedTemplate.credits_required > 0 && (
+                                  <span style={{ fontSize: '9px', color: 'var(--app-muted-text)' }}>
+                                    {matchedTemplate.credits_required} cr
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            {!hasTemplate && (
+                              <div style={{ fontSize: '9px', color: 'var(--app-muted-text)', marginTop: '4px' }}>â€”</div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Card>
+
+                  {/* Then & Now feature */}
+                  <Card title="Then &amp; Now">
                       <div style={{ padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                           <div>
                             <div style={{ fontSize: '16px', fontWeight: 800 }}>Then &amp; Now</div>
                             <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
                               Season-wide player content (not tied to a match). Pick up to 5 players and generate either a morph video
-                              (then → now) or a side-by-side montage.
+                              (then â†’ now) or a side-by-side montage.
                             </div>
                           </div>
                           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -1562,9 +1722,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         </div>
 
                         <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          <Badge variant="default">Season: {season?.name || '—'}</Badge>
+                          <Badge variant="default">Season: {season?.name || 'â€”'}</Badge>
                           <Badge variant="default">Competitions: {competitions.length}</Badge>
-                          <Badge variant="default">Matches: {matchesLoading ? 'Loading…' : String(matches.length)}</Badge>
+                          <Badge variant="default">Matches: {matchesLoading ? 'Loadingâ€¦' : String(matches.length)}</Badge>
                           <Badge variant="default">Players: {thenNowSelectedUserIds.size}/5</Badge>
                         </div>
 
@@ -1573,7 +1733,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             <div>
                               <div style={{ fontWeight: 800, marginBottom: 6 }}>Pick players</div>
                               <div style={{ opacity: 0.75, fontSize: 13 }}>
-                                Select 1–5 players from this season squad. “Then” and “Now” photos will come from player assets
+                                Select 1â€“5 players from this season squad. â€œThenâ€ and â€œNowâ€ photos will come from player assets
                                 (later: Media Day).
                               </div>
                             </div>
@@ -1605,7 +1765,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             <Input
                               value={thenNowSearch}
                               onChange={(e) => setThenNowSearch((e.target as any).value)}
-                              placeholder="Search players…"
+                              placeholder="Search playersâ€¦"
                             />
                           </div>
 
@@ -1621,7 +1781,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             }}
                           >
                             {membersLoading ? (
-                              <div style={{ opacity: 0.75, fontSize: 13 }}>Loading squad…</div>
+                              <div style={{ opacity: 0.75, fontSize: 13 }}>Loading squadâ€¦</div>
                             ) : membersError ? (
                               <div style={{ color: 'var(--app-danger, #d32f2f)', fontSize: 13 }}>{membersError}</div>
                             ) : thenNowCandidates.length === 0 ? (
@@ -1633,7 +1793,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   const roles = (p.roles || []).filter(Boolean).slice(0, 3);
                                   const subtitleParts = [p.position ? `Pos: ${p.position}` : '', p.shirt ? `#${p.shirt}` : '']
                                     .filter(Boolean)
-                                    .join(' • ');
+                                    .join(' â€¢ ');
                                   return (
                                     <label
                                       key={p.userId}
@@ -1694,23 +1854,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         </div>
                       </div>
                     </Card>
-                  </div>
 
-                  <div className="space-y-6">
-                    <Card>
-                      <div style={{ padding: '16px' }}>
-                        <div style={{ fontSize: '16px', fontWeight: 800, marginBottom: '6px' }}>Coming soon</div>
-                        <div style={{ opacity: 0.75, fontSize: '13px' }}>
-                          This tab will expand into a season “slot system” (pre/mid/post-season) as the content modules land.
-                        </div>
-                        <div style={{ marginTop: '12px' }}>
-                          <Button variant="secondary" onClick={() => navigate('/content')}>
-                            Content Library
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  </div>
+                  <Card title="Generated Content">
+                    <div className="text-center py-8 text-gray-400">
+                      <div className="text-3xl mb-2">📭</div>
+                      <p>No content generated yet</p>
+                      <p className="text-sm">Generated graphics will appear here</p>
+                    </div>
+                  </Card>
                 </div>
               )}
 
@@ -1720,14 +1871,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     <div>
                       <div style={{ fontSize: 16, fontWeight: 700 }}>Hierarchy</div>
                       <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>
-                        Competitions → Matches
+                        Competitions â†’ Matches
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <Input
                         value={hierarchySearch}
                         onChange={(e) => setHierarchySearch(e.target.value)}
-                        placeholder="Search competitions/matches…"
+                        placeholder="Search competitions/matchesâ€¦"
                       />
                       {userCanEditProject && (
                         <>
@@ -1897,7 +2048,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                                 <div style={{ padding: '10px 12px' }}>
                                   {matchesLoading ? (
-                                    <div className="text-sm text-gray-500 py-2">Loading matches…</div>
+                                    <div className="text-sm text-gray-500 py-2">Loading matchesâ€¦</div>
                                   ) : visibleMatches.length === 0 ? (
                                     <div className="text-sm text-gray-500 py-2">No matches.</div>
                                   ) : (
@@ -1931,7 +2082,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                                 {match.title || match.name}
                                               </button>
                                               <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
-                                                {match.start_time ? new Date(match.start_time).toLocaleString() : '—'}
+                                                {match.start_time ? new Date(match.start_time).toLocaleString() : 'â€”'}
                                               </div>
                                             </div>
 
@@ -2020,10 +2171,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       </div>
                     )}
 
-                    {membersLoading && <Alert variant="info">Loading squad…</Alert>}
+                    {membersLoading && <Alert variant="info">Loading squadâ€¦</Alert>}
                     {membersError && <Alert variant="error">{membersError}</Alert>}
 
-                    {teamRosterLoading && <Alert variant="info">Loading team roster…</Alert>}
+                    {teamRosterLoading && <Alert variant="info">Loading team rosterâ€¦</Alert>}
                     {teamRosterError && <Alert variant="error">{teamRosterError}</Alert>}
 
                     {userCanEditProject ? (
@@ -2128,7 +2279,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                               ))}
                                             </div>
                                           ) : (
-                                            '—'
+                                            'â€”'
                                           )}
                                         </td>
                                         <td style={compactTdStyle} className="text-right">
@@ -2237,12 +2388,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       memberUser.name ||
                                       `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
                                       memberUser.email ||
-                                      '—';
+                                      'â€”';
 
-                                    const email = memberUser.email || '—';
+                                    const email = memberUser.email || 'â€”';
                                     const role = normalizeAccessRole(m.role || 'viewer');
                                     const functionalRoles = getFunctionalRolesFromMembership(m);
-                                    const position = m.metadata?.position || '—';
+                                    const position = m.metadata?.position || 'â€”';
                                     const shirtNumber = m.metadata?.shirt_number ?? '';
                                     const membershipId = String(m.id || '').trim();
                                     const checked = Boolean(membershipId && selectedSquadMembershipIds.has(membershipId));
@@ -2290,11 +2441,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                               ))}
                                             </div>
                                           ) : (
-                                            '—'
+                                            'â€”'
                                           )}
                                         </td>
                                         <td style={compactTextTdStyle}>{position}</td>
-                                        <td style={compactTdStyle}>{shirtNumber || '—'}</td>
+                                        <td style={compactTdStyle}>{shirtNumber || 'â€”'}</td>
                                         <td style={compactTdStyle} className="text-right">
                                           <div style={compactActionsStyle}>
                                             <button
@@ -2346,12 +2497,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     memberUser.name ||
                                     `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
                                     memberUser.email ||
-                                    '—';
+                                    'â€”';
 
-                                  const email = memberUser.email || '—';
+                                  const email = memberUser.email || 'â€”';
                                   const role = normalizeAccessRole(m.role || 'viewer');
                                   const functionalRoles = getFunctionalRolesFromMembership(m);
-                                  const position = m.metadata?.position || '—';
+                                  const position = m.metadata?.position || 'â€”';
                                   const shirtNumber = m.metadata?.shirt_number ?? '';
                                   const membershipId = String(m.id || '').trim();
                                   const href = memberDetailHref(membershipId);
@@ -2387,11 +2538,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             ))}
                                           </div>
                                         ) : (
-                                          '—'
+                                          'â€”'
                                         )}
                                       </td>
                                       <td style={compactTextTdStyle}>{position}</td>
-                                      <td style={compactTdStyle}>{shirtNumber || '—'}</td>
+                                      <td style={compactTdStyle}>{shirtNumber || 'â€”'}</td>
                                     </tr>
                                   );
                                 })}
@@ -2412,7 +2563,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   <Card>
                     <div style={{ padding: '16px 16px 0 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>📸 Media Completion Matrix</h3>
+                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>ðŸ“¸ Media Completion Matrix</h3>
                         <Badge variant="default">
                           {members.filter((m) => countFilledMediaSlots(m) === MEDIA_SLOTS.length).length} / {members.length} Complete
                         </Badge>
@@ -2424,7 +2575,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                     <div style={{ padding: '16px' }}>
                       {membersLoading ? (
-                        <Alert variant="info">Loading squad media status…</Alert>
+                        <Alert variant="info">Loading squad media statusâ€¦</Alert>
                       ) : members.length === 0 ? (
                         <Alert variant="info">No squad members to show media status for.</Alert>
                       ) : (
@@ -2448,7 +2599,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   memberUser.name ||
                                   `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
                                   memberUser.email ||
-                                  '—';
+                                  'â€”';
                                 const membershipId = String(m.id || '').trim();
                                 const href = memberDetailHref(membershipId);
                                 const filledCount = countFilledMediaSlots(m);
@@ -2479,10 +2630,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                               style={{ textDecoration: 'none' }}
                                               title={`Edit ${slot.label}`}
                                             >
-                                              <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span>
+                                              <span style={{ fontSize: '14px' }}>{hasMedia ? 'âœ…' : 'â¬œ'}</span>
                                             </Link>
                                           ) : (
-                                            <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span>
+                                            <span style={{ fontSize: '14px' }}>{hasMedia ? 'âœ…' : 'â¬œ'}</span>
                                           )}
                                         </td>
                                       );
@@ -2536,7 +2687,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       ) : null}
                     </div>
                     {competitionsLoading ? (
-                      <Alert variant="info">Loading competitions…</Alert>
+                      <Alert variant="info">Loading competitionsâ€¦</Alert>
                     ) : competitions.length === 0 ? (
                       <Alert variant="info">No competitions found in this season.</Alert>
                     ) : (
@@ -2574,11 +2725,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     <span style={{ fontSize: '12px' }}>{competition.sport.name}</span>
                                   </span>
                                 ) : (
-                                  <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                                  <span style={{ color: 'var(--app-muted-text)' }}>â€”</span>
                                 )}
                               </td>
                               <td style={compactTextTdStyle}>
-                                {new Date(competition.start_date).toLocaleDateString()} –{' '}
+                                {new Date(competition.start_date).toLocaleDateString()} â€“{' '}
                                 {new Date(competition.end_date).toLocaleDateString()}
                               </td>
                               <td style={compactTdStyle}>
@@ -2679,7 +2830,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       ) : null}
                     </div>
                     {matchesLoading ? (
-                      <Alert variant="info">Loading matches…</Alert>
+                      <Alert variant="info">Loading matchesâ€¦</Alert>
                     ) : matches.length === 0 ? (
                       <Alert variant="info">No matches found in this season.</Alert>
                     ) : (
@@ -2731,11 +2882,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     {match.period?.name || 'Competition'}
                                   </Link>
                                 ) : (
-                                  match.period?.name || '—'
+                                  match.period?.name || 'â€”'
                                 )}
                               </td>
                               <td style={compactTextTdStyle}>
-                                {match.start_time ? new Date(match.start_time).toLocaleString() : '—'}
+                                {match.start_time ? new Date(match.start_time).toLocaleString() : 'â€”'}
                               </td>
                               <td style={compactTdStyle}>
                                 <Badge variant="default">{getMatchParticipantsCount(match)}</Badge>
@@ -3120,6 +3271,22 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             } finally {
               setAddingMember(false);
             }
+          }}
+        />
+
+        {/* Content Generation Modal */}
+        <ContentGenerationModal
+          opened={isContentModalOpen}
+          onClose={closeContentModal}
+          template={selectedTemplate}
+          contentTypeLabel={selectedContentTypeLabel}
+          contextData={{
+            season_id: resolvedSeasonId || effectiveSeasonId,
+            season_name: season?.name || '',
+            organisation_id: org?.id,
+            organisation_name: org?.name,
+            project_id: project?.id,
+            project_name: project?.name,
           }}
         />
       </div>

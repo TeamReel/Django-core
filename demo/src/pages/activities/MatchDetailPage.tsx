@@ -1862,15 +1862,18 @@ export default function HierarchyMatchDetailPage() {
                 </div>
               )}
 
-              {/* Compact grid of all content types */}
-              <Card title="Content Types">
-                <div style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '12px',
-                }}>
-                  {Object.entries(CONTENT_TYPES).flatMap(([categoryKey, category]) =>
-                    category.items.map(item => {
+              {/* Match content types grouped by phase */}
+              {(['pre_match', 'during_match', 'post_match'] as const).map(categoryKey => {
+                const category = CONTENT_TYPES[categoryKey];
+                if (!category) return null;
+                return (
+                  <Card key={categoryKey} title={category.label}>
+                    <div style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '12px',
+                    }}>
+                      {category.items.map(item => {
                       // Get all templates for this subtype
                       let templates = availableTemplates[item.subtype] || [];
                       let matchedTemplate: ContentTemplate | undefined;
@@ -1969,10 +1972,11 @@ export default function HierarchyMatchDetailPage() {
                           )}
                         </div>
                       );
-                    })
-                  )}
-                </div>
-              </Card>
+                    })}
+                    </div>
+                  </Card>
+                );
+              })}
 
               <Card title="Generated Content">
                 <div className="text-center py-8 text-gray-400">
