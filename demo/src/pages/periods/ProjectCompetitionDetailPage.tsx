@@ -1559,8 +1559,6 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
   const tableActionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => ({
     ...actionButtonStyle(tone),
-    padding: '6px 12px',
-    fontWeight: 500,
   });
 
   const backButtonStyle: React.CSSProperties = {
