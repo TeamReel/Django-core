@@ -1267,8 +1267,22 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                             const apiBaseUrl = getApiBaseUrl();
                                                             const csrfToken = getCsrfToken();
 
+                                                            // For pm:* format IDs, extract the numeric user ID and use user_id parameter
+                                                            let deleteUrl = `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/`;
+                                                            if (isUuid(membershipId)) {
+                                                                // Real UUID membership
+                                                                deleteUrl += `${membershipId}/`;
+                                                            } else if (String(membershipId).startsWith('pm:')) {
+                                                                // pm:USER_ID format - use user_id query parameter
+                                                                const userId = String(membershipId).replace('pm:', '');
+                                                                deleteUrl += `?user_id=${userId}`;
+                                                            } else {
+                                                                alert('Invalid membership ID format');
+                                                                return;
+                                                            }
+
                                                             const res = await fetch(
-                                                                `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${membershipId}/`,
+                                                                deleteUrl,
                                                                 {
                                                                     method: 'DELETE',
                                                                     headers: {
