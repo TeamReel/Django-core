@@ -50,7 +50,7 @@ export const actionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProper
   const base: React.CSSProperties = {
     padding: '4px 8px',
     borderRadius: '4px',
-    backgroundColor: 'var(--app-surface)',
+    backgroundColor: 'transparent',
     cursor: 'pointer',
     fontSize: '12px',
     lineHeight: 1.2,
@@ -59,7 +59,7 @@ export const actionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProper
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontWeight: 500,
+    fontWeight: 600,
   };
 
   // View / Primary: Outline (Link Color)
