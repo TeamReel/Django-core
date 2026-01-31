@@ -224,6 +224,11 @@ export default function HierarchyMatchDetailPage() {
       }
 
       const data = await response.json();
+        console.log('[Content] Full API response:', data);
+        console.log('[Content] data.data:', data?.data);
+        console.log('[Content] data.data.results:', data?.data?.results);
+        console.log('[Content] data.results:', data?.results);
+
         // Handle envelope format: { status: 'success', data: { results: [...] } }
         const rawResults = data?.data?.results || data?.results || data?.data || data || [];
         const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
