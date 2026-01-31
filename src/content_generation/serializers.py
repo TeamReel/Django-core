@@ -5,9 +5,13 @@ Serializers for ContentTemplate, ContentItem, and ContentApproval models
 with nested relationships and validation logic.
 """
 
+import logging
+
 from rest_framework import serializers
 
 from .models import ContentApproval, ContentItem, ContentTemplate
+
+logger = logging.getLogger(__name__)
 
 
 class ContentTemplateSerializer(serializers.ModelSerializer):
@@ -95,9 +99,30 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
 
     def validate_input_requirements(self, value):
         """Validate input_requirements is a valid JSON object"""
+        logger.info(
+            f"validate_input_requirements called with value type: {type(value)}, value: {value}"
+        )
         if value is not None and not isinstance(value, dict):
             raise serializers.ValidationError("input_requirements must be a valid JSON object")
         return value if value is not None else {}
+
+    def validate(self, attrs):
+        """Log all incoming attributes for debugging."""
+        logger.info(f"ContentTemplateSerializer.validate() called with attrs: {attrs}")
+        return super().validate(attrs)
+
+    def update(self, instance, validated_data):
+        """Log update operation for debugging."""
+        logger.info(
+            f"ContentTemplateSerializer.update() called for {instance.id} with data: {validated_data}"
+        )
+        try:
+            result = super().update(instance, validated_data)
+            logger.info(f"ContentTemplateSerializer.update() succeeded for {instance.id}")
+            return result
+        except Exception as e:
+            logger.exception(f"ContentTemplateSerializer.update() FAILED for {instance.id}: {e}")
+            raise
 
     def validate_sport_type(self, value):
         """
