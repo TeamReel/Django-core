@@ -200,7 +200,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
     competitions_count = serializers.SerializerMethodField()
     matches_count = serializers.SerializerMethodField()
     sport_variants_count = serializers.SerializerMethodField()
-    parent_id = serializers.UUIDField(source="parent_project.id", allow_null=True, read_only=True)
+    parent_id = serializers.IntegerField(
+        source="parent_project.id", allow_null=True, read_only=True
+    )
     parent_name = serializers.CharField(
         source="parent_project.name", allow_null=True, read_only=True
     )
