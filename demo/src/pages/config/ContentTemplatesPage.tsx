@@ -1107,105 +1107,228 @@ export default function ContentTemplatesPage() {
                   Define what inputs are required for this template to generate content.
                 </p>
 
-                {/* Players Section */}
+                {/* Members Required Section */}
                 <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', padding: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                    <input
-                      type="checkbox"
-                      id="req_players"
-                      checked={!!editForm.input_requirements?.players}
-                      onChange={(e) => {
-                        const newReqs = { ...editForm.input_requirements };
-                        if (e.target.checked) {
-                          newReqs.players = { use_formation: true, min_count: 1 };
-                        } else {
-                          delete newReqs.players;
-                        }
-                        setEditForm({ ...editForm, input_requirements: newReqs });
-                      }}
-                      style={{ width: '18px', height: '18px' }}
-                    />
-                    <label htmlFor="req_players" style={{ fontWeight: 600, fontSize: '15px' }}>
-                      👥 Players Required
-                    </label>
-                  </div>
-                  {editForm.input_requirements?.players && (
-                    <div style={{ marginLeft: '26px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <input
-                          type="checkbox"
-                          checked={editForm.input_requirements.players.use_formation !== false}
-                          onChange={(e) => {
-                            const newReqs = { ...editForm.input_requirements };
-                            newReqs.players = { ...newReqs.players, use_formation: e.target.checked };
-                            setEditForm({ ...editForm, input_requirements: newReqs });
-                          }}
-                        />
-                        Use formation positions
-                      </label>
-                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          Min:
-                          <input
-                            type="number"
-                            min="1"
-                            max="30"
-                            value={editForm.input_requirements.players.min_count || 1}
-                            onChange={(e) => {
-                              const newReqs = { ...editForm.input_requirements };
-                              newReqs.players = { ...newReqs.players, min_count: parseInt(e.target.value) || 1 };
-                              setEditForm({ ...editForm, input_requirements: newReqs });
-                            }}
-                            style={{ width: '60px', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--app-border)' }}
-                          />
-                        </label>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          Max:
-                          <input
-                            type="number"
-                            min="1"
-                            max="30"
-                            value={editForm.input_requirements.players.max_count || 11}
-                            onChange={(e) => {
-                              const newReqs = { ...editForm.input_requirements };
-                              newReqs.players = { ...newReqs.players, max_count: parseInt(e.target.value) || 11 };
-                              setEditForm({ ...editForm, input_requirements: newReqs });
-                            }}
-                            style={{ width: '60px', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--app-border)' }}
-                          />
-                        </label>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  <h4 style={{ margin: '0 0 16px 0', fontWeight: 600, fontSize: '15px' }}>
+                    👥 Members Required
+                  </h4>
 
-                {/* Staff Section */}
-                <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', padding: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                    <input
-                      type="checkbox"
-                      id="req_staff"
-                      checked={!!editForm.input_requirements?.staff}
-                      onChange={(e) => {
-                        const newReqs = { ...editForm.input_requirements };
-                        if (e.target.checked) {
-                          newReqs.staff = [{ role: 'head_coach', required: true, count: 1 }];
-                        } else {
-                          delete newReqs.staff;
-                        }
-                        setEditForm({ ...editForm, input_requirements: newReqs });
-                      }}
-                      style={{ width: '18px', height: '18px' }}
-                    />
-                    <label htmlFor="req_staff" style={{ fontWeight: 600, fontSize: '15px' }}>
-                      👔 Staff Required
+                  {/* Functional Roles Grid */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {/* Keeper */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'center' }}>
+                      <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🧤 Goalkeeper
+                      </label>
+                      <select
+                        value={editForm.input_requirements?.members?.goalkeeper?.count ?? 0}
+                        onChange={(e) => {
+                          const newReqs = { ...editForm.input_requirements };
+                          if (!newReqs.members) newReqs.members = {};
+                          const count = parseInt(e.target.value);
+                          if (count === 0) {
+                            delete newReqs.members.goalkeeper;
+                          } else {
+                            newReqs.members.goalkeeper = {
+                              ...newReqs.members.goalkeeper,
+                              count,
+                              asset_type: newReqs.members.goalkeeper?.asset_type || 'in_tenue',
+                            };
+                          }
+                          setEditForm({ ...editForm, input_requirements: newReqs });
+                        }}
+                        style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)' }}
+                      >
+                        {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                      <select
+                        value={editForm.input_requirements?.members?.goalkeeper?.asset_type || 'in_tenue'}
+                        onChange={(e) => {
+                          const newReqs = { ...editForm.input_requirements };
+                          if (!newReqs.members) newReqs.members = {};
+                          if (newReqs.members.goalkeeper) {
+                            newReqs.members.goalkeeper.asset_type = e.target.value;
+                            setEditForm({ ...editForm, input_requirements: newReqs });
+                          }
+                        }}
+                        disabled={!editForm.input_requirements?.members?.goalkeeper?.count}
+                        style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)', opacity: !editForm.input_requirements?.members?.goalkeeper?.count ? 0.5 : 1 }}
+                      >
+                        <option value="profile_photo">Profile Photo</option>
+                        <option value="in_tenue">In Tenue</option>
+                        <option value="full_body">Full Body</option>
+                        <option value="close_up">Close-up</option>
+                        <option value="short_intro">Short Intro</option>
+                        <option value="celebration">Celebration</option>
+                        <option value="legacy">Legacy</option>
+                      </select>
+                    </div>
+
+                    {/* Players */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'center' }}>
+                      <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        ⚽ Players
+                      </label>
+                      <select
+                        value={editForm.input_requirements?.members?.player?.count ?? 0}
+                        onChange={(e) => {
+                          const newReqs = { ...editForm.input_requirements };
+                          if (!newReqs.members) newReqs.members = {};
+                          const count = parseInt(e.target.value);
+                          if (count === 0) {
+                            delete newReqs.members.player;
+                          } else {
+                            newReqs.members.player = {
+                              ...newReqs.members.player,
+                              count,
+                              asset_type: newReqs.members.player?.asset_type || 'in_tenue',
+                            };
+                          }
+                          setEditForm({ ...editForm, input_requirements: newReqs });
+                        }}
+                        style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)' }}
+                      >
+                        {[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                      <select
+                        value={editForm.input_requirements?.members?.player?.asset_type || 'in_tenue'}
+                        onChange={(e) => {
+                          const newReqs = { ...editForm.input_requirements };
+                          if (!newReqs.members) newReqs.members = {};
+                          if (newReqs.members.player) {
+                            newReqs.members.player.asset_type = e.target.value;
+                            setEditForm({ ...editForm, input_requirements: newReqs });
+                          }
+                        }}
+                        disabled={!editForm.input_requirements?.members?.player?.count}
+                        style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)', opacity: !editForm.input_requirements?.members?.player?.count ? 0.5 : 1 }}
+                      >
+                        <option value="profile_photo">Profile Photo</option>
+                        <option value="in_tenue">In Tenue</option>
+                        <option value="full_body">Full Body</option>
+                        <option value="close_up">Close-up</option>
+                        <option value="short_intro">Short Intro</option>
+                        <option value="celebration">Celebration</option>
+                        <option value="legacy">Legacy</option>
+                      </select>
+                    </div>
+
+                    {/* Coach */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'center' }}>
+                      <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        👔 Coach
+                      </label>
+                      <select
+                        value={editForm.input_requirements?.members?.coach?.count ?? 0}
+                        onChange={(e) => {
+                          const newReqs = { ...editForm.input_requirements };
+                          if (!newReqs.members) newReqs.members = {};
+                          const count = parseInt(e.target.value);
+                          if (count === 0) {
+                            delete newReqs.members.coach;
+                          } else {
+                            newReqs.members.coach = {
+                              ...newReqs.members.coach,
+                              count,
+                              asset_type: newReqs.members.coach?.asset_type || 'profile_photo',
+                            };
+                          }
+                          setEditForm({ ...editForm, input_requirements: newReqs });
+                        }}
+                        style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)' }}
+                      >
+                        {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                      <select
+                        value={editForm.input_requirements?.members?.coach?.asset_type || 'profile_photo'}
+                        onChange={(e) => {
+                          const newReqs = { ...editForm.input_requirements };
+                          if (!newReqs.members) newReqs.members = {};
+                          if (newReqs.members.coach) {
+                            newReqs.members.coach.asset_type = e.target.value;
+                            setEditForm({ ...editForm, input_requirements: newReqs });
+                          }
+                        }}
+                        disabled={!editForm.input_requirements?.members?.coach?.count}
+                        style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)', opacity: !editForm.input_requirements?.members?.coach?.count ? 0.5 : 1 }}
+                      >
+                        <option value="profile_photo">Profile Photo</option>
+                        <option value="in_tenue">In Tenue</option>
+                        <option value="full_body">Full Body</option>
+                        <option value="close_up">Close-up</option>
+                        <option value="short_intro">Short Intro</option>
+                        <option value="celebration">Celebration</option>
+                        <option value="legacy">Legacy</option>
+                      </select>
+                    </div>
+
+                    {/* Assistant */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'center' }}>
+                      <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        📋 Assistant
+                      </label>
+                      <select
+                        value={editForm.input_requirements?.members?.assistant?.count ?? 0}
+                        onChange={(e) => {
+                          const newReqs = { ...editForm.input_requirements };
+                          if (!newReqs.members) newReqs.members = {};
+                          const count = parseInt(e.target.value);
+                          if (count === 0) {
+                            delete newReqs.members.assistant;
+                          } else {
+                            newReqs.members.assistant = {
+                              ...newReqs.members.assistant,
+                              count,
+                              asset_type: newReqs.members.assistant?.asset_type || 'profile_photo',
+                            };
+                          }
+                          setEditForm({ ...editForm, input_requirements: newReqs });
+                        }}
+                        style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)' }}
+                      >
+                        {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
+                      <select
+                        value={editForm.input_requirements?.members?.assistant?.asset_type || 'profile_photo'}
+                        onChange={(e) => {
+                          const newReqs = { ...editForm.input_requirements };
+                          if (!newReqs.members) newReqs.members = {};
+                          if (newReqs.members.assistant) {
+                            newReqs.members.assistant.asset_type = e.target.value;
+                            setEditForm({ ...editForm, input_requirements: newReqs });
+                          }
+                        }}
+                        disabled={!editForm.input_requirements?.members?.assistant?.count}
+                        style={{ padding: '6px 10px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)', opacity: !editForm.input_requirements?.members?.assistant?.count ? 0.5 : 1 }}
+                      >
+                        <option value="profile_photo">Profile Photo</option>
+                        <option value="in_tenue">In Tenue</option>
+                        <option value="full_body">Full Body</option>
+                        <option value="close_up">Close-up</option>
+                        <option value="short_intro">Short Intro</option>
+                        <option value="celebration">Celebration</option>
+                        <option value="legacy">Legacy</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Use Formation Positions checkbox */}
+                  <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--app-border)' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={editForm.input_requirements?.members?.use_formation ?? false}
+                        onChange={(e) => {
+                          const newReqs = { ...editForm.input_requirements };
+                          if (!newReqs.members) newReqs.members = {};
+                          newReqs.members.use_formation = e.target.checked;
+                          setEditForm({ ...editForm, input_requirements: newReqs });
+                        }}
+                        style={{ width: '16px', height: '16px' }}
+                      />
+                      <span style={{ fontSize: '13px' }}>Use formation positions for players</span>
                     </label>
                   </div>
-                  {editForm.input_requirements?.staff && (
-                    <div style={{ marginLeft: '26px', color: 'var(--app-text-muted)', fontSize: '13px' }}>
-                      Coach and staff members will be included
-                    </div>
-                  )}
                 </div>
 
                 {/* Match Data Section */}
