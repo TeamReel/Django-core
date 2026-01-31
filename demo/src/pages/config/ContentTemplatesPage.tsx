@@ -217,6 +217,8 @@ export default function ContentTemplatesPage() {
   const selectedCategory = searchParams.get('tab') || 'all';
   const [searchQuery, setSearchQuery] = useState('');
   const [showInactive, setShowInactive] = useState(false);
+  const [selectedFormation, setSelectedFormation] = useState<string>('all');
+  const [selectedStyle, setSelectedStyle] = useState<string>('all');
 
   // Modal state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -281,6 +283,27 @@ export default function ContentTemplatesPage() {
     fetchData();
   }, [apiBaseUrl]);
 
+  // Get unique formations and styles from templates for filter dropdowns
+  const availableFormations = useMemo(() => {
+    const formations = new Map<string, { code: string; name: string }>();
+    templates.forEach(t => {
+      if (t.formation_detail) {
+        formations.set(t.formation_detail.code, t.formation_detail);
+      }
+    });
+    return Array.from(formations.values());
+  }, [templates]);
+
+  const availableStyles = useMemo(() => {
+    const styles = new Set<string>();
+    templates.forEach(t => {
+      if (t.style_variant) {
+        styles.add(t.style_variant);
+      }
+    });
+    return Array.from(styles);
+  }, [templates]);
+
   // Filter templates based on selected category and search
   const filteredTemplates = useMemo(() => {
     let result = templates;
@@ -289,6 +312,16 @@ export default function ContentTemplatesPage() {
     const category = TEMPLATE_CATEGORIES.find(c => c.id === selectedCategory);
     if (category?.types) {
       result = result.filter(t => category.types!.includes(t.template_type));
+    }
+
+    // Filter by formation
+    if (selectedFormation !== 'all') {
+      result = result.filter(t => t.formation_detail?.code === selectedFormation);
+    }
+
+    // Filter by style variant
+    if (selectedStyle !== 'all') {
+      result = result.filter(t => t.style_variant === selectedStyle);
     }
 
     // Filter by search query
@@ -307,7 +340,7 @@ export default function ContentTemplatesPage() {
     }
 
     return result;
-  }, [templates, selectedCategory, searchQuery, showInactive]);
+  }, [templates, selectedCategory, selectedFormation, selectedStyle, searchQuery, showInactive]);
 
   // Group templates by subtype for the detail panel
   const groupedBySubtype = useMemo(() => {
@@ -381,23 +414,68 @@ export default function ContentTemplatesPage() {
       <PageContent>
         <Card>
           {/* Search & Filters */}
-          <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center' }}>
-            <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: '200px' }}>
               <Input
                 placeholder="Search templates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+
+            {/* Formation Filter */}
+            {availableFormations.length > 0 && (
+              <select
+                value={selectedFormation}
+                onChange={(e) => setSelectedFormation(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-bg)',
+                  color: 'var(--app-text)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="all">All Formations</option>
+                {availableFormations.map(f => (
+                  <option key={f.code} value={f.code}>{f.code} - {f.name}</option>
+                ))}
+              </select>
+            )}
+
+            {/* Style Variant Filter */}
+            {availableStyles.length > 0 && (
+              <select
+                value={selectedStyle}
+                onChange={(e) => setSelectedStyle(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-bg)',
+                  color: 'var(--app-text)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="all">All Styles</option>
+                {availableStyles.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            )}
+
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
               <input
                 type="checkbox"
-                    checked={showInactive}
-                    onChange={(e) => setShowInactive(e.target.checked)}
-                  />
-                  Show inactive
-                </label>
-              </div>
+                checked={showInactive}
+                onChange={(e) => setShowInactive(e.target.checked)}
+              />
+              Show inactive
+            </label>
+          </div>
 
               {loading ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: 'var(--app-text-muted)' }}>
