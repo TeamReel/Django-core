@@ -33,6 +33,7 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
             "formation",
             "formation_detail",
             "style_variant",
+            "input_requirements",
             "ai_workflow_id",
             "template_settings",
             "timeout_minutes",

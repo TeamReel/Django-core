@@ -185,6 +185,32 @@ class ContentTemplate(models.Model):
         blank=True,
         help_text="Visual style variant name (e.g., 'Modern', 'Classic', 'Neon')",
     )
+    input_requirements = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="""Input requirements for content generation. Schema:
+        {
+            "players": {
+                "use_formation": true,  // Use positions from linked Formation
+                "min_count": 11,
+                "max_count": 11,
+                "positions": ["GK", "LB", "CB", "CB", "RB", "CM", "CM", "CM", "LW", "ST", "RW"]
+            },
+            "staff": [
+                {"role": "coach", "required": true, "count": 1},
+                {"role": "assistant", "required": false, "count": 1}
+            ],
+            "assets": [
+                {"type": "team_logo", "required": true},
+                {"type": "opponent_logo", "required": false},
+                {"type": "sponsor_logo", "required": false}
+            ],
+            "match_data": {
+                "required": ["date", "opponent", "venue"],
+                "optional": ["kickoff_time", "competition"]
+            }
+        }""",
+    )
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

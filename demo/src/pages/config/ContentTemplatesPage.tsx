@@ -88,6 +88,34 @@ const TYPE_LABELS: Record<string, string> = {
   custom: 'Custom',
 };
 
+interface InputRequirements {
+  players?: {
+    use_formation?: boolean;
+    min_count?: number;
+    max_count?: number;
+    positions?: string[];
+  };
+  staff?: Array<{
+    role: string;
+    required: boolean;
+    count: number;
+  }>;
+  assets?: Array<{
+    type: string;
+    required: boolean;
+  }>;
+  match_data?: {
+    required?: string[];
+    optional?: string[];
+  };
+}
+
+interface FormationDetail {
+  id: number;
+  code: string;
+  name: string;
+}
+
 interface ContentTemplate {
   id: number;
   name: string;
@@ -95,6 +123,10 @@ interface ContentTemplate {
   template_type: string;
   template_subtype: string | null;
   sport_type: string | null;
+  formation: number | null;
+  formation_detail: FormationDetail | null;
+  style_variant: string | null;
+  input_requirements: InputRequirements;
   ai_workflow_id: string;
   template_settings: Record<string, any>;
   is_active: boolean;
@@ -308,11 +340,12 @@ export default function ContentTemplatesPage() {
                 <Table>
                   <thead>
                     <tr>
-                      <th style={{ width: '30%' }}>Name</th>
-                      <th style={{ width: '15%' }}>Type</th>
-                      <th style={{ width: '15%' }}>Subtype</th>
-                      <th style={{ width: '15%' }}>Sport</th>
-                      <th style={{ width: '10%' }}>Status</th>
+                      <th style={{ width: '25%' }}>Name</th>
+                      <th style={{ width: '12%' }}>Type</th>
+                      <th style={{ width: '12%' }}>Subtype</th>
+                      <th style={{ width: '10%' }}>Formation</th>
+                      <th style={{ width: '18%' }}>Requirements</th>
+                      <th style={{ width: '8%' }}>Status</th>
                       <th style={{ width: '15%', textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
@@ -322,10 +355,15 @@ export default function ContentTemplatesPage() {
                         <td>
                           <div>
                             <div style={{ fontWeight: 500 }}>{template.name}</div>
+                            {template.style_variant && (
+                              <div style={{ fontSize: '12px', color: 'var(--app-primary)', marginTop: '2px' }}>
+                                Style: {template.style_variant}
+                              </div>
+                            )}
                             {template.description && (
                               <div style={{ fontSize: '12px', color: 'var(--app-text-muted)', marginTop: '2px' }}>
-                                {template.description.substring(0, 60)}
-                                {template.description.length > 60 && '...'}
+                                {template.description.substring(0, 50)}
+                                {template.description.length > 50 && '...'}
                               </div>
                             )}
                           </div>
@@ -343,7 +381,27 @@ export default function ContentTemplatesPage() {
                           )}
                         </td>
                         <td>
-                          {template.sport_type || '—'}
+                          {template.formation_detail ? (
+                            <Badge variant="info">{template.formation_detail.code}</Badge>
+                          ) : (
+                            <span style={{ color: 'var(--app-text-muted)' }}>—</span>
+                          )}
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '12px' }}>
+                            {template.input_requirements?.players && (
+                              <div>👥 {template.input_requirements.players.min_count || template.input_requirements.players.positions?.length || '?'} players</div>
+                            )}
+                            {template.input_requirements?.staff && template.input_requirements.staff.length > 0 && (
+                              <div>🎯 {template.input_requirements.staff.filter(s => s.required).map(s => s.role).join(', ') || 'staff'}</div>
+                            )}
+                            {template.input_requirements?.assets && template.input_requirements.assets.filter(a => a.required).length > 0 && (
+                              <div>📁 {template.input_requirements.assets.filter(a => a.required).length} assets</div>
+                            )}
+                            {(!template.input_requirements || Object.keys(template.input_requirements).length === 0) && (
+                              <span style={{ color: 'var(--app-text-muted)' }}>—</span>
+                            )}
+                          </div>
                         </td>
                         <td>
                           <Badge variant={template.is_active ? 'success' : 'default'}>
