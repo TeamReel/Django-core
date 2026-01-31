@@ -116,6 +116,10 @@ interface ContentGenerationModalProps {
     start_time?: string;
     location?: string;
   } | null;
+  season?: {
+    id: string;
+    name: string;
+  } | null;
   organisationSport?: { id: number | string; name: string; slug?: string } | null;
   /** Pre-selected template - skips type/template selection */
   template?: ContentTemplate | null;
@@ -148,6 +152,7 @@ export default function ContentGenerationModal({
   isOpen,
   onClose,
   matchData,
+  season,
   organisationSport,
   template: initialTemplate,
   contentTypeLabel,
@@ -168,11 +173,37 @@ export default function ContentGenerationModal({
     assistant: [],
   });
 
-  // Group participations by functional role
-  const participationsByRole = useMemo(() => {
-    if (!matchData?.participations) return { goalkeeper: [], player: [], coach: [], assistant: [] };
-    return groupParticipationsByRole(matchData.participations);
-  }, [matchData?.participations]);
+  // Season squad members grouped by functional role
+  const [seasonSquad, setSeasonSquad] = useState<Record<string, Participation[]>>({
+    goalkeeper: [],
+    player: [],
+    coach: [],
+    assistant: [],
+  });
+
+  // Fetch season squad on mount
+  useEffect(() => {
+    if (!isOpen || !season?.id) return;
+
+    const fetchSeasonSquad = async () => {
+      try {
+        const response = await fetch(`${getApiBaseUrl()}/api/v1/activities/periods/${season.id}/participations/`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const participations = data?.data?.results || data?.results || data?.data || data || [];
+          setSeasonSquad(groupParticipationsByRole(participations));
+        }
+      } catch (err) {
+        console.error('Error fetching season squad:', err);
+      }
+    };
+
+    fetchSeasonSquad();
+  }, [isOpen, season?.id]);
 
   // Reset state when opening
   useEffect(() => {
@@ -571,55 +602,12 @@ export default function ContentGenerationModal({
                 </div>
               </div>
 
-              {/* Template Requirements Overview */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <span>📋</span> Template Requirements
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map(role => {
-                    const req = selectedTemplate.input_requirements?.members?.[role];
-                    if (!req || typeof req === 'boolean' || !req.count) return null;
-
-                    const selected = selectedMembers[role];
-                    const assetTypes = req.asset_types || [];
-                    const assetLabels = assetTypes.map(t => ASSET_TYPE_LABELS[t] || t);
-
-                    return (
-                      <div key={role} className="flex items-center gap-2">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                          selected.length === req.count ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'
-                        }`}>
-                          {selected.length}/{req.count}
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-sm font-medium">{renderRoleLabel(role)}</div>
-                          {assetLabels.length > 0 && (
-                            <div className="text-xs text-gray-500">{assetLabels.join(', ')}</div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                {selectedTemplate.input_requirements?.output && (
-                  <div className="mt-4 pt-4 border-t border-gray-300">
-                    <div className="text-sm text-gray-600">
-                      <span className="font-medium">Output:</span> {selectedTemplate.input_requirements.output.type} • {selectedTemplate.input_requirements.output.format}
-                      {selectedTemplate.input_requirements.output.dimensions && (
-                        <span> • {selectedTemplate.input_requirements.output.dimensions.aspect_ratio}</span>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
               {/* Member Selection - Compact Dropdown Layout */}
               {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map(role => {
                 const req = selectedTemplate.input_requirements?.members?.[role];
                 if (!req || typeof req === 'boolean' || !req.count) return null;
 
-                const available = participationsByRole[role] || [];
+                const available = seasonSquad[role] || [];
                 const selected = selectedMembers[role];
                 const assetTypes = req.asset_types || [];
                 const assetLabels = assetTypes.map(t => ASSET_TYPE_LABELS[t] || t);

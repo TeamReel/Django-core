@@ -1799,6 +1799,7 @@ export default function HierarchyMatchDetailPage() {
             isOpen={isContentModalOpen}
             onClose={closeContentModal}
             matchData={match}
+            season={season}
             organisationSport={org?.sport}
             template={selectedTemplate}
             contentTypeLabel={selectedContentTypeLabel}
