@@ -1051,11 +1051,15 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                     const orgHref = getOrganisationLinkForRow(u);
                                     const { clubHref, teamHref } = getClubAndTeamLinksForRow(u);
 
-                                    // For team members, use u.id directly (participation UUID)
+                                    // For team members, look for actual membership UUID in the data
                                     // For org members, use u.membership.id
-                                    const membershipId = teamLocked
-                                        ? (u?.id ?? u?.membership?.id ?? u?.membership_id ?? u?.member_id ?? null)
-                                        : (u?.membership?.id ?? u?.membership_id ?? u?.member_id ?? null);
+                                    let membershipId = null;
+                                    if (teamLocked) {
+                                        // Try to find the actual membership UUID (not user ID)
+                                        membershipId = u?.membership_id ?? u?.member_id ?? u?.membership?.id ?? u?.id ?? null;
+                                    } else {
+                                        membershipId = u?.membership?.id ?? u?.membership_id ?? u?.member_id ?? null;
+                                    }
                                     const source = String(u?.membership?.source ?? u?.source ?? '').toLowerCase();
                                     const isDirectMembership = Boolean(membershipId) && isUuid(membershipId) && !source;
 

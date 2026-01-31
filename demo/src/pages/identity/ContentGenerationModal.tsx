@@ -115,6 +115,7 @@ interface Participation {
     team_role?: string;
     position?: string;
     shirt_number?: string;
+    functional_roles?: string[];
   };
 }
 
@@ -152,10 +153,12 @@ function groupParticipationsByRole(participations: Participation[]): Record<stri
   };
 
   participations.forEach(p => {
-    // Check functional_roles array first, then legacy fields
+    // Check functional_roles array first, then metadata, then legacy fields
     let roles: string[] = [];
-    if (p.functional_roles && Array.isArray(p.functional_roles)) {
+    if (p.functional_roles && Array.isArray(p.functional_roles) && p.functional_roles.length > 0) {
       roles = p.functional_roles;
+    } else if (p.metadata?.functional_roles && Array.isArray(p.metadata.functional_roles) && p.metadata.functional_roles.length > 0) {
+      roles = p.metadata.functional_roles;
     } else if (p.data?.functional_role) {
       roles = [p.data.functional_role];
     } else if (p.metadata?.team_role) {
