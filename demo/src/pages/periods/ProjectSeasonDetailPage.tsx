@@ -1841,9 +1841,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
                                     <button
                                       type="button"
-                                      className="app-unstyled-button text-blue-600 hover:underline"
+                                      className="app-unstyled-button hover:underline"
                                       onClick={() => navigate(competitionPath)}
-                                      style={{ textAlign: 'left', fontWeight: 800, fontSize: 14 }}
+                                      style={{ textAlign: 'left', fontWeight: 800, fontSize: 14, color: '#60a5fa' }}
                                     >
                                       {competition.name || `Competition ${compId}`}
                                     </button>
@@ -1925,9 +1925,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             <div style={{ minWidth: 0 }}>
                                               <button
                                                 type="button"
-                                                className="app-unstyled-button text-blue-600 hover:underline"
+                                                className="app-unstyled-button hover:underline"
                                                 onClick={() => navigate(matchPath)}
-                                                style={{ textAlign: 'left', fontWeight: 700, fontSize: 13 }}
+                                                style={{ textAlign: 'left', fontWeight: 700, fontSize: 13, color: '#60a5fa' }}
                                               >
                                                 {match.title || match.name}
                                               </button>

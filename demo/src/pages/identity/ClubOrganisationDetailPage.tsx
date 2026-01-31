@@ -1391,9 +1391,9 @@ export default function ClubOrganisationDetailPage() {
                                   {teamPath ? (
                                     <button
                                       type="button"
-                                      className="app-unstyled-button text-blue-600 hover:underline"
+                                      className="app-unstyled-button hover:underline"
                                       onClick={() => navigate(teamPath)}
-                                      style={{ textAlign: 'left', fontWeight: 800, fontSize: 14 }}
+                                      style={{ textAlign: 'left', fontWeight: 800, fontSize: 14, color: '#60a5fa' }}
                                     >
                                       {team.name}
                                     </button>
@@ -1442,9 +1442,9 @@ export default function ClubOrganisationDetailPage() {
                                             {seasonPath ? (
                                               <button
                                                 type="button"
-                                                className="app-unstyled-button text-blue-600 hover:underline"
+                                                className="app-unstyled-button hover:underline"
                                                 onClick={() => navigate(seasonPath)}
-                                                style={{ textAlign: 'left', fontWeight: 700, fontSize: 13 }}
+                                                style={{ textAlign: 'left', fontWeight: 700, fontSize: 13, color: '#60a5fa' }}
                                               >
                                                 {String((s as any)?.name || 'Season')}
                                               </button>

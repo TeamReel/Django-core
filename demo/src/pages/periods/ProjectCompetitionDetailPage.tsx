@@ -2004,9 +2004,9 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                                       <div style={{ minWidth: 0 }}>
                                         <button
                                           type="button"
-                                          className="app-unstyled-button text-blue-600 hover:underline"
+                                          className="app-unstyled-button hover:underline"
                                           onClick={() => navigate(matchDetailPath(String(m.id)))}
-                                          style={{ textAlign: 'left', fontWeight: 700, fontSize: 13 }}
+                                          style={{ textAlign: 'left', fontWeight: 700, fontSize: 13, color: '#60a5fa' }}
                                         >
                                           {m.title || `Match ${m.id}`}
                                         </button>
