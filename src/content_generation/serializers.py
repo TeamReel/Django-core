@@ -25,6 +25,7 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "template_type",
+            "template_subtype",
             "sport_type",
             "sport",
             "sport_detail",

@@ -23,13 +23,38 @@ User = get_user_model()
 
 
 class TemplateType(models.TextChoices):
-    """Content template categories"""
+    """Content template categories - defines WHEN content is generated"""
 
     PRE_MATCH = "pre_match", "Pre-Match"
     DURING_MATCH = "during_match", "During Match"
     POST_MATCH = "post_match", "Post-Match"
-    SEASON = "season", "Season Summary"
+    SEASON = "season", "Season"
+    MEMBER = "member", "Member"
     CUSTOM = "custom", "Custom"
+
+
+class TemplateSubtype(models.TextChoices):
+    """Specific template types within each category - defines WHAT is generated"""
+
+    # Pre-Match templates
+    FLYER = "flyer", "Match Flyer"
+    LINEUP = "lineup", "Lineup Announcement"
+    WALKON = "walkon", "Walk-on Video"
+    ANTHEM = "anthem", "Anthem Video"
+    # During-Match templates
+    GOAL = "goal", "Goal Celebration"
+    SCORE_UPDATE = "score_update", "Score Update"
+    END_SCORE = "end_score", "Final Score"
+    # Post-Match templates
+    MATCH_SUMMARY = "match_summary", "Match Summary"
+    HIGHLIGHTS = "highlights", "Highlights Reel"
+    # Season templates
+    TRANSFORMATION = "transformation", "Then vs Now"
+    SEASON_RECAP = "season_recap", "Season Recap"
+    # Member templates
+    MEMBER_INTRO = "member_intro", "Short Intro"
+    MEMBER_CLOSEUP = "member_closeup", "Closeup Video"
+    MEMBER_CELEBRATION = "member_celebration", "Personal Celebration"
 
 
 class ContentStatus(models.TextChoices):
@@ -81,7 +106,18 @@ class ContentTemplate(models.Model):
         null=True, blank=True, help_text="Template purpose and usage notes"
     )
     template_type = models.CharField(
-        max_length=50, choices=TemplateType.choices, db_index=True, help_text="Template category"
+        max_length=50,
+        choices=TemplateType.choices,
+        db_index=True,
+        help_text="Template category (when)",
+    )
+    template_subtype = models.CharField(
+        max_length=50,
+        choices=TemplateSubtype.choices,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Specific template type (what)",
     )
     sport_type = models.CharField(
         max_length=50,

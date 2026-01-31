@@ -56,6 +56,7 @@ import {
   BillingPage,
 } from './pages/config';
 import UsageEventsPage from './pages/config/UsageEventsPage';
+import ContentTemplatesPage from './pages/config/ContentTemplatesPage';
 
 // Platform pages
 import {
@@ -1253,6 +1254,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <CreditsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/content-templates"
+        element={
+          <ProtectedRoute>
+            <ContentTemplatesPage />
           </ProtectedRoute>
         }
       />

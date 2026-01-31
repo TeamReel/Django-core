@@ -68,6 +68,7 @@ const NAV_CONFIG: NavSection[] = [
         visibility: 'everyone',
         items: [
             { path: '/preferences?tab=profile', label: 'Preferences', icon: Settings, visibility: 'everyone' },
+            { path: '/content-templates', label: 'Templates', icon: Palette, visibility: 'org_admin' },
             { path: '/permissions', label: 'Organisation', icon: Users, visibility: 'org_admin' },
             { path: '/health', label: 'Platform', icon: Activity, visibility: 'staff' },
         ]
