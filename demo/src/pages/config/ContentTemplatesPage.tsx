@@ -230,7 +230,7 @@ export default function ContentTemplatesPage() {
 
       try {
         const [templatesRes, sportsRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/content-templates/`, {
+          fetch(`${apiBaseUrl}/api/v1/content-generation/templates/`, {
             credentials: 'include',
           }),
           fetch(`${apiBaseUrl}/api/v1/sports/`, {
@@ -299,7 +299,7 @@ export default function ContentTemplatesPage() {
 
   const handleToggleActive = async (template: ContentTemplate) => {
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/content-templates/${template.id}/`, {
+      const res = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/${template.id}/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -323,7 +323,7 @@ export default function ContentTemplatesPage() {
     if (!window.confirm(`Are you sure you want to delete "${template.name}"?`)) return;
 
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/content-templates/${template.id}/`, {
+      const res = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/${template.id}/`, {
         method: 'DELETE',
         headers: {
           'X-CSRFToken': getCsrfToken(),
