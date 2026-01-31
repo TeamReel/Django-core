@@ -1055,17 +1055,29 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                     // For org members, use u.membership.id
                                     let membershipId = null;
                                     if (teamLocked) {
-                                        // Try to find the actual membership UUID (not user ID)
-                                        membershipId = u?.membership_id ?? u?.member_id ?? u?.membership?.id ?? u?.id ?? null;
+                                        // Try each field and only accept if it's a valid UUID (not pm:* format)
+                                        const candidates = [
+                                            u?.membership_id,
+                                            u?.member_id,
+                                            u?.membership?.id,
+                                            u?.id,
+                                        ];
+
+                                        for (const candidate of candidates) {
+                                            const candidateStr = String(candidate || '').trim();
+                                            if (candidateStr && isUuid(candidateStr)) {
+                                                membershipId = candidateStr;
+                                                break;
+                                            }
+                                        }
                                     } else {
                                         membershipId = u?.membership?.id ?? u?.membership_id ?? u?.member_id ?? null;
                                     }
                                     const source = String(u?.membership?.source ?? u?.source ?? '').toLowerCase();
                                     const isDirectMembership = Boolean(membershipId) && isUuid(membershipId) && !source;
 
-                                    // Team members can be deleted if we have a valid membershipId
-                                    // (should be UUID from u.id for team context)
-                                    const isTeamMember = teamLocked && Boolean(membershipId);
+                                    // Team members can be deleted only if we have a valid UUID
+                                    const isTeamMember = teamLocked && Boolean(membershipId) && isUuid(membershipId);
 
                                     // Debug logging
                                     if (teamLocked) {
