@@ -894,6 +894,7 @@ export default function ProjectSeasonSquadPage() {
             setIsPeriodEditModalOpen(false);
           }}
           period={selectedEditPeriod}
+          showSportVariant={false}
           onSave={async (payload) => {
             if (!selectedEditPeriod) return;
             const periodId = String(selectedEditPeriod?.id || '').trim();

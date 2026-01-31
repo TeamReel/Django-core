@@ -1013,9 +1013,6 @@ export default function ClubOrganisationDetailPage() {
               <Button variant="secondary" size="sm" onClick={() => setIsProjectEditModalOpen(true)}>
                 Edit
               </Button>
-              <Button variant="secondary" size="sm" onClick={() => navigate('/audit')}>
-                Audit
-              </Button>
               <Button
                 variant="secondary"
                 size="sm"

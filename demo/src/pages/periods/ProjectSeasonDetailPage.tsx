@@ -1096,15 +1096,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {(() => {
-                const href = memberDetailHref(mySeasonMembershipId);
-                if (!href) return null;
-                return (
-                  <Button variant="secondary" onClick={() => navigate(href)}>
-                    My member profile
-                  </Button>
-                );
-              })()}
-              {(() => {
                 const isActive = !!season && String(activeContext?.season?.id ?? '') === String((season as any)?.id ?? '');
                 return (
                   <button
@@ -1136,41 +1127,27 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   </button>
                 );
               })()}
-              <button
-                type="button"
-                onClick={() => navigate(seasonsBasePath)}
-                style={backButtonStyle}
-              >
+              <Button variant="secondary" size="sm" onClick={() => navigate(seasonsBasePath)}>
                 Back
-              </button>
-              <button
-                type="button"
-                className="app-action-button"
-                onClick={() => {
-                  setSelectedDetailPeriod(season);
-                  setIsPeriodDetailModalOpen(true);
-                }}
-                style={tableActionButtonStyle('primary')}
-              >
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => {
+                setSelectedDetailPeriod(season);
+                setIsPeriodDetailModalOpen(true);
+              }}>
                 View
-              </button>
+              </Button>
               {userCanEditProject && (
-                <button
-                  type="button"
-                  className="app-action-button"
-                  onClick={() => {
-                    setSelectedEditPeriod(season);
-                    setIsPeriodEditModalOpen(true);
-                  }}
-                  style={tableActionButtonStyle('warning')}
-                >
+                <Button variant="secondary" size="sm" onClick={() => {
+                  setSelectedEditPeriod(season);
+                  setIsPeriodEditModalOpen(true);
+                }}>
                   Edit
-                </button>
+                </Button>
               )}
               {userCanDeleteProject && (
-                <button
-                  type="button"
-                  className="app-action-button"
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={async () => {
                     if (!window.confirm(`Are you sure you want to delete season ${season?.name}?`)) return;
                     try {
@@ -1196,21 +1173,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       alert('Error deleting season');
                     }
                   }}
-                  style={tableActionButtonStyle('danger')}
+                  style={{ color: '#dc2626' }}
                 >
                   Delete
-                </button>
+                </Button>
               )}
 
               {userCanEditProject && (
-                <button
-                  type="button"
-                  className="app-action-button"
-                  onClick={() => setIsCreateTxnModalOpen(true)}
-                  style={tableActionButtonStyle('primary')}
-                >
+                <Button variant="secondary" size="sm" onClick={() => setIsCreateTxnModalOpen(true)}>
                   Create transaction
-                </button>
+                </Button>
               )}
             </div>
           }

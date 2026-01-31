@@ -758,30 +758,6 @@ export default function TeamOrganisationDetailPage() {
                 );
               })()}
 
-              {(() => {
-                const seasonKey = String(activeContext?.season?.key || activeContext?.season?.slug || '').trim();
-                const membershipId = String(activeContext?.membership?.id || '').trim();
-                const href =
-                  orgKeyForRoutes && clubKeyForRoutes && teamKeyForRoutes && seasonKey && membershipId
-                    ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKeyForRoutes)}/${encodeURIComponent(seasonKey)}/${encodeURIComponent(membershipId)}`
-                    : '';
-
-                return (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={!href}
-                    onClick={() => {
-                      if (!href) return;
-                      navigate(href);
-                    }}
-                    title={href ? 'Open your member profile for the active season' : 'Select a season first'}
-                  >
-                    My member profile
-                  </Button>
-                );
-              })()}
-
               <Button variant="secondary" size="sm" onClick={() => navigate(backToClubHref)}>
                 Back
               </Button>
@@ -790,9 +766,6 @@ export default function TeamOrganisationDetailPage() {
               </Button>
               <Button variant="secondary" size="sm" onClick={() => setIsProjectEditModalOpen(true)}>
                 Edit
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => navigate('/audit')}>
-                Audit
               </Button>
               <Button
                 variant="secondary"

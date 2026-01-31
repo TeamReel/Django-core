@@ -79,8 +79,12 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
     firstNonEmptyString(
       p?.sport_id,
       p?.sport?.id,
+      p?.metadata?.sport_id,
+      p?.metadata?.sport?.id,
       p?.data?.sport_id,
       p?.data?.sport?.id,
+      p?.data?.metadata?.sport_id,
+      p?.data?.metadata?.sport?.id,
       p?.data?.data?.sport_id,
       p?.data?.data?.sport?.id,
     );
@@ -132,15 +136,18 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
   }, [period]);
 
   // Reset form state whenever modal opens or period changes
-  // Use JSON.stringify on the original period prop to detect changes
-  const periodKey = useMemo(() => JSON.stringify({
-    id: (period as any)?.id,
-    name: (period as any)?.name,
-    description: (period as any)?.description,
-    start_date: (period as any)?.start_date,
-    end_date: (period as any)?.end_date,
-    sport_id: (period as any)?.sport_id ?? (period as any)?.sport?.id,
-  }), [period]);
+  // Use JSON.stringify on the RESOLVED period to detect changes (handles wrapped API responses)
+  const periodKey = useMemo(() => {
+    const p = resolvedPeriod;
+    return JSON.stringify({
+      id: p?.id,
+      name: extractPeriodName(p),
+      description: extractPeriodDescription(p),
+      start_date: p?.start_date,
+      end_date: p?.end_date,
+      sport_id: extractSportId(p),
+    });
+  }, [resolvedPeriod]);
 
   // Single effect to handle both reset (when closed) and populate (when opened with period)
   useEffect(() => {

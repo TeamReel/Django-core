@@ -40,6 +40,9 @@ interface MatchCreateModalProps {
   onClose: () => void;
   onCreate: (payload: MatchCreatePayload) => Promise<void>;
 
+  headerText?: string;
+  submitText?: string;
+
   mode?: 'default' | 'season-detail' | 'team-context';
 
   apiBaseUrl?: string;
@@ -53,12 +56,25 @@ interface MatchCreateModalProps {
   initialTeamId?: string;
   initialSeasonId?: string;
   initialCompetitionId?: string;
+
+  initialOpponentOrganisationId?: string;
+  initialOpponentClubId?: string;
+  initialOpponentTeamId?: string;
+
+  initialTitle?: string;
+  initialMatchDate?: string;
+  initialMatchTime?: string;
+  initialVenue?: 'Home' | 'Away';
+  initialLocation?: string;
+  initialDescription?: string;
 }
 
 export default function MatchCreateModal({
   opened,
   onClose,
   onCreate,
+  headerText,
+  submitText,
   mode = 'default',
   apiBaseUrl: apiBaseUrlProp,
   organisations = [],
@@ -69,6 +85,17 @@ export default function MatchCreateModal({
   initialTeamId = '',
   initialSeasonId = '',
   initialCompetitionId = '',
+
+  initialOpponentOrganisationId = '',
+  initialOpponentClubId = '',
+  initialOpponentTeamId = '',
+
+  initialTitle = '',
+  initialMatchDate = '',
+  initialMatchTime = '',
+  initialVenue = 'Home',
+  initialLocation = '',
+  initialDescription = '',
 }: MatchCreateModalProps) {
   const apiBaseUrl = apiBaseUrlProp || getApiBaseUrl();
   const isSeasonDetailMode = mode === 'season-detail';
@@ -166,24 +193,24 @@ export default function MatchCreateModal({
   useEffect(() => {
     if (!opened) return;
     setError(null);
-    setTitle('');
+    setTitle(String(initialTitle || ''));
     setTitleTouched(false);
     setTitleAutoValue('');
-    setMatchDate('');
-    setMatchTime('14:30');
-    setLocation('');
+    setMatchDate(String(initialMatchDate || ''));
+    setMatchTime(String(initialMatchTime || '14:30'));
+    setLocation(String(initialLocation || ''));
     setLocationTouched(false);
     setLocationAutoValue('');
-    setDescription('');
+    setDescription(String(initialDescription || ''));
     setDescriptionTouched(false);
     setDescriptionAutoValue('');
     setSelectedOrganisationId(String(initialOrganisationId || ''));
     setSelectedClubId(String(initialClubId || ''));
     setSelectedTeamId(String(initialTeamId || ''));
-    setSelectedOpponentTeamId('');
-    setSelectedOpponentOrganisationId(String(initialOrganisationId || ''));
-    setSelectedOpponentClubId('');
-    setVenue('Home');
+    setSelectedOpponentTeamId(String(initialOpponentTeamId || ''));
+    setSelectedOpponentOrganisationId(String(initialOpponentOrganisationId || initialOrganisationId || ''));
+    setSelectedOpponentClubId(String(initialOpponentClubId || ''));
+    setVenue(initialVenue);
     setSelectedSeasonId(String(initialSeasonId || ''));
     setSelectedCompetitionId(String(initialCompetitionId || ''));
     setSeasonOptions([]);
@@ -193,7 +220,23 @@ export default function MatchCreateModal({
     setRemoteOrganisations([]);
     setRemoteClubs([]);
     setRemoteTeams([]);
-  }, [opened, initialOrganisationId, initialClubId, initialTeamId, initialSeasonId, initialCompetitionId]);
+  }, [
+    opened,
+    initialOrganisationId,
+    initialClubId,
+    initialTeamId,
+    initialSeasonId,
+    initialCompetitionId,
+    initialOpponentOrganisationId,
+    initialOpponentClubId,
+    initialOpponentTeamId,
+    initialTitle,
+    initialMatchDate,
+    initialMatchTime,
+    initialVenue,
+    initialLocation,
+    initialDescription,
+  ]);
 
   // If the page resolves season/competition ids asynchronously (slug -> UUID),
   // the modal may open before initialSeasonId/initialCompetitionId are available.
@@ -1070,7 +1113,7 @@ export default function MatchCreateModal({
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-          <h2 style={{ marginTop: 0, marginBottom: '12px', color: 'var(--app-text)' }}>Create Match</h2>
+          <h2 style={{ marginTop: 0, marginBottom: '12px', color: 'var(--app-text)' }}>{headerText || 'Create Match'}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -1467,7 +1510,7 @@ export default function MatchCreateModal({
                 opacity: isSaving ? 0.7 : 1,
               }}
             >
-              {isSaving ? 'Creating…' : 'Create'}
+              {isSaving ? (submitText ? `${submitText}…` : 'Creating…') : submitText || 'Create'}
             </button>
           </div>
         </form>

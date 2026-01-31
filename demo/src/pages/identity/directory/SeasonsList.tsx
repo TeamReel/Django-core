@@ -1029,6 +1029,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
         opened={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         period={editSeason as any}
+        showSportVariant={false}
         onSave={async (payload) => {
           if (!editSeason) return;
           await savePeriodEdits(editSeason.id, payload);

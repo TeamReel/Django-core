@@ -1091,7 +1091,10 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         });
         if (!seasonRes.ok) throw new Error('Failed to load season');
         const rawSeason: any = await seasonRes.json();
-        const seasonJson: Period = rawSeason?.data?.data || rawSeason?.data || rawSeason;
+        // API returns { status, data: {period} }. Period.data is metadata, not a nested period.
+        // Check if data.data looks like a period (has id) vs metadata (has type but no id)
+        const seasonCandidate = rawSeason?.data?.data;
+        const seasonJson: Period = (seasonCandidate && seasonCandidate.id) ? seasonCandidate : (rawSeason?.data || rawSeason);
         setSeason(seasonJson);
 
         const desiredSeasonKey = periodPathKey(seasonJson);
@@ -1132,7 +1135,9 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         });
         if (!competitionRes.ok) throw new Error('Failed to load competition');
         const rawCompetition: any = await competitionRes.json();
-        const competitionJson: Period = rawCompetition?.data?.data || rawCompetition?.data || rawCompetition;
+        // API returns { status, data: {period} }. Period.data is metadata, not a nested period.
+        // So we only unwrap ONE level from the API envelope, not two.
+        const competitionJson: Period = rawCompetition?.data || rawCompetition;
         setCompetition(competitionJson);
 
         const desiredCompetitionKey = periodPathKey(competitionJson);
@@ -1713,59 +1718,32 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                   </button>
                 );
               })()}
-              <button
-                type="button"
-                onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}
-                style={backButtonStyle}
-              >
+              <Button variant="secondary" size="sm" onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}>
                 Back to Season
-              </button>
-              <button
-                type="button"
-                className="app-action-button"
-                onClick={() => setIsMatchCreateModalOpen(true)}
-                style={tableActionButtonStyle('primary')}
-              >
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => setIsMatchCreateModalOpen(true)}>
                 Create Match
-              </button>
-              <button
-                type="button"
-                className="app-action-button"
-                onClick={() => {
-                  setSelectedDetailPeriod(competition);
-                  setIsPeriodDetailModalOpen(true);
-                }}
-                style={tableActionButtonStyle('primary')}
-              >
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => {
+                setSelectedDetailPeriod(competition);
+                setIsPeriodDetailModalOpen(true);
+              }}>
                 View
-              </button>
-              <button
-                type="button"
-                className="app-action-button"
-                onClick={() => {
-                  setSelectedEditPeriod(competition);
-                  setIsPeriodEditModalOpen(true);
-                }}
-                style={tableActionButtonStyle('warning')}
-              >
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => {
+                setSelectedEditPeriod(competition);
+                setIsPeriodEditModalOpen(true);
+              }}>
                 Edit
-              </button>
-              <button
-                type="button"
-                className="app-action-button"
-                onClick={() => navigate('/audit')}
-                style={tableActionButtonStyle('neutral')}
-              >
-                Audit
-              </button>
-              <button
-                type="button"
-                className="app-action-button"
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={deleteCompetition}
-                style={tableActionButtonStyle('danger')}
+                style={{ color: '#dc2626' }}
               >
                 Delete
-              </button>
+              </Button>
             </div>
           }
         />
@@ -1792,14 +1770,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             <>
               {activeTab === 'overview' && (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <Card style={{ padding: '16px' }}>
-                      <div className="text-sm font-medium text-gray-500">Dates</div>
-                      <div className="text-sm font-semibold mt-1">
-                        {competition?.start_date ? new Date(competition.start_date).toLocaleDateString() : '—'} –{' '}
-                        {competition?.end_date ? new Date(competition.end_date).toLocaleDateString() : '—'}
-                      </div>
-                    </Card>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                     <Card style={{ padding: '16px' }}>
                       <div className="text-sm font-medium text-gray-500">Matches</div>
                       <div className="text-2xl font-bold mt-1">{competitionMatchesCount}</div>
@@ -2120,6 +2091,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 opened={isMatchEditModalOpen}
                 onClose={() => setIsMatchEditModalOpen(false)}
                 match={selectedEditMatch}
+                mode={isTeamRoute ? 'team-context' : 'default'}
                 onSave={async (patch) => {
                   if (!selectedEditMatch) return;
                   await saveMatchEdits(selectedEditMatch, patch);
