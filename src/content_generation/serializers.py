@@ -71,7 +71,12 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
 
     def get_sport_detail(self, obj):
         if obj.sport:
-            return {"id": obj.sport.id, "name": obj.sport.name, "slug": obj.sport.slug}
+            return {
+                "id": obj.sport.id,
+                "name": obj.sport.name,
+                "slug": obj.sport.slug,
+                "parent_sport_id": obj.sport.parent_sport_id,
+            }
         return None
 
     def get_formation_detail(self, obj):
