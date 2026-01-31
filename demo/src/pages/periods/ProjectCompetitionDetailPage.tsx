@@ -1889,36 +1889,64 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
               {activeTab === 'hierarchy' && (
                 <Card>
-                  <div style={{ padding: '16px', display: 'grid', gap: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      <Badge variant="default">Season</Badge>
-                      <Link
-                        to={`${seasonsBasePath}/${seasonKeyOrId}`}
-                        className="text-blue-600 hover:underline"
-                        style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
-                      >
-                        {season?.name || 'Season'}
-                      </Link>
-                      <span style={{ color: 'var(--app-text-secondary)' }}>→</span>
-                      <Badge variant="default">Competition</Badge>
-                      <span style={{ color: 'var(--app-text)' }}>{competition?.name || 'Competition'}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 16, fontWeight: 700 }}>Hierarchy</div>
+                      <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>
+                        Season → Competition → Matches
+                      </div>
                     </div>
-
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <Input
                         value={hierarchySearch}
                         onChange={(e) => setHierarchySearch(e.target.value)}
                         placeholder="Search matches…"
-                        style={{ maxWidth: '420px' }}
                       />
                       <Button variant="secondary" onClick={() => setIsMatchCreateModalOpen(true)}>
                         Create Match
                       </Button>
                     </div>
+                  </div>
 
-                    {(() => {
-                      if (!filteredMatches.length) return renderMatchesTable(filteredMatches);
+                  {/* Breadcrumb */}
+                  <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ padding: '2px 8px', borderRadius: 999, border: '1px solid var(--app-border)', background: 'var(--app-surface-2)', fontSize: 12, color: 'var(--app-muted-text)', fontWeight: 600 }}>Season</span>
+                    <Link
+                      to={`${seasonsBasePath}/${seasonKeyOrId}`}
+                      className="text-blue-600 hover:underline"
+                      style={{ textDecoration: 'none', fontWeight: 600, fontSize: 13 }}
+                    >
+                      {season?.name || 'Season'}
+                    </Link>
+                    <span style={{ color: 'var(--app-muted-text)' }}>→</span>
+                    <span style={{ padding: '2px 8px', borderRadius: 999, border: '1px solid var(--app-border)', background: 'var(--app-surface-2)', fontSize: 12, color: 'var(--app-muted-text)', fontWeight: 600 }}>Competition</span>
+                    <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--app-text)' }}>{competition?.name || 'Competition'}</span>
+                  </div>
 
+                  {matchesLoading && filteredMatches.length === 0 ? (
+                    <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                      Loading matches...
+                    </div>
+                  ) : filteredMatches.length === 0 ? (
+                    <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                      No matches found.
+                    </div>
+                  ) : (
+                    (() => {
+                      const pillStyle: React.CSSProperties = {
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '2px 8px',
+                        borderRadius: 999,
+                        border: '1px solid var(--app-border)',
+                        background: 'var(--app-surface-2)',
+                        fontSize: 12,
+                        color: 'var(--app-muted-text)',
+                        fontWeight: 600,
+                      };
+
+                      // Group by date
                       const groups = new Map<string, { label: string; rows: any[] }>();
                       for (const m of filteredMatches) {
                         if (m?.start_time) {
@@ -1942,19 +1970,102 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                       });
 
                       return (
-                        <div style={{ display: 'grid', gap: '16px' }}>
+                        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
                           {ordered.map(([key, group]) => (
-                            <div key={key}>
-                              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--app-text-secondary)', marginBottom: '6px' }}>
-                                {group.label}
+                            <div
+                              key={key}
+                              style={{
+                                border: '1px solid var(--app-border)',
+                                borderRadius: 10,
+                                background: 'var(--app-surface)',
+                                overflow: 'hidden',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  padding: '10px 12px',
+                                  borderBottom: '1px solid var(--app-border)',
+                                  background: 'var(--app-surface-2)',
+                                }}
+                              >
+                                <div style={{ fontWeight: 800, fontSize: 14 }}>{group.label}</div>
+                                <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>{group.rows.length} match{group.rows.length !== 1 ? 'es' : ''}</div>
                               </div>
-                              {renderMatchesTable(group.rows)}
+
+                              <div style={{ padding: '10px 12px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                  {group.rows.map((m: any) => (
+                                    <div
+                                      key={String(m.id)}
+                                      style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        gap: 12,
+                                        padding: '8px 10px',
+                                        border: '1px solid var(--app-border)',
+                                        borderRadius: 8,
+                                        background: 'var(--app-surface)',
+                                      }}
+                                    >
+                                      <div style={{ minWidth: 0 }}>
+                                        <button
+                                          type="button"
+                                          className="app-unstyled-button text-blue-600 hover:underline"
+                                          onClick={() => navigate(matchDetailPath(String(m.id)))}
+                                          style={{ textAlign: 'left', fontWeight: 700, fontSize: 13 }}
+                                        >
+                                          {m.title || `Match ${m.id}`}
+                                        </button>
+                                        <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
+                                          {m.start_time ? new Date(m.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'} • {m.location || '—'}
+                                        </div>
+                                      </div>
+
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                        <span style={pillStyle}>Participants: {m.participations_count ?? '—'}</span>
+                                        <button type="button" className="app-action-button" onClick={() => { setSelectedDetailMatch(m); setIsMatchDetailModalOpen(true); }} style={actionButtonStyle('primary')}>
+                                          View
+                                        </button>
+                                        <button type="button" className="app-action-button" onClick={() => { setSelectedEditMatch(m); setIsMatchEditModalOpen(true); }} style={actionButtonStyle('warning')}>
+                                          Edit
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className="app-action-button"
+                                          onClick={async () => {
+                                            if (!window.confirm(`Delete match ${m.title || m.id}?`)) return;
+                                            try {
+                                              const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(m.id))}/`, {
+                                                method: 'DELETE',
+                                                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                                                credentials: 'include',
+                                              });
+                                              if (res.ok) {
+                                                setMatches((prev) => prev.filter((x: any) => String(x.id) !== String(m.id)));
+                                              } else {
+                                                alert('Error deleting match');
+                                              }
+                                            } catch (e) {
+                                              console.error(e);
+                                              alert('Error deleting match');
+                                            }
+                                          }}
+                                          style={actionButtonStyle('danger')}
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
                             </div>
                           ))}
                         </div>
                       );
-                    })()}
-                  </div>
+                    })()
+                  )}
                 </Card>
               )}
 

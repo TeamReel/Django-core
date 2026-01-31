@@ -1719,39 +1719,27 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               )}
 
               {activeTab === 'hierarchy' && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-3">
-                    <Card>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '12px',
-                      gap: '12px',
-                      flexWrap: 'wrap',
-                    }}
-                  >
+                <Card>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 16, fontWeight: 700 }}>Hierarchy</div>
+                      <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>
+                        Competitions → Matches
+                      </div>
+                    </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <Input
                         value={hierarchySearch}
                         onChange={(e) => setHierarchySearch(e.target.value)}
-                        placeholder="Filter competitions/matches/members"
-                        style={{ width: '240px' }}
+                        placeholder="Search competitions/matches…"
                       />
-                      <Button variant="secondary" size="sm" onClick={() => setHierarchySearch('')}>
-                        Clear
-                      </Button>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       {userCanEditProject && (
                         <>
                           <button
                             type="button"
                             className="app-action-button"
                             onClick={() => setIsCreateCompetitionModalOpen(true)}
-                            style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: 500 }}
+                            style={actionButtonStyle('primary')}
                           >
                             Add Competition
                           </button>
@@ -1759,7 +1747,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             type="button"
                             className="app-action-button"
                             onClick={() => setIsCreateMatchModalOpen(true)}
-                            style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: 500 }}
+                            style={actionButtonStyle('primary')}
                           >
                             Add Match
                           </button>
@@ -1768,11 +1756,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <h3 className="text-lg font-semibold mb-4">Hierarchy: Competitions</h3>
-                  {competitionsLoading ? (
-                    <Alert variant="info">Loading competitions…</Alert>
+                  {competitionsLoading && competitions.length === 0 ? (
+                    <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                      Loading hierarchy...
+                    </div>
                   ) : competitions.length === 0 ? (
-                    <Alert variant="info">No competitions found in this season.</Alert>
+                    <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                      No competitions found.
+                    </div>
                   ) : (
                     (() => {
                       const normalized = hierarchySearch.trim().toLowerCase();
@@ -1798,17 +1789,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             });
                           });
 
+                      const pillStyle: React.CSSProperties = {
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '2px 8px',
+                        borderRadius: 999,
+                        border: '1px solid var(--app-border)',
+                        background: 'var(--app-surface-2)',
+                        fontSize: 12,
+                        color: 'var(--app-muted-text)',
+                        fontWeight: 600,
+                      };
+
                       return (
-                        <>
-                          {matchesLoading ? (
-                            <div style={{ marginBottom: '10px' }}>
-                              <Alert variant="info">Loading match counts…</Alert>
-                            </div>
-                          ) : null}
+                        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
                           {filteredCompetitions.map((competition) => {
                             const compId = String(competition.id);
                             const competitionKey = periodPathKey(competition) || compId;
-
                             const compMatches = getMatchesForCompetition(competition);
                             const visibleMatches = !normalized
                               ? compMatches
@@ -1818,289 +1816,181 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   return title.includes(normalized) || startTime.includes(normalized);
                                 });
 
-                            return (
-                              <div key={compId} style={{ marginBottom: '2rem' }}>
-                                <div
-                                  style={{
-                                    backgroundColor: 'var(--app-surface-2)',
-                                    padding: '12px 16px',
-                                    borderRadius: '4px',
-                                    marginBottom: '12px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px',
-                                  }}
-                                >
-                                  <Link
-                                    to={
-                                      isTeamRoute
-                                        ? `${seasonsBasePath}/${seasonPathKey}/${periodPathKey(competition) || competition.id}`
-                                        : `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`
-                                    }
-                                    className="text-blue-600 hover:underline"
-                                    style={{
-                                      textDecoration: 'none',
-                                      backgroundColor: 'transparent',
-                                      margin: 0,
-                                      flex: 1,
-                                      fontSize: '16px',
-                                      fontWeight: 600,
-                                    }}
-                                  >
-                                    {competition.name || `Competition ${compId}`}
-                                  </Link>
-                                  <Badge variant="default">{getMatchCountForCompetition(competition)} Matches</Badge>
-                                  <button
-                                    type="button"
-                                    className="app-action-button"
-                                    onClick={() => {
-                                      setSelectedDetailPeriod(competition);
-                                      setIsPeriodDetailModalOpen(true);
-                                    }}
-                                    style={tableActionButtonStyle('primary')}
-                                  >
-                                    View
-                                  </button>
-                                  {userCanEditProject && (
-                                    <button
-                                      type="button"
-                                      className="app-action-button"
-                                      onClick={() => {
-                                        setSelectedEditPeriod(competition);
-                                        setIsPeriodEditModalOpen(true);
-                                      }}
-                                      style={tableActionButtonStyle('warning')}
-                                    >
-                                      Edit
-                                    </button>
-                                  )}
-                                  {userCanDeleteProject && (
-                                    <button
-                                      type="button"
-                                      className="app-action-button"
-                                      onClick={async () => {
-                                        if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
-                                        try {
-                                          const res = await fetch(`${apiBaseUrl}/api/v1/periods/${competition.id}/`, {
-                                            method: 'DELETE',
-                                            headers: {
-                                              'Content-Type': 'application/json',
-                                              'X-CSRFToken': getCsrfToken(),
-                                            },
-                                            credentials: 'include',
-                                          });
-
-                                          if (res.ok) {
-                                            setCompetitions((prev) => prev.filter((c) => String(c.id) !== String(competition.id)));
-                                          } else {
-                                            alert('Error deleting competition');
-                                          }
-                                        } catch (e) {
-                                          console.error(e);
-                                          alert('Error deleting competition');
-                                        }
-                                      }}
-                                      style={tableActionButtonStyle('danger')}
-                                    >
-                                      Delete
-                                    </button>
-                                  )}
-                                </div>
-
-                                <div style={{ paddingLeft: '8px' }}>
-                                  {matchesLoading ? (
-                                    <Alert variant="info">Loading matches…</Alert>
-                                  ) : visibleMatches.length === 0 ? (
-                                    <div style={{ color: 'var(--app-text-secondary)', fontSize: '13px', padding: '8px 4px' }}>
-                                      No matches for this competition.
-                                    </div>
-                                  ) : (
-                                    <div className="overflow-x-auto">
-                                      <Table style={compactTableStyle}>
-                                        <thead>
-                                          <tr>
-                                            <th style={compactThStyle}>Match</th>
-                                            <th style={compactThStyle}>Date</th>
-                                            <th style={compactThStyle}>Participants</th>
-                                            <th style={compactThStyle} className="text-right">Actions</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {visibleMatches.map((match: any) => {
-                                            const matchKey = (match as any).slug || match.id;
-                                            const matchPath = isTeamRoute
-                                              ? `${seasonsBasePath}/${seasonPathKey}/${competitionKey}/${String(matchKey)}`
-                                              : `/matches/${String(matchKey)}`;
-                                            return (
-                                              <tr key={match.id}>
-                                                <td style={compactTextTdStyle}>
-                                                  <Link
-                                                    to={matchPath}
-                                                    className="text-blue-600 hover:underline"
-                                                    style={{ textDecoration: 'none' }}
-                                                  >
-                                                    {match.title || match.name}
-                                                  </Link>
-                                                </td>
-                                                <td style={compactTextTdStyle}>
-                                                  {match.start_time ? new Date(match.start_time).toLocaleString() : '—'}
-                                                </td>
-                                                <td style={compactTdStyle}>
-                                                  <Badge variant="default">{getMatchParticipantsCount(match)}</Badge>
-                                                </td>
-                                                <td style={compactTdStyle}>
-                                                  <div style={compactActionsStyle}>
-                                                    <button
-                                                      type="button"
-                                                      className="app-action-button"
-                                                      onClick={() => {
-                                                        setSelectedDetailMatch(match);
-                                                        setIsMatchDetailModalOpen(true);
-                                                      }}
-                                                      style={tableActionButtonStyle('primary')}
-                                                    >
-                                                      View
-                                                    </button>
-                                                    {userCanEditProject && (
-                                                      <button
-                                                        type="button"
-                                                        className="app-action-button"
-                                                        onClick={() => {
-                                                          setSelectedEditMatch(match);
-                                                          setIsMatchEditModalOpen(true);
-                                                        }}
-                                                        style={tableActionButtonStyle('warning')}
-                                                      >
-                                                        Edit
-                                                      </button>
-                                                    )}
-                                                    {userCanDeleteProject && (
-                                                      <button
-                                                        type="button"
-                                                        className="app-action-button"
-                                                        onClick={async () => {
-                                                          if (!window.confirm(`Are you sure you want to delete match ${match.title || match.name}?`)) return;
-                                                          try {
-                                                            const res = await fetch(
-                                                              `${apiBaseUrl}/api/v1/activities/${match.id}/`,
-                                                              {
-                                                                method: 'DELETE',
-                                                                headers: {
-                                                                  'Content-Type': 'application/json',
-                                                                  'X-CSRFToken': getCsrfToken(),
-                                                                },
-                                                                credentials: 'include',
-                                                              }
-                                                            );
-
-                                                            if (res.ok) {
-                                                              setMatches((prev) => prev.filter((m: any) => String(m.id) !== String(match.id)));
-                                                            } else {
-                                                              alert('Error deleting match');
-                                                            }
-                                                          } catch (e) {
-                                                            console.error(e);
-                                                            alert('Error deleting match');
-                                                          }
-                                                        }}
-                                                        style={tableActionButtonStyle('danger')}
-                                                      >
-                                                        Delete
-                                                      </button>
-                                                    )}
-                                                  </div>
-                                                </td>
-                                              </tr>
-                                            );
-                                          })}
-                                        </tbody>
-                                      </Table>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </>
-                      );
-                    })()
-                  )}
-
-                  <h3 className="text-lg font-semibold mb-4" style={{ marginTop: '1.5rem' }}>
-                    Hierarchy: Members
-                  </h3>
-                  {membersLoading ? (
-                    <Alert variant="info">Loading members…</Alert>
-                  ) : members.length === 0 ? (
-                    <Alert variant="info">No members found in this season.</Alert>
-                  ) : (
-                    (() => {
-                      const normalized = hierarchySearch.trim().toLowerCase();
-                      const filtered = !normalized
-                        ? members
-                        : members.filter((m: any) => {
-                            const u = m?.user || m;
-                            const name =
-                              String(u?.name || '').toLowerCase() ||
-                              `${String(u?.first_name || '').toLowerCase()} ${String(u?.last_name || '').toLowerCase()}`.trim();
-                            const email = String(u?.email || '').toLowerCase();
-                            return name.includes(normalized) || email.includes(normalized) || String(m?.id || '').toLowerCase().includes(normalized);
-                          });
-
-                      return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          {filtered.slice(0, 100).map((m: any) => {
-                            const membershipId = String(m?.id || '').trim();
-                            const u = m?.user || m;
-                            const label =
-                              String(u?.name || '').trim() ||
-                              `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim() ||
-                              String(u?.email || '').trim() ||
-                              'Member';
+                            const competitionPath = isTeamRoute
+                              ? `${seasonsBasePath}/${seasonPathKey}/${periodPathKey(competition) || competition.id}`
+                              : `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`;
 
                             return (
                               <div
-                                key={membershipId}
+                                key={compId}
                                 style={{
-                                  padding: '10px 12px',
                                   border: '1px solid var(--app-border)',
-                                  borderRadius: '6px',
-                                  backgroundColor: 'var(--app-surface)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'space-between',
-                                  gap: '10px',
-                                  flexWrap: 'wrap',
+                                  borderRadius: 10,
+                                  background: 'var(--app-surface)',
+                                  overflow: 'hidden',
                                 }}
                               >
-                                <div style={{ minWidth: 0 }}>
-                                  <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</div>
-                                  <div style={{ opacity: 0.7, fontSize: '12px' }}>{String(u?.email || '').trim() || '—'}</div>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: '10px 12px',
+                                    borderBottom: '1px solid var(--app-border)',
+                                    background: 'var(--app-surface-2)',
+                                    gap: 12,
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                                    <button
+                                      type="button"
+                                      className="app-unstyled-button text-blue-600 hover:underline"
+                                      onClick={() => navigate(competitionPath)}
+                                      style={{ textAlign: 'left', fontWeight: 800, fontSize: 14 }}
+                                    >
+                                      {competition.name || `Competition ${compId}`}
+                                    </button>
+                                    {competition.sport && (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--app-muted-text)' }}>
+                                        <span>{competition.sport.sport_icon}</span>
+                                        <span>{competition.sport.name}</span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                    <span style={pillStyle}>Matches: {getMatchCountForCompetition(competition)}</span>
+                                    <span style={pillStyle}>Participants: {getCompetitionParticipantsCount(competition)}</span>
+                                    <button type="button" className="app-action-button" onClick={() => { setSelectedDetailPeriod(competition); setIsPeriodDetailModalOpen(true); }} style={actionButtonStyle('primary')}>
+                                      View
+                                    </button>
+                                    {userCanEditProject && (
+                                      <button type="button" className="app-action-button" onClick={() => { setSelectedEditPeriod(competition); setIsPeriodEditModalOpen(true); }} style={actionButtonStyle('warning')}>
+                                        Edit
+                                      </button>
+                                    )}
+                                    {userCanDeleteProject && (
+                                      <button
+                                        type="button"
+                                        className="app-action-button"
+                                        onClick={async () => {
+                                          if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
+                                          try {
+                                            const res = await fetch(`${apiBaseUrl}/api/v1/periods/${competition.id}/`, {
+                                              method: 'DELETE',
+                                              headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                                              credentials: 'include',
+                                            });
+                                            if (res.ok) {
+                                              setCompetitions((prev) => prev.filter((c) => String(c.id) !== String(competition.id)));
+                                            } else {
+                                              alert('Error deleting competition');
+                                            }
+                                          } catch (e) {
+                                            console.error(e);
+                                            alert('Error deleting competition');
+                                          }
+                                        }}
+                                        style={actionButtonStyle('danger')}
+                                      >
+                                        Delete
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
 
-                                {membershipId ? (
-                                  <Link
-                                    to={`${seasonsBasePath}/${seasonPathKey}/${encodeURIComponent(membershipId)}`}
-                                    className="text-blue-600 hover:underline"
-                                    style={{ textDecoration: 'none', fontWeight: 600 }}
-                                  >
-                                    Edit profile
-                                  </Link>
-                                ) : null}
+                                <div style={{ padding: '10px 12px' }}>
+                                  {matchesLoading ? (
+                                    <div className="text-sm text-gray-500 py-2">Loading matches…</div>
+                                  ) : visibleMatches.length === 0 ? (
+                                    <div className="text-sm text-gray-500 py-2">No matches.</div>
+                                  ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                      {visibleMatches.map((match: any) => {
+                                        const matchKey = (match as any).slug || match.id;
+                                        const matchPath = isTeamRoute
+                                          ? `${seasonsBasePath}/${seasonPathKey}/${competitionKey}/${String(matchKey)}`
+                                          : `/matches/${String(matchKey)}`;
+                                        return (
+                                          <div
+                                            key={match.id}
+                                            style={{
+                                              display: 'flex',
+                                              justifyContent: 'space-between',
+                                              alignItems: 'center',
+                                              gap: 12,
+                                              padding: '8px 10px',
+                                              border: '1px solid var(--app-border)',
+                                              borderRadius: 8,
+                                              background: 'var(--app-surface)',
+                                            }}
+                                          >
+                                            <div style={{ minWidth: 0 }}>
+                                              <button
+                                                type="button"
+                                                className="app-unstyled-button text-blue-600 hover:underline"
+                                                onClick={() => navigate(matchPath)}
+                                                style={{ textAlign: 'left', fontWeight: 700, fontSize: 13 }}
+                                              >
+                                                {match.title || match.name}
+                                              </button>
+                                              <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
+                                                {match.start_time ? new Date(match.start_time).toLocaleString() : '—'}
+                                              </div>
+                                            </div>
+
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                              <span style={pillStyle}>Participants: {getMatchParticipantsCount(match)}</span>
+                                              <button type="button" className="app-action-button" onClick={() => { setSelectedDetailMatch(match); setIsMatchDetailModalOpen(true); }} style={actionButtonStyle('primary')}>
+                                                View
+                                              </button>
+                                              {userCanEditProject && (
+                                                <button type="button" className="app-action-button" onClick={() => { setSelectedEditMatch(match); setIsMatchEditModalOpen(true); }} style={actionButtonStyle('warning')}>
+                                                  Edit
+                                                </button>
+                                              )}
+                                              {userCanDeleteProject && (
+                                                <button
+                                                  type="button"
+                                                  className="app-action-button"
+                                                  onClick={async () => {
+                                                    if (!window.confirm(`Delete match ${match.title || match.name}?`)) return;
+                                                    try {
+                                                      const res = await fetch(`${apiBaseUrl}/api/v1/activities/${match.id}/`, {
+                                                        method: 'DELETE',
+                                                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                                                        credentials: 'include',
+                                                      });
+                                                      if (res.ok) {
+                                                        setMatches((prev) => prev.filter((m: any) => String(m.id) !== String(match.id)));
+                                                      } else {
+                                                        alert('Error deleting match');
+                                                      }
+                                                    } catch (e) {
+                                                      console.error(e);
+                                                      alert('Error deleting match');
+                                                    }
+                                                  }}
+                                                  style={actionButtonStyle('danger')}
+                                                >
+                                                  Delete
+                                                </button>
+                                              )}
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             );
                           })}
-
-                          {filtered.length > 100 && (
-                            <Alert variant="info">Showing first 100 members. Refine your filter to see more.</Alert>
-                          )}
                         </div>
                       );
                     })()
                   )}
-                    </Card>
-                  </div>
-                </div>
+                </Card>
               )}
 
               {activeTab === 'squad' && (
