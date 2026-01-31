@@ -739,10 +739,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   };
 
   const getFunctionalRolesFromMembership = (m: any): string[] => {
+    // Try top-level functional_roles field first (from API)
     const direct = (m as any)?.functional_roles ?? (m as any)?.functionalRoles;
-    if (Array.isArray(direct)) return direct.map((r) => String(r || '').trim()).filter(Boolean);
+    if (Array.isArray(direct) && direct.length > 0) {
+      return direct.map((r) => String(r || '').trim()).filter(Boolean);
+    }
 
+    // Then try metadata.functional_roles (where we save it)
     const meta = (m as any)?.metadata || {};
+    if (Array.isArray(meta.functional_roles) && meta.functional_roles.length > 0) {
+      return meta.functional_roles.map((r: any) => String(r || '').trim()).filter(Boolean);
+    }
+
+    // Legacy single role fields
     const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();
     return legacy ? [legacy] : [];
   };
@@ -3437,7 +3446,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           },
                           credentials: 'include',
                           body: JSON.stringify({
-                            functional_roles: functionalRoles,
+                            metadata: {
+                              ...((selectedEditMember as any)?.metadata || {}),
+                              functional_roles: functionalRoles,
+                            },
                           }),
                         }
                       );
