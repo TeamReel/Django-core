@@ -19,6 +19,10 @@ import {
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import type { Organisation as SharedOrganisation } from '../../../types';
 
+// CSRF token helper
+const getCsrfToken = (): string =>
+  document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content || '';
+
 
 // Reusing existing modals from parent folder
 // Note: We might need to adjust imports if they are not exported or move them
@@ -1051,6 +1055,9 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                     const source = String(u?.membership?.source ?? u?.source ?? '').toLowerCase();
                                     const isDirectMembership = Boolean(membershipId) && isUuid(membershipId) && !source;
 
+                                    // Team members can also be deleted (different API endpoint)
+                                    const isTeamMember = teamLocked && Boolean(membershipId) && isUuid(membershipId);
+
                                                                         const usernameLabel =
                                                                             String((u as any)?.username || '').trim() ||
                                                                             `${u.first_name || ''} ${u.last_name || ''}`.trim() ||
@@ -1235,6 +1242,45 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                         style={actionButtonStyle('danger')}
                                                     >
                                                         Delete
+                                                    </button>
+                                                )}
+
+                                                {isTeamMember && (
+                                                    <button
+                                                        onClick={async () => {
+                                                            const teamName = scoped.team.label;
+                                                            if (!window.confirm(`Remove ${usernameLabel} from ${teamName}?`)) return;
+
+                                                            const apiBaseUrl = getApiBaseUrl();
+                                                            const csrfToken = getCsrfToken();
+
+                                                            const res = await fetch(
+                                                                `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${membershipId}/`,
+                                                                {
+                                                                    method: 'DELETE',
+                                                                    headers: {
+                                                                        'X-CSRFToken': csrfToken,
+                                                                        'X-Requested-With': 'XMLHttpRequest',
+                                                                    },
+                                                                    credentials: 'include',
+                                                                }
+                                                            );
+
+                                                            if (!res.ok) {
+                                                                const text = await res.text().catch(() => '');
+                                                                alert(text || `Failed to remove member (${res.status})`);
+                                                                return;
+                                                            }
+
+                                                            // Update local table without full reload.
+                                                            setUsers((prev) => prev.filter((row: any) => {
+                                                                const rowMembershipId = row?.membership?.id ?? row?.membership_id ?? row?.member_id;
+                                                                return String(rowMembershipId) !== String(membershipId);
+                                                            }));
+                                                        }}
+                                                        style={actionButtonStyle('danger')}
+                                                    >
+                                                        Remove
                                                     </button>
                                                 )}
                                             </div>
