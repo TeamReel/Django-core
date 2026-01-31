@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
   LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder,
-      Bell, CreditCard, UserCircle, Star, PanelLeftClose, PanelLeft
+      Bell, CreditCard, UserCircle, Star, PanelLeftClose, PanelLeft, Calendar, Film
 } from 'lucide-react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -409,8 +409,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             matchPath({ path: '/:orgId', end: true }, path);
 
     // 1. Determine Active Section
-    let activeSection: 'work' | 'people' | 'content' | 'organisation' | 'platform' | 'help' | 'preferences' = 'work';
-    if (path.startsWith('/content') || path.startsWith('/studio')) activeSection = 'content';
+    let activeSection: 'work' | 'people' | 'content' | 'templates' | 'organisation' | 'platform' | 'help' | 'preferences' = 'work';
+    if (path.startsWith('/content-templates')) activeSection = 'templates';
+    else if (path.startsWith('/content') || path.startsWith('/studio')) activeSection = 'content';
     else if (path.startsWith('/credits')) activeSection = isPersonalWallet ? 'preferences' : 'organisation';
     else if (path.startsWith('/permissions') || path === '/users') activeSection = 'organisation';
     else if (path.startsWith('/organisation/')) activeSection = 'organisation';
@@ -761,6 +762,18 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             items = [
                 { label: 'Library', path: '/content', icon: Library },
                 { label: 'AI Studio', path: '/studio', icon: Sparkles },
+            ];
+            break;
+
+        case 'templates':
+            title = 'Content Templates';
+            items = [
+                { label: 'All Templates', path: '/content-templates?tab=all', icon: Library },
+                { label: 'Season', path: '/content-templates?tab=season', icon: Calendar },
+                { label: 'Pre-Match', path: '/content-templates?tab=pre_match', icon: Film },
+                { label: 'During Match', path: '/content-templates?tab=during_match', icon: Sparkles },
+                { label: 'Post-Match', path: '/content-templates?tab=post_match', icon: Trophy },
+                { label: 'Member', path: '/content-templates?tab=member', icon: UserCircle },
             ];
             break;
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, Button, Badge, Input, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
@@ -113,14 +114,16 @@ interface Sport {
 export default function ContentTemplatesPage() {
   const { context } = useContextSwitcher();
   const apiBaseUrl = getApiBaseUrl();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const [templates, setTemplates] = useState<ContentTemplate[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filter state
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // Get selected category from URL query param
+  const selectedCategory = searchParams.get('tab') || 'all';
   const [searchQuery, setSearchQuery] = useState('');
   const [showInactive, setShowInactive] = useState(false);
 
@@ -247,10 +250,14 @@ export default function ContentTemplatesPage() {
     }
   };
 
+  // Get current category label for title
+  const currentCategory = TEMPLATE_CATEGORIES.find(c => c.id === selectedCategory);
+  const pageTitle = currentCategory?.id === 'all' ? 'All Templates' : `${currentCategory?.label || 'Templates'} Templates`;
+
   return (
     <AppShell>
       <PageHeader
-        title="Content Templates"
+        title={pageTitle}
         subtitle="Manage AI content generation templates"
         actions={
           <Button variant="primary" onClick={() => setIsCreateModalOpen(true)}>
@@ -260,62 +267,19 @@ export default function ContentTemplatesPage() {
       />
 
       <PageContent>
-        <div style={{ display: 'flex', gap: '24px', minHeight: '600px' }}>
-          {/* Panel A: Category Navigation */}
-          <Card style={{ width: '240px', flexShrink: 0 }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text-muted)' }}>
-              TEMPLATE TYPES
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {TEMPLATE_CATEGORIES.map(category => {
-                const count = category.types
-                  ? templates.filter(t => category.types!.includes(t.template_type)).length
-                  : templates.length;
-                const isSelected = selectedCategory === category.id;
-
-                return (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '10px 12px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      background: isSelected ? 'var(--app-primary)' : 'transparent',
-                      color: isSelected ? 'white' : 'var(--app-text)',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      fontSize: '14px',
-                      fontWeight: isSelected ? 600 : 400,
-                    }}
-                  >
-                    <span>{category.icon}</span>
-                    <span style={{ flex: 1 }}>{category.label}</span>
-                    <Badge variant={isSelected ? 'info' : 'default'}>{count}</Badge>
-                  </button>
-                );
-              })}
+        <Card>
+          {/* Search & Filters */}
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center' }}>
+            <div style={{ flex: 1 }}>
+              <Input
+                placeholder="Search templates..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-          </Card>
-
-          {/* Panel B: Templates List */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <Card>
-              {/* Search & Filters */}
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center' }}>
-                <div style={{ flex: 1 }}>
-                  <Input
-                    placeholder="Search templates..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                  <input
-                    type="checkbox"
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+              <input
+                type="checkbox"
                     checked={showInactive}
                     onChange={(e) => setShowInactive(e.target.checked)}
                   />
@@ -334,7 +298,7 @@ export default function ContentTemplatesPage() {
                   No templates found
                   {selectedCategory !== 'all' && (
                     <div style={{ marginTop: '8px' }}>
-                      <Button variant="secondary" size="sm" onClick={() => setSelectedCategory('all')}>
+                      <Button variant="secondary" size="sm" onClick={() => navigate('/content-templates?tab=all')}>
                         Show all templates
                       </Button>
                     </div>
@@ -436,8 +400,6 @@ export default function ContentTemplatesPage() {
                 </div>
               </div>
             </Card>
-          </div>
-        </div>
       </PageContent>
 
       {/* TODO: Create/Edit Modal */}
