@@ -133,6 +133,7 @@ interface ContentGenerationModalProps {
   season?: {
     id: string;
     name: string;
+    project_id?: string | number;
   } | null;
   organisationSport?: { id: number | string; name: string; slug?: string } | null;
   /** Pre-selected template - skips type/template selection */
@@ -210,19 +211,24 @@ export default function ContentGenerationModal({
 
   // Fetch season squad on mount
   useEffect(() => {
-    if (!isOpen || !season?.id) return;
+    if (!isOpen) return;
+
+    // Try to get project ID from matchData or season
+    const projectId = matchData?.project?.id || season?.project_id;
+    if (!projectId) return;
 
     const fetchSeasonSquad = async () => {
       try {
-        const response = await fetch(`${getApiBaseUrl()}/api/v1/activities/periods/${season.id}/participations/`, {
+        // Fetch project members instead of period participations
+        const response = await fetch(`${getApiBaseUrl()}/api/v1/projects/${projectId}/members/`, {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
         });
 
         if (response.ok) {
           const data = await response.json();
-          const participations = data?.data?.results || data?.results || data?.data || data || [];
-          setSeasonSquad(groupParticipationsByRole(participations));
+          const members = data?.data?.results || data?.results || data?.data || data || [];
+          setSeasonSquad(groupParticipationsByRole(members));
         }
       } catch (err) {
         console.error('Error fetching season squad:', err);
@@ -230,7 +236,7 @@ export default function ContentGenerationModal({
     };
 
     fetchSeasonSquad();
-  }, [isOpen, season?.id]);
+  }, [isOpen, matchData?.project?.id, season?.project_id]);
 
   // Reset state when opening
   useEffect(() => {
