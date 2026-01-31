@@ -235,7 +235,8 @@ export default function HierarchyMatchDetailPage() {
         // Use COMPETITION sport (variant) for filtering, fallback to org sport (category)
         const competitionSport = competition?.sport;
         const orgSport = org?.sport;
-        const sportId = competitionSport?.id || orgSport?.id;
+        // Convert to number to match template.sport type
+        const sportId = competitionSport?.id ? Number(competitionSport.id) : (orgSport?.id ? Number(orgSport.id) : undefined);
         const sportName = competitionSport?.name || orgSport?.name;
 
         console.log('[Content] ======================');
@@ -287,11 +288,14 @@ export default function HierarchyMatchDetailPage() {
           }
 
           // Or if we have a variant and template has the category
-          if (competitionSport?.parent_sport_id && t.sport === competitionSport.parent_sport_id) {
+          const competitionParentId = competitionSport?.parent_sport_id ? Number(competitionSport.parent_sport_id) : undefined;
+          const orgParentId = orgSport?.parent_sport_id ? Number(orgSport.parent_sport_id) : undefined;
+
+          if (competitionParentId && t.sport === competitionParentId) {
             console.log('  ✓ Match: we have variant, template has category');
             return true;
           }
-          if (!competitionSport && orgSport?.parent_sport_id && t.sport === orgSport.parent_sport_id) {
+          if (!competitionSport && orgParentId && t.sport === orgParentId) {
             console.log('  ✓ Match: org variant, template has category');
             return true;
           }
