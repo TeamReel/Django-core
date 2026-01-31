@@ -1350,6 +1350,8 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
         opened={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         period={editCompetition as any}
+        showSportVariant={true}
+        organisationSportId={selectedOrg?.sport?.id || null}
         onSave={async (payload) => {
           if (!editCompetition) return;
           await savePeriodEdits(editCompetition.id, payload);

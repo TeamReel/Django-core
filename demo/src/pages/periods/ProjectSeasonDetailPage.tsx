@@ -71,6 +71,12 @@ type Organisation = {
   name: string;
   slug?: string;
   user_role?: 'admin' | 'member';
+  sport?: {
+    id: string | number;
+    name: string;
+    slug: string;
+    sport_icon?: string;
+  } | null;
 };
 
 // MEDIA_SLOTS, memberHasMedia, countFilledMediaSlots imported from shared utils
@@ -2917,7 +2923,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             setSelectedEditPeriod(null);
           }}
           period={selectedEditPeriod}
-          showSportVariant={false}
+          showSportVariant={!isSeasonPeriod(selectedEditPeriod)}
+          organisationSportId={org?.sport?.id ? String(org.sport.id) : null}
           onSave={async (payload) => {
             if (!selectedEditPeriod) return;
             await savePeriodEdits(selectedEditPeriod, payload);
