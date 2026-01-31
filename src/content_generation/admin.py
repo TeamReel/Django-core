@@ -16,21 +16,52 @@ class ContentTemplateAdmin(admin.ModelAdmin):
     list_display = [
         "name",
         "template_type",
-        "sport_type",
+        "template_subtype",
+        "sport",
         "is_active",
         "organisation",
         "created_at",
     ]
-    list_filter = ["template_type", "sport_type", "is_active", "organisation"]
+    list_filter = ["template_type", "template_subtype", "sport", "is_active", "organisation"]
     search_fields = ["name", "description", "ai_workflow_id"]
     readonly_fields = ["created_at", "updated_at", "created_by"]
     fieldsets = (
         (
             "Basic Info",
-            {"fields": ("name", "description", "template_type", "sport_type", "is_active")},
+            {
+                "fields": (
+                    "name",
+                    "description",
+                    "template_type",
+                    "template_subtype",
+                    "is_active",
+                )
+            },
         ),
-        ("Configuration", {"fields": ("ai_workflow_id", "template_settings", "timeout_minutes")}),
+        (
+            "Sport & Style",
+            {
+                "fields": ("sport", "formation", "style_variant"),
+                "description": "Sport filtering and visual style options",
+            },
+        ),
+        (
+            "Generation Config",
+            {
+                "fields": (
+                    "ai_workflow_id",
+                    "template_settings",
+                    "input_requirements",
+                    "timeout_minutes",
+                    "credits_required",
+                )
+            },
+        ),
         ("Relationships", {"fields": ("organisation", "project", "created_by")}),
+        (
+            "Legacy Fields",
+            {"fields": ("sport_type",), "classes": ("collapse",), "description": "Deprecated"},
+        ),
         ("Timestamps", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 
