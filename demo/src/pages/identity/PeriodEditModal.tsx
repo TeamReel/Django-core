@@ -17,6 +17,8 @@ interface PeriodEditModalProps {
   period: PeriodLike | null;
   showSportVariant?: boolean;
   showDates?: boolean;
+  /** Organisation's sport category ID - if provided, only variants of this category are shown */
+  organisationSportId?: string | null;
   onSave: (payload: {
     name?: string;
     description?: string;
@@ -27,7 +29,7 @@ interface PeriodEditModalProps {
   }) => Promise<void>;
 }
 
-export default function PeriodEditModal({ opened, onClose, period, onSave, showSportVariant = true, showDates = true }: PeriodEditModalProps) {
+export default function PeriodEditModal({ opened, onClose, period, onSave, showSportVariant = true, showDates = true, organisationSportId }: PeriodEditModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -38,7 +40,13 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { variants, loading: sportsLoading } = useSports();
+  const { variants, getVariantsForCategory, loading: sportsLoading } = useSports();
+
+  // Filter variants by organisation sport category if provided
+  const filteredVariants = useMemo(() => {
+    if (!organisationSportId) return variants;
+    return getVariantsForCategory(organisationSportId);
+  }, [variants, organisationSportId, getVariantsForCategory]);
 
   const firstNonEmptyString = (...values: any[]): string => {
     for (const v of values) {
@@ -355,7 +363,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
                 }}
               >
                 <option value="">— Select sport variant —</option>
-                {variants.map((sport) => (
+                {filteredVariants.map((sport) => (
                   <option key={sport.id} value={sport.id}>
                     {sport.sport_icon} {sport.name} {sport.category_name ? `(${sport.category_name})` : ''}
                   </option>

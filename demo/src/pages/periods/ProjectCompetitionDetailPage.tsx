@@ -2075,6 +2075,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 onClose={() => setIsPeriodEditModalOpen(false)}
                 period={selectedEditPeriod}
                 showDates={false}
+                organisationSportId={(org as any)?.sport?.id || null}
                 onSave={async (patch) => {
                   if (!selectedEditPeriod) return;
                   await savePeriodEdits(selectedEditPeriod, patch);
