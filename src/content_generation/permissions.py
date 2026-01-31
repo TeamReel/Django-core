@@ -26,7 +26,7 @@ class ContentTemplatePermissionMixin:
     Permission mixin for ContentTemplateViewSet.
 
     Read operations (list/retrieve) require only authentication.
-    Write operations require manage_templates permission.
+    Write operations require manage_templates permission OR superuser status.
     Global templates (organisation=NULL) can only be modified by superusers.
     """
 
@@ -35,8 +35,24 @@ class ContentTemplatePermissionMixin:
         # Read operations: any authenticated user can view templates
         if self.action in ["list", "retrieve"]:
             return [IsAuthenticated()]
-        # Write operations: require manage_templates permission
-        return [IsAuthenticated(), HasPermission(MANAGE_TEMPLATES)]
+        # Write operations: superusers always allowed, others need permission
+        return [IsAuthenticated(), HasPermissionOrSuperuser(MANAGE_TEMPLATES)]
+
+
+class HasPermissionOrSuperuser(HasPermission):
+    """Permission that allows superusers to bypass permission check."""
+
+    def has_permission(self, request, view):
+        """Check if user is superuser or has required permission."""
+        if request.user and request.user.is_authenticated and request.user.is_superuser:
+            return True
+        return super().has_permission(request, view)
+
+    def has_object_permission(self, request, view, obj):
+        """Check object permission, superusers always allowed."""
+        if request.user and request.user.is_authenticated and request.user.is_superuser:
+            return True
+        return super().has_object_permission(request, view, obj)
 
 
 class ContentItemPermissionMixin:
