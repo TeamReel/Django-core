@@ -461,7 +461,6 @@ export default function ContentGenerationModal({
                       >
                         <div className="text-3xl mb-2">{item.icon}</div>
                         <div className="font-semibold text-sm">{item.label}</div>
-                        <div className="text-xs text-gray-500">{item.sublabel}</div>
                       </div>
                     ))}
                   </div>
