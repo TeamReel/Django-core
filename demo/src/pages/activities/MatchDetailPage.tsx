@@ -103,6 +103,7 @@ type Period = {
   id: string;
   name: string;
   parent_period?: { id: string; name: string } | null;
+  sport?: { id: number; name: string; slug?: string } | null;
 };
 
 const looksLikeIdentifier = (value: string) => {
@@ -220,28 +221,36 @@ export default function HierarchyMatchDetailPage() {
         const rawResults = data?.data?.results || data?.results || data?.data || data || [];
         const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
 
-        console.log('[Content] Org sport:', org?.sport?.name, '(id:', org?.sport?.id, ')');
+        // Use COMPETITION sport (variant) for filtering, fallback to org sport (category)
+        const competitionSport = competition?.sport;
+        const orgSport = org?.sport;
+        const sportId = competitionSport?.id || orgSport?.id;
+        const sportName = competitionSport?.name || orgSport?.name;
+
+        console.log('[Content] Competition sport:', competitionSport?.name, '(id:', competitionSport?.id, ')');
+        console.log('[Content] Org sport:', orgSport?.name, '(id:', orgSport?.id, ')');
+        console.log('[Content] Using sport for filtering:', sportName, '(id:', sportId, ')');
         console.log('[Content] All templates fetched:', allTemplates.length);
 
-        // Filter templates that match the org's sport (or have no sport = universal)
-        const sportId = org?.sport?.id;
+        // Filter templates that match the sport (or have no sport = universal)
         const matchingTemplates = allTemplates.filter(t => {
           // Template has no sport = universal, include it
           if (!t.sport) return true;
-          // If org has no sport, only include universal templates
+          // If no sport available, only include universal templates
           if (!sportId) return false;
-          // Template sport matches org sport directly (exact match)
+          // Template sport matches directly (exact match)
           if (t.sport === sportId) return true;
           // Template sport_detail matches by ID
           if (t.sport_detail?.id === sportId) return true;
 
-          // IMPORTANT: Match if template has a sport VARIANT and org has the CATEGORY
-          // Example: Template=Football 11v11 (variant), Org=Football (category)
-          // Check if template's sport parent matches org's sport
+          // IMPORTANT: Match if template has a sport VARIANT and we have the CATEGORY
+          // Example: Template=Football 11v11 (variant), Sport=Football (category)
+          // Check if template's sport parent matches our sport
           if (t.sport_detail?.parent_sport_id === sportId) return true;
 
-          // Or if org has a variant and template has the category
-          if (org?.sport?.parent_sport_id && t.sport === org.sport.parent_sport_id) return true;
+          // Or if we have a variant and template has the category
+          if (competitionSport?.parent_sport_id && t.sport === competitionSport.parent_sport_id) return true;
+          if (!competitionSport && orgSport?.parent_sport_id && t.sport === orgSport.parent_sport_id) return true;
 
           return false;
         });
@@ -269,7 +278,7 @@ export default function HierarchyMatchDetailPage() {
     } finally {
       setTemplatesLoading(false);
     }
-  }, [org?.sport?.id]);
+  }, [competition?.sport, org?.sport]);
 
   // Fetch templates when component mounts or sport changes
   useEffect(() => {
@@ -1849,10 +1858,12 @@ export default function HierarchyMatchDetailPage() {
           {activeTab === 'content' && (
             <div style={{ display: 'grid', gap: '16px' }}>
               {/* Sport info header */}
-              {org?.sport && (
+              {(competition?.sport || org?.sport) && (
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-500">
-                    Templates for: <Badge variant="info" size="sm">⚽ {org.sport.name}</Badge>
+                    Templates for: <Badge variant="info" size="sm">
+                      {competition?.sport?.sport_icon || org?.sport?.sport_icon || '⚽'} {competition?.sport?.name || org?.sport?.name}
+                    </Badge>
                     {match?.metadata?.formation && (
                       <Badge variant="default" size="sm" style={{ marginLeft: '8px' }}>
                         Formation: {match.metadata.formation}
