@@ -1225,8 +1225,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             { id: 'competitions', label: 'Competitions' },
             { id: 'matches', label: 'Matches' },
             { id: 'squad', label: 'Squad' },
-            { id: 'content', label: 'Content' },
             { id: 'media', label: 'Media' },
+            { id: 'content', label: 'Content' },
           ]}
           activeTab={activeTab}
         />

@@ -48,6 +48,7 @@ export const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 
   const base: React.CSSProperties = {
     padding: '4px 8px',
     borderRadius: '4px',
+    backgroundColor: 'var(--app-surface)',
     cursor: 'pointer',
     fontSize: '12px',
     lineHeight: 1.2,
@@ -64,7 +65,6 @@ export const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 
   if (variant === 'primary') {
     return {
       ...base,
-      backgroundColor: 'transparent',
       color: 'var(--app-link)',
       border: '1px solid var(--app-link)'
     };
@@ -74,7 +74,6 @@ export const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 
   if (variant === 'warning') {
     return {
       ...base,
-      backgroundColor: 'transparent',
       color: 'var(--app-warning)',
       border: '1px solid var(--app-warning)'
     };
@@ -84,7 +83,6 @@ export const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 
   if (variant === 'danger') {
     return {
       ...base,
-      backgroundColor: 'transparent',
       border: '1px solid var(--app-error)',
       color: 'var(--app-error)'
     };
