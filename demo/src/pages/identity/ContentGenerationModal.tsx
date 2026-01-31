@@ -156,9 +156,9 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
       }
 
       const response = await fetch(`${getApiBaseUrl()}/api/v1/content-generation/templates/?${params.toString()}`, {
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
         },
       });
 
@@ -320,12 +320,30 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
               )}
 
               {error && (
-                <div className="text-center py-10 text-red-500">{error}</div>
+                <div className="space-y-4">
+                  <div className="text-center py-6 px-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="text-yellow-600 mb-2">⚠️ Could not load templates</div>
+                    <div className="text-sm text-gray-600 mb-4">
+                      Make sure the backend server is running and you have templates configured.
+                    </div>
+                    <Button variant="secondary" size="sm" onClick={fetchTemplates}>
+                      Retry
+                    </Button>
+                  </div>
+                  <div className="text-center text-sm text-gray-500">
+                    <a href="/content-templates" className="text-blue-600 hover:underline">
+                      → Go to Content Templates to create templates
+                    </a>
+                  </div>
+                </div>
               )}
 
               {!loading && !error && templates.length === 0 && (
-                <div className="text-center py-10 text-gray-400">
-                  No templates found for "{slotType}" content type.
+                <div className="text-center py-10">
+                  <div className="text-gray-400 mb-4">No templates found for "{slotType}" content type.</div>
+                  <a href="/content-templates" className="text-blue-600 hover:underline text-sm">
+                    → Create a template for this content type
+                  </a>
                 </div>
               )}
 
