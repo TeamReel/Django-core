@@ -498,17 +498,26 @@ export default function ContentTemplatesPage() {
                 <Table>
                   <thead>
                     <tr>
-                      <th style={{ width: '25%' }}>Name</th>
-                      <th style={{ width: '12%' }}>Type</th>
-                      <th style={{ width: '12%' }}>Subtype</th>
-                      <th style={{ width: '10%' }}>Formation</th>
-                      <th style={{ width: '18%' }}>Requirements</th>
-                      <th style={{ width: '8%' }}>Status</th>
-                      <th style={{ width: '15%', textAlign: 'right' }}>Actions</th>
+                      <th style={{ width: '20%' }}>Name</th>
+                      <th style={{ width: '10%' }}>Type</th>
+                      <th style={{ width: '10%' }}>Subtype</th>
+                      <th style={{ width: '10%' }}>Sport</th>
+                      <th style={{ width: '10%' }}>Variant</th>
+                      <th style={{ width: '8%' }}>Formation</th>
+                      <th style={{ width: '8%' }}>Style</th>
+                      <th style={{ width: '6%' }}>Status</th>
+                      <th style={{ width: '18%', textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredTemplates.map(template => (
+                    {filteredTemplates.map(template => {
+                      // Parse sport name into base sport and variant
+                      const sportName = template.sport_detail?.name || '';
+                      const sportParts = sportName.match(/^(\w+)\s+(.+)$/);
+                      const baseSport = sportParts ? sportParts[1] : sportName;
+                      const sportVariant = sportParts ? sportParts[2] : '';
+
+                      return (
                       <tr key={template.id}>
                         <td>
                           <div>
@@ -518,20 +527,10 @@ export default function ContentTemplatesPage() {
                                 <Badge variant="warning" style={{ fontSize: '10px', padding: '2px 6px' }}>Global</Badge>
                               )}
                             </div>
-                            {template.sport_detail && (
-                              <div style={{ fontSize: '12px', color: 'var(--app-text-muted)', marginTop: '2px' }}>
-                                ⚽ {template.sport_detail.name}
-                              </div>
-                            )}
-                            {template.style_variant && (
-                              <div style={{ fontSize: '12px', color: 'var(--app-primary)', marginTop: '2px' }}>
-                                Style: {template.style_variant}
-                              </div>
-                            )}
                             {template.description && (
                               <div style={{ fontSize: '12px', color: 'var(--app-text-muted)', marginTop: '2px' }}>
-                                {template.description.substring(0, 50)}
-                                {template.description.length > 50 && '...'}
+                                {template.description.substring(0, 40)}
+                                {template.description.length > 40 && '...'}
                               </div>
                             )}
                           </div>
@@ -542,10 +541,26 @@ export default function ContentTemplatesPage() {
                           </Badge>
                         </td>
                         <td>
-                          {template.template_subtype && (
+                          {template.template_subtype ? (
                             <Badge variant="default">
                               {SUBTYPE_LABELS[template.template_subtype] || template.template_subtype}
                             </Badge>
+                          ) : (
+                            <span style={{ color: 'var(--app-text-muted)' }}>—</span>
+                          )}
+                        </td>
+                        <td>
+                          {baseSport ? (
+                            <span>⚽ {baseSport}</span>
+                          ) : (
+                            <span style={{ color: 'var(--app-text-muted)' }}>—</span>
+                          )}
+                        </td>
+                        <td>
+                          {sportVariant ? (
+                            <Badge variant="default">{sportVariant}</Badge>
+                          ) : (
+                            <span style={{ color: 'var(--app-text-muted)' }}>—</span>
                           )}
                         </td>
                         <td>
@@ -556,37 +571,11 @@ export default function ContentTemplatesPage() {
                           )}
                         </td>
                         <td>
-                          <div style={{ fontSize: '12px' }}>
-                            {template.input_requirements?.players && (
-                              <div>
-                                👥 {template.input_requirements.players.count ||
-                                    template.input_requirements.players.positions?.length ||
-                                    template.input_requirements.players.min_count || '?'} players
-                                {template.input_requirements.players.required_assets && (
-                                  <span style={{ color: 'var(--app-text-muted)' }}> ({template.input_requirements.players.required_assets.length} assets/player)</span>
-                                )}
-                              </div>
-                            )}
-                            {template.input_requirements?.staff && (
-                              <div>
-                                🎯 {Array.isArray(template.input_requirements.staff)
-                                  ? template.input_requirements.staff.filter((s: any) => s.required).map((s: any) => s.role).join(', ') || 'staff'
-                                  : template.input_requirements.staff.members?.filter(m => m.required).map(m => m.label).join(', ') || 'staff'}
-                              </div>
-                            )}
-                            {template.input_requirements?.assets && template.input_requirements.assets.filter(a => a.required).length > 0 && (
-                              <div>📁 {template.input_requirements.assets.filter(a => a.required).length} assets</div>
-                            )}
-                            {template.input_requirements?.organisation_assets && (
-                              <div>🏢 {(template.input_requirements.organisation_assets.required?.length || 0) + (template.input_requirements.organisation_assets.optional?.length || 0)} org assets</div>
-                            )}
-                            {template.input_requirements?.output && (
-                              <div>🎬 {template.input_requirements.output.dimensions?.aspect_ratio || ''} {template.input_requirements.output.duration_seconds ? `${template.input_requirements.output.duration_seconds}s` : ''}</div>
-                            )}
-                            {(!template.input_requirements || Object.keys(template.input_requirements).length === 0) && (
-                              <span style={{ color: 'var(--app-text-muted)' }}>—</span>
-                            )}
-                          </div>
+                          {template.style_variant ? (
+                            <Badge variant="success">{template.style_variant}</Badge>
+                          ) : (
+                            <span style={{ color: 'var(--app-text-muted)' }}>—</span>
+                          )}
                         </td>
                         <td>
                           <Badge variant={template.is_active ? 'success' : 'default'}>
@@ -620,7 +609,7 @@ export default function ContentTemplatesPage() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    );})}
                   </tbody>
                 </Table>
               )}
