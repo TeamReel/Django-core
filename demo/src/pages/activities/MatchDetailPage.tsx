@@ -203,16 +203,11 @@ export default function HierarchyMatchDetailPage() {
 
   // Fetch available templates for all content types
   const fetchAvailableTemplates = useCallback(async () => {
-    if (!org?.sport?.id) return;
-
     setTemplatesLoading(true);
     try {
-      // Fetch templates filtered by organisation (includes global templates)
+      // Fetch all active templates (global, not filtered by organisation)
       const params = new URLSearchParams();
       params.append('is_active', 'true');
-      if (org?.id) {
-        params.append('organisation', String(org.id));
-      }
 
       const response = await fetch(`${getApiBaseUrl()}/api/v1/content-generation/templates/?${params.toString()}`, {
         credentials: 'include',
@@ -225,15 +220,16 @@ export default function HierarchyMatchDetailPage() {
         const rawResults = data?.data?.results || data?.results || data?.data || data || [];
         const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
 
-        console.log('[Content] Org sport:', org.sport?.name, '(id:', org.sport?.id, ')');
+        console.log('[Content] Org sport:', org?.sport?.name, '(id:', org?.sport?.id, ')');
         console.log('[Content] All templates fetched:', allTemplates.length);
 
         // Filter templates that match the org's sport (or have no sport = universal)
-        // Also include templates where sport matches parent sport
-        const sportId = org.sport.id;
+        const sportId = org?.sport?.id;
         const matchingTemplates = allTemplates.filter(t => {
           // Template has no sport = universal, include it
           if (!t.sport) return true;
+          // If org has no sport, only include universal templates
+          if (!sportId) return false;
           // Template sport matches org sport directly
           if (t.sport === sportId) return true;
           // Template sport_detail matches by ID
@@ -264,14 +260,12 @@ export default function HierarchyMatchDetailPage() {
     } finally {
       setTemplatesLoading(false);
     }
-  }, [org?.sport?.id, org?.id]);
+  }, [org?.sport?.id]);
 
-  // Fetch templates when sport is available
+  // Fetch templates when component mounts or sport changes
   useEffect(() => {
-    if (org?.sport?.id) {
-      fetchAvailableTemplates();
-    }
-  }, [org?.sport?.id, fetchAvailableTemplates]);
+    fetchAvailableTemplates();
+  }, [fetchAvailableTemplates]);
 
   const matchWalletOptions = useMemo<WalletOption[]>(() => {
     const opts: WalletOption[] = [{ kind: 'default', label: 'Default (recommended)' }];
