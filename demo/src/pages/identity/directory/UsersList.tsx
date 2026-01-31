@@ -1058,6 +1058,18 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                     // Team members can also be deleted (different API endpoint)
                                     const isTeamMember = teamLocked && Boolean(membershipId) && isUuid(membershipId);
 
+                                    // Debug logging
+                                    if (teamLocked) {
+                                        console.log('🔍 Team member check:', {
+                                            userId: u.id,
+                                            membershipId,
+                                            teamLocked,
+                                            isTeamMember,
+                                            isDirectMembership,
+                                            source,
+                                        });
+                                    }
+
                                                                         const usernameLabel =
                                                                             String((u as any)?.username || '').trim() ||
                                                                             `${u.first_name || ''} ${u.last_name || ''}`.trim() ||
