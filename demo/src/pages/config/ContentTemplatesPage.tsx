@@ -1199,7 +1199,7 @@ export default function ContentTemplatesPage() {
                                     if (e.target.checked) {
                                       newReqs.members.goalkeeper.asset_types = [...currentTypes, assetType];
                                     } else {
-                                      newReqs.members.goalkeeper.asset_types = currentTypes.filter(t => t !== assetType);
+                                      newReqs.members.goalkeeper.asset_types = currentTypes.filter((t: string) => t !== assetType);
                                     }
                                     setEditForm({ ...editForm, input_requirements: newReqs });
                                   }
@@ -1270,7 +1270,7 @@ export default function ContentTemplatesPage() {
                                     if (e.target.checked) {
                                       newReqs.members.player.asset_types = [...currentTypes, assetType];
                                     } else {
-                                      newReqs.members.player.asset_types = currentTypes.filter(t => t !== assetType);
+                                      newReqs.members.player.asset_types = currentTypes.filter((t: string) => t !== assetType);
                                     }
                                     setEditForm({ ...editForm, input_requirements: newReqs });
                                   }
@@ -1341,7 +1341,7 @@ export default function ContentTemplatesPage() {
                                     if (e.target.checked) {
                                       newReqs.members.coach.asset_types = [...currentTypes, assetType];
                                     } else {
-                                      newReqs.members.coach.asset_types = currentTypes.filter(t => t !== assetType);
+                                      newReqs.members.coach.asset_types = currentTypes.filter((t: string) => t !== assetType);
                                     }
                                     setEditForm({ ...editForm, input_requirements: newReqs });
                                   }
@@ -1412,7 +1412,7 @@ export default function ContentTemplatesPage() {
                                     if (e.target.checked) {
                                       newReqs.members.assistant.asset_types = [...currentTypes, assetType];
                                     } else {
-                                      newReqs.members.assistant.asset_types = currentTypes.filter(t => t !== assetType);
+                                      newReqs.members.assistant.asset_types = currentTypes.filter((t: string) => t !== assetType);
                                     }
                                     setEditForm({ ...editForm, input_requirements: newReqs });
                                   }
