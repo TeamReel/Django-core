@@ -6,6 +6,7 @@ import { BreadcrumbContextSwitcher, PageContent, PageHeader, type BreadcrumbSwit
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { actionButtonStyle } from '../../utils/directoryStyles';
 
 import { TeamsList } from './directory/TeamsList';
 import { SeasonsList } from './directory/SeasonsList';
@@ -823,28 +824,6 @@ export default function ClubOrganisationDetailPage() {
       cancelled = true;
     };
   }, [activeTabFromUrl, apiBaseUrl, clubIdForDirectoryLists, orgSlugForDirectoryLists]);
-
-  type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
-  const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
-    const base: React.CSSProperties = {
-      padding: '4px 8px',
-      borderRadius: '4px',
-      backgroundColor: 'var(--app-surface)',
-      cursor: 'pointer',
-      fontSize: '12px',
-      lineHeight: 1.2,
-    };
-    if (tone === 'primary') {
-      return { ...base, border: '1px solid var(--app-link)', color: 'var(--app-link)' };
-    }
-    if (tone === 'warning') {
-      return { ...base, border: '1px solid var(--app-warning)', color: 'var(--app-warning)' };
-    }
-    if (tone === 'danger') {
-      return { ...base, border: '1px solid var(--app-error)', color: 'var(--app-error)' };
-    }
-    return { ...base, border: '1px solid var(--app-border)', color: 'var(--app-muted-text)' };
-  };
 
   // If we arrived via org UUID, replace with org slug for stable routing.
   const shouldResolveOrg = useMemo(() => looksLikeIdentifier(orgSlugOrId), [orgSlugOrId]);

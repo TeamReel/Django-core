@@ -40,6 +40,7 @@ import { PolicyList } from '../../components/Organisations/PolicyList';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { periodPathKey } from '../../utils/periodPath';
+import { actionButtonStyle } from '../../utils/directoryStyles';
 import { ClubsList } from './directory/ClubsList';
 import { TeamsList } from './directory/TeamsList';
 import { SeasonsList } from './directory/SeasonsList';
@@ -602,28 +603,6 @@ export const OrganisationDetailPage: React.FC = () => {
     const title = [...unique].sort((a, b) => a.localeCompare(b)).join(', ');
     const label = unique.length === 1 ? best : `${best} +${unique.length - 1}`;
     return { bestKey: normalizeRoleName(best), label, title };
-  };
-
-  type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
-  const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
-    const base: React.CSSProperties = {
-      padding: '4px 8px',
-      borderRadius: '4px',
-      backgroundColor: 'var(--app-surface)',
-      cursor: 'pointer',
-      fontSize: '12px',
-      lineHeight: 1.2,
-    };
-    if (tone === 'primary') {
-      return { ...base, border: '1px solid var(--app-link)', color: 'var(--app-link)' };
-    }
-    if (tone === 'warning') {
-      return { ...base, border: '1px solid var(--app-warning)', color: 'var(--app-warning)' };
-    }
-    if (tone === 'danger') {
-      return { ...base, border: '1px solid var(--app-error)', color: 'var(--app-error)' };
-    }
-    return { ...base, border: '1px solid var(--app-border)', color: 'var(--app-muted-text)' };
   };
 
   const getCsrfToken = () =>

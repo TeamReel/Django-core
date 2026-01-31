@@ -43,8 +43,10 @@ export const compactActionsStyle: React.CSSProperties = {
   alignItems: 'center'
 };
 
-// Use 'primary' | 'secondary' | 'danger' | 'warning' | 'neutral' to match design system variants conceptually
-export const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 'warning' | 'neutral'): React.CSSProperties => {
+// Centralized action button styling - use this everywhere for View/Edit/Delete buttons
+export type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger' | 'success';
+
+export const actionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => {
   const base: React.CSSProperties = {
     padding: '4px 8px',
     borderRadius: '4px',
@@ -58,36 +60,28 @@ export const actionButtonStyle = (variant: 'primary' | 'secondary' | 'danger' | 
     alignItems: 'center',
     justifyContent: 'center',
     fontWeight: 500,
-    transition: 'all 0.2s ease',
   };
 
   // View / Primary: Outline (Link Color)
-  if (variant === 'primary') {
-    return {
-      ...base,
-      color: 'var(--app-link)',
-      border: '1px solid var(--app-link)'
-    };
+  if (tone === 'primary') {
+    return { ...base, border: '1px solid var(--app-link)', color: 'var(--app-link)' };
   }
 
   // Edit / Warning: Outline (Warning Color)
-  if (variant === 'warning') {
-    return {
-      ...base,
-      color: 'var(--app-warning)',
-      border: '1px solid var(--app-warning)'
-    };
+  if (tone === 'warning') {
+    return { ...base, border: '1px solid var(--app-warning)', color: 'var(--app-warning)' };
   }
 
   // Delete / Danger: Outline (Error Color)
-  if (variant === 'danger') {
-    return {
-      ...base,
-      border: '1px solid var(--app-error)',
-      color: 'var(--app-error)'
-    };
+  if (tone === 'danger') {
+    return { ...base, border: '1px solid var(--app-error)', color: 'var(--app-error)' };
   }
 
-  // secondary / neutral
-  return { ...base, backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)', border: '1px solid var(--app-border)' };
+  // Success: Outline (Success Color)
+  if (tone === 'success') {
+    return { ...base, border: '1px solid var(--app-success, #10b981)', color: 'var(--app-success, #10b981)' };
+  }
+
+  // Neutral
+  return { ...base, border: '1px solid var(--app-border)', color: 'var(--app-muted-text)' };
 };

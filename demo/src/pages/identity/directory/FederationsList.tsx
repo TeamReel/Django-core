@@ -17,69 +17,14 @@ import OrganisationCreateModal from '../OrganisationCreateModal';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import { useSports } from '../../../hooks/useSports';
 import type { Organisation } from '../../../types';
-
-// Table styling constants
-const compactTableStyle: React.CSSProperties = {
-  tableLayout: 'fixed',
-  width: '100%',
-  minWidth: '1200px',
-  borderCollapse: 'collapse'
-};
-const compactThStyle: React.CSSProperties = {
-  padding: '6px 8px',
-  fontSize: '0.8rem',
-  textAlign: 'left',
-  borderBottom: '2px solid var(--app-border)',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis'
-};
-const compactTdStyle: React.CSSProperties = {
-  padding: '6px 8px',
-  fontSize: '0.85rem',
-  verticalAlign: 'middle',
-  borderBottom: '1px solid #eee',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis'
-};
-const compactTextTdStyle: React.CSSProperties = {
-  ...compactTdStyle,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap'
-};
-const compactActionsStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'flex-end',
-  gap: '8px',
-  flexWrap: 'nowrap'
-};
-
-// Button styling function
-type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger';
-const actionButtonStyle = (tone: ActionTone): React.CSSProperties => {
-  const base: React.CSSProperties = {
-    padding: '4px 8px',
-    borderRadius: '4px',
-    backgroundColor: 'var(--app-surface)',
-    cursor: 'pointer',
-    fontSize: '12px',
-    lineHeight: 1.2,
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
-  };
-  if (tone === 'primary') {
-    return { ...base, border: '1px solid #007bff', color: '#007bff' };
-  }
-  if (tone === 'warning') {
-    return { ...base, border: '1px solid #fd7e14', color: '#fd7e14' };
-  }
-  if (tone === 'danger') {
-    return { ...base, border: '1px solid #dc3545', color: '#dc3545' };
-  }
-  return { ...base, border: '1px solid #6c757d', color: '#6c757d' };
-};
+import {
+  compactTableStyle,
+  compactThStyle,
+  compactTdStyle,
+  compactTextTdStyle,
+  compactActionsStyle,
+  actionButtonStyle,
+} from '../../../utils/directoryStyles';
 
 export const FederationsList: React.FC = () => {
   const navigate = useNavigate();
