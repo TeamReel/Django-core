@@ -218,15 +218,21 @@ export default function HierarchyMatchDetailPage() {
 
       if (response.ok) {
         const data = await response.json();
-        const results: ContentTemplate[] = data.results || data || [];
+        // Handle envelope format: { status: 'success', data: { results: [...] } }
+        const rawResults = data?.data?.results || data?.results || data?.data || data || [];
+        const results: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
 
-        // Group templates by subtype
+        console.log('[Content] Fetched templates for sport', org.sport.id, ':', results.length, 'templates');
+        console.log('[Content] Template subtypes:', results.map(t => ({ name: t.name, subtype: t.template_subtype })));
+
+        // Group templates by subtype - use both exact match and contains match
         const grouped: Record<string, ContentTemplate[]> = {};
         results.forEach(t => {
-          const key = t.template_subtype || t.template_type;
-          if (!grouped[key]) grouped[key] = [];
-          grouped[key].push(t);
+          const subtype = t.template_subtype || t.template_type;
+          if (!grouped[subtype]) grouped[subtype] = [];
+          grouped[subtype].push(t);
         });
+        console.log('[Content] Grouped templates:', Object.keys(grouped));
         setAvailableTemplates(grouped);
       }
     } catch (err) {
@@ -1832,9 +1838,13 @@ export default function HierarchyMatchDetailPage() {
                 </div>
               )}
 
-              {/* Flat grid of all content types */}
+              {/* Compact grid of all content types */}
               <Card title="Content Types">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                }}>
                   {Object.entries(CONTENT_TYPES).flatMap(([categoryKey, category]) =>
                     category.items.map(item => {
                       // Get all templates for this subtype
@@ -1870,7 +1880,8 @@ export default function HierarchyMatchDetailPage() {
                             : `No ${item.label} template available`
                           }
                           style={{
-                            padding: '16px',
+                            width: '100px',
+                            padding: '12px 8px',
                             border: hasTemplate ? '1px solid var(--app-border)' : '1px dashed var(--app-border)',
                             borderRadius: '8px',
                             display: 'flex',
@@ -1895,44 +1906,42 @@ export default function HierarchyMatchDetailPage() {
                           }}
                         >
                           <div style={{
-                            fontSize: '24px',
-                            marginBottom: '8px',
+                            fontSize: '20px',
+                            marginBottom: '4px',
                             filter: hasTemplate ? 'none' : 'grayscale(100%)',
                           }}>
                             {item.icon}
                           </div>
                           <div style={{
                             fontWeight: 600,
-                            fontSize: '14px',
+                            fontSize: '12px',
                             color: hasTemplate ? 'var(--app-text)' : 'var(--app-muted-text)',
+                            lineHeight: 1.2,
                           }}>
                             {item.label}
                           </div>
                           <div style={{
-                            fontSize: '11px',
+                            fontSize: '10px',
                             color: 'var(--app-muted-text)',
                             marginTop: '2px',
                           }}>
                             {item.sublabel}
                           </div>
-                          {/* Show template details */}
+                          {/* Show template info */}
                           {hasTemplate && matchedTemplate && (
-                            <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                            <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                               {matchedTemplate.style_variant && (
-                                <Badge variant="info" size="sm">{matchedTemplate.style_variant}</Badge>
-                              )}
-                              {matchedTemplate.formation_detail && (
-                                <Badge variant="default" size="sm">{matchedTemplate.formation_detail.code}</Badge>
+                                <Badge variant="info" size="sm" style={{ fontSize: '9px', padding: '2px 4px' }}>{matchedTemplate.style_variant}</Badge>
                               )}
                               {matchedTemplate.credits_required && matchedTemplate.credits_required > 0 && (
-                                <span style={{ fontSize: '10px', color: 'var(--app-muted-text)' }}>
-                                  {matchedTemplate.credits_required} credits
+                                <span style={{ fontSize: '9px', color: 'var(--app-muted-text)' }}>
+                                  {matchedTemplate.credits_required} cr
                                 </span>
                               )}
                             </div>
                           )}
                           {!hasTemplate && (
-                            <Badge variant="default" size="sm" style={{ marginTop: '8px' }}>No template</Badge>
+                            <div style={{ fontSize: '9px', color: 'var(--app-muted-text)', marginTop: '4px' }}>—</div>
                           )}
                         </div>
                       );
