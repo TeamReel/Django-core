@@ -215,8 +215,15 @@ export default function HierarchyMatchDetailPage() {
         headers: { 'Content-Type': 'application/json' },
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      console.log('[Content] API Response status:', response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to parse error' }));
+        console.error('[Content] API Error:', response.status, errorData);
+        return;
+      }
+
+      const data = await response.json();
         // Handle envelope format: { status: 'success', data: { results: [...] } }
         const rawResults = data?.data?.results || data?.results || data?.data || data || [];
         const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
@@ -306,9 +313,8 @@ export default function HierarchyMatchDetailPage() {
         });
         console.log('[Content] Grouped by subtype:', Object.keys(grouped));
         setAvailableTemplates(grouped);
-      }
     } catch (err) {
-      console.error('Error fetching templates:', err);
+      console.error('[Content] Error fetching templates:', err);
     } finally {
       setTemplatesLoading(false);
     }
