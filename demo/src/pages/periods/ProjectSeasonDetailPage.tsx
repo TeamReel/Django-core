@@ -3276,18 +3276,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
         {/* Content Generation Modal */}
         <ContentGenerationModal
-          opened={isContentModalOpen}
+          isOpen={isContentModalOpen}
           onClose={closeContentModal}
+          matchData={null}
+          organisationSport={org?.sport || null}
           template={selectedTemplate}
           contentTypeLabel={selectedContentTypeLabel}
-          contextData={{
-            season_id: resolvedSeasonId || effectiveSeasonId,
-            season_name: season?.name || '',
-            organisation_id: org?.id,
-            organisation_name: org?.name,
-            project_id: project?.id,
-            project_name: project?.name,
-          }}
         />
       </div>
     </>
