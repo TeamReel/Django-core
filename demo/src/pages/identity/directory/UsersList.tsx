@@ -279,6 +279,53 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
             try {
+                // When on a team page (teamLocked), fetch directly from the project members endpoint
+                // This gives us the correct project membership IDs for deletion
+                if (teamLocked && preselectedTeamId) {
+                    const teamMembersUrl = `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/`;
+                    const res = await fetch(teamMembersUrl, { credentials: 'include' });
+
+                    if (!res.ok) throw new Error('Failed to fetch team members');
+
+                    const data = await res.json();
+                    const rawList = data?.results || data?.data?.results || data?.data || [];
+
+                    let results = (Array.isArray(rawList) ? rawList : []).map((item: any) => {
+                        const nestedUser = item?.user;
+                        const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
+
+                        return {
+                            id: String(u?.id ?? ''),
+                            email: u?.email,
+                            first_name: u?.first_name,
+                            last_name: u?.last_name,
+                            is_active: u?.is_active ?? item?.is_active ?? true,
+                            role: item?.role ?? 'viewer',
+                            // Store the project membership ID for deletion
+                            project_membership_id: String(item?.id ?? ''),
+                            membership: {
+                                id: item?.id,
+                                role: item?.role,
+                                source: item?.source,
+                                joined_at: item?.joined_at,
+                            },
+                            source: item?.source,
+                            joined_at: item?.joined_at,
+                            project_memberships: [],
+                        };
+                    });
+
+                    // Client side filtering for status
+                    if (statusFilter === 'active') {
+                        results = results.filter((u: any) => u.is_active !== false);
+                    } else if (statusFilter === 'inactive') {
+                        results = results.filter((u: any) => u.is_active === false);
+                    }
+
+                    setUsers(results);
+                    return;
+                }
+
                 // Find the selected organisation to get its slug
                 const selectedOrg = selectedOrgId
                     ? organisations.find(o => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)
@@ -444,7 +491,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
         };
 
         loadUsers();
-    }, [selectedOrgId, selectedTeamId, selectedClubId, statusFilter, roleFilter, organisations, isSuperAdmin, refreshKey]);
+    }, [selectedOrgId, selectedTeamId, selectedClubId, statusFilter, roleFilter, organisations, isSuperAdmin, refreshKey, teamLocked, preselectedTeamId]);
 
     const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
 
@@ -1051,42 +1098,29 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                     const orgHref = getOrganisationLinkForRow(u);
                                     const { clubHref, teamHref } = getClubAndTeamLinksForRow(u);
 
-                                    // For team members, look for actual membership UUID in the data
+                                    // For team members fetched from /projects/:id/members/, use project_membership_id
                                     // For org members, use u.membership.id
                                     let membershipId = null;
                                     if (teamLocked) {
-                                        // Try each field and only accept if it's a valid UUID (not pm:* format)
-                                        const candidates = [
-                                            u?.membership_id,
-                                            u?.member_id,
-                                            u?.membership?.id,
-                                            u?.id,
-                                        ];
-
-                                        for (const candidate of candidates) {
-                                            const candidateStr = String(candidate || '').trim();
-                                            if (candidateStr && isUuid(candidateStr)) {
-                                                membershipId = candidateStr;
-                                                break;
-                                            }
-                                        }
+                                        // When teamLocked, we fetch from /projects/:id/members/ which returns project_membership_id
+                                        membershipId = u?.project_membership_id ?? u?.membership?.id ?? null;
                                     } else {
                                         membershipId = u?.membership?.id ?? u?.membership_id ?? u?.member_id ?? null;
                                     }
                                     const source = String(u?.membership?.source ?? u?.source ?? '').toLowerCase();
                                     const isDirectMembership = Boolean(membershipId) && isUuid(membershipId) && !source;
 
-                                    // Team members can be deleted only if we have a valid UUID
-                                    const isTeamMember = teamLocked && Boolean(membershipId) && isUuid(membershipId);
+                                    // Team members can be deleted when we have a valid project_membership_id
+                                    const hasValidTeamMembershipId = teamLocked && Boolean(u?.project_membership_id) && isUuid(u?.project_membership_id);
 
                                     // Debug logging
                                     if (teamLocked) {
                                         console.log('🔍 Team member check:', {
                                             userId: u.id,
+                                            projectMembershipId: u?.project_membership_id,
                                             membershipId,
-                                            rawData: { uId: u.id, membershipId: u?.membership?.id, memberId: u?.member_id },
                                             teamLocked,
-                                            isTeamMember,
+                                            hasValidTeamMembershipId,
                                             isDirectMembership,
                                             source,
                                         });
@@ -1279,7 +1313,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                     </button>
                                                 )}
 
-                                                {isTeamMember && (
+                                                {hasValidTeamMembershipId && (
                                                     <button
                                                         onClick={async () => {
                                                             const teamName = scoped.team.label;
@@ -1288,12 +1322,13 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                             const apiBaseUrl = getApiBaseUrl();
                                                             const csrfToken = getCsrfToken();
 
-                                                            // Use membership UUID directly
-                                                            const deleteUrl = `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${membershipId}/`;
+                                                            // Use project_membership_id for deletion
+                                                            const projectMembershipId = u?.project_membership_id;
+                                                            const deleteUrl = `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${projectMembershipId}/`;
 
                                                             console.log('🗑️ Deleting team member:', {
                                                                 teamId: preselectedTeamId,
-                                                                membershipId,
+                                                                projectMembershipId,
                                                                 deleteUrl,
                                                                 userData: { id: u.id, email: u.email },
                                                             });
@@ -1325,8 +1360,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
 
                                                             // Update local table without full reload.
                                                             setUsers((prev) => prev.filter((row: any) => {
-                                                                const rowMembershipId = row?.membership?.id ?? row?.membership_id ?? row?.member_id;
-                                                                return String(rowMembershipId) !== String(membershipId);
+                                                                return String(row?.project_membership_id) !== String(projectMembershipId);
                                                             }));
                                                         }}
                                                         style={actionButtonStyle('danger')}
