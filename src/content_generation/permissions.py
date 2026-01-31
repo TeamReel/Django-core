@@ -25,11 +25,17 @@ class ContentTemplatePermissionMixin:
     """
     Permission mixin for ContentTemplateViewSet.
 
-    All template operations require manage_templates permission.
+    Read operations (list/retrieve) require only authentication.
+    Write operations require manage_templates permission.
+    Global templates (organisation=NULL) can only be modified by superusers.
     """
 
     def get_permissions(self):
         """Return appropriate permissions for template operations."""
+        # Read operations: any authenticated user can view templates
+        if self.action in ["list", "retrieve"]:
+            return [IsAuthenticated()]
+        # Write operations: require manage_templates permission
         return [IsAuthenticated(), HasPermission(MANAGE_TEMPLATES)]
 
 
