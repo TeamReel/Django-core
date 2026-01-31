@@ -239,9 +239,18 @@ export default function ContentTemplatesPage() {
         ]);
 
         if (templatesRes.ok) {
-          const data = await templatesRes.json();
-          // Handle both paginated ({results: []}) and non-paginated ([]) responses
-          const templateList = Array.isArray(data) ? data : (data.results || []);
+          const response = await templatesRes.json();
+          // Handle API wrapper format: {status, data: {data: []}} or {results: []} or []
+          let templateList: ContentTemplate[] = [];
+          if (Array.isArray(response)) {
+            templateList = response;
+          } else if (response.data?.data && Array.isArray(response.data.data)) {
+            // API wrapper format: {status: "success", data: {data: [...]}}
+            templateList = response.data.data;
+          } else if (response.results && Array.isArray(response.results)) {
+            // DRF pagination format: {results: [...]}
+            templateList = response.results;
+          }
           setTemplates(templateList);
         } else {
           console.error('Templates fetch failed:', templatesRes.status, await templatesRes.text());
@@ -249,8 +258,16 @@ export default function ContentTemplatesPage() {
         }
 
         if (sportsRes.ok) {
-          const data = await sportsRes.json();
-          const sportList = Array.isArray(data) ? data : (data.results || []);
+          const response = await sportsRes.json();
+          // Handle API wrapper format
+          let sportList: Sport[] = [];
+          if (Array.isArray(response)) {
+            sportList = response;
+          } else if (response.data?.data && Array.isArray(response.data.data)) {
+            sportList = response.data.data;
+          } else if (response.results && Array.isArray(response.results)) {
+            sportList = response.results;
+          }
           setSports(sportList);
         }
       } catch (e) {
