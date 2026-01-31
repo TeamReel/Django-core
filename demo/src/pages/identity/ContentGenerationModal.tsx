@@ -56,7 +56,6 @@ export const CONTENT_TYPES = {
     items: [
       { id: 'goal', label: 'Goal', sublabel: 'Celebration', icon: '⚽', subtype: 'goal' },
       { id: 'score_update', label: 'Score', sublabel: 'Update', icon: '🔢', subtype: 'score_update' },
-      { id: 'injury', label: 'Injury', sublabel: 'Update', icon: '🩹', subtype: 'injury' },
     ],
   },
   post_match: {
