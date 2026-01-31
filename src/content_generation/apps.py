@@ -15,7 +15,7 @@ class ContentGenerationConfig(AppConfig):
     def _register_audit_event_types(self):
         """Register B31 content generation audit event types with B09."""
         try:
-            from src.audit.registry import register_event_type
+            from audit.registry import register_event_type
 
             # ContentItem events
             register_event_type(

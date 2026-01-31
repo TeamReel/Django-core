@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def _get_audit_log():
     """Get audit_log instance, returns None if B09 not available."""
     try:
-        from src.audit.api import audit_log
+        from audit.api import audit_log
 
         return audit_log
     except ImportError:
