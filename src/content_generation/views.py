@@ -92,11 +92,32 @@ class ContentTemplateViewSet(ContentTemplatePermissionMixin, viewsets.ModelViewS
     List, create, retrieve, update, and delete content templates.
     Includes delete protection for templates with existing ContentItems.
     Requires content.manage_templates permission.
+
+    Global templates (organisation=NULL) are visible to all users but
+    can only be edited by superusers.
     """
 
-    queryset = ContentTemplate.objects.select_related("organisation", "project", "created_by")
     serializer_class = ContentTemplateSerializer
     filterset_class = ContentTemplateFilter
+
+    def get_queryset(self):
+        """
+        Return templates for the organisation + global templates (organisation=NULL).
+
+        Global templates are system-seeded and available to all organisations.
+        """
+        from django.db.models import Q
+
+        qs = ContentTemplate.objects.select_related(
+            "organisation", "project", "created_by", "sport", "formation"
+        )
+
+        # If organisation filter is specified, include both org templates AND global templates
+        org_id = self.request.query_params.get("organisation")
+        if org_id:
+            qs = qs.filter(Q(organisation_id=org_id) | Q(organisation__isnull=True))
+
+        return qs
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

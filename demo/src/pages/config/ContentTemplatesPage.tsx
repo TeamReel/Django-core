@@ -3,7 +3,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, Button, Badge, Input, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
-import { useContextSwitcher } from '@django-core/context-switcher';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { Table } from '../../shims/design-system';
 
@@ -90,12 +89,40 @@ const TYPE_LABELS: Record<string, string> = {
 
 interface InputRequirements {
   players?: {
+    source?: string;
+    formation?: string;
+    count?: number;
     use_formation?: boolean;
     min_count?: number;
     max_count?: number;
-    positions?: string[];
+    positions?: Array<{
+      slot: number;
+      position: string;
+      functional_role: string;
+      label: string;
+    }>;
+    member_fields?: string[];
+    required_assets?: Array<{
+      type: string;
+      label: string;
+      description: string;
+    }>;
   };
-  staff?: Array<{
+  staff?: {
+    source?: string;
+    members?: Array<{
+      role: string;
+      functional_role: string;
+      label: string;
+      required: boolean;
+    }>;
+    member_fields?: string[];
+    required_assets?: Array<{
+      type: string;
+      label: string;
+      description: string;
+    }>;
+  } | Array<{
     role: string;
     required: boolean;
     count: number;
@@ -104,9 +131,34 @@ interface InputRequirements {
     type: string;
     required: boolean;
   }>;
+  organisation_assets?: {
+    source?: string;
+    required?: Array<{
+      type: string;
+      label: string;
+      description: string;
+    }>;
+    optional?: Array<{
+      type: string;
+      label: string;
+      description: string;
+    }>;
+  };
   match_data?: {
+    source?: string;
     required?: string[];
     optional?: string[];
+  };
+  output?: {
+    type: string;
+    format: string;
+    dimensions?: {
+      width: number;
+      height: number;
+      aspect_ratio: string;
+    };
+    duration_seconds?: number;
+    fps?: number;
   };
 }
 
@@ -116,6 +168,12 @@ interface FormationDetail {
   name: string;
 }
 
+interface SportDetail {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 interface ContentTemplate {
   id: number;
   name: string;
@@ -123,6 +181,8 @@ interface ContentTemplate {
   template_type: string;
   template_subtype: string | null;
   sport_type: string | null;
+  sport: number | null;
+  sport_detail: SportDetail | null;
   formation: number | null;
   formation_detail: FormationDetail | null;
   style_variant: string | null;
@@ -130,7 +190,7 @@ interface ContentTemplate {
   ai_workflow_id: string;
   template_settings: Record<string, any>;
   is_active: boolean;
-  organisation: number;
+  organisation: number | null;  // NULL = global template
   project: number | null;
   created_at: string;
   updated_at: string;
@@ -144,7 +204,6 @@ interface Sport {
 }
 
 export default function ContentTemplatesPage() {
-  const { context } = useContextSwitcher();
   const apiBaseUrl = getApiBaseUrl();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -163,17 +222,15 @@ export default function ContentTemplatesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<ContentTemplate | null>(null);
 
-  // Load templates and sports
+  // Load templates and sports (global templates, no organisation filter)
   useEffect(() => {
     const fetchData = async () => {
-      if (!context?.organisation?.id) return;
-
       setLoading(true);
       setError(null);
 
       try {
         const [templatesRes, sportsRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/content-templates/?organisation=${context.organisation.id}`, {
+          fetch(`${apiBaseUrl}/api/v1/content-templates/`, {
             credentials: 'include',
           }),
           fetch(`${apiBaseUrl}/api/v1/sports/`, {
@@ -199,7 +256,7 @@ export default function ContentTemplatesPage() {
     };
 
     fetchData();
-  }, [apiBaseUrl, context?.organisation?.id]);
+  }, [apiBaseUrl]);
 
   // Filter templates based on selected category and search
   const filteredTemplates = useMemo(() => {
@@ -354,7 +411,17 @@ export default function ContentTemplatesPage() {
                       <tr key={template.id}>
                         <td>
                           <div>
-                            <div style={{ fontWeight: 500 }}>{template.name}</div>
+                            <div style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              {template.name}
+                              {template.organisation === null && (
+                                <Badge variant="warning" style={{ fontSize: '10px', padding: '2px 6px' }}>Global</Badge>
+                              )}
+                            </div>
+                            {template.sport_detail && (
+                              <div style={{ fontSize: '12px', color: 'var(--app-text-muted)', marginTop: '2px' }}>
+                                ⚽ {template.sport_detail.name}
+                              </div>
+                            )}
                             {template.style_variant && (
                               <div style={{ fontSize: '12px', color: 'var(--app-primary)', marginTop: '2px' }}>
                                 Style: {template.style_variant}
@@ -390,13 +457,30 @@ export default function ContentTemplatesPage() {
                         <td>
                           <div style={{ fontSize: '12px' }}>
                             {template.input_requirements?.players && (
-                              <div>👥 {template.input_requirements.players.min_count || template.input_requirements.players.positions?.length || '?'} players</div>
+                              <div>
+                                👥 {template.input_requirements.players.count ||
+                                    template.input_requirements.players.positions?.length ||
+                                    template.input_requirements.players.min_count || '?'} players
+                                {template.input_requirements.players.required_assets && (
+                                  <span style={{ color: 'var(--app-text-muted)' }}> ({template.input_requirements.players.required_assets.length} assets/player)</span>
+                                )}
+                              </div>
                             )}
-                            {template.input_requirements?.staff && template.input_requirements.staff.length > 0 && (
-                              <div>🎯 {template.input_requirements.staff.filter(s => s.required).map(s => s.role).join(', ') || 'staff'}</div>
+                            {template.input_requirements?.staff && (
+                              <div>
+                                🎯 {Array.isArray(template.input_requirements.staff)
+                                  ? template.input_requirements.staff.filter((s: any) => s.required).map((s: any) => s.role).join(', ') || 'staff'
+                                  : template.input_requirements.staff.members?.filter(m => m.required).map(m => m.label).join(', ') || 'staff'}
+                              </div>
                             )}
                             {template.input_requirements?.assets && template.input_requirements.assets.filter(a => a.required).length > 0 && (
                               <div>📁 {template.input_requirements.assets.filter(a => a.required).length} assets</div>
+                            )}
+                            {template.input_requirements?.organisation_assets && (
+                              <div>🏢 {(template.input_requirements.organisation_assets.required?.length || 0) + (template.input_requirements.organisation_assets.optional?.length || 0)} org assets</div>
+                            )}
+                            {template.input_requirements?.output && (
+                              <div>🎬 {template.input_requirements.output.dimensions?.aspect_ratio || ''} {template.input_requirements.output.duration_seconds ? `${template.input_requirements.output.duration_seconds}s` : ''}</div>
                             )}
                             {(!template.input_requirements || Object.keys(template.input_requirements).length === 0) && (
                               <span style={{ color: 'var(--app-text-muted)' }}>—</span>

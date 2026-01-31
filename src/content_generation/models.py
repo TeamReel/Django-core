@@ -146,8 +146,10 @@ class ContentTemplate(models.Model):
     organisation = models.ForeignKey(
         "organisations.Organisation",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="content_templates",
-        help_text="Owning organization",
+        help_text="Owning organization. NULL = global template (superadmin only)",
     )
     project = models.ForeignKey(
         "projects.Project",
@@ -160,8 +162,10 @@ class ContentTemplate(models.Model):
     created_by = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         related_name="created_templates",
-        help_text="Template creator",
+        help_text="Template creator. NULL for system-seeded templates.",
     )
     sport = models.ForeignKey(
         "sport_configuration.Sport",

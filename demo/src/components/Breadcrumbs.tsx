@@ -1105,6 +1105,9 @@ export default function Breadcrumbs() {
       else if (location.pathname.startsWith('/credits')) items.push({ label: 'My Wallet', path: '/credits' });
       else if (location.pathname.startsWith('/settings')) items.push({ label: 'Settings', path: '/settings' });
       else if (location.pathname.startsWith('/analytics')) items.push({ label: 'Analytics', path: '/analytics' });
+
+      // Global Config Pages (no organisation context)
+      else if (location.pathname.startsWith('/content-templates')) items.push({ label: 'Content Templates', path: '/content-templates' });
   }
 
   if (items.length === 0) return null;
