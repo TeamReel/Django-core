@@ -86,6 +86,14 @@ export const CONTENT_TYPES = {
 
 interface Participation {
   id: string;
+  user?: {
+    id: string;
+    name?: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    avatar_url?: string;
+  };
   member?: {
     id: string;
     user_name?: string;
@@ -95,12 +103,18 @@ interface Participation {
   };
   role?: string;
   status?: string;
+  functional_roles?: string[];
   data?: {
     side?: 'home' | 'away';
     jersey_number?: number;
     position?: string;
     is_captain?: boolean;
     functional_role?: string;
+  };
+  metadata?: {
+    team_role?: string;
+    position?: string;
+    shirt_number?: string;
   };
 }
 
@@ -137,12 +151,25 @@ function groupParticipationsByRole(participations: Participation[]): Record<stri
   };
 
   participations.forEach(p => {
-    const role = p.data?.functional_role?.toLowerCase() || 'player';
-    if (groups[role]) {
-      groups[role].push(p);
+    // Check functional_roles array first, then legacy fields
+    let roles: string[] = [];
+    if (p.functional_roles && Array.isArray(p.functional_roles)) {
+      roles = p.functional_roles;
+    } else if (p.data?.functional_role) {
+      roles = [p.data.functional_role];
+    } else if (p.metadata?.team_role) {
+      roles = [p.metadata.team_role];
     } else {
-      groups.player.push(p);
+      roles = ['player'];
     }
+
+    // Add participation to all matching role groups
+    roles.forEach(role => {
+      const normalizedRole = role.toLowerCase();
+      if (groups[normalizedRole]) {
+        groups[normalizedRole].push(p);
+      }
+    });
   });
 
   return groups;
@@ -634,58 +661,70 @@ export default function ContentGenerationModal({
                       )}
                     </div>
 
-                    {available.length === 0 ? (
-                      <div className="text-sm text-gray-500 italic p-4 bg-yellow-50 border border-yellow-200 rounded text-center">
-                        ⚠️ No {role}s found in match lineup. Add players to the lineup first.
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {Array.from({ length: req.count }).map((_, idx) => {
-                          const currentSelection = selected[idx];
-                          const currentMember = available.find(p => p.id === currentSelection);
+                    <div className="space-y-2">
+                      {Array.from({ length: req.count }).map((_, idx) => {
+                        const currentSelection = selected[idx];
+                        const currentMember = available.find(p => p.id === currentSelection);
 
-                          return (
-                            <div key={idx} className="grid grid-cols-[80px_1fr] gap-3 items-center">
-                              <label className="text-sm text-gray-600 font-medium">
-                                {role === 'player' ? `Player ${idx + 1}` : `${renderRoleLabel(role)} ${idx + 1}`}
-                              </label>
-                              <select
-                                value={currentSelection || ''}
-                                onChange={(e) => {
-                                  const newSelected = [...selected];
-                                  if (e.target.value) {
-                                    newSelected[idx] = e.target.value;
+                        return (
+                          <div key={idx} className="grid grid-cols-[80px_1fr] gap-3 items-center">
+                            <label className="text-sm text-gray-600 font-medium">
+                              {role === 'player' ? `Player ${idx + 1}` : `${renderRoleLabel(role)} ${idx + 1}`}
+                            </label>
+                            <select
+                              value={currentSelection || ''}
+                              onChange={(e) => {
+                                const newSelected = [...selected];
+                                if (e.target.value) {
+                                  newSelected[idx] = e.target.value;
+                                } else {
+                                  newSelected.splice(idx, 1);
+                                }
+                                setSelectedMembers({ ...selectedMembers, [role]: newSelected.filter(Boolean) });
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">
+                                {available.length === 0
+                                  ? `No ${role}s in season squad - add members first`
+                                  : `Select ${role}...`
+                                }
+                              </option>
+                              {available.map(p => {
+                                const user = p.user || p.member;
+                                let memberName = 'Unknown';
+                                if (user) {
+                                  if ('name' in user && user.name) {
+                                    memberName = user.name;
+                                  } else if ('user_name' in user && user.user_name) {
+                                    memberName = user.user_name;
                                   } else {
-                                    newSelected.splice(idx, 1);
+                                    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+                                    if (fullName) {
+                                      memberName = fullName;
+                                    } else if ('email' in user && user.email) {
+                                      memberName = user.email;
+                                    }
                                   }
-                                  setSelectedMembers({ ...selectedMembers, [role]: newSelected.filter(Boolean) });
-                                }}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              >
-                                <option value="">Select {role}...</option>
-                                {available.map(p => {
-                                  const memberName = p.member?.user_name ||
-                                    `${p.member?.first_name || ''} ${p.member?.last_name || ''}`.trim() ||
-                                    'Unknown';
-                                  const isAlreadySelected = selected.includes(p.id) && p.id !== currentSelection;
-                                  const jerseyNumber = p.data?.jersey_number;
+                                }
+                                const isAlreadySelected = selected.includes(p.id) && p.id !== currentSelection;
+                                const jerseyNumber = p.metadata?.shirt_number || p.data?.jersey_number;
 
-                                  return (
-                                    <option
-                                      key={p.id}
-                                      value={p.id}
-                                      disabled={isAlreadySelected}
-                                    >
-                                      {jerseyNumber ? `#${jerseyNumber} - ` : ''}{memberName}{isAlreadySelected ? ' (already selected)' : ''}
-                                    </option>
-                                  );
-                                })}
-                              </select>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                                return (
+                                  <option
+                                    key={p.id}
+                                    value={p.id}
+                                    disabled={isAlreadySelected}
+                                  >
+                                    {jerseyNumber ? `#${jerseyNumber} - ` : ''}{memberName}{isAlreadySelected ? ' (already selected)' : ''}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}
