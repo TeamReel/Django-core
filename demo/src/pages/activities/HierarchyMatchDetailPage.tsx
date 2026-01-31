@@ -1491,10 +1491,19 @@ export default function HierarchyMatchDetailPage() {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {(() => {
                 const isActive = !!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
+                const headerButtonStyle: React.CSSProperties = {
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                };
                 return (
                   <button
                     type="button"
-                    className="app-action-button"
                     onClick={async () => {
                       if (!match || isActive) return;
                       try {
@@ -1508,11 +1517,11 @@ export default function HierarchyMatchDetailPage() {
                     }}
                     disabled={activatingContext || isActive}
                     style={{
-                      ...detailActionButtonStyle('neutral'),
-                      border: isActive ? '1px solid #10b981' : detailActionButtonStyle('neutral').border,
-                      background: isActive ? '#dcfce7' : detailActionButtonStyle('neutral').background,
-                      color: isActive ? '#166534' : detailActionButtonStyle('neutral').color,
-                      fontWeight: isActive ? 600 : detailActionButtonStyle('neutral').fontWeight,
+                      ...headerButtonStyle,
+                      border: isActive ? '1px solid #10b981' : headerButtonStyle.border,
+                      backgroundColor: isActive ? '#dcfce7' : headerButtonStyle.backgroundColor,
+                      color: isActive ? '#166534' : headerButtonStyle.color,
+                      fontWeight: isActive ? 600 : headerButtonStyle.fontWeight,
                       opacity: activatingContext || isActive ? 0.8 : 1,
                       cursor: activatingContext || isActive ? 'not-allowed' : 'pointer',
                     }}
@@ -1524,41 +1533,81 @@ export default function HierarchyMatchDetailPage() {
               })()}
               <button
                 type="button"
-                className="app-action-button"
                 onClick={() => setIsMatchDetailModalOpen(true)}
-                style={detailActionButtonStyle('primary')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
               >
                 View
               </button>
               <button
                 type="button"
-                className="app-action-button"
                 onClick={() => setIsMatchEditModalOpen(true)}
-                style={detailActionButtonStyle('warning')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
               >
                 Edit
               </button>
               <button
                 type="button"
-                className="app-action-button"
                 onClick={handleDeleteMatch}
-                style={detailActionButtonStyle('danger')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
               >
                 Delete
               </button>
               <button
                 type="button"
-                className="app-action-button"
                 onClick={() => navigate(`/studio/create?context=${match.id}`)}
-                style={detailActionButtonStyle('neutral')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
               >
                 Generate Content (AI)
               </button>
               <button
                 type="button"
-                className="app-action-button"
                 onClick={() => setIsCreateTxnModalOpen(true)}
-                style={detailActionButtonStyle('primary')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
               >
                 Create transaction
               </button>
