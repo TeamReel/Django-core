@@ -2,17 +2,34 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button, Badge } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 
-// Map slot types to template types/subtypes
-const SLOT_TYPE_MAPPING: Record<string, { types: string[]; subtypes?: string[] }> = {
-  'announcement': { types: ['pre_match'], subtypes: ['flyer'] },
-  'poster': { types: ['pre_match'], subtypes: ['flyer', 'poster'] },
-  'walk-on': { types: ['pre_match'], subtypes: ['walkon'] },
-  'lineup': { types: ['pre_match'], subtypes: ['lineup'] },
-  'goal-update': { types: ['during_match'], subtypes: ['goal'] },
-  'score-update': { types: ['during_match'], subtypes: ['score_update'] },
-  'injury-update': { types: ['during_match'], subtypes: ['injury'] },
-  'half-time': { types: ['during_match'], subtypes: ['score_update'] },
-  'full-time': { types: ['post_match'], subtypes: ['end_score', 'match_summary'] },
+// Content type definitions with icons and labels
+const CONTENT_TYPES = {
+  pre_match: {
+    label: 'Pre-match',
+    items: [
+      { id: 'flyer', label: 'Flyer', sublabel: 'Announcement', icon: '📣', subtype: 'flyer' },
+      { id: 'lineup', label: 'Lineup', sublabel: 'Starting XI', icon: '📋', subtype: 'lineup' },
+      { id: 'walkon', label: 'Walk-on', sublabel: 'Kickoff', icon: '🚶', subtype: 'walkon' },
+      { id: 'poster', label: 'Poster', sublabel: 'Match poster', icon: '🖼️', subtype: 'poster' },
+    ],
+  },
+  during_match: {
+    label: 'During match',
+    items: [
+      { id: 'goal', label: 'Goal', sublabel: 'Update', icon: '⚽', subtype: 'goal' },
+      { id: 'score_update', label: 'Score', sublabel: 'Update', icon: '🔢', subtype: 'score_update' },
+      { id: 'injury', label: 'Injury', sublabel: 'Update', icon: '🩹', subtype: 'injury' },
+      { id: 'halftime', label: 'Half-time', sublabel: 'Live', icon: '⏸️', subtype: 'score_update' },
+    ],
+  },
+  post_match: {
+    label: 'Post-match',
+    items: [
+      { id: 'end_score', label: 'Endscore', sublabel: 'Full-time', icon: '🏁', subtype: 'end_score' },
+      { id: 'match_summary', label: 'Summary', sublabel: 'Recap', icon: '📊', subtype: 'match_summary' },
+      { id: 'mvp', label: 'MVP', sublabel: 'Best player', icon: '🏆', subtype: 'mvp' },
+    ],
+  },
 };
 
 // Asset type labels
@@ -35,8 +52,9 @@ interface ContentTemplate {
   style_variant: string | null;
   is_active?: boolean;
   credits_required?: number;
+  sport?: number | null;
+  sport_detail?: { id: number; name: string; slug?: string } | null;
   formation_detail?: { code: string; name: string } | null;
-  sport_detail?: { id: number; name: string } | null;
   input_requirements?: {
     members?: {
       goalkeeper?: { count: number; asset_type: string };
@@ -74,7 +92,6 @@ interface Participation {
 interface ContentGenerationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  slotType: string;
   matchData: {
     id: string;
     title?: string;
@@ -84,6 +101,7 @@ interface ContentGenerationModalProps {
     start_time?: string;
     location?: string;
   } | null;
+  organisationSport?: { id: number | string; name: string; slug?: string } | null;
 }
 
 // Group participations by functional role
@@ -100,15 +118,21 @@ function groupParticipationsByRole(participations: Participation[]): Record<stri
     if (groups[role]) {
       groups[role].push(p);
     } else {
-      groups.player.push(p); // Default to player if unknown role
+      groups.player.push(p);
     }
   });
 
   return groups;
 }
 
-export default function ContentGenerationModal({ isOpen, onClose, slotType, matchData }: ContentGenerationModalProps) {
-  const [step, setStep] = useState<'select' | 'members' | 'generating' | 'success'>('select');
+export default function ContentGenerationModal({
+  isOpen,
+  onClose,
+  matchData,
+  organisationSport,
+}: ContentGenerationModalProps) {
+  const [step, setStep] = useState<'type' | 'template' | 'members' | 'generating' | 'success'>('type');
+  const [selectedType, setSelectedType] = useState<{ type: string; subtype: string; label: string } | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
   const [progress, setProgress] = useState(0);
   const [templates, setTemplates] = useState<ContentTemplate[]>([]);
@@ -129,43 +153,63 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
     return groupParticipationsByRole(matchData.participations);
   }, [matchData?.participations]);
 
-  // Fetch templates when opening
+  // Reset state when opening
   useEffect(() => {
     if (isOpen) {
-      setStep('select');
+      setStep('type');
+      setSelectedType(null);
       setSelectedTemplate(null);
       setProgress(0);
       setSelectedMembers({ goalkeeper: [], player: [], coach: [], assistant: [] });
-      fetchTemplates();
+      setTemplates([]);
+      setError(null);
     }
-  }, [isOpen, slotType]);
+  }, [isOpen]);
 
-  const fetchTemplates = async () => {
+  // Fetch templates when content type is selected
+  const fetchTemplates = async (templateType: string, templateSubtype: string) => {
     setLoading(true);
     setError(null);
     try {
-      const mapping = SLOT_TYPE_MAPPING[slotType];
       const params = new URLSearchParams();
       params.append('is_active', 'true');
+      params.append('template_type', templateType);
+      params.append('template_subtype', templateSubtype);
 
-      if (mapping?.types?.length) {
-        mapping.types.forEach(t => params.append('template_type', t));
-      }
-      if (mapping?.subtypes?.length) {
-        mapping.subtypes.forEach(s => params.append('template_subtype', s));
+      // Filter by sport if available
+      if (organisationSport?.id) {
+        params.append('sport', String(organisationSport.id));
       }
 
       const response = await fetch(`${getApiBaseUrl()}/api/v1/content-generation/templates/?${params.toString()}`, {
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (!response.ok) throw new Error('Failed to fetch templates');
 
       const data = await response.json();
-      setTemplates(data.results || data || []);
+      let results = data.results || data || [];
+
+      // If no sport-specific templates found, try without sport filter
+      if (results.length === 0 && organisationSport?.id) {
+        const paramsAll = new URLSearchParams();
+        paramsAll.append('is_active', 'true');
+        paramsAll.append('template_type', templateType);
+        paramsAll.append('template_subtype', templateSubtype);
+
+        const responseAll = await fetch(`${getApiBaseUrl()}/api/v1/content-generation/templates/?${paramsAll.toString()}`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (responseAll.ok) {
+          const dataAll = await responseAll.json();
+          results = dataAll.results || dataAll || [];
+        }
+      }
+
+      setTemplates(results);
     } catch (err) {
       console.error('Error fetching templates:', err);
       setError('Failed to load templates');
@@ -174,15 +218,14 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
     }
   };
 
-  // Check if member selection is complete based on template requirements
+  // Check if member selection is complete
   const memberSelectionValid = useMemo(() => {
     if (!selectedTemplate?.input_requirements?.members) return true;
-
     const reqs = selectedTemplate.input_requirements.members;
 
     for (const role of ['goalkeeper', 'player', 'coach', 'assistant'] as const) {
       const req = reqs[role];
-      if (req && req.count > 0) {
+      if (req && typeof req !== 'boolean' && req.count > 0) {
         if (selectedMembers[role].length !== req.count) {
           return false;
         }
@@ -197,19 +240,28 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
     const reqs = selectedTemplate.input_requirements.members;
     let total = 0;
     for (const role of ['goalkeeper', 'player', 'coach', 'assistant'] as const) {
-      if (reqs[role]?.count) total += reqs[role].count;
+      const req = reqs[role];
+      if (req && typeof req !== 'boolean' && req.count) total += req.count;
     }
     return total;
   }, [selectedTemplate]);
 
   if (!isOpen) return null;
 
+  const handleSelectType = (type: string, subtype: string, label: string) => {
+    setSelectedType({ type, subtype, label });
+    setStep('template');
+    fetchTemplates(type, subtype);
+  };
+
   const handleSelectTemplate = (template: ContentTemplate) => {
     setSelectedTemplate(template);
 
     // Check if template requires member selection
     const needsMembers = template.input_requirements?.members &&
-      Object.values(template.input_requirements.members).some((r: any) => r?.count > 0);
+      Object.entries(template.input_requirements.members).some(([key, val]) =>
+        key !== 'use_formation' && val && typeof val !== 'boolean' && val.count > 0
+      );
 
     if (needsMembers) {
       setStep('members');
@@ -225,10 +277,8 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
     setSelectedMembers(prev => {
       const current = prev[role] || [];
       if (current.includes(memberId)) {
-        // Remove
         return { ...prev, [role]: current.filter(id => id !== memberId) };
       } else if (current.length < maxCount) {
-        // Add if under limit
         return { ...prev, [role]: [...current, memberId] };
       }
       return prev;
@@ -237,10 +287,9 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
 
   const handleGenerate = () => {
     if (!selectedTemplate) return;
-
     setStep('generating');
 
-    // Simulate B34 Generative Pipeline
+    // Simulate generation
     let p = 0;
     const interval = setInterval(() => {
       p += Math.random() * 20;
@@ -251,6 +300,18 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
       }
       setProgress(Math.min(p, 100));
     }, 400);
+  };
+
+  const handleBack = () => {
+    if (step === 'template') {
+      setStep('type');
+      setSelectedType(null);
+      setTemplates([]);
+    } else if (step === 'members') {
+      setStep('template');
+      setSelectedTemplate(null);
+      setSelectedMembers({ goalkeeper: [], player: [], coach: [], assistant: [] });
+    }
   };
 
   const renderRoleLabel = (role: string) => {
@@ -277,46 +338,94 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
           backgroundColor: 'var(--app-surface, white)',
           padding: '24px',
           borderRadius: '12px',
-          width: '700px',
-          maxWidth: '90%',
+          width: '800px',
+          maxWidth: '95%',
           boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
           color: 'var(--app-text)',
           display: 'flex',
           flexDirection: 'column',
-          maxHeight: '85vh',
+          maxHeight: '90vh',
         }}
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-6 border-b pb-4">
           <div>
-            <h2 className="text-xl font-bold m-0">Create {slotType.replace('-', ' ')} Content</h2>
+            <h2 className="text-xl font-bold m-0">
+              {step === 'type' && 'Create Content'}
+              {step === 'template' && `Select ${selectedType?.label} Template`}
+              {step === 'members' && 'Select Members'}
+              {step === 'generating' && 'Generating...'}
+              {step === 'success' && 'Content Ready!'}
+            </h2>
             <div className="text-sm text-gray-500 mt-1">
-               {matchData?.project?.name} vs {matchData?.opponent_project?.name || 'Opponent'}
+              {matchData?.project?.name} vs {matchData?.opponent_project?.name || 'Opponent'}
+              {organisationSport && (
+                <span className="ml-2">
+                  <Badge variant="info" size="sm">⚽ {organisationSport.name}</Badge>
+                </span>
+              )}
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
         </div>
 
-        {/* Steps indicator */}
-        {(step === 'select' || step === 'members') && totalRequiredMembers > 0 && (
+        {/* Progress indicator */}
+        {(step === 'type' || step === 'template' || step === 'members') && (
           <div className="flex items-center gap-2 mb-4 text-sm">
-            <span className={`px-2 py-1 rounded ${step === 'select' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-400'}`}>
-              1. Select Template
+            <span className={`px-3 py-1 rounded-full ${step === 'type' ? 'bg-blue-100 text-blue-700 font-medium' : 'bg-gray-100 text-gray-500'}`}>
+              1. Content Type
             </span>
             <span className="text-gray-300">→</span>
-            <span className={`px-2 py-1 rounded ${step === 'members' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-400'}`}>
-              2. Select Members
+            <span className={`px-3 py-1 rounded-full ${step === 'template' ? 'bg-blue-100 text-blue-700 font-medium' : selectedType ? 'bg-gray-100 text-gray-500' : 'text-gray-300'}`}>
+              2. Template
             </span>
+            {totalRequiredMembers > 0 && (
+              <>
+                <span className="text-gray-300">→</span>
+                <span className={`px-3 py-1 rounded-full ${step === 'members' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-300'}`}>
+                  3. Members
+                </span>
+              </>
+            )}
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto min-h-[300px]">
+        <div className="flex-1 overflow-y-auto min-h-[400px]">
 
-          {/* Step 1: Select Template */}
-          {step === 'select' && (
+          {/* Step 1: Select Content Type */}
+          {step === 'type' && (
+            <div className="space-y-6">
+              {Object.entries(CONTENT_TYPES).map(([typeKey, typeData]) => (
+                <div key={typeKey}>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                    {typeData.label}
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {typeData.items.map(item => (
+                      <div
+                        key={item.id}
+                        onClick={() => handleSelectType(typeKey, item.subtype, item.label)}
+                        className="p-4 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:border-blue-400 hover:shadow-sm transition-all"
+                      >
+                        <div className="text-3xl mb-2">{item.icon}</div>
+                        <div className="font-semibold text-sm">{item.label}</div>
+                        <div className="text-xs text-gray-500">{item.sublabel}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Step 2: Select Template */}
+          {step === 'template' && (
             <div className="space-y-4">
               {loading && (
-                <div className="text-center py-10 text-gray-500">Loading templates...</div>
+                <div className="text-center py-10 text-gray-500">
+                  <div className="animate-spin inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mb-4"></div>
+                  <div>Loading templates...</div>
+                </div>
               )}
 
               {error && (
@@ -324,91 +433,94 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
                   <div className="text-center py-6 px-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <div className="text-yellow-600 mb-2">⚠️ Could not load templates</div>
                     <div className="text-sm text-gray-600 mb-4">
-                      Make sure the backend server is running and you have templates configured.
+                      Make sure the backend server is running.
                     </div>
-                    <Button variant="secondary" size="sm" onClick={fetchTemplates}>
+                    <Button variant="secondary" size="sm" onClick={() => selectedType && fetchTemplates(selectedType.type, selectedType.subtype)}>
                       Retry
                     </Button>
-                  </div>
-                  <div className="text-center text-sm text-gray-500">
-                    <a href="/content-templates" className="text-blue-600 hover:underline">
-                      → Go to Content Templates to create templates
-                    </a>
                   </div>
                 </div>
               )}
 
               {!loading && !error && templates.length === 0 && (
                 <div className="text-center py-10">
-                  <div className="text-gray-400 mb-4">No templates found for "{slotType}" content type.</div>
+                  <div className="text-5xl mb-4">📭</div>
+                  <div className="text-gray-600 mb-2">No templates found for "{selectedType?.label}"</div>
+                  <div className="text-sm text-gray-400 mb-4">
+                    {organisationSport ? `Looking for ${organisationSport.name} templates` : 'No sport filter active'}
+                  </div>
                   <a href="/content-templates" className="text-blue-600 hover:underline text-sm">
-                    → Create a template for this content type
+                    → Go to Content Templates to create one
                   </a>
                 </div>
               )}
 
               {!loading && !error && templates.length > 0 && (
-                <>
-                  <p className="text-sm text-gray-600">Select a template to generate this content.</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {templates.map(template => {
-                      const memberReqs = template.input_requirements?.members;
-                      const reqSummary: string[] = [];
-                      if (memberReqs) {
-                        (['goalkeeper', 'player', 'coach', 'assistant'] as const).forEach(role => {
-                          if (memberReqs[role]?.count) {
-                            reqSummary.push(`${memberReqs[role].count} ${role}${memberReqs[role].count > 1 ? 's' : ''}`);
-                          }
-                        });
-                      }
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {templates.map(template => {
+                    const memberReqs = template.input_requirements?.members;
+                    const reqSummary: string[] = [];
+                    if (memberReqs) {
+                      (['goalkeeper', 'player', 'coach', 'assistant'] as const).forEach(role => {
+                        const req = memberReqs[role];
+                        if (req && typeof req !== 'boolean' && req.count) {
+                          reqSummary.push(`${req.count} ${role}${req.count > 1 ? 's' : ''}`);
+                        }
+                      });
+                    }
 
-                      return (
-                        <div
-                          key={template.id}
-                          onClick={() => handleSelectTemplate(template)}
-                          className="border rounded-lg p-4 cursor-pointer transition-all flex flex-col gap-2 hover:border-blue-500 hover:bg-blue-50"
-                        >
-                          <div className="aspect-video bg-gray-200 rounded mb-2 flex items-center justify-center text-gray-400 text-xs">
-                            [Preview]
-                          </div>
-                          <div className="font-semibold text-sm">{template.name}</div>
-                          <div className="flex flex-wrap gap-1 items-center">
-                            <Badge variant="default" size="sm">{template.template_type}</Badge>
-                            {template.template_subtype && (
-                              <Badge variant="info" size="sm">{template.template_subtype}</Badge>
-                            )}
-                            {template.style_variant && (
-                              <Badge variant="success" size="sm">{template.style_variant}</Badge>
-                            )}
-                            <span className="text-xs text-gray-500 ml-auto">
-                              💎 {template.credits_required ?? 1} credit{(template.credits_required ?? 1) !== 1 ? 's' : ''}
-                            </span>
-                          </div>
-                          {reqSummary.length > 0 && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              Requires: {reqSummary.join(', ')}
-                            </div>
+                    return (
+                      <div
+                        key={template.id}
+                        onClick={() => handleSelectTemplate(template)}
+                        className="border rounded-lg p-4 cursor-pointer transition-all flex flex-col gap-2 hover:border-blue-500 hover:bg-blue-50 hover:shadow-md"
+                      >
+                        <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded flex items-center justify-center text-gray-400 text-sm">
+                          {template.style_variant || 'Preview'}
+                        </div>
+                        <div className="font-semibold">{template.name}</div>
+                        {template.description && (
+                          <div className="text-xs text-gray-500 line-clamp-2">{template.description}</div>
+                        )}
+                        <div className="flex flex-wrap gap-1 items-center">
+                          {template.sport_detail && (
+                            <Badge variant="info" size="sm">⚽ {template.sport_detail.name}</Badge>
+                          )}
+                          {template.formation_detail && (
+                            <Badge variant="default" size="sm">{template.formation_detail.code}</Badge>
+                          )}
+                          {template.style_variant && (
+                            <Badge variant="success" size="sm">{template.style_variant}</Badge>
                           )}
                         </div>
-                      );
-                    })}
-                  </div>
-                </>
+                        <div className="flex justify-between items-center mt-auto pt-2 border-t text-xs text-gray-500">
+                          <span>💎 {template.credits_required ?? 1} credit{(template.credits_required ?? 1) !== 1 ? 's' : ''}</span>
+                          {reqSummary.length > 0 && (
+                            <span>{reqSummary.join(', ')}</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           )}
 
-          {/* Step 2: Select Members */}
+          {/* Step 3: Select Members */}
           {step === 'members' && selectedTemplate && (
             <div className="space-y-6">
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <div className="font-medium">{selectedTemplate.name}</div>
-                <div className="text-sm text-gray-500">Select the members for this content</div>
+              <div className="bg-blue-50 p-4 rounded-lg flex items-center gap-4">
+                <div className="text-3xl">📋</div>
+                <div>
+                  <div className="font-semibold">{selectedTemplate.name}</div>
+                  <div className="text-sm text-gray-600">Select the required members for this template</div>
+                </div>
               </div>
 
               {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map(role => {
                 const req = selectedTemplate.input_requirements?.members?.[role];
-                if (!req?.count) return null;
+                if (!req || typeof req === 'boolean' || !req.count) return null;
 
                 const available = participationsByRole[role] || [];
                 const selected = selectedMembers[role];
@@ -418,8 +530,8 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
                   <div key={role} className="border rounded-lg p-4">
                     <div className="flex justify-between items-center mb-3">
                       <div>
-                        <span className="font-medium">{renderRoleLabel(role)}</span>
-                        <span className="text-sm text-gray-500 ml-2">
+                        <span className="font-semibold">{renderRoleLabel(role)}</span>
+                        <span className={`text-sm ml-2 ${selected.length === req.count ? 'text-green-600' : 'text-gray-500'}`}>
                           ({selected.length} / {req.count} selected)
                         </span>
                       </div>
@@ -429,9 +541,11 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
                     </div>
 
                     {available.length === 0 ? (
-                      <div className="text-sm text-gray-400 italic">No {role}s in match lineup</div>
+                      <div className="text-sm text-gray-400 italic p-4 bg-gray-50 rounded">
+                        No {role}s found in match lineup. Add players to the lineup first.
+                      </div>
                     ) : (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                         {available.map(p => {
                           const isSelected = selected.includes(p.id);
                           const canSelect = isSelected || selected.length < req.count;
@@ -446,14 +560,14 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
                               className={`
                                 flex items-center gap-2 p-2 rounded border cursor-pointer transition-all
                                 ${isSelected
-                                  ? 'border-blue-500 bg-blue-50'
+                                  ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
                                   : canSelect
-                                    ? 'border-gray-200 hover:border-gray-300'
-                                    : 'border-gray-100 opacity-50 cursor-not-allowed'
+                                    ? 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                                    : 'border-gray-100 opacity-40 cursor-not-allowed'
                                 }
                               `}
                             >
-                              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs overflow-hidden">
+                              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium overflow-hidden flex-shrink-0">
                                 {p.member?.avatar_url ? (
                                   <img src={p.member.avatar_url} alt="" className="w-full h-full object-cover" />
                                 ) : (
@@ -467,7 +581,7 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
                                 )}
                               </div>
                               {isSelected && (
-                                <div className="text-blue-500 text-lg">✓</div>
+                                <div className="text-blue-500 text-xl flex-shrink-0">✓</div>
                               )}
                             </div>
                           );
@@ -482,30 +596,31 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
 
           {/* Generating */}
           {step === 'generating' && (
-            <div className="flex flex-col items-center justify-center h-full py-12">
-              <div className="w-full max-w-xs mb-4">
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-600 transition-all duration-300" style={{ width: `${progress}%` }} />
+            <div className="flex flex-col items-center justify-center h-full py-16">
+              <div className="w-full max-w-sm mb-6">
+                <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-600 transition-all duration-300 rounded-full" style={{ width: `${progress}%` }} />
                 </div>
+                <div className="text-center text-sm text-gray-500 mt-2">{Math.round(progress)}%</div>
               </div>
-              <div className="text-lg font-medium text-gray-700 animate-pulse">Generating Content...</div>
-              <div className="text-sm text-gray-500 mt-2">Applying {matchData?.project?.name} branding...</div>
+              <div className="text-xl font-medium text-gray-700 animate-pulse">Generating Content...</div>
+              <div className="text-sm text-gray-500 mt-2">Applying {matchData?.project?.name} branding</div>
             </div>
           )}
 
           {/* Success */}
           {step === 'success' && (
-            <div className="flex flex-col items-center justify-center h-full py-8 text-center">
-              <div className="text-5xl mb-4">✨</div>
+            <div className="flex flex-col items-center justify-center h-full py-12 text-center">
+              <div className="text-6xl mb-4">✨</div>
               <h3 className="text-2xl font-bold mb-2">Content Ready!</h3>
               <p className="text-gray-600 mb-6 max-w-sm">
-                Your graphic has been generated and saved to the Match Gallery.
+                Your {selectedType?.label} graphic has been generated.
               </p>
-              <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg text-sm mb-4 border border-yellow-200 max-w-md">
-                <strong>Note:</strong> In the final version (B31), this will redirect to the Editor for final adjustments.
+              <div className="aspect-video w-80 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border flex items-center justify-center text-gray-400 mb-6">
+                [Preview]
               </div>
-              <div className="aspect-video w-64 bg-gray-100 rounded border border-gray-200 flex items-center justify-center text-gray-400 mb-6">
-                [Final Asset Preview]
+              <div className="p-4 bg-blue-50 text-blue-800 rounded-lg text-sm border border-blue-200 max-w-md">
+                <strong>Note:</strong> Full generation pipeline coming in B34. This is a UI preview.
               </div>
             </div>
           )}
@@ -513,27 +628,28 @@ export default function ContentGenerationModal({ isOpen, onClose, slotType, matc
         </div>
 
         {/* Footer */}
-        <div className="mt-6 pt-4 border-t flex justify-end gap-3">
-          {step === 'select' && (
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          )}
-          {step === 'members' && (
-            <>
-              <Button variant="ghost" onClick={() => setStep('select')}>Back</Button>
+        <div className="mt-6 pt-4 border-t flex justify-between">
+          <div>
+            {(step === 'template' || step === 'members') && (
+              <Button variant="ghost" onClick={handleBack}>← Back</Button>
+            )}
+          </div>
+          <div className="flex gap-3">
+            {step !== 'generating' && step !== 'success' && (
+              <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            )}
+            {step === 'members' && (
               <Button disabled={!memberSelectionValid} onClick={handleGenerate}>
-                Generate Graphic
+                Generate Content
               </Button>
-            </>
-          )}
-          {step === 'generating' && (
-            <Button disabled>Processing...</Button>
-          )}
-          {step === 'success' && (
-            <>
-              <Button variant="secondary" onClick={() => { setStep('select'); onClose(); }}>Close</Button>
-              <Button onClick={() => alert('Download coming in B22')}>Download</Button>
-            </>
-          )}
+            )}
+            {step === 'success' && (
+              <>
+                <Button variant="secondary" onClick={onClose}>Close</Button>
+                <Button onClick={() => alert('Download coming in B34')}>Download</Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

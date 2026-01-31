@@ -16,7 +16,12 @@ import ContentGenerationModal from '../identity/ContentGenerationModal';
 import { actionButtonStyle } from '../identity/detail/detailStyles';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 
-type Organisation = { id: string; name: string; slug?: string };
+type Organisation = {
+  id: string;
+  name: string;
+  slug?: string;
+  sport?: { id: number; name: string; slug?: string; sport_icon?: string } | null;
+};
 type Project = { id: string; name: string; slug?: string };
 
 type Participation = {
@@ -179,10 +184,8 @@ export default function HierarchyMatchDetailPage() {
 
   // B31 Content Generation
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
-  const [selectedSlotType, setSelectedSlotType] = useState<any | null>(null);
 
-  const openContentModal = (slotType: string) => {
-    setSelectedSlotType(slotType);
+  const openContentModal = () => {
     setIsContentModalOpen(true);
   };
 
@@ -1651,8 +1654,8 @@ export default function HierarchyMatchDetailPage() {
         <ContentGenerationModal
             isOpen={isContentModalOpen}
             onClose={() => setIsContentModalOpen(false)}
-            slotType={selectedSlotType}
             matchData={match}
+            organisationSport={org?.sport}
         />
 
         <PageContent>
@@ -1756,99 +1759,29 @@ export default function HierarchyMatchDetailPage() {
 
           {activeTab === 'content' && (
             <div style={{ display: 'grid', gap: '16px' }}>
-              <Card title="Pre-match">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div
-                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                    onClick={() => openContentModal('announcement')}
-                    title="Create Match Flyer / Announcement"
-                  >
-                    <div className="text-2xl mb-2">📣</div>
-                    <div className="font-semibold text-sm">Flyer</div>
-                    <div className="text-xs text-gray-500 mt-1">Announcement</div>
-                  </div>
-                  <div
-                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                    onClick={() => openContentModal('lineup')}
-                    title="Create Lineup Graphic"
-                  >
-                    <div className="text-2xl mb-2">📋</div>
-                    <div className="font-semibold text-sm">Lineup</div>
-                    <div className="text-xs text-gray-500 mt-1">Starting XI</div>
-                  </div>
-                  <div
-                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                    onClick={() => openContentModal('walk-on')}
-                    title="Create Walk-on Graphic"
-                  >
-                    <div className="text-2xl mb-2">🚶</div>
-                    <div className="font-semibold text-sm">Walk-on</div>
-                    <div className="text-xs text-gray-500 mt-1">Kickoff</div>
-                  </div>
-                  <div
-                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                    onClick={() => openContentModal('poster')}
-                    title="Create Match Poster"
-                  >
-                    <div className="text-2xl mb-2">🖼️</div>
-                    <div className="font-semibold text-sm">Poster</div>
-                    <div className="text-xs text-gray-500 mt-1">Match poster</div>
-                  </div>
+              <Card title="Content Generation">
+                <div className="text-center py-8">
+                  <div className="text-5xl mb-4">🎨</div>
+                  <h3 className="text-lg font-semibold mb-2">Create Match Content</h3>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    Generate professional graphics for your match - lineup, flyers, score updates and more.
+                  </p>
+                  <Button onClick={() => openContentModal()} size="lg">
+                    + Create Content
+                  </Button>
+                  {org?.sport && (
+                    <div className="mt-4 text-sm text-gray-500">
+                      Templates will be filtered for: <Badge variant="info" size="sm">⚽ {org.sport.name}</Badge>
+                    </div>
+                  )}
                 </div>
               </Card>
 
-              <Card title="During match">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div
-                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                    onClick={() => openContentModal('goal-update')}
-                    title="Create Goal Update"
-                  >
-                    <div className="text-2xl mb-2">⚽</div>
-                    <div className="font-semibold text-sm">Goal</div>
-                    <div className="text-xs text-gray-500 mt-1">Update</div>
-                  </div>
-                  <div
-                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                    onClick={() => openContentModal('score-update')}
-                    title="Create Score Update"
-                  >
-                    <div className="text-2xl mb-2">🔢</div>
-                    <div className="font-semibold text-sm">Score</div>
-                    <div className="text-xs text-gray-500 mt-1">Update</div>
-                  </div>
-                  <div
-                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                    onClick={() => openContentModal('injury-update')}
-                    title="Create Injury Update"
-                  >
-                    <div className="text-2xl mb-2">🩹</div>
-                    <div className="font-semibold text-sm">Injury</div>
-                    <div className="text-xs text-gray-500 mt-1">Update</div>
-                  </div>
-                  <div
-                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                    onClick={() => openContentModal('half-time')}
-                    title="Create Half-Time Graphic"
-                  >
-                    <div className="text-2xl mb-2">⏸️</div>
-                    <div className="font-semibold text-sm">Half-time</div>
-                    <div className="text-xs text-gray-500 mt-1">Live</div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card title="Post-match">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div
-                    className="p-4 border rounded bg-gray-50 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white hover:shadow-sm transition-all border-dashed border-gray-300"
-                    onClick={() => openContentModal('full-time')}
-                    title="Create Endscore / Full-Time Graphic"
-                  >
-                    <div className="text-2xl mb-2">🏁</div>
-                    <div className="font-semibold text-sm">Endscore</div>
-                    <div className="text-xs text-gray-500 mt-1">Full-time</div>
-                  </div>
+              <Card title="Generated Content">
+                <div className="text-center py-8 text-gray-400">
+                  <div className="text-3xl mb-2">📭</div>
+                  <p>No content generated yet</p>
+                  <p className="text-sm">Generated graphics will appear here</p>
                 </div>
               </Card>
             </div>
