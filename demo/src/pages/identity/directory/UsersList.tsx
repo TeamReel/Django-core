@@ -1275,6 +1275,13 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                             // Use membership UUID directly
                                                             const deleteUrl = `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${membershipId}/`;
 
+                                                            console.log('🗑️ Deleting team member:', {
+                                                                teamId: preselectedTeamId,
+                                                                membershipId,
+                                                                deleteUrl,
+                                                                userData: { id: u.id, email: u.email },
+                                                            });
+
                                                             const res = await fetch(
                                                                 deleteUrl,
                                                                 {
@@ -1289,9 +1296,16 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
 
                                                             if (!res.ok) {
                                                                 const text = await res.text().catch(() => '');
+                                                                console.error('❌ Delete failed:', {
+                                                                    status: res.status,
+                                                                    statusText: res.statusText,
+                                                                    response: text,
+                                                                });
                                                                 alert(text || `Failed to remove member (${res.status})`);
                                                                 return;
                                                             }
+
+                                                            console.log('✅ Member removed successfully');
 
                                                             // Update local table without full reload.
                                                             setUsers((prev) => prev.filter((row: any) => {
