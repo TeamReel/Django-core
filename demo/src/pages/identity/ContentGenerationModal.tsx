@@ -248,8 +248,11 @@ export default function ContentGenerationModal({
           const data = await response.json();
           console.log('✅ API Response:', data);
           // Handle paginated response structure from /api/v1/projects/{id}/members/
+          // Response format: { status: 'success', data: { data: [...] }, meta: {...} }
           let members = [];
-          if (data?.data?.results && Array.isArray(data.data.results)) {
+          if (data?.data?.data && Array.isArray(data.data.data)) {
+            members = data.data.data;
+          } else if (data?.data?.results && Array.isArray(data.data.results)) {
             members = data.data.results;
           } else if (data?.results && Array.isArray(data.results)) {
             members = data.results;
