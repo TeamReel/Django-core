@@ -390,13 +390,13 @@ export default function ContentGenerationModal({
           backgroundColor: 'var(--app-surface, white)',
           padding: '24px',
           borderRadius: '12px',
-          width: '800px',
+          width: '1200px',
           maxWidth: '95%',
           boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
           color: 'var(--app-text)',
           display: 'flex',
           flexDirection: 'column',
-          maxHeight: '90vh',
+          maxHeight: '95vh',
         }}
       >
         {/* Header */}
@@ -569,6 +569,49 @@ export default function ContentGenerationModal({
                 </div>
               </div>
 
+              {/* Template Requirements Overview */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <span>📋</span> Template Requirements
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map(role => {
+                    const req = selectedTemplate.input_requirements?.members?.[role];
+                    if (!req || typeof req === 'boolean' || !req.count) return null;
+
+                    const selected = selectedMembers[role];
+                    const assetTypeLabel = req.asset_type ? ASSET_TYPE_LABELS[req.asset_type] || req.asset_type : null;
+
+                    return (
+                      <div key={role} className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                          selected.length === req.count ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'
+                        }`}>
+                          {selected.length}/{req.count}
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium">{renderRoleLabel(role)}</div>
+                          {assetTypeLabel && (
+                            <div className="text-xs text-gray-500">{assetTypeLabel}</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {selectedTemplate.input_requirements?.output && (
+                  <div className="mt-4 pt-4 border-t border-gray-300">
+                    <div className="text-sm text-gray-600">
+                      <span className="font-medium">Output:</span> {selectedTemplate.input_requirements.output.type} • {selectedTemplate.input_requirements.output.format}
+                      {selectedTemplate.input_requirements.output.dimensions && (
+                        <span> • {selectedTemplate.input_requirements.output.dimensions.aspect_ratio}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Member Selection */}
               {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map(role => {
                 const req = selectedTemplate.input_requirements?.members?.[role];
                 if (!req || typeof req === 'boolean' || !req.count) return null;
@@ -578,25 +621,29 @@ export default function ContentGenerationModal({
                 const assetTypeLabel = req.asset_type ? ASSET_TYPE_LABELS[req.asset_type] || req.asset_type : null;
 
                 return (
-                  <div key={role} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-3">
+                  <div key={role} className="border border-gray-300 rounded-lg p-5 shadow-sm">
+                    <div className="flex justify-between items-center mb-4">
                       <div>
-                        <span className="font-semibold">{renderRoleLabel(role)}</span>
-                        <span className={`text-sm ml-2 ${selected.length === req.count ? 'text-green-600' : 'text-gray-500'}`}>
-                          ({selected.length} / {req.count} selected)
+                        <span className="font-semibold text-lg">{renderRoleLabel(role)}</span>
+                        <span className={`text-sm ml-3 px-2 py-1 rounded-full ${
+                          selected.length === req.count
+                            ? 'bg-green-100 text-green-700 font-medium'
+                            : 'bg-yellow-50 text-yellow-700'
+                        }`}>
+                          {selected.length} / {req.count} selected
                         </span>
                       </div>
                       {assetTypeLabel && (
-                        <Badge variant="info" size="sm">Asset: {assetTypeLabel}</Badge>
+                        <Badge variant="info" size="sm">📸 {assetTypeLabel}</Badge>
                       )}
                     </div>
 
                     {available.length === 0 ? (
-                      <div className="text-sm text-gray-400 italic p-4 bg-gray-50 rounded">
-                        No {role}s found in match lineup. Add players to the lineup first.
+                      <div className="text-sm text-gray-500 italic p-6 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+                        ⚠️ No {role}s found in match lineup. Add players to the lineup first.
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                         {available.map(p => {
                           const isSelected = selected.includes(p.id);
                           const canSelect = isSelected || selected.length < req.count;
@@ -609,30 +656,30 @@ export default function ContentGenerationModal({
                               key={p.id}
                               onClick={() => canSelect && handleMemberToggle(role, p.id)}
                               className={`
-                                flex items-center gap-2 p-2 rounded border cursor-pointer transition-all
+                                relative flex flex-col items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all
                                 ${isSelected
-                                  ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                                  ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200 shadow-md'
                                   : canSelect
-                                    ? 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                                    ? 'border-gray-200 hover:border-blue-300 hover:bg-gray-50 hover:shadow-sm'
                                     : 'border-gray-100 opacity-40 cursor-not-allowed'
                                 }
                               `}
                             >
-                              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium overflow-hidden flex-shrink-0">
+                              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium overflow-hidden flex-shrink-0">
                                 {p.member?.avatar_url ? (
                                   <img src={p.member.avatar_url} alt="" className="w-full h-full object-cover" />
                                 ) : (
                                   memberName.charAt(0).toUpperCase()
                                 )}
                               </div>
-                              <div className="flex-1 min-w-0">
+                              <div className="text-center w-full">
                                 <div className="text-sm font-medium truncate">{memberName}</div>
                                 {p.data?.jersey_number && (
-                                  <div className="text-xs text-gray-500">#{p.data.jersey_number}</div>
+                                  <div className="text-xs text-gray-500 font-semibold">#{p.data.jersey_number}</div>
                                 )}
                               </div>
                               {isSelected && (
-                                <div className="text-blue-500 text-xl flex-shrink-0">✓</div>
+                                <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">✓</div>
                               )}
                             </div>
                           );
