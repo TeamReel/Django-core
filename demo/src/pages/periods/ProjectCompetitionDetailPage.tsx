@@ -1906,8 +1906,8 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                     <span style={{ padding: '2px 8px', borderRadius: 999, border: '1px solid var(--app-border)', background: 'var(--app-surface-2)', fontSize: 12, color: 'var(--app-muted-text)', fontWeight: 600 }}>Season</span>
                     <Link
                       to={`${seasonsBasePath}/${seasonKeyOrId}`}
-                      className="text-blue-600 hover:underline"
-                      style={{ textDecoration: 'none', fontWeight: 600, fontSize: 13 }}
+                      className="hover:underline"
+                      style={{ textDecoration: 'none', fontWeight: 600, fontSize: 13, color: '#60a5fa' }}
                     >
                       {season?.name || 'Season'}
                     </Link>
@@ -2112,8 +2112,8 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                                     {userId ? (
                                       <Link
                                         to={`/users/${userId}`}
-                                        className="text-blue-600 hover:underline"
-                                        style={{ textDecoration: 'none' }}
+                                        className="hover:underline"
+                                        style={{ textDecoration: 'none', color: '#60a5fa' }}
                                       >
                                         {getUserDisplayName(m)}
                                       </Link>

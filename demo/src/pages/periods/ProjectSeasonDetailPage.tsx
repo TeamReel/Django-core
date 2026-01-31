@@ -1298,8 +1298,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             ? `${seasonsBasePath}/${seasonPathKey}/${periodPathKey(competition) || competition.id}`
                                             : `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`
                                         }
-                                        className="text-blue-600 hover:underline"
-                                        style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
+                                        className="hover:underline"
+                                        style={{ textDecoration: 'none', backgroundColor: 'transparent', color: '#60a5fa' }}
                                       >
                                         {competition.name}
                                       </Link>
@@ -2266,8 +2266,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                           {href ? (
                                             <Link
                                               to={href}
-                                              className="text-blue-600 hover:underline"
-                                              style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
+                                              className="hover:underline"
+                                              style={{ textDecoration: 'none', backgroundColor: 'transparent', color: '#60a5fa' }}
                                             >
                                               {name}
                                             </Link>
@@ -2363,8 +2363,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         {href ? (
                                           <Link
                                             to={href}
-                                            className="text-blue-600 hover:underline"
-                                            style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
+                                            className="hover:underline"
+                                            style={{ textDecoration: 'none', backgroundColor: 'transparent', color: '#60a5fa' }}
                                           >
                                             {name}
                                           </Link>
@@ -2461,8 +2461,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       {href ? (
                                         <Link
                                           to={href}
-                                          className="text-blue-600 hover:underline"
-                                          style={{ textDecoration: 'none', backgroundColor: 'transparent' }}
+                                          className="hover:underline"
+                                          style={{ textDecoration: 'none', backgroundColor: 'transparent', color: '#60a5fa' }}
                                         >
                                           {name}
                                         </Link>
@@ -2562,8 +2562,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       ? `${seasonsBasePath}/${seasonPathKey}/${periodPathKey(competition) || competition.id}`
                                       : `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`
                                   }
-                                  className="text-blue-600 hover:underline"
-                                  style={{ textDecoration: 'none' }}
+                                  className="hover:underline"
+                                  style={{ textDecoration: 'none', color: '#60a5fa' }}
                                 >
                                   {competition.name}
                                 </Link>
@@ -2710,8 +2710,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   return (
                                 <Link
                                       to={matchPath}
-                                  className="text-blue-600 hover:underline"
-                                  style={{ textDecoration: 'none' }}
+                                  className="hover:underline"
+                                  style={{ textDecoration: 'none', color: '#60a5fa' }}
                                 >
                                   {match.title || match.name}
                                 </Link>
@@ -2726,8 +2726,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         ? `${seasonsBasePath}/${seasonPathKey}/${String(match.period?.id)}`
                                         : `${seasonsBasePath}/${seasonPathKey}/competitions/${String(match.period?.id)}`
                                     }
-                                    className="text-blue-600 hover:underline"
-                                    style={{ textDecoration: 'none' }}
+                                    className="hover:underline"
+                                    style={{ textDecoration: 'none', color: '#60a5fa' }}
                                   >
                                     {match.period?.name || 'Competition'}
                                   </Link>

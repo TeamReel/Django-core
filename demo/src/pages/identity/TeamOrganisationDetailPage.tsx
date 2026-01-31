@@ -846,9 +846,9 @@ export default function TeamOrganisationDetailPage() {
                           <button
                             key={String((s as any)?.id)}
                             type="button"
-                            className="app-unstyled-button text-blue-600 hover:underline"
+                            className="app-unstyled-button hover:underline"
                             onClick={() => navigate(seasonPath)}
-                            style={{ textAlign: 'left', fontWeight: 600 }}
+                            style={{ textAlign: 'left', fontWeight: 600, color: '#60a5fa' }}
                           >
                             {String((s as any)?.name || 'Season')}
                           </button>
@@ -904,9 +904,9 @@ export default function TeamOrganisationDetailPage() {
                               <button
                                 key={String((comp as any)?.id)}
                                 type="button"
-                                className="app-unstyled-button text-blue-600 hover:underline"
+                                className="app-unstyled-button hover:underline"
                                 onClick={() => navigate(compPath)}
-                                style={{ textAlign: 'left', fontWeight: 600 }}
+                                style={{ textAlign: 'left', fontWeight: 600, color: '#60a5fa' }}
                               >
                                 {label}
                               </button>
@@ -949,9 +949,9 @@ export default function TeamOrganisationDetailPage() {
                           <button
                             key={String(m.id)}
                             type="button"
-                            className="app-unstyled-button text-blue-600 hover:underline"
+                            className="app-unstyled-button hover:underline"
                             onClick={() => navigate(`/users/${encodeURIComponent(String(m.id))}`)}
-                            style={{ textAlign: 'left', fontWeight: 600 }}
+                            style={{ textAlign: 'left', fontWeight: 600, color: '#60a5fa' }}
                           >
                             {label}
                           </button>
@@ -1156,9 +1156,9 @@ export default function TeamOrganisationDetailPage() {
                             {seasonPath ? (
                               <button
                                 type="button"
-                                className="app-unstyled-button text-blue-600 hover:underline"
+                                className="app-unstyled-button hover:underline"
                                 onClick={() => navigate(seasonPath)}
-                                style={{ textAlign: 'left', fontWeight: 800, fontSize: 14 }}
+                                style={{ textAlign: 'left', fontWeight: 800, fontSize: 14, color: '#60a5fa' }}
                               >
                                 {String((season as any)?.name || 'Season')}
                               </button>
@@ -1196,9 +1196,9 @@ export default function TeamOrganisationDetailPage() {
                                     {competitionPath ? (
                                       <button
                                         type="button"
-                                        className="app-unstyled-button text-blue-600 hover:underline"
+                                        className="app-unstyled-button hover:underline"
                                         onClick={() => navigate(competitionPath)}
-                                        style={{ textAlign: 'left', fontWeight: 700, fontSize: 13 }}
+                                        style={{ textAlign: 'left', fontWeight: 700, fontSize: 13, color: '#60a5fa' }}
                                       >
                                         {String((c as any)?.name || 'Competition')}
                                       </button>
