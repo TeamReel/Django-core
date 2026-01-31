@@ -1051,19 +1051,23 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                     const orgHref = getOrganisationLinkForRow(u);
                                     const { clubHref, teamHref } = getClubAndTeamLinksForRow(u);
 
-                                    const membershipId = u?.membership?.id ?? u?.membership_id ?? u?.member_id ?? null;
+                                    // For team members, use u.id directly (participation UUID)
+                                    // For org members, use u.membership.id
+                                    const membershipId = teamLocked
+                                        ? (u?.id ?? u?.membership?.id ?? u?.membership_id ?? u?.member_id ?? null)
+                                        : (u?.membership?.id ?? u?.membership_id ?? u?.member_id ?? null);
                                     const source = String(u?.membership?.source ?? u?.source ?? '').toLowerCase();
                                     const isDirectMembership = Boolean(membershipId) && isUuid(membershipId) && !source;
 
                                     // Team members can also be deleted (different API endpoint)
-                                    // Accept both UUID and pm:* format membershipIds
-                                    const isTeamMember = teamLocked && Boolean(membershipId) && (isUuid(membershipId) || String(membershipId).startsWith('pm:'));
+                                    const isTeamMember = teamLocked && Boolean(membershipId) && isUuid(membershipId);
 
                                     // Debug logging
                                     if (teamLocked) {
                                         console.log('🔍 Team member check:', {
                                             userId: u.id,
                                             membershipId,
+                                            rawData: { uId: u.id, membershipId: u?.membership?.id, memberId: u?.member_id },
                                             teamLocked,
                                             isTeamMember,
                                             isDirectMembership,
@@ -1267,19 +1271,8 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                             const apiBaseUrl = getApiBaseUrl();
                                                             const csrfToken = getCsrfToken();
 
-                                                            // For pm:* format IDs, extract the numeric user ID and use user_id parameter
-                                                            let deleteUrl = `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/`;
-                                                            if (isUuid(membershipId)) {
-                                                                // Real UUID membership
-                                                                deleteUrl += `${membershipId}/`;
-                                                            } else if (String(membershipId).startsWith('pm:')) {
-                                                                // pm:USER_ID format - use user_id query parameter
-                                                                const userId = String(membershipId).replace('pm:', '');
-                                                                deleteUrl += `?user_id=${userId}`;
-                                                            } else {
-                                                                alert('Invalid membership ID format');
-                                                                return;
-                                                            }
+                                                            // Use membership UUID directly
+                                                            const deleteUrl = `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${membershipId}/`;
 
                                                             const res = await fetch(
                                                                 deleteUrl,
