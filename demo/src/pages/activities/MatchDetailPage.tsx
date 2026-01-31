@@ -227,31 +227,65 @@ export default function HierarchyMatchDetailPage() {
         const sportId = competitionSport?.id || orgSport?.id;
         const sportName = competitionSport?.name || orgSport?.name;
 
-        console.log('[Content] Competition sport:', competitionSport?.name, '(id:', competitionSport?.id, ')');
-        console.log('[Content] Org sport:', orgSport?.name, '(id:', orgSport?.id, ')');
-        console.log('[Content] Using sport for filtering:', sportName, '(id:', sportId, ')');
+        console.log('[Content] ======================');
+        console.log('[Content] Competition sport:', competitionSport);
+        console.log('[Content] Org sport:', orgSport);
+        console.log('[Content] Using sportId for filtering:', sportId, '(', sportName, ')');
         console.log('[Content] All templates fetched:', allTemplates.length);
+
+        if (allTemplates.length > 0) {
+          console.log('[Content] Sample template:', allTemplates[0]);
+        }
 
         // Filter templates that match the sport (or have no sport = universal)
         const matchingTemplates = allTemplates.filter(t => {
           // Template has no sport = universal, include it
-          if (!t.sport) return true;
+          if (!t.sport) {
+            console.log('[Content] ✓ Template', t.name, '- universal (no sport)');
+            return true;
+          }
           // If no sport available, only include universal templates
-          if (!sportId) return false;
+          if (!sportId) {
+            console.log('[Content] ✗ Template', t.name, '- no sportId to match against');
+            return false;
+          }
+
+          // Log all the checks
+          console.log('[Content] Checking template:', t.name);
+          console.log('  - t.sport:', t.sport, 'vs sportId:', sportId);
+          console.log('  - t.sport_detail:', t.sport_detail);
+          console.log('  - competitionSport?.parent_sport_id:', competitionSport?.parent_sport_id);
+
           // Template sport matches directly (exact match)
-          if (t.sport === sportId) return true;
+          if (t.sport === sportId) {
+            console.log('  ✓ Exact match: t.sport === sportId');
+            return true;
+          }
           // Template sport_detail matches by ID
-          if (t.sport_detail?.id === sportId) return true;
+          if (t.sport_detail?.id === sportId) {
+            console.log('  ✓ Match: t.sport_detail.id === sportId');
+            return true;
+          }
 
           // IMPORTANT: Match if template has a sport VARIANT and we have the CATEGORY
           // Example: Template=Football 11v11 (variant), Sport=Football (category)
           // Check if template's sport parent matches our sport
-          if (t.sport_detail?.parent_sport_id === sportId) return true;
+          if (t.sport_detail?.parent_sport_id === sportId) {
+            console.log('  ✓ Match: template variant parent matches our sport');
+            return true;
+          }
 
           // Or if we have a variant and template has the category
-          if (competitionSport?.parent_sport_id && t.sport === competitionSport.parent_sport_id) return true;
-          if (!competitionSport && orgSport?.parent_sport_id && t.sport === orgSport.parent_sport_id) return true;
+          if (competitionSport?.parent_sport_id && t.sport === competitionSport.parent_sport_id) {
+            console.log('  ✓ Match: we have variant, template has category');
+            return true;
+          }
+          if (!competitionSport && orgSport?.parent_sport_id && t.sport === orgSport.parent_sport_id) {
+            console.log('  ✓ Match: org variant, template has category');
+            return true;
+          }
 
+          console.log('  ✗ No match');
           return false;
         });
 
