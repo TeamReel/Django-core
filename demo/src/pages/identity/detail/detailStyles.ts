@@ -1,7 +1,7 @@
 import type React from 'react';
 
-// Re-export the centralized actionButtonStyle from directoryStyles
-export { actionButtonStyle, type ActionTone } from '../../../utils/directoryStyles';
+// Re-export centralized button styles from directoryStyles
+export { actionButtonStyle, ctaButtonStyle, type ActionTone } from '../../../utils/directoryStyles';
 
 export const compactTableStyle: React.CSSProperties = {
   tableLayout: 'fixed',

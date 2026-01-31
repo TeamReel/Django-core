@@ -43,7 +43,7 @@ export const compactActionsStyle: React.CSSProperties = {
   alignItems: 'center'
 };
 
-// Centralized action button styling - use this everywhere for View/Edit/Delete buttons
+// Centralized action button styling - use this everywhere for View/Edit/Delete buttons in tables
 export type ActionTone = 'neutral' | 'primary' | 'warning' | 'danger' | 'success';
 
 export const actionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => {
@@ -85,3 +85,11 @@ export const actionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProper
   // Neutral
   return { ...base, border: '1px solid var(--app-border)', color: 'var(--app-muted-text)' };
 };
+
+// Larger "Call To Action" buttons for prominent actions like "Add User", "Assign", etc.
+export const ctaButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => ({
+  ...actionButtonStyle(tone),
+  padding: '8px 16px',
+  fontSize: '14px',
+  minWidth: '120px',
+});

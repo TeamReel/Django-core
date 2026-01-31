@@ -28,6 +28,7 @@ import CreateTransactionModal, { type WalletOption } from '../../components/tran
 import MobileTabBar from '../../components/MobileTabBar';
 import {
   actionButtonStyle,
+  ctaButtonStyle,
   type ActionTone,
   compactActionsStyle,
   compactTableStyle,
@@ -2009,7 +2010,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           type="button"
                           className="app-action-button"
                           onClick={() => setIsAddSquadMemberModalOpen(true)}
-                          style={{ ...actionButtonStyle('neutral'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: 500 }}
+                          style={ctaButtonStyle('neutral')}
                         >
                           Add User (advanced)
                         </button>
@@ -2043,7 +2044,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 const userIds = Array.from(selectedEligibleUserIds.values()).filter(Boolean);
                                 await assignUsersToSeasonSquad(userIds);
                               }}
-                              style={{ ...tableActionButtonStyle('success'), padding: '8px 16px', fontSize: '14px', minWidth: '160px' }}
+                              style={ctaButtonStyle('success')}
                               title="Assign selected users to the squad"
                             >
                               Assign ({selectedEligibleUserIds.size})
@@ -2202,7 +2203,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   const ids = Array.from(selectedSquadMembershipIds.values()).filter(Boolean);
                                   await unassignMembershipsFromSeasonSquad(ids);
                                 }}
-                                style={{ ...tableActionButtonStyle('danger'), padding: '8px 16px', fontSize: '14px', minWidth: '170px' }}
+                                style={ctaButtonStyle('danger')}
                                 title="Unassign selected users from the squad"
                               >
                                 Unassign ({selectedSquadMembershipIds.size})
@@ -2528,7 +2529,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           type="button"
                           className="app-action-button"
                           onClick={() => setIsCreateCompetitionModalOpen(true)}
-                          style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '140px', fontWeight: 500 }}
+                          style={ctaButtonStyle('primary')}
                         >
                           Add Competition
                         </button>
@@ -2671,7 +2672,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           type="button"
                           className="app-action-button"
                           onClick={() => setIsCreateMatchModalOpen(true)}
-                          style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '120px', fontWeight: 500 }}
+                          style={ctaButtonStyle('primary')}
                         >
                           Add Match
                         </button>

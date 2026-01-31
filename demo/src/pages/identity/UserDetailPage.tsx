@@ -18,6 +18,7 @@ import { useAuth } from '@django-core/auth-ui';
 import MatchEditModal from './MatchEditModal';
 import {
   actionButtonStyle,
+  ctaButtonStyle,
   compactActionsStyle,
   compactTableStyle,
   compactTdStyle,
@@ -940,7 +941,7 @@ export const UserDetailPage: React.FC = () => {
                 }
                 setIsCreateTxnModalOpen(true);
               }}
-              style={{ ...actionButtonStyle('primary'), padding: '8px 16px', fontSize: '14px', minWidth: '160px' }}
+              style={ctaButtonStyle('primary')}
               disabled={!user}
             >
               Create transaction
@@ -949,7 +950,7 @@ export const UserDetailPage: React.FC = () => {
               type="button"
               className="app-action-button"
               onClick={() => setIsLinkModalOpen(true)}
-              style={{ ...actionButtonStyle('neutral'), padding: '8px 16px', fontSize: '14px', minWidth: '120px' }}
+              style={ctaButtonStyle('neutral')}
               disabled={!user}
             >
               Add to…
