@@ -203,6 +203,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
   const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
 
+  // Edit member functional roles state
+  const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
+  const [selectedEditMember, setSelectedEditMember] = useState<any | null>(null);
+
   // Content generation state
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
   const [templatesLoading, setTemplatesLoading] = useState(false);
@@ -2370,7 +2374,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     <th style={compactThStyle}>Functional</th>
                                     <th style={compactThStyle}>Position</th>
                                     <th style={compactThStyle}>#</th>
-                                    <th style={{ ...compactThStyle, width: '120px' }} className="text-right">
+                                    <th style={{ ...compactThStyle, width: '180px' }} className="text-right">
                                       Action
                                     </th>
                                   </tr>
@@ -2442,6 +2446,20 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         <td style={compactTdStyle}>{shirtNumber || 'â€”'}</td>
                                         <td style={compactTdStyle} className="text-right">
                                           <div style={compactActionsStyle}>
+                                            <button
+                                              type="button"
+                                              className="app-action-button"
+                                              disabled={!membershipId || bulkSubmitting}
+                                              onClick={() => {
+                                                if (!membershipId) return;
+                                                setSelectedEditMember(m);
+                                                setIsEditMemberModalOpen(true);
+                                              }}
+                                              style={tableActionButtonStyle('primary')}
+                                              title="Edit member details"
+                                            >
+                                              Edit
+                                            </button>
                                             <button
                                               type="button"
                                               className="app-action-button"
@@ -3267,6 +3285,185 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             }
           }}
         />
+
+        {/* Edit Member Modal */}
+        {isEditMemberModalOpen && selectedEditMember && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+            }}
+            onClick={() => setIsEditMemberModalOpen(false)}
+          >
+            <div
+              style={{
+                backgroundColor: 'white',
+                padding: '32px',
+                borderRadius: '8px',
+                maxWidth: '600px',
+                width: '90%',
+                maxHeight: '90vh',
+                overflow: 'auto',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 style={{ marginTop: 0, marginBottom: '24px', fontSize: '24px', fontWeight: 600 }}>
+                Edit Member Roles
+              </h2>
+
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <strong>Name:</strong>{' '}
+                  {selectedEditMember.user?.name ||
+                    `${selectedEditMember.user?.first_name || ''} ${selectedEditMember.user?.last_name || ''}`.trim() ||
+                    selectedEditMember.user?.email ||
+                    '—'}
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <strong>Email:</strong> {selectedEditMember.user?.email || '—'}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', marginBottom: '12px', fontWeight: 600 }}>
+                  Functional Roles
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                  {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map((role) => {
+                    const currentRoles = getFunctionalRolesFromMembership(selectedEditMember);
+                    const isChecked = currentRoles.includes(role);
+
+                    return (
+                      <label
+                        key={role}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '12px',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          backgroundColor: isChecked ? '#eff6ff' : 'white',
+                          borderColor: isChecked ? '#3b82f6' : '#e5e7eb',
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setSelectedEditMember((prev: any) => {
+                              if (!prev) return prev;
+                              const currentRoles = getFunctionalRolesFromMembership(prev);
+                              let newRoles: string[];
+
+                              if (checked) {
+                                newRoles = [...currentRoles, role];
+                              } else {
+                                newRoles = currentRoles.filter((r: string) => r !== role);
+                              }
+
+                              return {
+                                ...prev,
+                                functional_roles: newRoles,
+                              };
+                            });
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        />
+                        <span style={{ textTransform: 'capitalize' }}>{role}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setIsEditMemberModalOpen(false)}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '6px',
+                    border: '1px solid #e5e7eb',
+                    backgroundColor: 'white',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const membershipId = String(selectedEditMember.id || '').trim();
+                      if (!membershipId) {
+                        alert('No membership ID found');
+                        return;
+                      }
+
+                      const functionalRoles = getFunctionalRolesFromMembership(selectedEditMember);
+
+                      const res = await fetch(
+                        `${apiBaseUrl}/api/v1/activities/participations/${encodeURIComponent(membershipId)}/`,
+                        {
+                          method: 'PATCH',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken(),
+                          },
+                          credentials: 'include',
+                          body: JSON.stringify({
+                            functional_roles: functionalRoles,
+                          }),
+                        }
+                      );
+
+                      if (!res.ok) {
+                        const text = await res.text();
+                        throw new Error(text || 'Failed to update member');
+                      }
+
+                      // Update local state
+                      setMembers((prev) =>
+                        prev.map((m: any) =>
+                          String(m.id || '').trim() === membershipId
+                            ? { ...m, functional_roles: functionalRoles }
+                            : m
+                        )
+                      );
+
+                      setIsEditMemberModalOpen(false);
+                      setSelectedEditMember(null);
+                    } catch (err: any) {
+                      alert(err.message || 'Failed to update member');
+                    }
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Content Generation Modal */}
         <ContentGenerationModal
