@@ -38,6 +38,7 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
             "template_settings",
             "timeout_minutes",
             "is_active",
+            "credits_required",
             "organisation",
             "organisation_detail",
             "project",

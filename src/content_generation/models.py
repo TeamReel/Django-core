@@ -141,6 +141,10 @@ class ContentTemplate(models.Model):
     is_active = models.BooleanField(
         default=True, db_index=True, help_text="Template availability flag"
     )
+    credits_required = models.PositiveIntegerField(
+        default=1,
+        help_text="Number of credits required to generate content with this template",
+    )
 
     # Foreign Keys
     organisation = models.ForeignKey(

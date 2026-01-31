@@ -190,6 +190,7 @@ interface ContentTemplate {
   ai_workflow_id: string;
   template_settings: Record<string, any>;
   is_active: boolean;
+  credits_required: number;
   organisation: number | null;  // NULL = global template
   project: number | null;
   created_at: string;
@@ -253,6 +254,7 @@ export default function ContentTemplatesPage() {
     style_variant: '',
     ai_workflow_id: '',
     is_active: true,
+    credits_required: 1,
     input_requirements: {} as Record<string, any>,
   });
 
@@ -274,6 +276,7 @@ export default function ContentTemplatesPage() {
         style_variant: editingTemplate.style_variant || '',
         ai_workflow_id: editingTemplate.ai_workflow_id,
         is_active: editingTemplate.is_active,
+        credits_required: editingTemplate.credits_required ?? 1,
         input_requirements: editingTemplate.input_requirements || {},
       });
       setModalTab('basic');
@@ -289,6 +292,7 @@ export default function ContentTemplatesPage() {
         style_variant: '',
         ai_workflow_id: '',
         is_active: true,
+        credits_required: 1,
         input_requirements: {},
       });
       setModalTab('basic');
@@ -546,6 +550,7 @@ export default function ContentTemplatesPage() {
           style_variant: editForm.style_variant || null,
           ai_workflow_id: editForm.ai_workflow_id || null,
           is_active: editForm.is_active,
+          credits_required: editForm.credits_required,
           input_requirements: editForm.input_requirements,
         }),
       });
@@ -679,13 +684,14 @@ export default function ContentTemplatesPage() {
                 <Table>
                   <thead>
                     <tr>
-                      <th style={{ width: '20%' }}>Name</th>
+                      <th style={{ width: '18%' }}>Name</th>
                       <th style={{ width: '10%' }}>Type</th>
                       <th style={{ width: '10%' }}>Subtype</th>
                       <th style={{ width: '10%' }}>Sport</th>
-                      <th style={{ width: '10%' }}>Variant</th>
+                      <th style={{ width: '8%' }}>Variant</th>
                       <th style={{ width: '8%' }}>Formation</th>
-                      <th style={{ width: '8%' }}>Style</th>
+                      <th style={{ width: '6%' }}>Style</th>
+                      <th style={{ width: '6%' }}>Credits</th>
                       <th style={{ width: '6%' }}>Status</th>
                       <th style={{ width: '18%', textAlign: 'right' }}>Actions</th>
                     </tr>
@@ -757,6 +763,9 @@ export default function ContentTemplatesPage() {
                           ) : (
                             <span style={{ color: 'var(--app-text-muted)' }}>—</span>
                           )}
+                        </td>
+                        <td>
+                          <span style={{ fontWeight: 500 }}>{template.credits_required ?? 1}</span>
                         </td>
                         <td>
                           <Badge variant={template.is_active ? 'success' : 'default'}>
@@ -1096,6 +1105,24 @@ export default function ContentTemplatesPage() {
                     style={{ width: '18px', height: '18px' }}
                   />
                   <label htmlFor="is_active" style={{ fontWeight: 500 }}>Active</label>
+                </div>
+
+                {/* Credits Required */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    Credits Required
+                  </label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={editForm.credits_required}
+                    onChange={(e) => setEditForm({ ...editForm, credits_required: Math.max(1, parseInt(e.target.value) || 1) })}
+                    placeholder="1"
+                    style={{ width: '100px' }}
+                  />
+                  <p style={{ fontSize: '12px', color: 'var(--app-text-muted)', marginTop: '4px' }}>
+                    Number of credits consumed per generation
+                  </p>
                 </div>
               </div>
             )}
