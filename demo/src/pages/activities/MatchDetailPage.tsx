@@ -314,9 +314,7 @@ export const MatchDetailPage: React.FC = () => {
               {(() => {
                 const isActive = !!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
                 return (
-                  <Button
-                    variant={isActive ? 'primary' : 'secondary'}
-                    size="sm"
+                  <button
                     onClick={async () => {
                       if (!match || isActive) return;
                       try {
@@ -331,24 +329,51 @@ export const MatchDetailPage: React.FC = () => {
                     disabled={activatingContext || isActive}
                     title="Set this match as your active context"
                     style={{
-                      backgroundColor: isActive ? '#dcfce7' : undefined,
-                      color: isActive ? '#166534' : undefined,
-                      border: isActive ? '1px solid #10b981' : undefined,
+                      padding: '6px 12px',
+                      borderRadius: '4px',
+                      border: isActive ? '1px solid #10b981' : '1px solid var(--app-border)',
+                      backgroundColor: isActive ? '#dcfce7' : 'var(--app-surface-2)',
+                      color: isActive ? '#166534' : 'var(--app-text)',
                       cursor: activatingContext || isActive ? 'not-allowed' : 'pointer',
+                      fontSize: '12px',
+                      fontWeight: isActive ? 600 : 500,
                       opacity: activatingContext || isActive ? 0.8 : 1,
-                      fontWeight: isActive ? 600 : undefined,
                     }}
                   >
                     {isActive ? '✓ Active' : 'Make active'}
-                  </Button>
+                  </button>
                 );
               })()}
-              <Button variant="secondary" size="sm" onClick={() => navigate(-1)}>
+              <button
+                onClick={() => navigate(-1)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
+              >
                 Back
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => navigate(`/studio/create?context=${match.id}`)}>
+              </button>
+              <button
+                onClick={() => navigate(`/studio/create?context=${match.id}`)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface-2)',
+                  color: 'var(--app-text)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
+              >
                 ✨ Create Content
-              </Button>
+              </button>
             </div>
           }
         />
