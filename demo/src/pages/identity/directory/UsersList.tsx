@@ -288,7 +288,8 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                     if (!res.ok) throw new Error('Failed to fetch team members');
 
                     const data = await res.json();
-                    const rawList = data?.results || data?.data?.results || data?.data || [];
+                    // API response: { status, data: { data: [...] }, meta } or { results: [...] }
+                    const rawList = data?.data?.data || data?.data?.results || data?.results || (Array.isArray(data?.data) ? data.data : []);
 
                     let results = (Array.isArray(rawList) ? rawList : []).map((item: any) => {
                         const nestedUser = item?.user;
