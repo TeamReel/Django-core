@@ -247,6 +247,8 @@ export default function ContentTemplatesPage() {
   const [showInactive, setShowInactive] = useState(false);
   const [selectedFormation, setSelectedFormation] = useState<string>('all');
   const [selectedStyle, setSelectedStyle] = useState<string>('all');
+  const [selectedSport, setSelectedSport] = useState<string>('all');
+  const [selectedSubtype, setSelectedSubtype] = useState<string>('all');
 
   // Modal state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -435,8 +437,38 @@ export default function ContentTemplatesPage() {
         styles.add(t.style_variant);
       }
     });
-    return Array.from(styles);
+    return Array.from(styles).sort();
   }, [templates]);
+
+  // Get unique sports from templates for filter dropdown
+  const availableSports = useMemo(() => {
+    const sportMap = new Map<number, { id: number; name: string }>();
+    templates.forEach(t => {
+      if (t.sport_detail) {
+        sportMap.set(t.sport_detail.id, t.sport_detail);
+      }
+    });
+    return Array.from(sportMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [templates]);
+
+  // Get unique subtypes from templates for filter dropdown (filtered by category if selected)
+  const availableSubtypes = useMemo(() => {
+    const category = TEMPLATE_CATEGORIES.find(c => c.id === selectedCategory);
+    const subtypeSet = new Set<string>();
+    templates.forEach(t => {
+      if (t.template_subtype) {
+        // If category is selected, only show subtypes for that category
+        if (category?.types) {
+          if (category.types.includes(t.template_type)) {
+            subtypeSet.add(t.template_subtype);
+          }
+        } else {
+          subtypeSet.add(t.template_subtype);
+        }
+      }
+    });
+    return Array.from(subtypeSet).sort();
+  }, [templates, selectedCategory]);
 
   // Filter templates based on selected category and search
   const filteredTemplates = useMemo(() => {
@@ -446,6 +478,16 @@ export default function ContentTemplatesPage() {
     const category = TEMPLATE_CATEGORIES.find(c => c.id === selectedCategory);
     if (category?.types) {
       result = result.filter(t => category.types!.includes(t.template_type));
+    }
+
+    // Filter by sport
+    if (selectedSport !== 'all') {
+      result = result.filter(t => t.sport_detail?.id === parseInt(selectedSport));
+    }
+
+    // Filter by subtype
+    if (selectedSubtype !== 'all') {
+      result = result.filter(t => t.template_subtype === selectedSubtype);
     }
 
     // Filter by formation
@@ -474,7 +516,7 @@ export default function ContentTemplatesPage() {
     }
 
     return result;
-  }, [templates, selectedCategory, selectedFormation, selectedStyle, searchQuery, showInactive]);
+  }, [templates, selectedCategory, selectedSport, selectedSubtype, selectedFormation, selectedStyle, searchQuery, showInactive]);
 
   // Group templates by subtype for the detail panel
   const groupedBySubtype = useMemo(() => {
@@ -622,6 +664,50 @@ export default function ContentTemplatesPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+
+            {/* Sport Filter */}
+            {availableSports.length > 0 && (
+              <select
+                value={selectedSport}
+                onChange={(e) => setSelectedSport(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-bg)',
+                  color: 'var(--app-text)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="all">All Sports</option>
+                {availableSports.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            )}
+
+            {/* Subtype Filter */}
+            {availableSubtypes.length > 0 && (
+              <select
+                value={selectedSubtype}
+                onChange={(e) => setSelectedSubtype(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-bg)',
+                  color: 'var(--app-text)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="all">All Subtypes</option>
+                {availableSubtypes.map(st => (
+                  <option key={st} value={st}>{SUBTYPE_LABELS[st] || st}</option>
+                ))}
+              </select>
+            )}
 
             {/* Formation Filter */}
             {availableFormations.length > 0 && (
