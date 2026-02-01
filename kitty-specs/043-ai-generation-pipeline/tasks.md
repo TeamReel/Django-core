@@ -341,7 +341,7 @@
 **Milestone**: API functional with manual testing (no async, no credits yet)
 
 ### Phase 2: Pipeline Execution (WP03-WP04)
-- [ ] WP03: Pipeline Executors (9 subtasks)
+System.Func`2[System.Text.RegularExpressions.Match,System.String]
 - [ ] WP04: Async Processing & Retry Logic (9 subtasks)
 **Milestone**: Content generation works end-to-end (mocked credits)
 

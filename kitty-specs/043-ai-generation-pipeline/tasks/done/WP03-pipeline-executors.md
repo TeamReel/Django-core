@@ -12,7 +12,7 @@ subtasks:
   - "T026"
 title: "Pipeline Executors"
 phase: "Phase 2 - Pipeline Execution"
-lane: "for_review"
+lane: "done"
 assignee: ""
 agent: "copilot"
 shell_pid: "13948"
@@ -746,3 +746,4 @@ history:
 - 2026-02-01T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2026-02-01T20:22:48Z – claude – shell_pid=13948 – lane=doing – Started implementation: Pipeline Executors
 - 2026-02-01T20:41:15Z – claude – shell_pid=13948 – lane=for_review – Moved to for_review
+- 2026-02-01T20:56:55Z – copilot – shell_pid=13948 – lane=done – Moved to done
