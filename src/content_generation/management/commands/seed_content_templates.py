@@ -282,6 +282,11 @@ class Command(BaseCommand):
             action="store_true",
             help="Show what would be created without actually creating",
         )
+        parser.add_argument(
+            "--cleanup",
+            action="store_true",
+            help="Delete all existing global templates before seeding (WARNING: destructive)",
+        )
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -292,15 +297,34 @@ class Command(BaseCommand):
 
         category = options.get("category", "all")
         dry_run = options.get("dry_run", False)
+        cleanup = options.get("cleanup", False)
 
         if dry_run:
             self.stdout.write(self.style.WARNING("DRY RUN - no changes will be made"))
 
-        self.stdout.write("🌍 Seeding GLOBAL templates (organisation=None)")
+        # Cleanup: Delete all global templates first
+        if cleanup:
+            global_count = ContentTemplate.objects.filter(organisation=None).count()
+            if dry_run:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"\n[CLEANUP DRY] Would delete {global_count} existing global templates"
+                    )
+                )
+            else:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"\n[CLEANUP] Deleting {global_count} existing global templates..."
+                    )
+                )
+                ContentTemplate.objects.filter(organisation=None).delete()
+                self.stdout.write(self.style.SUCCESS("  Done - Deleted all global templates"))
+
+        self.stdout.write("[GLOBAL] Seeding GLOBAL templates (organisation=None)")
         self.stdout.write("   These can only be edited by superadmins.\n")
 
         # Step 1: Create Sports
-        self.stdout.write("📌 Creating sports...")
+        self.stdout.write("[1/5] Creating sports...")
         football_cat, _ = Sport.objects.update_or_create(
             slug="football",
             defaults={
@@ -309,7 +333,7 @@ class Command(BaseCommand):
                 "is_active": True,
             },
         )
-        self.stdout.write(f"  ✓ Sport category: {football_cat.name}")
+        self.stdout.write(f"  + Sport category: {football_cat.name}")
 
         football_11v11, _ = Sport.objects.update_or_create(
             slug="football-11v11",
@@ -341,11 +365,11 @@ class Command(BaseCommand):
             },
         )
         self.stdout.write(
-            f"  ✓ Sport variants: {football_11v11.name}, {football_7v7.name}, {futsal_5v5.name}"
+            f"  + Sport variants: {football_11v11.name}, {football_7v7.name}, {futsal_5v5.name}"
         )
 
         # Step 2: Create SportConfigurations
-        self.stdout.write("\n⚙️  Creating sport configurations...")
+        self.stdout.write("\n[2/5] Creating sport configurations...")
         config_11v11, _ = SportConfiguration.objects.update_or_create(
             sport=football_11v11,
             defaults={
@@ -382,10 +406,10 @@ class Command(BaseCommand):
                 "positions": ["GK", "CB", "LM", "CM", "RM", "ST"],
             },
         )
-        self.stdout.write("  ✓ Configurations created for 11v11 and 7v7")
+        self.stdout.write("  + Configurations created for 11v11 and 7v7")
 
         # Step 3: Create Formations
-        self.stdout.write("\n🔢 Creating formations...")
+        self.stdout.write("\n[3/5] Creating formations...")
         formations_11v11 = []
         for f_data in FOOTBALL_11V11_FORMATIONS:
             formation, _ = Formation.objects.update_or_create(
@@ -400,7 +424,7 @@ class Command(BaseCommand):
                 },
             )
             formations_11v11.append(formation)
-            self.stdout.write(f"  ✓ 11v11: {formation.code}")
+            self.stdout.write(f"  + 11v11: {formation.code}")
 
         formations_7v7 = []
         for f_data in FOOTBALL_7V7_FORMATIONS:
@@ -416,7 +440,7 @@ class Command(BaseCommand):
                 },
             )
             formations_7v7.append(formation)
-            self.stdout.write(f"  ✓ 7v7: {formation.code}")
+            self.stdout.write(f"  + 7v7: {formation.code}")
 
         # Step 4: Create templates by category
         template_count = 0
@@ -814,7 +838,7 @@ class Command(BaseCommand):
 
         # Create the templates
         if template_definitions:
-            self.stdout.write(f"\n📄 Creating {category} templates...")
+            self.stdout.write(f"\n[4/5] Creating {category} templates...")
             for t_data in template_definitions:
                 if dry_run:
                     self.stdout.write(f"  [DRY] Would create: {t_data['name']}")
@@ -852,11 +876,11 @@ class Command(BaseCommand):
                 )
                 template_count += 1
                 status = "created" if created else "updated"
-                self.stdout.write(f"  ✓ {template.name} ({status})")
+                self.stdout.write(f"  + {template.name} ({status})")
 
         # Step 5: Create lineup templates per formation (only if category matches)
         if category in ["all", "pre_match"]:
-            self.stdout.write("\n📋 Creating lineup templates per formation...")
+            self.stdout.write("\n[5/5] Creating lineup templates per formation...")
 
             # 11v11 lineup templates
             for formation in formations_11v11:
@@ -886,7 +910,7 @@ class Command(BaseCommand):
                     )
                     template_count += 1
                     status = "created" if created else "updated"
-                    self.stdout.write(f"  ✓ {name} ({status})")
+                    self.stdout.write(f"  + {name} ({status})")
 
             # 7v7 lineup templates
             for formation in formations_7v7:
@@ -916,12 +940,12 @@ class Command(BaseCommand):
                     )
                     template_count += 1
                     status = "created" if created else "updated"
-                    self.stdout.write(f"  ✓ {name} ({status})")
+                    self.stdout.write(f"  + {name} ({status})")
 
         # Summary
         self.stdout.write(
             self.style.SUCCESS(
-                f"\n✅ Seed complete! {'Would create' if dry_run else 'Created/updated'} {template_count} templates"
+                f"\n[DONE] Seed complete! {'Would create' if dry_run else 'Created/updated'} {template_count} templates"
             )
         )
         self.stdout.write(f"   - {len(formations_11v11)} formations for 11v11")
@@ -933,5 +957,5 @@ class Command(BaseCommand):
             )
             self.stdout.write(f"   - {2 * len(formations_7v7)} lineup templates for 7v7")
 
-        self.stdout.write("\n🔒 All templates are GLOBAL (organisation=None)")
+        self.stdout.write("\n[INFO] All templates are GLOBAL (organisation=None)")
         self.stdout.write("   Only superadmins can edit these templates.")
