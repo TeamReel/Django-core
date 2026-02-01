@@ -2,7 +2,7 @@
 work_package_id: WP01
 title: Django App Setup & Models
 priority: P1
-lane: planned
+lane: "doing"
 subtasks:
   - T001
   - T002
@@ -14,6 +14,8 @@ subtasks:
   - T008
 estimated_hours: 4
 dependencies: []
+agent: "claude"
+shell_pid: "18452"
 history:
   - date: 2026-02-01
     action: created
@@ -564,3 +566,7 @@ except Exception as e:
 - Constraints prevent invalid data (test with invalid inputs)
 - Migrations apply cleanly
 - Can perform basic CRUD via Django shell
+
+## Activity Log
+
+- 2026-02-01T15:28:28Z – claude – shell_pid=18452 – lane=doing – Started implementation of Django app and models
