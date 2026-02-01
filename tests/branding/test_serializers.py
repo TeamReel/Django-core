@@ -19,9 +19,9 @@ class TestBrandProfileSerializer:
         serializer = BrandProfileSerializer(org_brand)
         data = serializer.data
 
-        assert data["id"] == str(org_brand.id)
+        assert str(data["id"]) == str(org_brand.id)
         assert data["name"] == org_brand.name
-        assert data["organisation"] == str(org_brand.organisation.id)
+        assert str(data["organisation"]) == str(org_brand.organisation.id)
         assert data["project"] is None
         assert data["is_active"] is True
 
@@ -30,8 +30,8 @@ class TestBrandProfileSerializer:
         serializer = BrandProfileSerializer(project_brand)
         data = serializer.data
 
-        assert data["id"] == str(project_brand.id)
-        assert data["project"] == str(project_brand.project.id)
+        assert str(data["id"]) == str(project_brand.id)
+        assert str(data["project"]) == str(project_brand.project.id)
         assert data["organisation"] is None
 
     def test_create_org_brand(self, organisation):
@@ -125,11 +125,11 @@ class TestDesignTokenSerializer:
         serializer = DesignTokenSerializer(token)
         data = serializer.data
 
-        assert data["id"] == str(token.id)
+        assert str(data["id"]) == str(token.id)
         assert data["key"] == "primary_color"
         assert data["value"] == "#FF6600"
         assert data["type"] == "color"
-        assert data["profile"] == str(token.profile.id)
+        assert str(data["profile"]) == str(token.profile.id)
 
     def test_create_token(self, org_brand):
         """Test creating token via serializer."""
@@ -222,11 +222,11 @@ class TestBrandAssetSerializer:
         serializer = BrandAssetSerializer(asset)
         data = serializer.data
 
-        assert data["id"] == str(asset.id)
+        assert str(data["id"]) == str(asset.id)
         assert data["asset_type"] == "logo_light"
         assert data["alt_text"] == "Logo"
         assert data["is_active"] is True
-        assert data["profile"] == str(org_brand.id)
+        assert str(data["profile"]) == str(org_brand.id)
 
     def test_create_asset(self, org_brand):
         """Test creating asset via serializer."""

@@ -116,7 +116,7 @@ class TestBrandProfileViewSet:
 
         # Should only return brands for specified project
         for brand in results:
-            assert brand["project"] == str(project.id)
+            assert str(brand["project"]) == str(project.id)
 
     def test_filter_by_is_active(self, api_client, org_admin, org_brand):
         """Test filtering by is_active status."""
