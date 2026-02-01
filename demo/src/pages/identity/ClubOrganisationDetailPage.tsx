@@ -14,6 +14,7 @@ import { CompetitionsList } from './directory/CompetitionsList';
 import { MatchesList } from './directory/MatchesList';
 import { UsersList } from './directory/UsersList';
 import TeamCreditsTab from './detail/TeamCreditsTab';
+import ClubAssetsTab from './detail/ClubAssetsTab';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import MobileTabBar from '../../components/MobileTabBar';
 import ProjectEditModal from './ProjectEditModal';
@@ -206,6 +207,7 @@ export default function ClubOrganisationDetailPage() {
       'competitions',
       'matches',
       'members',
+      'assets',
       'balance',
       'transactions',
     ]);
@@ -1032,6 +1034,7 @@ export default function ClubOrganisationDetailPage() {
             { id: 'competitions', label: 'Competitions' },
             { id: 'matches', label: 'Matches' },
             { id: 'members', label: 'Members' },
+            { id: 'assets', label: 'Assets' },
             { id: 'balance', label: 'Balance' },
           ]}
           activeTab={activeTabFromUrl}
@@ -1473,6 +1476,18 @@ export default function ClubOrganisationDetailPage() {
 
           {activeTabFromUrl === 'members' && orgSlugForDirectoryLists && clubIdForDirectoryLists && (
             <UsersList preselectedOrgId={orgSlugForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
+          )}
+
+          {activeTabFromUrl === 'assets' && club && (
+            <ClubAssetsTab
+              clubId={String(club.id)}
+              clubName={club.name}
+              clubMetadata={(club as any)?.metadata || {}}
+              onAssetsUpdated={() => {
+                // Reload club data to get updated metadata
+                window.location.reload();
+              }}
+            />
           )}
 
           {activeTabFromUrl === 'balance' && orgIdForDirectoryLists && clubIdForDirectoryLists && (

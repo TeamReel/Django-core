@@ -616,12 +616,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     items = [
                                         { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
                                         { label: 'Profile Photo', path: makeTabUrl(baseUrl, 'profile'), icon: UserCircle },
+                                        { label: 'Legacy Photo', path: makeTabUrl(baseUrl, 'legacy_photo'), icon: Timer },
                                         { label: 'In Tenue', path: makeTabUrl(baseUrl, 'kit'), icon: Shirt },
-                                        { label: 'Full Body', path: makeTabUrl(baseUrl, 'fullbody'), icon: Users },
                                         { label: 'Close-up', path: makeTabUrl(baseUrl, 'closeup'), icon: Star },
                                         { label: 'Short Intro', path: makeTabUrl(baseUrl, 'intro'), icon: Sparkles },
                                         { label: 'Celebration', path: makeTabUrl(baseUrl, 'celebration'), icon: Trophy },
-                                        { label: 'Legacy', path: makeTabUrl(baseUrl, 'legacy'), icon: Timer },
+                                        { label: 'Legacy in Tenue', path: makeTabUrl(baseUrl, 'legacy'), icon: Trophy },
                                     ];
                                     break;
                                 }

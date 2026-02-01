@@ -1,4 +1,5 @@
 ﻿import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
+import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
@@ -397,7 +398,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'media', 'transactions']);
+    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions']);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
 
@@ -640,9 +641,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     const projectIdForMembers = String((project as any)?.id || '').trim();
     const seasonUuid = String(resolvedSeasonId || '').trim();
 
-    console.log('[SeasonDetail] Squad fetch check:', { projectIdForMembers, seasonUuid, resolvedSeasonId });
-
-    if (!projectIdForMembers || !seasonUuid) return;
+        if (!projectIdForMembers || !seasonUuid) return;
 
     let cancelled = false;
     const run = async () => {
@@ -653,17 +652,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           projectIdForMembers
         )}/members/?period=${encodeURIComponent(seasonUuid)}&page_size=200`;
 
-        console.log('[SeasonDetail] Fetching squad members with URL:', membersUrl);
-
-        const membersList = await fetchAllPages<any>(
+                const membersList = await fetchAllPages<any>(
           membersUrl,
           { credentials: 'include' },
           { bypass: true, maxItems: 5000 }
         );
 
-        console.log('[SeasonDetail] Squad members fetched:', membersList?.length || 0);
-
-        if (!cancelled) setMembers(Array.isArray(membersList) ? membersList : []);
+                if (!cancelled) setMembers(Array.isArray(membersList) ? membersList : []);
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'Failed to load squad';
         if (!cancelled) setMembersError(msg);
@@ -681,7 +676,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   // Fetch full team roster (all memberships on the team, any period) so we can show
   // "team members not in squad" for quick assignment.
   useEffect(() => {
-    if (activeTab !== 'squad') return;
+    if (activeTab !== 'squad' && activeTab !== 'team') return;
     const projectIdForMembers = String((project as any)?.id || '').trim();
     if (!projectIdForMembers) return;
 
@@ -1537,6 +1532,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                                   setSeason((prev: any) => ({ ...(prev as any), ...(updated as any) }));
                                                 }}
                                               />
+
+                        {/* Season Assets Card for sponsor override */}
+                        <SeasonAssetsCard
+                          seasonId={String(season?.id || '')}
+                          seasonName={String(season?.name || '')}
+                          seasonMetadata={(season as any)?.metadata || {}}
+                          clubAssets={(club as any)?.metadata?.teamreel_assets}
+                          onAssetsUpdated={() => {
+                            // Reload to get updated metadata
+                            window.location.reload();
+                          }}
+                        />
+
                         <div className="space-y-2">
                           <Button
                             variant="secondary"
@@ -2586,8 +2594,191 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 </div>
               )}
 
+              {activeTab === 'team' && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-3">
+                    <Card>
+                      <div style={{ padding: '16px 16px 0 16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Team Members</h3>
+                          <Badge variant="default">{eligibleTeamMembers.length} Available</Badge>
+                        </div>
+                        <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
+                          Team members not yet assigned to this season. Select members to add them to the squad.
+                        </div>
+                      </div>
+
+                      <div style={{ padding: '16px' }}>
+                        {teamRosterLoading && <Alert variant="info">Loading team roster…</Alert>}
+                        {teamRosterError && <Alert variant="error">{teamRosterError}</Alert>}
+
+                        {userCanEditProject && (
+                          <div style={{ marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                            <Input
+                              value={eligibleSearch}
+                              onChange={(e) => setEligibleSearch(e.target.value)}
+                              placeholder="Search team members"
+                              style={{ width: '280px' }}
+                            />
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => {
+                                const allIds = eligibleTeamMembers.map((m: any) => getUserId(m)).filter(Boolean);
+                                const allSelected = allIds.length > 0 && allIds.every((id: string) => selectedEligibleUserIds.has(id));
+                                setSelectedEligibleUserIds(allSelected ? new Set() : new Set(allIds));
+                              }}
+                              disabled={bulkSubmitting || eligibleTeamMembers.length === 0}
+                            >
+                              {(() => {
+                                const allIds = eligibleTeamMembers.map((m: any) => getUserId(m)).filter(Boolean);
+                                const allSelected = allIds.length > 0 && allIds.every((id: string) => selectedEligibleUserIds.has(id));
+                                return allSelected ? 'Unselect all' : 'Select all';
+                              })()}
+                            </Button>
+                            <button
+                              type="button"
+                              className="app-action-button"
+                              disabled={bulkSubmitting || selectedEligibleUserIds.size === 0}
+                              onClick={async () => {
+                                const userIds = Array.from(selectedEligibleUserIds.values()).filter(Boolean);
+                                await assignUsersToSeasonSquad(userIds);
+                              }}
+                              style={ctaButtonStyle('success')}
+                              title="Assign selected users to the squad"
+                            >
+                              Assign to Squad ({selectedEligibleUserIds.size})
+                            </button>
+                          </div>
+                        )}
+
+                        {!teamRosterLoading && eligibleTeamMembers.length === 0 ? (
+                          <Alert variant="info">All team members are already assigned to this season squad.</Alert>
+                        ) : !teamRosterLoading ? (
+                          <div className="overflow-x-auto">
+                            <Table style={compactTableStyle}>
+                              <thead>
+                                <tr>
+                                  {userCanEditProject && (
+                                    <th style={{ ...compactThStyle, width: '44px' }}></th>
+                                  )}
+                                  <th style={compactThStyle}>Name</th>
+                                  <th style={compactThStyle}>Email</th>
+                                  <th style={compactThStyle}>Access</th>
+                                  <th style={compactThStyle}>Functional</th>
+                                  {userCanEditProject && (
+                                    <th style={{ ...compactThStyle, width: '120px' }} className="text-right">
+                                      Action
+                                    </th>
+                                  )}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {eligibleTeamMembers.map((m: any) => {
+                                  const userId = getUserId(m);
+                                  const { name, email } = getUserLabel(m);
+                                  const checked = Boolean(userId && selectedEligibleUserIds.has(userId));
+                                  const role = getBestRoleForUser(userId);
+                                  const functionalRoles = getFunctionalRolesForUser(userId);
+                                  return (
+                                    <tr key={`team-eligible:${userId || email}`}>
+                                      {userCanEditProject && (
+                                        <td style={compactTdStyle}>
+                                          <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            disabled={!userId || bulkSubmitting}
+                                            onChange={() => {
+                                              if (!userId) return;
+                                              toggleEligibleUser(userId);
+                                            }}
+                                          />
+                                        </td>
+                                      )}
+                                      <td style={compactTextTdStyle}>{name}</td>
+                                      <td style={compactTextTdStyle}>{email}</td>
+                                      <td style={compactTdStyle}>
+                                        <Badge variant="default">{role}</Badge>
+                                      </td>
+                                      <td style={compactTdStyle}>
+                                        {functionalRoles.length ? (
+                                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                            {functionalRoles.map((r) => (
+                                              <Badge key={r} variant="default">
+                                                {r}
+                                              </Badge>
+                                            ))}
+                                          </div>
+                                        ) : (
+                                          '—'
+                                        )}
+                                      </td>
+                                      {userCanEditProject && (
+                                        <td style={compactTdStyle} className="text-right">
+                                          <div style={compactActionsStyle}>
+                                            <button
+                                              type="button"
+                                              className="app-action-button"
+                                              disabled={!userId || bulkSubmitting}
+                                              onClick={async () => {
+                                                if (!userId) return;
+                                                await assignUsersToSeasonSquad([userId]);
+                                              }}
+                                              style={tableActionButtonStyle('success')}
+                                              title="Assign this user to the season squad"
+                                            >
+                                              Assign
+                                            </button>
+                                          </div>
+                                        </td>
+                                      )}
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </Table>
+                          </div>
+                        ) : null}
+                      </div>
+                    </Card>
+                  </div>
+                </div>
+              )}
+
               {activeTab === 'media' && (
                 <div className="grid grid-cols-1 gap-6">
+                  {/* In Tenue Generation Info Card */}
+                  <Card>
+                    <div style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                        <span style={{ fontSize: '24px' }}>👕</span>
+                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>In Tenue Generation</h3>
+                      </div>
+                      <div style={{ color: 'var(--app-muted-text)', fontSize: '13px', marginBottom: '12px' }}>
+                        Generate "In Tenue" images by combining profile photos with the team&apos;s kit.
+                      </div>
+                      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', fontSize: '13px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>{(club as any)?.metadata?.teamreel_assets?.tenue?.url ? '✅' : '⚠️'}</span>
+                          <span>Club Tenue</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>{(club as any)?.metadata?.teamreel_assets?.logo?.url ? '✅' : '⚠️'}</span>
+                          <span>Club Logo</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>{((season as any)?.metadata?.teamreel_assets?.sponsor?.url || (club as any)?.metadata?.teamreel_assets?.sponsor?.url) ? '✅' : '—'}</span>
+                          <span>Sponsor (optional)</span>
+                        </div>
+                      </div>
+                      {!(club as any)?.metadata?.teamreel_assets?.tenue?.url && (
+                        <Alert variant="warning" style={{ marginTop: '12px' }}>
+                          Missing club tenue. Go to the club&apos;s Assets tab to upload kit images.
+                        </Alert>
+                      )}
+                    </div>
+                  </Card>
+
                   <Card>
                     <div style={{ padding: '16px 16px 0 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>

@@ -6,13 +6,15 @@
  */
 
 export const MEDIA_SLOTS = [
-  { id: 'profile', label: 'Profile Photo', icon: '👤', description: 'Headshot or portrait' },
-  { id: 'kit', label: 'In Tenue', icon: '👕', description: 'Player in team kit' },
-  { id: 'fullbody', label: 'Full Body', icon: '🧍', description: 'Full body portrait' },
-  { id: 'closeup', label: 'Close-up', icon: '🔍', description: 'Close-up shot' },
-  { id: 'intro', label: 'Short Intro', icon: '🎬', description: 'Video introduction' },
-  { id: 'celebration', label: 'Celebration', icon: '🎉', description: 'Celebration moment' },
-  { id: 'legacy', label: 'Legacy', icon: '🏆', description: 'Legacy/history shot' },
+  // Input assets (uploaded by user)
+  { id: 'profile', label: 'Profile Photo', icon: '👤', description: 'Headshot or portrait', isInput: true },
+  { id: 'legacy_photo', label: 'Legacy Photo', icon: '📸', description: 'Historical photo of player', isInput: true },
+  // Generated content (from templates)
+  { id: 'kit', label: 'In Tenue', icon: '👕', description: 'Profile Photo + Team Tenue → Generated', isInput: false },
+  { id: 'closeup', label: 'Close-up', icon: '🔍', description: 'In Tenue → Generated image', isInput: false },
+  { id: 'intro', label: 'Short Intro', icon: '🎬', description: 'In Tenue → Generated video', isInput: false },
+  { id: 'celebration', label: 'Celebration', icon: '🎉', description: 'In Tenue → Generated video', isInput: false },
+  { id: 'legacy', label: 'Legacy in Tenue', icon: '🏆', description: 'Legacy Photo + Legacy Tenue → Generated', isInput: false },
 ] as const;
 
 /**

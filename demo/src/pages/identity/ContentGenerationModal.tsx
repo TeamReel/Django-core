@@ -5,12 +5,12 @@ import { getApiBaseUrl } from '../../utils/apiBase';
 // Asset type labels
 const ASSET_TYPE_LABELS: Record<string, string> = {
   profile_photo: 'Profile Photo',
+  legacy_photo: 'Legacy Photo',
   in_tenue: 'In Tenue',
-  full_body: 'Full Body',
   close_up: 'Close-up',
   short_intro: 'Short Intro',
   celebration: 'Celebration',
-  legacy: 'Legacy',
+  legacy: 'Legacy in Tenue',
 };
 
 export interface ContentTemplate {

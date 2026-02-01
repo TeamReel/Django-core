@@ -115,8 +115,8 @@ function readAssetsFromMembership(membership: any): MemberMediaForm {
   if (!form.celebration.url && legacyKit?.goal_celebration_url) {
     form.celebration.url = String(legacyKit.goal_celebration_url).trim();
   }
-  if (!form.legacy.url && legacyOld?.profile_photo_url) {
-    form.legacy.url = String(legacyOld.profile_photo_url).trim();
+  if (!form.legacy_photo.url && legacyOld?.profile_photo_url) {
+    form.legacy_photo.url = String(legacyOld.profile_photo_url).trim();
   }
 
   return form;
@@ -152,7 +152,7 @@ function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm): 
       goal_celebration_url: form.celebration?.url || '',
     },
     old: {
-      profile_photo_url: form.legacy?.url || '',
+      profile_photo_url: form.legacy_photo?.url || '',
       full_body_url: '',
     },
   };
