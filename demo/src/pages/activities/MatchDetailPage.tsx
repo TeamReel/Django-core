@@ -270,6 +270,7 @@ export default function HierarchyMatchDetailPage() {
       // Fetch all active templates (global, not filtered by organisation)
       const params = new URLSearchParams();
       params.append('is_active', 'true');
+      params.append('page_size', '500');  // Ensure we get all templates, not just first 50
 
       const response = await fetch(`${getApiBaseUrl()}/api/v1/content-generation/templates/?${params.toString()}`, {
         credentials: 'include',
@@ -329,13 +330,18 @@ export default function HierarchyMatchDetailPage() {
           console.log('  - t.sport_detail:', t.sport_detail);
           console.log('  - competitionSport?.parent_sport_id:', competitionSport?.parent_sport_id);
 
+          // Convert all IDs to numbers for consistent comparison
+          const templateSport = t.sport ? Number(t.sport) : undefined;
+          const templateDetailId = t.sport_detail?.id ? Number(t.sport_detail.id) : undefined;
+          const templateParentSportId = t.sport_detail?.parent_sport_id ? Number(t.sport_detail.parent_sport_id) : undefined;
+
           // Template sport matches directly (exact match)
-          if (t.sport === sportId) {
+          if (templateSport === sportId) {
             console.log('  ✓ Exact match: t.sport === sportId');
             return true;
           }
           // Template sport_detail matches by ID
-          if (t.sport_detail?.id === sportId) {
+          if (templateDetailId === sportId) {
             console.log('  ✓ Match: t.sport_detail.id === sportId');
             return true;
           }
@@ -343,7 +349,7 @@ export default function HierarchyMatchDetailPage() {
           // IMPORTANT: Match if template has a sport VARIANT and we have the CATEGORY
           // Example: Template=Football 11v11 (variant), Sport=Football (category)
           // Check if template's sport parent matches our sport
-          if (t.sport_detail?.parent_sport_id === sportId) {
+          if (templateParentSportId === sportId) {
             console.log('  ✓ Match: template variant parent matches our sport');
             return true;
           }
@@ -352,11 +358,11 @@ export default function HierarchyMatchDetailPage() {
           const competitionParentId = competitionSport?.parent_sport_id ? Number(competitionSport.parent_sport_id) : undefined;
           const orgParentId = orgSport?.parent_sport_id ? Number(orgSport.parent_sport_id) : undefined;
 
-          if (competitionParentId && t.sport === competitionParentId) {
+          if (competitionParentId && templateSport === competitionParentId) {
             console.log('  ✓ Match: we have variant, template has category');
             return true;
           }
-          if (!competitionSport && orgParentId && t.sport === orgParentId) {
+          if (!competitionSport && orgParentId && templateSport === orgParentId) {
             console.log('  ✓ Match: org variant, template has category');
             return true;
           }

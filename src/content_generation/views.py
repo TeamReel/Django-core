@@ -37,6 +37,20 @@ class ContentItemPagination(PageNumberPagination):
     max_page_size = 200
 
 
+class ContentTemplatePagination(PageNumberPagination):
+    """
+    Pagination for ContentTemplate list views.
+
+    Higher limits than default because templates are small and we need
+    to load all variants for sport filtering on the frontend.
+    Supports page_size parameter with default of 100 and max of 500.
+    """
+
+    page_size = 100
+    page_size_query_param = "page_size"
+    max_page_size = 500
+
+
 class ContentTemplateFilter(filters.FilterSet):
     """
     Filter for ContentTemplate queries.
@@ -137,6 +151,7 @@ class ContentTemplateViewSet(ContentTemplatePermissionMixin, viewsets.ModelViewS
 
     serializer_class = ContentTemplateSerializer
     filterset_class = ContentTemplateFilter
+    pagination_class = ContentTemplatePagination
 
     def get_queryset(self):
         """
