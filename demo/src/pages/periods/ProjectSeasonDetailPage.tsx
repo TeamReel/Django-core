@@ -2170,383 +2170,128 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     <Card>
                   <div style={{ padding: '16px 16px 0 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Players & Staff</h3>
+                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Season Squad</h3>
                       <Badge variant="default">{members.length} Members</Badge>
                     </div>
                     <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
-                      Season-scoped roster (filtered by period).
+                      Players and staff assigned to this season. Use the Team tab to add new members.
                     </div>
                   </div>
 
                   <div style={{ padding: '16px' }}>
+                    {membersLoading && <Alert variant="info">Loading squad…</Alert>}
+                    {membersError && <Alert variant="error">{membersError}</Alert>}
+
                     {userCanEditProject && (
-                      <div style={{ marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-                        <button
-                          type="button"
-                          className="app-action-button"
-                          onClick={() => setIsAddSquadMemberModalOpen(true)}
-                          style={ctaButtonStyle('neutral')}
-                        >
-                          Add User (advanced)
-                        </button>
-                        <div style={{ color: 'var(--app-muted-text)', fontSize: '13px' }}>
-                          Use quick Assign/Unassign below for team members.
+                      <div style={{ marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <Input
+                            value={squadSearch}
+                            onChange={(e) => setSquadSearch(e.target.value)}
+                            placeholder="Search squad"
+                            style={{ width: '220px' }}
+                          />
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              const allIds = (members || [])
+                                .map((m: any) => String(m?.id || '').trim())
+                                .filter(Boolean);
+                              const allSelected =
+                                allIds.length > 0 && allIds.every((id: string) => selectedSquadMembershipIds.has(id));
+                              setSelectedSquadMembershipIds(allSelected ? new Set() : new Set(allIds));
+                            }}
+                            disabled={bulkSubmitting || (members || []).length === 0}
+                          >
+                            {(() => {
+                              const allIds = (members || [])
+                                .map((m: any) => String(m?.id || '').trim())
+                                .filter(Boolean);
+                              const allSelected =
+                                allIds.length > 0 && allIds.every((id: string) => selectedSquadMembershipIds.has(id));
+                              return allSelected ? 'Unselect all' : 'Select all';
+                            })()}
+                          </Button>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            className="app-action-button"
+                            onClick={() => setIsAddSquadMemberModalOpen(true)}
+                            style={ctaButtonStyle('neutral')}
+                          >
+                            Add User (advanced)
+                          </button>
+                          <button
+                            type="button"
+                            className="app-action-button"
+                            disabled={bulkSubmitting || selectedSquadMembershipIds.size === 0}
+                            onClick={async () => {
+                              const ids = Array.from(selectedSquadMembershipIds.values()).filter(Boolean);
+                              await unassignMembershipsFromSeasonSquad(ids);
+                            }}
+                            style={ctaButtonStyle('danger')}
+                            title="Unassign selected users from the squad"
+                          >
+                            Unassign ({selectedSquadMembershipIds.size})
+                          </button>
                         </div>
                       </div>
                     )}
 
-                    {membersLoading && <Alert variant="info">Loading squad…</Alert>}
-                    {membersError && <Alert variant="error">{membersError}</Alert>}
-
-                    {teamRosterLoading && <Alert variant="info">Loading team roster…</Alert>}
-                    {teamRosterError && <Alert variant="error">{teamRosterError}</Alert>}
-
                     {userCanEditProject ? (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                            <div style={{ display: 'grid', gap: 2 }}>
-                              <div style={{ fontWeight: 600 }}>Not in squad (team members)</div>
-                              <div style={{ fontSize: 13, color: 'var(--app-muted-text)' }}>
-                                Select users that belong to the team and assign them to this season squad.
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              className="app-action-button"
-                              disabled={bulkSubmitting || selectedEligibleUserIds.size === 0}
-                              onClick={async () => {
-                                const userIds = Array.from(selectedEligibleUserIds.values()).filter(Boolean);
-                                await assignUsersToSeasonSquad(userIds);
-                              }}
-                              style={ctaButtonStyle('success')}
-                              title="Assign selected users to the squad"
-                            >
-                              Assign ({selectedEligibleUserIds.size})
-                            </button>
-                          </div>
-
-                          <div style={{ marginBottom: '8px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                            <Input
-                              value={eligibleSearch}
-                              onChange={(e) => setEligibleSearch(e.target.value)}
-                              placeholder="Search team members"
-                              style={{ width: '280px' }}
-                            />
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => {
-                                const allIds = eligibleTeamMembers.map((m: any) => getUserId(m)).filter(Boolean);
-                                const allSelected = allIds.length > 0 && allIds.every((id: string) => selectedEligibleUserIds.has(id));
-                                setSelectedEligibleUserIds(allSelected ? new Set() : new Set(allIds));
-                              }}
-                              disabled={bulkSubmitting || eligibleTeamMembers.length === 0}
-                            >
-                              {(() => {
-                                const allIds = eligibleTeamMembers.map((m: any) => getUserId(m)).filter(Boolean);
-                                const allSelected = allIds.length > 0 && allIds.every((id: string) => selectedEligibleUserIds.has(id));
-                                return allSelected ? 'Unselect all' : 'Select all';
-                              })()}
-                            </Button>
-                          </div>
-
-                          {eligibleTeamMembers.length === 0 ? (
-                            <Alert variant="info">Everyone who belongs to the team is already in this season squad.</Alert>
-                          ) : (
-                            <div className="overflow-x-auto">
-                              <Table style={compactTableStyle}>
-                                <thead>
-                                  <tr>
-                                    <th style={{ ...compactThStyle, width: '44px' }}></th>
-                                    <th style={compactThStyle}>Name</th>
-                                    <th style={compactThStyle}>Email</th>
-                                    <th style={compactThStyle}>Access</th>
-                                    <th style={compactThStyle}>Functional</th>
-                                    <th style={{ ...compactThStyle, width: '120px' }} className="text-right">
-                                      Action
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {eligibleTeamMembers.map((m: any) => {
-                                    const userId = getUserId(m);
-                                    const { name, email } = getUserLabel(m);
-                                    const checked = Boolean(userId && selectedEligibleUserIds.has(userId));
-                                    const role = getBestRoleForUser(userId);
-                                    const functionalRoles = getFunctionalRolesForUser(userId);
-                                    return (
-                                      <tr key={`eligible:${userId || email}`}>
-                                        <td style={compactTdStyle}>
-                                          <input
-                                            type="checkbox"
-                                            checked={checked}
-                                            disabled={!userId || bulkSubmitting}
-                                            onChange={() => {
-                                              if (!userId) return;
-                                              toggleEligibleUser(userId);
-                                            }}
-                                          />
-                                        </td>
-                                        <td style={compactTextTdStyle}>{name}</td>
-                                        <td style={compactTextTdStyle}>{email}</td>
-                                        <td style={compactTdStyle}>
-                                          <Badge variant="default">{role}</Badge>
-                                        </td>
-                                        <td style={compactTdStyle}>
-                                          {functionalRoles.length ? (
-                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                              {functionalRoles.map((r) => (
-                                                <Badge key={r} variant="default">
-                                                  {r}
-                                                </Badge>
-                                              ))}
-                                            </div>
-                                          ) : (
-                                            '"”'
-                                          )}
-                                        </td>
-                                        <td style={compactTdStyle} className="text-right">
-                                          <div style={compactActionsStyle}>
-                                            <button
-                                              type="button"
-                                              className="app-action-button"
-                                              disabled={!userId || bulkSubmitting}
-                                              onClick={async () => {
-                                                if (!userId) return;
-                                                await assignUsersToSeasonSquad([userId]);
-                                              }}
-                                              style={tableActionButtonStyle('success')}
-                                              title="Assign this user to the season squad"
-                                            >
-                                              Assign
-                                            </button>
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </Table>
-                            </div>
-                          )}
-                        </div>
-
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                            <div style={{ display: 'grid', gap: 2 }}>
-                              <div style={{ fontWeight: 600 }}>In squad</div>
-                              <div style={{ fontSize: 13, color: 'var(--app-muted-text)' }}>
-                                Select squad members and unassign them from this season.
-                              </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                              <Input
-                                value={squadSearch}
-                                onChange={(e) => setSquadSearch(e.target.value)}
-                                placeholder="Search squad"
-                                style={{ width: '220px' }}
-                              />
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => {
-                                  const allIds = (members || [])
-                                    .map((m: any) => String(m?.id || '').trim())
-                                    .filter(Boolean);
-                                  const allSelected =
-                                    allIds.length > 0 && allIds.every((id: string) => selectedSquadMembershipIds.has(id));
-                                  setSelectedSquadMembershipIds(allSelected ? new Set() : new Set(allIds));
-                                }}
-                                disabled={bulkSubmitting || (members || []).length === 0}
-                              >
-                                {(() => {
-                                  const allIds = (members || [])
-                                    .map((m: any) => String(m?.id || '').trim())
-                                    .filter(Boolean);
-                                  const allSelected =
-                                    allIds.length > 0 && allIds.every((id: string) => selectedSquadMembershipIds.has(id));
-                                  return allSelected ? 'Unselect all' : 'Select all';
-                                })()}
-                              </Button>
-
-                              <button
-                                type="button"
-                                className="app-action-button"
-                                disabled={bulkSubmitting || selectedSquadMembershipIds.size === 0}
-                                onClick={async () => {
-                                  const ids = Array.from(selectedSquadMembershipIds.values()).filter(Boolean);
-                                  await unassignMembershipsFromSeasonSquad(ids);
-                                }}
-                                style={ctaButtonStyle('danger')}
-                                title="Unassign selected users from the squad"
-                              >
-                                Unassign ({selectedSquadMembershipIds.size})
-                              </button>
-                            </div>
-                          </div>
-
-                          {!membersLoading && !membersError && members.length === 0 ? (
-                            <Alert variant="info">No members found for this season.</Alert>
-                          ) : !membersLoading && !membersError ? (
-                            <div className="overflow-x-auto">
-                              <Table style={compactTableStyle}>
-                                <thead>
-                                  <tr>
-                                    <th style={{ ...compactThStyle, width: '44px' }}></th>
-                                    <th style={compactThStyle}>Name</th>
-                                    <th style={compactThStyle}>Email</th>
-                                    <th style={compactThStyle}>Access</th>
-                                    <th style={compactThStyle}>Functional</th>
-                                    <th style={compactThStyle}>Position</th>
-                                    <th style={compactThStyle}>#</th>
-                                    <th style={{ ...compactThStyle, width: '180px' }} className="text-right">
-                                      Action
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {visibleSquadMembers.map((m: any) => {
-                                    const memberUser = m.user || m;
-                                    const name =
-                                      memberUser.name ||
-                                      `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
-                                      memberUser.email ||
-                                      '"”';
-
-                                    const email = memberUser.email || '"”';
-                                    const role = normalizeAccessRole(m.role || 'viewer');
-                                    const functionalRoles = getFunctionalRolesFromMembership(m);
-                                    const position = m.metadata?.position || '"”';
-                                    const shirtNumber = m.metadata?.shirt_number ?? '';
-                                    const membershipId = String(m.id || '').trim();
-                                    const checked = Boolean(membershipId && selectedSquadMembershipIds.has(membershipId));
-                                    const href = memberDetailHref(membershipId);
-
-                                    return (
-                                      <tr key={membershipId}>
-                                        <td style={compactTdStyle}>
-                                          <input
-                                            type="checkbox"
-                                            checked={checked}
-                                            disabled={!membershipId || bulkSubmitting}
-                                            onChange={() => {
-                                              if (!membershipId) return;
-                                              toggleSquadMembership(membershipId);
-                                            }}
-                                          />
-                                        </td>
-                                        <td style={compactTextTdStyle}>
-                                          {href ? (
-                                            <Link
-                                              to={href}
-                                              className="hover:underline"
-                                              style={{ textDecoration: 'none', backgroundColor: 'transparent', color: '#60a5fa' }}
-                                            >
-                                              {name}
-                                            </Link>
-                                          ) : (
-                                            name
-                                          )}
-                                        </td>
-                                        <td style={compactTextTdStyle}>{email}</td>
-                                        <td style={compactTdStyle}>
-                                          <Badge variant={role === 'admin' ? 'warning' : 'default'}>
-                                            {role}
-                                          </Badge>
-                                        </td>
-                                        <td style={compactTdStyle}>
-                                          {functionalRoles.length ? (
-                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                              {functionalRoles.map((r: string) => (
-                                                <Badge key={r} variant="default">
-                                                  {r}
-                                                </Badge>
-                                              ))}
-                                            </div>
-                                          ) : (
-                                            '"”'
-                                          )}
-                                        </td>
-                                        <td style={compactTextTdStyle}>{position}</td>
-                                        <td style={compactTdStyle}>{shirtNumber || '"”'}</td>
-                                        <td style={compactTdStyle} className="text-right">
-                                          <div style={compactActionsStyle}>
-                                            <button
-                                              type="button"
-                                              className="app-action-button"
-                                              disabled={!membershipId || bulkSubmitting}
-                                              onClick={() => {
-                                                if (!membershipId) return;
-                                                setSelectedEditMember(m);
-                                                setIsEditMemberModalOpen(true);
-                                              }}
-                                              style={tableActionButtonStyle('primary')}
-                                              title="Edit member details"
-                                            >
-                                              Edit
-                                            </button>
-                                            <button
-                                              type="button"
-                                              className="app-action-button"
-                                              disabled={!membershipId || bulkSubmitting}
-                                              onClick={async () => {
-                                                if (!membershipId) return;
-                                                await unassignMembershipsFromSeasonSquad([membershipId]);
-                                              }}
-                                              style={tableActionButtonStyle('danger')}
-                                              title="Unassign this user from the season squad"
-                                            >
-                                              Unassign
-                                            </button>
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </Table>
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
-                    ) : (
-                      // Read-only view (no bulk actions)
                       <>
                         {!membersLoading && !membersError && members.length === 0 ? (
-                          <Alert variant="info">No members found for this season.</Alert>
+                          <Alert variant="info">No members in this season squad. Go to the Team tab to assign team members.</Alert>
                         ) : !membersLoading && !membersError ? (
                           <div className="overflow-x-auto">
                             <Table style={compactTableStyle}>
                               <thead>
                                 <tr>
+                                  <th style={{ ...compactThStyle, width: '44px' }}></th>
                                   <th style={compactThStyle}>Name</th>
                                   <th style={compactThStyle}>Email</th>
                                   <th style={compactThStyle}>Access</th>
                                   <th style={compactThStyle}>Functional</th>
                                   <th style={compactThStyle}>Position</th>
                                   <th style={compactThStyle}>#</th>
+                                  <th style={{ ...compactThStyle, width: '180px' }} className="text-right">
+                                    Action
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {members.map((m: any) => {
+                                {visibleSquadMembers.map((m: any) => {
                                   const memberUser = m.user || m;
                                   const name =
                                     memberUser.name ||
                                     `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
                                     memberUser.email ||
-                                    '"”';
+                                    '—';
 
-                                  const email = memberUser.email || '"”';
+                                  const email = memberUser.email || '—';
                                   const role = normalizeAccessRole(m.role || 'viewer');
                                   const functionalRoles = getFunctionalRolesFromMembership(m);
-                                  const position = m.metadata?.position || '"”';
+                                  const position = m.metadata?.position || '—';
                                   const shirtNumber = m.metadata?.shirt_number ?? '';
                                   const membershipId = String(m.id || '').trim();
+                                  const checked = Boolean(membershipId && selectedSquadMembershipIds.has(membershipId));
                                   const href = memberDetailHref(membershipId);
 
                                   return (
-                                    <tr key={String(m.id || email)}>
+                                    <tr key={membershipId}>
+                                      <td style={compactTdStyle}>
+                                        <input
+                                          type="checkbox"
+                                          checked={checked}
+                                          disabled={!membershipId || bulkSubmitting}
+                                          onChange={() => {
+                                            if (!membershipId) return;
+                                            toggleSquadMembership(membershipId);
+                                          }}
+                                        />
+                                      </td>
                                       <td style={compactTextTdStyle}>
                                         {href ? (
                                           <Link
@@ -2576,11 +2321,120 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             ))}
                                           </div>
                                         ) : (
-                                          '"”'
+                                          '—'
                                         )}
                                       </td>
                                       <td style={compactTextTdStyle}>{position}</td>
-                                      <td style={compactTdStyle}>{shirtNumber || '"”'}</td>
+                                      <td style={compactTdStyle}>{shirtNumber || '—'}</td>
+                                      <td style={compactTdStyle} className="text-right">
+                                        <div style={compactActionsStyle}>
+                                          <button
+                                            type="button"
+                                            className="app-action-button"
+                                            disabled={!membershipId || bulkSubmitting}
+                                            onClick={() => {
+                                              if (!membershipId) return;
+                                              setSelectedEditMember(m);
+                                              setIsEditMemberModalOpen(true);
+                                            }}
+                                            style={tableActionButtonStyle('primary')}
+                                            title="Edit member details"
+                                          >
+                                            Edit
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="app-action-button"
+                                            disabled={!membershipId || bulkSubmitting}
+                                            onClick={async () => {
+                                              if (!membershipId) return;
+                                              await unassignMembershipsFromSeasonSquad([membershipId]);
+                                            }}
+                                            style={tableActionButtonStyle('danger')}
+                                            title="Unassign this user from the season squad"
+                                          >
+                                            Unassign
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </Table>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : (
+                      // Read-only view
+                      <>
+                        {!membersLoading && !membersError && members.length === 0 ? (
+                          <Alert variant="info">No members found for this season.</Alert>
+                        ) : !membersLoading && !membersError ? (
+                          <div className="overflow-x-auto">
+                            <Table style={compactTableStyle}>
+                              <thead>
+                                <tr>
+                                  <th style={compactThStyle}>Name</th>
+                                  <th style={compactThStyle}>Email</th>
+                                  <th style={compactThStyle}>Access</th>
+                                  <th style={compactThStyle}>Functional</th>
+                                  <th style={compactThStyle}>Position</th>
+                                  <th style={compactThStyle}>#</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {members.map((m: any) => {
+                                  const memberUser = m.user || m;
+                                  const name =
+                                    memberUser.name ||
+                                    `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
+                                    memberUser.email ||
+                                    '—';
+
+                                  const email = memberUser.email || '—';
+                                  const role = normalizeAccessRole(m.role || 'viewer');
+                                  const functionalRoles = getFunctionalRolesFromMembership(m);
+                                  const position = m.metadata?.position || '—';
+                                  const shirtNumber = m.metadata?.shirt_number ?? '';
+                                  const href = memberDetailHref(String(m.id || '').trim());
+
+                                  return (
+                                    <tr key={String(m.id || memberUser.email)}>
+                                      <td style={compactTextTdStyle}>
+                                        {href ? (
+                                          <Link
+                                            to={href}
+                                            className="hover:underline"
+                                            style={{ textDecoration: 'none', backgroundColor: 'transparent', color: '#60a5fa' }}
+                                          >
+                                            {name}
+                                          </Link>
+                                        ) : (
+                                          name
+                                        )}
+                                      </td>
+                                      <td style={compactTextTdStyle}>{email}</td>
+                                      <td style={compactTdStyle}>
+                                        <Badge variant={role === 'admin' ? 'warning' : 'default'}>
+                                          {role}
+                                        </Badge>
+                                      </td>
+                                      <td style={compactTdStyle}>
+                                        {functionalRoles.length ? (
+                                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                            {functionalRoles.map((r: string) => (
+                                              <Badge key={r} variant="default">
+                                                {r}
+                                              </Badge>
+                                            ))}
+                                          </div>
+                                        ) : (
+                                          '—'
+                                        )}
+                                      </td>
+                                      <td style={compactTextTdStyle}>{position}</td>
+                                      <td style={compactTdStyle}>{shirtNumber || '—'}</td>
                                     </tr>
                                   );
                                 })}
