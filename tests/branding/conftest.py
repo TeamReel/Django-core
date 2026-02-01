@@ -2,6 +2,7 @@
 
 import pytest
 from django.contrib.auth import get_user_model
+from files.models import FileAsset
 from organisations.models import Membership, Organisation
 from projects.models import Project, ProjectMembership
 from rest_framework.test import APIClient
@@ -157,7 +158,46 @@ def design_token_factory(db, brand_profile_factory):
 
 
 @pytest.fixture
-def brand_asset_factory(db, brand_profile_factory):
+def file_asset_factory(db, organisation_factory, user_factory):
+    """Factory for creating file assets for brand assets."""
+
+    def _create_file(
+        organization=None,
+        uploaded_by=None,
+        original_name="test-brand-asset.png",
+        storage_path=None,
+        file_size=1024,
+        mime_type="image/png",
+        is_public=False,
+        **kwargs,
+    ):
+        if organization is None:
+            organization = organisation_factory()
+        if uploaded_by is None:
+            uploaded_by = user_factory()
+
+        # Generate unique storage path if not provided
+        if storage_path is None:
+            import uuid
+
+            storage_path = f"brand-assets/{uuid.uuid4()}/{original_name}"
+
+        return FileAsset.objects.create(
+            organization=organization,
+            uploaded_by=uploaded_by,
+            original_name=original_name,
+            storage_path=storage_path,
+            file_size=file_size,
+            mime_type=mime_type,
+            is_public=is_public,
+            **kwargs,
+        )
+
+    return _create_file
+
+
+@pytest.fixture
+def brand_asset_factory(db, brand_profile_factory, file_asset_factory):
     """Factory for creating brand assets."""
 
     def _create_asset(
@@ -171,8 +211,11 @@ def brand_asset_factory(db, brand_profile_factory):
         if profile is None:
             profile = brand_profile_factory()
 
-        # Mock B22 File - use None for now
-        # In real tests, you'd create a File object
+        # Create FileAsset if not provided
+        if file is None:
+            # Get organization from profile
+            org = profile.organisation if profile.organisation else None
+            file = file_asset_factory(organization=org)
 
         return BrandAsset.objects.create(
             profile=profile,

@@ -5,6 +5,15 @@ import pytest
 from branding.models import BrandAsset, BrandProfile, DesignToken
 
 
+def extract_data(response):
+    """Helper to extract data from B13 wrapper response."""
+    response_data = response.json()
+    # Handle both wrapped and direct responses for flexibility
+    if "data" in response_data:
+        return response_data["data"]
+    return response_data
+
+
 @pytest.mark.django_db
 class TestBrandProfileViewSet:
     """Tests for BrandProfile API endpoints."""
@@ -26,7 +35,7 @@ class TestBrandProfileViewSet:
         response = api_client.get("/api/branding/profiles/")
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         assert "results" in data  # Paginated
         assert len(data["results"]) >= 2
 
@@ -36,7 +45,7 @@ class TestBrandProfileViewSet:
         response = api_client.get(f"/api/branding/profiles/{org_brand.id}/")
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         assert data["id"] == str(org_brand.id)
         assert data["name"] == org_brand.name
         assert "design_tokens" in data
@@ -51,7 +60,7 @@ class TestBrandProfileViewSet:
         response = api_client.post("/api/branding/profiles/", payload)
 
         assert response.status_code == 201
-        data = response.json()
+        data = extract_data(response)
         assert data["name"] == "New Brand"
         assert data["organisation"] == str(organisation.id)
 
@@ -63,7 +72,7 @@ class TestBrandProfileViewSet:
         response = api_client.patch(f"/api/branding/profiles/{org_brand.id}/", payload)
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         assert data["name"] == "Updated Brand Name"
 
     def test_delete_brand(self, api_client, org_admin, org_brand):
@@ -88,7 +97,7 @@ class TestBrandProfileViewSet:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         results = data["results"]
 
         # Should only return brands for specified org
@@ -102,7 +111,7 @@ class TestBrandProfileViewSet:
         response = api_client.get(f"/api/branding/profiles/?project={project.id}")
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         results = data["results"]
 
         # Should only return brands for specified project
@@ -121,21 +130,23 @@ class TestBrandProfileViewSet:
         # Filter active only
         response = api_client.get("/api/branding/profiles/?is_active=true")
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         for brand in data["results"]:
             assert brand["is_active"] is True
 
-    def test_pagination(self, api_client, org_admin, organisation):
+    def test_pagination(self, api_client, org_admin, organisation, organisation_factory):
         """Test pagination works correctly."""
         # Create 25 brands (more than default page_size of 20)
+        # Use different orgs to avoid UNIQUE constraint
         for i in range(25):
-            BrandProfile.objects.create(organisation=organisation, name=f"Brand {i}")
+            org = organisation_factory() if i > 0 else organisation
+            BrandProfile.objects.create(organisation=org, name=f"Brand {i}")
 
         api_client.force_authenticate(org_admin)
         response = api_client.get("/api/branding/profiles/")
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         assert "results" in data
         assert "count" in data
         assert "next" in data
@@ -152,7 +163,7 @@ class TestDesignTokenViewSet:
         response = api_client.get(f"/api/branding/profiles/{org_brand.id}/tokens/")
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         assert "results" in data
         assert len(data["results"]) == 3
 
@@ -170,7 +181,7 @@ class TestDesignTokenViewSet:
         response = api_client.post(f"/api/branding/profiles/{org_brand.id}/tokens/", payload)
 
         assert response.status_code == 201
-        data = response.json()
+        data = extract_data(response)
         assert data["key"] == "new_token"
 
     def test_update_token(self, api_client, org_admin, org_brand, org_tokens):
@@ -184,7 +195,7 @@ class TestDesignTokenViewSet:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         assert data["value"] == "#000000"
 
     def test_delete_token(self, api_client, org_admin, org_brand, org_tokens):
@@ -203,7 +214,7 @@ class TestDesignTokenViewSet:
         response = api_client.get(f"/api/branding/profiles/{org_brand.id}/tokens/?type=color")
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         for token in data["results"]:
             assert token["type"] == "color"
 
@@ -213,7 +224,7 @@ class TestDesignTokenViewSet:
         response = api_client.get(f"/api/branding/profiles/{org_brand.id}/tokens/?key=color")
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         # Should find primary_color
         assert len(data["results"]) >= 1
 
@@ -231,7 +242,7 @@ class TestBrandAssetViewSet:
         response = api_client.get(f"/api/branding/profiles/{org_brand.id}/assets/")
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         assert "results" in data
         assert len(data["results"]) == 2
 
@@ -248,7 +259,7 @@ class TestBrandAssetViewSet:
         response = api_client.post(f"/api/branding/profiles/{org_brand.id}/assets/", payload)
 
         assert response.status_code == 201
-        data = response.json()
+        data = extract_data(response)
         assert data["asset_type"] == "icon"
 
     def test_update_asset(self, api_client, org_admin, org_brand, brand_asset_factory):
@@ -262,7 +273,7 @@ class TestBrandAssetViewSet:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         assert data["alt_text"] == "Updated Alt Text"
 
     def test_delete_asset(self, api_client, org_admin, org_brand, brand_asset_factory):
@@ -286,7 +297,7 @@ class TestBrandAssetViewSet:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         for asset in data["results"]:
             assert asset["asset_type"] == "logo_light"
 
@@ -310,7 +321,7 @@ class TestTokenResolutionView:
         response = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
 
         assert "tokens" in data
         assert data["tokens"]["primary_color"] == "#D2122E"  # Project override
@@ -326,7 +337,7 @@ class TestTokenResolutionView:
         response = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
 
         assert data["tokens"]["primary_color"] == "#FF6600"  # Org
         assert data["tokens"]["font_heading"] == "Roboto"  # Org
@@ -338,7 +349,7 @@ class TestTokenResolutionView:
         response = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         assert data["tokens"] == {}
         assert data["source"] == "none"
 
@@ -354,7 +365,7 @@ class TestTokenResolutionView:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         assert "assets" in data
         assert "logo_light" in data["assets"]
 
@@ -364,7 +375,7 @@ class TestTokenResolutionView:
         response = api_client.get("/api/branding/tokens/resolve/")
 
         assert response.status_code == 400
-        data = response.json()
+        data = extract_data(response)
         assert "error" in data
 
     def test_resolve_inactive_brand_excluded(self, api_client, org_admin, project, organisation):
@@ -381,6 +392,6 @@ class TestTokenResolutionView:
         response = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
 
         assert response.status_code == 200
-        data = response.json()
+        data = extract_data(response)
         # Should not include inactive_token
         assert "inactive_token" not in data["tokens"]

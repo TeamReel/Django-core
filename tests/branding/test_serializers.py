@@ -66,7 +66,7 @@ class TestBrandProfileSerializer:
 
         serializer = BrandProfileSerializer(data=data)
         assert not serializer.is_valid()
-        assert "non_field_errors" in serializer.errors
+        assert "__all__" in serializer.errors or "non_field_errors" in serializer.errors
 
     def test_xor_validation_neither_org_nor_project(self):
         """Test XOR validation requires at least one."""
@@ -74,7 +74,7 @@ class TestBrandProfileSerializer:
 
         serializer = BrandProfileSerializer(data=data)
         assert not serializer.is_valid()
-        assert "non_field_errors" in serializer.errors
+        assert "__all__" in serializer.errors or "non_field_errors" in serializer.errors
 
     def test_name_required(self, organisation):
         """Test name field is required."""

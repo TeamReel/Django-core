@@ -3,6 +3,14 @@
 import pytest
 
 
+def extract_data(response):
+    """Helper to extract data from B13 wrapper response."""
+    response_data = response.json()
+    if "data" in response_data:
+        return response_data["data"]
+    return response_data
+
+
 @pytest.mark.django_db
 class TestBrandProfilePermissions:
     """Tests for BrandProfile permission cascade logic."""

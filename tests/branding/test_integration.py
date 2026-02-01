@@ -8,6 +8,14 @@ import pytest
 from branding.models import BrandProfile, DesignToken
 
 
+def extract_data(response):
+    """Helper to extract data from B13 wrapper response."""
+    response_data = response.json()
+    if "data" in response_data:
+        return response_data["data"]
+    return response_data
+
+
 @pytest.mark.django_db
 class TestUserStory1OrgBrandSetup:
     """US1: As an org admin, I set up the org brand identity."""
@@ -26,7 +34,7 @@ class TestUserStory1OrgBrandSetup:
             },
         )
         assert brand_response.status_code == 201
-        brand_id = brand_response.json()["id"]
+        brand_id = extract_data(brand_response)["id"]
 
         # Step 2: Add design tokens
         token_data = [
@@ -84,7 +92,7 @@ class TestUserStory2ProjectOverride:
             },
         )
         assert brand_response.status_code == 201
-        project_brand_id = brand_response.json()["id"]
+        project_brand_id = extract_data(brand_response)["id"]
 
         # Step 2: Override primary color only
         override_response = api_client.post(
@@ -151,7 +159,7 @@ class TestUserStory3ConsumerApp:
         )
         assert response.status_code == 200
 
-        data = response.json()
+        data = extract_data(response)
 
         # Verify merged tokens
         assert "tokens" in data
@@ -235,7 +243,7 @@ class TestUserStory5InactiveBrands:
         # Verify brand is initially active
         resolve_active = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
         assert resolve_active.status_code == 200
-        assert len(resolve_active.json()["tokens"]) == 3
+        assert len(extract_data(resolve_active)["tokens"]) == 3
 
         # Deactivate brand
         deactivate_response = api_client.patch(
@@ -252,8 +260,8 @@ class TestUserStory5InactiveBrands:
         # Verify resolution excludes inactive brand
         resolve_inactive = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
         assert resolve_inactive.status_code == 200
-        assert resolve_inactive.json()["tokens"] == {}
-        assert resolve_inactive.json()["source"] == "none"
+        assert extract_data(resolve_inactive)["tokens"] == {}
+        assert extract_data(resolve_inactive)["source"] == "none"
 
         # Verify can reactivate
         reactivate_response = api_client.patch(
@@ -264,7 +272,7 @@ class TestUserStory5InactiveBrands:
 
         # Tokens should be available again
         resolve_reactivated = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
-        assert len(resolve_reactivated.json()["tokens"]) == 3
+        assert len(extract_data(resolve_reactivated)["tokens"]) == 3
 
 
 @pytest.mark.django_db
@@ -342,5 +350,5 @@ class TestEdgeCases:
         response = api_client.get(f"/api/branding/tokens/resolve/?project={child.id}")
         assert response.status_code == 200
         # Should not have parent_token (unless org has it)
-        tokens = response.json()["tokens"]
+        tokens = extract_data(response)["tokens"]
         # This validates current behavior: no project-to-project inheritance

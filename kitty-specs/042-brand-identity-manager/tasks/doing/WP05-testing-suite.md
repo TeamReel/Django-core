@@ -2,11 +2,11 @@
 work_package_id: WP05
 title: Testing Suite
 priority: P2
-lane: planned
-agent: claude
-shell_pid: 18452
+lane: "doing"
+agent: "claude"
+shell_pid: "18452"
 assignee: claude
-review_status: has_feedback
+review_status: acknowledged
 reviewed_by: claude-reviewer
 subtasks:
   - T029
@@ -675,3 +675,7 @@ Target: >90% coverage. Address gaps.
 ```bash
 pytest tests/branding/ -v --cov=src.branding --cov-report=term-missing
 ```
+
+## Activity Log
+
+- 2026-02-01T17:04:32Z – claude – shell_pid=18452 – lane=doing – Addressing review feedback - fixing test infrastructure

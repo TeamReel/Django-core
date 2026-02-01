@@ -5,6 +5,7 @@ design tokens, and brand assets, plus the critical token resolution endpoint.
 """
 from rest_framework import status, viewsets
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -174,6 +175,8 @@ class TokenResolutionView(APIView):
         }
     """
 
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         """Resolve and return merged brand tokens."""
         project_id = request.query_params.get("project")
@@ -191,7 +194,7 @@ class TokenResolutionView(APIView):
 
         # Get project brand (if applicable)
         if project_id:
-            from src.projects.models import Project
+            from projects.models import Project
 
             try:
                 project = Project.objects.select_related("organisation").get(id=project_id)
