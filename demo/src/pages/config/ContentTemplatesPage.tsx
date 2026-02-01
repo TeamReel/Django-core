@@ -324,13 +324,13 @@ export default function ContentTemplatesPage() {
 
       try {
         const [templatesRes, sportsRes, formationsRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/content-generation/templates/`, {
+          fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?page_size=500`, {
             credentials: 'include',
           }),
-          fetch(`${apiBaseUrl}/api/v1/sports/`, {
+          fetch(`${apiBaseUrl}/api/v1/sports/?page_size=100`, {
             credentials: 'include',
           }),
-          fetch(`${apiBaseUrl}/api/v1/formations/`, {
+          fetch(`${apiBaseUrl}/api/v1/formations/?page_size=100`, {
             credentials: 'include',
           }),
         ]);
