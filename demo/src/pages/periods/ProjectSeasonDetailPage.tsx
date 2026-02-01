@@ -718,8 +718,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       u?.name ||
       `${u?.first_name || ''} ${u?.last_name || ''}`.trim() ||
       String(u?.email || '').trim() ||
-      'â€”';
-    const email = String(u?.email || '').trim() || 'â€”';
+      '"”';
+    const email = String(u?.email || '').trim() || '"”';
     return { name, email };
   };
 
@@ -1314,8 +1314,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             { id: 'competitions', label: 'Competitions' },
             { id: 'matches', label: 'Matches' },
             { id: 'squad', label: 'Squad' },
+            { id: 'team', label: 'Team' },
             { id: 'media', label: 'Media' },
             { id: 'content', label: 'Content' },
+            { id: 'transactions', label: 'Transactions' },
           ]}
           activeTab={activeTab}
         />
@@ -1334,8 +1336,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     <Card style={{ padding: '16px' }}>
                       <div className="text-sm font-medium text-gray-500">Dates</div>
                       <div className="text-sm font-semibold mt-1">
-                        {season?.start_date ? new Date(season.start_date).toLocaleDateString() : 'â€”'} â€“{' '}
-                        {season?.end_date ? new Date(season.end_date).toLocaleDateString() : 'â€”'}
+                        {season?.start_date ? new Date(season.start_date).toLocaleDateString() : '"”'} "“{' '}
+                        {season?.end_date ? new Date(season.end_date).toLocaleDateString() : '"”'}
                       </div>
                     </Card>
                     <Card style={{ padding: '16px' }}>
@@ -1363,7 +1365,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           </Button>
                         </div>
                         {competitionsLoading ? (
-                          <div className="text-sm text-gray-500 py-4 text-center">Loading competitionsâ€¦</div>
+                          <div className="text-sm text-gray-500 py-4 text-center">Loading competitions…</div>
                         ) : competitions.length === 0 ? (
                           <div className="text-sm text-gray-500 py-4 text-center">No competitions in this season.</div>
                         ) : (
@@ -1400,7 +1402,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                           <span style={{ fontSize: '12px' }}>{competition.sport.name}</span>
                                         </span>
                                       ) : (
-                                        <span style={{ color: 'var(--app-muted-text)' }}>â€”</span>
+                                        <span style={{ color: 'var(--app-muted-text)' }}>"”</span>
                                       )}
                                     </td>
                                     <td style={compactTdStyle}>
@@ -1576,7 +1578,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             style={{ width: '100%', justifyContent: 'flex-start' }}
                             onClick={() => navigateToTab('media')}
                           >
-                            ðŸ“¸ Media Matrix
+                             Media Matrix
                           </Button>
                         </div>
                       </Card>
@@ -1693,7 +1695,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               </div>
                             )}
                             {!hasTemplate && (
-                              <div style={{ fontSize: '9px', color: 'var(--app-muted-text)', marginTop: '4px' }}>â€”</div>
+                              <div style={{ fontSize: '9px', color: 'var(--app-muted-text)', marginTop: '4px' }}>"”</div>
                             )}
                           </div>
                         );
@@ -1744,9 +1746,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         </div>
 
                         <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          <Badge variant="default">Season: {season?.name || 'â€”'}</Badge>
+                          <Badge variant="default">Season: {season?.name || '"”'}</Badge>
                           <Badge variant="default">Competitions: {competitions.length}</Badge>
-                          <Badge variant="default">Matches: {matchesLoading ? 'Loadingâ€¦' : String(matches.length)}</Badge>
+                          <Badge variant="default">Matches: {matchesLoading ? 'Loading…' : String(matches.length)}</Badge>
                           <Badge variant="default">Players: {thenNowSelectedUserIds.size}/5</Badge>
                         </div>
 
@@ -1755,7 +1757,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             <div>
                               <div style={{ fontWeight: 800, marginBottom: 6 }}>Pick players</div>
                               <div style={{ opacity: 0.75, fontSize: 13 }}>
-                                Select 1â€“5 players from this season squad. â€œThenâ€ and â€œNowâ€ photos will come from player assets
+                                Select 1"“5 players from this season squad. "Then" and "Now" photos will come from player assets
                                 (later: Media Day).
                               </div>
                             </div>
@@ -1787,7 +1789,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             <Input
                               value={thenNowSearch}
                               onChange={(e) => setThenNowSearch((e.target as any).value)}
-                              placeholder="Search playersâ€¦"
+                              placeholder="Search players…"
                             />
                           </div>
 
@@ -1803,7 +1805,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             }}
                           >
                             {membersLoading ? (
-                              <div style={{ opacity: 0.75, fontSize: 13 }}>Loading squadâ€¦</div>
+                              <div style={{ opacity: 0.75, fontSize: 13 }}>Loading squad…</div>
                             ) : membersError ? (
                               <div style={{ color: 'var(--app-danger, #d32f2f)', fontSize: 13 }}>{membersError}</div>
                             ) : thenNowCandidates.length === 0 ? (
@@ -1815,7 +1817,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   const roles = (p.roles || []).filter(Boolean).slice(0, 3);
                                   const subtitleParts = [p.position ? `Pos: ${p.position}` : '', p.shirt ? `#${p.shirt}` : '']
                                     .filter(Boolean)
-                                    .join(' â€¢ ');
+                                    .join(' "¢ ');
                                   return (
                                     <label
                                       key={p.userId}
@@ -1900,7 +1902,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       <Input
                         value={hierarchySearch}
                         onChange={(e) => setHierarchySearch(e.target.value)}
-                        placeholder="Search competitions/matchesâ€¦"
+                        placeholder="Search competitions/matches…"
                       />
                       {userCanEditProject && (
                         <>
@@ -2070,7 +2072,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                                 <div style={{ padding: '10px 12px' }}>
                                   {matchesLoading ? (
-                                    <div className="text-sm text-gray-500 py-2">Loading matchesâ€¦</div>
+                                    <div className="text-sm text-gray-500 py-2">Loading matches…</div>
                                   ) : visibleMatches.length === 0 ? (
                                     <div className="text-sm text-gray-500 py-2">No matches.</div>
                                   ) : (
@@ -2104,7 +2106,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                                 {match.title || match.name}
                                               </button>
                                               <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
-                                                {match.start_time ? new Date(match.start_time).toLocaleString() : 'â€”'}
+                                                {match.start_time ? new Date(match.start_time).toLocaleString() : '"”'}
                                               </div>
                                             </div>
 
@@ -2193,10 +2195,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       </div>
                     )}
 
-                    {membersLoading && <Alert variant="info">Loading squadâ€¦</Alert>}
+                    {membersLoading && <Alert variant="info">Loading squad…</Alert>}
                     {membersError && <Alert variant="error">{membersError}</Alert>}
 
-                    {teamRosterLoading && <Alert variant="info">Loading team rosterâ€¦</Alert>}
+                    {teamRosterLoading && <Alert variant="info">Loading team roster…</Alert>}
                     {teamRosterError && <Alert variant="error">{teamRosterError}</Alert>}
 
                     {userCanEditProject ? (
@@ -2301,7 +2303,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                               ))}
                                             </div>
                                           ) : (
-                                            'â€”'
+                                            '"”'
                                           )}
                                         </td>
                                         <td style={compactTdStyle} className="text-right">
@@ -2410,12 +2412,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       memberUser.name ||
                                       `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
                                       memberUser.email ||
-                                      'â€”';
+                                      '"”';
 
-                                    const email = memberUser.email || 'â€”';
+                                    const email = memberUser.email || '"”';
                                     const role = normalizeAccessRole(m.role || 'viewer');
                                     const functionalRoles = getFunctionalRolesFromMembership(m);
-                                    const position = m.metadata?.position || 'â€”';
+                                    const position = m.metadata?.position || '"”';
                                     const shirtNumber = m.metadata?.shirt_number ?? '';
                                     const membershipId = String(m.id || '').trim();
                                     const checked = Boolean(membershipId && selectedSquadMembershipIds.has(membershipId));
@@ -2463,11 +2465,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                               ))}
                                             </div>
                                           ) : (
-                                            'â€”'
+                                            '"”'
                                           )}
                                         </td>
                                         <td style={compactTextTdStyle}>{position}</td>
-                                        <td style={compactTdStyle}>{shirtNumber || 'â€”'}</td>
+                                        <td style={compactTdStyle}>{shirtNumber || '"”'}</td>
                                         <td style={compactTdStyle} className="text-right">
                                           <div style={compactActionsStyle}>
                                             <button
@@ -2533,12 +2535,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     memberUser.name ||
                                     `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
                                     memberUser.email ||
-                                    'â€”';
+                                    '"”';
 
-                                  const email = memberUser.email || 'â€”';
+                                  const email = memberUser.email || '"”';
                                   const role = normalizeAccessRole(m.role || 'viewer');
                                   const functionalRoles = getFunctionalRolesFromMembership(m);
-                                  const position = m.metadata?.position || 'â€”';
+                                  const position = m.metadata?.position || '"”';
                                   const shirtNumber = m.metadata?.shirt_number ?? '';
                                   const membershipId = String(m.id || '').trim();
                                   const href = memberDetailHref(membershipId);
@@ -2574,11 +2576,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             ))}
                                           </div>
                                         ) : (
-                                          'â€”'
+                                          '"”'
                                         )}
                                       </td>
                                       <td style={compactTextTdStyle}>{position}</td>
-                                      <td style={compactTdStyle}>{shirtNumber || 'â€”'}</td>
+                                      <td style={compactTdStyle}>{shirtNumber || '"”'}</td>
                                     </tr>
                                   );
                                 })}
@@ -2782,7 +2784,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   <Card>
                     <div style={{ padding: '16px 16px 0 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>ðŸ“¸ Media Completion Matrix</h3>
+                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}> Media Completion Matrix</h3>
                         <Badge variant="default">
                           {members.filter((m) => countFilledMediaSlots(m) === MEDIA_SLOTS.length).length} / {members.length} Complete
                         </Badge>
@@ -2794,7 +2796,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                     <div style={{ padding: '16px' }}>
                       {membersLoading ? (
-                        <Alert variant="info">Loading squad media statusâ€¦</Alert>
+                        <Alert variant="info">Loading squad media status…</Alert>
                       ) : members.length === 0 ? (
                         <Alert variant="info">No squad members to show media status for.</Alert>
                       ) : (
@@ -2818,7 +2820,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   memberUser.name ||
                                   `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
                                   memberUser.email ||
-                                  'â€”';
+                                  '"”';
                                 const membershipId = String(m.id || '').trim();
                                 const href = memberDetailHref(membershipId);
                                 const filledCount = countFilledMediaSlots(m);
@@ -2849,10 +2851,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                               style={{ textDecoration: 'none' }}
                                               title={`Edit ${slot.label}`}
                                             >
-                                              <span style={{ fontSize: '14px' }}>{hasMedia ? 'âœ…' : 'â¬œ'}</span>
+                                              <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span>
                                             </Link>
                                           ) : (
-                                            <span style={{ fontSize: '14px' }}>{hasMedia ? 'âœ…' : 'â¬œ'}</span>
+                                            <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span></span>
                                           )}
                                         </td>
                                       );
@@ -2906,7 +2908,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       ) : null}
                     </div>
                     {competitionsLoading ? (
-                      <Alert variant="info">Loading competitionsâ€¦</Alert>
+                      <Alert variant="info">Loading competitions…</Alert>
                     ) : competitions.length === 0 ? (
                       <Alert variant="info">No competitions found in this season.</Alert>
                     ) : (
@@ -2944,11 +2946,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     <span style={{ fontSize: '12px' }}>{competition.sport.name}</span>
                                   </span>
                                 ) : (
-                                  <span style={{ color: 'var(--app-muted-text)' }}>â€”</span>
+                                  <span style={{ color: 'var(--app-muted-text)' }}>"”</span>
                                 )}
                               </td>
                               <td style={compactTextTdStyle}>
-                                {new Date(competition.start_date).toLocaleDateString()} â€“{' '}
+                                {new Date(competition.start_date).toLocaleDateString()} "“{' '}
                                 {new Date(competition.end_date).toLocaleDateString()}
                               </td>
                               <td style={compactTdStyle}>
@@ -3049,7 +3051,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       ) : null}
                     </div>
                     {matchesLoading ? (
-                      <Alert variant="info">Loading matchesâ€¦</Alert>
+                      <Alert variant="info">Loading matches…</Alert>
                     ) : matches.length === 0 ? (
                       <Alert variant="info">No matches found in this season.</Alert>
                     ) : (
@@ -3101,11 +3103,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     {match.period?.name || 'Competition'}
                                   </Link>
                                 ) : (
-                                  match.period?.name || 'â€”'
+                                  match.period?.name || '"”'
                                 )}
                               </td>
                               <td style={compactTextTdStyle}>
-                                {match.start_time ? new Date(match.start_time).toLocaleString() : 'â€”'}
+                                {match.start_time ? new Date(match.start_time).toLocaleString() : '"”'}
                               </td>
                               <td style={compactTdStyle}>
                                 <Badge variant="default">{getMatchParticipantsCount(match)}</Badge>
