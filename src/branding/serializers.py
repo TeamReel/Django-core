@@ -4,8 +4,10 @@ This module implements DRF serializers for BrandProfile, DesignToken, and
 BrandAsset models with comprehensive validation logic.
 """
 import re
+
 from rest_framework import serializers
-from .models import BrandProfile, DesignToken, BrandAsset
+
+from .models import BrandAsset, BrandProfile, DesignToken
 
 
 class BrandProfileSerializer(serializers.ModelSerializer):
@@ -266,8 +268,10 @@ class BrandAssetSerializer(serializers.ModelSerializer):
             if qs.exists():
                 raise serializers.ValidationError(
                     {
-                        "asset_type": f"Asset of type '{asset_type}' already exists for this profile. "
-                        "Update the existing asset instead."
+                        "asset_type": (
+                            f"Asset of type '{asset_type}' already exists for this profile. "
+                            "Update the existing asset instead."
+                        )
                     }
                 )
 
