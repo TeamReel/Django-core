@@ -52,7 +52,14 @@ const TEMPLATE_CATEGORIES = [
     label: 'Member',
     icon: '👤',
     types: ['member'],
-    subtypes: ['member_intro', 'member_closeup', 'member_celebration'],
+    subtypes: ['member_intro', 'member_closeup', 'member_celebration', 'member_in_tenue', 'member_legacy_closeup', 'member_legacy_in_tenue'],
+  },
+  {
+    id: 'custom',
+    label: 'Custom',
+    icon: '🎨',
+    types: ['custom'],
+    subtypes: ['custom_logo', 'custom_tenue', 'custom_tenue_logo', 'custom_tenue_logo_sponsor'],
   },
 ];
 
@@ -76,6 +83,14 @@ const SUBTYPE_LABELS: Record<string, string> = {
   member_intro: 'Short Intro',
   member_closeup: 'Closeup Video',
   member_celebration: 'Personal Celebration',
+  member_in_tenue: 'In Tenue',
+  member_legacy_closeup: 'Legacy Closeup',
+  member_legacy_in_tenue: 'Legacy In Tenue',
+  // Custom
+  custom_logo: 'Logo',
+  custom_tenue: 'Tenue',
+  custom_tenue_logo: 'Tenue + Logo',
+  custom_tenue_logo_sponsor: 'Tenue + Logo + Sponsor',
 };
 
 const TYPE_LABELS: Record<string, string> = {
