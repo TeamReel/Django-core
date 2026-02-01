@@ -16,7 +16,7 @@ This task breakdown covers the implementation of the Brand Identity Manager feat
 
 | ID | Title | Priority | Subtasks | Status |
 |----|-------|----------|----------|--------|
-| WP01 | Django App Setup & Models | P1 | 8 | Planned |
+| WP01 | Django App Setup & Models | P1 | 8 | ✅ Done |
 | WP02 | Serializers & Validation | P1 | 6 | Planned |
 | WP03 | ViewSets & API Endpoints | P1 | 8 | Planned |
 | WP04 | Permissions & Django Admin | P2 | 6 | Planned |
@@ -34,14 +34,14 @@ Create the `branding` Django app with complete data models for BrandProfile, Des
 
 ### Subtasks
 
-- [ ] **T001**: Create Django app `src/branding/` with standard structure
-- [ ] **T002**: Implement BrandProfile model with UUID PK, organisation/project FKs, timestamps
-- [ ] **T003**: Implement DesignToken model with key-value storage, type choices
-- [ ] **T004**: Implement BrandAsset model with asset_type choices, File FK (B22)
-- [ ] **T005**: Add model constraints (unique, check, FK cascades)
-- [ ] **T006**: Add model methods: `get_tokens()`, `get_effective_brand()`, `__str__()`
-- [ ] **T007**: Create initial migration file
-- [ ] **T008**: Run migrations and verify tables created
+- [x] **T001**: Create Django app `src/branding/` with standard structure
+- [x] **T002**: Implement BrandProfile model with UUID PK, organisation/project FKs, timestamps
+- [x] **T003**: Implement DesignToken model with key-value storage, type choices
+- [x] **T004**: Implement BrandAsset model with asset_type choices, File FK (B22)
+- [x] **T005**: Add model constraints (unique, check, FK cascades)
+- [x] **T006**: Add model methods: `get_tokens()`, `get_effective_brand()`, `__str__()`
+- [x] **T007**: Create initial migration file
+- [x] **T008**: Run migrations and verify tables created
 
 ### Implementation Sketch
 
