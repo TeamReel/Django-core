@@ -39,6 +39,7 @@ Django Core-App is a modular platform providing reusable, product-agnostic infra
 | **Workspaces** | Project workspaces within organizations | [Projects Module](docs/modules/projects.md) |
 | **Access Control** | Hierarchical RBAC (Org → Project) | [Permissions Module](docs/modules/permissions.md) |
 | **Audit Logging** | Immutable audit trail for system activity | [Audit Module](docs/modules/audit.md) |
+| **Brand Identity** | Centralized brand tokens & assets with merge inheritance | [Branding Module](src/branding/README.md) |
 | **Transactions** | Double-entry ledger for credits/billing | [Transactions Module](docs/modules/transactions.md) |
 | **Notifications** | Multi-channel delivery (Email, In-App, Webhook) | [Notifications Module](docs/modules/notifications.md) |
 | **Observability** | Health checks, metrics, and structured logging | [Observability Feature](docs/features/observability/overview.md) |
