@@ -2854,7 +2854,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                               <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span>
                                             </Link>
                                           ) : (
-                                            <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span></span>
+                                            <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span>
                                           )}
                                         </td>
                                       );
