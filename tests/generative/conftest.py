@@ -31,11 +31,23 @@ def organisation(db) -> Organisation:
 
 @pytest.fixture
 def user(db, organisation) -> User:
-    """Create a test user."""
-    return User.objects.create_user(
+    """Create a test user with organisation membership."""
+    from organisations.models import Membership
+
+    user = User.objects.create_user(
         email="testuser@example.com",
         password="testpass123",
     )
+
+    # Create membership
+    Membership.objects.create(
+        organisation=organisation,
+        user=user,
+        role="member",
+        is_active=True,
+    )
+
+    return user
 
 
 @pytest.fixture
@@ -162,4 +174,51 @@ def generation_output(db, completed_request) -> GenerationOutput:
         output_type=OutputType.TEXT,
         text_content="Generated content for the test.",
         metadata={"word_count": 5, "language": "en"},
+    )
+
+
+# API Testing Fixtures
+
+
+@pytest.fixture
+def api_client():
+    """Return an unauthenticated DRF API client."""
+    from rest_framework.test import APIClient
+
+    return APIClient()
+
+
+@pytest.fixture
+def authenticated_client(api_client, user):
+    """Return an authenticated API client for the test user."""
+    api_client.force_authenticate(user=user)
+    return api_client
+
+
+@pytest.fixture
+def admin_user(db, organisation) -> User:
+    """Create an admin user."""
+    from organisations.models import Membership
+
+    admin = User.objects.create_user(
+        email="admin@example.com",
+        password="testpass123",
+    )
+    Membership.objects.create(organisation=organisation, user=admin, role="admin", is_active=True)
+    return admin
+
+
+@pytest.fixture
+def admin_client(api_client, admin_user):
+    """Return an authenticated API client for admin user."""
+    api_client.force_authenticate(user=admin_user)
+    return api_client
+
+
+@pytest.fixture
+def other_user(db, organisation) -> User:
+    """Create another test user for permission testing."""
+    return User.objects.create_user(
+        email="other@example.com",
+        password="testpass123",
     )

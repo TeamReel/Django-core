@@ -12,7 +12,7 @@ subtasks:
   - "T017"
 title: "API Layer & Permissions"
 phase: "Phase 1 - Foundation"
-lane: "doing"
+lane: "done"
 assignee: ""
 agent: "claude"
 shell_pid: "13948"
@@ -737,3 +737,4 @@ history:
 
 - 2026-02-01T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2026-02-01T19:55:54Z – claude – shell_pid=13948 – lane=doing – Started WP02: API Layer & Permissions implementation
+- 2026-02-01T20:22:05Z – claude – shell_pid=13948 – lane=done – Review complete: 37/37 tests passing, approved with notes
