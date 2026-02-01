@@ -2,7 +2,10 @@
 work_package_id: WP04
 title: Permissions & Django Admin
 priority: P2
-lane: planned
+lane: doing
+agent: claude
+shell_pid: 18452
+assignee: claude
 subtasks:
   - T023
   - T024
@@ -17,6 +20,12 @@ history:
   - date: 2026-02-01
     action: created
     by: spec-kitty.tasks
+  - date: 2026-02-01T16:45:00Z
+    action: started_implementation
+    by: claude
+    shell_pid: 18452
+    lane: doing
+    note: "Started implementation of permissions and Django admin"
 ---
 
 # Work Package 04: Permissions & Django Admin

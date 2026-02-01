@@ -18,7 +18,7 @@ This task breakdown covers the implementation of the Brand Identity Manager feat
 |----|-------|----------|----------|--------|
 | WP01 | Django App Setup & Models | P1 | 8 | ✅ Done |
 | WP02 | Serializers & Validation | P1 | 6 | ✅ Done |
-| WP03 | ViewSets & API Endpoints | P1 | 8 | Planned |
+| WP03 | ViewSets & API Endpoints | P1 | 8 | ✅ Done |
 | WP04 | Permissions & Django Admin | P2 | 6 | Planned |
 | WP05 | Testing Suite | P2 | 10 | Planned |
 | WP06 | Documentation & Integration | P3 | 4 | Planned |
@@ -94,21 +94,21 @@ Implement DRF serializers with validation logic for all models.
 
 ## Work Package 03: ViewSets & API Endpoints
 **Priority**: P1 (Core Functionality)
-**Prompt**: [tasks/planned/WP03-viewsets-api-endpoints.md](tasks/planned/WP03-viewsets-api-endpoints.md)
+**Prompt**: [tasks/done/WP03-viewsets-api-endpoints.md](tasks/done/WP03-viewsets-api-endpoints.md)
 
 ### Goal
 Implement DRF ViewSets for CRUD operations and special token resolution endpoint.
 
 ### Subtasks
 
-- [ ] **T015**: Create BrandProfileViewSet with CRUD operations
-- [ ] **T016**: Create DesignTokenViewSet (nested under profile)
-- [ ] **T017**: Create BrandAssetViewSet (nested under profile)
-- [ ] **T018**: Implement token resolution endpoint (`/api/branding/tokens/resolve/`)
-- [ ] **T019**: Implement merge inheritance logic in token resolution
-- [ ] **T020**: Add pagination (PageNumberPagination, page_size=20, max=100)
-- [ ] **T021**: Configure URL routing in `src/branding/urls.py`
-- [ ] **T022**: Add URL includes to main `src/config/urls.py`
+- [x] **T015**: Create BrandProfileViewSet with CRUD operations
+- [x] **T016**: Create DesignTokenViewSet (nested under profile)
+- [x] **T017**: Create BrandAssetViewSet (nested under profile)
+- [x] **T018**: Implement token resolution endpoint (`/api/branding/tokens/resolve/`)
+- [x] **T019**: Implement merge inheritance logic in token resolution
+- [x] **T020**: Add pagination (PageNumberPagination, page_size=20, max=100)
+- [x] **T021**: Configure URL routing in `src/branding/urls.py`
+- [x] **T022**: Add URL includes to main `src/config/urls.py`
 
 ### Implementation Sketch
 
