@@ -83,8 +83,7 @@ export const CONTENT_TYPES = {
     sportRequired: false, // Member templates don't require sport selection
     items: [
       { id: 'member_intro', label: 'Short Intro', icon: '👋', subtype: 'member_intro' },
-      { id: 'member_closeup', label: 'Closeup Video', icon: '📸', subtype: 'member_closeup' },
-      { id: 'member_celebration', label: 'Personal Celebration', icon: '🎉', subtype: 'member_celebration' },
+      { id: 'member_goal_celebration', label: 'Goal Celebration', icon: '⚽', subtype: 'member_goal_celebration' },
       { id: 'member_in_tenue', label: 'In Tenue', icon: '👕', subtype: 'member_in_tenue' },
       { id: 'member_legacy_closeup', label: 'Legacy Closeup', icon: '📷', subtype: 'member_legacy_closeup' },
       { id: 'member_legacy_in_tenue', label: 'Legacy In Tenue', icon: '🎽', subtype: 'member_legacy_in_tenue' },

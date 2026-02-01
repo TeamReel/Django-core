@@ -584,52 +584,109 @@ class Command(BaseCommand):
             )
 
         if category in ["all", "member"]:
-            template_definitions.extend(
-                [
+            # Member templates for each role: goalkeeper, player, coach, assistant
+            # Each subtype × each role = template
+            roles = ["goalkeeper", "player", "coach", "assistant"]
+
+            for role in roles:
+                role_label = role.capitalize()
+                role_key = role
+
+                # Short Intro - requires in_tenue asset
+                template_definitions.append(
                     {
-                        "name": "Player Intro - Short",
+                        "name": f"{role_label} Short Intro - Modern",
                         "template_type": TemplateType.MEMBER,
                         "template_subtype": TemplateSubtype.MEMBER_INTRO,
-                        "style_variant": "Short",
-                        "ai_workflow_id": "intro_short_v1",
+                        "style_variant": "Modern",
+                        "ai_workflow_id": f"wf_member_intro_{role}_modern",
+                        "credits_required": 1,
                         "input_requirements": {
-                            "players": {
-                                "use_formation": False,
-                                "min_count": 1,
-                                "max_count": 1,
-                            },
-                            "assets": [
-                                {"type": "player_photo", "required": True},
-                                {"type": "team_logo", "required": True},
-                            ],
-                            "match_data": {
-                                "required": ["player_name", "position", "number"],
-                                "optional": ["nationality", "age"],
+                            "members": {
+                                role_key: {"count": 1, "asset_types": ["in_tenue"]},
                             },
                         },
-                        "description": "Quick player introduction card (5-10 seconds)",
-                    },
+                        "description": f"Short intro video for {role} with in-tenue photo",
+                    }
+                )
+
+                # Goal Celebration - requires in_tenue asset
+                template_definitions.append(
                     {
-                        "name": "Player Closeup - Portrait",
+                        "name": f"{role_label} Goal Celebration - Modern",
                         "template_type": TemplateType.MEMBER,
-                        "template_subtype": TemplateSubtype.MEMBER_CLOSEUP,
-                        "style_variant": "Portrait",
-                        "ai_workflow_id": "closeup_portrait_v1",
+                        "template_subtype": TemplateSubtype.MEMBER_GOAL_CELEBRATION,
+                        "style_variant": "Modern",
+                        "ai_workflow_id": f"wf_member_goal_celebration_{role}_modern",
+                        "credits_required": 1,
                         "input_requirements": {
-                            "players": {
-                                "use_formation": False,
-                                "min_count": 1,
-                                "max_count": 1,
+                            "members": {
+                                role_key: {"count": 1, "asset_types": ["in_tenue"]},
                             },
-                            "assets": [
-                                {"type": "player_photo_hd", "required": True},
-                                {"type": "player_interview", "required": False},
-                            ],
                         },
-                        "description": "Detailed player profile with high-quality visuals",
-                    },
-                ]
-            )
+                        "description": f"Goal celebration video for {role} with in-tenue photo",
+                    }
+                )
+
+                # In Tenue - requires profile_photo and tenue (season asset)
+                template_definitions.append(
+                    {
+                        "name": f"{role_label} In Tenue - Modern",
+                        "template_type": TemplateType.MEMBER,
+                        "template_subtype": TemplateSubtype.MEMBER_IN_TENUE,
+                        "style_variant": "Modern",
+                        "ai_workflow_id": f"wf_member_in_tenue_{role}_modern",
+                        "credits_required": 1,
+                        "input_requirements": {
+                            "members": {
+                                role_key: {"count": 1, "asset_types": ["profile_photo"]},
+                            },
+                            "season_assets": {
+                                "required": [{"type": "tenue", "label": "Team Tenue"}],
+                            },
+                        },
+                        "description": f"Generate {role} in-tenue photo from profile photo",
+                    }
+                )
+
+                # Legacy Closeup
+                template_definitions.append(
+                    {
+                        "name": f"{role_label} Legacy Closeup - Modern",
+                        "template_type": TemplateType.MEMBER,
+                        "template_subtype": TemplateSubtype.MEMBER_LEGACY_CLOSEUP,
+                        "style_variant": "Modern",
+                        "ai_workflow_id": f"wf_member_legacy_closeup_{role}_modern",
+                        "credits_required": 1,
+                        "input_requirements": {
+                            "members": {
+                                role_key: {"count": 1, "asset_types": ["profile_photo"]},
+                            },
+                        },
+                        "description": f"Legacy-style closeup portrait for {role}",
+                    }
+                )
+
+                # Legacy In Tenue
+                template_definitions.append(
+                    {
+                        "name": f"{role_label} Legacy In Tenue - Modern",
+                        "template_type": TemplateType.MEMBER,
+                        "template_subtype": TemplateSubtype.MEMBER_LEGACY_IN_TENUE,
+                        "style_variant": "Modern",
+                        "ai_workflow_id": f"wf_member_legacy_in_tenue_{role}_modern",
+                        "credits_required": 1,
+                        "input_requirements": {
+                            "members": {
+                                role_key: {"count": 1, "asset_types": ["profile_photo"]},
+                            },
+                            "season_assets": {
+                                "required": [{"type": "tenue", "label": "Team Tenue"}],
+                            },
+                        },
+                        "description": f"Legacy-style {role} in team tenue",
+                    }
+                )
 
         # Create the templates
         if template_definitions:
@@ -639,6 +696,13 @@ class Command(BaseCommand):
                     self.stdout.write(f"  [DRY] Would create: {t_data['name']}")
                     template_count += 1
                     continue
+
+                # Member and custom templates don't need sport
+                template_sport = (
+                    None
+                    if t_data["template_type"] in [TemplateType.MEMBER, TemplateType.CUSTOM]
+                    else football_11v11
+                )
 
                 template, created = ContentTemplate.objects.update_or_create(
                     # Global templates: organisation=None
@@ -651,7 +715,8 @@ class Command(BaseCommand):
                         "style_variant": t_data.get("style_variant"),
                         "ai_workflow_id": t_data["ai_workflow_id"],
                         "input_requirements": t_data.get("input_requirements", {}),
-                        "sport": football_11v11,
+                        "credits_required": t_data.get("credits_required", 1),
+                        "sport": template_sport,
                         "is_active": True,
                         "created_by": None,  # Global template
                     },

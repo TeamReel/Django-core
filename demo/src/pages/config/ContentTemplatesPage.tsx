@@ -52,7 +52,7 @@ const TEMPLATE_CATEGORIES = [
     label: 'Member',
     icon: '👤',
     types: ['member'],
-    subtypes: ['member_intro', 'member_closeup', 'member_celebration', 'member_in_tenue', 'member_legacy_closeup', 'member_legacy_in_tenue'],
+    subtypes: ['member_intro', 'member_goal_celebration', 'member_in_tenue', 'member_legacy_closeup', 'member_legacy_in_tenue'],
   },
   {
     id: 'custom',
@@ -81,8 +81,7 @@ const SUBTYPE_LABELS: Record<string, string> = {
   season_recap: 'Season Recap',
   // Member
   member_intro: 'Short Intro',
-  member_closeup: 'Closeup Video',
-  member_celebration: 'Personal Celebration',
+  member_goal_celebration: 'Goal Celebration',
   member_in_tenue: 'In Tenue',
   member_legacy_closeup: 'Legacy Closeup',
   member_legacy_in_tenue: 'Legacy In Tenue',
