@@ -2,10 +2,12 @@
 work_package_id: WP05
 title: Testing Suite
 priority: P2
-lane: for_review
+lane: planned
 agent: claude
 shell_pid: 18452
 assignee: claude
+review_status: has_feedback
+reviewed_by: claude-reviewer
 subtasks:
   - T029
   - T030
@@ -40,6 +42,249 @@ history:
     commit: d1c62611
     test_results: "46 passed, 60 failed (43% pass rate - known issues documented)"
     note: "Created 6 test files (1900+ lines) with 100+ tests. Failures due to B13 wrapper, file fixtures, URL config, and minor validation issues. Core logic validated by passing tests."
+  - date: 2026-02-01T17:30:00Z
+    action: review_complete
+    by: claude-reviewer
+    shell_pid: $PID
+    review_status: needs_changes
+    test_results_verified: "46/106 passing (43%)"
+    note: "Comprehensive test suite created with excellent domain coverage. Requires fixes for B13 wrapper handling, FileAsset fixtures, and minor validation issues before reaching >90% target. Core branding logic validated."
+---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Reviewer**: claude-reviewer
+**Date**: 2026-02-01T17:30:00Z
+**Test Results**: 46/106 tests passing (43%)
+
+### Executive Summary
+
+The implementation demonstrates **excellent understanding** of the branding domain with comprehensive test coverage of business logic. The test suite structure is well-organized with proper fixture patterns and good separation of concerns. However, **critical infrastructure issues** prevent achieving the >90% coverage target required by the Definition of Done.
+
+All 60 test failures are **fixable** - they stem from test infrastructure gaps (missing FileAsset fixtures, B13 wrapper handling) and minor configuration issues, NOT from flawed business logic. The 46 passing tests validate core functionality including XOR constraints, merge inheritance, and cascade permissions.
+
+### Key Issues
+
+#### 1. ❌ CRITICAL: FileAsset Fixtures Missing (25 failures)
+
+**Problem**: `BrandAsset.file` is a required FK to `FileAsset` (B22), but `brand_asset_factory` doesn't create FileAsset instances.
+
+**Evidence**:
+```python
+# conftest.py line 177
+def brand_asset_factory(...):
+    return BrandAsset.objects.create(
+        profile=profile,
+        asset_type=asset_type,
+        # MISSING: file=<FileAsset instance>
+    )
+```
+
+**Impact**: 25 tests fail with `IntegrityError: NOT NULL constraint failed: branding_brandasset.file_id`
+
+**Fix Required**:
+```python
+from files.models import FileAsset
+
+@pytest.fixture
+def file_asset_factory(db):
+    def _create_file():
+        return FileAsset.objects.create(
+            name="test-file.png",
+            file_type="image/png",
+            size=1024,
+            # Add other required FileAsset fields
+        )
+    return _create_file
+
+@pytest.fixture
+def brand_asset_factory(db, file_asset_factory):
+    def _create_asset(profile, asset_type, alt_text="", file=None):
+        if file is None:
+            file = file_asset_factory()
+        return BrandAsset.objects.create(
+            profile=profile,
+            file=file,  # Now provided
+            asset_type=asset_type,
+            alt_text=alt_text,
+        )
+    return _create_asset
+```
+
+#### 2. ❌ CRITICAL: B13 Response Wrapper Not Handled (18 failures)
+
+**Problem**: API uses B13 standard response format, but tests expect direct data access.
+
+**Evidence**:
+```python
+# API returns:
+{
+  "status": "success",
+  "data": {"id": "...", "name": "..."},
+  "meta": {"timestamp": "..."}
+}
+
+# Tests expect:
+data = response.json()
+assert data["id"] == ...  # KeyError: 'id'
+```
+
+**Impact**: 18 tests fail with `KeyError: 'id'`, `'name'`, `'results'`, etc.
+
+**Fix Required**:
+```python
+# Change ALL view tests from:
+data = response.json()
+assert data["id"] == str(brand.id)
+
+# To:
+response_data = response.json()
+data = response_data["data"]  # Extract nested data
+assert data["id"] == str(brand.id)
+```
+
+**Files to Update**:
+- `test_views.py`: All ViewSet tests
+- `test_integration.py`: All API calls
+- `test_permissions.py`: Permission tests with API calls
+
+#### 3. ❌ BLOCKER: Token Resolution Endpoint Returns 404 (7 failures)
+
+**Problem**: Token resolution endpoint configured in URLs but tests get 404.
+
+**Evidence**:
+```python
+# URL configured correctly in urls.py:
+path("tokens/resolve/", TokenResolutionView.as_view(), name="token-resolve")
+
+# Tests fail:
+response = client.get("/api/branding/tokens/resolve/?project=...")
+assert response.status_code == 200  # Gets 404
+```
+
+**Root Cause**: Unknown - URL is registered, view exists, Django check passes. May be:
+- URL pattern not included in main urls.py
+- Namespace issue
+- Test client URL construction issue
+
+**Fix Required**:
+1. Verify branding URLs included in main `src/config/urls.py`
+2. Check if namespace required: `/api/v1/branding/tokens/resolve/`
+3. Update test URL construction if needed
+
+#### 4. ❌ Minor: Serializer Validation Error Keys (2 failures)
+
+**Problem**: DRF uses `__all__` for non-field errors, tests expect `non_field_errors`.
+
+**Evidence**:
+```python
+# BrandProfileSerializer XOR validation returns:
+{"__all__": ["Cannot specify both organisation and project."]}
+
+# Tests check:
+assert "non_field_errors" in errors  # AssertionError
+```
+
+**Fix**: Update test assertions to use `"__all__"` or test both keys.
+
+#### 5. ❌ Minor: UUID String Conversion (3 failures)
+
+**Problem**: Serializers return UUID objects, not strings.
+
+**Evidence**:
+```python
+# Serializer returns:
+{"organisation": UUID('...')}
+
+# Test checks:
+assert data["organisation"] == str(organisation.id)  # AssertionError
+```
+
+**Fix**: Convert UUIDs to strings in test assertions:
+```python
+assert str(data["organisation"]) == str(organisation.id)
+```
+
+#### 6. ❌ Minor: BrandProfile Unique Constraint Tests (2 failures)
+
+**Problem**: Tests try to create multiple brands for same organisation (UNIQUE constraint).
+
+**Fix**: Create new organisations for pagination/multiple-brand tests.
+
+#### 7. ❌ Coverage Analysis Not Run (DoD Blocker)
+
+**Problem**: Cannot verify >90% coverage target due to test failures.
+
+**Required**:
+1. Fix above issues
+2. Run: `pytest tests/branding/ --cov=branding --cov-report=html --cov-report=term-missing`
+3. Verify >90% coverage
+4. Add tests for any gaps
+
+### What Was Done Well ✅
+
+1. **Excellent Test Structure**:
+   - Clear separation: models, serializers, views, permissions, integration
+   - Factory pattern for flexible test data
+   - Comprehensive fixtures in conftest.py
+
+2. **Domain Understanding**:
+   - XOR constraints tested thoroughly
+   - Merge inheritance logic validated
+   - Cascade permissions comprehensively tested
+
+3. **Test Coverage Breadth**:
+   - 106 tests covering all user stories
+   - Integration tests for end-to-end scenarios
+   - Edge cases considered
+
+4. **Code Quality**:
+   - Clean test organization
+   - Good use of pytest markers
+   - Descriptive test names
+
+5. **Documentation**:
+   - Detailed TEST_RESULTS.md with analysis
+   - Clear identification of issues
+   - Fix recommendations provided
+
+### Action Items (Must Complete Before Re-Review)
+
+**Priority P0 (Blockers)**:
+- [ ] Add FileAsset factory to conftest.py
+- [ ] Update all `brand_asset_factory` calls to provide file parameter
+- [ ] Fix ALL B13 response wrapper assertions (test_views.py, test_integration.py, test_permissions.py)
+- [ ] Debug token resolution endpoint 404 issue
+  - [ ] Verify branding URLs included in main urls.py
+  - [ ] Test URL construction in isolation
+  - [ ] Fix URL patterns or test URLs
+
+**Priority P1 (Required for DoD)**:
+- [ ] Fix serializer validation error key assertions (`__all__` vs `non_field_errors`)
+- [ ] Fix UUID string conversion assertions
+- [ ] Fix unique constraint test issues (create separate orgs)
+- [ ] Run coverage analysis: `pytest tests/branding/ --cov=branding --cov-report=html`
+- [ ] Verify >90% coverage achieved
+- [ ] Add tests for any coverage gaps identified
+
+**Priority P2 (Nice to Have)**:
+- [ ] Add admin interface smoke tests
+- [ ] Add more edge cases for error paths
+- [ ] Test performance (N+1 queries)
+
+### Definition of Done Status
+
+- [x] All test files created ✅
+- [ ] >90% code coverage ❌ (Cannot verify due to test failures)
+- [x] All user stories covered by integration tests ✅ (Tests exist, need fixes)
+- [x] Edge cases tested ✅
+- [ ] No flaky tests ❓ (Cannot verify - tests not running)
+- [ ] Tests pass in CI ❌ (46/106 passing)
+
+**Estimated Fix Time**: 3-4 hours
+
 ---
 
 # Work Package 05: Testing Suite
