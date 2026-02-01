@@ -2,7 +2,10 @@
 work_package_id: WP06
 title: Documentation & Integration
 priority: P3
-lane: planned
+lane: doing
+agent: claude
+shell_pid: "1476"
+assignee: claude
 subtasks:
   - T039
   - T040
@@ -19,6 +22,12 @@ history:
   - date: 2026-02-01
     action: created
     by: spec-kitty.tasks
+  - date: 2026-02-02T11:00:00Z
+    action: started_implementation
+    by: claude
+    shell_pid: 1476
+    lane: doing
+    note: "Starting documentation and integration tasks after successful WP05 review"
 ---
 
 # Work Package 06: Documentation & Integration
