@@ -1,11 +1,12 @@
 # TeamReel Navigation Model (Panel A + Panel B)
 
-**Date:** 2026-01-26
-**Status:** ✅ Shell implemented; some flows are placeholders (no-mock)
+**Date:** 2026-01-30
+**Status:** ✅ Shell implemented; Season tabs fully operational
 **Related:**
 - [TeamReel Layout Optimization](teamreel-layout-optimization.md)
 - [TeamReel Webapp Hierarchy](teamreel-webapp-hierarchy.md)
 - [TeamReel RBAC Configuration](teamreel-rbac-config.md)
+- [TeamReel Templates & Content](teamreel-templates-content.md)
 
 ---
 
@@ -50,7 +51,48 @@ Examples:
 Panel B is route-driven and uses route matching + querystring `?tab=` patterns.
 
 ---
+## Panel B Tab Definitions (per Entity Type)
 
+### Season Tabs (ProjectSeasonDetailPage.tsx)
+The Season detail view contains 9 tabs:
+
+| Tab ID | Label | Purpose |
+|--------|-------|---------|
+| `overview` | Overview | Stats, assets card, sport configuration |
+| `hierarchy` | Hierarchy | Child periods tree view |
+| `competitions` | Competitions | Competitions within season |
+| `matches` | Matches | All matches (direct + via competitions) |
+| `squad` | Squad | **Assigned members only** (with positions) |
+| `team` | Team | **Unassigned team members** (ready to assign) |
+| `media` | Media | Media completion matrix, member slots |
+| `content` | Content | Content templates, generation, approval |
+| `transactions` | Transactions | Credits/wallet transactions |
+
+**Important distinction (2026-01-30 update):**
+- **Squad tab**: Shows ONLY members who have a squad assignment (`MemberSeasonSquad` entry) for this season.
+- **Team tab**: Shows team members who do NOT yet have a squad assignment. Used to assign new members.
+
+### Club Tabs (ClubOrganisationDetailPage.tsx)
+| Tab ID | Label | Purpose |
+|--------|-------|---------|
+| `overview` | Overview | Club stats, child teams |
+| `teams` | Teams | Team list within club |
+| `assets` | Assets | Club asset management (logo, tenue, sponsor) |
+
+### Organisation Tabs (OrganisationDetailPage.tsx)
+| Tab ID | Label | Purpose |
+|--------|-------|---------|
+| `overview` | Overview | Organisation dashboard |
+| `teams` | Teams | Teams within organisation |
+
+### Match Tabs
+| Tab ID | Label | Purpose |
+|--------|-------|---------|
+| `overview` | Overview | Match details, status |
+| `lineup` | Lineup | Formation, starting players |
+| `content` | Content | Match-related content generation |
+
+---
 ## Routing rules (important UX invariants)
 
 ### 1) Wallet split (Personal vs Organisation)

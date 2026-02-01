@@ -190,6 +190,54 @@ export default function HierarchyMatchDetailPage() {
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
   const [templatesLoading, setTemplatesLoading] = useState(false);
 
+  // Content Items - track generated content for this match
+  type ContentItemStatus = 'queued' | 'generating' | 'completed' | 'failed' | 'approved' | 'rejected';
+  type ContentItem = {
+    id: string;
+    template: { id: number; name: string; template_subtype?: string | null };
+    status: ContentItemStatus;
+    created_at: string;
+    output_file?: { id: string; url: string; file_name?: string } | null;
+    error_message?: string | null;
+  };
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  const [contentItemsLoading, setContentItemsLoading] = useState(false);
+  const [selectedContentItem, setSelectedContentItem] = useState<ContentItem | null>(null);
+  const [isContentPreviewOpen, setIsContentPreviewOpen] = useState(false);
+
+  // Fetch content items for this match
+  const fetchContentItems = useCallback(async () => {
+    if (!match?.id) return;
+    setContentItemsLoading(true);
+    try {
+      const response = await fetch(
+        `${getApiBaseUrl()}/api/v1/content-generation/items/?activity=${match.id}`,
+        { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        const items = data?.data?.results || data?.results || data?.data || [];
+        setContentItems(Array.isArray(items) ? items : []);
+      }
+    } catch (err) {
+      console.error('[Content] Error fetching content items:', err);
+    } finally {
+      setContentItemsLoading(false);
+    }
+  }, [match?.id]);
+
+  // Helper to get content item for a template subtype
+  const getContentItemForSubtype = useCallback((subtype: string): ContentItem | null => {
+    return contentItems.find(item => item.template?.template_subtype === subtype) || null;
+  }, [contentItems]);
+
+  // Fetch content items when match changes
+  useEffect(() => {
+    if (match?.id) {
+      fetchContentItems();
+    }
+  }, [match?.id, fetchContentItems]);
+
   const openContentModal = (template?: ContentTemplate, label?: string) => {
     setSelectedTemplate(template || null);
     setSelectedContentTypeLabel(label || '');
@@ -200,6 +248,19 @@ export default function HierarchyMatchDetailPage() {
     setIsContentModalOpen(false);
     setSelectedTemplate(null);
     setSelectedContentTypeLabel('');
+    // Refresh content items to show newly generated content
+    fetchContentItems();
+  };
+
+  // Open content preview modal
+  const openContentPreview = (item: ContentItem) => {
+    setSelectedContentItem(item);
+    setIsContentPreviewOpen(true);
+  };
+
+  const closeContentPreview = () => {
+    setIsContentPreviewOpen(false);
+    setSelectedContentItem(null);
   };
 
   // Fetch available templates for all content types
@@ -1805,6 +1866,151 @@ export default function HierarchyMatchDetailPage() {
             contentTypeLabel={selectedContentTypeLabel}
         />
 
+        {/* Content Preview Modal */}
+        {isContentPreviewOpen && selectedContentItem && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            }}
+            onClick={closeContentPreview}
+          >
+            <div
+              style={{
+                backgroundColor: 'var(--app-card-bg)',
+                borderRadius: '12px',
+                maxWidth: '800px',
+                width: '90%',
+                maxHeight: '90vh',
+                overflow: 'auto',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '16px 20px',
+                  borderBottom: '1px solid var(--app-border)',
+                }}
+              >
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
+                    {selectedContentItem.template?.name || 'Generated Content'}
+                  </h3>
+                  <div style={{ fontSize: '13px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
+                    Generated {new Date(selectedContentItem.created_at).toLocaleString()}
+                  </div>
+                </div>
+                <button
+                  onClick={closeContentPreview}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    color: 'var(--app-muted-text)',
+                    padding: '4px 8px',
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div style={{ padding: '20px' }}>
+                {selectedContentItem.output_file?.url ? (
+                  <div style={{ textAlign: 'center' }}>
+                    {/* Check if it's a video or image based on file extension or url */}
+                    {selectedContentItem.output_file.url.match(/\.(mp4|webm|mov)$/i) ? (
+                      <video
+                        src={selectedContentItem.output_file.url}
+                        controls
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: '60vh',
+                          borderRadius: '8px',
+                        }}
+                      />
+                    ) : (
+                      <img
+                        src={selectedContentItem.output_file.url}
+                        alt={selectedContentItem.template?.name || 'Generated content'}
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: '60vh',
+                          borderRadius: '8px',
+                          objectFit: 'contain',
+                        }}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-400">
+                    <div className="text-3xl mb-2">🖼️</div>
+                    <p>Preview not available</p>
+                    <p className="text-sm">The generated file is being processed</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '16px 20px',
+                  borderTop: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-bg)',
+                  borderRadius: '0 0 12px 12px',
+                }}
+              >
+                <Badge
+                  variant={['completed', 'approved'].includes(selectedContentItem.status) ? 'success' : 'warning'}
+                >
+                  {selectedContentItem.status}
+                </Badge>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {selectedContentItem.output_file?.url && (
+                    <a
+                      href={selectedContentItem.output_file.url}
+                      download={selectedContentItem.output_file.file_name || 'content'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 16px',
+                        backgroundColor: 'var(--app-primary)',
+                        color: 'white',
+                        borderRadius: '6px',
+                        textDecoration: 'none',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                      }}
+                    >
+                      ⬇️ Download
+                    </a>
+                  )}
+                  <Button variant="secondary" onClick={closeContentPreview}>
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <PageContent>
           {activeTab === 'overview' && (
             <>
@@ -1961,58 +2167,139 @@ export default function HierarchyMatchDetailPage() {
 
                       const hasTemplate = !!matchedTemplate;
 
+                      // Check if content has been generated for this subtype
+                      const existingItem = getContentItemForSubtype(item.subtype);
+                      const isGenerated = existingItem && ['completed', 'approved'].includes(existingItem.status);
+                      const isGenerating = existingItem && ['queued', 'generating'].includes(existingItem.status);
+                      const isFailed = existingItem?.status === 'failed';
+
+                      // Determine border and background based on status
+                      let borderColor = hasTemplate ? 'var(--app-border)' : 'var(--app-border)';
+                      let bgColor = hasTemplate ? 'var(--app-card-bg)' : 'var(--app-bg)';
+                      let statusIcon = '';
+                      let statusTooltip = '';
+
+                      if (isGenerated) {
+                        borderColor = '#22c55e'; // green
+                        bgColor = 'rgba(34, 197, 94, 0.1)';
+                        statusIcon = '✓';
+                        statusTooltip = 'Content generated - click to view';
+                      } else if (isGenerating) {
+                        borderColor = '#f59e0b'; // amber
+                        bgColor = 'rgba(245, 158, 11, 0.1)';
+                        statusIcon = '⏳';
+                        statusTooltip = 'Content is being generated...';
+                      } else if (isFailed) {
+                        borderColor = '#ef4444'; // red
+                        bgColor = 'rgba(239, 68, 68, 0.1)';
+                        statusIcon = '!';
+                        statusTooltip = `Generation failed: ${existingItem?.error_message || 'Unknown error'}`;
+                      }
+
+                      const handleTileClick = () => {
+                        if (isGenerated && existingItem) {
+                          // Open preview modal for generated content
+                          openContentPreview(existingItem);
+                        } else if (hasTemplate && !isGenerating) {
+                          // Open generation modal
+                          openContentModal(matchedTemplate, item.label);
+                        }
+                      };
+
                       return (
                         <div
                           key={`${categoryKey}-${item.id}`}
-                          onClick={() => hasTemplate && openContentModal(matchedTemplate, item.label)}
-                          title={hasTemplate
+                          onClick={handleTileClick}
+                          title={statusTooltip || (hasTemplate
                             ? `Create ${item.label}${matchedTemplate?.style_variant ? ` (${matchedTemplate.style_variant})` : ''}`
-                            : `No ${item.label} template available`
+                            : `No ${item.label} template available`)
                           }
                           style={{
+                            position: 'relative',
                             width: '100px',
                             padding: '12px 8px',
-                            border: hasTemplate ? '1px solid var(--app-border)' : '1px dashed var(--app-border)',
+                            border: `2px solid ${borderColor}`,
                             borderRadius: '8px',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
                             textAlign: 'center',
-                            cursor: hasTemplate ? 'pointer' : 'not-allowed',
-                            opacity: hasTemplate ? 1 : 0.5,
-                            backgroundColor: hasTemplate ? 'var(--app-card-bg)' : 'var(--app-bg)',
+                            cursor: (hasTemplate || isGenerated) ? 'pointer' : 'not-allowed',
+                            opacity: (hasTemplate || isGenerated) ? 1 : 0.5,
+                            backgroundColor: bgColor,
                             transition: 'all 0.2s ease',
                           }}
                           onMouseEnter={(e) => {
-                            if (hasTemplate) {
-                              e.currentTarget.style.borderColor = 'var(--app-primary)';
-                              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                            if (hasTemplate || isGenerated) {
+                              e.currentTarget.style.borderColor = isGenerated ? '#16a34a' : 'var(--app-primary)';
+                              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+                              e.currentTarget.style.transform = 'translateY(-2px)';
                             }
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--app-border)';
+                            e.currentTarget.style.borderColor = borderColor;
                             e.currentTarget.style.boxShadow = 'none';
+                            e.currentTarget.style.transform = 'none';
                           }}
                         >
+                          {/* Status indicator badge */}
+                          {statusIcon && (
+                            <div style={{
+                              position: 'absolute',
+                              top: '-8px',
+                              right: '-8px',
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              backgroundColor: isGenerated ? '#22c55e' : (isGenerating ? '#f59e0b' : '#ef4444'),
+                              color: 'white',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                            }}>
+                              {statusIcon}
+                            </div>
+                          )}
                           <div style={{
                             fontSize: '20px',
                             marginBottom: '4px',
-                            filter: hasTemplate ? 'none' : 'grayscale(100%)',
+                            filter: (hasTemplate || isGenerated) ? 'none' : 'grayscale(100%)',
                           }}>
                             {item.icon}
                           </div>
                           <div style={{
                             fontWeight: 600,
                             fontSize: '11px',
-                            color: hasTemplate ? 'var(--app-text)' : 'var(--app-muted-text)',
+                            color: (hasTemplate || isGenerated) ? 'var(--app-text)' : 'var(--app-muted-text)',
                             lineHeight: 1.3,
                             textAlign: 'center',
                           }}>
                             {item.label}
                           </div>
-                          {/* Show template info */}
-                          {hasTemplate && matchedTemplate && (
+                          {/* Show status or template info */}
+                          {isGenerated ? (
+                            <div style={{ marginTop: '6px' }}>
+                              <Badge variant="success" size="sm" style={{ fontSize: '9px', padding: '2px 6px' }}>
+                                Generated
+                              </Badge>
+                            </div>
+                          ) : isGenerating ? (
+                            <div style={{ marginTop: '6px' }}>
+                              <Badge variant="warning" size="sm" style={{ fontSize: '9px', padding: '2px 6px' }}>
+                                Processing...
+                              </Badge>
+                            </div>
+                          ) : isFailed ? (
+                            <div style={{ marginTop: '6px' }}>
+                              <Badge variant="error" size="sm" style={{ fontSize: '9px', padding: '2px 6px' }}>
+                                Failed
+                              </Badge>
+                            </div>
+                          ) : hasTemplate && matchedTemplate ? (
                             <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                               {matchedTemplate.style_variant && (
                                 <Badge variant="info" size="sm" style={{ fontSize: '9px', padding: '2px 4px' }}>{matchedTemplate.style_variant}</Badge>
@@ -2023,8 +2310,7 @@ export default function HierarchyMatchDetailPage() {
                                 </span>
                               )}
                             </div>
-                          )}
-                          {!hasTemplate && (
+                          ) : (
                             <div style={{ fontSize: '9px', color: 'var(--app-muted-text)', marginTop: '4px' }}>—</div>
                           )}
                         </div>
@@ -2035,12 +2321,77 @@ export default function HierarchyMatchDetailPage() {
                 );
               })}
 
-              <Card title="Generated Content">
-                <div className="text-center py-8 text-gray-400">
-                  <div className="text-3xl mb-2">📭</div>
-                  <p>No content generated yet</p>
-                  <p className="text-sm">Generated graphics will appear here</p>
-                </div>
+              <Card title={`Generated Content${contentItems.length > 0 ? ` (${contentItems.length})` : ''}`}>
+                {contentItemsLoading ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <div className="text-2xl mb-2">⏳</div>
+                    <p>Loading content...</p>
+                  </div>
+                ) : contentItems.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <div className="text-3xl mb-2">📭</div>
+                    <p>No content generated yet</p>
+                    <p className="text-sm">Click on a content type above to generate</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                    {contentItems.map(item => {
+                      const isCompleted = ['completed', 'approved'].includes(item.status);
+                      const isPending = ['queued', 'generating'].includes(item.status);
+                      const isFailed = item.status === 'failed';
+
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => isCompleted && openContentPreview(item)}
+                          style={{
+                            padding: '12px',
+                            border: `1px solid ${isCompleted ? '#22c55e' : (isPending ? '#f59e0b' : '#ef4444')}`,
+                            borderRadius: '8px',
+                            backgroundColor: isCompleted ? 'rgba(34, 197, 94, 0.05)' : (isPending ? 'rgba(245, 158, 11, 0.05)' : 'rgba(239, 68, 68, 0.05)'),
+                            cursor: isCompleted ? 'pointer' : 'default',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (isCompleted) {
+                              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.boxShadow = 'none';
+                            e.currentTarget.style.transform = 'none';
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                            <span style={{ fontWeight: 600, fontSize: '13px' }}>
+                              {item.template?.name || 'Content'}
+                            </span>
+                            <Badge
+                              variant={isCompleted ? 'success' : (isPending ? 'warning' : 'error')}
+                              size="sm"
+                            >
+                              {item.status}
+                            </Badge>
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--app-muted-text)' }}>
+                            {new Date(item.created_at).toLocaleString()}
+                          </div>
+                          {isFailed && item.error_message && (
+                            <div style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>
+                              {item.error_message}
+                            </div>
+                          )}
+                          {isCompleted && (
+                            <div style={{ fontSize: '11px', color: '#22c55e', marginTop: '4px' }}>
+                              Click to preview
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </Card>
             </div>
           )}
