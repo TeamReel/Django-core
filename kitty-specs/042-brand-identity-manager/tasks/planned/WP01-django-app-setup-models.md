@@ -76,6 +76,16 @@ import uuid
 from django.db import models
 from django.conf import settings
 
+# Well-known token keys that should always be present in API responses
+WELL_KNOWN_TOKEN_KEYS = [
+    'primary_color',
+    'secondary_color',
+    'accent_color',
+    'font_heading',
+    'font_body',
+    'border_radius',
+]
+
 
 class BrandProfile(models.Model):
     """Brand identity configuration for organisation or project."""

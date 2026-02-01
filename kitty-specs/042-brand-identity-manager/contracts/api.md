@@ -216,7 +216,18 @@ PATCH /api/branding/tokens/{id}/
 DELETE /api/branding/tokens/{id}/
 ```
 
+**Purpose**: Remove a token from a brand profile (enables "remove override" pattern)
+
 **Response** (204 No Content)
+
+**Effect**: Removes token from profile. For project-level tokens, if the organisation has a token with the same key, subsequent token resolution API calls will return the organisation value (inheritance fallback). This implements the "remove override" pattern from User Story 3.
+
+**Example Workflow** (Override Removal):
+1. Organisation has token: `primary_color: #FF6600`
+2. Project creates override: `primary_color: #D2122E`
+3. Token resolution returns: `#D2122E` (project override)
+4. Project admin DELETEs the project token
+5. Token resolution returns: `#FF6600` (organisation fallback)
 
 ---
 

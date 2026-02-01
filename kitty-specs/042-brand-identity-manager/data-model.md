@@ -90,7 +90,20 @@ TOKEN_TYPES = [
 - Unique constraint: (`profile`, `key`) — no duplicate keys per brand
 - Max length validation: `value` max 1000 chars
 
+**Constants**:
+```python
+WELL_KNOWN_TOKEN_KEYS = [
+    'primary_color',
+    'secondary_color',
+    'accent_color',
+    'font_heading',
+    'font_body',
+    'border_radius',
+]
+```
+
 **Methods**:
+- `is_well_known() -> bool`: Returns `self.key in WELL_KNOWN_TOKEN_KEYS`
 - `__str__()`: Returns `{key}: {value}`
 
 **Meta**:

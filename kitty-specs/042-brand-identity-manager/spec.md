@@ -97,7 +97,7 @@ An admin uploads, replaces, and removes brand assets (logos, watermarks, fonts) 
 
 ### Edge Cases
 
-- What happens when an organisation has no brand profile? → Projects return empty token set with well-known keys as null
+- What happens when an organisation has no brand profile? → Projects return empty token set with well-known token keys as null
 - What happens when a project's organisation is changed? → Brand inheritance re-evaluates to new org's brand
 - How does system handle circular inheritance? → Not possible by design: org→project is single level, no project-to-project inheritance
 - What happens when a brand profile is deactivated? → Tokens return empty, assets return null, but data is preserved for reactivation
@@ -113,8 +113,8 @@ An admin uploads, replaces, and removes brand assets (logos, watermarks, fonts) 
 - **FR-003**: System MUST store DesignTokens as key-value pairs with type classification (color, font, spacing, other)
 - **FR-004**: System MUST define well-known token keys: primary_color, secondary_color, accent_color, font_heading, font_body, border_radius
 - **FR-005**: System MUST allow custom token keys beyond the well-known set
-- **FR-006**: System MUST validate color tokens as valid hex codes (#RRGGBB or #RGB)
-- **FR-007**: System MUST validate all token values have length between 1 and 255 characters
+- **FR-006**: System MUST validate all token values have length between 1 and 255 characters (format-specific validation like hex codes is a product-layer concern per Constitution product-agnostic constraint)
+- **FR-007**: System MUST support token type classification to enable downstream validation in product layers
 - **FR-008**: System MUST implement merge inheritance: project tokens override org tokens, unspecified tokens inherit from org
 - **FR-009**: System MUST return complete merged token set via API endpoint
 - **FR-010**: System MUST store BrandAssets linked to BrandProfile and B22 File
@@ -184,7 +184,7 @@ An admin uploads, replaces, and removes brand assets (logos, watermarks, fonts) 
 - **SC-001**: Organisation admins can create and configure a brand profile in under 5 minutes
 - **SC-002**: Project brand token retrieval (merged) completes in under 100ms for 95% of requests
 - **SC-003**: Content generation system can retrieve complete brand context in a single API call
-- **SC-004**: 100% of well-known token keys are present in API response (null if not set)
+- **SC-004**: 100% of well-known token keys (primary_color, secondary_color, accent_color, font_heading, font_body, border_radius) are present in API response (null if not set)
 - **SC-005**: Brand inheritance correctly resolves for projects without own profile (verified by automated tests)
 - **SC-006**: Asset upload/replace operations complete successfully with proper file storage integration
 

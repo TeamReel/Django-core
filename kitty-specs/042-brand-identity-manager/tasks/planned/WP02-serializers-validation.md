@@ -118,6 +118,19 @@ class DesignTokenSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    def validate_value(self, value):
+        """Validate token value length (1-255 chars per FR-006).
+
+        Note: Format-specific validation (e.g., hex codes for colors) is
+        intentionally NOT implemented here per Constitution's product-agnostic
+        constraint. Product layers can add format validators as needed.
+        """
+        if not value or len(value) < 1:
+            raise serializers.ValidationError("Token value cannot be empty")
+        if len(value) > 255:
+            raise serializers.ValidationError("Token value must be 255 characters or less")
+        return value
+
     def validate_key(self, value):
         """Validate token key format."""
         if not value or len(value.strip()) == 0:
