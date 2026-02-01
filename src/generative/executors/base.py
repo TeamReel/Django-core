@@ -1,9 +1,18 @@
 """Base pipeline executor interface."""
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal
+from enum import Enum
 from typing import Any
+
+
+class ErrorCategory(Enum):
+    """Error classification for retry logic."""
+
+    TRANSIENT = "transient"  # Retry (rate limit, timeout, 429, 503, 504)
+    PERMANENT = "permanent"  # Fail (invalid input, auth error, 400, 401, 403)
+    UNKNOWN = "unknown"  # Retry with caution (unexpected errors)
 
 
 @dataclass
@@ -14,10 +23,10 @@ class ExecutionResult:
     output_type: str  # 'text', 'json', 'image', 'video'
     content: str | None = None  # For text/json outputs
     file_path: str | None = None  # For file outputs
-    metadata: dict[str, Any] | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
     actual_cost: Decimal | None = None
     error_message: str | None = None
-    error_category: str | None = None  # 'transient', 'permanent', 'unknown'
+    error_category: ErrorCategory | None = None
 
 
 class BasePipelineExecutor(ABC):
@@ -68,3 +77,32 @@ class BasePipelineExecutor(ABC):
     def provider_name(self) -> str:
         """Return the provider identifier (e.g., 'openai', 'langgraph')."""
         pass
+
+    def classify_error(self, exception: Exception) -> ErrorCategory:
+        """Classify error for retry logic.
+
+        Args:
+            exception: The exception to classify
+
+        Returns:
+            ErrorCategory enum value
+        """
+        error_msg = str(exception).lower()
+        error_type = exception.__class__.__name__
+
+        # Transient errors (retry) - rate limits, timeouts, server errors
+        if error_type in ["TimeoutError", "ConnectionError", "RateLimitError"] or any(
+            keyword in error_msg
+            for keyword in ["rate limit", "timeout", "429", "503", "504", "too many"]
+        ):
+            return ErrorCategory.TRANSIENT
+
+        # Permanent errors (fail) - auth, validation, bad requests
+        if error_type in ["AuthenticationError", "BadRequestError", "PermissionError"] or any(
+            keyword in error_msg
+            for keyword in ["invalid", "unauthorized", "401", "403", "400", "authentication"]
+        ):
+            return ErrorCategory.PERMANENT
+
+        # Unknown (retry with caution)
+        return ErrorCategory.UNKNOWN
