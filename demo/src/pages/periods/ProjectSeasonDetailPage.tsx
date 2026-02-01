@@ -639,6 +639,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   useEffect(() => {
     const projectIdForMembers = String((project as any)?.id || '').trim();
     const seasonUuid = String(resolvedSeasonId || '').trim();
+
+    console.log('[SeasonDetail] Squad fetch check:', { projectIdForMembers, seasonUuid, resolvedSeasonId });
+
     if (!projectIdForMembers || !seasonUuid) return;
 
     let cancelled = false;
@@ -650,11 +653,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           projectIdForMembers
         )}/members/?period=${encodeURIComponent(seasonUuid)}&page_size=200`;
 
+        console.log('[SeasonDetail] Fetching squad members with URL:', membersUrl);
+
         const membersList = await fetchAllPages<any>(
           membersUrl,
           { credentials: 'include' },
           { bypass: true, maxItems: 5000 }
         );
+
+        console.log('[SeasonDetail] Squad members fetched:', membersList?.length || 0);
 
         if (!cancelled) setMembers(Array.isArray(membersList) ? membersList : []);
       } catch (e) {
