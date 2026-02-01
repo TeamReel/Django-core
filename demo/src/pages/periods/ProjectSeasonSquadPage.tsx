@@ -473,11 +473,15 @@ export default function ProjectSeasonSquadPage() {
           projectJson.id
         )}/members/?period=${encodeURIComponent(seasonUuid)}&page_size=200`;
 
+        console.log('[Squad] Fetching members with period filter:', { membersUrl, seasonUuid, projectId: projectJson.id });
+
         const membersList = await fetchAllPages<any>(
           membersUrl,
           { credentials: 'include' },
           { bypass: true, maxItems: 5000 }
         );
+
+        console.log('[Squad] Fetched members count:', membersList?.length || 0);
 
         if (!isCancelled) setMembers(Array.isArray(membersList) ? membersList : []);
       } catch (e) {
