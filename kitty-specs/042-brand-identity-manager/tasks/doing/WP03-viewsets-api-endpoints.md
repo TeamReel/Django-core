@@ -2,7 +2,10 @@
 work_package_id: WP03
 title: ViewSets & API Endpoints
 priority: P1
-lane: planned
+lane: doing
+assignee: claude
+agent: claude
+shell_pid: "18452"
 subtasks:
   - T015
   - T016
@@ -20,6 +23,12 @@ history:
   - date: 2026-02-01
     action: created
     by: spec-kitty.tasks
+activity_log:
+  - timestamp: 2026-02-01T16:00:00Z
+    agent: claude
+    shell_pid: "18452"
+    lane: doing
+    note: "Started implementation of ViewSets and token resolution API"
 ---
 
 # Work Package 03: ViewSets & API Endpoints
