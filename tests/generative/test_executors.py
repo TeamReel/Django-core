@@ -13,6 +13,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+import src.generative.executors.openai_executor as openai_executor_module
+
 from src.generative.executors import (
     BasePipelineExecutor,
     ErrorCategory,
@@ -130,9 +132,47 @@ class TestOpenAIExecutor:
         assert isinstance(cost, Decimal)
         assert cost > Decimal("0")
 
+    def test_get_client_requires_api_key(self, executor, settings):
+        """Test OpenAI API key is required."""
+        settings.OPENAI_API_KEY = None
+        with pytest.raises(ValueError, match="OPENAI_API_KEY not configured"):
+            executor._get_client()
+
+    def test_build_messages_requires_prompt(self, executor):
+        """Test prompt is required for message building."""
+        with pytest.raises(ValueError, match="must contain 'prompt'"):
+            executor._build_messages(input_data={}, system_message="sys")
+
+    def test_inject_brand_context(self, executor):
+        """Test brand context injection appends tokens."""
+        system_message = "Base system"
+
+        # No tokens -> unchanged
+        assert (
+            executor._inject_brand_context(system_message, brand_context={"tokens": {}})
+            == system_message
+        )
+
+        # With tokens -> appended
+        updated = executor._inject_brand_context(
+            system_message,
+            brand_context={
+                "tokens": {
+                    "brand_name": "TeamReel",
+                    "tone": "direct",
+                    "primary_color": "#123456",
+                }
+            },
+        )
+        assert "Brand Context:" in updated
+        assert "Brand: TeamReel" in updated
+        assert "Tone: direct" in updated
+        assert "Primary Color: #123456" in updated
+
     @pytest.mark.asyncio
-    async def test_execute_success(self, executor, valid_openai_config):
+    async def test_execute_success(self, executor, valid_openai_config, settings):
         """Test successful OpenAI execution with mocked API."""
+        settings.OPENAI_API_KEY = "test-key"
         with patch("src.generative.executors.openai_executor.openai.OpenAI") as mock_openai_class:
             # Mock the client and response
             mock_client = MagicMock()
@@ -158,6 +198,72 @@ class TestOpenAIExecutor:
             assert result.content == "Generated text"
             assert result.actual_cost > Decimal("0")
             assert result.error_message is None
+
+    @pytest.mark.asyncio
+    async def test_execute_rate_limit_error(
+        self, executor, valid_openai_config, settings, monkeypatch
+    ):
+        """Test OpenAI rate limit maps to TRANSIENT."""
+        settings.OPENAI_API_KEY = "test-key"
+
+        RateLimitError = type("RateLimitError", (Exception,), {})
+        monkeypatch.setattr(openai_executor_module.openai, "RateLimitError", RateLimitError)
+
+        with patch("src.generative.executors.openai_executor.openai.OpenAI") as mock_openai_class:
+            mock_client = MagicMock()
+            mock_openai_class.return_value = mock_client
+            mock_client.chat.completions.create.side_effect = RateLimitError("rate limit")
+
+            result = await executor.execute(
+                template_config=valid_openai_config, input_data={"prompt": "Test prompt"}
+            )
+
+            assert result.success is False
+            assert result.error_category == ErrorCategory.TRANSIENT
+
+    @pytest.mark.asyncio
+    async def test_execute_auth_error(self, executor, valid_openai_config, settings, monkeypatch):
+        """Test OpenAI auth errors map to PERMANENT."""
+        settings.OPENAI_API_KEY = "test-key"
+
+        AuthenticationError = type("AuthenticationError", (Exception,), {})
+        monkeypatch.setattr(
+            openai_executor_module.openai, "AuthenticationError", AuthenticationError
+        )
+
+        with patch("src.generative.executors.openai_executor.openai.OpenAI") as mock_openai_class:
+            mock_client = MagicMock()
+            mock_openai_class.return_value = mock_client
+            mock_client.chat.completions.create.side_effect = AuthenticationError("bad key")
+
+            result = await executor.execute(
+                template_config=valid_openai_config, input_data={"prompt": "Test prompt"}
+            )
+
+            assert result.success is False
+            assert result.error_category == ErrorCategory.PERMANENT
+
+    @pytest.mark.asyncio
+    async def test_execute_bad_request_error(
+        self, executor, valid_openai_config, settings, monkeypatch
+    ):
+        """Test OpenAI bad request maps to PERMANENT."""
+        settings.OPENAI_API_KEY = "test-key"
+
+        BadRequestError = type("BadRequestError", (Exception,), {})
+        monkeypatch.setattr(openai_executor_module.openai, "BadRequestError", BadRequestError)
+
+        with patch("src.generative.executors.openai_executor.openai.OpenAI") as mock_openai_class:
+            mock_client = MagicMock()
+            mock_openai_class.return_value = mock_client
+            mock_client.chat.completions.create.side_effect = BadRequestError("invalid")
+
+            result = await executor.execute(
+                template_config=valid_openai_config, input_data={"prompt": "Test prompt"}
+            )
+
+            assert result.success is False
+            assert result.error_category == ErrorCategory.PERMANENT
 
 
 class TestLangGraphExecutor:
@@ -197,16 +303,15 @@ class TestLangGraphExecutor:
             mock_get_client.return_value = mock_client
 
             # Mock thread creation
-            mock_thread = MagicMock(thread_id="test-thread-123")
-            mock_client.threads.create.return_value = mock_thread
+            mock_client.threads.create.return_value = {"thread_id": "test-thread-123"}
 
             # Mock run execution
-            mock_run = MagicMock(
-                status="success",
-                values={"output": "Generated workflow result"},
-                multitask_strategy=None,
-            )
-            mock_client.runs.wait.return_value = mock_run
+            mock_client.runs.create.return_value = {"run_id": "test-run-456"}
+            mock_client.runs.wait.return_value = {
+                "status": "success",
+                "output": {"output": "Generated workflow result"},
+                "run_id": "test-run-456",
+            }
 
             # Execute
             result = await executor.execute(
@@ -218,6 +323,50 @@ class TestLangGraphExecutor:
             assert result.output_type == "json"
             assert result.content is not None
             assert result.error_message is None
+
+    @pytest.mark.asyncio
+    async def test_execute_missing_graph_id(self, executor):
+        """Test missing graph_id returns failure result."""
+        result = await executor.execute(template_config={"provider": "langgraph"}, input_data={})
+        assert result.success is False
+        assert result.error_category == ErrorCategory.UNKNOWN
+
+    @pytest.mark.asyncio
+    async def test_execute_run_failure(self, executor, valid_langgraph_config):
+        """Test non-success status returns error result."""
+        with patch("src.generative.executors.langgraph_executor.get_client") as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
+
+            mock_client.threads.create.return_value = {"thread_id": "test-thread-123"}
+            mock_client.runs.create.return_value = {"run_id": "test-run-456"}
+            mock_client.runs.wait.return_value = {"status": "error", "error": "boom"}
+
+            result = await executor.execute(
+                template_config=valid_langgraph_config, input_data={"prompt": "Test prompt"}
+            )
+
+            assert result.success is False
+            assert result.error_category == ErrorCategory.UNKNOWN
+            assert "execution failed" in (result.error_message or "").lower()
+
+    @pytest.mark.asyncio
+    async def test_execute_connection_error(self, executor, valid_langgraph_config):
+        """Test connection errors map to TRANSIENT."""
+        with patch.object(executor, "_get_client", side_effect=ConnectionError("down")):
+            result = await executor.execute(template_config=valid_langgraph_config, input_data={})
+            assert result.success is False
+            assert result.error_category == ErrorCategory.TRANSIENT
+
+    def test_compute_cost_with_usage(self, executor):
+        """Test usage-based cost computation path."""
+        cost = executor._compute_cost({"usage": {"prompt_tokens": 1000, "completion_tokens": 500}})
+        assert cost == Decimal("0.0300")
+
+    def test_compute_cost_fallback_estimated_cost(self, executor):
+        """Test fallback uses estimated_cost when usage is absent."""
+        cost = executor._compute_cost({"estimated_cost": 1.25})
+        assert cost == Decimal("1.2500")
 
 
 class TestExecutorFactory:
@@ -241,6 +390,20 @@ class TestExecutorFactory:
         """Test unknown provider raises ValueError."""
         with pytest.raises(ValueError, match="Unknown provider"):
             ExecutorFactory.get_executor({"provider": "unknown-provider"})
+
+    def test_get_executor_missing_provider_key(self):
+        """Test missing provider key raises ValueError."""
+        with pytest.raises(ValueError, match="must contain 'provider'"):
+            ExecutorFactory.get_executor({})
+
+    def test_register_executor_requires_subclass(self):
+        """Test register_executor enforces BasePipelineExecutor inheritance."""
+
+        class NotAnExecutor:
+            pass
+
+        with pytest.raises(ValueError, match="must inherit from BasePipelineExecutor"):
+            ExecutorFactory.register_executor("nope", NotAnExecutor)  # type: ignore[arg-type]
 
     def test_register_custom_executor(self):
         """Test registering custom executor."""
