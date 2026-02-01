@@ -2,7 +2,7 @@
 work_package_id: WP04
 title: Permissions & Django Admin
 priority: P2
-lane: doing
+lane: for_review
 agent: claude
 shell_pid: 18452
 assignee: claude
@@ -26,6 +26,12 @@ history:
     shell_pid: 18452
     lane: doing
     note: "Started implementation of permissions and Django admin"
+  - date: 2026-02-01T16:50:00Z
+    action: completed_implementation
+    by: claude
+    shell_pid: 18452
+    lane: for_review
+    note: "Completed all 6 subtasks: permissions, ViewSet integration, Django admin with inlines"
 ---
 
 # Work Package 04: Permissions & Django Admin

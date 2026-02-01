@@ -9,6 +9,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import BrandAsset, BrandProfile, DesignToken
+from .permissions import (
+    BrandAssetPermission,
+    BrandProfilePermission,
+    DesignTokenPermission,
+)
 from .serializers import (
     BrandAssetSerializer,
     BrandProfileDetailSerializer,
@@ -36,6 +41,7 @@ class BrandProfileViewSet(viewsets.ModelViewSet):
         "organisation", "project", "created_by", "updated_by"
     ).prefetch_related("design_tokens", "brand_assets")
     pagination_class = BrandPagination
+    permission_classes = [BrandProfilePermission]
 
     def get_serializer_class(self):
         """Return detailed serializer for retrieve action."""
@@ -87,6 +93,7 @@ class DesignTokenViewSet(viewsets.ModelViewSet):
 
     serializer_class = DesignTokenSerializer
     pagination_class = BrandPagination
+    permission_classes = [DesignTokenPermission]
 
     def get_queryset(self):
         """Get tokens for specific profile with optional filters.
@@ -119,6 +126,7 @@ class BrandAssetViewSet(viewsets.ModelViewSet):
 
     serializer_class = BrandAssetSerializer
     pagination_class = BrandPagination
+    permission_classes = [BrandAssetPermission]
 
     def get_queryset(self):
         """Get assets for specific profile with optional filters.
