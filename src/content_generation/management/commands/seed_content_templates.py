@@ -143,20 +143,25 @@ FOOTBALL_7V7_FORMATIONS = [
 
 
 def get_lineup_requirements(player_count: int, use_formation: bool = True) -> dict:
-    """Get standard lineup template requirements."""
+    """Get standard lineup template requirements.
+
+    Requires in_tenue, closeup, and short_intro for each member.
+    1 goalkeeper + (player_count - 1) players.
+    """
     return {
-        "players": {
-            "use_formation": use_formation,
-            "min_count": player_count,
-            "max_count": player_count,
+        "members": {
+            "goalkeeper": {
+                "count": 1,
+                "asset_types": ["in_tenue", "closeup", "short_intro"],
+            },
+            "player": {
+                "count": player_count - 1,  # -1 for goalkeeper
+                "asset_types": ["in_tenue", "closeup", "short_intro"],
+            },
         },
-        "staff": [
-            {"role": "coach", "required": True, "count": 1},
-            {"role": "assistant", "required": False, "count": 1},
-        ],
+        "use_formation": use_formation,
         "assets": [
             {"type": "team_logo", "required": True},
-            {"type": "player_photos", "required": True},
             {"type": "background", "required": False},
         ],
         "match_data": {
@@ -408,102 +413,149 @@ class Command(BaseCommand):
         template_definitions = []
 
         if category in ["all", "pre_match"]:
-            template_definitions.extend(
-                [
+            # Pre-match Flyer templates (sport=Football 11v11)
+            flyer_styles = [("Modern", "modern"), ("Classic", "classic")]
+            for style_name, style_id in flyer_styles:
+                template_definitions.append(
                     {
-                        "name": "Match Flyer - Modern",
+                        "name": f"Match Flyer - {style_name}",
                         "template_type": TemplateType.PRE_MATCH,
                         "template_subtype": TemplateSubtype.FLYER,
-                        "style_variant": "Modern",
-                        "ai_workflow_id": "flyer_modern_v1",
-                        "input_requirements": get_match_flyer_requirements(),
-                        "description": "Clean, modern match announcement with bold typography",
-                    },
+                        "style_variant": style_name,
+                        "ai_workflow_id": f"wf_flyer_{style_id}",
+                        "sport_variant": "11v11",  # Flag to use football_11v11
+                        "input_requirements": {
+                            "match_data": {
+                                "required": ["opponent", "date", "venue", "kickoff_time"],
+                                "optional": ["competition", "ticket_info"],
+                            },
+                            "club_data": {
+                                "required": ["name", "logo"],
+                                "optional": ["colors", "stadium"],
+                            },
+                            "assets": [
+                                {"type": "team_logo", "required": True},
+                                {"type": "opponent_logo", "required": True},
+                                {"type": "background", "required": False},
+                            ],
+                        },
+                        "description": f"{style_name} style match announcement flyer",
+                    }
+                )
+
+            # Walk-on templates: in_tenue required, 1 keeper + 10 players
+            walkon_styles = [("Dramatic", "dramatic"), ("Epic", "epic")]
+            for style_name, style_id in walkon_styles:
+                template_definitions.append(
                     {
-                        "name": "Match Flyer - Classic",
-                        "template_type": TemplateType.PRE_MATCH,
-                        "template_subtype": TemplateSubtype.FLYER,
-                        "style_variant": "Classic",
-                        "ai_workflow_id": "flyer_classic_v1",
-                        "input_requirements": get_match_flyer_requirements(),
-                        "description": "Traditional match poster style with club heritage feel",
-                    },
-                    {
-                        "name": "Match Flyer - Neon",
-                        "template_type": TemplateType.PRE_MATCH,
-                        "template_subtype": TemplateSubtype.FLYER,
-                        "style_variant": "Neon",
-                        "ai_workflow_id": "flyer_neon_v1",
-                        "input_requirements": get_match_flyer_requirements(),
-                        "description": "Vibrant neon-style match flyer with glow effects",
-                    },
-                    {
-                        "name": "Walk-on Video - Dramatic",
+                        "name": f"Walk-on Video - {style_name}",
                         "template_type": TemplateType.PRE_MATCH,
                         "template_subtype": TemplateSubtype.WALKON,
-                        "style_variant": "Dramatic",
-                        "ai_workflow_id": "walkon_dramatic_v1",
-                        "input_requirements": get_lineup_requirements(11),
-                        "description": "Cinematic player introduction with dramatic lighting",
-                    },
+                        "style_variant": style_name,
+                        "ai_workflow_id": f"wf_walkon_{style_id}",
+                        "sport_variant": "11v11",
+                        "input_requirements": {
+                            "members": {
+                                "goalkeeper": {"count": 1, "asset_types": ["in_tenue"]},
+                                "player": {"count": 10, "asset_types": ["in_tenue"]},
+                            },
+                            "assets": [
+                                {"type": "team_logo", "required": True},
+                            ],
+                        },
+                        "description": f"{style_name} player walk-on introduction video",
+                    }
+                )
+
+            # Anthem templates: in_tenue required, 1 keeper + 10 players
+            anthem_styles = [("Stadium", "stadium"), ("Cinematic", "cinematic")]
+            for style_name, style_id in anthem_styles:
+                template_definitions.append(
                     {
-                        "name": "Anthem Video - Stadium",
+                        "name": f"Anthem Video - {style_name}",
                         "template_type": TemplateType.PRE_MATCH,
                         "template_subtype": TemplateSubtype.ANTHEM,
-                        "style_variant": "Stadium",
-                        "ai_workflow_id": "anthem_stadium_v1",
+                        "style_variant": style_name,
+                        "ai_workflow_id": f"wf_anthem_{style_id}",
+                        "sport_variant": "11v11",
                         "input_requirements": {
+                            "members": {
+                                "goalkeeper": {"count": 1, "asset_types": ["in_tenue"]},
+                                "player": {"count": 10, "asset_types": ["in_tenue"]},
+                            },
                             "assets": [
                                 {"type": "team_logo", "required": True},
                                 {"type": "anthem_audio", "required": True},
                                 {"type": "stadium_footage", "required": False},
                             ],
                         },
-                        "description": "Anthem video with stadium atmosphere and crowd sounds",
-                    },
-                ]
-            )
+                        "description": f"{style_name} anthem video with team lineup",
+                    }
+                )
+
+            # NOTE: Lineup templates are created separately per formation (see below)
 
         if category in ["all", "during_match"]:
-            template_definitions.extend(
-                [
-                    {
-                        "name": "Goal Celebration - Explosive",
-                        "template_type": TemplateType.DURING_MATCH,
-                        "template_subtype": TemplateSubtype.GOAL,
-                        "style_variant": "Explosive",
-                        "ai_workflow_id": "goal_explosive_v1",
-                        "input_requirements": get_goal_celebration_requirements(),
-                        "description": "High-energy goal celebration with particle effects",
-                    },
-                    {
-                        "name": "Goal Celebration - Clean",
-                        "template_type": TemplateType.DURING_MATCH,
-                        "template_subtype": TemplateSubtype.GOAL,
-                        "style_variant": "Clean",
-                        "ai_workflow_id": "goal_clean_v1",
-                        "input_requirements": get_goal_celebration_requirements(),
-                        "description": "Minimal, elegant goal graphic with player focus",
-                    },
-                    {
-                        "name": "Score Update - Live",
-                        "template_type": TemplateType.DURING_MATCH,
-                        "template_subtype": TemplateSubtype.SCORE_UPDATE,
-                        "style_variant": "Live",
-                        "ai_workflow_id": "score_live_v1",
-                        "input_requirements": get_score_update_requirements(),
-                        "description": "Real-time score update graphic",
-                    },
-                    {
-                        "name": "Final Score - Victory",
-                        "template_type": TemplateType.DURING_MATCH,
-                        "template_subtype": TemplateSubtype.END_SCORE,
-                        "style_variant": "Victory",
-                        "ai_workflow_id": "endscore_victory_v1",
-                        "input_requirements": get_score_update_requirements(),
-                        "description": "Final whistle score announcement with celebration theme",
-                    },
-                ]
+            # During-match Goal Celebration templates
+            # 1 member required, variants for keeper/coach/player/assistant
+            # Same styles as member celebrations (Fist Pump, Slide, Arms Wide, Point to Sky)
+            roles = ["goalkeeper", "player", "coach", "assistant"]
+            celebration_styles = [
+                ("Fist Pump", "fist_pump", "Celebrating with fist pump"),
+                ("Slide", "slide", "Knee slide celebration"),
+                ("Arms Wide", "arms_wide", "Arms spread wide celebration"),
+                ("Point to Sky", "point_sky", "Pointing to the sky"),
+            ]
+
+            for role in roles:
+                role_label = role.capitalize()
+                role_key = role
+
+                for style_name, style_id, style_desc in celebration_styles:
+                    template_definitions.append(
+                        {
+                            "name": f"Goal Celebration {role_label} - {style_name}",
+                            "template_type": TemplateType.DURING_MATCH,
+                            "template_subtype": TemplateSubtype.GOAL,
+                            "style_variant": style_name,
+                            "ai_workflow_id": f"wf_goal_celebration_{role}_{style_id}",
+                            "input_requirements": {
+                                "members": {
+                                    role_key: {"count": 1, "asset_types": ["in_tenue"]},
+                                },
+                                "match_data": {
+                                    "required": ["opponent", "score", "minute"],
+                                    "optional": ["assist", "competition"],
+                                },
+                            },
+                            "description": f"Goal celebration for {role}: {style_desc}",
+                        }
+                    )
+
+            # Score Update
+            template_definitions.append(
+                {
+                    "name": "Score Update - Live",
+                    "template_type": TemplateType.DURING_MATCH,
+                    "template_subtype": TemplateSubtype.SCORE_UPDATE,
+                    "style_variant": "Live",
+                    "ai_workflow_id": "wf_score_live",
+                    "input_requirements": get_score_update_requirements(),
+                    "description": "Real-time score update graphic",
+                }
+            )
+
+            # Final Score
+            template_definitions.append(
+                {
+                    "name": "Final Score - Victory",
+                    "template_type": TemplateType.DURING_MATCH,
+                    "template_subtype": TemplateSubtype.END_SCORE,
+                    "style_variant": "Victory",
+                    "ai_workflow_id": "wf_endscore_victory",
+                    "input_requirements": get_score_update_requirements(),
+                    "description": "Final whistle score announcement with celebration theme",
+                }
             )
 
         if category in ["all", "post_match"]:
@@ -714,8 +766,15 @@ class Command(BaseCommand):
                     template_count += 1
                     continue
 
-                # All templates get Football sport (parent category)
-                template_sport = football_cat
+                # Determine sport based on sport_variant flag
+                sport_variant = t_data.get("sport_variant")
+                if sport_variant == "11v11":
+                    template_sport = football_11v11
+                elif sport_variant == "7v7":
+                    template_sport = football_7v7
+                else:
+                    # Default to Football category (parent)
+                    template_sport = football_cat
 
                 template, created = ContentTemplate.objects.update_or_create(
                     # Global templates: organisation=None
