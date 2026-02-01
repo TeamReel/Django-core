@@ -45,6 +45,7 @@ export interface ContentTemplate {
 export const CONTENT_TYPES = {
   pre_match: {
     label: 'Pre-match',
+    sportRequired: true,
     items: [
       { id: 'flyer', label: 'Match Flyer', icon: '📣', subtype: 'flyer' },
       { id: 'lineup', label: 'Lineup Announcement', icon: '📋', subtype: 'lineup' },
@@ -54,6 +55,7 @@ export const CONTENT_TYPES = {
   },
   during_match: {
     label: 'During match',
+    sportRequired: true,
     items: [
       { id: 'goal', label: 'Goal Celebration', icon: '⚽', subtype: 'goal' },
       { id: 'score_update', label: 'Score Update', icon: '🔢', subtype: 'score_update' },
@@ -61,6 +63,7 @@ export const CONTENT_TYPES = {
   },
   post_match: {
     label: 'Post-match',
+    sportRequired: true,
     items: [
       { id: 'end_score', label: 'Final Score', icon: '🏁', subtype: 'end_score' },
       { id: 'match_summary', label: 'Match Summary', icon: '📊', subtype: 'match_summary' },
@@ -69,6 +72,7 @@ export const CONTENT_TYPES = {
   },
   season: {
     label: 'Season',
+    sportRequired: true,
     items: [
       { id: 'transformation', label: 'Then vs Now', icon: '🔄', subtype: 'transformation' },
       { id: 'season_recap', label: 'Season Recap', icon: '📅', subtype: 'season_recap' },
