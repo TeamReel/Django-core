@@ -18,6 +18,15 @@ AI content generation factory that manages generation requests (jobs), routes to
 
 **Integrations**: B15 Celery (async), B11 Credits (transactions), B33 Brand Identity (tokens), B35 File Storage (outputs), B23 WebSocket (status updates)
 
+## Clarifications
+
+### Session 2026-02-01
+
+- Q: When a template is updated, what happens to pending/processing requests? → A: True versioning - Template updates create new version, old requests use old version (enterprise-grade approach for long-term production)
+- Q: How long should generated files be stored? → A: Per-template retention policy - Each template defines retention_days (null=forever), allowing flexible governance per content type (match videos=3 years, invoices=7 years, training notes=30 days)
+- Q: Who sets estimated_cost and how? → A: Hybrid (Manual Seed + Auto-Update) - Template creator sets initial estimated_cost (cold start solved), system auto-updates monthly based on avg(actual_cost) of last 30 days if ≥10 completed requests exist (long-term accuracy with zero maintenance)
+- Q: Which providers in MVP (OpenAI/LangGraph/n8n)? → A: OpenAI (direct API) + LangGraph (orchestration) - Simple completions use direct OpenAI API (fast, 80% of use cases), complex multi-step workflows use LangGraph (which calls OpenAI internally with state management, 20% of use cases). Skip n8n (no-code, not relevant for programmable flows). Both providers covered = complete AI architecture with performance optimization.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Template-Based Content Generation (Priority: P1)
@@ -137,14 +146,21 @@ AI content generation factory that manages generation requests (jobs), routes to
 
 **Models & Data Schema:**
 
-- **FR-001**: System MUST provide `GenerationTemplate` model with fields: name, slug, version, input_schema (JSON Schema), pipeline_config (JSON), is_active, created_at, updated_at
-- **FR-002**: System MUST provide `GenerationRequest` model with fields: template (FK), status (pending/processing/completed/failed), input_data (JSON), requester (FK User), project (FK Project), retry_count, error_category (transient/permanent/unknown), error_message, estimated_cost, actual_cost, created_at, started_at, completed_at
-- **FR-003**: System MUST provide `GenerationOutput` model with fields: request (FK), file (FK to B35 FileStorageRecord or B22 File), text_content (TextField), output_type (image/video/text/json), metadata (JSON), created_at
+- **FR-001**: System MUST provide `GenerationTemplate` model with fields: name, slug, version (semantic versioning: 1.0.0, 1.1.0, 2.0.0), input_schema (JSON Schema), pipeline_config (JSON), retention_days (nullable integer for file lifecycle), is_active, is_latest (boolean flag for current version), parent_template (FK to previous version), created_at, updated_at
+- **FR-001b**: Template versioning MUST follow immutable version pattern: updates create new template row with incremented version, old version remains for historical requests
+- **FR-001c**: Template retention_days MUST define output file lifecycle: NULL=forever, integer=days until automatic deletion (enables per-content-type governance)
+- **FR-002**: System MUST provide `GenerationRequest` model with fields: template (FK to specific version), template_version (denormalized for quick access), status (pending/processing/completed/failed), input_data (JSON), requester (FK User), project (FK Project), retry_count, error_category (transient/permanent/unknown), error_message, estimated_cost, actual_cost, created_at, started_at, completed_at
+- **FR-003**: System MUST provide `GenerationOutput` model with fields: request (FK), file (FK to B35 FileStorageRecord or B22 File), text_content (TextField), output_type (image/video/text/json), metadata (JSON), expires_at (computed from created_at + template.retention_days), created_at
+- **FR-003b**: System MUST provide automated cleanup job (daily cron) that soft-deletes GenerationOutput records where expires_at < now() and template.retention_days IS NOT NULL
 - **FR-004**: System MUST validate input_data against template's input_schema before queueing request (fail fast with HTTP 400)
+- **FR-004b**: When creating new template version, system MUST validate schema compatibility (breaking changes require major version bump)
+- **FR-004c**: System MUST provide hybrid cost estimation: template creator sets initial estimated_cost (manual seed in pipeline_config), system auto-updates monthly via cron job based on avg(actual_cost) of last 30 days if sample_size ≥ 10 completed requests
+- **FR-004d**: GenerationTemplate.pipeline_config MUST store cost metadata fields: estimated_cost (current estimate in credits), cost_last_updated (ISO timestamp of last recalculation), cost_sample_size (integer count of requests used for calculation)
 
 **Pipeline Execution:**
 
-- **FR-005**: System MUST support pipeline providers: "openai" (direct API), "langgraph" (agent flows), "n8n" (workflow webhooks)
+- **FR-005**: System MUST support 2 pipeline providers: "openai" (direct API for simple single-shot completions), "langgraph" (stateful orchestration for complex multi-step workflows, calls OpenAI/Claude/etc internally)
+- **FR-005b**: OpenAI provider MUST optimize for fast path (direct API calls, 80% of use cases), LangGraph provider MUST support pre-programmed graphs with state management (complex reasoning, 20% of use cases)
 - **FR-006**: System MUST select pipeline executor based on template.pipeline_config["provider"] (hardcoded, no automatic detection)
 - **FR-007**: System MUST execute generation requests asynchronously via Celery tasks (B15 integration)
 - **FR-008**: Pipeline executors MUST return standardized output format: `{"type": "image|video|text|json", "content": "...", "metadata": {...}}`
@@ -326,14 +342,16 @@ AI content generation factory that manages generation requests (jobs), routes to
                               ┌────────────────────────────────────┐
                               │     Pipeline Executor Factory      │
                               │  BasePipelineExecutor (ABC)        │
-                              └──┬──────────┬──────────┬───────────┘
-                                 │          │          │
-                    ┌────────────▼─┐  ┌────▼────┐  ┌─▼─────────┐
-                    │ OpenAI Exec  │  │ LangGr. │  │ n8n Exec  │
-                    │ - GPT-4/3.5  │  │ - Flows │  │ - Webhook │
-                    └──────┬───────┘  └────┬────┘  └─┬─────────┘
-                           │               │          │
-                           └───────────────┼──────────┘
+                              └──┬───────────────────┬─────────────┘
+                                 │                   │
+                    ┌────────────▼──────────┐  ┌────▼─────────────────┐
+                    │ OpenAI Executor       │  │ LangGraph Executor   │
+                    │ - Direct API (fast)   │  │ - Stateful workflows │
+                    │ - Single-shot calls   │  │ - Calls OpenAI/etc   │
+                    │ - 80% of use cases    │  │ - 20% complex tasks  │
+                    └──────┬────────────────┘  └────┬─────────────────┘
+                           │                        │
+                           └────────────────────────┘
                                            ▼
                               ┌────────────────────────────────────┐
                               │     Error Classifier               │
@@ -404,20 +422,20 @@ AI content generation factory that manages generation requests (jobs), routes to
 
 ### Error Classification Matrix
 
-| Provider | Error Type | Category | Retry? |
-|----------|-----------|----------|--------|
-| **OpenAI** | RateLimitError (429) | TRANSIENT | ✅ 3x |
-| OpenAI | Timeout (504) | TRANSIENT | ✅ 3x |
-| OpenAI | BadRequestError (400) | PERMANENT | ❌ No |
-| OpenAI | AuthenticationError (401) | PERMANENT | ❌ No |
-| OpenAI | InvalidRequestError | PERMANENT | ❌ No |
-| **LangGraph** | HTTP 503 | TRANSIENT | ✅ 3x |
-| LangGraph | ValidationError | PERMANENT | ❌ No |
-| LangGraph | FlowNotFoundError | PERMANENT | ❌ No |
-| **n8n** | Webhook timeout | TRANSIENT | ✅ 3x |
-| n8n | Workflow error | PERMANENT | ❌ No |
-| **All** | ConnectionError | TRANSIENT | ✅ 3x |
-| **All** | Unknown exception | UNKNOWN | ✅ 1x |
+| Provider | Error Type | Category | Retry? | Notes |
+|----------|-----------|----------|--------|-------|
+| **OpenAI** | RateLimitError (429) | TRANSIENT | ✅ 3x | Exponential backoff |
+| OpenAI | Timeout (504) | TRANSIENT | ✅ 3x | Network issue |
+| OpenAI | BadRequestError (400) | PERMANENT | ❌ No | Invalid prompt/params |
+| OpenAI | AuthenticationError (401) | PERMANENT | ❌ No | Config error |
+| OpenAI | InvalidRequestError | PERMANENT | ❌ No | Malformed request |
+| **LangGraph** | HTTP 503 (Service Unavailable) | TRANSIENT | ✅ 3x | Temporary overload |
+| LangGraph | Timeout | TRANSIENT | ✅ 3x | Long workflow |
+| LangGraph | ValidationError | PERMANENT | ❌ No | Invalid input schema |
+| LangGraph | GraphNotFoundError | PERMANENT | ❌ No | Missing graph_id config |
+| LangGraph | LLM API errors | TRANSIENT/PERMANENT | Depends | Inherits from underlying LLM (OpenAI/Claude) |
+| **All** | ConnectionError | TRANSIENT | ✅ 3x | Network issue |
+| **All** | Unknown exception | UNKNOWN | ✅ 1x | Conservative retry |
 
 ### Database Schema
 
@@ -483,7 +501,7 @@ CONSTRAINT: (file_id IS NOT NULL) OR (text_content IS NOT NULL)
 
 **GET /api/generation/templates/**
 - **Auth**: Authenticated users
-- **Query Params**: `?is_active=true`, `?provider=openai`
+- **Query Params**: `?is_active=true`, `?provider=openai`, `?provider=langgraph`
 - **Response**: `200 OK` with paginated list
 - **Errors**: `401` (not authenticated)
 
@@ -529,12 +547,35 @@ CONSTRAINT: (file_id IS NOT NULL) OR (text_content IS NOT NULL)
 2. **Template Presets** (in product code):
    ```python
    # TeamReel creates templates via migration
+
+   # Simple completion (OpenAI direct)
    GenerationTemplate.objects.get_or_create(
-       slug="match-report-ig",
+       slug="instagram-caption",
        defaults={
-           "name": "Match Report Instagram",
-           "input_schema": {...},
-           "pipeline_config": {"provider": "openai", ...}
+           "name": "Instagram Caption",
+           "input_schema": {"match_id": "integer", "mvp": "string"},
+           "pipeline_config": {
+               "provider": "openai",
+               "model": "gpt-4",
+               "prompt_template": "Create Instagram caption for match...",
+               "estimated_cost": 50.00
+           }
+       }
+   )
+
+   # Complex workflow (LangGraph orchestration)
+   GenerationTemplate.objects.get_or_create(
+       slug="match-analysis-report",
+       defaults={
+           "name": "Match Analysis Report",
+           "input_schema": {"match_id": "integer"},
+           "pipeline_config": {
+               "provider": "langgraph",
+               "graph_id": "match_analysis_v1",  # Pre-programmed graph
+               "llm_provider": "openai",
+               "llm_model": "gpt-4",
+               "estimated_cost": 300.00
+           }
        }
    )
    ```
@@ -584,26 +625,25 @@ CONSTRAINT: (file_id IS NOT NULL) OR (text_content IS NOT NULL)
 - Standardized output format validation
 
 **Work Package 2.2: OpenAI Executor**
-- Integration with `openai` library (GPT-4, GPT-3.5)
+- Integration with `openai` library (direct API calls for GPT-4, GPT-3.5)
+- Fast path optimization (single-shot completions, 80% of use cases)
 - Cost calculation (token usage → credits)
 - Response parsing (text, JSON, function calls)
 
-**Work Package 2.3: LangGraph Executor** (if in scope)
-- HTTP client for LangGraph API
-- Flow invocation with input mapping
-- Result polling or webhook callback
+**Work Package 2.3: LangGraph Executor**
+- Integration with LangGraph SDK (StateGraph, pre-programmed flows)
+- Load pre-defined graphs by `graph_id` from template config
+- State management for multi-step workflows (complex reasoning, 20% of use cases)
+- Support for multiple LLM providers within graph (OpenAI, Claude, etc.)
+- Result aggregation from multi-node execution
 
-**Work Package 2.4: n8n Executor** (if in scope)
-- Webhook POST to workflow URL
-- Standardized payload format
-- Response parsing
+**Work Package 2.4: Tests**
+- Mock external APIs (responses library, unittest.mock)
+- Test success paths + error handling for both providers
+- Test cost calculations (OpenAI token counting, LangGraph aggregated costs)
+- Test error classification (TRANSIENT/PERMANENT/UNKNOWN)
 
-**Work Package 2.5: Tests**
-- Mock external APIs (responses library)
-- Test success paths + error handling
-- Test cost calculations
-
-**Deliverable**: All pipeline providers work, but synchronous execution (no Celery yet)
+**Deliverable**: Both pipeline providers work (OpenAI direct + LangGraph orchestration), synchronous execution (Celery integration in Phase 3)
 
 ---
 
