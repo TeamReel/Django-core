@@ -188,7 +188,7 @@ export default function ContentGenerationModal({
   template: initialTemplate,
   contentTypeLabel,
 }: ContentGenerationModalProps) {
-  const [step, setStep] = useState<'type' | 'template' | 'members' | 'generating' | 'success'>('type');
+  const [step, setStep] = useState<'type' | 'template' | 'members' | 'confirm' | 'generating' | 'success'>('type');
   const [selectedType, setSelectedType] = useState<{ type: string; subtype: string; label: string } | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
   const [progress, setProgress] = useState(0);
@@ -301,9 +301,8 @@ export default function ContentGenerationModal({
         if (needsMembers) {
           setStep('members');
         } else {
-          // No members needed, go directly to generate
-          setStep('generating');
-          setTimeout(() => handleGenerateInternal(), 100);
+          // No members needed, go to confirm step
+          setStep('confirm');
         }
       } else {
         setStep('type');
@@ -413,7 +412,8 @@ export default function ContentGenerationModal({
     if (needsMembers) {
       setStep('members');
     } else {
-      handleGenerate();
+      // No members needed, go to confirm step
+      setStep('confirm');
     }
   };
 
@@ -454,8 +454,8 @@ export default function ContentGenerationModal({
   };
 
   const handleBack = () => {
-    // If we started with a template, just close the modal
-    if (initialTemplate) {
+    // If we started with a template, just close the modal on first back
+    if (initialTemplate && (step === 'members' || step === 'confirm')) {
       onClose();
       return;
     }
@@ -468,6 +468,18 @@ export default function ContentGenerationModal({
       setStep('template');
       setSelectedTemplate(null);
       setSelectedMembers({ goalkeeper: [], player: [], coach: [], assistant: [] });
+    } else if (step === 'confirm') {
+      // Check if we need to go back to members or template
+      const needsMembers = selectedTemplate?.input_requirements?.members &&
+        Object.entries(selectedTemplate.input_requirements.members).some(([key, val]) =>
+          key !== 'use_formation' && val && typeof val !== 'boolean' && val.count > 0
+        );
+      if (needsMembers) {
+        setStep('members');
+      } else {
+        setStep('template');
+        setSelectedTemplate(null);
+      }
     }
   };
 
@@ -793,6 +805,56 @@ export default function ContentGenerationModal({
             </div>
           )}
 
+          {/* Confirm - Review before generation */}
+          {step === 'confirm' && (
+            <div className="flex flex-col items-center justify-center h-full py-12">
+              <div className="text-6xl mb-6">🎬</div>
+              <h3 className="text-2xl font-bold mb-2">Ready to Generate</h3>
+              <p className="text-gray-600 mb-6 text-center max-w-md">
+                You're about to generate a <strong>{selectedType?.label || selectedTemplate?.name}</strong> for this match.
+              </p>
+
+              {/* Template info */}
+              {selectedTemplate && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-6 w-full max-w-md">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Badge variant="info">{selectedTemplate.template_type}</Badge>
+                    {selectedTemplate.style_variant && (
+                      <Badge variant="default">{selectedTemplate.style_variant}</Badge>
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <strong>Template:</strong> {selectedTemplate.name}
+                  </div>
+                  {selectedTemplate.description && (
+                    <div className="text-sm text-gray-500 mt-1">
+                      {selectedTemplate.description}
+                    </div>
+                  )}
+                  {selectedTemplate.credits_required && selectedTemplate.credits_required > 0 && (
+                    <div className="text-sm text-gray-600 mt-2">
+                      <strong>Cost:</strong> {selectedTemplate.credits_required} credits
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Match info */}
+              {matchData && (
+                <div className="bg-blue-50 rounded-lg p-4 w-full max-w-md">
+                  <div className="text-sm text-blue-800">
+                    <strong>Match:</strong> {matchData.title || 'Match'}
+                  </div>
+                  {matchData.start_time && (
+                    <div className="text-sm text-blue-600 mt-1">
+                      {new Date(matchData.start_time).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Generating */}
           {step === 'generating' && (
             <div className="flex flex-col items-center justify-center h-full py-16">
@@ -829,7 +891,7 @@ export default function ContentGenerationModal({
         {/* Footer */}
         <div className="mt-6 pt-4 border-t flex justify-between">
           <div>
-            {(step === 'template' || step === 'members') && (
+            {(step === 'template' || step === 'members' || step === 'confirm') && (
               <Button variant="ghost" onClick={handleBack}>← Back</Button>
             )}
           </div>
@@ -838,8 +900,13 @@ export default function ContentGenerationModal({
               <Button variant="ghost" onClick={onClose}>Cancel</Button>
             )}
             {step === 'members' && (
-              <Button disabled={!memberSelectionValid} onClick={handleGenerate}>
-                Generate Content
+              <Button disabled={!memberSelectionValid} onClick={() => setStep('confirm')}>
+                Continue →
+              </Button>
+            )}
+            {step === 'confirm' && (
+              <Button onClick={handleGenerate}>
+                🚀 Generate Content
               </Button>
             )}
             {step === 'success' && (
