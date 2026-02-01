@@ -19,7 +19,7 @@ This task breakdown covers the implementation of the Brand Identity Manager feat
 | WP01 | Django App Setup & Models | P1 | 8 | ✅ Done |
 | WP02 | Serializers & Validation | P1 | 6 | ✅ Done |
 | WP03 | ViewSets & API Endpoints | P1 | 8 | ✅ Done |
-| WP04 | Permissions & Django Admin | P2 | 6 | 🔍 Review |
+| WP04 | Permissions & Django Admin | P2 | 6 | ✅ Done |
 | WP05 | Testing Suite | P2 | 10 | Planned |
 | WP06 | Documentation & Integration | P3 | 4 | Planned |
 
@@ -130,19 +130,19 @@ Implement DRF ViewSets for CRUD operations and special token resolution endpoint
 
 ## Work Package 04: Permissions & Django Admin
 **Priority**: P2 (Access Control)
-**Prompt**: [tasks/for_review/WP04-permissions-django-admin.md](tasks/for_review/WP04-permissions-django-admin.md)
+**Prompt**: [tasks/done/WP04-permissions-django-admin.md](tasks/done/WP04-permissions-django-admin.md)
 
 ### Goal
 Implement permission classes and configure Django admin interface.
 
 ### Subtasks
 
-- [ ] **T023**: Create BrandProfilePermission class (cascade control: org admins → all, project admins → own)
-- [ ] **T024**: Apply permissions to all ViewSets
-- [ ] **T025**: Register BrandProfile in Django admin with inlines
-- [ ] **T026**: Register DesignToken in Django admin
-- [ ] **T027**: Register BrandAsset in Django admin
-- [ ] **T028**: Add admin list filters, search fields, readonly fields
+- [x] **T023**: Create BrandProfilePermission class (cascade control: org admins → all, project admins → own)
+- [x] **T024**: Apply permissions to all ViewSets
+- [x] **T025**: Register BrandProfile in Django admin with inlines
+- [x] **T026**: Register DesignToken in Django admin
+- [x] **T027**: Register BrandAsset in Django admin
+- [x] **T028**: Add admin list filters, search fields, readonly fields
 
 ### Implementation Sketch
 
