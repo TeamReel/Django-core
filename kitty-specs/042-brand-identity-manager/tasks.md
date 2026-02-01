@@ -17,7 +17,7 @@ This task breakdown covers the implementation of the Brand Identity Manager feat
 | ID | Title | Priority | Subtasks | Status |
 |----|-------|----------|----------|--------|
 | WP01 | Django App Setup & Models | P1 | 8 | ✅ Done |
-| WP02 | Serializers & Validation | P1 | 6 | Planned |
+| WP02 | Serializers & Validation | P1 | 6 | ✅ Done |
 | WP03 | ViewSets & API Endpoints | P1 | 8 | Planned |
 | WP04 | Permissions & Django Admin | P2 | 6 | Planned |
 | WP05 | Testing Suite | P2 | 10 | Planned |
@@ -62,19 +62,19 @@ Create the `branding` Django app with complete data models for BrandProfile, Des
 
 ## Work Package 02: Serializers & Validation
 **Priority**: P1 (Foundation)
-**Prompt**: [tasks/planned/WP02-serializers-validation.md](tasks/planned/WP02-serializers-validation.md)
+**Prompt**: [tasks/done/WP02-serializers-validation.md](tasks/done/WP02-serializers-validation.md)
 
 ### Goal
 Implement DRF serializers with validation logic for all models.
 
 ### Subtasks
 
-- [ ] **T009**: Create BrandProfileSerializer with nested relationships
-- [ ] **T010**: Create DesignTokenSerializer with type choices validation
-- [ ] **T011**: Create BrandAssetSerializer with File relationship
-- [ ] **T012**: Implement token value validation (length 1-255 chars)
-- [ ] **T013**: Implement BrandProfile validation (org XOR project, not both)
-- [ ] **T014**: Implement unique constraint validation per serializer
+- [x] **T009**: Create BrandProfileSerializer with nested relationships
+- [x] **T010**: Create DesignTokenSerializer with type choices validation
+- [x] **T011**: Create BrandAssetSerializer with File relationship
+- [x] **T012**: Implement token value validation (length 1-255 chars)
+- [x] **T013**: Implement BrandProfile validation (org XOR project, not both)
+- [x] **T014**: Implement unique constraint validation per serializer
 
 ### Implementation Sketch
 
