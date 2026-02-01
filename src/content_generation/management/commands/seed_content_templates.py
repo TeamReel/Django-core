@@ -585,48 +585,65 @@ class Command(BaseCommand):
 
         if category in ["all", "member"]:
             # Member templates for each role: goalkeeper, player, coach, assistant
-            # Each subtype × each role = template
+            # Each subtype × each role × style variants = templates
             roles = ["goalkeeper", "player", "coach", "assistant"]
+
+            # Style variants for Short Intro
+            intro_styles = [
+                ("Arms Crossed", "arms_crossed", "Standing with arms crossed"),
+                ("Thumbs Up", "thumbs_up", "Giving thumbs up gesture"),
+                ("Hand Up", "hand_up", "Waving with hand up"),
+            ]
+
+            # Style variants for Goal Celebration
+            celebration_styles = [
+                ("Fist Pump", "fist_pump", "Celebrating with fist pump"),
+                ("Slide", "slide", "Knee slide celebration"),
+                ("Arms Wide", "arms_wide", "Arms spread wide celebration"),
+                ("Point to Sky", "point_sky", "Pointing to the sky"),
+            ]
 
             for role in roles:
                 role_label = role.capitalize()
                 role_key = role
 
-                # Short Intro - requires in_tenue asset
-                template_definitions.append(
-                    {
-                        "name": f"{role_label} Short Intro - Modern",
-                        "template_type": TemplateType.MEMBER,
-                        "template_subtype": TemplateSubtype.MEMBER_INTRO,
-                        "style_variant": "Modern",
-                        "ai_workflow_id": f"wf_member_intro_{role}_modern",
-                        "credits_required": 1,
-                        "input_requirements": {
-                            "members": {
-                                role_key: {"count": 1, "asset_types": ["in_tenue"]},
+                # Short Intro - multiple style variants
+                for style_name, style_id, style_desc in intro_styles:
+                    template_definitions.append(
+                        {
+                            "name": f"{role_label} Short Intro - {style_name}",
+                            "template_type": TemplateType.MEMBER,
+                            "template_subtype": TemplateSubtype.MEMBER_INTRO,
+                            "style_variant": style_name,
+                            "ai_workflow_id": f"wf_member_intro_{role}_{style_id}",
+                            "credits_required": 1,
+                            "input_requirements": {
+                                "members": {
+                                    role_key: {"count": 1, "asset_types": ["in_tenue"]},
+                                },
                             },
-                        },
-                        "description": f"Short intro video for {role} with in-tenue photo",
-                    }
-                )
+                            "description": f"Short intro for {role}: {style_desc}",
+                        }
+                    )
 
-                # Goal Celebration - requires in_tenue asset
-                template_definitions.append(
-                    {
-                        "name": f"{role_label} Goal Celebration - Modern",
-                        "template_type": TemplateType.MEMBER,
-                        "template_subtype": TemplateSubtype.MEMBER_GOAL_CELEBRATION,
-                        "style_variant": "Modern",
-                        "ai_workflow_id": f"wf_member_goal_celebration_{role}_modern",
-                        "credits_required": 1,
-                        "input_requirements": {
-                            "members": {
-                                role_key: {"count": 1, "asset_types": ["in_tenue"]},
+                # Goal Celebration - multiple style variants
+                for style_name, style_id, style_desc in celebration_styles:
+                    template_definitions.append(
+                        {
+                            "name": f"{role_label} Goal Celebration - {style_name}",
+                            "template_type": TemplateType.MEMBER,
+                            "template_subtype": TemplateSubtype.MEMBER_GOAL_CELEBRATION,
+                            "style_variant": style_name,
+                            "ai_workflow_id": f"wf_member_goal_celebration_{role}_{style_id}",
+                            "credits_required": 1,
+                            "input_requirements": {
+                                "members": {
+                                    role_key: {"count": 1, "asset_types": ["in_tenue"]},
+                                },
                             },
-                        },
-                        "description": f"Goal celebration video for {role} with in-tenue photo",
-                    }
-                )
+                            "description": f"Goal celebration for {role}: {style_desc}",
+                        }
+                    )
 
                 # In Tenue - requires profile_photo and tenue (season asset)
                 template_definitions.append(
@@ -697,12 +714,8 @@ class Command(BaseCommand):
                     template_count += 1
                     continue
 
-                # Member and custom templates don't need sport
-                template_sport = (
-                    None
-                    if t_data["template_type"] in [TemplateType.MEMBER, TemplateType.CUSTOM]
-                    else football_11v11
-                )
+                # All templates get Football sport (parent category)
+                template_sport = football_cat
 
                 template, created = ContentTemplate.objects.update_or_create(
                     # Global templates: organisation=None
