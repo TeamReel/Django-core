@@ -11,7 +11,7 @@ subtasks:
   - "T008"
 title: "Core Models & Database"
 phase: "Phase 1 - Foundation"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
 shell_pid: "13948"
@@ -710,3 +710,4 @@ history:
 
 - 2026-02-01T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2026-02-01T19:34:23Z – claude – shell_pid=13948 – lane=doing – Started implementation
+- 2026-02-01T19:46:41Z – claude – shell_pid=13948 – lane=for_review – WP01 complete: models, tests (96% coverage), admin implemented
