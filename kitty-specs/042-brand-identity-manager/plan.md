@@ -1,8 +1,8 @@
 # Implementation Plan: B33 Brand Identity Manager
-*Path: kitty-specs/043-brand-identity-manager/plan.md*
+*Path: kitty-specs/042-brand-identity-manager/plan.md*
 
 **Branch**: `042-brand-identity-manager` | **Date**: 2026-02-01 | **Spec**: [spec.md](spec.md)
-**Input**: Feature specification from `/kitty-specs/043-brand-identity-manager/spec.md`
+**Input**: Feature specification from `/kitty-specs/042-brand-identity-manager/spec.md`
 
 **Note**: This template is filled in by the `/spec-kitty.plan` command. See `.kittify/templates/commands/plan.md` for the execution workflow.
 
@@ -135,7 +135,7 @@ Centralized brand identity management system allowing organisations and projects
 ### Documentation (this feature)
 
 ```
-kitty-specs/[###-feature]/
+kitty-specs/042-brand-identity-manager/
 ├── plan.md              # This file (/spec-kitty.plan command output)
 ├── research.md          # Phase 0 output (/spec-kitty.plan command)
 ├── data-model.md        # Phase 1 output (/spec-kitty.plan command)
