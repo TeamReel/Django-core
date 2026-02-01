@@ -79,6 +79,8 @@ INSTALLED_APPS = [
     "sport_configuration.apps.SportConfigurationConfig",
     # B33: Brand Identity Manager
     "branding.apps.BrandingConfig",
+    # B34: Generative Pipelines - AI Content Generation Factory
+    "src.generative.apps.GenerativeConfig",
 ]
 
 MIDDLEWARE = [
