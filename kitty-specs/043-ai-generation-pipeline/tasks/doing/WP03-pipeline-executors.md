@@ -12,10 +12,10 @@ subtasks:
   - "T026"
 title: "Pipeline Executors"
 phase: "Phase 2 - Pipeline Execution"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "13948"
 review_status: ""
 reviewed_by: ""
 history:
@@ -726,3 +726,4 @@ history:
 ## Activity Log
 
 - 2026-02-01T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
+- 2026-02-01T20:22:48Z – claude – shell_pid=13948 – lane=doing – Started implementation: Pipeline Executors
