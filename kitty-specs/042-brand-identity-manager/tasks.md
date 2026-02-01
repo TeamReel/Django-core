@@ -19,7 +19,7 @@ This task breakdown covers the implementation of the Brand Identity Manager feat
 | WP01 | Django App Setup & Models | P1 | 8 | ✅ Done |
 | WP02 | Serializers & Validation | P1 | 6 | ✅ Done |
 | WP03 | ViewSets & API Endpoints | P1 | 8 | ✅ Done |
-| WP04 | Permissions & Django Admin | P2 | 6 | Planned |
+| WP04 | Permissions & Django Admin | P2 | 6 | 🔍 Review |
 | WP05 | Testing Suite | P2 | 10 | Planned |
 | WP06 | Documentation & Integration | P3 | 4 | Planned |
 
@@ -130,7 +130,7 @@ Implement DRF ViewSets for CRUD operations and special token resolution endpoint
 
 ## Work Package 04: Permissions & Django Admin
 **Priority**: P2 (Access Control)
-**Prompt**: [tasks/planned/WP04-permissions-django-admin.md](tasks/planned/WP04-permissions-django-admin.md)
+**Prompt**: [tasks/for_review/WP04-permissions-django-admin.md](tasks/for_review/WP04-permissions-django-admin.md)
 
 ### Goal
 Implement permission classes and configure Django admin interface.
