@@ -249,6 +249,7 @@ export default function ContentTemplatesPage() {
   const [selectedStyle, setSelectedStyle] = useState<string>('all');
   const [selectedSport, setSelectedSport] = useState<string>('all');
   const [selectedSubtype, setSelectedSubtype] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<string>('all');
 
   // Modal state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -451,14 +452,30 @@ export default function ContentTemplatesPage() {
     return Array.from(sportMap.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [templates]);
 
-  // Get unique subtypes from templates for filter dropdown (filtered by category if selected)
+  // Get unique types from templates for filter dropdown
+  const availableTypes = useMemo(() => {
+    const typeSet = new Set<string>();
+    templates.forEach(t => {
+      if (t.template_type) {
+        typeSet.add(t.template_type);
+      }
+    });
+    return Array.from(typeSet).sort();
+  }, [templates]);
+
+  // Get unique subtypes from templates for filter dropdown (filtered by category/type if selected)
   const availableSubtypes = useMemo(() => {
     const category = TEMPLATE_CATEGORIES.find(c => c.id === selectedCategory);
     const subtypeSet = new Set<string>();
     templates.forEach(t => {
       if (t.template_subtype) {
-        // If category is selected, only show subtypes for that category
-        if (category?.types) {
+        // If type filter is selected, only show subtypes for that type
+        if (selectedType !== 'all') {
+          if (t.template_type === selectedType) {
+            subtypeSet.add(t.template_subtype);
+          }
+        } else if (category?.types) {
+          // If category is selected, only show subtypes for that category
           if (category.types.includes(t.template_type)) {
             subtypeSet.add(t.template_subtype);
           }
@@ -468,7 +485,7 @@ export default function ContentTemplatesPage() {
       }
     });
     return Array.from(subtypeSet).sort();
-  }, [templates, selectedCategory]);
+  }, [templates, selectedCategory, selectedType]);
 
   // Filter templates based on selected category and search
   const filteredTemplates = useMemo(() => {
@@ -478,6 +495,11 @@ export default function ContentTemplatesPage() {
     const category = TEMPLATE_CATEGORIES.find(c => c.id === selectedCategory);
     if (category?.types) {
       result = result.filter(t => category.types!.includes(t.template_type));
+    }
+
+    // Filter by type
+    if (selectedType !== 'all') {
+      result = result.filter(t => t.template_type === selectedType);
     }
 
     // Filter by sport
@@ -516,7 +538,7 @@ export default function ContentTemplatesPage() {
     }
 
     return result;
-  }, [templates, selectedCategory, selectedSport, selectedSubtype, selectedFormation, selectedStyle, searchQuery, showInactive]);
+  }, [templates, selectedCategory, selectedType, selectedSport, selectedSubtype, selectedFormation, selectedStyle, searchQuery, showInactive]);
 
   // Group templates by subtype for the detail panel
   const groupedBySubtype = useMemo(() => {
@@ -664,6 +686,31 @@ export default function ContentTemplatesPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+
+            {/* Type Filter */}
+            {availableTypes.length > 0 && (
+              <select
+                value={selectedType}
+                onChange={(e) => {
+                  setSelectedType(e.target.value);
+                  setSelectedSubtype('all'); // Reset subtype when type changes
+                }}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-bg)',
+                  color: 'var(--app-text)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="all">All Types</option>
+                {availableTypes.map(t => (
+                  <option key={t} value={t}>{TYPE_LABELS[t] || t}</option>
+                ))}
+              </select>
+            )}
 
             {/* Sport Filter */}
             {availableSports.length > 0 && (
