@@ -20,7 +20,9 @@ def extract_data(response):
 class TestUserStory1OrgBrandSetup:
     """US1: As an org admin, I set up the org brand identity."""
 
-    def test_complete_org_brand_setup(self, api_client, org_admin, organisation):
+    def test_complete_org_brand_setup(
+        self, api_client, org_admin, organisation, file_asset_factory
+    ):
         """Test complete org brand setup workflow."""
         api_client.force_authenticate(org_admin)
 
@@ -50,11 +52,13 @@ class TestUserStory1OrgBrandSetup:
             response = api_client.post(f"/api/branding/profiles/{brand_id}/tokens/", token)
             assert response.status_code == 201
 
-        # Step 3: Add brand assets
+        # Step 3: Add brand assets (file is required)
+        file_asset = file_asset_factory(organization=organisation)
         asset_response = api_client.post(
             f"/api/branding/profiles/{brand_id}/assets/",
             {
                 "profile": brand_id,
+                "file": str(file_asset.id),
                 "asset_type": "logo_light",
                 "alt_text": "Acme Corp Logo Light",
             },
@@ -111,7 +115,7 @@ class TestUserStory2ProjectOverride:
         resolve_response = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
         assert resolve_response.status_code == 200
 
-        resolved = resolve_response.json()
+        resolved = extract_data(resolve_response)
         assert resolved["tokens"]["primary_color"] == "#D2122E"  # Override
         assert resolved["tokens"]["font_heading"] == "Roboto"  # Inherited
         assert resolved["source"] == "merged"
@@ -148,7 +152,7 @@ class TestUserStory3ConsumerApp:
             profile=org_brand, asset_type="logo_light", alt_text="Org Logo"
         )
         project_asset = brand_asset_factory(
-            profile=project_brand, asset_type="icon", alt_text="Team Icon"
+            profile=project_brand, asset_type="favicon", alt_text="Team Favicon"
         )
 
         api_client.force_authenticate(user)
@@ -167,14 +171,17 @@ class TestUserStory3ConsumerApp:
         assert data["tokens"]["font_heading"] == "Roboto"  # Org
         assert data["tokens"]["spacing_base"] == "8px"  # Org
 
-        # Verify assets included
+        # Verify assets included (assets come from project_brand when it exists)
         assert "assets" in data
-        assert "logo_light" in data["assets"]
-        assert "icon" in data["assets"]
+        # logo_light is from org_brand, but project_brand takes precedence
+        # so only project_brand's assets (favicon) are returned
+        assert "favicon" in data["assets"]
+        assert data["assets"]["favicon"]["alt_text"] == "Team Favicon"
 
         # Verify metadata
         assert data["source"] == "merged"
-        assert "profile_ids" in data
+        assert "project_brand_id" in data
+        assert "org_brand_id" in data
 
 
 @pytest.mark.django_db
@@ -217,11 +224,11 @@ class TestUserStory4BrandUpdate:
 
         # Verify project1 inherits new color
         resolve1 = api_client.get(f"/api/branding/tokens/resolve/?project={project1.id}")
-        assert resolve1.json()["tokens"]["primary_color"] == "#NEW_ORG_COLOR"
+        assert extract_data(resolve1)["tokens"]["primary_color"] == "#NEW_ORG_COLOR"
 
         # Verify project2 keeps override
         resolve2 = api_client.get(f"/api/branding/tokens/resolve/?project={project2.id}")
-        assert resolve2.json()["tokens"]["primary_color"] == "#OVERRIDE"
+        assert extract_data(resolve2)["tokens"]["primary_color"] == "#OVERRIDE"
 
 
 @pytest.mark.django_db

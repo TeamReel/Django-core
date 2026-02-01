@@ -22,6 +22,10 @@ router.register(r"tokens", DesignTokenViewSet, basename="designtoken")
 router.register(r"assets", BrandAssetViewSet, basename="brandasset")
 
 urlpatterns = [
+    # Token resolution endpoint - MUST be BEFORE router.urls to prevent
+    # the router's tokens/<pk>/ pattern from capturing "resolve" as a pk
+    path("tokens/resolve/", TokenResolutionView.as_view(), name="token-resolve"),
+    # Router URLs (profiles, tokens, assets CRUD)
     path("", include(router.urls)),
     # Nested routes manually defined for clarity
     path(
@@ -48,6 +52,4 @@ urlpatterns = [
         ),
         name="profile-assets-detail",
     ),
-    # Token resolution endpoint (primary consumer interface)
-    path("tokens/resolve/", TokenResolutionView.as_view(), name="token-resolve"),
 ]

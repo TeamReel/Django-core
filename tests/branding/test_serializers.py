@@ -93,22 +93,23 @@ class TestBrandProfileDetailSerializer:
         """Test serializing brand with nested tokens and assets."""
         # Create some assets
         asset1 = brand_asset_factory(profile=org_brand, asset_type="logo_light")
-        asset2 = brand_asset_factory(profile=org_brand, asset_type="icon")
+        asset2 = brand_asset_factory(profile=org_brand, asset_type="favicon")
 
         serializer = BrandProfileDetailSerializer(org_brand)
         data = serializer.data
 
-        assert "design_tokens" in data
-        assert "brand_assets" in data
-        assert len(data["design_tokens"]) == 3
-        assert len(data["brand_assets"]) == 2
+        # Serializer uses 'tokens' and 'assets' field names
+        assert "tokens" in data
+        assert "assets" in data
+        assert len(data["tokens"]) == 3
+        assert len(data["assets"]) == 2
 
     def test_nested_tokens_structure(self, org_brand, org_tokens):
         """Test nested token structure."""
         serializer = BrandProfileDetailSerializer(org_brand)
         data = serializer.data
 
-        token_data = data["design_tokens"][0]
+        token_data = data["tokens"][0]
         assert "id" in token_data
         assert "key" in token_data
         assert "value" in token_data
@@ -201,14 +202,9 @@ class TestDesignTokenSerializer:
         }
 
         serializer = DesignTokenSerializer(data=data)
-        # Serializer validation passes, but DB will reject
-        assert serializer.is_valid()
-
-        # DB constraint will catch it
-        from django.db import IntegrityError
-
-        with pytest.raises(IntegrityError):
-            serializer.save()
+        # Serializer validation catches duplicate key (improved from DB-level)
+        assert not serializer.is_valid()
+        assert "key" in serializer.errors
 
 
 @pytest.mark.django_db
@@ -227,13 +223,17 @@ class TestBrandAssetSerializer:
         assert data["alt_text"] == "Logo"
         assert data["is_active"] is True
         assert str(data["profile"]) == str(org_brand.id)
+        # File should be present since brand_asset_factory creates one
+        assert data["file"] is not None
 
-    def test_create_asset(self, org_brand):
+    def test_create_asset(self, org_brand, file_asset_factory):
         """Test creating asset via serializer."""
+        file = file_asset_factory(organization=org_brand.organisation)
         data = {
             "profile": str(org_brand.id),
-            "asset_type": "icon",
-            "alt_text": "Test Icon",
+            "file": str(file.id),
+            "asset_type": "favicon",  # Valid asset type choice
+            "alt_text": "Test Favicon",
             "is_active": True,
         }
 
@@ -241,41 +241,43 @@ class TestBrandAssetSerializer:
         assert serializer.is_valid(), serializer.errors
 
         asset = serializer.save()
-        assert asset.asset_type == "icon"
-        assert asset.alt_text == "Test Icon"
+        assert asset.asset_type == "favicon"
+        assert asset.alt_text == "Test Favicon"
+        assert asset.file == file
 
-    def test_asset_type_required(self, org_brand):
+    def test_asset_type_required(self, org_brand, file_asset_factory):
         """Test asset_type field is required."""
-        data = {"profile": str(org_brand.id), "alt_text": "Test"}
+        file = file_asset_factory(organization=org_brand.organisation)
+        data = {"profile": str(org_brand.id), "file": str(file.id), "alt_text": "Test"}
 
         serializer = BrandAssetSerializer(data=data)
         assert not serializer.is_valid()
         assert "asset_type" in serializer.errors
 
-    def test_unique_asset_type_per_profile(self, brand_asset_factory, org_brand):
+    def test_unique_asset_type_per_profile(
+        self, brand_asset_factory, org_brand, file_asset_factory
+    ):
         """Test unique validation for asset_type per profile."""
         # Create first asset
         brand_asset_factory(profile=org_brand, asset_type="logo_light")
 
         # Try to create duplicate
+        file2 = file_asset_factory(organization=org_brand.organisation)
         data = {
             "profile": str(org_brand.id),
+            "file": str(file2.id),
             "asset_type": "logo_light",  # Already exists
             "alt_text": "Duplicate",
         }
 
         serializer = BrandAssetSerializer(data=data)
-        assert serializer.is_valid()
-
-        # DB constraint will catch it
-        from django.db import IntegrityError
-
-        with pytest.raises(IntegrityError):
-            serializer.save()
+        # Serializer validation catches duplicate asset type (improved from DB-level)
+        assert not serializer.is_valid()
+        assert "asset_type" in serializer.errors
 
     def test_update_alt_text(self, brand_asset_factory, org_brand):
         """Test updating alt_text via serializer."""
-        asset = brand_asset_factory(profile=org_brand, asset_type="icon")
+        asset = brand_asset_factory(profile=org_brand, asset_type="favicon")
 
         data = {"alt_text": "Updated Alt Text"}
         serializer = BrandAssetSerializer(asset, data=data, partial=True)
@@ -284,4 +286,4 @@ class TestBrandAssetSerializer:
         updated_asset = serializer.save()
 
         assert updated_asset.alt_text == "Updated Alt Text"
-        assert updated_asset.asset_type == "icon"  # Unchanged
+        assert updated_asset.asset_type == "favicon"  # Unchanged

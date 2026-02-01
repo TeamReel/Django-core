@@ -48,8 +48,9 @@ class TestBrandProfileViewSet:
         data = extract_data(response)
         assert data["id"] == str(org_brand.id)
         assert data["name"] == org_brand.name
-        assert "design_tokens" in data
-        assert len(data["design_tokens"]) == 3
+        # Serializer uses 'tokens' not 'design_tokens'
+        assert "tokens" in data
+        assert len(data["tokens"]) == 3
 
     def test_create_org_brand(self, api_client, org_admin, organisation):
         """Test creating organisation brand."""
@@ -118,11 +119,12 @@ class TestBrandProfileViewSet:
         for brand in results:
             assert str(brand["project"]) == str(project.id)
 
-    def test_filter_by_is_active(self, api_client, org_admin, org_brand):
+    def test_filter_by_is_active(self, api_client, org_admin, org_brand, organisation_factory):
         """Test filtering by is_active status."""
-        # Create inactive brand
+        # Create inactive brand (different org to avoid UNIQUE constraint)
+        other_org = organisation_factory()
         inactive = BrandProfile.objects.create(
-            organisation=org_brand.organisation, name="Inactive", is_active=False
+            organisation=other_org, name="Inactive", is_active=False
         )
 
         api_client.force_authenticate(org_admin)
@@ -236,7 +238,7 @@ class TestBrandAssetViewSet:
     def test_list_assets_for_profile(self, api_client, org_admin, org_brand, brand_asset_factory):
         """Test listing assets for specific profile."""
         asset1 = brand_asset_factory(profile=org_brand, asset_type="logo_light")
-        asset2 = brand_asset_factory(profile=org_brand, asset_type="icon")
+        asset2 = brand_asset_factory(profile=org_brand, asset_type="favicon")
 
         api_client.force_authenticate(org_admin)
         response = api_client.get(f"/api/branding/profiles/{org_brand.id}/assets/")
@@ -246,21 +248,23 @@ class TestBrandAssetViewSet:
         assert "results" in data
         assert len(data["results"]) == 2
 
-    def test_create_asset(self, api_client, org_admin, org_brand):
+    def test_create_asset(self, api_client, org_admin, org_brand, file_asset_factory):
         """Test creating brand asset."""
         api_client.force_authenticate(org_admin)
+        file = file_asset_factory(organization=org_brand.organisation)
 
         payload = {
             "profile": str(org_brand.id),
-            "asset_type": "icon",
-            "alt_text": "Test Icon",
+            "file": str(file.id),
+            "asset_type": "favicon",
+            "alt_text": "Test Favicon",
         }
 
         response = api_client.post(f"/api/branding/profiles/{org_brand.id}/assets/", payload)
 
         assert response.status_code == 201
         data = extract_data(response)
-        assert data["asset_type"] == "icon"
+        assert data["asset_type"] == "favicon"
 
     def test_update_asset(self, api_client, org_admin, org_brand, brand_asset_factory):
         """Test updating asset."""
@@ -278,7 +282,7 @@ class TestBrandAssetViewSet:
 
     def test_delete_asset(self, api_client, org_admin, org_brand, brand_asset_factory):
         """Test deleting brand asset."""
-        asset = brand_asset_factory(profile=org_brand, asset_type="icon")
+        asset = brand_asset_factory(profile=org_brand, asset_type="favicon")
         api_client.force_authenticate(org_admin)
 
         response = api_client.delete(f"/api/branding/profiles/{org_brand.id}/assets/{asset.id}/")
@@ -289,7 +293,7 @@ class TestBrandAssetViewSet:
     def test_filter_assets_by_type(self, api_client, org_admin, org_brand, brand_asset_factory):
         """Test filtering assets by asset_type."""
         brand_asset_factory(profile=org_brand, asset_type="logo_light")
-        brand_asset_factory(profile=org_brand, asset_type="icon")
+        brand_asset_factory(profile=org_brand, asset_type="favicon")
 
         api_client.force_authenticate(org_admin)
         response = api_client.get(

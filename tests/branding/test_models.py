@@ -177,77 +177,82 @@ class TestDesignToken:
 class TestBrandAsset:
     """Tests for BrandAsset model."""
 
-    def test_create_asset_without_file(self, org_brand):
-        """Test creating brand asset (file is optional for testing)."""
+    def test_create_asset_with_file(self, org_brand, file_asset_factory):
+        """Test creating brand asset with required file."""
+        file_asset = file_asset_factory(organization=org_brand.organisation)
         asset = BrandAsset.objects.create(
-            profile=org_brand, asset_type="logo_light", alt_text="Logo"
+            profile=org_brand,
+            file=file_asset,
+            asset_type="logo_light",
+            alt_text="Logo",
         )
 
         assert asset.id is not None
         assert asset.asset_type == "logo_light"
         assert asset.alt_text == "Logo"
         assert asset.is_active is True
+        assert asset.file == file_asset
 
-    def test_unique_asset_type_per_profile(self, org_brand):
+    def test_unique_asset_type_per_profile(self, org_brand, file_asset_factory):
         """Test unique constraint on (profile, asset_type)."""
-        BrandAsset.objects.create(profile=org_brand, asset_type="logo_light", alt_text="Logo 1")
+        file1 = file_asset_factory(organization=org_brand.organisation)
+        file2 = file_asset_factory(organization=org_brand.organisation)
+        BrandAsset.objects.create(
+            profile=org_brand, file=file1, asset_type="logo_light", alt_text="Logo 1"
+        )
 
         with pytest.raises(IntegrityError):
-            BrandAsset.objects.create(profile=org_brand, asset_type="logo_light", alt_text="Logo 2")
+            BrandAsset.objects.create(
+                profile=org_brand, file=file2, asset_type="logo_light", alt_text="Logo 2"
+            )
 
-    def test_same_asset_type_different_profiles(self, org_brand, project_brand):
+    def test_same_asset_type_different_profiles(self, org_brand, project_brand, file_asset_factory):
         """Test same asset_type can exist in different profiles."""
+        file1 = file_asset_factory(organization=org_brand.organisation)
+        file2 = file_asset_factory(organization=project_brand.project.organisation)
         asset1 = BrandAsset.objects.create(
-            profile=org_brand, asset_type="logo_light", alt_text="Org Logo"
+            profile=org_brand, file=file1, asset_type="logo_light", alt_text="Org Logo"
         )
 
         asset2 = BrandAsset.objects.create(
-            profile=project_brand, asset_type="logo_light", alt_text="Project Logo"
+            profile=project_brand, file=file2, asset_type="logo_light", alt_text="Project Logo"
         )
 
         assert asset1.id != asset2.id
         assert asset1.asset_type == asset2.asset_type
 
-    def test_asset_type_choices(self, org_brand):
+    def test_asset_type_choices(self, org_brand, file_asset_factory):
         """Test all asset_type choices work."""
         types = [
             "logo_light",
             "logo_dark",
-            "icon",
-            "banner",
-            "background",
-            "image",
+            "watermark",
+            "favicon",
+            "font_file",
             "other",
         ]
 
         for asset_type in types:
+            file = file_asset_factory(organization=org_brand.organisation)
             asset = BrandAsset.objects.create(
-                profile=org_brand, asset_type=asset_type, alt_text=f"Test {asset_type}"
+                profile=org_brand, file=file, asset_type=asset_type, alt_text=f"Test {asset_type}"
             )
             assert asset.asset_type == asset_type
 
-    def test_get_url_with_file(self, org_brand):
-        """Test get_url returns file URL when file exists."""
-        # Mock file with URL
-        from unittest.mock import Mock
+    def test_get_url_with_file(self, org_brand, file_asset_factory):
+        """Test get_url returns file storage_path when file exists."""
+        file = file_asset_factory(organization=org_brand.organisation)
+        asset = BrandAsset.objects.create(profile=org_brand, file=file, asset_type="logo_light")
 
-        mock_file = Mock()
-        mock_file.url = "https://example.com/logo.png"
-
-        asset = BrandAsset.objects.create(
-            profile=org_brand, file=mock_file, asset_type="logo_light"
-        )
-
-        # Note: In real DB, file would be B22 File object
-        # Here we're just testing the logic
         url = asset.get_url()
-        # Will return None since file.url isn't actually persisted
-        assert url is None or isinstance(url, str)
+        # get_url returns the file's storage_path
+        assert url == file.storage_path
 
-    def test_inactive_asset(self, org_brand):
+    def test_inactive_asset(self, org_brand, file_asset_factory):
         """Test creating inactive asset."""
+        file = file_asset_factory(organization=org_brand.organisation)
         asset = BrandAsset.objects.create(
-            profile=org_brand, asset_type="logo_light", is_active=False
+            profile=org_brand, file=file, asset_type="logo_light", is_active=False
         )
 
         assert asset.is_active is False

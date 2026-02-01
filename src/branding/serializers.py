@@ -225,9 +225,9 @@ class BrandAssetSerializer(serializers.ModelSerializer):
 
         return {
             "id": str(obj.file.id),
-            "name": obj.file.name,
-            "size": obj.file.size,
-            "content_type": obj.file.content_type,
+            "name": obj.file.original_name,
+            "size": obj.file.file_size,
+            "content_type": obj.file.mime_type,
         }
 
     def get_url(self, obj: BrandAsset) -> str | None:

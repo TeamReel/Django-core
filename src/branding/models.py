@@ -235,8 +235,15 @@ class BrandAsset(models.Model):
         ]
 
     def get_url(self):
-        """Return file URL via B22 FileAsset model."""
-        return self.file.url if self.file else None
+        """Return file URL via B22 FileAsset model.
+
+        FileAsset stores the storage_path which can be used to construct a URL.
+        For actual URL construction, refer to B22 file serving implementation.
+        """
+        if self.file:
+            # Use storage_path from FileAsset - actual URL generation depends on B22 implementation
+            return self.file.storage_path
+        return None
 
     def __str__(self):
         return f"{self.profile.name} - {self.get_asset_type_display()}"
