@@ -51,10 +51,18 @@ class TemplateSubtype(models.TextChoices):
     # Season templates
     TRANSFORMATION = "transformation", "Then vs Now"
     SEASON_RECAP = "season_recap", "Season Recap"
-    # Member templates
+    # Member templates (no sport required)
     MEMBER_INTRO = "member_intro", "Short Intro"
     MEMBER_CLOSEUP = "member_closeup", "Closeup Video"
     MEMBER_CELEBRATION = "member_celebration", "Personal Celebration"
+    MEMBER_IN_TENUE = "member_in_tenue", "In Tenue"
+    MEMBER_LEGACY_CLOSEUP = "member_legacy_closeup", "Legacy Closeup"
+    MEMBER_LEGACY_IN_TENUE = "member_legacy_in_tenue", "Legacy In Tenue"
+    # Custom templates (no sport required)
+    CUSTOM_LOGO = "custom_logo", "Logo"
+    CUSTOM_TENUE = "custom_tenue", "Tenue"
+    CUSTOM_TENUE_LOGO = "custom_tenue_logo", "Tenue + Logo"
+    CUSTOM_TENUE_LOGO_SPONSOR = "custom_tenue_logo_sponsor", "Tenue + Logo + Sponsor"
 
 
 class ContentStatus(models.TextChoices):

@@ -76,10 +76,24 @@ export const CONTENT_TYPES = {
   },
   member: {
     label: 'Member',
+    sportRequired: false, // Member templates don't require sport selection
     items: [
       { id: 'member_intro', label: 'Short Intro', icon: '👋', subtype: 'member_intro' },
       { id: 'member_closeup', label: 'Closeup Video', icon: '📸', subtype: 'member_closeup' },
       { id: 'member_celebration', label: 'Personal Celebration', icon: '🎉', subtype: 'member_celebration' },
+      { id: 'member_in_tenue', label: 'In Tenue', icon: '👕', subtype: 'member_in_tenue' },
+      { id: 'member_legacy_closeup', label: 'Legacy Closeup', icon: '📷', subtype: 'member_legacy_closeup' },
+      { id: 'member_legacy_in_tenue', label: 'Legacy In Tenue', icon: '🎽', subtype: 'member_legacy_in_tenue' },
+    ],
+  },
+  custom: {
+    label: 'Custom',
+    sportRequired: false, // Custom templates don't require sport selection
+    items: [
+      { id: 'custom_logo', label: 'Logo', icon: '🏷️', subtype: 'custom_logo' },
+      { id: 'custom_tenue', label: 'Tenue', icon: '👕', subtype: 'custom_tenue' },
+      { id: 'custom_tenue_logo', label: 'Tenue + Logo', icon: '🎨', subtype: 'custom_tenue_logo' },
+      { id: 'custom_tenue_logo_sponsor', label: 'Tenue + Logo + Sponsor', icon: '🏆', subtype: 'custom_tenue_logo_sponsor' },
     ],
   },
 };
@@ -322,8 +336,12 @@ export default function ContentGenerationModal({
       params.append('template_type', templateType);
       params.append('template_subtype', templateSubtype);
 
-      // Filter by sport if available
-      if (organisationSport?.id) {
+      // Check if this content type requires sport selection
+      const contentTypeConfig = CONTENT_TYPES[templateType as keyof typeof CONTENT_TYPES];
+      const sportRequired = contentTypeConfig?.sportRequired !== false;
+
+      // Filter by sport if available AND sport is required for this type
+      if (organisationSport?.id && sportRequired) {
         params.append('sport', String(organisationSport.id));
       }
 
@@ -337,8 +355,8 @@ export default function ContentGenerationModal({
       const data = await response.json();
       let results = data.results || data || [];
 
-      // If no sport-specific templates found, try without sport filter
-      if (results.length === 0 && organisationSport?.id) {
+      // If no sport-specific templates found and sport was required, try without sport filter
+      if (results.length === 0 && organisationSport?.id && sportRequired) {
         const paramsAll = new URLSearchParams();
         paramsAll.append('is_active', 'true');
         paramsAll.append('template_type', templateType);
