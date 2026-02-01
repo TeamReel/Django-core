@@ -401,8 +401,7 @@ AI content generation factory that manages generation requests (jobs), routes to
 
 5. **Executor Invocation**: Execute pipeline with input_data + brand_context
    - OpenAI: `client.chat.completions.create(...)`
-   - LangGraph: `POST https://langgraph-api/v1/flows/{flow_id}/run`
-   - n8n: `POST {workflow_url}` with webhook payload
+   - LangGraph: `POST https://langgraph-api/v1/graphs/{graph_id}/run`
 
 6. **Error Handling**: On exception, classify error category
    - If TRANSIENT → retry with backoff (max 3 attempts)
@@ -442,7 +441,7 @@ AI content generation factory that manages generation requests (jobs), routes to
 **generative_generationtemplate**
 ```
 id: bigint (PK)
-organisation_id: bigint (FK → organisations_organisation)
+project_id: bigint (FK → projects_project)
 name: varchar(200)
 slug: varchar(100, unique)
 version: varchar(20)
@@ -797,7 +796,6 @@ CONSTRAINT: (file_id IS NOT NULL) OR (text_content IS NOT NULL)
 **Error Classifier** (`tests/generative/test_error_classification.py`):
 - OpenAI error mapping: 429 → TRANSIENT, 400 → PERMANENT
 - LangGraph error mapping
-- n8n error mapping
 - Unknown error → UNKNOWN category
 
 ### Integration Tests (`tests/generative/test_integration.py`)
@@ -875,7 +873,7 @@ CONSTRAINT: (file_id IS NOT NULL) OR (text_content IS NOT NULL)
 [tool.poetry.dependencies]
 openai = "^1.12.0"  # OpenAI API client
 jsonschema = "^4.21.1"  # Input validation
-httpx = "^0.26.0"  # Async HTTP client for LangGraph/n8n
+httpx = "^0.26.0"  # Async HTTP client for LangGraph
 ```
 
 ### Django Core Modules (existing dependencies)
@@ -893,7 +891,6 @@ httpx = "^0.26.0"  # Async HTTP client for LangGraph/n8n
 
 - **OpenAI API**: Requires `OPENAI_API_KEY` environment variable
 - **LangGraph** (optional): Requires `LANGGRAPH_API_URL` + `LANGGRAPH_API_KEY`
-- **n8n** (optional): Workflow URLs configured per template
 - **Redis** (for Celery): Task queue + result backend
 
 ## Open Questions & Decisions Needed
