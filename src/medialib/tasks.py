@@ -100,4 +100,4 @@ def process_media_item(self, media_item_id: str):
         # If we failed to even get the item or save error state
         logger.exception(f"Critical failure in process_media_item for {media_item_id}")
         # Retrying handled by Celery configuration
-        raise exc
+        raise self.retry(exc=exc, countdown=60)
