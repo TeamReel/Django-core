@@ -28,10 +28,31 @@ subtasks:
     title: Handle extraction failures gracefully
     priority: P2
     status: completed
-lane: "for_review"
+lane: "planned"
+review_status: "has_feedback"
+reviewed_by: "GitHub Copilot"
 agent: "GitHub Copilot"
 shell_pid: "10500"
 ---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Key Issues**:
+1. **Missing Tests**: `src/medialib/tests.py` is empty. WP02 explicitly requires unit tests mocking ffprobe and Pillow.
+2. **Missing Management Command**: The required command `reprocess_media` (T012) was not implemented.
+3. **Task Retry Logic**: `src/medialib/tasks.py` does not include `self.retry(exc=exc, countdown=60)` for the outer exception handler as specified in T010/T012. It currently logs errors but does not schedule a retry.
+
+**What Was Done Well**:
+- `services/metadata.py` implements the Pillow and ffprobe extraction logic nicely.
+- `views.py` is correctly wired to trigger the task.
+- `tasks.py` structure handles the data flow and locking logic well (aside from the retry miss).
+
+**Action Items**:
+- [ ] Implement unit tests in `src/medialib/tests.py` mocking `subprocess` and `Pillow`.
+- [ ] Create `src/medialib/management/commands/reprocess_media.py`.
+- [ ] Add `raise self.retry(...)` to `process_media_item` task.
 
 # WP02: Metadata Extraction
 
@@ -256,3 +277,4 @@ class Command(BaseCommand):
 
 - 2026-02-02T19:16:52Z – GitHub Copilot – shell_pid=10500 – lane=doing – Started implementation of WP02
 - 2026-02-02T19:19:52Z – GitHub Copilot – shell_pid=10500 – lane=for_review – Completed implementation. Added metadata services and background task.
+- 2026-02-02T20:22:45Z  GitHub Copilot  shell_pid=;  lane=planned  Review complete: Needs Changes (Missing tests, retry logic, and management command)
