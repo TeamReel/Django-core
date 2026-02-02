@@ -13,7 +13,7 @@
 | WP | Name | Priority | Subtasks | Status |
 |----|------|----------|----------|--------|
 | WP01 | Core Models & API | P1 | T001-T007 | ✅ Done |
-| WP02 | Metadata Extraction | P1 | T008-T012 | 🟡 Planned |
+| WP02 | Metadata Extraction | P1 | T008-T012 | ✅ Done |
 | WP03 | Tagging System | P2 | T013-T016 | 🟡 Planned |
 | WP04 | Context Relations | P2 | T017-T020 | 🟡 Planned |
 | WP05 | Collections | P2 | T021-T023 | 🟡 Planned |
@@ -44,13 +44,13 @@
 **Goal**: Auto-extract image/video metadata on upload
 **Estimate**: 4h
 **Dependencies**: WP01, Pillow, ffprobe
-**Prompt**: [tasks/planned/WP02-metadata-extraction.md](tasks/planned/WP02-metadata-extraction.md)
+**Prompt**: [tasks/done/WP02-metadata-extraction.md](tasks/done/WP02-metadata-extraction.md)
 
-- [ ] [T008] [P1] Implement `extract_image_metadata()` service (Pillow)
-- [ ] [T009] [P1] Implement `extract_video_metadata()` service (ffprobe)
-- [ ] [T010] [P1] Create Celery task `process_media_item` for async extraction
-- [ ] [T011] [P1] Wire extraction to MediaItem creation flow
-- [ ] [T012] [P2] Handle extraction failures gracefully (state=error)
+- [x] [T008] [P1] Implement `extract_image_metadata()` service (Pillow)
+- [x] [T009] [P1] Implement `extract_video_metadata()` service (ffprobe)
+- [x] [T010] [P1] Create Celery task `process_media_item` for async extraction
+- [x] [T011] [P1] Wire extraction to MediaItem creation flow
+- [x] [T012] [P2] Handle extraction failures gracefully (state=error)
 
 ---
 
