@@ -199,21 +199,89 @@ class GenerationRequestViewSet(viewsets.ModelViewSet):
 
         Returns HTTP 202 Accepted with request details.
         Processing happens asynchronously via Celery task.
+
+        Raises:
+            PaymentRequired (HTTP 402): If user has insufficient credits
         """
+        from decimal import Decimal
+
+        from django.db import transaction as db_transaction
+
+        from organisations.models import Membership
+
+        from .exceptions import PaymentRequired
+        from .services import GenerationCreditService, InsufficientCreditsException
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Create request with requester
-        generation_request = serializer.save(requester=request.user)
+        # Get organisation and project from user context
+        membership = (
+            Membership.objects.filter(user=request.user, is_active=True)
+            .select_related("organisation")
+            .first()
+        )
 
-        # Dispatch async processing (task implemented in WP04)
+        if not membership:
+            return Response(
+                {
+                    "error_code": "NO_ORGANISATION",
+                    "message": "User has no active organisation membership",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        organisation = membership.organisation
+        project = serializer.validated_data.get("project")
+        template = serializer.validated_data["template"]
+
+        # Get estimated cost from template config (default to 0 if not set)
+        estimated_cost = Decimal(str(template.pipeline_config.get("estimated_cost", 0.0)))
+
+        # Reserve credits and create request atomically
         try:
-            from src.generative.tasks import process_generation_request
+            with db_transaction.atomic():
+                # Create request first to get ID for idempotency key
+                generation_request = serializer.save(
+                    requester=request.user,
+                    estimated_cost=estimated_cost,
+                )
 
-            process_generation_request.delay(generation_request.id)
-        except ImportError:
-            # Task not yet implemented (WP04), continue without error
-            pass
+                # Reserve credits
+                transaction_id = GenerationCreditService.reserve_credits(
+                    user=request.user,
+                    organisation=organisation,
+                    project=project,
+                    amount=estimated_cost,
+                    description=f"Generation: {template.name} (Request {generation_request.id})",
+                    idempotency_key=f"gen-req-{generation_request.id}",
+                )
+
+                # Store transaction ID
+                generation_request.transaction_id = transaction_id
+                generation_request.save(update_fields=["transaction_id"])
+
+                # Dispatch async processing (task implemented in WP04)
+                try:
+                    from src.generative.tasks import process_generation_request
+
+                    process_generation_request.delay(generation_request.id)
+                except ImportError:
+                    # Task not yet implemented (WP04), continue without error
+                    pass
+
+        except InsufficientCreditsException as e:
+            # Convert to HTTP 402 Payment Required
+            raise PaymentRequired(
+                detail={
+                    "error_code": "INSUFFICIENT_CREDITS",
+                    "message": str(e),
+                    "details": {
+                        "current_balance": float(e.current_balance),
+                        "required_amount": float(e.required_amount),
+                    },
+                }
+            )
 
         # Return 202 Accepted
         return Response(
@@ -229,6 +297,12 @@ class GenerationRequestViewSet(viewsets.ModelViewSet):
         - Refunds reserved credits (WP05 implementation)
         - Only works for pending/processing requests
         """
+        from django.db import transaction as db_transaction
+
+        from organisations.models import Membership
+
+        from .services import GenerationCreditService
+
         obj = self.get_object()
 
         # Check if request can be cancelled
@@ -242,18 +316,47 @@ class GenerationRequestViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Update status
-        obj.mark_cancelled()
+        # Atomic cancel + refund
+        with db_transaction.atomic():
+            # Update status
+            obj.mark_cancelled()
 
-        # Refund credits (WP05 implementation)
-        try:
-            from src.credits.services import refund_transaction
-
+            # Refund credits
             if obj.transaction_id:
-                refund_transaction(obj.transaction_id)
-        except ImportError:
-            # Credits service not yet implemented
-            pass
+                # Get organisation from user's active membership
+                membership = (
+                    Membership.objects.filter(user=request.user, is_active=True)
+                    .select_related("organisation")
+                    .first()
+                )
+
+                if membership:
+                    try:
+                        GenerationCreditService.refund_credits(
+                            transaction_id=obj.transaction_id,
+                            reason="Request cancelled by user",
+                            user=request.user,
+                            organisation=membership.organisation,
+                        )
+                    except Exception as e:
+                        # Log but don't fail (credit refund is best-effort)
+                        import logging
+
+                        logger = logging.getLogger(__name__)
+                        logger.error(
+                            "Failed to refund credits for request %s: %s",
+                            obj.id,
+                            str(e),
+                            exc_info=True,
+                        )
+                else:
+                    import logging
+
+                    logger = logging.getLogger(__name__)
+                    logger.warning(
+                        "Cannot refund credits: user %s has no active membership",
+                        request.user.id,
+                    )
 
         return Response(GenerationRequestSerializer(obj).data, status=status.HTTP_200_OK)
 

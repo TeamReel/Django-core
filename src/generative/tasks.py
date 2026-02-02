@@ -188,7 +188,7 @@ def _handle_success(request_id: int, *, result: Any, duration_seconds: float) ->
     with transaction.atomic():
         request = (
             GenerationRequest.objects.select_for_update()
-            .select_related("template")
+            .select_related("template", "requester", "project")
             .get(id=request_id)
         )
 
@@ -229,8 +229,44 @@ def _handle_success(request_id: int, *, result: Any, duration_seconds: float) ->
         request.metadata["execution"] = execution_meta
         request.save(update_fields=["metadata"])
 
-        actual_cost = getattr(result, "actual_cost", None)
-        request.mark_completed(actual_cost=actual_cost or Decimal("0"))
+        actual_cost = getattr(result, "actual_cost", None) or Decimal("0")
+
+        # Settle credits with actual cost (WP05)
+        if request.transaction_id:
+            try:
+                from organisations.models import Membership
+
+                from .services import GenerationCreditService
+
+                # Get organisation from user's active membership
+                membership = (
+                    Membership.objects.filter(user=request.requester, is_active=True)
+                    .select_related("organisation")
+                    .first()
+                )
+
+                if membership:
+                    GenerationCreditService.settle_credits(
+                        transaction_id=request.transaction_id,
+                        actual_amount=actual_cost,
+                        user=request.requester,
+                        organisation=membership.organisation,
+                    )
+                else:
+                    logger.warning(
+                        "Cannot settle credits: user %s has no active membership",
+                        request.requester.id,
+                    )
+            except Exception as e:
+                # Log but don't fail the task (credit settlement is not critical)
+                logger.error(
+                    "Failed to settle credits for request %s: %s",
+                    request_id,
+                    str(e),
+                    exc_info=True,
+                )
+
+        request.mark_completed(actual_cost=actual_cost)
 
         logger.info(
             "Task completed: request=%s cost=%s duration=%ss",
@@ -250,7 +286,7 @@ def _handle_failure(
     with transaction.atomic():
         request = (
             GenerationRequest.objects.select_for_update()
-            .select_related("template")
+            .select_related("template", "requester", "project")
             .get(id=request_id)
         )
 
@@ -315,6 +351,41 @@ def _handle_failure(
             )
 
         request.save(update_fields=["retry_count", "error_message", "error_category", "metadata"])
+
+        # Refund credits on permanent failure (WP05)
+        if request.transaction_id:
+            try:
+                from organisations.models import Membership
+
+                from .services import GenerationCreditService
+
+                # Get organisation from user's active membership
+                membership = (
+                    Membership.objects.filter(user=request.requester, is_active=True)
+                    .select_related("organisation")
+                    .first()
+                )
+
+                if membership:
+                    GenerationCreditService.refund_credits(
+                        transaction_id=request.transaction_id,
+                        reason=f"Request failed: {error_message[:100]}",
+                        user=request.requester,
+                        organisation=membership.organisation,
+                    )
+                else:
+                    logger.warning(
+                        "Cannot refund credits: user %s has no active membership",
+                        request.requester.id,
+                    )
+            except Exception as e:
+                # Log but don't fail the task (credit refund is best-effort)
+                logger.error(
+                    "Failed to refund credits for request %s: %s",
+                    request_id,
+                    str(e),
+                    exc_info=True,
+                )
 
         request.mark_failed(error_message=error_message, error_category=category.value)
 
