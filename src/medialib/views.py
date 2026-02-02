@@ -13,6 +13,7 @@ from .serializers import (
     CollectionSerializer,
     CollectionDetailSerializer,
 )
+from .tasks import process_media_item
 
 
 class MediaItemViewSet(viewsets.ModelViewSet):
@@ -20,7 +21,7 @@ class MediaItemViewSet(viewsets.ModelViewSet):
     ViewSet for MediaItem with project scoping
 
     Filters:
-    - state: Filter by processing state (pending/processing/ready/error)
+    - state: Filter by processing state (raw/processing/processed/error)
     - tags: Filter by tag slug (comma-separated)
     - mime_type: Filter by MIME type prefix (e.g., "image/", "video/")
     - search: Full-text search on title and description
@@ -60,8 +61,10 @@ class MediaItemViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        """Set created_by to current user"""
-        serializer.save(created_by=self.request.user)
+        """Set created_by to current user and trigger metadata extraction"""
+        instance = serializer.save(created_by=self.request.user)
+        # Trigger async metadata extraction
+        process_media_item.delay(str(instance.id))
 
 
 class MediaTagViewSet(viewsets.ModelViewSet):

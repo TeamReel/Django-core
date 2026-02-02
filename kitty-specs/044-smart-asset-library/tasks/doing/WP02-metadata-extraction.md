@@ -11,23 +11,23 @@ subtasks:
   - id: T008
     title: Implement extract_image_metadata() service
     priority: P1
-    status: not-started
+    status: completed
   - id: T009
     title: Implement extract_video_metadata() service
     priority: P1
-    status: not-started
+    status: completed
   - id: T010
     title: Create Celery task process_media_item
     priority: P1
-    status: not-started
+    status: completed
   - id: T011
     title: Wire extraction to MediaItem creation flow
     priority: P1
-    status: not-started
+    status: completed
   - id: T012
     title: Handle extraction failures gracefully
     priority: P2
-    status: not-started
+    status: completed
 lane: "doing"
 agent: "GitHub Copilot"
 shell_pid: "10500"
