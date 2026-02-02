@@ -81,6 +81,8 @@ INSTALLED_APPS = [
     "branding.apps.BrandingConfig",
     # B34: Generative Pipelines - AI Content Generation Factory
     "src.generative.apps.GenerativeConfig",
+    # B35: Smart Asset Library - Media & File Management
+    "medialib35.apps.Medialib35Config",
 ]
 
 MIDDLEWARE = [
