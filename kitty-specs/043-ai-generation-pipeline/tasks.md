@@ -188,22 +188,23 @@
 
 ---
 
-## Work Package WP05: Credit Management Integration (Priority: P1)
+## Work Package WP05: Credit Management Integration (Priority: P1) ✅ DONE
 
 **Goal**: Integrate B11 Credits API with reserve/settle pattern per FR-009 to FR-013.
 **Independent Test**: Credits reserved on submit, settled on complete, refunded on failure, insufficient credits rejected with HTTP 402.
-**Prompt**: [tasks/planned/WP05-credit-management.md](tasks/planned/WP05-credit-management.md)
+**Prompt**: [tasks/done/WP05-credit-management.md](tasks/done/WP05-credit-management.md)
 **Dependencies**: WP04 (task execution must work)
+**Status**: Approved without changes (reviewer: github-copilot)
 
 ### Included Subtasks
-- [ ] T036 Create `services/credit_service.py` - wrapper for B11 Transactions API calls
-- [ ] T037 Implement credit reservation in `RequestViewSet.create()` - reserve estimated_cost before queueing
-- [ ] T038 Implement balance check - return HTTP 402 if user.available_balance < estimated_cost
-- [ ] T039 Link transaction to request via `GenerationRequest.transaction_id` FK
-- [ ] T040 Implement credit settlement in Celery task on success - update transaction with actual_cost
-- [ ] T041 Implement credit refund in Celery task on permanent failure - cancel transaction (full refund)
-- [ ] T042 Handle partial refund case: actual_cost < estimated_cost (release difference)
-- [ ] T043 [P] Write credit integration tests (mock B11 API, test reserve→settle, reserve→refund, insufficient balance) - target >85% coverage
+- [x] T036 Create `services/credit_service.py` - wrapper for B11 Transactions API calls
+- [x] T037 Implement credit reservation in `RequestViewSet.create()` - reserve estimated_cost before queueing
+- [x] T038 Implement balance check - return HTTP 402 if user.available_balance < estimated_cost
+- [x] T039 Link transaction to request via `GenerationRequest.transaction_id` FK
+- [x] T040 Implement credit settlement in Celery task on success - update transaction with actual_cost
+- [x] T041 Implement credit refund in Celery task on permanent failure - cancel transaction (full refund)
+- [x] T042 Handle partial refund case: actual_cost < estimated_cost (release difference)
+- [x] T043 [P] Write credit integration tests (mock B11 API, test reserve→settle, reserve→refund, insufficient balance) - target >85% coverage
 
 ### Constitutional Alignment
 - Principle V (Security): No credit leakage, transaction safety
