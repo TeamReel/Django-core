@@ -139,6 +139,23 @@ def process_generation_request(self, request_id: int) -> None:
     provider = request.template.pipeline_config.get("provider")
     logger.info("Task started: request=%s provider=%s", request_id, provider)
 
+    # WP06 T045: Inject brand context before execution
+    from .services.brand import BrandContextService
+
+    input_data = BrandContextService.inject_brand_context(
+        input_data=request.input_data.copy(),
+        template_config=request.template.pipeline_config,
+        organisation_id=request.template.organisation_id,
+    )
+
+    # WP06 T051: Send WebSocket status update (processing started)
+    try:
+        from .services.websocket import GenerationWebSocketService
+
+        GenerationWebSocketService.send_status_update(request)
+    except Exception as ws_error:  # noqa: BLE001
+        logger.warning(f"Failed to send WebSocket update: {ws_error}")
+
     started_monotonic = time.monotonic()
 
     try:
@@ -146,7 +163,7 @@ def process_generation_request(self, request_id: int) -> None:
         result = _run_async(
             executor.execute(
                 template_config=request.template.pipeline_config,
-                input_data=request.input_data,
+                input_data=input_data,
                 brand_context=None,
             )
         )
@@ -203,19 +220,67 @@ def _handle_success(request_id: int, *, result: Any, duration_seconds: float) ->
         output_type = _map_output_type(getattr(result, "output_type", "text"))
         text_content = getattr(result, "content", None) or ""
         file_path = getattr(result, "file_path", None)
+        file_content = getattr(result, "file_content", None)
 
-        if file_path:
-            request.mark_failed(
-                error_message="File outputs are not supported yet (WP06/WP35 integration)",
-                error_category=ExecutorErrorCategory.PERMANENT.value,
+        # WP06 T047: Store file outputs via B35 FileStorage
+        file_id = None
+        if file_content and isinstance(file_content, bytes):
+            try:
+                from .services.file_storage import GenerationFileService
+
+                # Determine filename and MIME type from output metadata or defaults
+                filename = getattr(result, "filename", f"output_{request.id}")
+                mime_type = getattr(result, "mime_type", None)
+
+                if not mime_type:
+                    # Infer MIME type from output_type
+                    mime_type_map = {
+                        "image": "image/png",
+                        "video": "video/mp4",
+                        "audio": "audio/mpeg",
+                        "document": "application/pdf",
+                    }
+                    mime_type = mime_type_map.get(output_type, "application/octet-stream")
+
+                file_id = GenerationFileService.store_output_file(
+                    content=file_content,
+                    filename=filename,
+                    mime_type=mime_type,
+                    user_id=request.requester_id,
+                    organisation_id=request.template.organisation_id,
+                )
+
+                logger.info(
+                    "Stored file output",
+                    extra={
+                        "request_id": request_id,
+                        "file_id": file_id,
+                        "filename": filename,
+                        "size_bytes": len(file_content),
+                    },
+                )
+
+            except Exception as file_error:  # noqa: BLE001
+                logger.error(
+                    f"Failed to store file output: {file_error}",
+                    extra={"request_id": request_id},
+                    exc_info=True,
+                )
+                # Continue with text fallback
+                file_id = None
+
+        elif file_path:
+            logger.warning(
+                f"file_path returned but no file_content (legacy executor): {file_path}",
+                extra={"request_id": request_id},
             )
-            return
 
         GenerationOutput.objects.update_or_create(
             request=request,
             defaults={
                 "output_type": output_type,
-                "text_content": text_content,
+                "text_content": text_content if not file_id else "",
+                "file_id": file_id,
                 "metadata": getattr(result, "metadata", {}) or {},
             },
         )
@@ -274,6 +339,16 @@ def _handle_success(request_id: int, *, result: Any, duration_seconds: float) ->
             request.actual_cost,
             duration_seconds,
         )
+
+    # WP06 T051: Send WebSocket status update (completed) - outside transaction
+    try:
+        from .services.websocket import GenerationWebSocketService
+
+        # Refresh from DB to get updated status
+        request.refresh_from_db()
+        GenerationWebSocketService.send_status_update(request)
+    except Exception as ws_error:  # noqa: BLE001
+        logger.warning(f"Failed to send WebSocket update: {ws_error}")
 
 
 def _handle_failure(
@@ -396,3 +471,13 @@ def _handle_failure(
             category.value,
             error_message,
         )
+
+    # WP06 T051: Send WebSocket status update (failed) - outside transaction
+    try:
+        from .services.websocket import GenerationWebSocketService
+
+        # Refresh from DB to get updated status
+        request.refresh_from_db()
+        GenerationWebSocketService.send_status_update(request)
+    except Exception as ws_error:  # noqa: BLE001
+        logger.warning(f"Failed to send WebSocket update: {ws_error}")

@@ -1,17 +1,18 @@
 """Test fixtures for B34 Generative Pipelines tests."""
 
-import pytest
 from decimal import Decimal
 
+import pytest
 from accounts.models import User
 from organisations.models import Organisation
 from projects.models import Project
+
 from src.generative.models import (
-    GenerationTemplate,
-    GenerationRequest,
     GenerationOutput,
-    ProviderChoices,
+    GenerationRequest,
+    GenerationTemplate,
     OutputType,
+    ProviderChoices,
 )
 
 
@@ -221,4 +222,64 @@ def other_user(db, organisation) -> User:
     return User.objects.create_user(
         email="other@example.com",
         password="testpass123",
+    )
+
+
+# WP06 Integration Fixtures
+
+
+@pytest.fixture
+def brand_profile(db, organisation, user):
+    """Create a test brand profile for integration tests."""
+    from branding.models import BrandProfile, DesignToken
+
+    brand = BrandProfile.objects.create(
+        organisation=organisation,
+        name="Test Brand",
+        is_active=True,
+        created_by=user,
+    )
+
+    # Add design tokens
+    DesignToken.objects.create(
+        profile=brand,
+        key="primary_color",
+        value="#FF0000",
+        type="color",
+    )
+    DesignToken.objects.create(
+        profile=brand,
+        key="secondary_color",
+        value="#00FF00",
+        type="color",
+    )
+    DesignToken.objects.create(
+        profile=brand,
+        key="font_heading",
+        value="Arial",
+        type="font",
+    )
+    DesignToken.objects.create(
+        profile=brand,
+        key="font_body",
+        value="Helvetica",
+        type="font",
+    )
+
+    return brand
+
+
+@pytest.fixture
+def generation_template(db, organisation, user, valid_input_schema, valid_openai_config):
+    """Alias for template fixture (for clarity in WP06 tests)."""
+    return GenerationTemplate.objects.create(
+        organisation=organisation,
+        name="Test Template",
+        slug="test-template",
+        version="1.0.0",
+        description="A test template for unit tests",
+        input_schema=valid_input_schema,
+        pipeline_config=valid_openai_config,
+        retention_days=30,
+        created_by=user,
     )

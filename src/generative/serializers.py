@@ -83,7 +83,14 @@ class GenerationTemplateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_pipeline_config(self, value: dict[str, Any]) -> dict[str, Any]:
-        """Validate pipeline_config has required keys per provider."""
+        """Validate pipeline_config has required keys per provider.
+
+        WP06 T052: Support brand configuration in pipeline_config.
+
+        Brand context options (optional):
+            - use_brand_context (bool): Enable brand injection
+            - brand_id (int): Specific brand ID (defaults to organisation default)
+        """
         provider = value.get("provider")
 
         # Validate provider exists
@@ -109,6 +116,15 @@ class GenerationTemplateSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError("estimated_cost must be non-negative")
             except (ValueError, TypeError):
                 raise serializers.ValidationError("estimated_cost must be a valid number")
+
+        # WP06 T052: Validate brand configuration if present
+        if value.get("use_brand_context") and "brand_id" in value:
+            try:
+                brand_id = int(value["brand_id"])
+                if brand_id < 1:
+                    raise ValueError("brand_id must be positive")
+            except (ValueError, TypeError):
+                raise serializers.ValidationError("brand_id must be a valid positive integer")
 
         return value
 
@@ -260,17 +276,28 @@ class GenerationOutputSerializer(serializers.ModelSerializer):
         ]
 
     def get_presigned_url(self, obj: GenerationOutput) -> str | None:
-        """Generate presigned URL for file_id if exists."""
+        """Generate presigned URL for file_id if exists.
+
+        WP06 T048: Presigned URLs for file downloads.
+        """
         if obj.file_id:
             try:
-                # Import here to avoid circular dependency
-                from src.files.services import get_presigned_download_url
+                # Use WP06 GenerationFileService for presigned URLs
+                from .services.file_storage import GenerationFileService
 
-                return get_presigned_download_url(
-                    obj.file_id, expiration_seconds=1800  # 30 minutes
+                return GenerationFileService.get_presigned_url(
+                    file_id=obj.file_id,
+                    expiration=3600,  # 1 hour
                 )
-            except (ImportError, AttributeError):
-                # Fallback if B35 Files not available or different API
+            except Exception as e:
+                # Log error but don't fail serialization
+                import logging
+
+                logger = logging.getLogger("generative.serializers")
+                logger.error(
+                    f"Failed to generate presigned URL for file_id={obj.file_id}: {e}",
+                    exc_info=True,
+                )
                 return None
         return None
 
