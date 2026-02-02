@@ -23,6 +23,8 @@ subtasks:
     priority: P1
     status: completed
 lane: done
+review_status: "approved without changes"
+reviewed_by: "copilot-reviewer"
 ---
 
 # WP03: Tagging System
