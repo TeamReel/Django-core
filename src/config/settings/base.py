@@ -82,7 +82,7 @@ INSTALLED_APPS = [
     # B34: Generative Pipelines - AI Content Generation Factory
     "src.generative.apps.GenerativeConfig",
     # B35: Smart Asset Library - Media & File Management
-    "medialib35.apps.Medialib35Config",
+    "medialib.apps.MedialibConfig",
 ]
 
 MIDDLEWARE = [

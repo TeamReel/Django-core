@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 
-class Medialib35Config(AppConfig):
+class MedialibConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "medialib35"
+    name = "medialib"
     verbose_name = "Smart Asset Library"
