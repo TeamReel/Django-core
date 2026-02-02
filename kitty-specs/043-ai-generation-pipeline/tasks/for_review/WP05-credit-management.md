@@ -11,7 +11,7 @@ subtasks:
   - "T043"
 title: "Credit Management Integration"
 phase: "Phase 3 - Integrations"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "github-copilot"
 shell_pid: "13948"
@@ -488,3 +488,4 @@ history:
 
 - 2026-02-01T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2026-02-02T05:49:08Z – github-copilot – shell_pid=13948 – lane=doing – Started implementation
+- 2026-02-02T05:58:16Z – github-copilot – shell_pid=13948 – lane=for_review – Ready for review
