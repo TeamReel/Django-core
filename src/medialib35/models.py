@@ -12,10 +12,11 @@ from django.utils.text import slugify
 
 
 class MediaItemState(models.TextChoices):
-    PENDING = "pending", "Pending Processing"
+    RAW = "raw", "Raw Upload"
     PROCESSING = "processing", "Processing"
-    READY = "ready", "Ready"
+    PROCESSED = "processed", "Processed"
     ERROR = "error", "Error"
+    ARCHIVED = "archived", "Archived"
 
 
 class MediaItem(models.Model):
@@ -40,7 +41,7 @@ class MediaItem(models.Model):
 
     # Processing
     state = models.CharField(
-        max_length=20, choices=MediaItemState.choices, default=MediaItemState.PENDING
+        max_length=20, choices=MediaItemState.choices, default=MediaItemState.RAW
     )
     extraction_metadata = models.JSONField(default=dict, blank=True)
 

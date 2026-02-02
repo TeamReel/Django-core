@@ -6,7 +6,7 @@ estimated_hours: 4
 dependencies:
   - B22 File Storage
   - B07 Projects
-lane: doing
+lane: for_review
 agent: claude
 shell_pid: "10500"
 assignee: GitHub Copilot
@@ -20,8 +20,13 @@ activity_log:
   - timestamp: 2026-02-02T19:05:00Z
     agent: claude
     shell_pid: "10500"
-    lane: doing
+    lane: for_review
     note: Completed implementation - all models, serializers, views, admin, and migrations created
+  - timestamp: 2026-02-02T19:10:00Z
+    agent: claude
+    shell_pid: "10500"
+    lane: for_review
+    note: Fixed state enum to match API contract (raw/processed/archived), regenerated migration
 subtasks:
   - id: T001
     title: Create MediaItem model with required fields
