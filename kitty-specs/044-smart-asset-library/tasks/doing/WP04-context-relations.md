@@ -23,10 +23,12 @@ subtasks:
     title: Validate target object exists
     priority: P2
     status: done
-lane: planned
-review_status: has_feedback
+lane: "doing"
+review_status: acknowledged
 reviewed_by: github-copilot
-assignee: ""
+assignee: "copilot"
+agent: "copilot"
+shell_pid: "12345"
 ---
 
 ## Review Feedback
@@ -316,3 +318,7 @@ urlpatterns = [
 - Test object existence validation
 - Test duplicate relation prevention
 - Test reverse query (target → media)
+
+## Activity Log
+
+- 2026-02-02T20:13:58Z – copilot – shell_pid= – lane=doing – Restarting implementation to address feedback
