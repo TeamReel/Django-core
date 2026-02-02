@@ -12,7 +12,7 @@
 
 | WP | Name | Priority | Subtasks | Status |
 |----|------|----------|----------|--------|
-| WP01 | Core Models & API | P1 | T001-T007 | 🟡 Planned |
+| WP01 | Core Models & API | P1 | T001-T007 | ✅ Done |
 | WP02 | Metadata Extraction | P1 | T008-T012 | 🟡 Planned |
 | WP03 | Tagging System | P2 | T013-T016 | 🟡 Planned |
 | WP04 | Context Relations | P2 | T017-T020 | 🟡 Planned |
@@ -28,15 +28,15 @@
 **Goal**: MediaItem, MediaTag, Collection models + basic CRUD endpoints
 **Estimate**: 4h
 **Dependencies**: B22 File Storage, B07 Projects
-**Prompt**: [tasks/planned/WP01-core-models.md](tasks/planned/WP01-core-models.md)
+**Prompt**: [tasks/done/WP01-core-models.md](tasks/done/WP01-core-models.md)
 
-- [ ] [T001] [P1] Create MediaItem model with required fields
-- [ ] [T002] [P1] Create MediaTag model with hybrid scope (system/project)
-- [ ] [T003] [P1] Create Collection model with membership M2M
-- [ ] [T004] [P1] Create MediaItemSerializer with nested output
-- [ ] [T005] [P1] Create MediaItemViewSet with project scoping
-- [ ] [T006] [P1] Create MediaTagViewSet with scope filtering
-- [ ] [T007] [P2] Add admin configuration for debugging
+- [x] [T001] [P1] Create MediaItem model with required fields
+- [x] [T002] [P1] Create MediaTag model with hybrid scope (system/project)
+- [x] [T003] [P1] Create Collection model with membership M2M
+- [x] [T004] [P1] Create MediaItemSerializer with nested output
+- [x] [T005] [P1] Create MediaItemViewSet with project scoping
+- [x] [T006] [P1] Create MediaTagViewSet with scope filtering
+- [x] [T007] [P2] Add admin configuration for debugging
 
 ---
 
