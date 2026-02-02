@@ -29,7 +29,7 @@ subtasks:
     priority: P2
     status: completed
 lane: "for_review"
-review_status: "acknowledged"
+review_status: "approved without changes"
 reviewed_by: "GitHub Copilot"
 agent: "GitHub Copilot"
 shell_pid: "10500"
