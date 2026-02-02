@@ -28,7 +28,9 @@ subtasks:
     title: Handle extraction failures gracefully
     priority: P2
     status: not-started
-lane: planned
+lane: "doing"
+agent: "GitHub Copilot"
+shell_pid: "10500"
 ---
 
 # WP02: Metadata Extraction
@@ -249,3 +251,7 @@ class Command(BaseCommand):
 - Test with various image formats (JPEG, PNG, WebP, GIF)
 - Test with video formats (MP4, WebM, MOV)
 - Test error cases (corrupt file, unsupported format)
+
+## Activity Log
+
+- 2026-02-02T19:16:52Z – GitHub Copilot – shell_pid=10500 – lane=doing – Started implementation of WP02
