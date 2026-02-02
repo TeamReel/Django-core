@@ -228,21 +228,22 @@
 
 **Goal**: Integrate B33 Brand Identity and B22/B35 File Storage per FR-020 to FR-023.
 **Independent Test**: Brand tokens injected into generation context, output files stored with ACL, WebSocket events emitted.
-**Prompt**: [tasks/planned/WP06-brand-file-integration.md](tasks/planned/WP06-brand-file-integration.md)
+**Prompt**: [tasks/done/WP06-brand-file-integration.md](tasks/done/WP06-brand-file-integration.md)
 **Dependencies**: WP04 (task execution), WP05 (credit flow complete)
+**Status**: ✅ **DONE** - All 16/16 tests passing (100%). Reviewed 2026-02-02.
 
 ### Included Subtasks
-- [ ] T044 Implement brand context fetching in Celery task - call `BrandProfile.get_effective_profile(project=request.project_id)`
-- [ ] T045 Pass brand_context to executor.execute() method (update executor interface)
-- [ ] T046 Inject brand tokens in OpenAI executor (add to system message: "Brand colors: #FF0000, Logo: ...")
-- [ ] T047 Pass brand tokens to LangGraph executor as flow variables
-- [ ] T048 Handle missing brand profile gracefully (continue with empty context)
-- [ ] T049 Implement file storage via B35 - save output files with `FileStorageRecord.create()`
-- [ ] T050 Set ACL on output files - inherit from request.project permissions
-- [ ] T051 Generate presigned URLs for file downloads (15min expiry) in OutputSerializer
-- [ ] T052 Implement WebSocket integration via B23 - emit events on status changes (created, processing, completed, failed)
-- [ ] T053 Include metadata in WebSocket events: request_id, status, retry_count, error_category, progress_percentage
-- [ ] T054 [P] Write integration tests (mock B33/B35/B23 APIs, test brand injection, file storage, WebSocket events)
+- [x] T044 Implement brand context fetching in Celery task - call `BrandProfile.get_effective_profile(project=request.project_id)`
+- [x] T045 Pass brand_context to executor.execute() method (update executor interface)
+- [x] T046 Inject brand tokens in OpenAI executor (add to system message: "Brand colors: #FF0000, Logo: ...")
+- [x] T047 Pass brand tokens to LangGraph executor as flow variables
+- [x] T048 Handle missing brand profile gracefully (continue with empty context)
+- [x] T049 Implement file storage via B35 - save output files with `FileStorageRecord.create()`
+- [x] T050 Set ACL on output files - inherit from request.project permissions
+- [x] T051 Generate presigned URLs for file downloads (15min expiry) in OutputSerializer
+- [x] T052 Implement WebSocket integration via B23 - emit events on status changes (created, processing, completed, failed)
+- [x] T053 Include metadata in WebSocket events: request_id, status, retry_count, error_category, progress_percentage
+- [x] T054 [P] Write integration tests (mock B33/B35/B23 APIs, test brand injection, file storage, WebSocket events)
 
 ### Constitutional Alignment
 - Principle II (Architecture): Loose coupling with B33/B35/B23 (use public APIs)
@@ -348,7 +349,7 @@ System.Func`2[System.Text.RegularExpressions.Match,System.String]
 
 ### Phase 3: Integrations (WP05-WP06)
 - [ ] WP05: Credit Management Integration (8 subtasks)
-- [ ] WP06: Brand & File Storage Integration (11 subtasks)
+- [x] WP06: Brand & File Storage Integration (11 subtasks) ✅ **DONE** (2026-02-02)
 **Milestone**: Production-ready job lifecycle with all integrations
 
 ### Phase 4: Operations & Polish (WP07-WP08)
