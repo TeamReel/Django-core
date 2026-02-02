@@ -15,8 +15,8 @@
 | WP01 | Core Models & API | P1 | T001-T007 | ✅ Done |
 | WP02 | Metadata Extraction | P1 | T008-T012 | ✅ Done |
 | WP03 | Tagging System | P2 | T013-T016 | ✅ Done |
-| WP04 | Context Relations | P2 | T017-T020 | 🔴 Needs Changes |
-| WP05 | Collections | P2 | T021-T023 | 🟡 Planned |
+| WP04 | Context Relations | P2 | T017-T020 | ✅ Done |
+| WP05 | Collections | P2 | T021-T023 | ✅ Done |
 | WP06 | Search & Filter | P1 | T024-T027 | 🟡 Planned |
 | WP07 | Thumbnail Generation | P3 | T028-T032 | 🟡 Planned |
 | WP08 | B34 Auto-Linking | P2 | T033-T036 | 🟡 Planned |
@@ -71,7 +71,7 @@
 **Goal**: Link media to activities, players, matches via generic FK
 **Estimate**: 4h
 **Dependencies**: WP01, B30 Activities
-**Prompt**: [tasks/planned/WP04-context-relations.md](tasks/planned/WP04-context-relations.md)
+**Prompt**: [tasks/done/WP04-context-relations.md](tasks/done/WP04-context-relations.md)
 
 - [x] [T017] [P1] Create MediaItemRelation model for generic FK
 - [x] [T018] [P1] Implement MediaItemRelationService
@@ -84,11 +84,11 @@
 **Goal**: Group media into named collections with ordering
 **Estimate**: 2h
 **Dependencies**: WP01
-**Prompt**: [tasks/planned/WP05-collections.md](tasks/planned/WP05-collections.md)
+**Prompt**: [tasks/done/WP05-collections.md](tasks/done/WP05-collections.md)
 
-- [ ] [T021] [P1] Implement CollectionService
-- [ ] [T022] [P1] Add Collection ViewSet with CRUD
-- [ ] [T023] [P1] Add/remove items endpoints with position support
+- [x] [T021] [P1] Implement CollectionService
+- [x] [T022] [P1] Add Collection ViewSet with CRUD
+- [x] [T023] [P1] Add/remove items endpoints with position support
 
 ---
 

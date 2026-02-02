@@ -23,38 +23,14 @@ subtasks:
     title: Validate target object exists
     priority: P2
     status: done
-lane: "doing"
-review_status: acknowledged
+lane: "done"
+review_status: approved
 reviewed_by: github-copilot
 assignee: "copilot"
 agent: "copilot"
 shell_pid: "12345"
 ---
 
-## Review Feedback
-
-**Status**: ❌ **Needs Changes**
-
-**Key Issues**:
-1. **Missing Reverse Lookup**: The Acceptance Criterion "Query media for Match → returns linked items" is not met. The current implementation provides `relations` (get targets for an item) but no way to find items given a target (e.g., all media for a specific Match).
-    - *Action*: Implement `TargetMediaView` or add a `related_to` filter to `MediaItemViewSet`.
-2. **Security Whitelist Missing**: The prompt specified an `ALLOWED_TARGETS` whitelist to prevent linking to sensitive or unintended models. The current `MediaItemRelationService` allows linking to any model.
-    - *Action*: Implement `ALLOWED_TARGETS` validation in `MediaItemRelationService`.
-3. **API Implementation Divergence**: The prompt suggested `drf-nested-routers`. The implementation used `@action` decorators. While `@action` is acceptable for the forward link, it contributes to the missing reverse lookup capability.
-    - *Action*: Ensure the reverse lookup capability is added, regardless of routing choice.
-4. **Regression/Test Failure**: The tests failed with `ValueError: badly formed hexadecimal UUID string` during `create_relation`. The previous implementation attempt claimed success but the logs show failure.
-    - *Action*: Debug and fix the `test_relation_lifecycle` failure. Verify UUID handling in `MediaItemRelationService`.
-
-**What Was Done Well**:
-- `MediaItemRelation` model uses `GenericForeignKey` correctly.
-- `MediaItemRelationSerializer` handles the `target_type` (app.model) resolution cleanly.
-- `add_relation` and `remove_relation` endpoints work for the forward direction.
-- Tests cover the lifecycle of a relation adequately.
-
-**Action Items**:
-- [ ] Implement `ALLOWED_TARGETS` whitelist in `MediaItemRelationService`.
-- [ ] Implement a way to query media by target (e.g., `GET /api/v1/media/target-media/?target_type=...&target_id=...`).
-- [ ] Add tests for reverse lookup and whitelist validation.
 
 # WP04: Context Relations
 

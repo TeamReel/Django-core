@@ -2,7 +2,7 @@
 B35 Smart Asset Library - API Serializers
 """
 from rest_framework import serializers
-from .models import MediaItem, MediaTag, Collection, CollectionMembership
+from .models import MediaItem, MediaTag, Collection, CollectionMembership, MediaItemRelation
 from projects.models import Project
 
 
@@ -121,6 +121,7 @@ class CollectionSerializer(serializers.ModelSerializer):
         model = Collection
         fields = [
             "id",
+            "project",
             "name",
             "description",
             "item_count",
@@ -150,3 +151,42 @@ class CollectionDetailSerializer(CollectionSerializer):
 
     class Meta(CollectionSerializer.Meta):
         fields = CollectionSerializer.Meta.fields + ["memberships"]
+
+
+class MediaItemRelationSerializer(serializers.ModelSerializer):
+    """Serializer for generic relations"""
+
+    target_model = serializers.CharField(source="content_type.model", read_only=True)
+    target_app = serializers.CharField(source="content_type.app_label", read_only=True)
+
+    # Write fields
+    target_id = serializers.UUIDField(source="object_id")
+    target_type = serializers.CharField(write_only=True)  # e.g. "activities.activity"
+
+    class Meta:
+        model = MediaItemRelation
+        fields = [
+            "id",
+            "target_app",
+            "target_model",
+            "target_id",
+            "target_type",
+            "relation_type",
+            "metadata",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at", "target_app", "target_model"]
+
+    def validate(self, attrs):
+        # Validate target_type exists using ContentType
+        target_type = attrs.get("target_type")
+        if target_type:
+            try:
+                app_label, model = target_type.split(".")
+                from django.contrib.contenttypes.models import ContentType
+
+                if not ContentType.objects.filter(app_label=app_label, model=model).exists():
+                    raise serializers.ValidationError({"target_type": "Invalid model identifier"})
+            except ValueError:
+                raise serializers.ValidationError({"target_type": "Format must be 'app.model'"})
+        return attrs

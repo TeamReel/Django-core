@@ -4,10 +4,13 @@ B35 Smart Asset Library - Core Models
 MediaItem: Core media asset with processing state
 MediaTag: Hybrid scope tagging (system/project)
 Collection: Grouped media with ordering
+MediaItemRelation: Generic linking
 """
 import uuid
 from django.conf import settings
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.utils.text import slugify
 
 
@@ -150,3 +153,33 @@ class CollectionMembership(models.Model):
 
     def __str__(self):
         return f"{self.collection.name} → {self.media_item.title} (pos {self.position})"
+
+
+class MediaItemRelation(models.Model):
+    """Generic relation linking media items to any model."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    media_item = models.ForeignKey(MediaItem, on_delete=models.CASCADE, related_name="relations")
+
+    # Generic FK target
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.UUIDField()
+    target = GenericForeignKey("content_type", "object_id")
+
+    # Relation metadata
+    relation_type = models.CharField(max_length=50, default="related")
+    metadata = models.JSONField(default=dict, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [("media_item", "content_type", "object_id")]
+        indexes = [
+            models.Index(fields=["content_type", "object_id"]),
+        ]
+        db_table = "medialib_relations"
+
+    def __str__(self):
+        return f"{self.media_item_id} -> {self.content_type}:{self.object_id}"
