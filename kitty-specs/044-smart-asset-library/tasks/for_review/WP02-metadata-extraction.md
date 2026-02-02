@@ -28,7 +28,7 @@ subtasks:
     title: Handle extraction failures gracefully
     priority: P2
     status: completed
-lane: "doing"
+lane: "for_review"
 review_status: "acknowledged"
 reviewed_by: "GitHub Copilot"
 agent: "GitHub Copilot"
@@ -281,3 +281,4 @@ class Command(BaseCommand):
 - 2026-02-02T19:23:03Z – GitHub Copilot – shell_pid=10500 – lane=planned – Code review complete: Needs Changes
 - 2026-02-02T19:24:29Z – GitHub Copilot – shell_pid=10500 – lane=doing – Restarting implementation to address review feedback
 - 2026-02-02T20:29:08Z  GitHub Copilot  shell_pid=;  lane=doing  Addressed feedback: Added tests, management command, and retry logic.
+- 2026-02-02T19:29:33Z – GitHub Copilot – shell_pid=10500 – lane=for_review – Ready for review (Feedback Addressed)
