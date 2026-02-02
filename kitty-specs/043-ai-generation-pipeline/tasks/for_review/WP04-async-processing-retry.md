@@ -12,7 +12,7 @@ subtasks:
   - "T035"
 title: "Async Processing & Retry Logic"
 phase: "Phase 2 - Pipeline Execution"
-lane: "doing"
+lane: "for_review"
 assignee: "GitHub Copilot"
 agent: "github-copilot"
 shell_pid: "13948"
@@ -570,3 +570,4 @@ history:
 - 2026-02-01T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2026-02-01T21:01:11Z – github-copilot – shell_pid=13948 – lane=doing – Started implementation
 - 2026-02-02T05:18:32Z – github-copilot – shell_pid=13948 – lane=doing – Completed implementation
+- 2026-02-02T05:19:10Z – github-copilot – shell_pid=13948 – lane=for_review – Ready for review
