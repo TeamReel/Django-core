@@ -151,23 +151,23 @@
 
 ---
 
-## Work Package WP04: Async Processing & Retry Logic (Priority: P1)
+## Work Package WP04: Async Processing & Retry Logic (Priority: P1) ✅ DONE
 
 **Goal**: Implement Celery task execution with intelligent retry per FR-014 to FR-019.
 **Independent Test**: Tasks execute async, retries work for transient errors, no retry for permanent errors, >85% task test coverage.
-**Prompt**: [tasks/planned/WP04-async-processing-retry.md](tasks/planned/WP04-async-processing-retry.md)
+**Prompt**: [tasks/done/WP04-async-processing-retry.md](tasks/done/WP04-async-processing-retry.md)
 **Dependencies**: WP03 (executors must exist)
 
 ### Included Subtasks
-- [ ] T027 Create `tasks.py` with `process_generation_request` Celery task (bind=True, acks_late=True)
-- [ ] T028 Implement job lifecycle in task: status updates (pending → processing → completed/failed), timestamp tracking
-- [ ] T029 Create `error_classifier.py` with `ErrorClassifier` class (provider-specific error mapping)
-- [ ] T030 Implement OpenAI error classification (RateLimitError=TRANSIENT, BadRequestError=PERMANENT, etc.)
-- [ ] T031 Implement LangGraph error classification (HTTP 503=TRANSIENT, ValidationError=PERMANENT)
-- [ ] T032 Implement retry policy: exponential backoff [30s, 300s, 900s] for TRANSIENT, no retry for PERMANENT, 1x retry for UNKNOWN
-- [ ] T033 Track retry attempts in `GenerationRequest.retry_count` and metadata (attempt history)
-- [ ] T034 Implement max retries check (3 for transient) - mark failed after exhaustion
-- [ ] T035 [P] Write task tests (pytest-celery, mock executors, test transient/permanent/unknown flows) - target >85% coverage
+- [x] T027 Create `tasks.py` with `process_generation_request` Celery task (bind=True, acks_late=True)
+- [x] T028 Implement job lifecycle in task: status updates (pending → processing → completed/failed), timestamp tracking
+- [x] T029 Create `error_classifier.py` with `ErrorClassifier` class (provider-specific error mapping)
+- [x] T030 Implement OpenAI error classification (RateLimitError=TRANSIENT, BadRequestError=PERMANENT, etc.)
+- [x] T031 Implement LangGraph error classification (HTTP 503=TRANSIENT, ValidationError=PERMANENT)
+- [x] T032 Implement retry policy: exponential backoff [30s, 300s, 900s] for TRANSIENT, no retry for PERMANENT, 1x retry for UNKNOWN
+- [x] T033 Track retry attempts in `GenerationRequest.retry_count` and metadata (attempt history)
+- [x] T034 Implement max retries check (3 for transient) - mark failed after exhaustion
+- [x] T035 [P] Write task tests (pytest-celery, mock executors, test transient/permanent/unknown flows) - target >85% coverage
 
 ### Constitutional Alignment
 - Principle VI (Performance): Async processing, graceful degradation with retry
