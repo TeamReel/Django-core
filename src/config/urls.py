@@ -84,6 +84,8 @@ urlpatterns = [
     path("api/v1/tasks/", include("tasks.urls")),
     # B30: Activities & Period Hierarchy API
     path("api/v1/", include("activities.api.urls")),
+    # B34: Generative Pipelines API
+    path("api/v1/generative/", include("src.generative.urls")),
     # Security Baseline API
     path("api/security/", include("security_baseline.urls")),
     # Constitution API (B18)

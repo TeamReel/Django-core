@@ -48,6 +48,10 @@ redis>=5.0.0,<6.0
 # HTTP client for webhook notifications
 requests>=2.31.0,<3.0
 
+# AI Generation Pipeline (B34)
+openai>=1.0.0
+langgraph-sdk>=0.1.0
+
 # Scaffolding CLI (B20)
 click>=8.1.0,<9.0
 jinja2>=3.1.0,<4.0  # Template rendering engine
@@ -59,3 +63,6 @@ PyJWT>=2.8.0,<3.0
 
 # Image processing (WP03)
 Pillow>=10.0.0,<11.0
+
+# JSON Schema validation (B34 Generative Pipelines)
+jsonschema>=4.20.0,<5.0

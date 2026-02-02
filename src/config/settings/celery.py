@@ -118,6 +118,22 @@ CELERY_BEAT_SCHEDULE = {
             "expires": 3600,  # Task expires if not run within 1 hour
         },
     },
+    # B34: Cleanup expired generation outputs daily at 2:45 AM UTC
+    "cleanup-expired-outputs": {
+        "task": "generative.tasks.cleanup_expired_outputs",
+        "schedule": crontab(hour=2, minute=45),  # Daily at 2:45 AM UTC
+        "options": {
+            "expires": 3600,  # Task expires if not run within 1 hour
+        },
+    },
+    # B34: Update template costs monthly on 1st at 3:00 AM UTC
+    "update-template-costs": {
+        "task": "generative.tasks.update_template_costs",
+        "schedule": crontab(hour=3, minute=0, day_of_month=1),  # Monthly on 1st
+        "options": {
+            "expires": 7200,  # Task expires if not run within 2 hours
+        },
+    },
 }
 
 # Beat Scheduler Settings
