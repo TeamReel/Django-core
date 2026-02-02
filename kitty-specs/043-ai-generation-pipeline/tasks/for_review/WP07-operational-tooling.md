@@ -12,7 +12,7 @@ subtasks:
   - "T063"
 title: "Operational Tooling"
 phase: "Phase 4 - Operations & Polish"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude-sonnet-4.5"
 shell_pid: "21336"
@@ -695,3 +695,4 @@ history:
 
 - 2026-02-01T12:00:00Z – system – lane=planned – Prompt created via /spec-kitty.tasks
 - 2026-02-02T17:11:11Z – claude-sonnet-4.5 – shell_pid=21336 – lane=doing – Started implementation of operational tooling
+- 2026-02-02T17:27:39Z – claude-sonnet-4.5 – shell_pid=21336 – lane=for_review – Completed operational tooling: All commands, admin actions, health check, and tests (16/16 passing, 100% WP07 coverage). Fixed usage_report SQL query, admin test fixtures, and flexible assertions.
