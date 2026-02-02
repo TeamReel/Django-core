@@ -14,7 +14,7 @@
 |----|------|----------|----------|--------|
 | WP01 | Core Models & API | P1 | T001-T007 | ✅ Done |
 | WP02 | Metadata Extraction | P1 | T008-T012 | ✅ Done |
-| WP03 | Tagging System | P2 | T013-T016 | 🟡 Planned |
+| WP03 | Tagging System | P2 | T013-T016 | 🟡 In Progress |
 | WP04 | Context Relations | P2 | T017-T020 | 🟡 Planned |
 | WP05 | Collections | P2 | T021-T023 | 🟡 Planned |
 | WP06 | Search & Filter | P1 | T024-T027 | 🟡 Planned |

@@ -22,7 +22,7 @@ subtasks:
     title: Wire tags to MediaItem M2M
     priority: P1
     status: not-started
-lane: planned
+lane: doing
 ---
 
 # WP03: Tagging System
