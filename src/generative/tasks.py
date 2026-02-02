@@ -301,7 +301,7 @@ def _handle_success(request_id: int, *, result: Any, duration_seconds: float) ->
             try:
                 from organisations.models import Membership
 
-                from .services import GenerationCreditService
+                from .credit_service import GenerationCreditService
 
                 # Get organisation from user's active membership
                 membership = (
@@ -432,7 +432,7 @@ def _handle_failure(
             try:
                 from organisations.models import Membership
 
-                from .services import GenerationCreditService
+                from .credit_service import GenerationCreditService
 
                 # Get organisation from user's active membership
                 membership = (
@@ -481,3 +481,78 @@ def _handle_failure(
         GenerationWebSocketService.send_status_update(request)
     except Exception as ws_error:  # noqa: BLE001
         logger.warning(f"Failed to send WebSocket update: {ws_error}")
+
+
+# ==============================================================================
+# WP07: Operational Cron Tasks
+# ==============================================================================
+
+
+@shared_task(bind=True, name="generative.tasks.cleanup_expired_outputs")
+def cleanup_expired_outputs(self):
+    """Celery task wrapper for cleanup_expired_outputs management command.
+
+    WP07 T055: Cleanup cron job
+
+    Scheduled to run daily at 2:00 AM UTC via Celery Beat.
+    Calls the management command to delete expired generation outputs.
+
+    Returns:
+        dict: Task execution summary with count of deleted outputs
+
+    Raises:
+        Exception: If cleanup command fails (will trigger retry)
+    """
+    from django.core.management import call_command
+    from io import StringIO
+
+    logger.info("Starting cleanup_expired_outputs task")
+
+    try:
+        # Capture command output
+        out = StringIO()
+        call_command("cleanup_expired_outputs", stdout=out)
+
+        output = out.getvalue()
+        logger.info(f"Cleanup task completed: {output}")
+
+        return {"status": "success", "output": output}
+
+    except Exception as e:
+        logger.error(f"Cleanup task failed: {str(e)}", exc_info=True)
+        raise
+
+
+@shared_task(bind=True, name="generative.tasks.update_template_costs")
+def update_template_costs(self):
+    """Celery task wrapper for update_template_costs management command.
+
+    WP07 T056: Cost update cron job
+
+    Scheduled to run monthly on the 1st at 3:00 AM UTC via Celery Beat.
+    Recalculates template estimated costs based on recent actual costs.
+
+    Returns:
+        dict: Task execution summary with number of templates updated
+
+    Raises:
+        Exception: If cost update fails (will trigger retry)
+    """
+    from django.core.management import call_command
+    from io import StringIO
+
+    logger.info("Starting update_template_costs task")
+
+    try:
+        # Capture command output
+        out = StringIO()
+        call_command("update_template_costs", stdout=out)
+
+        output = out.getvalue()
+        logger.info(f"Cost update task completed: {output}")
+
+        return {"status": "success", "output": output}
+
+    except Exception as e:
+        logger.error(f"Cost update task failed: {str(e)}", exc_info=True)
+        raise

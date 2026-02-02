@@ -10,13 +10,14 @@ Constitution Principle VII: DRF standards with versioning and consistent respons
 
 from typing import Any
 
+from django.db import connection
 from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -210,7 +211,7 @@ class GenerationRequestViewSet(viewsets.ModelViewSet):
         from organisations.models import Membership
 
         from .exceptions import PaymentRequired
-        from .services import GenerationCreditService, InsufficientCreditsException
+        from .credit_service import GenerationCreditService, InsufficientCreditsException
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -301,7 +302,7 @@ class GenerationRequestViewSet(viewsets.ModelViewSet):
 
         from organisations.models import Membership
 
-        from .services import GenerationCreditService
+        from .credit_service import GenerationCreditService
 
         obj = self.get_object()
 
@@ -403,3 +404,72 @@ class GenerationOutputViewSet(viewsets.ReadOnlyModelViewSet):
         qs = qs.select_related("request", "request__template", "request__requester")
 
         return qs
+
+
+# ==============================================================================
+# WP07: Operational Endpoints
+# ==============================================================================
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def health_check(request: Request) -> Response:
+    """Health check endpoint for monitoring and load balancers.
+
+    WP07 T061: Health Check Endpoint
+
+    Performs basic checks:
+    - Database connectivity
+    - Celery worker availability (optional)
+
+    Returns:
+        200 OK: Service healthy
+        503 Service Unavailable: Service unhealthy
+
+    Example:
+        GET /api/v1/generative/health/
+        {
+            "status": "healthy",
+            "database": "ok",
+            "celery": "ok"
+        }
+    """
+    health_status = {"status": "healthy"}
+
+    try:
+        # Check database connectivity
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        health_status["database"] = "ok"
+
+        # Check Celery workers (optional, non-blocking)
+        try:
+            from celery import current_app
+
+            inspect = current_app.control.inspect()
+            stats = inspect.stats()
+
+            if stats and len(stats) > 0:
+                health_status["celery"] = "ok"
+                health_status["celery_workers"] = len(stats)
+            else:
+                health_status["celery"] = "no_workers"
+                health_status["status"] = "degraded"
+
+        except Exception as celery_error:  # noqa: BLE001
+            health_status["celery"] = "unavailable"
+            health_status["celery_error"] = str(celery_error)
+            # Don't fail health check if Celery is down
+            # (allows graceful degradation)
+
+        # Return 200 if healthy or degraded
+        status_code = status.HTTP_200_OK
+
+    except Exception as e:
+        # Database failure = service unavailable
+        health_status["status"] = "unhealthy"
+        health_status["database"] = "error"
+        health_status["error"] = str(e)
+        status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+
+    return Response(health_status, status=status_code)

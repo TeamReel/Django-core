@@ -24,10 +24,9 @@ from src.generative.models import (
     ProviderChoices,
     RequestStatus,
 )
-from src.generative.services import (
-    GenerationCreditService,
-    InsufficientCreditsException,
-)
+
+# Import from credit_service.py
+from src.generative.credit_service import GenerationCreditService, InsufficientCreditsException
 from src.transactions.exceptions import (
     InsufficientBalanceError,
     DuplicateIdempotencyKeyError,
@@ -127,7 +126,7 @@ def authenticated_client(user):
 class TestGenerationCreditService:
     """Unit tests for GenerationCreditService wrapper."""
 
-    @patch("src.generative.services.create_transaction")
+    @patch("src.generative.credit_service.create_transaction")
     def test_reserve_credits_success(self, mock_create_txn, user, organisation, project):
         """Test successful credit reservation."""
         # Mock transaction creation
@@ -154,7 +153,7 @@ class TestGenerationCreditService:
         assert call_kwargs["project"] == project
         assert call_kwargs["idempotency_key"] == "test-key-1"
 
-    @patch("src.generative.services.create_transaction")
+    @patch("src.generative.credit_service.create_transaction")
     def test_reserve_credits_insufficient_balance(
         self, mock_create_txn, user, organisation, project
     ):
@@ -181,7 +180,7 @@ class TestGenerationCreditService:
         assert exc_info.value.current_balance == Decimal("0.05")
         assert exc_info.value.required_amount == Decimal("0.10")
 
-    @patch("src.generative.services.create_transaction")
+    @patch("src.generative.credit_service.create_transaction")
     def test_reserve_credits_duplicate_idempotency(
         self, mock_create_txn, user, organisation, project
     ):
@@ -210,13 +209,13 @@ class TestGenerationCreditService:
                 idempotency_key="test-key-3",
             )
 
-    @patch("src.generative.services.create_transaction")
+    @patch("src.generative.credit_service.create_transaction")
     def test_settle_credits_exact_match(self, mock_create_txn, user, organisation, project):
         """Test settle with actual == estimated (no refund)."""
         # Create mock reserve transaction
         reserve_txn = Mock(id=123, amount=Decimal("-0.10"), project=project)
 
-        with patch("src.generative.services.Transaction") as mock_txn_model:
+        with patch("src.generative.credit_service.Transaction") as mock_txn_model:
             mock_txn_model.objects.get.return_value = reserve_txn
 
             refund_txn_id = GenerationCreditService.settle_credits(
@@ -230,7 +229,7 @@ class TestGenerationCreditService:
             assert refund_txn_id is None
             assert not mock_create_txn.called
 
-    @patch("src.generative.services.create_transaction")
+    @patch("src.generative.credit_service.create_transaction")
     def test_settle_credits_with_refund(self, mock_create_txn, user, organisation, project):
         """Test settle with actual < estimated (refund difference)."""
         # Create mock reserve transaction
@@ -238,7 +237,7 @@ class TestGenerationCreditService:
         mock_refund_txn = Mock(id=456)
         mock_create_txn.return_value = mock_refund_txn
 
-        with patch("src.generative.services.Transaction") as mock_txn_model:
+        with patch("src.generative.credit_service.Transaction") as mock_txn_model:
             mock_txn_model.objects.get.return_value = reserve_txn
 
             refund_txn_id = GenerationCreditService.settle_credits(
@@ -255,12 +254,12 @@ class TestGenerationCreditService:
             assert call_kwargs["amount"] == Decimal("0.04")  # Positive = credit
             assert call_kwargs["idempotency_key"] == "gen-settle-refund-123"
 
-    @patch("src.generative.services.create_transaction")
+    @patch("src.generative.credit_service.create_transaction")
     def test_settle_credits_underestimated(self, mock_create_txn, user, organisation, project):
         """Test settle with actual > estimated (log warning, no extra charge)."""
         reserve_txn = Mock(id=123, amount=Decimal("-0.10"), project=project)
 
-        with patch("src.generative.services.Transaction") as mock_txn_model:
+        with patch("src.generative.credit_service.Transaction") as mock_txn_model:
             mock_txn_model.objects.get.return_value = reserve_txn
 
             refund_txn_id = GenerationCreditService.settle_credits(
@@ -274,14 +273,14 @@ class TestGenerationCreditService:
             assert refund_txn_id is None
             assert not mock_create_txn.called
 
-    @patch("src.generative.services.create_transaction")
+    @patch("src.generative.credit_service.create_transaction")
     def test_refund_credits_success(self, mock_create_txn, user, organisation, project):
         """Test full credit refund on cancel/failure."""
         reserve_txn = Mock(id=123, amount=Decimal("-0.10"), project=project)
         mock_refund_txn = Mock(id=789)
         mock_create_txn.return_value = mock_refund_txn
 
-        with patch("src.generative.services.Transaction") as mock_txn_model:
+        with patch("src.generative.credit_service.Transaction") as mock_txn_model:
             mock_txn_model.objects.get.return_value = reserve_txn
 
             refund_txn_id = GenerationCreditService.refund_credits(
@@ -299,13 +298,13 @@ class TestGenerationCreditService:
             assert call_kwargs["idempotency_key"] == "gen-refund-123"
             assert "Request cancelled" in call_kwargs["notes"]
 
-    @patch("src.generative.services.create_transaction")
+    @patch("src.generative.credit_service.create_transaction")
     def test_refund_credits_idempotent(self, mock_create_txn, user, organisation, project):
         """Test refund idempotency (duplicate refund returns existing)."""
         reserve_txn = Mock(id=123, amount=Decimal("-0.10"), project=project)
         existing_refund = Mock(id=999)
 
-        with patch("src.generative.services.Transaction") as mock_txn_model:
+        with patch("src.generative.credit_service.Transaction") as mock_txn_model:
             mock_txn_model.objects.get.side_effect = [
                 reserve_txn,  # First get for reserve txn
                 existing_refund,  # Second get for existing refund
@@ -413,7 +412,7 @@ class TestReserveCreditsonSubmission:
 class TestSettleCreditsOnCompletion:
     """Integration tests for credit settlement on task completion."""
 
-    @patch("src.generative.services.GenerationCreditService.settle_credits")
+    @patch("src.generative.credit_service.GenerationCreditService.settle_credits")
     def test_settle_credits_on_success(self, mock_settle, user, organisation, project, template):
         """Test credits settled with actual cost on completion."""
         from src.generative.tasks import _handle_success
@@ -463,7 +462,7 @@ class TestSettleCreditsOnCompletion:
 class TestRefundCreditsOnCancellation:
     """Integration tests for credit refund on request cancellation."""
 
-    @patch("src.generative.services.GenerationCreditService.refund_credits")
+    @patch("src.generative.credit_service.GenerationCreditService.refund_credits")
     def test_cancel_request_refunds_credits(
         self, mock_refund, authenticated_client, user, project, template
     ):
@@ -514,7 +513,7 @@ class TestRefundCreditsOnCancellation:
 class TestRefundCreditsOnFailure:
     """Integration tests for credit refund on permanent failure."""
 
-    @patch("src.generative.services.GenerationCreditService.refund_credits")
+    @patch("src.generative.credit_service.GenerationCreditService.refund_credits")
     def test_refund_credits_on_permanent_failure(
         self, mock_refund, user, organisation, project, template
     ):
@@ -551,7 +550,7 @@ class TestRefundCreditsOnFailure:
         request.refresh_from_db()
         assert request.status == RequestStatus.FAILED
 
-    @patch("src.generative.services.GenerationCreditService.refund_credits")
+    @patch("src.generative.credit_service.GenerationCreditService.refund_credits")
     @patch("src.generative.tasks.process_generation_request.apply_async")
     def test_no_refund_on_transient_failure(
         self, mock_retry, mock_refund, user, organisation, project, template

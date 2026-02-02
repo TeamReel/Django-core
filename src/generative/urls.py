@@ -15,6 +15,7 @@ from .views import (
     GenerationOutputViewSet,
     GenerationRequestViewSet,
     GenerationTemplateViewSet,
+    health_check,
 )
 
 # Create router and register viewsets
@@ -25,5 +26,6 @@ router.register(r"outputs", GenerationOutputViewSet, basename="generation-output
 
 # URL patterns
 urlpatterns = [
+    path("health/", health_check, name="generative-health-check"),
     path("", include(router.urls)),
 ]

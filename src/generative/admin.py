@@ -65,6 +65,8 @@ class GenerationTemplateAdmin(admin.ModelAdmin):
         ),
     )
 
+    actions = ["activate_templates", "deactivate_templates"]
+
     def provider_display(self, obj: GenerationTemplate) -> str:
         """Display provider from pipeline_config."""
         provider = obj.provider or "Unknown"
@@ -72,6 +74,18 @@ class GenerationTemplateAdmin(admin.ModelAdmin):
 
     provider_display.short_description = "Provider"
     provider_display.admin_order_field = "pipeline_config"
+
+    @admin.action(description="Activate selected templates")
+    def activate_templates(self, request, queryset):
+        """Bulk activate templates."""
+        count = queryset.update(is_active=True)
+        self.message_user(request, f"Activated {count} template(s).")
+
+    @admin.action(description="Deactivate selected templates")
+    def deactivate_templates(self, request, queryset):
+        """Bulk deactivate templates."""
+        count = queryset.update(is_active=False)
+        self.message_user(request, f"Deactivated {count} template(s).")
 
 
 @admin.register(GenerationRequest)
@@ -151,7 +165,7 @@ class GenerationRequestAdmin(admin.ModelAdmin):
         ),
     )
 
-    actions = ["retry_failed_requests"]
+    actions = ["retry_failed_requests", "cancel_requests"]
 
     def status_colored(self, obj: GenerationRequest) -> str:
         """Display status with color coding."""
@@ -171,6 +185,17 @@ class GenerationRequestAdmin(admin.ModelAdmin):
 
     status_colored.short_description = "Status"
     status_colored.admin_order_field = "status"
+
+    @admin.action(description="Cancel selected requests")
+    def cancel_requests(self, request, queryset):
+        """Bulk cancel requests (only pending/processing)."""
+        cancelable = queryset.filter(status__in=[RequestStatus.PENDING, RequestStatus.PROCESSING])
+        count = cancelable.count()
+
+        for req in cancelable:
+            req.mark_cancelled()
+
+        self.message_user(request, f"Cancelled {count} request(s).")
 
     @admin.action(description="Retry failed requests (create new requests)")
     def retry_failed_requests(self, request, queryset):
