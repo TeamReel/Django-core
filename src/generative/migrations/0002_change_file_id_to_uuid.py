@@ -9,7 +9,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        # Drop the old bigint column (safe - no production data yet)
+        migrations.RemoveField(
+            model_name="generationoutput",
+            name="file_id",
+        ),
+        # Recreate as UUID
+        migrations.AddField(
             model_name="generationoutput",
             name="file_id",
             field=models.UUIDField(
