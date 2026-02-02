@@ -23,7 +23,7 @@ subtasks:
     title: Validate target object exists
     priority: P2
     status: not-started
-lane: planned
+lane: doing
 ---
 
 # WP04: Context Relations
