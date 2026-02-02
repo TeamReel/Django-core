@@ -14,7 +14,7 @@ subtasks:
   - "T054"
 title: "Brand & File Storage Integration"
 phase: "Phase 3 - Integrations"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude-sonnet-4.5"
 shell_pid: "21336"
@@ -837,3 +837,4 @@ def get_presigned_url(file_id: str, expiration: int = 3600) -> str:
 - 2026-02-02T16:55:40Z – github-copilot – shell_pid=13948 – lane=planned – Review complete: Critical API mismatches require fixes before re-review
 - 2026-02-02T16:57:15Z – claude-sonnet-4.5 – shell_pid=21336 – lane=doing – Started addressing review feedback
 - 2026-02-02T17:05:00Z – claude-sonnet-4.5 – shell_pid=21336 – lane=doing – Fixed all 3 critical issues: (1) Updated WebSocket to use NotificationService.send_user_notification() (2) Updated File Storage to use FileAsset model with two-step save via get_storage_backend() (3) Implemented presigned URLs using storage.get_url(). Added migration for GenerationOutput.file_id BigIntegerField→UUIDField. All tests now passing: 16/16 (100%). Coverage: file_storage 71%, websocket 89%.
+- 2026-02-02T17:04:13Z – claude-sonnet-4.5 – shell_pid=21336 – lane=for_review – All review feedback addressed: 16/16 tests passing, APIs fixed
