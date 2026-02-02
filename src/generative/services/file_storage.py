@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 from django.core.files.base import ContentFile
 
 if TYPE_CHECKING:
-    from src.files.models import FileStorage
+    pass
 
 logger = logging.getLogger("generative.services.file_storage")
 
@@ -28,8 +28,8 @@ class GenerationFileService:
         mime_type: str,
         user_id: int,
         organisation_id: int,
-    ) -> int:
-        """Store output file in B35 FileStorage.
+    ) -> str:
+        """Store output file in B22 FileAsset.
 
         Args:
             content: File content (bytes)
@@ -39,40 +39,45 @@ class GenerationFileService:
             organisation_id: Organisation ID for storage quota
 
         Returns:
-            FileStorage record ID
+            FileAsset UUID as string
 
         Raises:
             Exception: If file storage fails
         """
         # Lazy import to avoid circular dependencies
-        from src.files.models import FileStorage
+        from files.models import FileAsset
+        from files.utils import get_storage_backend
 
         try:
+            # Step 1: Save to storage backend first
             file_obj = ContentFile(content, name=filename)
+            storage = get_storage_backend()
+            storage_path = storage.save(filename, file_obj)
 
-            # Create FileStorage record
-            record: FileStorage = FileStorage.objects.create(
-                file=file_obj,
-                filename=filename,
-                mime_type=mime_type,
-                file_size=len(content),
+            # Step 2: Create FileAsset model record
+            record = FileAsset.objects.create(
+                organization_id=organisation_id,
                 uploaded_by_id=user_id,
-                organisation_id=organisation_id,
-                category="generation_output",
+                original_name=filename,
+                storage_path=storage_path,
+                file_size=len(content),
+                mime_type=mime_type,
+                metadata={"category": "generation_output"},
             )
 
             logger.info(
-                "Stored output file in B35",
+                "Stored output file in B22",
                 extra={
-                    "file_id": record.id,
+                    "file_id": str(record.id),
                     "filename": filename,
                     "size_bytes": len(content),
                     "mime_type": mime_type,
                     "user_id": user_id,
+                    "storage_path": storage_path,
                 },
             )
 
-            return record.id
+            return str(record.id)
 
         except Exception as e:
             logger.error(
@@ -87,50 +92,45 @@ class GenerationFileService:
             raise
 
     @staticmethod
-    def get_presigned_url(file_id: int, expiration: int = 3600) -> str:
+    def get_presigned_url(file_id: str, expiration: int = 3600) -> str:
         """Get presigned URL for file download.
 
         Args:
-            file_id: FileStorage record ID
+            file_id: FileAsset UUID as string
             expiration: URL expiration in seconds (default 1 hour)
 
         Returns:
             Presigned URL for file download
 
         Raises:
-            FileStorage.DoesNotExist: If file not found
+            FileAsset.DoesNotExist: If file not found
             Exception: If URL generation fails
         """
         # Lazy import to avoid circular dependencies
-        from src.files.models import FileStorage
+        from files.models import FileAsset
+        from files.utils import get_storage_backend
 
         try:
-            record: FileStorage = FileStorage.objects.get(id=file_id)
+            asset = FileAsset.objects.get(id=file_id, is_deleted=False)
+            storage = get_storage_backend()
 
-            # Generate presigned URL (assumes S3/compatible storage)
-            # If using local storage, return the file URL directly
-            if hasattr(record.file, "url"):
-                url = record.file.url
-                logger.debug(
-                    "Generated file URL",
-                    extra={"file_id": file_id, "filename": record.filename},
-                )
-                return url
-            else:
-                # S3-compatible storage with presigned URLs
-                url = record.file.storage.url(record.file.name, parameters={"Expires": expiration})
-                logger.debug(
-                    "Generated presigned URL",
-                    extra={
-                        "file_id": file_id,
-                        "filename": record.filename,
-                        "expiration": expiration,
-                    },
-                )
-                return url
+            # Generate URL using storage backend
+            # get_url() returns signed URL if supported, otherwise public URL
+            url = storage.get_url(asset.storage_path, signed=True)
 
-        except FileStorage.DoesNotExist:
-            logger.error(f"File not found: file_id={file_id}")
+            logger.debug(
+                "Generated presigned URL",
+                extra={
+                    "file_id": file_id,
+                    "filename": asset.original_name,
+                    "expiration": expiration,
+                    "storage_path": asset.storage_path,
+                },
+            )
+            return url
+
+        except FileAsset.DoesNotExist:
+            logger.error(f"File not found or deleted: file_id={file_id}")
             raise
         except Exception as e:
             logger.error(
@@ -141,36 +141,43 @@ class GenerationFileService:
             raise
 
     @staticmethod
-    def delete_file(file_id: int) -> None:
-        """Delete file from storage.
+    def delete_file(file_id: str) -> None:
+        """Delete file from storage (soft delete).
 
         Args:
-            file_id: FileStorage record ID
+            file_id: FileAsset UUID as string
 
         Raises:
-            FileStorage.DoesNotExist: If file not found
+            FileAsset.DoesNotExist: If file not found
             Exception: If deletion fails
         """
         # Lazy import to avoid circular dependencies
-        from src.files.models import FileStorage
+        from files.models import FileAsset
+        from files.utils import get_storage_backend
 
         try:
-            record: FileStorage = FileStorage.objects.get(id=file_id)
-            filename = record.filename
+            asset = FileAsset.objects.get(id=file_id, is_deleted=False)
+            filename = asset.original_name
+            storage_path = asset.storage_path
 
             # Delete file from storage backend
-            record.file.delete(save=False)
+            storage = get_storage_backend()
+            storage.delete(storage_path)
 
-            # Delete FileStorage record
-            record.delete()
+            # Soft-delete FileAsset record
+            asset.soft_delete()
 
             logger.info(
                 "Deleted file from storage",
-                extra={"file_id": file_id, "filename": filename},
+                extra={
+                    "file_id": file_id,
+                    "filename": filename,
+                    "storage_path": storage_path,
+                },
             )
 
-        except FileStorage.DoesNotExist:
-            logger.warning(f"File not found for deletion: file_id={file_id}")
+        except FileAsset.DoesNotExist:
+            logger.warning(f"File not found or already deleted: file_id={file_id}")
             raise
         except Exception as e:
             logger.error(

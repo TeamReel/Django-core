@@ -39,14 +39,13 @@ class GenerationWebSocketService:
 
         # Lazy import to avoid circular dependencies
         try:
-            from rtc_websockets.services import WebSocketService
+            from rtc_websockets.services import NotificationService
         except ImportError:
             logger.warning("B23 WebSocket module not available, skipping event")
             return
 
         try:
-            event = {
-                "type": "generation_status",
+            payload = {
                 "request_id": request.id,
                 "status": request.status,
                 "retry_count": request.retry_count,
@@ -59,7 +58,10 @@ class GenerationWebSocketService:
                 ),
             }
 
-            WebSocketService.send_to_user(user_id=request.requester_id, event=event)
+            service = NotificationService()
+            service.send_user_notification(
+                user_id=request.requester_id, message_type="generation_status", payload=payload
+            )
 
             logger.debug(
                 "Sent WebSocket status update",

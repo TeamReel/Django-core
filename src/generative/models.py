@@ -524,11 +524,11 @@ class GenerationOutput(models.Model):
         help_text="Type of generated content",
     )
 
-    # B35 FileStorageRecord reference (not a FK to avoid circular dependency)
-    file_id = models.BigIntegerField(
+    # B22 FileAsset UUID reference (not a FK to avoid circular dependency)
+    file_id = models.UUIDField(
         null=True,
         blank=True,
-        help_text="B35 FileStorageRecord reference (for media outputs)",
+        help_text="B22 FileAsset UUID reference (for media outputs)",
     )
 
     text_content = models.TextField(

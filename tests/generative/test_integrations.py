@@ -119,24 +119,18 @@ class TestFileStorageIntegration:
         assert asset.organization_id == organisation.id
 
     @patch("files.utils.get_storage_backend")
-    def test_get_presigned_url(self, mock_backend):
+    def test_get_presigned_url(self, mock_backend, user, organisation):
         """Test presigned URL generation."""
         # Mock the storage backend
         mock_backend_instance = Mock()
-        mock_backend_instance.get_presigned_url.return_value = (
-            "https://presigned.example.com/output.png"
-        )
+        mock_backend_instance.get_url.return_value = "https://presigned.example.com/output.png"
         mock_backend.return_value = mock_backend_instance
 
         # Create FileAsset
         from files.models import FileAsset
-        from organisations.models import Organisation
-        from accounts.models import User
 
-        org = Organisation.objects.create(name="Test Org")
-        user = User.objects.create_user(email="test@example.com", password="pass")
         asset = FileAsset.objects.create(
-            organization=org,
+            organization=organisation,
             uploaded_by=user,
             original_name="output.png",
             storage_path="storage/path/output.png",
@@ -144,12 +138,13 @@ class TestFileStorageIntegration:
             mime_type="image/png",
         )
 
-        url = GenerationFileService.get_presigned_url(file_id=asset.id)
+        url = GenerationFileService.get_presigned_url(file_id=str(asset.id))
 
-        assert "presigned" in url or "storage" in url
+        assert url == "https://presigned.example.com/output.png"
+        assert mock_backend_instance.get_url.called
 
     @patch("files.utils.get_storage_backend")
-    def test_delete_file(self, mock_backend):
+    def test_delete_file(self, mock_backend, user, organisation):
         """Test file deletion."""
         # Mock the storage backend
         mock_backend_instance = Mock()
@@ -157,13 +152,9 @@ class TestFileStorageIntegration:
 
         # Create FileAsset
         from files.models import FileAsset
-        from organisations.models import Organisation
-        from accounts.models import User
 
-        org = Organisation.objects.create(name="Test Org")
-        user = User.objects.create_user(email="test@example.com", password="pass")
         asset = FileAsset.objects.create(
-            organization=org,
+            organization=organisation,
             uploaded_by=user,
             original_name="output.png",
             storage_path="storage/path/output.png",
@@ -171,23 +162,22 @@ class TestFileStorageIntegration:
             mime_type="image/png",
         )
 
-        GenerationFileService.delete_file(file_id=asset.id)
+        GenerationFileService.delete_file(file_id=str(asset.id))
 
         # Verify soft-deleted or removed
         assert not FileAsset.objects.filter(id=asset.id, is_deleted=False).exists()
 
     def test_file_expiration_cleanup(self, generation_request):
         """Test expired files identified for cleanup."""
+        import uuid
+
         # Create expired output
         expired_output = GenerationOutput.objects.create(
             request=generation_request,
             output_type=OutputType.IMAGE,
-            file_id=456,
+            file_id=uuid.uuid4(),
             expires_at=timezone.now() - timezone.timedelta(days=1),
         )
-
-        # Refresh to get the ID assigned by DB
-        expired_output.refresh_from_db()
 
         # Query expired outputs
         expired = GenerationOutput.objects.filter(
@@ -195,14 +185,14 @@ class TestFileStorageIntegration:
         )
 
         assert expired.count() == 1
-        assert expired.first().id == expired_output.id
+        assert expired.first().request_id == expired_output.request_id
 
 
 @pytest.mark.django_db
 class TestWebSocketIntegration:
     """Test B23 WebSocket integration (WP06 T050-T051)."""
 
-    @patch("rtc_websockets.services.WebSocketService.send_to_user")
+    @patch("rtc_websockets.services.NotificationService.send_user_notification")
     def test_send_status_update(self, mock_send, generation_request):
         """Test WebSocket status update sent."""
         GenerationWebSocketService.send_status_update(generation_request)
@@ -211,13 +201,13 @@ class TestWebSocketIntegration:
         call_kwargs = mock_send.call_args.kwargs
 
         assert call_kwargs["user_id"] == generation_request.requester_id
-        event = call_kwargs["event"]
-        assert event["type"] == "generation_status"
-        assert event["request_id"] == generation_request.id
-        assert event["status"] == generation_request.status
+        assert call_kwargs["message_type"] == "generation_status"
+        payload = call_kwargs["payload"]
+        assert payload["request_id"] == generation_request.id
+        assert payload["status"] == generation_request.status
 
     @patch("src.generative.services.websocket.settings")
-    @patch("rtc_websockets.services.WebSocketService.send_to_user")
+    @patch("rtc_websockets.services.NotificationService.send_user_notification")
     def test_websocket_disabled_via_feature_flag(
         self, mock_send, mock_settings, generation_request
     ):
@@ -228,7 +218,7 @@ class TestWebSocketIntegration:
 
         assert not mock_send.called
 
-    @patch("rtc_websockets.services.WebSocketService.send_to_user")
+    @patch("rtc_websockets.services.NotificationService.send_user_notification")
     def test_websocket_error_handled_gracefully(self, mock_send, generation_request):
         """Test WebSocket errors don't fail the task."""
         mock_send.side_effect = Exception("WebSocket connection failed")
@@ -241,11 +231,16 @@ class TestWebSocketIntegration:
 class TestBrandFileIntegration:
     """Test end-to-end brand + file integration."""
 
-    @patch("src.files.models.FileStorage.objects.create")
+    @patch("files.utils.get_storage_backend")
     def test_template_with_brand_and_file_output(
-        self, mock_create, generation_template, brand_profile, user, organisation
+        self, mock_backend, generation_template, brand_profile, user, organisation
     ):
         """Test template with brand context produces file output."""
+        # Mock the storage backend
+        mock_backend_instance = Mock()
+        mock_backend_instance.save.return_value = "storage/path/logo.png"
+        mock_backend.return_value = mock_backend_instance
+
         # Configure template with brand context
         generation_template.pipeline_config["use_brand_context"] = True
         generation_template.pipeline_config["brand_id"] = str(brand_profile.id)
@@ -263,9 +258,6 @@ class TestBrandFileIntegration:
         assert result["brand"]["brand_name"] == brand_profile.name
 
         # Simulate file output storage
-        mock_record = Mock(id=789)
-        mock_create.return_value = mock_record
-
         file_id = GenerationFileService.store_output_file(
             content=b"logo image data",
             filename="logo.png",
@@ -274,7 +266,11 @@ class TestBrandFileIntegration:
             organisation_id=organisation.id,
         )
 
-        assert file_id == 789
+        # Verify FileAsset created
+        from files.models import FileAsset
+
+        asset = FileAsset.objects.get(id=file_id)
+        assert asset.original_name == "logo.png"
 
 
 @pytest.mark.django_db
@@ -284,13 +280,14 @@ class TestOutputSerializerPresignedURL:
     @patch("src.generative.services.file_storage.GenerationFileService.get_presigned_url")
     def test_presigned_url_generated_for_file_output(self, mock_presigned, generation_request):
         """Test presigned URL included in serializer output."""
+        import uuid
         from src.generative.serializers import GenerationOutputSerializer
 
         # Create output with file
         output = GenerationOutput.objects.create(
             request=generation_request,
             output_type=OutputType.IMAGE,
-            file_id=999,
+            file_id=uuid.uuid4(),
         )
 
         mock_presigned.return_value = "https://presigned-url.example.com"
