@@ -135,3 +135,55 @@ class MediaItemTaskTests(TestCase):
         self.item.refresh_from_db()
         self.assertEqual(self.item.state, MediaItemState.ERROR)
         self.assertEqual(self.item.extraction_metadata["error"], "Extraction failed")
+
+
+class MediaTagServiceTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        from organisations.models import Organisation
+        from projects.models import Project
+
+        User = get_user_model()
+        self.user = User.objects.create(email="tagtester@example.com")
+        self.org = Organisation.objects.create(name="Tag Org", slug="tag-org", creator=self.user)
+        self.project = Project.objects.create(
+            name="Tag Project", slug="tag-project", organisation=self.org, creator=self.user
+        )
+
+    def test_generate_tags_from_filename(self):
+        from .services.tags import MediaTagService
+
+        filename = "My_Awesome_Video-2024 final_v2.mp4"
+        tags = MediaTagService.generate_tags_from_filename(filename)
+
+        # expected = {"awesome", "video", "2024", "final", "my"} # Set comparison
+        self.assertTrue(set(tags).issuperset({"awesome", "video"}))
+        self.assertNotIn("v2", tags)  # "v2" is < 3 chars
+        self.assertNotIn("mp4", tags)  # extension removed
+
+    def test_get_or_create_tag_system(self):
+        from .services.tags import MediaTagService
+
+        # Create system tag
+        sys_tag = MediaTagService.create_system_tag("Common")
+        self.assertTrue(sys_tag.is_system)
+
+        # Try to get/create "Common" for project
+        tag, created = MediaTagService.get_or_create_tag("Common", str(self.project.id))
+
+        self.assertFalse(created)
+        self.assertEqual(tag.id, sys_tag.id)
+        self.assertTrue(tag.is_system)
+
+    def test_get_or_create_tag_project(self):
+        from .services.tags import MediaTagService
+
+        tag, created = MediaTagService.get_or_create_tag("Specific", str(self.project.id))
+        self.assertTrue(created)
+        self.assertFalse(tag.is_system)
+        self.assertEqual(tag.project, self.project)
+
+        # Again
+        tag2, created2 = MediaTagService.get_or_create_tag("Specific", str(self.project.id))
+        self.assertFalse(created2)
+        self.assertEqual(tag.id, tag2.id)

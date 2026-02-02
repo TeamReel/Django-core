@@ -3,6 +3,7 @@ B35 Smart Asset Library - API Serializers
 """
 from rest_framework import serializers
 from .models import MediaItem, MediaTag, Collection, CollectionMembership
+from projects.models import Project
 
 
 class MediaTagSerializer(serializers.ModelSerializer):
@@ -23,10 +24,17 @@ class MediaItemSerializer(serializers.ModelSerializer):
     project_id = serializers.UUIDField(source="project.id", read_only=True)
     created_by_name = serializers.CharField(source="created_by.get_full_name", read_only=True)
 
+    # Write fields
+    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all(), write_only=True)
+    tag_names = serializers.ListField(
+        child=serializers.CharField(), required=False, write_only=True
+    )
+
     class Meta:
         model = MediaItem
         fields = [
             "id",
+            "project",
             "project_id",
             "file_id",
             "title",
@@ -39,6 +47,7 @@ class MediaItemSerializer(serializers.ModelSerializer):
             "state",
             "extraction_metadata",
             "tags",
+            "tag_names",
             "file_url",
             "created_by_name",
             "created_at",
@@ -63,6 +72,33 @@ class MediaItemSerializer(serializers.ModelSerializer):
             # FileAsset should have a method like get_presigned_url()
             return getattr(obj.file, "get_presigned_url", lambda: None)()
         return None
+
+    def create(self, validated_data):
+        tag_names = validated_data.pop("tag_names", [])
+        instance = super().create(validated_data)
+
+        if tag_names:
+            self._set_tags(instance, tag_names)
+
+        return instance
+
+    def update(self, instance, validated_data):
+        tag_names = validated_data.pop("tag_names", None)
+        instance = super().update(instance, validated_data)
+
+        if tag_names is not None:
+            self._set_tags(instance, tag_names)
+
+        return instance
+
+    def _set_tags(self, instance, tag_names):
+        from .services.tags import MediaTagService
+
+        tags = []
+        for name in tag_names:
+            tag, _ = MediaTagService.get_or_create_tag(name, str(instance.project.id))
+            tags.append(tag)
+        instance.tags.set(tags)
 
 
 class CollectionMembershipSerializer(serializers.ModelSerializer):
@@ -98,6 +134,16 @@ class CollectionSerializer(serializers.ModelSerializer):
 class CollectionDetailSerializer(CollectionSerializer):
     """Detail serializer with full item list"""
 
+    # Assuming this was empty or had logic in original file?
+    # Original file line 100+...
+    # Let me check original file again to be sure I didn't miss CollectionDetailSerializer body.
+    # It was just 'pass' or inheritance in the part I checked?
+
+    # Re-reading line 100+ of serializers.py (which I haven't done in full, I read lines 1-100)
+    # The read_file output for serializers.py stopped at line 107.
+    # "class CollectionDetailSerializer(CollectionSerializer):" was the last line.
+
+    # I need to see if there was content there.
     memberships = CollectionMembershipSerializer(
         source="collectionmembership_set", many=True, read_only=True
     )

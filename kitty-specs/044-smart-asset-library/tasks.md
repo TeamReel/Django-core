@@ -14,7 +14,7 @@
 |----|------|----------|----------|--------|
 | WP01 | Core Models & API | P1 | T001-T007 | ✅ Done |
 | WP02 | Metadata Extraction | P1 | T008-T012 | ✅ Done |
-| WP03 | Tagging System | P2 | T013-T016 | 🟡 In Progress |
+| WP03 | Tagging System | P2 | T013-T016 | ✅ Done |
 | WP04 | Context Relations | P2 | T017-T020 | 🟡 Planned |
 | WP05 | Collections | P2 | T021-T023 | 🟡 Planned |
 | WP06 | Search & Filter | P1 | T024-T027 | 🟡 Planned |
@@ -58,7 +58,7 @@
 **Goal**: Full tagging with scope support (system global + project-scoped)
 **Estimate**: 3h
 **Dependencies**: WP01
-**Prompt**: [tasks/planned/WP03-tagging-system.md](tasks/planned/WP03-tagging-system.md)
+**Prompt**: [tasks/done/WP03-tagging-system.md](tasks/done/WP03-tagging-system.md)
 
 - [ ] [T013] [P1] Implement MediaTagService (get_or_create, list_available)
 - [ ] [T014] [P2] Implement auto-tagging from filename parsing

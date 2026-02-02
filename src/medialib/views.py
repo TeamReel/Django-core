@@ -14,6 +14,7 @@ from .serializers import (
     CollectionDetailSerializer,
 )
 from .tasks import process_media_item
+from .services.tags import MediaTagService
 
 
 class MediaItemViewSet(viewsets.ModelViewSet):
@@ -90,20 +91,49 @@ class MediaTagViewSet(viewsets.ModelViewSet):
             Q(is_system=True) | Q(project_id__in=user_projects)
         ).select_related("project")
 
+    def create(self, request, *args, **kwargs):
+        """Create or return existing tag for project"""
+        project_id = request.data.get("project_id") or request.query_params.get("project_id")
+        if not project_id:
+            return Response({"error": "project_id required"}, status=400)
+
+        # Verify access
+        if not request.user.project_memberships.filter(project_id=project_id).exists():
+            return Response({"error": "Access denied to project"}, status=403)
+
+        name = request.data.get("name")
+        if not name:
+            return Response({"error": "name required"}, status=400)
+
+        # Use service to get or create tag
+        tag, created = MediaTagService.get_or_create_tag(name, project_id)
+        serializer = self.get_serializer(tag)
+        return Response(serializer.data, status=201 if created else 200)
+
     @action(detail=False, methods=["get"])
     def available(self, request):
         """List tags available for a specific project"""
-        from django.db.models import Q
-
         project_id = request.query_params.get("project_id")
         if not project_id:
             return Response({"error": "project_id required"}, status=400)
 
-        # System tags + project-specific tags
-        tags = MediaTag.objects.filter(Q(is_system=True) | Q(project_id=project_id))
+        # Verify access
+        if not request.user.project_memberships.filter(project_id=project_id).exists():
+            return Response({"error": "Access denied to project"}, status=403)
 
+        tags = MediaTagService.get_available_tags(project_id)
         serializer = self.get_serializer(tags, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def suggest(self, request):
+        """Suggest tags from filename"""
+        filename = request.query_params.get("filename")
+        if not filename:
+            return Response({"error": "filename required"}, status=400)
+
+        candidates = MediaTagService.generate_tags_from_filename(filename)
+        return Response(candidates)
 
 
 class CollectionViewSet(viewsets.ModelViewSet):

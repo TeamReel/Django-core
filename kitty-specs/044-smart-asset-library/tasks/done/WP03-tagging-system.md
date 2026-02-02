@@ -9,20 +9,20 @@ subtasks:
   - id: T013
     title: Implement MediaTagService
     priority: P1
-    status: not-started
+    status: completed
   - id: T014
     title: Implement auto-tagging from filename
     priority: P2
-    status: not-started
+    status: completed
   - id: T015
     title: Add tag management endpoints
     priority: P1
-    status: not-started
+    status: completed
   - id: T016
     title: Wire tags to MediaItem M2M
     priority: P1
-    status: not-started
-lane: doing
+    status: completed
+lane: done
 ---
 
 # WP03: Tagging System
