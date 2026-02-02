@@ -12,6 +12,8 @@ Target: >85% API test coverage
 """
 
 from decimal import Decimal
+from unittest.mock import patch
+
 from rest_framework import status
 
 from src.generative.models import GenerationRequest, GenerationTemplate, RequestStatus
@@ -210,8 +212,10 @@ class TestRequestAPI:
         )
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    def test_submit_request_success(self, authenticated_client, template):
+    @patch("src.generative.credit_service.GenerationCreditService.reserve_credits")
+    def test_submit_request_success(self, mock_reserve, authenticated_client, template):
         """Test POST /requests/ returns 202 Accepted."""
+        mock_reserve.return_value = 123  # Mock transaction ID
         data = {"template": template.id, "input_data": {"text": "Hello world"}}
         response = authenticated_client.post("/api/v1/generative/requests/", data, format="json")
         assert response.status_code == status.HTTP_202_ACCEPTED

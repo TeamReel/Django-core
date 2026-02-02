@@ -274,6 +274,15 @@ def _handle_success(request_id: int, *, result: Any, duration_seconds: float) ->
                 f"file_path returned but no file_content (legacy executor): {file_path}",
                 extra={"request_id": request_id},
             )
+            # Fail the request if file output expected but no content provided
+            if result.output_type in ["image", "video", "audio"]:
+                _handle_failure(
+                    request_id,
+                    error_message="File output expected but no file_content provided",
+                    category=ExecutorErrorCategory.PERMANENT,
+                    duration_seconds=duration_seconds,
+                )
+                return
 
         GenerationOutput.objects.update_or_create(
             request=request,

@@ -10,6 +10,7 @@ Target coverage: >90% for models.py
 
 from datetime import timedelta
 from decimal import Decimal
+import uuid
 
 import pytest
 from django.core.exceptions import ValidationError
@@ -389,10 +390,10 @@ class TestGenerationOutput:
         output = GenerationOutput.objects.create(
             request=completed_request,
             output_type=OutputType.IMAGE,
-            file_id=12345,  # B35 FileStorageRecord ID
+            file_id=uuid.UUID("12345678-1234-5678-1234-567812345678"),  # B35 FileStorageRecord ID
             metadata={"resolution": "1920x1080", "format": "PNG"},
         )
-        assert output.file_id == 12345
+        assert output.file_id == uuid.UUID("12345678-1234-5678-1234-567812345678")
         assert output.text_content == ""
 
     def test_output_str_representation(self, generation_output):
