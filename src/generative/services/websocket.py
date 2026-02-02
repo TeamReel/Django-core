@@ -39,7 +39,7 @@ class GenerationWebSocketService:
 
         # Lazy import to avoid circular dependencies
         try:
-            from src.websockets.services import WebSocketService
+            from rtc_websockets.services import WebSocketService
         except ImportError:
             logger.warning("B23 WebSocket module not available, skipping event")
             return
