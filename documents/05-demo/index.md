@@ -77,6 +77,13 @@ TeamReel is the reference implementation of the Django Core-App, demonstrating a
 
 ---
 
+## 🎬 Media Generation
+
+- **[TeamReel Media Generation Plan](teamreel-media-generation-plan.md)** 🆕
+  Plan voor automatische afbeelding- en videogeneratie met S3 (storage), Gemini API (AI), en FFmpeg (video rendering). Inclusief use cases voor tenue-ontwerpen en lineup-video's.
+
+---
+
 ## 🚀 Quick Start
 
 ### Accessing TeamReel
