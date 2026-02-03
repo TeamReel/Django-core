@@ -86,6 +86,8 @@ urlpatterns = [
     path("api/v1/", include("activities.api.urls")),
     # B34: Generative Pipelines API
     path("api/v1/generative/", include("src.generative.urls")),
+    # B35: Smart Asset Library API
+    path("api/v1/media/", include("medialib.urls")),
     # Security Baseline API
     path("api/security/", include("security_baseline.urls")),
     # Constitution API (B18)
