@@ -11,6 +11,8 @@ from django.conf import settings
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.indexes import GinIndex
 from django.utils.text import slugify
 
 
@@ -48,6 +50,9 @@ class MediaItem(models.Model):
     )
     extraction_metadata = models.JSONField(default=dict, blank=True)
 
+    # Search
+    search_vector = SearchVectorField(null=True)
+
     # Ownership
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
@@ -71,6 +76,7 @@ class MediaItem(models.Model):
         indexes = [
             models.Index(fields=["project", "-created_at"]),
             models.Index(fields=["state"]),
+            GinIndex(fields=["search_vector"]),
         ]
         db_table = "medialib_items"
 

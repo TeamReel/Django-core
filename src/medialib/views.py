@@ -5,6 +5,7 @@ from rest_framework import viewsets, filters, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Prefetch
 from .models import MediaItem, MediaTag, Collection
 from .serializers import (
@@ -14,6 +15,8 @@ from .serializers import (
     CollectionDetailSerializer,
     MediaItemRelationSerializer,
 )
+from .filters import MediaItemFilterSet
+from .pagination import MediaItemCursorPagination
 from .tasks import process_media_item
 from .services.tags import MediaTagService
 from .services.relations import MediaItemRelationService
@@ -33,8 +36,9 @@ class MediaItemViewSet(viewsets.ModelViewSet):
 
     serializer_class = MediaItemSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["title", "description"]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_class = MediaItemFilterSet
+    pagination_class = MediaItemCursorPagination
     ordering_fields = ["created_at", "updated_at", "title", "file_size_bytes"]
     ordering = ["-created_at"]
 
@@ -46,23 +50,8 @@ class MediaItemViewSet(viewsets.ModelViewSet):
             .prefetch_related("tags")
         )
 
-        # Filter by state
-        state = self.request.query_params.get("state")
-        if state:
-            queryset = queryset.filter(state=state)
-
-        # Filter by tags
-        tags = self.request.query_params.get("tags")
-        if tags:
-            tag_slugs = tags.split(",")
-            queryset = queryset.filter(tags__slug__in=tag_slugs).distinct()
-
-        # Filter by MIME type prefix
-        mime_type = self.request.query_params.get("mime_type")
-        if mime_type:
-            queryset = queryset.filter(mime_type__startswith=mime_type)
-
-        # Filter by related target (Reverse Lookup)
+        # Legacy manual filters removed in favor of MediaItemFilterSet
+        # Target/Relation filtering
         target_type = self.request.query_params.get("target_type")
         target_id = self.request.query_params.get("target_id")
         if target_type and target_id:

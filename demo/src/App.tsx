@@ -11,6 +11,7 @@ import ForbiddenPage from './pages/errors/ForbiddenPage';
 import NotFoundPage from './pages/errors/NotFoundPage';
 import LoadingState from './components/LoadingState';
 import FilesPage from './pages/files';
+import MediaLibraryPage from './pages/medialib';
 import {
   ProtectedRoute,
   AdminOnlyRoute,
@@ -1502,6 +1503,16 @@ export default function App() {
           <AdminOnlyRoute>
             <FilesPage />
           </AdminOnlyRoute>
+        }
+      />
+
+      {/* Media Library */}
+      <Route
+        path="/medialib"
+        element={
+          <ProtectedRoute>
+            <MediaLibraryPage />
+          </ProtectedRoute>
         }
       />
 

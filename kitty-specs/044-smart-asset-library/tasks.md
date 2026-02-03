@@ -17,7 +17,7 @@
 | WP03 | Tagging System | P2 | T013-T016 | ✅ Done |
 | WP04 | Context Relations | P2 | T017-T020 | ✅ Done |
 | WP05 | Collections | P2 | T021-T023 | ✅ Done |
-| WP06 | Search & Filter | P1 | T024-T027 | 🟡 Planned |
+| WP06 | Search & Filter | P1 | T024-T027 | ✅ Done |
 | WP07 | Thumbnail Generation | P3 | T028-T032 | 🟡 Planned |
 | WP08 | B34 Auto-Linking | P2 | T033-T036 | 🟡 Planned |
 | WP09 | Testing & Documentation | P1 | T037-T041 | 🟡 Planned |

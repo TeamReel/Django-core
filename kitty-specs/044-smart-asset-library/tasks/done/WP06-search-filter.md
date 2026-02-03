@@ -24,8 +24,8 @@ subtasks:
     title: Add cursor-based pagination
     priority: P1
     status: not-started
-lane: "doing"
-agent: "copilot"
+lane: "done"
+agent: "Github Copilot"
 ---
 
 # WP06: Search & Filter
@@ -324,3 +324,4 @@ class MediaSearchView(APIView):
 ## Activity Log
 
 - 2026-02-02T20:40:59Z – copilot – shell_pid= – lane=doing – Started implementation
+- 2026-02-02T20:59:11Z – Github Copilot – shell_pid= – lane=done – Tests passed. Reviewed.
