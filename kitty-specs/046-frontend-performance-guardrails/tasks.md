@@ -216,11 +216,11 @@
 **Prompt**: `tasks/planned/WP05-unit-tests.md`
 
 ### Included Subtasks
-- [ ] T018 Unit tests for pagination guardrails
-- [ ] T019 [P] Unit tests for budget calculation
-- [ ] T020 [P] Unit tests for feature flag integration
-- [ ] T021 [P] Unit tests for cache headers mixin
-- [ ] T022 [P] Unit tests for optimistic create mixin
+- [x] T018 Unit tests for pagination guardrails
+- [x] T019 [P] Unit tests for budget calculation
+- [x] T020 [P] Unit tests for feature flag integration
+- [x] T021 [P] Unit tests for cache headers mixin
+- [x] T022 [P] Unit tests for optimistic create mixin
 
 ### Constitutional Alignment
 - Principle IV (Testing): pytest + pytest-django, deterministic, coverage targets
