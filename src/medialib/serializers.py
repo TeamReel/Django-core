@@ -2,8 +2,32 @@
 B35 Smart Asset Library - API Serializers
 """
 from rest_framework import serializers
-from .models import MediaItem, MediaTag, Collection, CollectionMembership, MediaItemRelation
+from .models import (
+    MediaItem,
+    MediaTag,
+    Collection,
+    CollectionMembership,
+    MediaItemRelation,
+    MediaThumbnail,
+)
 from projects.models import Project
+
+
+class MediaThumbnailSerializer(serializers.ModelSerializer):
+    """Serializer for generated thumbnails"""
+
+    url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MediaThumbnail
+        fields = ["id", "size_label", "width", "height", "url"]
+
+    def get_url(self, obj):
+        if obj.file:
+            # Assumes FileAsset has get_presigned_url method or use storage directly
+            # For now mimicking MediaItemSerializer.get_file_url
+            return getattr(obj.file, "get_presigned_url", lambda: None)()
+        return None
 
 
 class MediaTagSerializer(serializers.ModelSerializer):
@@ -19,6 +43,7 @@ class MediaItemSerializer(serializers.ModelSerializer):
     """Serializer for media items with nested tags and file URL"""
 
     tags = MediaTagSerializer(many=True, read_only=True)
+    thumbnails = MediaThumbnailSerializer(many=True, read_only=True)
     file_url = serializers.SerializerMethodField()
     file_id = serializers.UUIDField(source="file.id", read_only=True)
     project_id = serializers.UUIDField(source="project.id", read_only=True)
@@ -48,6 +73,7 @@ class MediaItemSerializer(serializers.ModelSerializer):
             "extraction_metadata",
             "tags",
             "tag_names",
+            "thumbnails",
             "file_url",
             "created_by_name",
             "created_at",

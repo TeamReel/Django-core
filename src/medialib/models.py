@@ -189,3 +189,28 @@ class MediaItemRelation(models.Model):
 
     def __str__(self):
         return f"{self.media_item_id} -> {self.content_type}:{self.object_id}"
+
+
+class MediaThumbnail(models.Model):
+    """
+    Generated thumbnail for a MediaItem.
+    Stored as a separate FileAsset for unified management.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    media_item = models.ForeignKey(MediaItem, on_delete=models.CASCADE, related_name="thumbnails")
+    file = models.ForeignKey("files.FileAsset", on_delete=models.CASCADE)
+
+    size_label = models.CharField(max_length=20)  # small, medium, large
+    width = models.PositiveIntegerField()
+    height = models.PositiveIntegerField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [("media_item", "size_label")]
+        ordering = ["width"]
+        db_table = "medialib_thumbnails"
+
+    def __str__(self):
+        return f"{self.media_item.title} ({self.size_label})"

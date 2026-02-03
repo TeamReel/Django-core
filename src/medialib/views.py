@@ -11,6 +11,7 @@ from .models import MediaItem, MediaTag, Collection
 from .serializers import (
     MediaItemSerializer,
     MediaTagSerializer,
+    MediaThumbnailSerializer,
     CollectionSerializer,
     CollectionDetailSerializer,
     MediaItemRelationSerializer,
@@ -74,6 +75,14 @@ class MediaItemViewSet(viewsets.ModelViewSet):
         instance = serializer.save(created_by=self.request.user)
         # Trigger async metadata extraction
         process_media_item.delay(str(instance.id))
+
+    @action(detail=True, methods=["get"])
+    def thumbnails(self, request, pk=None):
+        """List generated thumbnails for this media item"""
+        item = self.get_object()
+        thumbnails = item.thumbnails.all().order_by("width")
+        serializer = MediaThumbnailSerializer(thumbnails, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
     def relations(self, request, pk=None):
