@@ -260,7 +260,7 @@ class OptimisticCreateMixin:
             # Import get_flag here to avoid circular imports
             # Fall back to settings if B10 module not available
             try:
-                from src.api.settings import get_flag
+                from settings.api import get_flag
 
                 enabled = get_flag(
                     "frontend_optimistic_create_enabled",

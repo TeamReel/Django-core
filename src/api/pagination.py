@@ -61,7 +61,8 @@ class BaseAPIPagination(PageNumberPagination):
         # Extract page number (without advancing to next page)
         try:
             page_number = self.get_page_number(request, self.page_size)
-        except Exception:
+            page_number = int(page_number)
+        except (TypeError, ValueError):
             page_number = 1
 
         # Check max_pages limit if guardrails enabled
