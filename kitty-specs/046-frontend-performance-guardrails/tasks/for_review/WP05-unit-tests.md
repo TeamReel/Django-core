@@ -8,10 +8,10 @@ subtasks:
   - "T022"
 title: "Unit Tests"
 phase: "Phase 2 - Core Implementation"
-lane: "doing"
+lane: "for_review"
 assignee: ""
 agent: "claude"
-shell_pid: "10500"
+shell_pid: "42868"
 review_status: ""
 reviewed_by: ""
 history:
@@ -423,3 +423,4 @@ history:
 
 - 2026-02-03T20:21:00Z – system – lane=planned – Prompt created.
 - 2026-02-03T19:49:38Z – claude – shell_pid=10500 – lane=doing – Started WP05 implementation
+- 2026-02-03T20:25:09Z – claude – shell_pid=42868 – lane=for_review – Completed implementation - Unit tests added and passing
