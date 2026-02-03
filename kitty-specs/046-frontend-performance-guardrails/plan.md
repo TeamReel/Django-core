@@ -183,11 +183,12 @@ tests/
 ### Phase 2: Core Implementation (via /spec-kitty.tasks)
 - **Work Packages**:
   - WP01: Settings & Configuration
-  - WP02: Pagination Guardrails
+  - WP02: Pagination Guardrails (MVP)
   - WP03: Cache Headers Mixin
-  - WP04: Unit Tests
-  - WP05: Integration Tests
-  - WP06: Documentation
+  - WP04: Optimistic Create Support
+  - WP05: Unit Tests (MVP)
+  - WP06: Integration Tests
+  - WP07: Documentation & Polish
 
 ---
 

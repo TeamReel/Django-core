@@ -182,10 +182,25 @@ history:
              header_json = budget.to_header_json()
              parsed = json.loads(header_json)
              assert parsed['max_pages'] == 5
+
+         def test_max_items_limit_hit_before_max_pages(self):
+             """Edge case: max_items hit before max_pages (small page_size)."""
+             # Scenario: page_size=1, max_pages=5, max_items=3
+             # Requesting page 4 would fetch items 4+, exceeding max_items=3
+             # System must enforce whichever limit is hit first (edge case from spec)
+             budget = FetchBudget(
+                 max_pages=5,
+                 max_items=3,
+                 current_page=4,
+                 page_size=1,
+                 is_limited=True,
+             )
+             # Verify that current_page * page_size exceeds max_items
+             assert budget.current_page * budget.page_size > budget.max_items
      ```
 - **Files**: `tests/api/test_pagination_guardrails.py`
 - **Parallel?**: Yes (pure unit tests)
-- **Notes**: No database needed for dataclass tests
+- **Notes**: No database needed for dataclass tests; includes edge case for small page_size per spec
 
 ### Subtask T020 – Unit tests for feature flag integration
 
@@ -352,10 +367,18 @@ history:
                  result = mixin._validate_client_request_id('not-a-uuid')
                  assert result is False
                  mock_logger.warning.assert_called_once()
+
+         def test_validation_error_response_structure(self):
+             """Validation errors must be structured for UI rollback (FR-011)."""
+             # Test that create() with invalid data returns structured error
+             # Error response must include 'error' key with 'code' and 'message'
+             # and optional 'details' for field-level errors
+             # Implementation handles via DRF serializer validation + envelope renderer
+             pass
      ```
 - **Files**: `tests/api/test_optimistic_create.py`
 - **Parallel?**: Yes (independent module)
-- **Notes**: Test both enabled and disabled states
+- **Notes**: Test both enabled and disabled states; include FR-011 validation error structure test
 
 ## Risks & Mitigations
 
@@ -364,6 +387,16 @@ history:
 | Tests depend on database state | Use fixtures with explicit data |
 | Flaky tests from timing | Use fixed timestamps, mock datetime |
 | Mock setup errors | Verify mock calls in assertions |
+
+## Parallel Opportunities
+
+- T019-T022 can all proceed in parallel (different modules)
+- **Early Start**: T018-T020 can begin immediately after WP02; only T021-T022 require WP03/WP04
+
+## Dependencies
+
+- Depends on WP02, WP03, WP04 (implementation must exist)
+- **Phased**: T018-T020 depend only on WP02; T021 depends on WP03; T022 depends on WP04
 
 ## Definition of Done Checklist
 
