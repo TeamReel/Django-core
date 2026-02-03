@@ -90,7 +90,236 @@ class StandardResultsSetPagination(PageNumberPagination):
 class SearchAPIView(APIView):
     """
     API Endpoint for Global and Filtered Search.
+    Supports optional hierarchy navigation via ?hierarchy=true parameter.
     """
+
+    def select_hierarchy_anchor(self, entries, request):
+        """
+        Select the best anchor entity from search results.
+
+        Selection logic:
+        1. Filter to anchor types from settings
+        2. Prioritize exact title match
+        3. Prioritize by type order in settings
+        4. Select from top 3 ranked results
+
+        Args:
+            entries: List of SearchEntry objects
+            request: Current HttpRequest
+
+        Returns:
+            Tuple of (content_object, anchor_data) or (None, None)
+        """
+        from django.conf import settings
+
+        anchor_types = getattr(settings, "SEARCH_HIERARCHY_ANCHOR_TYPES", [])
+        if not anchor_types:
+            return None, None
+
+        # Get query for exact match check
+        query = request.GET.get("q", "").strip().lower()
+
+        # Filter and rank results
+        candidates = []
+        for idx, entry in enumerate(entries[:3]):  # Top 3 only
+            # Get ContentType label
+            label = f"{entry.content_type.app_label}.{entry.content_type.model}"
+
+            if label not in anchor_types:
+                continue
+
+            # Get the actual object
+            try:
+                obj = entry.content_object
+                if obj is None:
+                    continue
+            except Exception:
+                continue
+
+            # Check for exact match
+            title = getattr(obj, "title", None) or getattr(obj, "name", None) or str(obj)
+            exact_match = title.lower() == query
+
+            # Calculate priority
+            type_priority = anchor_types.index(label)
+
+            candidates.append(
+                {
+                    "instance": obj,
+                    "entry": entry,
+                    "label": label,
+                    "exact_match": exact_match,
+                    "type_priority": type_priority,
+                    "rank_order": idx,
+                }
+            )
+
+        if not candidates:
+            return None, None
+
+        # Sort: exact match first, then type priority, then rank order
+        candidates.sort(key=lambda x: (not x["exact_match"], x["type_priority"], x["rank_order"]))
+
+        best = candidates[0]
+        instance = best["instance"]
+        entry = best["entry"]
+
+        # Build anchor metadata
+        url = None
+        if hasattr(instance, "get_absolute_url"):
+            try:
+                url = instance.get_absolute_url()
+            except Exception:
+                pass
+
+        anchor_data = {
+            "id": str(instance.pk),
+            "type": best["label"],
+            "title": getattr(instance, "title", None)
+            or getattr(instance, "name", None)
+            or str(instance),
+            "url": url,
+            "score": getattr(entry, "rank", None),
+        }
+
+        return instance, anchor_data
+
+    def resolve_hierarchy(self, instance, request):
+        """
+        Generate hierarchy tree for the given instance.
+
+        Args:
+            instance: Django model instance (anchor)
+            request: Current HttpRequest
+
+        Returns:
+            List of HierarchyNode objects, or None on failure
+        """
+        from search.hierarchy.registry import get_resolver
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        try:
+            # Get resolver for this instance type
+            resolver = get_resolver(instance, request)
+            if not resolver:
+                logger.info("No resolver found for %s", instance.__class__.__name__)
+                return None
+
+            # Build tree using resolver
+            tree = resolver.build_tree(instance)
+            return tree
+
+        except Exception as e:
+            # Fail-safe: log error but don't crash
+            logger.error(
+                "Hierarchy resolution failed for %s (id=%s): %s",
+                instance.__class__.__name__,
+                instance.pk,
+                e,
+                exc_info=True,
+            )
+            return None
+
+    def _add_hierarchy_to_response(self, request, entries):
+        """
+        Generate hierarchy data for the response if requested.
+
+        This method implements fail-safe error handling - hierarchy failures
+        never crash the main search.
+
+        Args:
+            request: Current HttpRequest
+            entries: List of search entry objects
+
+        Returns:
+            Dict with 'anchor' and 'tree' keys, or None if hierarchy not requested/failed
+        """
+        from django.conf import settings
+        from search.hierarchy.serializers import HierarchyNodeSerializer, HierarchyAnchorSerializer
+        import logging
+        import time
+
+        logger = logging.getLogger(__name__)
+
+        # Check if hierarchy is requested
+        include_hierarchy = request.GET.get("hierarchy", "").lower() == "true"
+        enabled = getattr(settings, "SEARCH_HIERARCHY_ENABLED", True)
+
+        if not include_hierarchy or not enabled:
+            return None
+
+        # Initialize hierarchy field
+        hierarchy_data = None
+        start_time = time.time()
+
+        try:
+            # Log hierarchy generation start
+            logger.info(
+                "Hierarchy generation started",
+                extra={
+                    "query": request.GET.get("q", ""),
+                    "user_id": request.user.id if request.user.is_authenticated else None,
+                },
+            )
+
+            # Convert queryset to list if needed
+            if hasattr(entries, "__iter__") and not isinstance(entries, list):
+                entries = list(entries)
+
+            if entries:
+                # Select anchor
+                instance, anchor_data = self.select_hierarchy_anchor(entries, request)
+
+                if instance and anchor_data:
+                    # Resolve hierarchy
+                    tree = self.resolve_hierarchy(instance, request)
+
+                    if tree is not None:
+                        # Serialize
+                        hierarchy_data = {
+                            "anchor": HierarchyAnchorSerializer(anchor_data).data,
+                            "tree": HierarchyNodeSerializer(tree, many=True).data,
+                        }
+
+                        # Log success
+                        duration_ms = (time.time() - start_time) * 1000
+                        logger.info(
+                            "Hierarchy generation completed",
+                            extra={
+                                "anchor_type": anchor_data["type"],
+                                "node_count": len(tree) if tree else 0,
+                                "duration_ms": duration_ms,
+                            },
+                        )
+                    else:
+                        # Log failure (no resolver or resolver returned None)
+                        duration_ms = (time.time() - start_time) * 1000
+                        logger.warning(
+                            "Hierarchy generation failed",
+                            extra={"reason": "no_resolver", "duration_ms": duration_ms},
+                        )
+                else:
+                    # Log failure (no suitable anchor)
+                    duration_ms = (time.time() - start_time) * 1000
+                    logger.warning(
+                        "Hierarchy generation failed",
+                        extra={"reason": "no_anchor", "duration_ms": duration_ms},
+                    )
+
+        except Exception as e:
+            # Fail-safe: log error but don't crash
+            duration_ms = (time.time() - start_time) * 1000
+            logger.error(
+                "Hierarchy generation failed unexpectedly: %s",
+                e,
+                exc_info=True,
+                extra={"reason": "exception", "duration_ms": duration_ms},
+            )
+            hierarchy_data = None
+
+        return hierarchy_data
 
     def get(self, request):
         query_string = request.query_params.get("q", "").strip()
@@ -252,6 +481,11 @@ class SearchAPIView(APIView):
                     )
                     response_data[key] = serializer.data
 
+            # Add hierarchy support for global search
+            hierarchy_data = self._add_hierarchy_to_response(request, results)
+            if hierarchy_data is not None:
+                response_data["hierarchy"] = hierarchy_data
+
             return Response(response_data)
 
         # Filtered Search (Paginated)
@@ -260,7 +494,21 @@ class SearchAPIView(APIView):
             page = paginator.paginate_queryset(queryset, request)
             if page is not None:
                 serializer = SearchEntrySerializer(page, many=True, context={"request": request})
-                return paginator.get_paginated_response(serializer.data)
+                paginated_response = paginator.get_paginated_response(serializer.data)
+
+                # Add hierarchy support for filtered search
+                hierarchy_data = self._add_hierarchy_to_response(request, page)
+                if hierarchy_data is not None:
+                    paginated_response.data["hierarchy"] = hierarchy_data
+
+                return paginated_response
 
             serializer = SearchEntrySerializer(queryset, many=True, context={"request": request})
-            return Response(serializer.data)
+            response_data = {"results": serializer.data}
+
+            # Add hierarchy support
+            hierarchy_data = self._add_hierarchy_to_response(request, queryset)
+            if hierarchy_data is not None:
+                response_data["hierarchy"] = hierarchy_data
+
+            return Response(response_data)
