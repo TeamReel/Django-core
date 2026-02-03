@@ -19,7 +19,7 @@
 | WP05 | Collections | P2 | T021-T023 | ✅ Done |
 | WP06 | Search & Filter | P1 | T024-T027 | ✅ Done |
 | WP07 | Thumbnail Generation | P3 | T028-T032 | ✅ Done |
-| WP08 | B34 Auto-Linking | P2 | T033-T036 | 🟡 Planned |
+| WP08 | B34 Auto-Linking | P2 | T033-T036 | ✅ Done |
 | WP09 | Testing & Documentation | P1 | T037-T041 | 🟡 Planned |
 
 ---
@@ -123,7 +123,7 @@
 **Goal**: Auto-create MediaItem when B34 generates output files
 **Estimate**: 2h
 **Dependencies**: WP01, WP04, B34 Generative Pipelines
-**Prompt**: [tasks/planned/WP08-b34-auto-linking.md](tasks/planned/WP08-b34-auto-linking.md)
+**Prompt**: [tasks/done/WP08-b34-auto-linking.md](tasks/done/WP08-b34-auto-linking.md)
 
 - [ ] [T033] [P1] Create signal handler for GenerationOutput creation
 - [ ] [T034] [P1] Auto-set project, activity from GenerationRequest

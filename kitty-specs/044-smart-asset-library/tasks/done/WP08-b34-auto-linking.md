@@ -11,13 +11,19 @@ subtasks:
   - id: T033
     title: Create signal handler for GenerationOutput
     priority: P1
-    status: not-started
+    status: completed
   - id: T034
     title: Auto-set project, activity from GenerationRequest
     priority: P1
-    status: not-started
+    status: completed
   - id: T035
     title: Auto-generate tag from template slug
+    priority: P2
+    status: completed
+  - id: T036
+    title: Integration test with B34 flow
+    priority: P1
+    status: completed
     priority: P2
     status: not-started
   - id: T036
@@ -387,3 +393,7 @@ class TestB34AutoLinking:
 - Test with various mime types
 - Test missing activity (should be NULL)
 - Test template with different slugs
+
+## Activity Log
+
+- 2026-02-03 â€ Github Copilot â€ Implement WP08: B34 Auto-Linking signals and tests. Verified pass on new tests.

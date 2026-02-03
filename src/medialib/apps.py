@@ -7,4 +7,4 @@ class MedialibConfig(AppConfig):
     verbose_name = "Smart Asset Library"
 
     def ready(self):
-        pass
+        import medialib.signals  # noqa
