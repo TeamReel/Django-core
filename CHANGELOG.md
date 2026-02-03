@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Hierarchical Search Navigation (Feature 045)
+
+- **Hierarchical Search Navigation**: Global search API now supports `?hierarchy=true` parameter to return entity-centric navigation trees alongside search results
+  - New `search.hierarchy` package with pluggable resolver pattern (`BaseHierarchyResolver`)
+  - `HierarchyNode` data class for tree node representation
+  - Registry-based resolver discovery with settings configuration
+  - Recursive tree building with configurable depth and node limits
+  - Comprehensive serialization with `HierarchyNodeSerializer` and `HierarchyAnchorSerializer`
+  - Fail-safe error handling ensures search functionality is never impacted by hierarchy issues
+  - Permission checks at resolver level for tenant isolation
+  - Query optimization support (select_related/prefetch_related)
+  - Documentation: [Hierarchical Search Guide](documents/04-modules/search/hierarchy.md)
+  - Configuration settings:
+    - `SEARCH_HIERARCHY_RESOLVERS`: Map models to resolver classes
+    - `SEARCH_HIERARCHY_ANCHOR_TYPES`: Models that can be hierarchy roots
+    - `SEARCH_HIERARCHY_MAX_DEPTH`: Maximum tree depth (default: 3)
+    - `SEARCH_HIERARCHY_MAX_NODES`: Maximum total nodes (default: 100)
+    - `SEARCH_HIERARCHY_ENABLED`: Enable/disable feature (default: True)
+  - API response includes optional `hierarchy` field with anchor and tree structure
+  - Comprehensive test coverage (30+ tests) covering edge cases and limits
+  - ADRs documenting architectural decisions:
+    - [ADR 045-01: Stateful Hierarchy Resolvers](documents/adr/045-01-stateful-hierarchy-resolvers.md)
+    - [ADR 045-02: Fail-Safe Error Handling](documents/adr/045-02-fail-safe-error-handling.md)
+
 #### Platform Observability Foundation (Feature 018 - B18)
 
 - **Health Check System**:

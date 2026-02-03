@@ -39,6 +39,8 @@ These documents are generated based on the **actual source code** (`src/`) and r
     *   Bidirectional communication and live updates.
 *   **[B24: Full-Text Search](backend/B24-search.md)**
     *   Search across Projects, Files, and resources.
+*   **[B24: Hierarchical Search Navigation](search/hierarchy.md)**
+    *   Entity-centric navigation trees from search results. Pluggable resolver pattern for domain-specific hierarchies.
 *   **[B35: Smart Asset Library](backend/B35-media-library.md)**
     *   AI-powered media management and search.
 
