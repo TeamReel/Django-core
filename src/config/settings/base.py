@@ -421,6 +421,30 @@ from .celery import *  # noqa
 SITE_NAME = "Django Core"  # Used in page titles (<title> tag) and branding (header)
 
 # ==============================================================================
+# Search Hierarchy Configuration (B39 Feature 045)
+# ==============================================================================
+
+# Registry of hierarchy resolvers (populated by product apps)
+# Format: {"anchor_type": ResolverClass}
+SEARCH_HIERARCHY_RESOLVERS: dict[str, type] = {}
+
+# List of searchable anchor types for hierarchical navigation
+# Populated by registered resolvers at runtime
+SEARCH_HIERARCHY_ANCHOR_TYPES: list[str] = []
+
+# Maximum depth for hierarchy traversal (default: 3 levels)
+SEARCH_HIERARCHY_MAX_DEPTH = int(os.getenv("SEARCH_HIERARCHY_MAX_DEPTH", "3"))
+
+# Maximum total nodes in a single hierarchy response (default: 100)
+SEARCH_HIERARCHY_MAX_NODES = int(os.getenv("SEARCH_HIERARCHY_MAX_NODES", "100"))
+
+# Maximum children per node (default: 5)
+SEARCH_HIERARCHY_PER_LEVEL_LIMIT = int(os.getenv("SEARCH_HIERARCHY_PER_LEVEL_LIMIT", "5"))
+
+# Enable/disable hierarchical navigation feature
+SEARCH_HIERARCHY_ENABLED = os.getenv("SEARCH_HIERARCHY_ENABLED", "true").lower() == "true"
+
+# ==============================================================================
 # Transactions Configuration (B11)
 # ==============================================================================
 
