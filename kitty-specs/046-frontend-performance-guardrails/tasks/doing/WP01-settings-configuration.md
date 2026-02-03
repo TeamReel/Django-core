@@ -6,10 +6,10 @@ subtasks:
   - "T003"
 title: "Settings & Configuration"
 phase: "Phase 2 - Core Implementation"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "7"
 review_status: ""
 reviewed_by: ""
 history:
@@ -156,3 +156,4 @@ history:
 > Append entries when the work package changes lanes.
 
 - 2026-02-03T20:21:00Z – system – lane=planned – Prompt created.
+- 2026-02-03T19:33:32Z – claude – shell_pid=7 – lane=doing – Started implementation
