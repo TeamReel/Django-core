@@ -40,4 +40,6 @@ urlpatterns = [
     ),  # /api/v1/content-generation/ (B31)
     # B32: Sport Configuration & Templates
     path("", include("sport_configuration.urls")),  # /api/v1/sports/
+    # B35: Smart Asset Library
+    path("media-library/", include("medialib.urls")),
 ]

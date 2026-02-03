@@ -56,9 +56,10 @@ class MediaItemViewSet(viewsets.ModelViewSet):
         target_type = self.request.query_params.get("target_type")
         target_id = self.request.query_params.get("target_id")
         if target_type and target_id:
+            from django.contrib.contenttypes.models import ContentType
+
             try:
                 app_label, model_name = target_type.split(".")
-                from django.contrib.contenttypes.models import ContentType
 
                 ct = ContentType.objects.get(app_label=app_label, model=model_name)
                 queryset = queryset.filter(

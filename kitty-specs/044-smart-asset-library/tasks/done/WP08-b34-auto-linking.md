@@ -396,4 +396,4 @@ class TestB34AutoLinking:
 
 ## Activity Log
 
-- 2026-02-03 â€ Github Copilot â€ Implement WP08: B34 Auto-Linking signals and tests. Verified pass on new tests.
+- 2026-02-03 ï¿½ Github Copilot ï¿½ Implement WP08: B34 Auto-Linking signals and tests. Verified pass on new tests.

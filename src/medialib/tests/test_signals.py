@@ -1,10 +1,11 @@
 import pytest
 from django.contrib.auth import get_user_model
-from src.generative.models import GenerationTemplate, GenerationRequest, GenerationOutput
-from medialib.models import MediaItem
 from files.models import FileAsset
-from projects.models import Project
 from organisations.models import Organisation
+from projects.models import Project
+
+from medialib.models import MediaItem
+from src.generative.models import GenerationOutput, GenerationRequest, GenerationTemplate
 
 User = get_user_model()
 

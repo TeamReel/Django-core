@@ -20,7 +20,7 @@
 | WP06 | Search & Filter | P1 | T024-T027 | ✅ Done |
 | WP07 | Thumbnail Generation | P3 | T028-T032 | ✅ Done |
 | WP08 | B34 Auto-Linking | P2 | T033-T036 | ✅ Done |
-| WP09 | Testing & Documentation | P1 | T037-T041 | 🟡 Planned |
+| WP09 | Testing & Documentation | P1 | T037-T041 | � Doing |
 
 ---
 
@@ -136,7 +136,7 @@
 **Goal**: Comprehensive tests and README documentation
 **Estimate**: 6h
 **Dependencies**: WP01-WP08
-**Prompt**: [tasks/planned/WP09-testing-docs.md](tasks/planned/WP09-testing-docs.md)
+**Prompt**: [tasks/doing/WP09-testing-docs.md](tasks/doing/WP09-testing-docs.md)
 
 - [ ] [T037] [P1] Model unit tests (≥90% coverage)
 - [ ] [T038] [P1] API endpoint tests (≥85% coverage)

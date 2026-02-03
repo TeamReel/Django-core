@@ -1,10 +1,11 @@
+from django.contrib.postgres.search import SearchVector
 from django.db import connection
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib.postgres.search import SearchVector
+from files.models import FileAsset
 
 from src.generative.models import GenerationOutput
-from files.models import FileAsset
+
 from .models import MediaItem, MediaItemState, MediaTag
 
 
@@ -55,7 +56,9 @@ def create_media_item_from_generation(sender, instance, created, **kwargs):
         project=project,
         file=file_asset,
         title=f"Generated: {request.template.name}",
-        description=f"Generated from template v{request.template_version}. Request ID: {request.id}",
+        description=(
+            f"Generated from template v{request.template_version}. " f"Request ID: {request.id}"
+        ),
         mime_type=file_asset.mime_type,
         file_size_bytes=file_asset.file_size or 0,
         width=file_asset.metadata.get("width") if file_asset.metadata else None,

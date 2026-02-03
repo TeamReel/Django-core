@@ -11,6 +11,7 @@ from .models import (
     MediaThumbnail,
 )
 from projects.models import Project
+from files.models import FileAsset
 
 
 class MediaThumbnailSerializer(serializers.ModelSerializer):
@@ -51,6 +52,7 @@ class MediaItemSerializer(serializers.ModelSerializer):
 
     # Write fields
     project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all(), write_only=True)
+    file = serializers.PrimaryKeyRelatedField(queryset=FileAsset.objects.all(), write_only=True)
     tag_names = serializers.ListField(
         child=serializers.CharField(), required=False, write_only=True
     )
@@ -60,6 +62,7 @@ class MediaItemSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "project",
+            "file",
             "project_id",
             "file_id",
             "title",
