@@ -7,10 +7,10 @@ subtasks:
   - "T026"
 title: "Integration Tests"
 phase: "Phase 2 - Core Implementation"
-lane: "planned"
+lane: "doing"
 assignee: ""
-agent: ""
-shell_pid: ""
+agent: "claude"
+shell_pid: "42868"
 review_status: ""
 reviewed_by: ""
 history:
@@ -361,3 +361,4 @@ history:
 > Append entries when the work package changes lanes.
 
 - 2026-02-03T20:21:00Z – system – lane=planned – Prompt created.
+- 2026-02-03T20:31:20Z – claude – shell_pid=42868 – lane=doing – Started WP06 implementation
