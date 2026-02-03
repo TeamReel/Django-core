@@ -5,14 +5,20 @@ T011-T014: Cache Headers Mixin
 - Provides ETag and Last-Modified support
 - Enables HTTP 304 Not Modified responses
 - Applicable to list and detail views
+
+T015-T017: Optimistic Create Mixin
+- Echoes X-Client-Request-ID for optimistic UI reconciliation
+- Ensures created_at has millisecond precision
 """
 
 import hashlib
 import logging
+import uuid
 from datetime import datetime, timezone
 from email.utils import format_datetime
 from typing import Optional
 
+from django.conf import settings
 from django.db.models import Max
 from django.http import HttpResponse
 from rest_framework import status
@@ -180,5 +186,100 @@ class CacheHeadersMixin:
             # Log error but don't break the response
             logger.debug(
                 f"Failed to add cache headers to detail response: {e}",
+                exc_info=True,
+            )
+
+
+class OptimisticCreateMixin:
+    """
+    Mixin that supports optimistic UI patterns for create operations.
+
+    Features:
+    - Echoes X-Client-Request-ID header for reconciliation
+    - Ensures created_at has millisecond precision
+
+    Apply to ViewSets where frontends use optimistic creates.
+
+    **T015**: Create OptimisticCreateMixin base class
+    **T016**: Implement X-Client-Request-ID echo
+    **T017**: Ensure created_at millisecond precision (via serializers)
+    """
+
+    def create(self, request, *args, **kwargs):
+        """
+        Override create to capture client request ID.
+
+        Stores the X-Client-Request-ID header for later echoing
+        in the response (via finalize_response).
+        """
+        # Store the client request ID for later
+        self._client_request_id = request.headers.get("X-Client-Request-ID")
+        return super().create(request, *args, **kwargs)
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        """
+        Override response finalization to add optimistic headers.
+
+        Echoes X-Client-Request-ID on POST responses (both success and errors).
+        """
+        response = super().finalize_response(request, response, *args, **kwargs)
+
+        # Echo client request ID on create responses
+        if request.method == "POST" and hasattr(self, "_client_request_id"):
+            self._add_optimistic_headers(response)
+
+        return response
+
+    def _validate_client_request_id(self, value: str) -> bool:
+        """
+        Validate that the client request ID is a valid UUID.
+
+        Returns:
+            True if valid UUID, False otherwise. Always logs invalid values.
+
+        Note: We still echo the header even if invalid (see T016).
+        """
+        try:
+            uuid.UUID(value)
+            return True
+        except (ValueError, TypeError):
+            logger.warning(
+                "invalid_client_request_id",
+                extra={"value": value[:50] if value else None},
+            )
+            return False
+
+    def _add_optimistic_headers(self, response) -> None:
+        """
+        Add headers for optimistic create reconciliation.
+
+        Echoes X-Client-Request-ID if present. Validates UUID format
+        but still echoes even if invalid.
+        """
+        try:
+            # Import get_flag here to avoid circular imports
+            # Fall back to settings if B10 module not available
+            try:
+                from src.api.settings import get_flag
+
+                enabled = get_flag(
+                    "frontend_optimistic_create_enabled",
+                    default=getattr(settings, "OPTIMISTIC_CREATE_ENABLED", True),
+                )
+            except ImportError:
+                # B10 not available, use settings directly
+                enabled = getattr(settings, "OPTIMISTIC_CREATE_ENABLED", True)
+
+            if not enabled:
+                return
+
+            # Validate UUID format (logs warning but still echoes)
+            if self._client_request_id:
+                self._validate_client_request_id(self._client_request_id)
+                response["X-Client-Request-ID"] = self._client_request_id
+        except Exception as e:
+            # Log error but don't break the response
+            logger.debug(
+                f"Failed to add optimistic headers: {e}",
                 exc_info=True,
             )
