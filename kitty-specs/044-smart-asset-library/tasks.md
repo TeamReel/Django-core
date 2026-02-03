@@ -18,7 +18,7 @@
 | WP04 | Context Relations | P2 | T017-T020 | ✅ Done |
 | WP05 | Collections | P2 | T021-T023 | ✅ Done |
 | WP06 | Search & Filter | P1 | T024-T027 | ✅ Done |
-| WP07 | Thumbnail Generation | P3 | T028-T032 | 🟡 Planned |
+| WP07 | Thumbnail Generation | P3 | T028-T032 | ✅ Done |
 | WP08 | B34 Auto-Linking | P2 | T033-T036 | 🟡 Planned |
 | WP09 | Testing & Documentation | P1 | T037-T041 | 🟡 Planned |
 
@@ -109,13 +109,13 @@
 **Goal**: Auto-generate preview thumbnails for images and videos
 **Estimate**: 4h
 **Dependencies**: WP01, WP02, Pillow, ffmpeg
-**Prompt**: [tasks/planned/WP07-thumbnail-generation.md](tasks/planned/WP07-thumbnail-generation.md)
+**Prompt**: [tasks/done/WP07-thumbnail-generation.md](tasks/done/WP07-thumbnail-generation.md)
 
-- [ ] [T028] [P1] Implement `generate_image_thumbnail()` (Pillow resize)
-- [ ] [T029] [P1] Implement `generate_video_thumbnail()` (ffmpeg frame)
-- [ ] [T030] [P1] Create Celery task for async generation
-- [ ] [T031] [P2] Store thumbnails as FileAsset with parent reference
-- [ ] [T032] [P2] Add thumbnails endpoint to API
+- [x] [T028] [P1] Implement `generate_image_thumbnail()` (Pillow resize)
+- [x] [T029] [P1] Implement `generate_video_thumbnail()` (ffmpeg frame)
+- [x] [T030] [P1] Create Celery task for async generation
+- [x] [T031] [P2] Store thumbnails as FileAsset with parent reference
+- [x] [T032] [P2] Add thumbnails endpoint to API
 
 ---
 
