@@ -337,12 +337,15 @@ export default function ContentTemplatesPage() {
 
         if (templatesRes.ok) {
           const response = await templatesRes.json();
-          // Handle API wrapper format: {status, data: {data: []}} or {results: []} or []
+          // Handle API wrapper format: {status, data: {results: []}} or {results: []} or []
           let templateList: ContentTemplate[] = [];
           if (Array.isArray(response)) {
             templateList = response;
+          } else if (response.data?.results && Array.isArray(response.data.results)) {
+            // API wrapper format: {status: "success", data: {results: [...]}}
+            templateList = response.data.results;
           } else if (response.data?.data && Array.isArray(response.data.data)) {
-            // API wrapper format: {status: "success", data: {data: [...]}}
+            // Legacy API wrapper format: {status: "success", data: {data: [...]}}
             templateList = response.data.data;
           } else if (response.results && Array.isArray(response.results)) {
             // DRF pagination format: {results: [...]}
