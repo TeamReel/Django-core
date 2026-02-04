@@ -1,0 +1,57 @@
+# B48: Onboarding & Tours
+
+**Phase:** 13
+**Status:** 📋 ROADMAP
+**Module ID:** 288
+**Category:** Backend
+
+## Description
+
+## 288. B48 – Onboarding & Tours
+
+**Doel**: First-time user experience met guided tours, checklists, en progressive disclosure.
+
+**Waarom agnostisch**: User onboarding is universeel - reduces churn, improves activation.
+
+**Wat moet er gebeuren**:
+- **OnboardingFlow model**:
+  - Fields: name, slug, steps (JSON), target_audience
+  - Conditions: trigger_on (signup, first_login, role_change)
+  - Status: is_active, priority
+- **OnboardingStep model**:
+  - Fields: flow FK, order, title, content, action_type
+  - Action types: tooltip, modal, highlight, redirect
+  - Target: CSS selector or route path
+  - Completion: auto (action taken) or manual (dismiss)
+- **UserOnboardingProgress model**:
+  - Fields: user FK, flow FK, current_step, completed_steps (JSON)
+  - Status: in_progress, completed, skipped
+  - Timestamps: started_at, completed_at
+- **Checklist system**:
+  - Onboarding checklist items (e.g., "Complete profile", "Create first project")
+  - Progress percentage
+  - Rewards/badges on completion (optional)
+- **Feature tours**:
+  - Triggered on new feature release
+  - "What's new" modal or guided tour
+  - Dismissable, remembers state
+- **A/B testing ready**:
+  - Multiple flows per trigger
+  - Random assignment
+  - Completion rate tracking
+- **Integration**: B10 (feature flags), B49 (analytics), B17 (notifications)
+
+**Scope**: 🔧 **Backend Only** (Django app + REST API + tests + README)
+
+**API Endpoints**:
+- `GET /api/v1/onboarding/active/` - Get active flows for current user
+- `GET /api/v1/onboarding/flows/{slug}/` - Get flow details
+- `POST /api/v1/onboarding/flows/{slug}/start/` - Start flow
+- `POST /api/v1/onboarding/flows/{slug}/step/{n}/complete/` - Complete step
+- `POST /api/v1/onboarding/flows/{slug}/skip/` - Skip flow
+- `GET /api/v1/onboarding/checklist/` - Get onboarding checklist
+
+**Status**: 📋 ROADMAP
+
+## Notes
+<!-- Add progress notes here -->
