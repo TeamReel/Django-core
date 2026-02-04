@@ -38,9 +38,9 @@ const MediaLibraryPage: React.FC = () => {
            <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)' }}>
                 {/* Header */}
                 <div style={{ padding: '24px', borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
-                    <Stack direction="column" gap="small">
-                        <Text variant="h2" weight="bold">Smart Asset Library</Text>
-                        <Text variant="body" color="muted">
+                    <Stack direction="column" gap="2">
+                        <Text size="xl" weight="bold">Smart Asset Library</Text>
+                        <Text size="md" color="secondary">
                             Search and manage your media assets with AI-powered search.
                         </Text>
                     </Stack>
@@ -48,7 +48,7 @@ const MediaLibraryPage: React.FC = () => {
 
                 {/* Content */}
                 <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-                    <Stack direction="column" gap="large">
+                    <Stack direction="column" gap="6">
 
                         {/* Search Bar */}
                         <Card style={{ padding: '16px' }}>
@@ -99,11 +99,11 @@ const MediaLibraryPage: React.FC = () => {
                                             </Text>
                                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                                                 {item.tags.map(tag => (
-                                                    <Badge key={tag.id} size="sm" variant="secondary">{tag.name}</Badge>
+                                                    <Badge key={tag.id} size="sm" variant="primary">{tag.name}</Badge>
                                                 ))}
-                                                <Badge size="sm" variant="outline">{item.state}</Badge>
+                                                <Badge size="sm" variant="default">{item.state}</Badge>
                                             </div>
-                                            <Text variant="caption" color="muted">
+                                            <Text size="sm" color="secondary">
                                                 {(item.file_size_bytes / 1024).toFixed(1)} KB
                                             </Text>
                                         </div>
