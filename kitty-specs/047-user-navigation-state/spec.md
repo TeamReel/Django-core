@@ -46,13 +46,19 @@ A server-backed productivity system for Recents and Favorites that synchronizes 
 **Flow**:
 1. User Alice's access to "Project X" is revoked by an admin.
 2. Alice refreshes her dashboard which loads favorites from the server.
-**Outcome**: "Project X" is automatically absent or marked as unavailable in the favorites list, preventing a 403 Forbidden error upon click.
+**Outcome**: "Project X" is marked as unavailable (e.g., "Restricted Item") in the favorites list, preserving the slot but preventing access and leaking no insensitive details.
 
-**Independent Test**: Revoke permission to an object, verify it disappears from `GET /recents/`.
+## Clarifications
+
+### Session 2026-02-04
+- Q: To filter inaccessible items without leaking data or confusing users, how should we handle objects that fail the permission check? → A: Return them but marked as `is_accessible: false` (allows showing "Access Revoked" UI), with the label sanitized to "Restricted Item" to prevent data leakage.
+- Q: How should we manage storage limits for "Recents" to prevent data bloat? → A: Use a **Hybrid Cap**: Enforce both a time limit (e.g., 90 days) AND a strict quantity limit (e.g., 50 items). FIFO behavior deletes the oldest item when the cap is reached.
+
+**Independent Test**: Revoke permission to an object, verify it returns with `is_unresolved=True` and sanitized label.
 
 **Acceptance Scenarios**:
-1. **Given** User has favorite pointing to Project A, **When** user loses permission to Project A, **Then** Project A is omitted from response list.
-2. **Given** User re-gains access, **When** user refreshes list, **Then** Project A works again (if not deleted/pruned).
+1. **Given** User has favorite pointing to Project A, **When** user loses permission to Project A, **Then** Project A is returned with `is_accessible: False` and label "Restricted Item".
+2. **Given** User re-gains access, **When** user refreshes list, **Then** Project A works again with original label.
 
 ### User Story 3: Digital Hygiene (Guardrails) (Priority: P2)
 **Actor**: Power User
@@ -89,8 +95,8 @@ A server-backed productivity system for Recents and Favorites that synchronizes 
 
 ### 3.3 Security & Privacy Resolvers
 - **FR3.3.1**: When retrieving navigation state, the system MUST verify the user's current access rights to the underlying resources.
-- **FR3.3.2**: Items linking to resources the user can no longer access MUST be filtered out or marked as unresolved in the response.
-- **FR3.3.3**: Navigation data MUST allow a configurable retention period (e.g., 90 days), after which old "recents" are permanently deleted.
+- **FR3.3.2**: Items linking to resources the user can no longer access MUST be included in the response but marked as `is_accessible: False` and have their labels sanitized (e.g., "Restricted Item").
+- **FR3.3.3**: Navigation data MUST allow a configurable retention period (e.g., 90 days) AND a configurable quantity limit (e.g., max 50 items). When the limit is reached, the oldest item is removed (FIFO).
 
 ### 3.4 Data Integrity
 - **FR3.4.1**: Stored paths MUST undergo validation to prevent storage of malicious URLs or absolute external links.
