@@ -4,7 +4,8 @@ subtasks:
   - T015
   - T016
   - T017
-lane: planned
+lane: "doing"
+agent: "system"
 history:
   - { date: "2026-02-04", action: "created" }
 ---
@@ -39,3 +40,7 @@ Create `src/core/navigation/README.md`.
 - [ ] Feature fully configurable.
 - [ ] Admins can inspect data.
 - [ ] Documentation meets Constitution Article XI.
+
+## Activity Log
+
+- 2026-02-04T18:24:41Z – system – shell_pid= – lane=doing – Started implementation
