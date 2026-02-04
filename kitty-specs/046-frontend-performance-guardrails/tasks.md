@@ -296,7 +296,7 @@ tests/
 
 **Goal**: Export new mixins, update docs, run quality checks.
 **Independent Test**: `black --check src/api/` and `ruff check src/api/` pass.
-**Prompt**: `tasks/planned/WP07-documentation-polish.md`
+**Prompt**: `tasks/done/WP07-documentation-polish.md` ✅
 
 ### Included Subtasks
 - [x] T027 Update `src/api/__init__.py` exports
