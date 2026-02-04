@@ -18,8 +18,9 @@
 ### Seed Results
 | Model | Before | After | Status |
 |-------|--------|-------|--------|
-| BrandProfile | 3 | 8 | ✅ Complete |
-| DesignToken | 18 | 48 | ✅ Complete |
+| BrandProfile (org) | 3 | 8 | ✅ Complete |
+| BrandProfile (club) | 0 | 98 | ⏳ Pending |
+| DesignToken | 18 | 48 | ✅ Complete (org only) |
 | FeatureFlag | 0 | - | ⏳ Pending |
 | MediaTag | 0 | - | ⏳ Pending |
 
@@ -27,33 +28,26 @@
 
 ## Seed Actions Required
 
-### 1. Branding Seed (B33)
+### 1. Branding Seed - Clubs (B33)
 
-**Goal:** 1 BrandProfile per Organisation with 6 DesignTokens each
+**Goal:** 1 BrandProfile per Club (Project with parent_project=null)
 
-**BrandProfile per Org:**
-| Organisation | Profile Name | Primary Color | Secondary | Notes |
-|--------------|--------------|---------------|-----------|-------|
-| DFB | DFB Brand Identity | #000000 | #FFFFFF | Black & White |
-| FIGC | FIGC Brand Identity | #0066B3 | #FFFFFF | Azzurri Blue |
-| KNVB | KNVB Brand Identity | #F47920 | #FFFFFF | Dutch Orange |
-| RBFA | RBFA Brand Identity | #EF3340 | #000000 | Red Devils |
-| The FA | The FA Brand Identity | #002366 | #CF142B | Navy & Red |
+**Clubs in Database (98 total by federation):**
+| Federation | Clubs | Example |
+|------------|-------|---------|
+| KNVB | ~20 | Roda, Heino, SVD, etc. |
+| FIGC | ~20 | AC Milan, Inter, Juventus, AS Roma, etc. |
+| DFB | ~20 | Bayern, Dortmund, etc. |
+| RBFA | ~20 | Club Brugge, Anderlecht, etc. |
+| The FA | ~20 | Liverpool, Arsenal, Chelsea, etc. |
 
-**DesignTokens per Profile (6 tokens):**
-| Key | Type | Description |
-|-----|------|-------------|
-| `primary_color` | color | Main brand color |
-| `secondary_color` | color | Secondary brand color |
-| `accent_color` | color | Accent/highlight color |
-| `font_heading` | font | Heading font family |
-| `font_body` | font | Body text font family |
-| `border_radius` | spacing | UI corner radius |
+**Color Generation Strategy:**
+- Known clubs: Use official club colors (hardcoded)
+- Unknown clubs: Generate colors based on club name hash (deterministic)
 
 **Expected Result:**
-- 5 new BrandProfiles (1 per real federation)
-- 30 new DesignTokens (6 per profile)
-- Skip test_del_* orgs
+- 98 new BrandProfiles (1 per club)
+- 588 new DesignTokens (6 per club)
 
 ---
 
