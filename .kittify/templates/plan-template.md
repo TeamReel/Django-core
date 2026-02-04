@@ -129,6 +129,15 @@ The planner will not begin until all planning questions have been answered—cap
 - [ ] **No Constitution Changes**: This feature does not require constitution amendments
 - [ ] **Template Updates**: No template changes required (or changes documented)
 
+### XIII. Feature Delivery & Production Integration
+- [ ] **Migrations Ready**: Migration plan is production-safe (no destructive operations)
+- [ ] **Seed Data Planned**: Fixtures/factories will be created for testing and demo
+- [ ] **Admin Registration**: All models will be registered in Django Admin
+- [ ] **API Documentation**: Endpoints will be documented in Swagger/OpenAPI
+- [ ] **Demo Integration**: Feature will be visible/testable in demo app (if applicable)
+- [ ] **Manual Test File**: Test file will be created in `documents/08-testing/manual-tests/`
+- [ ] **Documentation**: Module README and usage examples will be provided
+
 ### Violations Requiring Justification
 
 *Fill ONLY if Constitution Check has violations that must be justified*

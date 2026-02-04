@@ -153,6 +153,14 @@
 - [ ] Extension guide updates identified if applicable
 - [ ] ADR planned if major architectural decision involved
 
+### Delivery & Integration (Principle XIII)
+- [ ] Migration plan is production-safe (no destructive operations)
+- [ ] Seed data (fixtures/factories) requirements identified
+- [ ] Admin registration requirements identified
+- [ ] API documentation (Swagger) requirements defined
+- [ ] Demo app integration plan included (if applicable)
+- [ ] Manual test file location identified
+
 **Violations Requiring Justification**: [List any principle violations and why simpler alternatives were rejected, or write "None"]
 
 ## Success Criteria *(mandatory)*

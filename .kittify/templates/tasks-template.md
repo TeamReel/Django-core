@@ -37,6 +37,7 @@ Tasks should be organized to reflect constitutional principles:
 - **Performance & Observability (Principle VI)**: Structured logging, metrics hooks, health checks, caching strategies
 - **Documentation (Principle XI)**: App READMs, getting started guides, extension guides, ADRs
 - **Quality Gates (Principle X)**: CI/CD configuration, linting gates, formatting checks, mypy, test gates
+- **Delivery & Integration (Principle XIII)**: Migrations to Railway, seed data, Admin registration, Swagger docs, demo app integration, manual test files
 
 <!-- SAMPLE CONTENT BELOW. MUST BE REPLACED. -->
 
@@ -240,6 +241,48 @@ Tasks should be organized to reflect constitutional principles:
 - Documentation drift → Keep docs in same repo; treat as code
 - Regression risk → Run full integration suite before release
 - Security gaps → Use automated scanning tools; manual review checklist
+
+---
+
+## Work Package WP0N+1: Delivery & Production Integration (Priority: P0 - REQUIRED)
+
+**Goal**: Complete the Delivery Checklist per Constitution Principle XIII. Feature MUST be live and functional in Railway deployment.
+**Independent Test**: Feature is accessible and usable in production demo app.
+**Prompt**: `/tasks/planned/WP0N-delivery-integration.md`
+
+### Included Subtasks
+- [ ] T0XX Apply migrations to Railway production database (verify production-safe)
+- [ ] T0XX Create seed data fixtures/factories in `tests/factories.py`
+- [ ] T0XX Create demo seed data for development environments
+- [ ] T0XX Register all models in Django Admin with list displays, filters, search
+- [ ] T0XX Verify all API endpoints accessible in Swagger (`/api/docs/`)
+- [ ] T0XX Add request/response examples to API documentation
+- [ ] T0XX Integrate feature into demo app (navigation, UI, CRUD verification)
+- [ ] T0XX Create manual test file in `documents/08-testing/manual-tests/`
+- [ ] T0XX Update module README with integration examples
+- [ ] T0XX Verify feature works end-to-end in Railway deployment
+- [ ] T0XX Update Delivery Checklist in module spec (mark all items complete)
+
+### Constitutional Alignment
+- Principle XIII (Feature Delivery): All Delivery Checklist items MUST be complete
+- Principle VI (Reliability): Feature works in production environment
+- Principle XI (Documentation): Manual tests and README documentation
+
+### Implementation Notes
+- Migrations MUST use `update_or_create` patterns, NEVER `DROP TABLE`
+- Seed scripts MUST be idempotent (safe to run multiple times)
+- Demo integration confirms feature delivers immediate user value
+- Manual test file covers flows that can't be fully automated
+- A feature is NOT "done" until this work package is complete
+
+### Dependencies
+- Depends on all story packages being complete and merged.
+- Depends on WP0N polish being complete.
+
+### Risks & Mitigations
+- Migration failures in production → Test on staging first; use reversible migrations
+- Demo app breaks → Smoke test demo after deployment
+- Seed data conflicts → Use idempotent patterns with unique constraints
 
 ---
 

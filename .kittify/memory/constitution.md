@@ -1,6 +1,29 @@
 <!--
-SYNC IMPACT REPORT - Django Core-App Constitution v1.2.0
+SYNC IMPACT REPORT - Django Core-App Constitution v1.3.0
 ==========================================================
+Version Change: 1.2.0 → 1.3.0 (MINOR: New Article XIII added)
+Amendment Date: 2026-02-04
+
+CHANGES - NEW ARTICLE XIII (Feature Delivery & Production Integration):
+
+ADDED SECTIONS:
++ Article XIII: Feature Delivery & Production Integration (NEW)
+  - Mandatory Delivery Checklist for every feature
+  - Production-safe migration requirements (Railway)
+  - Seed data requirements (fixtures/factories)
+  - Admin registration requirements
+  - API testing in Swagger/OpenAPI
+  - Demo app integration requirements
+  - Manual test file requirements
+  - Documentation requirements
+  - "Done" definition now includes production integration
+
+RATIONALE:
+Every feature MUST be immediately usable in the running web application.
+No "loose" modules that need later integration. Incremental value delivery.
+Prevents technical debt accumulation from unintegrated features.
+
+PREVIOUS VERSION v1.2.0:
 Version Change: 1.1.0 → 1.2.0 (MINOR: Mandatory pytest requirements added)
 Amendment Date: 2026-01-06
 
@@ -288,6 +311,61 @@ processes ensure all stakeholders understand and adopt changes.
 
 ---
 
+## XIII. Feature Delivery & Production Integration
+
+**Delivery Checklist** (MANDATORY for every feature):
+Every feature MUST complete the following checklist before being marked as "done":
+
+1. **Migrations**: Applied to Railway production database
+   - Migrations MUST be production-safe (no destructive operations without review)
+   - Use `update_or_create` patterns for seed data, NEVER `DROP TABLE`
+   - Test migrations on staging before production
+
+2. **Seed Data**: Fixtures and/or factories created
+   - Every module MUST have factory classes for testing (`tests/factories.py`)
+   - Demo seed data MUST be included for development environments
+   - Seed scripts MUST be idempotent (safe to run multiple times)
+
+3. **Admin Registration**: Django Admin configured
+   - All models MUST be registered in `admin.py`
+   - List displays, filters, and search fields MUST be configured
+   - Inline admins for related models where appropriate
+
+4. **API Testing**: Endpoints tested in Swagger/OpenAPI
+   - All endpoints MUST be accessible via `/api/docs/`
+   - Request/response examples MUST be documented
+   - Error responses MUST be consistent with API standards
+
+5. **Demo App Integration**: Feature visible in running application
+   - Backend features MUST be testable via demo frontend (if applicable)
+   - New entities MUST appear in navigation or relevant lists
+   - CRUD operations MUST be verifiable through the UI
+
+6. **Manual Test File**: Test documentation completed
+   - Manual test file MUST exist in `documents/08-testing/manual-tests/`
+   - Covers user flows that can't be fully automated
+   - Includes setup steps, test scenarios, expected results
+
+7. **Documentation**: README and usage examples updated
+   - Module README MUST include integration examples
+   - API endpoints MUST have usage examples
+   - Any configuration options MUST be documented
+
+**Definition of Done**:
+A feature is only "done" when:
+- All code is merged to main
+- All tests pass in CI
+- All Delivery Checklist items are completed
+- Feature is live and functional in the Railway deployment
+- Feature can be used by end users without additional integration work
+
+**Rationale**: Every module MUST deliver immediate value to the running
+application. No "loose" modules that require future integration. This ensures
+incremental delivery, prevents technical debt, and maintains a working product
+at all times.
+
+---
+
 ## Governance
 
 This constitution supersedes all other development practices. All PRs, code
@@ -298,4 +376,4 @@ Complexity that violates these principles MUST be justified explicitly in
 planning documents, with simpler alternatives documented and their rejection
 rationale recorded.
 
-**Version**: 1.2.0 | **Ratified**: 2025-11-20 | **Last Amended**: 2026-01-06
+**Version**: 1.3.0 | **Ratified**: 2025-11-20 | **Last Amended**: 2026-02-04
