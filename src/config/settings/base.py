@@ -300,6 +300,45 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
+# =============================================================================
+# FETCH GUARDRAILS (B40)
+# =============================================================================
+# Pagination guardrails to prevent frontend over-fetching
+
+# Master switch (can be overridden by feature flag)
+FETCH_GUARDRAIL_ENABLED = True
+
+# Default limits
+FETCH_GUARDRAIL_MAX_PAGES = 5
+FETCH_GUARDRAIL_MAX_ITEMS = 500
+
+# Warning threshold (log warning when usage exceeds this percentage)
+FETCH_GUARDRAIL_WARNING_THRESHOLD = 0.8
+
+# Optimistic create support
+OPTIMISTIC_CREATE_ENABLED = True
+
+# Observability logging
+FETCH_GUARDRAIL_OBSERVABILITY_ENABLED = True
+
+# Feature Flag Keys (B10 Integration)
+# These flags can override the settings above at runtime:
+# - frontend_fetch_guardrails_enabled (bool): Master switch
+# - frontend_fetch_max_pages_default (int): Override FETCH_GUARDRAIL_MAX_PAGES
+# - frontend_fetch_max_items_default (int): Override FETCH_GUARDRAIL_MAX_ITEMS
+# - frontend_optimistic_create_enabled (bool): Override OPTIMISTIC_CREATE_ENABLED
+# - frontend_fetch_observability_enabled (bool): Override FETCH_GUARDRAIL_OBSERVABILITY_ENABLED
+# Note: Feature flags take precedence over settings at runtime
+
+# Per-endpoint overrides (optional)
+# Keys are URL path patterns, values are dicts with 'max_pages' and/or 'max_items'
+# Example:
+# FETCH_GUARDRAIL_OVERRIDES = {
+#     '/api/v1/activities/': {'max_pages': 10, 'max_items': 1000},
+#     '/api/v1/audit-logs/': {'max_pages': 20},
+# }
+FETCH_GUARDRAIL_OVERRIDES: dict[str, dict[str, int]] = {}
+
 # B13: JWT Authentication Configuration (djangorestframework-simplejwt)
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # Short-lived for security

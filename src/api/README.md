@@ -165,6 +165,155 @@ Version is included in the API discovery response:
 }
 ```
 
+## Frontend Performance Guardrails (B40)
+
+The API includes guardrails to prevent frontend over-fetching and enable efficient client-side caching.
+
+### Pagination Guardrails
+
+Pagination limits prevent frontend clients from accidentally fetching too many pages:
+
+**Configuration** (in `settings.py`):
+```python
+# Enable/disable guardrails (default: True)
+FETCH_GUARDRAIL_ENABLED = True
+
+# Maximum pages per request (default: 5)
+FETCH_GUARDRAIL_MAX_PAGES = 5
+
+# Maximum total items per request (default: 500)
+FETCH_GUARDRAIL_MAX_ITEMS = 500
+
+# Per-endpoint overrides
+FETCH_GUARDRAIL_OVERRIDES = {
+    '/api/v1/activities/activities/': {'max_pages': 10},
+}
+```
+
+**Response Headers**:
+
+All paginated list responses include `X-Fetch-Budget` header with pagination metadata:
+
+```json
+{
+  "max_pages": 5,
+  "max_items": 500,
+  "current_page": 1,
+  "is_limited": true
+}
+```
+
+**Error Handling**:
+
+Requests exceeding limits return HTTP 400:
+```json
+{
+  "status": "error",
+  "error": {
+    "code": "pagination_limit_exceeded",
+    "message": "Page 6 exceeds maximum allowed pages (5)",
+    "details": {
+      "requested_page": 6,
+      "max_pages": 5,
+      "limit_type": "max_pages"
+    }
+  }
+}
+```
+
+### Cache Headers Mixin
+
+Enable ETag and Last-Modified headers for efficient client-side caching:
+
+**Usage**:
+```python
+from api import CacheHeadersMixin
+from rest_framework import viewsets
+
+class MyViewSet(CacheHeadersMixin, viewsets.ModelViewSet):
+    cache_timestamp_field = 'updated_at'  # Field to compute ETag
+    queryset = MyModel.objects.all()
+    serializer_class = MySerializer
+```
+
+**Supported Headers**:
+- `ETag`: Hash of model max `updated_at` timestamp for list responses
+- `Last-Modified`: Model's `updated_at` in RFC 7231 format
+- `If-None-Match`: Request header to check ETag match (returns 304 Not Modified)
+- `If-Modified-Since`: Request header to check Last-Modified (returns 304 Not Modified)
+
+**Example**:
+```bash
+# First request
+curl -i http://localhost:8000/api/v1/items/
+# Response includes: ETag: "abc123", Last-Modified: "Mon, 03 Feb 2025 21:00:00 GMT"
+
+# Subsequent request with cache validation
+curl -i http://localhost:8000/api/v1/items/ \
+  -H "If-None-Match: abc123"
+# Returns: HTTP 304 Not Modified
+```
+
+### Optimistic Create Mixin
+
+Support optimistic UI patterns with request ID echo:
+
+**Usage**:
+```python
+from api import OptimisticCreateMixin
+from rest_framework import viewsets
+
+class MyViewSet(OptimisticCreateMixin, viewsets.ModelViewSet):
+    queryset = MyModel.objects.all()
+    serializer_class = MySerializer
+```
+
+**Frontend Integration**:
+
+Send unique request ID header:
+```bash
+curl -X POST http://localhost:8000/api/v1/items/ \
+  -H "Content-Type: application/json" \
+  -H "X-Client-Request-ID: 550e8400-e29b-41d4-a716-446655440000" \
+  -d '{"name": "New Item"}'
+```
+
+Response echoes the request ID for reconciliation:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "actual-server-id-123",
+    "name": "New Item",
+    "created_at": "2025-02-03T21:45:00.123Z"
+  }
+}
+```
+
+Response headers include:
+```
+X-Client-Request-ID: 550e8400-e29b-41d4-a716-446655440000
+```
+
+This enables frontends to reconcile optimistic UI updates with server responses.
+
+### Feature Flag Control (B10 Integration)
+
+All guardrail features can be toggled via B10 feature flags:
+
+```python
+# Master switch for pagination guardrails
+frontend_fetch_guardrails_enabled = True
+
+# Override default max pages
+frontend_fetch_max_pages_default = 5
+
+# Toggle optimistic create support
+frontend_optimistic_create_enabled = True
+```
+
+See [quickstart.md](../../kitty-specs/046-frontend-performance-guardrails/quickstart.md) for integration examples.
+
 ## Base Classes
 
 ### BaseAPIViewSet
@@ -426,6 +575,17 @@ Database and SQL errors are sanitized in production to prevent information leaka
 Rate limits are enforced at the middleware level and cannot be bypassed through authentication.
 
 ## Testing APIs
+
+### Type Checking (mypy)
+
+For API modules, use the dedicated config to keep checks focused on API code while
+the broader project typing is improved:
+
+```bash
+mypy --config-file mypy.api.ini
+```
+The config scopes checks to `src/api` and skips import following to avoid
+project-wide strict typing failures.
 
 ### Unit Tests
 

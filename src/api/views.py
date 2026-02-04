@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from django.conf import settings
@@ -8,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
+
+logger = logging.getLogger(__name__)
 
 
 class BaseAPIViewSet(ModelViewSet):
@@ -128,8 +131,7 @@ class LogoutView(APIView):
                     token = RefreshToken(refresh_token)
                     token.blacklist()
                 except Exception:
-                    # Invalid token - ignore and proceed to session logout
-                    pass
+                    logger.exception("Failed to blacklist refresh token during logout")
 
             # Handle session logout
             logout(request)
