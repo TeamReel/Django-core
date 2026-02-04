@@ -4,7 +4,7 @@ subtasks:
   - T015
   - T016
   - T017
-lane: "doing"
+lane: "for_review"
 agent: "system"
 history:
   - { date: "2026-02-04", action: "created" }
@@ -44,3 +44,4 @@ Create `src/core/navigation/README.md`.
 ## Activity Log
 
 - 2026-02-04T18:24:41Z – system – shell_pid= – lane=doing – Started implementation
+- 2026-02-04T18:28:50Z – system – shell_pid= – lane=for_review – Implementation complete - All 3 tasks done, settings verified, 33/33 tests passing
