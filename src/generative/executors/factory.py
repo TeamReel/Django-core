@@ -1,10 +1,26 @@
 """Factory for creating pipeline executors."""
 
-from typing import Type
+from typing import TYPE_CHECKING, Type
 
 from .base import BasePipelineExecutor
-from .langgraph_executor import LangGraphExecutor
 from .openai_executor import OpenAIExecutor
+
+# Lazy import for langgraph to avoid requiring langgraph_sdk in production
+# LangGraph is the "20% use case" and may not be installed everywhere
+if TYPE_CHECKING:
+    pass
+
+
+def _get_langgraph_executor() -> Type[BasePipelineExecutor]:
+    """Lazy loader for LangGraphExecutor to defer langgraph_sdk import."""
+    try:
+        from .langgraph_executor import LangGraphExecutor
+
+        return LangGraphExecutor
+    except ImportError as e:
+        raise ImportError(
+            "LangGraph SDK is not installed. Install with: pip install langgraph-sdk"
+        ) from e
 
 
 class ExecutorFactory:
@@ -13,9 +29,12 @@ class ExecutorFactory:
     Supports runtime registration of custom executors for extensibility.
     """
 
+    # Only register OpenAI by default; LangGraph is lazy-loaded
     _executors: dict[str, Type[BasePipelineExecutor]] = {
         "openai": OpenAIExecutor,
-        "langgraph": LangGraphExecutor,
+    }
+    _lazy_executors: dict[str, callable] = {
+        "langgraph": _get_langgraph_executor,
     }
 
     @classmethod
@@ -45,23 +64,30 @@ class ExecutorFactory:
 
         Raises:
             ValueError: If provider is unknown or not registered
+            ImportError: If lazy-loaded provider's dependencies are not installed
         """
         provider = template_config.get("provider")
         if not provider:
             raise ValueError("template_config must contain 'provider' key")
 
-        if provider not in cls._executors:
-            available = ", ".join(cls._executors.keys())
-            raise ValueError(f"Unknown provider '{provider}'. Available: {available}")
+        # Check direct executors first
+        if provider in cls._executors:
+            executor_class = cls._executors[provider]
+            return executor_class()
 
-        executor_class = cls._executors[provider]
-        return executor_class()
+        # Check lazy-loaded executors
+        if provider in cls._lazy_executors:
+            executor_class = cls._lazy_executors[provider]()
+            return executor_class()
+
+        available = ", ".join(list(cls._executors.keys()) + list(cls._lazy_executors.keys()))
+        raise ValueError(f"Unknown provider '{provider}'. Available: {available}")
 
     @classmethod
     def list_providers(cls) -> list[str]:
         """List all registered providers.
 
         Returns:
-            List of provider identifiers
+            List of provider identifiers (including lazy-loaded)
         """
-        return list(cls._executors.keys())
+        return list(cls._executors.keys()) + list(cls._lazy_executors.keys())
