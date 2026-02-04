@@ -59,6 +59,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B57-player-statistics
+
+[feature summary]
+Player and team statistics tracking with season aggregations.
+
+[goals]
+- PlayerStats model per match: goals, assists, cards, rating
+- SeasonStats model with auto-calculated aggregations
+- TeamStats model: wins, draws, losses, points, form
+- MatchEvent model for goals, cards, substitutions
+- Leaderboards: top scorers, assists, clean sheets
+- Content generation hooks for stats-driven graphics
+
+[non-goals]
+- Advanced analytics (xG, heat maps)
+- Video tagging of events
+- External stats provider integration
+
+[dependencies]
+- B56 (matches)
+- B32 (sport configuration)
+- B34 (content generation)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

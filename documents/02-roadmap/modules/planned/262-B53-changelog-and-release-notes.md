@@ -56,6 +56,35 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B53-changelog-and-release-notes
+
+[feature summary]
+In-app "What's New" announcements and release notes management.
+
+[goals]
+- Release model with version, type (major/minor/patch), content
+- ReleaseItem for individual changes with categories
+- Announcement model for banners/modals with targeting
+- UserReleaseView tracking for "new" badge
+- Display rules: first login after release, dismissable
+- Scheduling release notes publication
+
+[non-goals]
+- Automatic changelog generation from commits
+- Public changelog page/widget
+- RSS feed generation
+
+[dependencies]
+- B17 (notifications)
+- B10 (feature flags for targeting)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

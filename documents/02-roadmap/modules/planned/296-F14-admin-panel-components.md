@@ -40,6 +40,36 @@
 - [ ] Permission checks integreren met B08
 - [ ] Mobile-responsive admin views
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=F14-admin-panel-components
+
+[feature summary]
+Reusable admin panel components for content management (users, organisations, projects).
+
+[goals]
+- AdminTable component: sortable, filterable, paginated, bulk actions
+- AdminForm component: auto-generated from TypeScript interfaces
+- AdminPanel layout: sidebar navigation, breadcrumbs
+- BulkActions component: multi-select with actions
+- QuickFilters component: predefined filter presets
+- Integration with B08 permissions system
+
+[non-goals]
+- Custom admin dashboard builder
+- Django Admin replacement
+- Low-code form builder
+
+[dependencies]
+- F01 (@django-core/design-system)
+- F02 (@django-core/auth)
+- Backend: B05, B06, B07, B08
+
+[scope]
+Frontend package - React components, TypeScript, Storybook stories, tests
+Demo page: /admin with users/orgs/projects management
+```
+
 ---
 ## Notes
 <!-- Add progress notes here -->

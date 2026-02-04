@@ -56,6 +56,37 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B55-video-processing-pipeline
+
+[feature summary]
+Video transcoding, thumbnail generation, and format conversion for sports content.
+
+[goals]
+- VideoJob model with status, progress tracking
+- FFmpeg-based transcoding service
+- Multiple output formats: MP4, WebM, HLS
+- Quality presets: 1080p, 720p, 480p, thumbnail
+- Thumbnail generation at timestamps
+- Video composition: overlays, text, intro/outro
+- Celery workers for async processing
+
+[non-goals]
+- Real-time video streaming
+- Live video capture/recording
+- AI-based video analysis
+
+[dependencies]
+- B22 (file storage for input/output)
+- B35 (media library integration)
+- B15 (Celery for async processing)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

@@ -53,6 +53,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B44-api-keys-and-oauth-apps
+
+[feature summary]
+Third-party app registration, API key management, and OAuth2 provider functionality for developer platform.
+
+[goals]
+- APIKey model with hashed key, prefix, scopes, rate limits
+- OAuthApplication model with client credentials flow
+- Secure key generation with one-time display
+- Authentication middleware for X-API-Key header
+- Redis-based rate limiting per key
+- Key lifecycle: rotation, revocation, expiration
+
+[non-goals]
+- Full OAuth2 authorization code flow with consent screen
+- API key marketplace/developer portal UI
+- Monetization/billing per API key
+
+[dependencies]
+- B03 (security headers)
+- B09 (audit logging)
+- B25 (Redis for rate limiting)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

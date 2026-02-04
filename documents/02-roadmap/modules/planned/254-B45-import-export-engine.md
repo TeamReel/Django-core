@@ -58,6 +58,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B45-import-export-engine
+
+[feature summary]
+Bulk data import (CSV, Excel, JSON) and async export jobs with progress reporting.
+
+[goals]
+- ImportJob model with file, mapping, validation, progress tracking
+- ExportJob model with filters, format selection, download URL
+- Support CSV, Excel (.xlsx), JSON formats
+- Import workflow: upload → preview → mapping → dry-run → execute
+- Async processing via Celery with progress updates
+- Registry pattern for importable/exportable models
+
+[non-goals]
+- Real-time streaming imports
+- Database-to-database migration
+- Schema migration/transformation
+
+[dependencies]
+- B15 (Celery for async processing)
+- B22 (file storage)
+- B17 (notifications for completion)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

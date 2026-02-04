@@ -58,6 +58,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B51-content-moderation
+
+[feature summary]
+UGC moderation queue with flagging, review workflow, and optional AI-assisted detection.
+
+[goals]
+- ModerationQueue model with status: pending, approved, rejected, escalated
+- Flag model for user reports with reason types
+- Moderation workflow: auto-queue on threshold, review, actions
+- Actions: hide, delete, warn user, suspend, ban
+- Appeal system for rejected content
+- Integration point for AI content scanning
+
+[non-goals]
+- Built-in ML content classifier
+- Real-time content filtering
+- Automated ban decisions (always human review)
+
+[dependencies]
+- B09 (audit logging)
+- B17 (notifications for flaggers/moderators)
+- B05 (user status management)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

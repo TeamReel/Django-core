@@ -51,6 +51,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B47-user-preferences-hub
+
+[feature summary]
+Centralized user preferences beyond i18n - notification settings, UI preferences, privacy controls.
+
+[goals]
+- UserPreference model with category/key/value (JSON)
+- Categories: notifications, privacy, display, defaults
+- Preference schema registry with validation
+- Default inheritance: system → org → user
+- Bulk get/update operations
+- GDPR: data export, account deletion request
+
+[non-goals]
+- Complex preference dependencies
+- A/B test variant storage (use B52)
+- Application settings (use B10 feature flags)
+
+[dependencies]
+- B12 (i18n preferences integration)
+- B17 (notification settings)
+- B05 (user model)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

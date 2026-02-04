@@ -53,6 +53,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B50-scheduled-publishing
+
+[feature summary]
+Content scheduling - publish at future date/time with timezone support.
+
+[goals]
+- PublishableMixin for content models with schedule fields
+- ScheduledItem model for polymorphic scheduling
+- Celery beat task checking scheduled items every minute
+- Timezone handling for global users
+- Draft management: preview, last-minute edits, cancel
+- Notifications: reminders before, confirmation after
+
+[non-goals]
+- Recurring content generation (use B34 with cron)
+- A/B testing of publish times (use B52)
+- Social media optimal time suggestions
+
+[dependencies]
+- B15 (Celery beat for scheduler)
+- B17 (notifications)
+- B09 (audit trail)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

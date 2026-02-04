@@ -58,6 +58,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B54-social-media-publishing
+
+[feature summary]
+Direct publishing to social media platforms (Instagram, TikTok, X, Facebook, YouTube) with OAuth integration.
+
+[goals]
+- SocialAccount model with encrypted tokens per platform
+- Platform adapter pattern for each social network
+- OAuth2 flow for account connection with token refresh
+- Multi-platform publishing service with platform-specific formatting
+- Post analytics integration (views, likes, shares)
+- Content preview with character count and aspect ratio validation
+
+[non-goals]
+- Social listening/monitoring
+- Automated content generation for social
+- Influencer management
+
+[dependencies]
+- B22 (file storage for media)
+- B50 (scheduled publishing)
+- B35 (media library)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

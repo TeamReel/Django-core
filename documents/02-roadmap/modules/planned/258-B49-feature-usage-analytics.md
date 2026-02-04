@@ -52,6 +52,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B49-feature-usage-analytics
+
+[feature summary]
+Internal product analytics for feature usage, funnels, and user behavior tracking.
+
+[goals]
+- AnalyticsEvent model with event_name, properties, context
+- Event categories: page views, feature usage, funnels, engagement
+- Server-side tracking service with batch insert
+- Aggregation models: DailyFeatureUsage, FunnelConversion
+- Privacy compliance: anonymization, retention, opt-out
+- Query API for trends and funnel analysis
+
+[non-goals]
+- Third-party analytics integration (Mixpanel, Amplitude)
+- Client-side tracking SDK
+- Advanced cohort analysis/retention curves
+
+[dependencies]
+- B18 (observability infrastructure)
+- B09 (audit logging)
+- B25 (cache for aggregations)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

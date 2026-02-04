@@ -64,6 +64,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B59-multi-format-export
+
+[feature summary]
+Platform-specific export formats for social media (Stories, Posts, Reels).
+
+[goals]
+- FormatPreset model with platform, dimensions, quality settings
+- Built-in presets: Instagram, TikTok, X, Facebook, YouTube formats
+- Multi-export service: one source → multiple format versions
+- Smart cropping with face detection and focus points
+- Template adaptation: layout, text scaling per format
+- Batch export with zip download option
+
+[non-goals]
+- Video transcoding (use B55)
+- Template design tool
+- AI-based format optimization
+
+[dependencies]
+- B54 (social media publishing)
+- B55 (video processing)
+- B35 (media library)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

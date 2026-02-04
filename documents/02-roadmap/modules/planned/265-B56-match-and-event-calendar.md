@@ -57,6 +57,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B56-match-and-event-calendar
+
+[feature summary]
+Sports calendar with matches, training sessions, and club events.
+
+[goals]
+- Match model with teams, competition, status, score
+- Event model with types (training, meeting, social) and recurrence
+- Season model for roster and statistics aggregation
+- Calendar views: month/week/day with filters
+- iCal export (.ics) for external sync
+- Match workflow hooks: pre-match, during-match, post-match triggers
+
+[non-goals]
+- Live match tracking/commentary
+- Ticket sales integration
+- Venue management
+
+[dependencies]
+- B39 (activities for match events)
+- B17 (notifications for reminders)
+- B34 (content generation triggers)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

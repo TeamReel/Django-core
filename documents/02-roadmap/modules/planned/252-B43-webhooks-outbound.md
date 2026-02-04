@@ -51,6 +51,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B43-webhooks-outbound
+
+[feature summary]
+Event-driven webhook system for pushing events to external systems (Zapier, n8n, Make, custom).
+
+[goals]
+- WebhookEndpoint model with URL, secret, event subscription
+- WebhookEvent delivery tracking with retry logic
+- Decorator-based event type registry
+- Async delivery via Celery with exponential backoff
+- HMAC-SHA256 signature security
+- Admin tools: delivery logs, manual retry, test ping
+
+[non-goals]
+- Inbound webhooks (receiving from external systems)
+- GraphQL subscriptions
+- WebSocket-based event streaming
+
+[dependencies]
+- B15 (Celery for async delivery)
+- B09 (audit logging)
+- B18 (observability for delivery metrics)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

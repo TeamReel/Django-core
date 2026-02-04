@@ -53,6 +53,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B48-onboarding-and-tours
+
+[feature summary]
+First-time user experience with guided tours, checklists, and progressive disclosure.
+
+[goals]
+- OnboardingFlow model with steps, triggers, target audience
+- OnboardingStep with action types: tooltip, modal, highlight, redirect
+- UserOnboardingProgress tracking per user/flow
+- Checklist system with progress percentage
+- Feature tours for new releases
+- A/B testing ready (multiple flows per trigger)
+
+[non-goals]
+- Interactive tutorials with code execution
+- Video-based onboarding
+- Gamification/rewards system
+
+[dependencies]
+- B10 (feature flags for flow targeting)
+- B49 (analytics for completion tracking)
+- B17 (notifications for reminders)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

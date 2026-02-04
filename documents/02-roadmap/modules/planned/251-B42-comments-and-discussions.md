@@ -48,6 +48,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B42-comments-and-discussions
+
+[feature summary]
+Threaded comments system attachable to any object via GenericForeignKey, with mentions, reactions, and moderation.
+
+[goals]
+- Comment model with GenericForeignKey for polymorphic attachment
+- Threading support with configurable max depth
+- @mention parsing with notification trigger (B17)
+- Emoji reactions with counts
+- Soft delete with moderation flags
+- Object-level and comment-level permissions
+
+[non-goals]
+- Real-time collaborative editing
+- Rich text editor (plain text/markdown only)
+- File attachments in comments (use B42 separately)
+
+[dependencies]
+- B09 (audit logging)
+- B17 (notifications for mentions)
+- B08 (permissions)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

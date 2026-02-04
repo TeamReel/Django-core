@@ -60,6 +60,36 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B52-ab-testing-framework
+
+[feature summary]
+Feature experiments with variant assignment, metrics tracking, and statistical analysis.
+
+[goals]
+- Experiment model with hypothesis, variants, traffic allocation
+- Variant model with weights and control group
+- Sticky user assignment (deterministic hashing)
+- Metrics tracking: primary/secondary/guardrail
+- Statistical analysis: sample size, confidence intervals, p-value
+- Feature flag integration (B10) for experiment-backed flags
+
+[non-goals]
+- Multi-armed bandit algorithms
+- Bayesian statistics
+- Visual experiment editor
+
+[dependencies]
+- B10 (feature flags integration)
+- B49 (analytics for metric tracking)
+- B09 (audit logging)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

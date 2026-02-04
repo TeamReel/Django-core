@@ -58,6 +58,37 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B58-content-calendar
+
+[feature summary]
+Planning tool for content creators with calendar view and workflow management.
+
+[goals]
+- ContentPlan model with status workflow: idea → planned → in_progress → review → published
+- Auto-suggestions based on upcoming matches
+- Calendar integration with match calendar overlay
+- Assignment and due date tracking
+- Reminders and overdue alerts
+- Batch planning for entire season
+
+[non-goals]
+- Content creation/editing (use B34)
+- Approval workflow with multiple stages
+- Resource/capacity planning
+
+[dependencies]
+- B56 (match calendar)
+- B34 (content generation)
+- B50 (scheduled publishing)
+- B17 (notifications)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 

@@ -51,6 +51,37 @@
 
 **Status**: 📋 ROADMAP
 
+**Specify Prompt**:
+```
+/spec-kitty.specify feature=B46-soft-delete-and-trash
+
+[feature summary]
+Recycle bin pattern with restore functionality and permanent delete after configurable retention period.
+
+[goals]
+- SoftDeleteMixin with deleted_at, deleted_by fields
+- Custom manager excluding soft-deleted by default
+- TrashItem wrapper model for unified trash view
+- Restore to original location
+- Configurable retention policy per model type
+- Scheduled cleanup via Celery beat
+- Cascade handling for related objects
+
+[non-goals]
+- Version history (use B09 audit trail)
+- Undo/redo beyond restore
+- Cross-organisation trash visibility
+
+[dependencies]
+- B09 (audit logging for delete/restore events)
+- B15 (Celery for scheduled cleanup)
+- B17 (notifications for expiration warnings)
+
+[scope]
+Backend only - Django app, REST API, pytest tests, README
+No frontend/demo pages (downstream product responsibility)
+```
+
 ## Notes
 <!-- Add progress notes here -->
 
