@@ -152,6 +152,7 @@ module = "config.settings.*"
 module = "tests.*"
 disallow_untyped_defs = false
 
+
 [[tool.mypy.overrides]]
 # Management commands are operational tools - relax strict typing
 module = "*.management.commands.*"

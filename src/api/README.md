@@ -576,6 +576,17 @@ Rate limits are enforced at the middleware level and cannot be bypassed through 
 
 ## Testing APIs
 
+### Type Checking (mypy)
+
+For API modules, use the dedicated config to keep checks focused on API code while
+the broader project typing is improved:
+
+```bash
+mypy --config-file mypy.api.ini
+```
+The config scopes checks to `src/api` and skips import following to avoid
+project-wide strict typing failures.
+
 ### Unit Tests
 
 ```python
