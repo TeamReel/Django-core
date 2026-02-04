@@ -5,9 +5,12 @@ subtasks:
   - T012
   - T013
   - T014
-lane: planned
+lane: doing
+agent: copilot
+shell_pid: 42868
 history:
   - { date: "2026-02-04", action: "created" }
+  - { date: "2026-02-04T19:50:00Z", agent: "copilot", shell_pid: "42868", lane: "doing", action: "Started implementation" }
 ---
 
 # Work Package 03: API & Security
