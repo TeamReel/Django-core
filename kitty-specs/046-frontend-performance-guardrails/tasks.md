@@ -259,10 +259,10 @@ tests/
 **Prompt**: `tasks/planned/WP06-integration-tests.md`
 
 ### Included Subtasks
-- [ ] T023 Integration test: page limit enforcement
-- [ ] T024 [P] Integration test: ETag/If-None-Match flow
-- [ ] T025 [P] Integration test: optimistic create reconciliation
-- [ ] T026 [P] Integration test: feature flag runtime toggle
+- [x] T023 Integration test: page limit enforcement
+- [x] T024 [P] Integration test: ETag/If-None-Match flow
+- [x] T025 [P] Integration test: optimistic create reconciliation
+- [x] T026 [P] Integration test: feature flag runtime toggle
 
 ### Constitutional Alignment
 - Principle IV (Testing): Integration tests for key user flows
@@ -299,10 +299,10 @@ tests/
 **Prompt**: `tasks/planned/WP07-documentation-polish.md`
 
 ### Included Subtasks
-- [ ] T027 Update `src/api/__init__.py` exports
-- [ ] T028 [P] Update api module README
-- [ ] T029 [P] Run Black/Ruff/mypy checks
-- [ ] T030 Final coverage report
+- [x] T027 Update `src/api/__init__.py` exports
+- [x] T028 [P] Update api module README
+- [x] T029 [P] Run Black/Ruff/mypy checks
+- [x] T030 Final coverage report
 
 ### Constitutional Alignment
 - Principle III (Code Quality): Black, Ruff, mypy

@@ -7,7 +7,7 @@ subtasks:
   - "T030"
 title: "Documentation & Polish"
 phase: "Phase 2 - Core Implementation"
-lane: "doing"
+lane: "for_review"
 assignee: "claude"
 agent: "claude"
 shell_pid: "42868"
@@ -258,3 +258,5 @@ history:
 > Append entries when the work package changes lanes.
 
 - 2026-02-03T20:21:00Z – system – lane=planned – Prompt created.
+- 2026-02-03T22:05:00Z – claude – shell_pid=42868 – lane=doing – Completed implementation.
+- 2026-02-04T05:47:34Z – claude – shell_pid=42868 – lane=for_review – Ready for review
