@@ -5,12 +5,13 @@ subtasks:
   - T008
   - T009
   - T010
-lane: doing
+lane: for_review
 agent: copilot
 shell_pid: 42868
 history:
   - { date: "2026-02-04", action: "created" }
   - { date: "2026-02-04T19:10:00Z", agent: "copilot", shell_pid: "42868", lane: "doing", action: "Started implementation" }
+  - { date: "2026-02-04T19:35:00Z", agent: "copilot", shell_pid: "42868", lane: "for_review", action: "Completed all subtasks - ready for review" }
 ---
 
 # Work Package 02: Business Logic & Guardrails
@@ -61,6 +62,36 @@ Create `tests/navigation/test_services.py`.
     4. Assert order is A(T3), B(T2).
 
 ## Definition of Done
-- [ ] Database never grows beyond Limit+1 items per user.
-- [ ] Visiting existing item updates timestamp (bumps to top).
-- [ ] Tests verify pruning verified.
+- [x] Database never grows beyond Limit+1 items per user.
+- [x] Visiting existing item updates timestamp (bumps to top).
+- [x] Tests verify pruning verified.
+
+## Implementation Summary
+
+**Files Created:**
+- [`src/navigation/services.py`](c:/Users/brian/Documents/django-core/.worktrees/047-user-navigation-state/src/navigation/services.py) - Business logic services (~150 lines)
+  - `prune_recents(user) -> int` - FIFO pruning keeping N most recent items
+  - `log_visit(user, path, label, content_object, context) -> UserRecent` - Update-or-create with auto-pruning
+- [`tests/navigation/test_services.py`](c:/Users/brian/Documents/django-core/.worktrees/047-user-navigation-state/tests/navigation/test_services.py) - Comprehensive service tests (11 tests)
+
+**Test Results:**
+```
+✅ 11/11 tests passing
+- TestPruneRecents: 3 tests (under limit, over limit, keeps most recent)
+- TestLogVisit: 8 tests (create, update, timestamp bump, cap enforcement, validation, path-based fallback, multi-user isolation)
+```
+
+**Key Design Decisions:**
+- ✅ T007: Pruning service using `order_by('-last_seen_at')[:max_count]` for FIFO semantics
+- ✅ T008: Explicit pruning call (not signal) - better control and testability
+- ✅ T009: Update-or-create with dual lookup (content_object + path fallback)
+- ✅ T010: Comprehensive tests including edge cases (time.sleep for timestamp precision)
+
+**Security:**
+- Path validation via `validate_relative_path()` - rejects absolute URLs
+- Type hints throughout for type safety
+
+**Performance:**
+- Single query for keep_ids identification
+- Bulk delete for pruned items
+- Auto-pruning after each visit (minimal overhead)
