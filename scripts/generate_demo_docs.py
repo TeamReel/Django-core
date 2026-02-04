@@ -57,16 +57,37 @@ def generate_counts():
     output_lines.append("| App | Model | Count | Status |")
     output_lines.append("|-----|-------|-------|--------|")
 
-    # Core apps to include
+    # All Django apps to include (comprehensive list)
     core_apps = [
+        # Core domain
         "organisations",
         "projects",
         "activities",
-        "authentication",
-        "sports",
+        # Auth & users
+        "accounts",
+        "permissions",
+        # Content & media
+        "content_generation",
+        "medialib",
+        "files",
+        "branding",
+        # Credits & transactions
         "credits",
-        "content",
-        "templates",
+        "transactions",
+        # Templates & settings
+        "settings",
+        "sport_configuration",
+        # Notifications & audit
+        "notifications",
+        "contextual_notifications",
+        "audit",
+        # Navigation & UI
+        "navigation",
+        "scaffolding",
+        # Generative AI
+        "generative",
+        # Tasks & background
+        "tasks",
     ]
 
     for app_label in core_apps:
@@ -189,13 +210,37 @@ def generate_schema():
     output_lines.append(f"**Database**: {vendor} ({host})")
     output_lines.append("")
 
-    # Core apps
-    core_apps = [
+    # All Django apps (comprehensive list)
+    all_apps = [
+        # Core domain
         "organisations",
         "projects",
         "activities",
-        "authentication",
-        "sports",
+        # Auth & users
+        "accounts",
+        "permissions",
+        # Content & media
+        "content_generation",
+        "medialib",
+        "files",
+        "branding",
+        # Credits & transactions
+        "credits",
+        "transactions",
+        # Templates & settings
+        "settings",
+        "sport_configuration",
+        # Notifications & audit
+        "notifications",
+        "contextual_notifications",
+        "audit",
+        # Navigation & UI
+        "navigation",
+        "scaffolding",
+        # Generative AI
+        "generative",
+        # Tasks & background
+        "tasks",
     ]
 
     output_lines.append("## FK Relationship Summary")
@@ -205,7 +250,7 @@ def generate_schema():
 
     fk_relations = []
 
-    for app_label in core_apps:
+    for app_label in all_apps:
         try:
             app_config = apps.get_app_config(app_label)
             for model in app_config.get_models():
@@ -231,7 +276,7 @@ def generate_schema():
     output_lines.append("## Table Details")
     output_lines.append("")
 
-    for app_label in core_apps:
+    for app_label in all_apps:
         try:
             app_config = apps.get_app_config(app_label)
             output_lines.append(f"### {app_label}")
