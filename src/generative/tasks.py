@@ -15,15 +15,20 @@ import asyncio
 import logging
 import time
 from decimal import Decimal
-from typing import Any, Coroutine, TypeVar
+from typing import TYPE_CHECKING, Any, Coroutine, TypeVar
 
 from celery import shared_task
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
+# Base types are safe to import (no external dependencies)
 from src.generative.executors.base import ErrorCategory as ExecutorErrorCategory
-from src.generative.executors.factory import ExecutorFactory
+
+# ExecutorFactory is imported inside task functions to avoid loading openai at Celery startup
+if TYPE_CHECKING:
+    pass
+
 from src.generative.models import GenerationOutput, GenerationRequest, OutputType, RequestStatus
 
 logger = logging.getLogger("generative.tasks")
@@ -159,6 +164,9 @@ def process_generation_request(self, request_id: int) -> None:
     started_monotonic = time.monotonic()
 
     try:
+        # Lazy import to avoid loading openai/langgraph at Celery startup
+        from src.generative.executors.factory import ExecutorFactory
+
         executor = ExecutorFactory.get_executor(request.template.pipeline_config)
         result = _run_async(
             executor.execute(
