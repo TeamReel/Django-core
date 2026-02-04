@@ -37,3 +37,15 @@ Generate PDF/Excel reports and data exports with templates and scheduling.
 Backend only - Django app, REST API, pytest tests, README
 No frontend/demo pages (downstream product responsibility)
 ```
+
+---
+
+## Delivery Checklist
+
+- [ ] **Migrations**: Applied to Railway (production-safe)
+- [ ] **Seed Data**: Fixtures/factories created for testing
+- [ ] **Admin**: Registered & configured in Django Admin
+- [ ] **API**: Endpoints tested in Swagger/OpenAPI
+- [ ] **Demo Integration**: Visible in demo app (if applicable)
+- [ ] **Manual Test**: Test file completed in `documents/08-testing/manual-tests/`
+- [ ] **Documentation**: README updated with usage examples

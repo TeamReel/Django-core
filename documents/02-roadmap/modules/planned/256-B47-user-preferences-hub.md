@@ -53,3 +53,15 @@
 
 ## Notes
 <!-- Add progress notes here -->
+
+---
+
+## Delivery Checklist
+
+- [ ] **Migrations**: Applied to Railway (production-safe)
+- [ ] **Seed Data**: Fixtures/factories created for testing
+- [ ] **Admin**: Registered & configured in Django Admin
+- [ ] **API**: Endpoints tested in Swagger/OpenAPI
+- [ ] **Demo Integration**: Visible in demo app (if applicable)
+- [ ] **Manual Test**: Test file completed in `documents/08-testing/manual-tests/`
+- [ ] **Documentation**: README updated with usage examples
