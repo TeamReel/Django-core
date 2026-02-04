@@ -83,6 +83,8 @@ INSTALLED_APPS = [
     "src.generative.apps.GenerativeConfig",
     # B35: Smart Asset Library - Media & File Management
     "medialib.apps.MedialibConfig",
+    # B41: User Navigation State
+    "navigation.apps.NavigationConfig",
 ]
 
 MIDDLEWARE = [

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "organisations.apps.OrganisationsConfig",
     "projects.apps.ProjectsConfig",
     "permissions.apps.PermissionsConfig",
+    "navigation.apps.NavigationConfig",
     # Feature apps
     "settings.apps.SettingsConfig",
     "activities.apps.ActivitiesConfig",
