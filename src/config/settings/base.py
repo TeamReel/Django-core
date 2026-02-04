@@ -83,6 +83,8 @@ INSTALLED_APPS = [
     "src.generative.apps.GenerativeConfig",
     # B35: Smart Asset Library - Media & File Management
     "medialib.apps.MedialibConfig",
+    # B41: User Navigation State
+    "navigation.apps.NavigationConfig",
 ]
 
 MIDDLEWARE = [
@@ -496,6 +498,16 @@ TRANSACTIONS_PAYER_ROUTING_DEFAULT = os.getenv(
     "TRANSACTIONS_PAYER_ROUTING_DEFAULT",
     "explicit",
 )
+
+# ==============================================================================
+# Navigation Configuration (B41: User Navigation State)
+# ==============================================================================
+
+# Maximum number of recent items to keep per user (hard cap)
+NAVIGATION_RECENTS_MAX_COUNT = int(os.getenv("NAVIGATION_RECENTS_MAX_COUNT", "50"))
+
+# Retention period for recent items (in days), after which they may be pruned
+NAVIGATION_RECENTS_RETENTION_DAYS = int(os.getenv("NAVIGATION_RECENTS_RETENTION_DAYS", "90"))
 
 # ==============================================================================
 # Observability Configuration (B18)
