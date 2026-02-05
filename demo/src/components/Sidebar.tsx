@@ -1030,30 +1030,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             position: 'relative'
         }}
       >
-        {/* LOGO AREA with Collapse Button */}
+        {/* Collapse/Expand Toggle - compact header */}
         <div style={{
-            height: 64,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: isOpen ? '0 12px 0 20px' : '0 12px',
-            borderBottom: '1px solid var(--sidebar-a-border)',
-            marginBottom: 16
+            justifyContent: isOpen ? 'flex-end' : 'center',
+            padding: '8px 12px',
         }}>
-             {isOpen ? (
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                     <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
-                        <AppIcon icon={Command} size={24} />
-                    </span>
-                    <span style={{ marginLeft: 12, fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em', color: 'var(--sidebar-a-text)' }}>TeamReel</span>
-                </div>
-             ) : (
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)', margin: '0 auto' }}>
-                    <AppIcon icon={Command} size={24} />
-                </span>
-             )}
-
-            {/* Collapse/Expand Toggle */}
             <button
                 onClick={toggle}
                 title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
@@ -1067,7 +1050,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     border: 'none',
                     cursor: 'pointer',
                     color: 'var(--sidebar-a-text)',
-                    display: isOpen ? 'flex' : 'none',
+                    display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     transition: 'all 0.15s ease',
@@ -1080,42 +1063,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
                 }}
             >
-                <AppIcon icon={PanelLeftClose} size={18} />
+                <AppIcon icon={isOpen ? PanelLeftClose : PanelLeft} size={18} />
             </button>
         </div>
-
-        {/* Expand button when collapsed - shown below logo */}
-        {!isOpen && (
-            <button
-                onClick={toggle}
-                title="Expand Sidebar"
-                aria-label="Expand Sidebar"
-                className="sidebar-expand-button"
-                style={{
-                    width: 40,
-                    height: 32,
-                    margin: '0 auto 16px',
-                    borderRadius: '6px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'var(--sidebar-a-text)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.15s ease',
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                }}
-            >
-                <AppIcon icon={PanelLeft} size={18} />
-            </button>
-        )}
-
 
         {/* Global Navigation (Panel A) */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px', overflowY: 'auto' }}>
@@ -1273,16 +1223,14 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 zIndex: 10
             }}
         >
-            {/* Header */}
+            {/* Header - compact */}
             <div style={{
-                height: 64,
                 display: 'flex',
                 alignItems: 'center',
-                padding: '0 20px',
-                borderBottom: '1px solid var(--sidebar-b-border)',
+                padding: '12px 16px 8px',
                 fontWeight: 600,
-                fontSize: 14,
-                color: 'var(--sidebar-b-text)',
+                fontSize: 11,
+                color: 'var(--sidebar-b-muted-text)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em'
             }}>
