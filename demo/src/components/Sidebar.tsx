@@ -58,7 +58,7 @@ const NAV_CONFIG: NavSection[] = [
     title: 'CONTENT',
     visibility: 'everyone',
     items: [
-      { path: '/content', label: 'Library', icon: Library, visibility: 'everyone' },
+      { path: '/medialib', label: 'Media Library', icon: Library, visibility: 'everyone' },
       { path: '/studio', label: 'AI Studio', icon: Sparkles, visibility: 'everyone' },
     ]
   },
@@ -1138,7 +1138,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         if (itemPath === '/directory') {
                             return path.startsWith('/directory');
                         }
-                        if (itemPath === '/content' || itemPath === '/studio') {
+                        if (itemPath === '/medialib' || itemPath === '/studio') {
                             return path.startsWith(itemPath);
                         }
                         return path === itemPath || path.startsWith(`${itemPath}/`);
