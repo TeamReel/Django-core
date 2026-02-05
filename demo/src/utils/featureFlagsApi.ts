@@ -196,16 +196,16 @@ export async function deleteOrgOverride(overrideId: string): Promise<void> {
   }
 }
 
-export async function seedDefaultFlags(): Promise<{ total: number; created: number }> {
+export async function seedDefaultFlags(): Promise<{ total: number; created: number; failed: number }> {
   const baseUrl = getApiBaseUrl();
 
   const normalizeKey = (value: string): string =>
     String(value || '')
       .trim()
       .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/_/g, '-')
-      .replace(/[^a-z0-9.-]/g, '');
+      .replace(/\s+/g, '_')
+      .replace(/-/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
 
   const buildTemplateFlagKeys = (template: any): string[] => {
     const type = normalizeKey(template?.template_type || '');
@@ -215,9 +215,9 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
     if (!type || !subtype) return [];
 
     const keys = new Set<string>();
-    keys.add(`content.${type}`);
-    keys.add(`content.${type}.${subtype}`);
-    if (style) keys.add(`content.${type}.${subtype}.style.${style}`);
+    keys.add(`content__${type}`);
+    keys.add(`content__${type}__${subtype}`);
+    if (style) keys.add(`content__${type}__${subtype}__style__${style}`);
     return Array.from(keys);
   };
 
@@ -253,6 +253,7 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
   }));
 
   let created = 0;
+  let failed = 0;
   for (const flag of defaults) {
     // Check if exists first (optional, but good for idempotency if we had a check endpoint)
     // For now, just try to create. If it fails (unique constraint), we ignore.
@@ -272,13 +273,18 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
           enabled: flag.enabled,
         }),
       });
-      if (res.ok) created += 1;
+      if (res.ok) {
+        created += 1;
+      } else {
+        failed += 1;
+      }
     } catch (e) {
+      failed += 1;
       console.warn(`Failed to seed flag ${flag.key} (might already exist)`);
     }
   }
 
-  return { total: defaults.length, created };
+  return { total: defaults.length, created, failed };
 }
 
 function getCsrfToken(): string {

@@ -52,6 +52,10 @@ export const FeatureFlagsPage: React.FC = () => {
   const [useApi, setUseApi] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
   const [seedMessage, setSeedMessage] = useState<string | null>(null);
+  const [autoSeeded, setAutoSeeded] = useState(false);
+  const [filterType, setFilterType] = useState('');
+  const [filterSubtype, setFilterSubtype] = useState('');
+  const [filterStyle, setFilterStyle] = useState('');
 
   // This page is GLOBAL-only
   const editMode = 'global';
@@ -131,12 +135,33 @@ export const FeatureFlagsPage: React.FC = () => {
           setApiError(null);
           // GLOBAL mode only - no org context
           debugLog('[FeatureFlagsPage] Fetching GLOBAL flags from API');
-          const apiFlags = await fetchFlagsForScope('GLOBAL');
+          let apiFlags = await fetchFlagsForScope('GLOBAL');
           const normalized = apiFlags.map((flag: any) => ({
             ...flag,
             global_id: flag.global_id || flag.id,
           }));
           setFlags(normalized);
+
+          // Auto-seed once if none found
+          if (!autoSeeded && normalized.filter((flag) => String(flag.key || '').startsWith('content__')).length === 0) {
+            const result = await seedDefaultFlags();
+            setAutoSeeded(true);
+            if (result.total === 0) {
+              setSeedMessage('No active templates found. Create or activate templates first, then seed again.');
+            } else if (result.created === 0 && result.failed === 0) {
+              setSeedMessage(`All ${result.total} flags already exist.`);
+            } else if (result.created === 0 && result.failed > 0) {
+              setSeedMessage('Seeding failed. Check API validation for content flag keys.');
+            } else {
+              setSeedMessage(`Seeded ${result.created} of ${result.total} content flags.`);
+            }
+            apiFlags = await fetchFlagsForScope('GLOBAL');
+            const normalizedAfterSeed = apiFlags.map((flag: any) => ({
+              ...flag,
+              global_id: flag.global_id || flag.id,
+            }));
+            setFlags(normalizedAfterSeed);
+          }
         } catch (err: any) {
           console.warn('API failed:', err);
 
@@ -261,7 +286,20 @@ export const FeatureFlagsPage: React.FC = () => {
     );
   }
 
-  const displayFlags = flags.filter((flag) => !isThemeFlagKey(flag.key));
+  const displayFlags = flags
+    .filter((flag) => !isThemeFlagKey(flag.key))
+    .filter((flag) => String(flag.key || '').startsWith('content__'))
+    .filter((flag) => {
+      const parts = String(flag.key || '').split('__');
+      const type = parts[1] || '';
+      const subtype = parts[2] || '';
+      const styleIndex = parts.findIndex((p) => p === 'style');
+      const style = styleIndex >= 0 ? parts[styleIndex + 1] || '' : '';
+      if (filterType && !type.includes(filterType)) return false;
+      if (filterSubtype && !subtype.includes(filterSubtype)) return false;
+      if (filterStyle && !style.includes(filterStyle)) return false;
+      return true;
+    });
 
   return (
     <>
@@ -293,19 +331,43 @@ export const FeatureFlagsPage: React.FC = () => {
       />
 
       <PageContent>
+        {seedMessage && (
+          <Alert variant="info" className="mb-4">
+            {seedMessage}
+          </Alert>
+        )}
+
         {/* Info Alert */}
         <Alert variant="info" className="mb-4">
-                  {seedMessage && (
-                    <Alert variant="info" className="mb-4">
-                      {seedMessage}
-                    </Alert>
-                  )}
           <strong>Global Feature Flags:</strong> These are master switches for the entire application.
           When a global flag is <strong>disabled</strong>, it overrides all organisation and project settings.
           Organisations can create more restrictive overrides (disable when global is enabled) but cannot enable when global is disabled.
           <br /><br />
           To manage organisation-specific overrides, go to <strong>Organisation → Settings tab</strong>.
         </Alert>
+
+        <Card className="mb-4">
+          <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              placeholder="Filter by type (e.g. pre_match)"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value.trim().toLowerCase())}
+            />
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              placeholder="Filter by subtype (e.g. flyer)"
+              value={filterSubtype}
+              onChange={(e) => setFilterSubtype(e.target.value.trim().toLowerCase())}
+            />
+            <input
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              placeholder="Filter by style (e.g. classic)"
+              value={filterStyle}
+              onChange={(e) => setFilterStyle(e.target.value.trim().toLowerCase())}
+            />
+          </div>
+        </Card>
 
         {/* Flags Table */}
         <Card>

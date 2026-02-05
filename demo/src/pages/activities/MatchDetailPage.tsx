@@ -209,15 +209,15 @@ export default function HierarchyMatchDetailPage() {
   const [isContentPreviewOpen, setIsContentPreviewOpen] = useState(false);
 
   const normalizeFlagKey = (value: string): string =>
-    String(value || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    String(value || '').trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
 
   const slugify = (value: string): string =>
     String(value || '')
       .trim()
       .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/_/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
+      .replace(/\s+/g, '_')
+      .replace(/-/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
 
   const buildTemplateFlagKeys = (template: ContentTemplate): string[] => {
     const type = slugify(template.template_type);
@@ -225,9 +225,9 @@ export default function HierarchyMatchDetailPage() {
     const style = slugify(template.style_variant || '');
     if (!type || !subtype) return [];
     const keys: string[] = [];
-    if (style) keys.push(`content.${type}.${subtype}.style.${style}`);
-    keys.push(`content.${type}.${subtype}`);
-    keys.push(`content.${type}`);
+    if (style) keys.push(`content__${type}__${subtype}__style__${style}`);
+    keys.push(`content__${type}__${subtype}`);
+    keys.push(`content__${type}`);
     return keys;
   };
 

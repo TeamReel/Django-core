@@ -38,9 +38,9 @@ const slugify = (value: string): string =>
   String(value || '')
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/_/g, '-')
-    .replace(/[^a-z0-9-]/g, '');
+    .replace(/\s+/g, '_')
+    .replace(/-/g, '_')
+    .replace(/[^a-z0-9_]/g, '');
 
 const titleCase = (value: string): string =>
   String(value || '')
@@ -55,9 +55,9 @@ const buildTemplateFlagKeys = (template: ContentTemplate): string[] => {
   const style = slugify(template.style_variant || '');
   if (!type || !subtype) return [];
   const keys: string[] = [];
-  if (style) keys.push(`content.${type}.${subtype}.style.${style}`);
-  keys.push(`content.${type}.${subtype}`);
-  keys.push(`content.${type}`);
+  if (style) keys.push(`content__${type}__${subtype}__style__${style}`);
+  keys.push(`content__${type}__${subtype}`);
+  keys.push(`content__${type}`);
   return keys;
 };
 
@@ -65,8 +65,8 @@ const getFlagKeyForTemplate = (template: ContentTemplate): string => {
   const type = slugify(template.template_type);
   const subtype = slugify(template.template_subtype || template.template_type);
   const style = slugify(template.style_variant || '');
-  if (style) return `content.${type}.${subtype}.style.${style}`;
-  return `content.${type}.${subtype}`;
+  if (style) return `content__${type}__${subtype}__style__${style}`;
+  return `content__${type}__${subtype}`;
 };
 
 export default function ContentAvailabilityCard({
@@ -123,7 +123,7 @@ export default function ContentAvailabilityCard({
 
   const fetchAvailabilityFlags = useCallback(async () => {
     const scopedFlags = await fetchFlags(organisationId, scopeType === 'PROJECT' ? projectId || undefined : undefined);
-    setFlags(scopedFlags.filter((flag) => String(flag.key || '').startsWith('content.')));
+    setFlags(scopedFlags.filter((flag) => String(flag.key || '').startsWith('content__')));
   }, [organisationId, projectId, scopeType]);
 
   const reloadAll = useCallback(async () => {
