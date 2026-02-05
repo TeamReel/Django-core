@@ -47,29 +47,43 @@ export async function fetchFlags(orgId: string | null, projectId?: string | null
 
 export async function fetchFlagsForScope(scopeType: ScopeType, scopeId?: string): Promise<ApiFeatureFlag[]> {
   const baseUrl = getApiBaseUrl();
-  const url = new URL(`${baseUrl}${API_BASE}/`, window.location.origin);
-  url.searchParams.append('scope_type', scopeType);
+  const allFlags: ApiFeatureFlag[] = [];
+
+  // Use pagination to fetch ALL flags
+  let nextUrl: string | null = `${baseUrl}${API_BASE}/?scope_type=${scopeType}&page_size=200`;
 
   if (scopeType === 'ORGANISATION' && scopeId) {
-    url.searchParams.append('organisation', scopeId);
+    nextUrl += `&organisation=${scopeId}`;
   } else if (scopeType === 'PROJECT' && scopeId) {
-    url.searchParams.append('project', scopeId);
+    nextUrl += `&project=${scopeId}`;
   }
 
-  const response = await fetch(url.toString(), {
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-    },
-    credentials: 'include',
-  });
+  while (nextUrl) {
+    const response = await fetch(nextUrl, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      credentials: 'include',
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch flags: ${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch flags: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const results = data.data?.results || data.results || data.data || data || [];
+    allFlags.push(...(Array.isArray(results) ? results : []));
+
+    // Check for next page
+    nextUrl = data.data?.next || data.next || null;
+    if (nextUrl && !nextUrl.startsWith('http')) {
+      nextUrl = `${baseUrl}${nextUrl}`;
+    }
   }
 
-  const data = await response.json();
-  return data.data?.results || data.results || data.data || data || [];
+  debugLog('[fetchFlagsForScope] Fetched', allFlags.length, 'flags for scope', scopeType);
+  return allFlags;
 }
 
 export async function updateGlobalFlag(flagId: string, enabled: boolean): Promise<void> {
@@ -328,6 +342,123 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
   }
 
   return { total: defaults.length, created, failed };
+}
+
+/**
+ * Sync feature flags with templates - creates missing flags and updates descriptions
+ * This ensures flags stay in sync when new templates are added
+ */
+export async function syncFlags(): Promise<{ total: number; created: number; updated: number; failed: number }> {
+  const baseUrl = getApiBaseUrl();
+
+  const normalizeKey = (value: string): string =>
+    String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/-/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
+
+  const titleCase = (value: string): string =>
+    String(value || '')
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
+
+  const buildTemplateFlagInfo = (template: any): Array<{ key: string; description: string }> => {
+    const type = normalizeKey(template?.template_type || '');
+    const subtype = normalizeKey(template?.template_subtype || template?.template_type || '');
+    const style = normalizeKey(template?.style_variant || '');
+    const templateName = template?.name || '';
+
+    if (!type || !subtype) return [];
+
+    const results: Array<{ key: string; description: string }> = [];
+    results.push({ key: `content__${type}`, description: `${titleCase(type)} content templates` });
+    results.push({ key: `content__${type}__${subtype}`, description: templateName || `${titleCase(type)} - ${titleCase(subtype)}` });
+    if (style) {
+      results.push({ key: `content__${type}__${subtype}__style__${style}`, description: templateName || `${titleCase(type)} - ${titleCase(subtype)} (${titleCase(style)})` });
+    }
+    return results;
+  };
+
+  // Fetch all templates
+  const fetchTemplates = async (): Promise<any[]> => {
+    try {
+      const allTemplates: any[] = [];
+      let nextUrl: string | null = `${baseUrl}/api/v1/content-generation/templates/?page_size=200`;
+      while (nextUrl) {
+        const res: Response = await fetch(nextUrl, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
+        if (!res.ok) break;
+        const data: any = await res.json();
+        const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
+        allTemplates.push(...(Array.isArray(rawResults) ? rawResults : []));
+        nextUrl = data?.data?.next || data?.next || null;
+        if (nextUrl && !nextUrl.startsWith('http')) nextUrl = `${baseUrl}${nextUrl}`;
+      }
+      return allTemplates;
+    } catch (err) {
+      console.warn('Failed to fetch templates', err);
+      return [];
+    }
+  };
+
+  // Fetch existing GLOBAL flags
+  const existingFlags = await fetchFlagsForScope('GLOBAL');
+  const existingFlagMap = new Map<string, ApiFeatureFlag>();
+  existingFlags.forEach((f) => existingFlagMap.set(f.key, f));
+
+  // Build desired flags from templates
+  const templates = await fetchTemplates();
+  const desiredFlagMap = new Map<string, { key: string; description: string }>();
+  templates.forEach((template) => {
+    buildTemplateFlagInfo(template).forEach((info) => {
+      if (!desiredFlagMap.has(info.key)) {
+        desiredFlagMap.set(info.key, info);
+      }
+    });
+  });
+
+  debugLog('[syncFlags] Existing flags:', existingFlagMap.size, 'Desired flags:', desiredFlagMap.size);
+
+  let created = 0;
+  let updated = 0;
+  let failed = 0;
+
+  for (const [key, info] of desiredFlagMap) {
+    const existing = existingFlagMap.get(key);
+
+    if (existing) {
+      // Update description if different
+      if (existing.description !== info.description) {
+        try {
+          const res = await fetch(`${baseUrl}${API_BASE}/${existing.id}/`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
+            credentials: 'include',
+            body: JSON.stringify({ description: info.description }),
+          });
+          if (res.ok) updated++;
+          else failed++;
+        } catch { failed++; }
+      }
+    } else {
+      // Create new flag
+      try {
+        const res = await fetch(`${baseUrl}${API_BASE}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
+          credentials: 'include',
+          body: JSON.stringify({ scope_type: 'GLOBAL', key: info.key, description: info.description, enabled: true }),
+        });
+        if (res.ok) created++;
+        else failed++;
+      } catch { failed++; }
+    }
+  }
+
+  return { total: desiredFlagMap.size, created, updated, failed };
 }
 
 function getCsrfToken(): string {

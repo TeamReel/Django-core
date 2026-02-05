@@ -20,6 +20,7 @@ import {
   fetchFlagsForScope,
   updateGlobalFlag,
   seedDefaultFlags,
+  syncFlags,
   type ApiFeatureFlag
 } from '../../utils/featureFlagsApi';
 import {
@@ -335,6 +336,8 @@ export const FeatureFlagsPage: React.FC = () => {
       .filter(Boolean)
   )).sort();
 
+  const [syncing, setSyncing] = useState(false);
+
   // Multi-select helpers
   const allSelected = displayFlags.length > 0 && displayFlags.every((f) => selectedIds.has(f.id));
   const someSelected = selectedIds.size > 0;
@@ -378,6 +381,31 @@ export const FeatureFlagsPage: React.FC = () => {
       alert('Bulk update failed. Check console for details.');
     } finally {
       setBulkUpdating(false);
+    }
+  };
+
+  const handleSyncFlags = async () => {
+    setSyncing(true);
+    setSeedMessage(null);
+    try {
+      const result = await syncFlags();
+      if (result.created === 0 && result.updated === 0) {
+        setSeedMessage(`All ${result.total} flags are in sync.`);
+      } else {
+        setSeedMessage(`Synced: ${result.created} created, ${result.updated} updated (${result.total} total).`);
+      }
+      // Reload flags
+      const apiFlags = await fetchFlagsForScope('GLOBAL');
+      const normalized = apiFlags.map((flag: any) => ({
+        ...flag,
+        global_id: flag.global_id || flag.id,
+      }));
+      setFlags(normalized);
+    } catch (err) {
+      console.error('Sync failed:', err);
+      setSeedMessage('Sync failed. Check console for details.');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -517,6 +545,14 @@ export const FeatureFlagsPage: React.FC = () => {
               }}
             >
               Clear
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              disabled={syncing}
+              onClick={handleSyncFlags}
+            >
+              {syncing ? 'Syncing...' : '🔄 Sync Templates'}
             </Button>
           </div>
         </div>

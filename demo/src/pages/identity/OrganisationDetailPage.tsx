@@ -49,7 +49,6 @@ import { MatchesList } from './directory/MatchesList';
 import { UsersList } from './directory/UsersList';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import MobileTabBar from '../../components/MobileTabBar';
-import FeatureFlagsCard from '../../components/FeatureFlags/FeatureFlagsCard';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
@@ -2030,19 +2029,11 @@ export const OrganisationDetailPage: React.FC = () => {
         )}
 
         {activeTab === 'settings' && org && (
-          <div className="space-y-6">
-            <FeatureFlagsCard
-              scopeType="ORGANISATION"
-              scopeId={String(org.id)}
-              scopeName={org.name}
-              title="Feature Flags"
-            />
-            <ContentAvailabilityCard
-              scopeType="ORGANISATION"
-              organisationId={String(org.id)}
-              scopeName={org.name}
-            />
-          </div>
+          <ContentAvailabilityCard
+            scopeType="ORGANISATION"
+            organisationId={String(org.id)}
+            scopeName={org.name}
+          />
         )}
 
       </PageContent>

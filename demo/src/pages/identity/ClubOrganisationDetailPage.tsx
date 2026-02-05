@@ -19,7 +19,6 @@ import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySett
 import MobileTabBar from '../../components/MobileTabBar';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
-import FeatureFlagsCard from '../../components/FeatureFlags/FeatureFlagsCard';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 
 type Organisation = {
@@ -1502,23 +1501,13 @@ export default function ClubOrganisationDetailPage() {
             <TeamCreditsTab view="transactions" projectId={clubIdForDirectoryLists} projectName={club.name} organisationId={orgIdForDirectoryLists} />
           )}
 
-          {activeTabFromUrl === 'settings' && club && (
-            <div className="space-y-6">
-              <FeatureFlagsCard
-                scopeType="PROJECT"
-                scopeId={String(club.id)}
-                scopeName={club.name}
-                title="Feature Flags"
-              />
-              {orgIdForDirectoryLists && (
-                <ContentAvailabilityCard
-                  scopeType="PROJECT"
-                  organisationId={String(orgIdForDirectoryLists)}
-                  projectId={String(club.id)}
-                  scopeName={club.name}
-                />
-              )}
-            </div>
+          {activeTabFromUrl === 'settings' && club && orgIdForDirectoryLists && (
+            <ContentAvailabilityCard
+              scopeType="PROJECT"
+              organisationId={String(orgIdForDirectoryLists)}
+              projectId={String(club.id)}
+              scopeName={club.name}
+            />
           )}
         </PageContent>
       </div>
