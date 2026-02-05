@@ -1,8 +1,17 @@
 # Frontend Integration Status
 
-> Last updated: 2026-02-05 (Identity tab on all detail pages)
+> Last updated: 2026-02-05 21:11 (Brand Assets seeded, logo display WIP)
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.
+
+## 🎯 Current Focus: Brand Identity Display
+
+**Status**: BrandAssets seeded (71), maar logo's tonen nog niet correct
+- ✅ Ajax logo URL gefixed (werkend)
+- ❌ Andere club logos: Wikipedia thumbnail URLs geven 404
+- ❌ KNVB logo: 404 error
+
+**Volgende actie**: Fix broken logo URLs of verwijder ze tijdelijk
 
 ## Legend
 
@@ -104,16 +113,21 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - [ ] Tag management UI (CRUD voor project-specifieke tags)
 
 ### B33 Branding 🟡
-- **Backend**: 102 BrandProfiles, 612 DesignTokens
+- **Backend**: 102 BrandProfiles, 645 DesignTokens, **71 BrandAssets**, **66 FileAssets**
 - **Frontend**:
   - ✅ IdentitySettingsCard (basic identity fields)
   - ✅ BrandProfileCard (read-only profile viewer with design tokens)
   - ✅ Identity tab op alle detail pages (Organisation, Club, Team, Season)
   - ✅ Token grouping by type (Colors, Typography, Spacing, Border Radius)
   - ✅ Color swatch preview voor color tokens
+  - ✅ ProfileHeader met logo preview component
+  - 🟡 BrandAssets seeded maar logo URLs deels broken (Wikipedia 404s)
   - ❌ Geen BrandProfile editor (create/update)
-  - ❌ Geen BrandAsset viewer
+- **CURRENT ISSUE**: Logo URLs geven 404
+  - ✅ Ajax logo gefixed (werkende URL)
+  - ❌ Andere clubs/orgs nog broken
 - **TODO**:
+  - [ ] Fix broken logo URLs
   - [ ] BrandProfile create/edit form
   - [ ] BrandAsset upload component
   - [ ] Token inheritance display (org → project → season)

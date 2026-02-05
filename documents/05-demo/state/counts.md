@@ -1,25 +1,52 @@
 # Database Model Counts
 
-> Last updated: 2026-02-05 (Feature Flags synced)
+> Last updated: 2026-02-05 21:11 (Brand Assets seeded)
 
 **Database**: postgresql (switchback.proxy.rlwy.net)
 
 ## Summary
 
-| Category | Count |
-|----------|-------|
-| Organisations | 8 |
-| Projects | 325 |
-| Users | 2,780 |
-| Project Memberships | 3,773 |
-| Org Memberships | 2,284 |
-| Sports | 15 |
-| Formations | 6 |
-| ContentTemplates | 320 |
-| MediaTags | 78 |
-| BrandProfiles | 102 |
-| DesignTokens | 612 |
-| **FeatureFlags** | **44 GLOBAL content flags** |
+| Category | Count | Change |
+|----------|-------|--------|
+| Organisations | 8 | - |
+| Projects | 325 | - |
+| Users | 2,781 | +1 |
+| Project Memberships | 3,773 | - |
+| Org Memberships | 2,284 | - |
+| Sports | 15 | - |
+| Formations | 6 | - |
+| ContentTemplates | 320 | - |
+| MediaTags | 78 | - |
+| BrandProfiles | 102 | - |
+| DesignTokens | 645 | +33 |
+| **BrandAssets** | **71** | **+71 NEW** |
+| **FileAssets** | **66** | **+66 NEW** |
+| FeatureFlags | 44 | - |
+
+## 🎯 Next Action: Fix Brand Identity Display
+
+**Problem**: Brand profiles laden correct, maar logo's worden niet getoond (404 errors op Wikipedia URLs).
+
+**Status**:
+- ✅ Ajax logo URL bijgewerkt naar werkende versie
+- ❌ Andere club logo URLs nog broken (Wikipedia thumbnail format)
+- ❌ KNVB logo 404 error
+
+**Volgende stap**: Fix logo URLs voor alle clubs of verwijder broken assets
+
+## Project Hierarchy
+
+| Level | Count | Description |
+|-------|-------|-------------|
+| Clubs (root) | 98 | Parent projects (Ajax, PSV, etc.) |
+| Teams (child) | 227 | Child projects (Ajax 1, Ajax U21, etc.) |
+
+## Period Hierarchy
+
+| Level | Count | Description |
+|-------|-------|-------------|
+| Seasons | 108 | Root periods (2024/2025, 2023/2024) |
+| Competitions | 571 | Child periods (League, Cup, etc.) |
 
 ## Feature Flags (B10)
 
@@ -78,7 +105,7 @@
 | activities | Activity | 865 | 🟢 OK |
 | activities | Participation | 1,409 | 🟢 OK |
 | activities | ActivityEvent | 201 | 🟢 OK |
-| accounts | User | 2,780 | 🟢 OK |
+| accounts | User | 2,781 | 🟢 OK |
 | accounts | UserActiveContext | 3 | 🟢 OK |
 | permissions | Permission | 23 | 🟢 OK |
 | permissions | Role | 5 | 🟢 OK |
@@ -92,10 +119,10 @@
 | medialib | CollectionMembership | 0 | 🔴 EMPTY |
 | medialib | MediaItemRelation | 0 | 🔴 EMPTY |
 | medialib | MediaThumbnail | 0 | 🔴 EMPTY |
-| files | FileAsset | 0 | 🔴 EMPTY |
+| **files** | **FileAsset** | **66** | **🟢 NEW** |
 | branding | BrandProfile | 102 | 🟢 OK |
-| branding | DesignToken | 612 | 🟢 OK |
-| branding | BrandAsset | 0 | 🔴 EMPTY |
+| branding | DesignToken | 645 | 🟢 OK |
+| **branding** | **BrandAsset** | **71** | **🟢 NEW** |
 | credits | CreditsBalance | 1 | 🟡 THIN |
 | credits | ProjectCreditsBalance | 94 | 🟢 OK |
 | credits | UserCreditsBalance | 3 | 🟢 OK |
