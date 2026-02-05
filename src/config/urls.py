@@ -69,7 +69,7 @@ urlpatterns = [
     # Settings & Feature Flags API
     path("api/v1/settings/", include("settings.urls")),
     # B33: Brand Identity Manager API
-    path("api/branding/", include("branding.urls")),
+    path("api/v1/branding/", include("branding.urls")),
     # i18n Preferences API (B12)
     path("api/v1/preferences/", include("i18n_preferences.urls")),
     # B16: Notifications API

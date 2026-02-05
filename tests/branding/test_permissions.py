@@ -18,14 +18,16 @@ class TestBrandProfilePermissions:
     def test_org_admin_can_read_org_brand(self, api_client, org_admin, org_brand):
         """Test org admin can read org brand."""
         api_client.force_authenticate(org_admin)
-        response = api_client.get(f"/api/branding/profiles/{org_brand.id}/")
+        response = api_client.get(f"/api/v1/branding/profiles/{org_brand.id}/")
 
         assert response.status_code == 200
 
     def test_org_admin_can_edit_org_brand(self, api_client, org_admin, org_brand):
         """Test org admin can edit org brand."""
         api_client.force_authenticate(org_admin)
-        response = api_client.patch(f"/api/branding/profiles/{org_brand.id}/", {"name": "Updated"})
+        response = api_client.patch(
+            f"/api/v1/branding/profiles/{org_brand.id}/", {"name": "Updated"}
+        )
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -34,7 +36,7 @@ class TestBrandProfilePermissions:
     def test_org_admin_can_read_project_brand(self, api_client, org_admin, project_brand):
         """Test org admin can read project brand (cascade)."""
         api_client.force_authenticate(org_admin)
-        response = api_client.get(f"/api/branding/profiles/{project_brand.id}/")
+        response = api_client.get(f"/api/v1/branding/profiles/{project_brand.id}/")
 
         assert response.status_code == 200
 
@@ -42,7 +44,7 @@ class TestBrandProfilePermissions:
         """Test org admin can edit project brand (cascade)."""
         api_client.force_authenticate(org_admin)
         response = api_client.patch(
-            f"/api/branding/profiles/{project_brand.id}/", {"name": "Updated Project"}
+            f"/api/v1/branding/profiles/{project_brand.id}/", {"name": "Updated Project"}
         )
 
         assert response.status_code == 200
@@ -52,21 +54,23 @@ class TestBrandProfilePermissions:
     def test_org_member_can_read_org_brand(self, api_client, org_member, org_brand):
         """Test org member can read org brand."""
         api_client.force_authenticate(org_member)
-        response = api_client.get(f"/api/branding/profiles/{org_brand.id}/")
+        response = api_client.get(f"/api/v1/branding/profiles/{org_brand.id}/")
 
         assert response.status_code == 200
 
     def test_org_member_cannot_edit_org_brand(self, api_client, org_member, org_brand):
         """Test org member cannot edit org brand."""
         api_client.force_authenticate(org_member)
-        response = api_client.patch(f"/api/branding/profiles/{org_brand.id}/", {"name": "Hacked"})
+        response = api_client.patch(
+            f"/api/v1/branding/profiles/{org_brand.id}/", {"name": "Hacked"}
+        )
 
         assert response.status_code == 403
 
     def test_project_admin_can_read_project_brand(self, api_client, project_admin, project_brand):
         """Test project admin can read their project brand."""
         api_client.force_authenticate(project_admin)
-        response = api_client.get(f"/api/branding/profiles/{project_brand.id}/")
+        response = api_client.get(f"/api/v1/branding/profiles/{project_brand.id}/")
 
         assert response.status_code == 200
 
@@ -74,7 +78,7 @@ class TestBrandProfilePermissions:
         """Test project admin can edit their project brand."""
         api_client.force_authenticate(project_admin)
         response = api_client.patch(
-            f"/api/branding/profiles/{project_brand.id}/", {"name": "Updated by PA"}
+            f"/api/v1/branding/profiles/{project_brand.id}/", {"name": "Updated by PA"}
         )
 
         assert response.status_code == 200
@@ -90,14 +94,16 @@ class TestBrandProfilePermissions:
         other_brand = brand_profile_factory(project=other_project, name="Other Project Brand")
 
         api_client.force_authenticate(project_admin)
-        response = api_client.patch(f"/api/branding/profiles/{other_brand.id}/", {"name": "Hacked"})
+        response = api_client.patch(
+            f"/api/v1/branding/profiles/{other_brand.id}/", {"name": "Hacked"}
+        )
 
         assert response.status_code == 403
 
     def test_project_member_can_read_project_brand(self, api_client, project_member, project_brand):
         """Test project member can read project brand."""
         api_client.force_authenticate(project_member)
-        response = api_client.get(f"/api/branding/profiles/{project_brand.id}/")
+        response = api_client.get(f"/api/v1/branding/profiles/{project_brand.id}/")
 
         assert response.status_code == 200
 
@@ -107,7 +113,7 @@ class TestBrandProfilePermissions:
         """Test project member cannot edit project brand."""
         api_client.force_authenticate(project_member)
         response = api_client.patch(
-            f"/api/branding/profiles/{project_brand.id}/", {"name": "Hacked"}
+            f"/api/v1/branding/profiles/{project_brand.id}/", {"name": "Hacked"}
         )
 
         assert response.status_code == 403
@@ -117,7 +123,7 @@ class TestBrandProfilePermissions:
         non_member = user_factory()
         api_client.force_authenticate(non_member)
 
-        response = api_client.get(f"/api/branding/profiles/{org_brand.id}/")
+        response = api_client.get(f"/api/v1/branding/profiles/{org_brand.id}/")
         assert response.status_code == 403
 
     def test_non_member_cannot_edit_brand(self, api_client, user_factory, org_brand):
@@ -125,12 +131,14 @@ class TestBrandProfilePermissions:
         non_member = user_factory()
         api_client.force_authenticate(non_member)
 
-        response = api_client.patch(f"/api/branding/profiles/{org_brand.id}/", {"name": "Hacked"})
+        response = api_client.patch(
+            f"/api/v1/branding/profiles/{org_brand.id}/", {"name": "Hacked"}
+        )
         assert response.status_code == 403
 
     def test_unauthenticated_cannot_access(self, api_client, org_brand):
         """Test unauthenticated users cannot access."""
-        response = api_client.get(f"/api/branding/profiles/{org_brand.id}/")
+        response = api_client.get(f"/api/v1/branding/profiles/{org_brand.id}/")
         assert response.status_code == 401
 
 
@@ -144,7 +152,7 @@ class TestDesignTokenPermissions:
         api_client.force_authenticate(org_admin)
 
         response = api_client.patch(
-            f"/api/branding/profiles/{org_brand.id}/tokens/{token.id}/",
+            f"/api/v1/branding/profiles/{org_brand.id}/tokens/{token.id}/",
             {"value": "#000000"},
         )
 
@@ -157,7 +165,7 @@ class TestDesignTokenPermissions:
         api_client.force_authenticate(org_admin)
 
         response = api_client.patch(
-            f"/api/branding/profiles/{project_brand.id}/tokens/{project_token.id}/",
+            f"/api/v1/branding/profiles/{project_brand.id}/tokens/{project_token.id}/",
             {"value": "#000000"},
         )
 
@@ -170,7 +178,7 @@ class TestDesignTokenPermissions:
         api_client.force_authenticate(project_admin)
 
         response = api_client.patch(
-            f"/api/branding/profiles/{project_brand.id}/tokens/{project_token.id}/",
+            f"/api/v1/branding/profiles/{project_brand.id}/tokens/{project_token.id}/",
             {"value": "#FFFFFF"},
         )
 
@@ -183,7 +191,7 @@ class TestDesignTokenPermissions:
         api_client.force_authenticate(project_member)
 
         response = api_client.patch(
-            f"/api/branding/profiles/{project_brand.id}/tokens/{project_token.id}/",
+            f"/api/v1/branding/profiles/{project_brand.id}/tokens/{project_token.id}/",
             {"value": "#000000"},
         )
 
@@ -202,7 +210,7 @@ class TestBrandAssetPermissions:
         api_client.force_authenticate(org_admin)
 
         response = api_client.patch(
-            f"/api/branding/profiles/{org_brand.id}/assets/{asset.id}/",
+            f"/api/v1/branding/profiles/{org_brand.id}/assets/{asset.id}/",
             {"alt_text": "Updated"},
         )
 
@@ -216,7 +224,7 @@ class TestBrandAssetPermissions:
         api_client.force_authenticate(org_admin)
 
         response = api_client.patch(
-            f"/api/branding/profiles/{project_brand.id}/assets/{asset.id}/",
+            f"/api/v1/branding/profiles/{project_brand.id}/assets/{asset.id}/",
             {"alt_text": "Updated"},
         )
 
@@ -230,7 +238,7 @@ class TestBrandAssetPermissions:
         api_client.force_authenticate(project_admin)
 
         response = api_client.patch(
-            f"/api/branding/profiles/{project_brand.id}/assets/{asset.id}/",
+            f"/api/v1/branding/profiles/{project_brand.id}/assets/{asset.id}/",
             {"alt_text": "Updated by PA"},
         )
 
@@ -244,7 +252,7 @@ class TestBrandAssetPermissions:
         api_client.force_authenticate(org_member)
 
         response = api_client.patch(
-            f"/api/branding/profiles/{org_brand.id}/assets/{asset.id}/",
+            f"/api/v1/branding/profiles/{org_brand.id}/assets/{asset.id}/",
             {"alt_text": "Hacked"},
         )
 
@@ -274,8 +282,12 @@ class TestCascadePermissionEdgeCases:
         api_client.force_authenticate(org_admin)
 
         # Can edit both
-        response1 = api_client.patch(f"/api/branding/profiles/{brand1.id}/", {"name": "Updated 1"})
-        response2 = api_client.patch(f"/api/branding/profiles/{brand2.id}/", {"name": "Updated 2"})
+        response1 = api_client.patch(
+            f"/api/v1/branding/profiles/{brand1.id}/", {"name": "Updated 1"}
+        )
+        response2 = api_client.patch(
+            f"/api/v1/branding/profiles/{brand2.id}/", {"name": "Updated 2"}
+        )
 
         assert response1.status_code == 200
         assert response2.status_code == 200
@@ -305,7 +317,7 @@ class TestCascadePermissionEdgeCases:
 
         # Admin1 can see Brand2 because they're an org member (from project_factory)
         api_client.force_authenticate(admin1)
-        response = api_client.get(f"/api/branding/profiles/{brand2.id}/")
+        response = api_client.get(f"/api/v1/branding/profiles/{brand2.id}/")
 
         # Org members have read access to all project brands in their org
         assert response.status_code == 200
@@ -336,7 +348,7 @@ class TestCascadePermissionEdgeCases:
         # Org member (not in project) currently HAS read access via org membership
         # Future: could enforce private project isolation for brands
         api_client.force_authenticate(member)
-        response = api_client.get(f"/api/branding/profiles/{private_brand.id}/")
+        response = api_client.get(f"/api/v1/branding/profiles/{private_brand.id}/")
 
         # Current behavior: org members can read project brands
         assert response.status_code == 200

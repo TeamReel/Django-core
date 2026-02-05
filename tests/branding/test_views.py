@@ -21,18 +21,18 @@ class TestBrandProfileViewSet:
     def test_list_brands_authenticated(self, api_client, org_admin, org_brand):
         """Test listing brands requires authentication."""
         # Unauthenticated
-        response = api_client.get("/api/branding/profiles/")
+        response = api_client.get("/api/v1/branding/profiles/")
         assert response.status_code == 401
 
         # Authenticated
         api_client.force_authenticate(org_admin)
-        response = api_client.get("/api/branding/profiles/")
+        response = api_client.get("/api/v1/branding/profiles/")
         assert response.status_code == 200
 
     def test_list_brands_returns_profiles(self, api_client, org_admin, org_brand, project_brand):
         """Test list endpoint returns brand profiles."""
         api_client.force_authenticate(org_admin)
-        response = api_client.get("/api/branding/profiles/")
+        response = api_client.get("/api/v1/branding/profiles/")
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -42,7 +42,7 @@ class TestBrandProfileViewSet:
     def test_retrieve_brand(self, api_client, org_admin, org_brand, org_tokens):
         """Test retrieving single brand with details."""
         api_client.force_authenticate(org_admin)
-        response = api_client.get(f"/api/branding/profiles/{org_brand.id}/")
+        response = api_client.get(f"/api/v1/branding/profiles/{org_brand.id}/")
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -58,7 +58,7 @@ class TestBrandProfileViewSet:
 
         payload = {"organisation": str(organisation.id), "name": "New Brand"}
 
-        response = api_client.post("/api/branding/profiles/", payload)
+        response = api_client.post("/api/v1/branding/profiles/", payload)
 
         assert response.status_code == 201
         data = extract_data(response)
@@ -70,7 +70,7 @@ class TestBrandProfileViewSet:
         api_client.force_authenticate(org_admin)
 
         payload = {"name": "Updated Brand Name"}
-        response = api_client.patch(f"/api/branding/profiles/{org_brand.id}/", payload)
+        response = api_client.patch(f"/api/v1/branding/profiles/{org_brand.id}/", payload)
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -80,7 +80,7 @@ class TestBrandProfileViewSet:
         """Test deleting brand profile."""
         api_client.force_authenticate(org_admin)
 
-        response = api_client.delete(f"/api/branding/profiles/{org_brand.id}/")
+        response = api_client.delete(f"/api/v1/branding/profiles/{org_brand.id}/")
         assert response.status_code == 204
 
         # Verify deleted
@@ -94,7 +94,7 @@ class TestBrandProfileViewSet:
 
         api_client.force_authenticate(org_admin)
         response = api_client.get(
-            f"/api/branding/profiles/?organisation={org_brand.organisation.id}"
+            f"/api/v1/branding/profiles/?organisation={org_brand.organisation.id}"
         )
 
         assert response.status_code == 200
@@ -109,7 +109,7 @@ class TestBrandProfileViewSet:
     def test_filter_by_project(self, api_client, project_admin, project, project_brand):
         """Test filtering brands by project."""
         api_client.force_authenticate(project_admin)
-        response = api_client.get(f"/api/branding/profiles/?project={project.id}")
+        response = api_client.get(f"/api/v1/branding/profiles/?project={project.id}")
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -130,7 +130,7 @@ class TestBrandProfileViewSet:
         api_client.force_authenticate(org_admin)
 
         # Filter active only
-        response = api_client.get("/api/branding/profiles/?is_active=true")
+        response = api_client.get("/api/v1/branding/profiles/?is_active=true")
         assert response.status_code == 200
         data = extract_data(response)
         for brand in data["results"]:
@@ -145,7 +145,7 @@ class TestBrandProfileViewSet:
             BrandProfile.objects.create(organisation=org, name=f"Brand {i}")
 
         api_client.force_authenticate(org_admin)
-        response = api_client.get("/api/branding/profiles/")
+        response = api_client.get("/api/v1/branding/profiles/")
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -162,7 +162,7 @@ class TestDesignTokenViewSet:
     def test_list_tokens_for_profile(self, api_client, org_admin, org_brand, org_tokens):
         """Test listing tokens for specific profile."""
         api_client.force_authenticate(org_admin)
-        response = api_client.get(f"/api/branding/profiles/{org_brand.id}/tokens/")
+        response = api_client.get(f"/api/v1/branding/profiles/{org_brand.id}/tokens/")
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -180,7 +180,7 @@ class TestDesignTokenViewSet:
             "type": "other",
         }
 
-        response = api_client.post(f"/api/branding/profiles/{org_brand.id}/tokens/", payload)
+        response = api_client.post(f"/api/v1/branding/profiles/{org_brand.id}/tokens/", payload)
 
         assert response.status_code == 201
         data = extract_data(response)
@@ -193,7 +193,7 @@ class TestDesignTokenViewSet:
 
         payload = {"value": "#000000"}
         response = api_client.patch(
-            f"/api/branding/profiles/{org_brand.id}/tokens/{token.id}/", payload
+            f"/api/v1/branding/profiles/{org_brand.id}/tokens/{token.id}/", payload
         )
 
         assert response.status_code == 200
@@ -205,7 +205,7 @@ class TestDesignTokenViewSet:
         token = org_tokens[0]
         api_client.force_authenticate(org_admin)
 
-        response = api_client.delete(f"/api/branding/profiles/{org_brand.id}/tokens/{token.id}/")
+        response = api_client.delete(f"/api/v1/branding/profiles/{org_brand.id}/tokens/{token.id}/")
 
         assert response.status_code == 204
         assert not DesignToken.objects.filter(id=token.id).exists()
@@ -213,7 +213,7 @@ class TestDesignTokenViewSet:
     def test_filter_tokens_by_type(self, api_client, org_admin, org_brand, org_tokens):
         """Test filtering tokens by type."""
         api_client.force_authenticate(org_admin)
-        response = api_client.get(f"/api/branding/profiles/{org_brand.id}/tokens/?type=color")
+        response = api_client.get(f"/api/v1/branding/profiles/{org_brand.id}/tokens/?type=color")
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -223,7 +223,7 @@ class TestDesignTokenViewSet:
     def test_search_tokens_by_key(self, api_client, org_admin, org_brand, org_tokens):
         """Test searching tokens by key."""
         api_client.force_authenticate(org_admin)
-        response = api_client.get(f"/api/branding/profiles/{org_brand.id}/tokens/?key=color")
+        response = api_client.get(f"/api/v1/branding/profiles/{org_brand.id}/tokens/?key=color")
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -241,7 +241,7 @@ class TestBrandAssetViewSet:
         asset2 = brand_asset_factory(profile=org_brand, asset_type="favicon")
 
         api_client.force_authenticate(org_admin)
-        response = api_client.get(f"/api/branding/profiles/{org_brand.id}/assets/")
+        response = api_client.get(f"/api/v1/branding/profiles/{org_brand.id}/assets/")
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -260,7 +260,7 @@ class TestBrandAssetViewSet:
             "alt_text": "Test Favicon",
         }
 
-        response = api_client.post(f"/api/branding/profiles/{org_brand.id}/assets/", payload)
+        response = api_client.post(f"/api/v1/branding/profiles/{org_brand.id}/assets/", payload)
 
         assert response.status_code == 201
         data = extract_data(response)
@@ -273,7 +273,7 @@ class TestBrandAssetViewSet:
 
         payload = {"alt_text": "Updated Alt Text"}
         response = api_client.patch(
-            f"/api/branding/profiles/{org_brand.id}/assets/{asset.id}/", payload
+            f"/api/v1/branding/profiles/{org_brand.id}/assets/{asset.id}/", payload
         )
 
         assert response.status_code == 200
@@ -285,7 +285,7 @@ class TestBrandAssetViewSet:
         asset = brand_asset_factory(profile=org_brand, asset_type="favicon")
         api_client.force_authenticate(org_admin)
 
-        response = api_client.delete(f"/api/branding/profiles/{org_brand.id}/assets/{asset.id}/")
+        response = api_client.delete(f"/api/v1/branding/profiles/{org_brand.id}/assets/{asset.id}/")
 
         assert response.status_code == 204
         assert not BrandAsset.objects.filter(id=asset.id).exists()
@@ -297,7 +297,7 @@ class TestBrandAssetViewSet:
 
         api_client.force_authenticate(org_admin)
         response = api_client.get(
-            f"/api/branding/profiles/{org_brand.id}/assets/?asset_type=logo_light"
+            f"/api/v1/branding/profiles/{org_brand.id}/assets/?asset_type=logo_light"
         )
 
         assert response.status_code == 200
@@ -322,7 +322,7 @@ class TestTokenResolutionView:
     ):
         """Test project overrides org token, inherits others."""
         api_client.force_authenticate(org_admin)
-        response = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
+        response = api_client.get(f"/api/v1/branding/tokens/resolve/?project={project.id}")
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -338,7 +338,7 @@ class TestTokenResolutionView:
     ):
         """Test project without own brand inherits all from org."""
         api_client.force_authenticate(org_admin)
-        response = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
+        response = api_client.get(f"/api/v1/branding/tokens/resolve/?project={project.id}")
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -350,7 +350,7 @@ class TestTokenResolutionView:
     def test_resolve_no_brands(self, api_client, org_admin, project):
         """Test project with no brands returns empty."""
         api_client.force_authenticate(org_admin)
-        response = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
+        response = api_client.get(f"/api/v1/branding/tokens/resolve/?project={project.id}")
 
         assert response.status_code == 200
         data = extract_data(response)
@@ -365,7 +365,7 @@ class TestTokenResolutionView:
 
         api_client.force_authenticate(org_admin)
         response = api_client.get(
-            f"/api/branding/tokens/resolve/?project={project.id}&include_assets=true"
+            f"/api/v1/branding/tokens/resolve/?project={project.id}&include_assets=true"
         )
 
         assert response.status_code == 200
@@ -376,7 +376,7 @@ class TestTokenResolutionView:
     def test_resolve_without_project_param(self, api_client, org_admin):
         """Test error when project param missing."""
         api_client.force_authenticate(org_admin)
-        response = api_client.get("/api/branding/tokens/resolve/")
+        response = api_client.get("/api/v1/branding/tokens/resolve/")
 
         assert response.status_code == 400
         data = extract_data(response)
@@ -393,7 +393,7 @@ class TestTokenResolutionView:
         )
 
         api_client.force_authenticate(org_admin)
-        response = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
+        response = api_client.get(f"/api/v1/branding/tokens/resolve/?project={project.id}")
 
         assert response.status_code == 200
         data = extract_data(response)
