@@ -5,6 +5,8 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { Alert, Badge, Button, Card } from '@django-core/design-system';
+import { Table } from '../../shims/design-system';
 import {
   fetchFlagsForScope,
   createScopeOverride,
@@ -114,111 +116,120 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">{title}</h3>
-        <div className="animate-pulse space-y-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-12 bg-gray-700 rounded" />
-          ))}
+      <Card>
+        <div className="p-8 text-center">
+          <div className="animate-spin inline-block w-8 h-8 border-4 border-gray-600 border-t-blue-600 rounded-full"></div>
+          <p className="text-gray-400 mt-4">Loading feature flags...</p>
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
-        <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
-          {scopeType === 'ORGANISATION' ? 'ORG' : 'PROJECT'}
-        </span>
-      </div>
-
-      <p className="text-sm text-gray-400 mb-4">
-        Manage feature flags for <strong className="text-white">{scopeName}</strong>.
-        {scopeType === 'PROJECT' && ' These override organisation settings.'}
-      </p>
+    <Card>
+      <Alert variant="info" className="mb-4">
+        <strong>{scopeType === 'ORGANISATION' ? 'Organisation' : 'Project/Club'} Feature Flags:</strong>
+        <ul className="mt-2 ml-4 list-disc space-y-1">
+          <li><strong>Global Setting</strong>: The baseline value from global app settings.</li>
+          <li><strong>{scopeType === 'ORGANISATION' ? 'Organisation' : 'Project'} Setting</strong>: Your {scopeType === 'ORGANISATION' ? 'organisation' : 'club'} override (if configured).</li>
+          <li><strong>Effective Value</strong>: The actual active setting for {scopeName}.</li>
+          <li className="text-amber-700 dark:text-amber-400">
+            ⚠️ If a global flag is <strong>disabled</strong>, it overrides all {scopeType === 'ORGANISATION' ? 'organisation' : 'project'} settings.
+          </li>
+        </ul>
+      </Alert>
 
       {error && (
-        <div className="bg-red-900/50 border border-red-700 text-red-200 px-4 py-2 rounded mb-4">
+        <Alert variant="error" className="mb-4">
           {error}
-        </div>
+        </Alert>
       )}
 
       {mergedFlags.length === 0 ? (
-        <p className="text-gray-500 text-sm">No feature flags available.</p>
+        <div className="p-8 text-center text-gray-500">
+          No feature flags available.
+        </div>
       ) : (
-        <div className="space-y-3">
-          {mergedFlags.map(flag => {
-            const effectiveEnabled = flag.hasOverride ? flag.scopeEnabled : flag.globalEnabled;
+        <Table
+          columns={[
+            { key: 'name', label: 'Feature Flag' },
+            { key: 'global_setting', label: 'Global Setting' },
+            { key: 'scope_setting', label: `${scopeType === 'ORGANISATION' ? 'Org' : 'Project'} Setting` },
+            { key: 'effective_value', label: 'Effective Value' },
+            { key: 'actions', label: 'Actions' },
+          ]}
+          rows={mergedFlags.map(flag => {
+            const globalValue = flag.globalEnabled;
+            const scopeValue = flag.scopeEnabled;
+            const effectiveValue = flag.hasOverride ? scopeValue : globalValue;
+            const isGlobalDisabled = globalValue === false;
             const isUpdating = updating === flag.key;
 
-            return (
-              <div
-                key={flag.key}
-                className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-white font-medium capitalize">
-                      {flag.key.replace(/_/g, ' ')}
-                    </span>
-                    {flag.hasOverride && (
-                      <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded">
-                        Override
-                      </span>
-                    )}
+            // Determine if toggle should be disabled
+            let isDisabled = false;
+            let disabledReason = '';
+
+            // Cannot enable if global is disabled
+            if (isGlobalDisabled && !effectiveValue) {
+              isDisabled = true;
+              disabledReason = `Cannot enable: Global setting is disabled. ${scopeType === 'ORGANISATION' ? 'Org' : 'Project'} must be more restrictive.`;
+            }
+
+            return {
+              id: flag.key,
+              name: (
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100">
+                    {flag.key.replace(/_/g, ' ')}
                   </div>
-                  <p className="text-sm text-gray-400 mt-0.5">{flag.description}</p>
-                  <div className="flex gap-3 mt-1 text-xs">
-                    <span className={`${flag.globalEnabled ? 'text-green-400' : 'text-gray-500'}`}>
-                      Global: {flag.globalEnabled ? 'On' : 'Off'}
-                    </span>
-                    {flag.hasOverride && (
-                      <span className={`${flag.scopeEnabled ? 'text-green-400' : 'text-gray-500'}`}>
-                        {scopeType === 'ORGANISATION' ? 'Org' : 'Project'}: {flag.scopeEnabled ? 'On' : 'Off'}
-                      </span>
-                    )}
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{flag.description}</div>
+                </div>
+              ),
+              global_setting: (
+                <Badge variant={globalValue ? 'success' : 'default'}>
+                  {globalValue ? 'Enabled' : 'Disabled'}
+                </Badge>
+              ),
+              scope_setting: flag.hasOverride ? (
+                <Badge variant={scopeValue ? 'success' : 'default'}>
+                  {scopeValue ? 'Enabled' : 'Disabled'}
+                </Badge>
+              ) : (
+                <span className="text-gray-500 dark:text-gray-400 text-sm italic">
+                  Inherited from global
+                </span>
+              ),
+              effective_value: isGlobalDisabled && scopeValue === true ? (
+                <div>
+                  <Badge variant="default">Disabled</Badge>
+                  <div className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                    <span>⚠️</span>
+                    <span>Overridden by global</span>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  {/* Effective status badge */}
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    effectiveEnabled
-                      ? 'bg-green-600/20 text-green-400'
-                      : 'bg-gray-600/20 text-gray-400'
-                  }`}>
-                    {effectiveEnabled ? 'Enabled' : 'Disabled'}
-                  </span>
-
-                  {/* Toggle button */}
-                  <button
-                    onClick={() => handleToggle(flag.key, effectiveEnabled ?? false, flag.scopeFlagId)}
-                    disabled={isUpdating}
-                    className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                      isUpdating
-                        ? 'bg-gray-600 text-gray-400 cursor-wait'
-                        : effectiveEnabled
-                        ? 'bg-gray-600 hover:bg-gray-500 text-white'
-                        : 'bg-blue-600 hover:bg-blue-500 text-white'
-                    }`}
+              ) : (
+                <Badge variant={effectiveValue ? 'success' : 'default'}>
+                  {effectiveValue ? 'Enabled' : 'Disabled'}
+                </Badge>
+              ),
+              actions: (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Button
+                    size="sm"
+                    variant={effectiveValue ? 'outline' : 'primary'}
+                    disabled={isDisabled || isUpdating}
+                    title={isDisabled ? disabledReason : undefined}
+                    onClick={() => handleToggle(flag.key, effectiveValue ?? false, flag.scopeFlagId)}
                   >
-                    {isUpdating ? '...' : effectiveEnabled ? 'Disable' : 'Enable'}
-                  </button>
+                    {isUpdating ? '...' : effectiveValue ? 'Disable' : 'Enable'}
+                  </Button>
                 </div>
-              </div>
-            );
+              ),
+            };
           })}
-        </div>
+        />
       )}
-
-      <p className="text-xs text-gray-500 mt-4">
-        💡 Tip: {scopeType === 'ORGANISATION'
-          ? 'Organisation settings apply to all clubs unless overridden at project level.'
-          : 'Project settings override both global and organisation settings.'}
-      </p>
-    </div>
+    </Card>
   );
 };
 
