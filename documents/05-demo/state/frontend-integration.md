@@ -134,6 +134,43 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 
 ---
 
+## Search Module
+
+### B20 Global Search ✅
+- **Backend**: PostgreSQL full-text search with SearchEntry model
+- **Frontend**:
+  - ✅ SearchPage component (`/search?q=...`)
+  - ✅ useSearch hook (`searchGlobal`, `searchFiltered`)
+  - ✅ Grouped results by category (clubs, teams, seasons, competitions, matches, users)
+  - ✅ Category filtering (`?types=clubs,teams`)
+  - ✅ Pagination for filtered results
+  - ✅ Result highlighting
+  - ✅ Category icons and labels
+- **API Endpoints**:
+  - `GET /api/v1/search/?q=query` - Global grouped search
+  - `GET /api/v1/search/?q=query&types=clubs` - Filtered paginated search
+- **Status**: ✅ Volledig
+
+### B20.1 Hierarchical Search ✅ (NEW)
+- **Backend**: Hierarchy resolvers for entity-centric navigation
+  - `HierarchyNode` dataclass (id, type, title, url, children)
+  - `BaseHierarchyResolver` abstract class
+  - Per-entity resolvers registered in `search.hierarchy.registry`
+  - Fail-safe error handling (hierarchy failures don't crash search)
+  - Configurable limits: `SEARCH_HIERARCHY_MAX_DEPTH=3`, `SEARCH_HIERARCHY_MAX_NODES=100`, `SEARCH_HIERARCHY_PER_LEVEL_LIMIT=5`
+- **Frontend**:
+  - ❌ Hierarchy tree not yet implemented in SearchPage
+  - ❌ No anchor-based navigation UI
+- **API Parameters**:
+  - `?hierarchy=true` - Include hierarchy tree in response
+  - Response includes `anchor` (selected entity) and `tree` (children hierarchy)
+- **TODO**:
+  - [ ] Add hierarchy toggle button to SearchPage
+  - [ ] HierarchyTreeView component (collapsible tree)
+  - [ ] Anchor entity highlight in results
+
+---
+
 ## Configuration Modules
 
 ### B32 Sport Configuration ✅
@@ -259,6 +296,9 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 
 | Endpoint | Hook/Component | Status |
 |----------|----------------|--------|
+| `/api/v1/search/?q=...` | useSearch (searchGlobal) | ✅ |
+| `/api/v1/search/?q=...&types=...` | useSearch (searchFiltered) | ✅ |
+| `/api/v1/search/?hierarchy=true` | - | ❌ Not in frontend |
 | `/api/v1/settings/feature-flags/` | FeatureFlagsPage | ✅ |
 | `/api/v1/settings/feature-flags/resolve-all/` | ContentAvailabilityCard, MatchDetailPage | ✅ |
 | `/api/v1/content-generation/templates/` | ContentTemplatesPage | ✅ |
