@@ -74,7 +74,7 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 
 ## Content & Media Modules
 
-### B31 Content Templates 🟡
+### B31 Content Templates ✅
 - **Backend**: 320 templates seeded
   - member: 196 (profile_photo, legacy_photo, closeup, intro, in_tenue, lineup, flyer)
   - during_match: 73 (goal, score_update, end_score, substitution, yellow_card, red_card, injury, highlights)
@@ -83,23 +83,25 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - season: 3 (season_recap, transformation)
 - **Frontend**:
   - ✅ ContentTemplatesPage (list/CRUD UI)
+  - ✅ Subtype filter dropdown (cascading with type)
+  - ✅ Category tabs (All, Pre-Match, During Match, Post-Match, Member, Season)
+  - ✅ SUBTYPE_LABELS mapping for display
   - ✅ ContentGenerationModal (template selection)
-  - ❌ Geen UI voor nieuwe member subtypes (profile_photo, legacy_photo, closeup)
-  - ❌ Geen filter op template_subtype in UI
-- **TODO**:
-  - [ ] Filter dropdown voor subtypes toevoegen in ContentTemplatesPage
-  - [ ] ContentGenerationModal updaten met member template categorieën
+  - ✅ Template grouping by subtype
+- **Status**: ✅ Volledig
 
-### B22 MediaLib 🟡
+### B22 MediaLib ✅
 - **Backend**: 78 MediaTags seeded, 0 MediaItems
 - **Frontend**:
-  - ✅ MediaLibraryPage (basic list/filter UI)
+  - ✅ MediaLibraryPage (Smart Asset Library UI)
   - ✅ useMediaLibrary hook
-  - ❌ Tag filter dropdown nog niet gevuld met system tags
-  - ❌ Geen tag management UI
+  - ✅ Tag filter with category dropdown (useMasterData)
+  - ✅ Tag selection with toggle buttons
+  - ✅ Status filter (raw, edited, approved, published)
+  - ✅ Search with pagination
 - **TODO**:
-  - [ ] Fetch system tags via API en toon in filter
-  - [ ] Tag selector component voor MediaItems
+  - [ ] Upload nieuwe MediaItems (presigned URL flow)
+  - [ ] Tag management UI (CRUD voor project-specifieke tags)
 
 ### B33 Branding 🟡
 - **Backend**: 102 BrandProfiles, 612 DesignTokens
@@ -188,18 +190,16 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 ## Priority TODO List (Frontend)
 
 ### High Priority
-1. **MediaTags in filter** - Fetch `/api/v1/media/tags/?is_system=true` en toon in dropdown
-2. **ContentTemplate subtype filter** - Dropdown in ContentTemplatesPage
-3. **Member template categories** - UI voor profile_photo, legacy_photo, closeup
+1. **BrandProfile viewer** - Read-only weergave van project branding met tokens
+2. **File upload flow** - Direct upload naar S3 via presigned URL
 
 ### Medium Priority
-4. **BrandProfile viewer** - Read-only weergave van project branding
-5. **DesignToken display** - Token values met inheritance
-6. **File upload flow** - Direct upload naar S3 via presigned URL
+3. **DesignToken display** - Token values met inheritance (org → project → season)
+4. **MediaItem upload** - File upload integratie met MediaLibrary
 
 ### Low Priority
-7. **Task status widget** - Celery queue monitoring
-8. **Generation UI** - B34 pipeline triggers (wacht op backend)
+5. **Task status widget** - Celery queue monitoring
+6. **Generation UI** - B34 pipeline triggers (wacht op backend)
 
 ---
 
@@ -234,7 +234,7 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 | `/api/v1/settings/feature-flags/resolve-all/` | ContentAvailabilityCard, MatchDetailPage | ✅ |
 | `/api/v1/content-generation/templates/` | ContentTemplatesPage | ✅ |
 | `/api/v1/media/items/` | useMediaLibrary | ✅ |
-| `/api/v1/media/tags/` | - | ❌ Niet aangeroepen |
+| `/api/v1/media/tags/` | useMasterData (mediaTagsByCategory) | ✅ |
 | `/api/v1/branding/profiles/` | - | ❌ Niet aangeroepen |
 | `/api/v1/branding/tokens/` | - | ❌ Niet aangeroepen |
 | `/api/v1/sport-configuration/sports/` | useSports | ✅ |
