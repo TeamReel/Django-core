@@ -67,7 +67,7 @@ export const FeatureFlagsPage: React.FC = () => {
   const currentOrgName = context.organisation?.name || '';
 
   // Use useAuth for superadmin check (most reliable source)
-  const isSuperadmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
+  const isSuperadmin = Boolean((user as any)?.is_superuser) || String((user as any)?.role || '').toLowerCase() === 'superadmin';
 
   // Debug log the full user object to understand structure
   useEffect(() => {
