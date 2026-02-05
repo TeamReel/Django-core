@@ -320,19 +320,72 @@ export default function BrandProfileCard({
               <Text weight="bold" size="sm">Brand Assets</Text>
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
               {profile.assets.map((asset) => (
                 <div
                   key={asset.id}
                   style={{
-                    padding: '8px 12px',
+                    padding: '12px',
                     backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.03))',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     border: '1px solid var(--app-border)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
                   }}
                 >
-                  <Text size="sm" weight="medium">{asset.name}</Text>
-                  <Text size="xs" color="secondary">{asset.asset_type}</Text>
+                  {/* Asset Preview */}
+                  {asset.file_url && (
+                    <div
+                      style={{
+                        width: '100%',
+                        aspectRatio: '1',
+                        backgroundColor: 'var(--app-surface)',
+                        borderRadius: '6px',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid var(--app-border)',
+                      }}
+                    >
+                      <img
+                        src={asset.file_url}
+                        alt={asset.name}
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: '100%',
+                          objectFit: 'contain',
+                        }}
+                        onError={(e) => {
+                          // Hide broken images
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  {!asset.file_url && (
+                    <div
+                      style={{
+                        width: '100%',
+                        aspectRatio: '1',
+                        backgroundColor: 'var(--app-surface)',
+                        borderRadius: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid var(--app-border)',
+                      }}
+                    >
+                      <Image size={24} style={{ opacity: 0.3 }} />
+                    </div>
+                  )}
+                  <div>
+                    <Text size="sm" weight="medium">{asset.name}</Text>
+                    <Text size="xs" color="secondary" style={{ textTransform: 'capitalize' }}>
+                      {asset.asset_type.replace(/_/g, ' ')}
+                    </Text>
+                  </div>
                 </div>
               ))}
             </div>
