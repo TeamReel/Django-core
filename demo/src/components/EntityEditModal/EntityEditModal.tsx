@@ -20,6 +20,24 @@ import {
 } from 'lucide-react';
 
 // ============================================================================
+// Utilities
+// ============================================================================
+
+function getCsrfToken(): string {
+  try {
+    return (
+      document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('csrftoken='))
+        ?.split('=')[1] ||
+      ''
+    );
+  } catch {
+    return '';
+  }
+}
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -596,7 +614,10 @@ export default function EntityEditModal({
 
         const res = await fetch(endpoint, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+          },
           credentials: 'include',
           body: JSON.stringify({
             name: entityData.name,
@@ -618,7 +639,11 @@ export default function EntityEditModal({
         for (const tokenId of deletedTokenIds) {
           await fetch(
             `${apiBaseUrl}/api/v1/branding/profiles/${brandProfile.id}/tokens/${tokenId}/`,
-            { method: 'DELETE', credentials: 'include' }
+            {
+              method: 'DELETE',
+              headers: { 'X-CSRFToken': getCsrfToken() },
+              credentials: 'include',
+            }
           );
         }
 
@@ -630,7 +655,10 @@ export default function EntityEditModal({
               `${apiBaseUrl}/api/v1/branding/profiles/${brandProfile.id}/tokens/${token.id}/`,
               {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': getCsrfToken(),
+                },
                 credentials: 'include',
                 body: JSON.stringify({
                   key: token.key,
@@ -649,7 +677,10 @@ export default function EntityEditModal({
               `${apiBaseUrl}/api/v1/branding/profiles/${brandProfile.id}/tokens/`,
               {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': getCsrfToken(),
+                },
                 credentials: 'include',
                 body: JSON.stringify({
                   profile: brandProfile.id,
