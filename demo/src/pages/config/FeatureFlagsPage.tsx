@@ -96,22 +96,31 @@ export const FeatureFlagsPage: React.FC = () => {
   useEffect(() => {
     if (context.isLoading) return;
 
-    if (!isSuperadmin) {
-      // Redirect to org settings if they have an org
-      if (currentOrgId) {
-        const orgSlug = organisations.find(o => String(o.id) === currentOrgId)?.slug || currentOrgId;
-        navigate(`/organisations/${orgSlug}?tab=settings`);
-      } else {
-        // No org selected - show message
-        setApiError('Feature flags management requires superadmin access. Please contact your administrator.');
-        setLoading(false);
-      }
+    console.log('[FeatureFlagsPage] Redirect check:', {
+      isSuperadmin,
+      currentOrgId,
+      userRole: (user as any)?.role,
+      isSuper: (user as any)?.is_superuser
+    });
+
+    // Superadmins: allow access to global flags page
+    if (isSuperadmin) {
+      setInitialLoadDone(true);
+      setLoading(false);
       return;
     }
 
-    setInitialLoadDone(true);
-    setLoading(false);
-  }, [context.isLoading, currentOrgId, isSuperadmin, organisations, navigate]);
+    // Non-superadmins: redirect to org settings
+    if (currentOrgId) {
+      const orgSlug = organisations.find(o => String(o.id) === currentOrgId)?.slug || currentOrgId;
+      console.log('[FeatureFlagsPage] Redirecting non-superadmin to org settings:', orgSlug);
+      navigate(`/organisations/${orgSlug}?tab=settings`);
+    } else {
+      // No org selected - show access denied message
+      setApiError('Feature flags management requires superadmin access. Please contact your administrator.');
+      setLoading(false);
+    }
+  }, [context.isLoading, currentOrgId, isSuperadmin, organisations, navigate, user]);
 
   // Reload flags when context changes (GLOBAL-only, no org context)
   useEffect(() => {
