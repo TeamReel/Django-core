@@ -1027,7 +1027,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             transition: 'width 0.2s ease-in-out',
             flexShrink: 0,
             borderRight: '1px solid var(--sidebar-a-border)',
-            position: 'relative'
+            position: 'relative',
+            paddingTop: 57, // Account for fixed TopNavbar height
         }}
       >
         {/* Collapse/Expand Toggle - compact header */}
@@ -1220,7 +1221,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 display: 'flex',
                 flexDirection: 'column',
                 flexShrink: 0,
-                zIndex: 10
+                zIndex: 10,
+                paddingTop: 57, // Account for fixed TopNavbar height
             }}
         >
             {/* Header - compact */}
