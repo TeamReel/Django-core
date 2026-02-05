@@ -112,12 +112,38 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
     location.pathname.startsWith('/platform')
   );
 
-  const showBreadcrumbs = !(
+  // Routes that should NOT show organisation breadcrumbs (non-APP routes)
+  const isNonAppRoute = (
+    location.pathname === '/' ||
+    location.pathname === '/dashboard' ||
+    location.pathname.startsWith('/dashboard/') ||
+    location.pathname === '/directory' ||
+    location.pathname.startsWith('/directory/') ||
+    location.pathname === '/apps' ||
+    location.pathname === '/content' ||
+    location.pathname === '/settings' ||
+    location.pathname === '/medialib' ||
+    location.pathname.startsWith('/medialib/') ||
+    location.pathname === '/studio' ||
+    location.pathname.startsWith('/studio/') ||
+    location.pathname === '/content-templates' ||
+    location.pathname.startsWith('/content-templates/') ||
+    location.pathname === '/preferences' ||
+    location.pathname.startsWith('/preferences/') ||
+    location.pathname === '/permissions' ||
+    location.pathname.startsWith('/permissions/') ||
+    location.pathname === '/docs' ||
+    location.pathname.startsWith('/docs/') ||
+    location.pathname === '/recents' ||
+    location.pathname === '/favorites' ||
     location.pathname.startsWith('/notifications') ||
     location.pathname.startsWith('/login') ||
     location.pathname.startsWith('/register') ||
     isPlatformRoute
   );
+
+  // Show breadcrumbs only on APP routes (org/club/team/season/competition/match)
+  const showBreadcrumbs = !isNonAppRoute;
 
 
   const orgIdForMyBalance = String((context as any)?.organisation?.id || '').trim();

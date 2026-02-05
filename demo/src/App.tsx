@@ -59,6 +59,11 @@ import {
 import UsageEventsPage from './pages/config/UsageEventsPage';
 import ContentTemplatesPage from './pages/config/ContentTemplatesPage';
 
+// Section Landing Pages
+import AppsPage from './pages/AppsPage';
+import ContentPage from './pages/ContentPage';
+import SettingsLandingPage from './pages/SettingsLandingPage';
+
 // Platform pages
 import {
   HealthCheckPage,
@@ -434,6 +439,34 @@ export default function App() {
         element={
           <ProtectedRoute>
             <DirectoryPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Section Landing Pages */}
+      <Route
+        path="/apps"
+        element={
+          <ProtectedRoute>
+            <AppsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/content"
+        element={
+          <ProtectedRoute>
+            <ContentPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsLandingPage />
           </ProtectedRoute>
         }
       />

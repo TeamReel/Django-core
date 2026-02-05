@@ -1122,10 +1122,19 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
                 return (
                <div key={section.id} style={{ marginBottom: section.bottom ? 0 : 16 }}>
-                    {/* Section Label (Only if open) */}
+                    {/* Section Label (Only if open) - clickable to landing page */}
                     {isOpen && section.title && (
-                        <div
+                        <Link
+                          to={
+                            section.id === 'overview' ? '/dashboard' :
+                            section.id === 'app' ? '/apps' :
+                            section.id === 'content' ? '/content' :
+                            section.id === 'settings' ? '/settings' :
+                            section.id === 'help' ? '/docs' :
+                            '/dashboard'
+                          }
                           style={{
+                            display: 'block',
                             padding: '0 12px',
                             marginBottom: 6,
                             fontSize: 10,
@@ -1133,10 +1142,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                             textTransform: 'uppercase',
                             opacity: sectionIsActive ? 1 : 0.5,
                             color: sectionIsActive ? 'var(--sidebar-a-active-text)' : 'var(--sidebar-a-text)',
+                            textDecoration: 'none',
+                            cursor: 'pointer',
                           }}
                         >
                             {section.title}
-                        </div>
+                        </Link>
                     )}
 
                     {section.items.map((item, index) => (
