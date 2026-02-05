@@ -27,6 +27,38 @@ interface ContentAvailabilityCardProps {
   scopeName: string;
 }
 
+// Display name mappings for better readability
+const TYPE_LABELS: Record<string, string> = {
+  during_match: 'During Match',
+  pre_match: 'Pre Match',
+  post_match: 'Post Match',
+  member: 'Member',
+  season: 'Season',
+};
+
+const SUBTYPE_LABELS: Record<string, string> = {
+  goal: 'Goal Celebration',
+  end_score: 'Final Score',
+  score_update: 'Score Update',
+  lineup: 'Lineup',
+  preview: 'Match Preview',
+  recap: 'Match Recap',
+  highlights: 'Highlights',
+  stats: 'Statistics',
+  profile: 'Profile',
+  welcome: 'Welcome',
+  birthday: 'Birthday',
+  achievement: 'Achievement',
+  announcement: 'Announcement',
+  summary: 'Summary',
+  review: 'Review',
+};
+
+const getDisplayLabel = (value: string, labelMap: Record<string, string>): string => {
+  const key = String(value || '').toLowerCase().replace(/\s+/g, '_');
+  return labelMap[key] || titleCase(value);
+};
+
 const titleCase = (value: string): string =>
   String(value || '')
     .replace(/[_-]+/g, ' ')
@@ -136,8 +168,8 @@ export default function ContentAvailabilityCard({
       rowList.push({
         id: flag.key,
         key: flag.key,
-        type: titleCase(parsed.type),
-        subtype: parsed.subtype ? titleCase(parsed.subtype) : '—',
+        type: getDisplayLabel(parsed.type, TYPE_LABELS),
+        subtype: parsed.subtype ? getDisplayLabel(parsed.subtype, SUBTYPE_LABELS) : '—',
         style: parsed.style ? titleCase(parsed.style) : '—',
         globalValue,
         orgValue,
