@@ -82,7 +82,7 @@ export const PreferencesPage: React.FC = () => {
   const location = useLocation();
   const { setTheme, mode, resolvedMode } = useTheme();
   const { user, setUser } = useAuth();
-  const darkModeEnabled = useFeatureFlag('dark_mode', true); // Default enabled
+  const darkModeEnabled = useFeatureFlag('dark_themeOverride', true); // Default enabled
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [initialPreferences, setInitialPreferences] = useState<UserPreferences | null>(null);
   const [effectivePrefs, setEffectivePrefs] = useState<I18nEffectivePreferences | null>(null);

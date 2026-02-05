@@ -80,7 +80,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   const debugLog = (...args: unknown[]) => {
     if (import.meta.env.DEV) console.log(...args);
   };
-  const themeToggleEnabled = useFeatureFlag('dark_mode', true); // Theme toggle feature flag (resolved with org overrides)
+  const themeToggleEnabled = useFeatureFlag('dark_themeOverride', true); // Theme toggle feature flag (resolved with org overrides)
   const [themeToggleGlobalEnabled, setThemeToggleGlobalEnabled] = useState<boolean>(true); // Global flag value (for superadmins)
   const { isSystemAdmin, isLandAdmin, isOrgAdmin, hasOrgRole } = useUserRole();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -255,7 +255,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
         if (response.ok) {
           const data = await response.json();
           const flags = data.data?.results || data.results || data.data || data || [];
-          const themeFlag = flags.find((f: any) => f.key === 'dark_mode');
+          const themeFlag = flags.find((f: any) => f.key === 'dark_themeOverride');
 
           if (themeFlag) {
             // For superadmins, ONLY use global_value (ignore resolved/org overrides)

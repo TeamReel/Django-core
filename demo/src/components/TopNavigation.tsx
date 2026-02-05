@@ -29,7 +29,7 @@ export default function TopNavigation() {
   const { isSystemAdmin } = useUserRole();
 
   // Check if theme toggle feature is enabled (from feature flags system)
-  const themeToggleEnabled = useFeatureFlag('dark_mode', true); // Resolved with org overrides
+  const themeToggleEnabled = useFeatureFlag('dark_themeOverride', true); // Resolved with org overrides
   const [themeToggleGlobalEnabled, setThemeToggleGlobalEnabled] = useState<boolean>(true); // Global value for superadmins
 
   // For superadmins: Fetch the global flag value (not resolved with org overrides)
@@ -50,7 +50,7 @@ export default function TopNavigation() {
         if (response.ok) {
           const data = await response.json();
           const flags = data.data?.results || data.results || data.data || data || [];
-          const themeFlag = flags.find((f: any) => f.key === 'dark_mode');
+          const themeFlag = flags.find((f: any) => f.key === 'dark_themeOverride');
 
           if (themeFlag) {
             const globalValue = themeFlag.global_value !== null && themeFlag.global_value !== undefined
