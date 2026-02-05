@@ -1,6 +1,6 @@
 # Frontend Integration Status
 
-> Last updated: 2026-02-05 (Feature Flags integration complete)
+> Last updated: 2026-02-05 (Panel A collapse/expand + section landing pages)
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.
 
@@ -204,6 +204,17 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 ---
 
 ## Recent Completions
+
+### 2026-02-05: Panel A Collapse/Expand + Section Landing Pages
+- ✅ Collapse button in OVERVIEW section header (was in top-left logo area)
+- ✅ Expand button visible when Panel A collapsed (absolute positioned on border)
+- ✅ Clickable section titles (OVERVIEW → /dashboard, APP → /apps, CONTENT → /content, SETTINGS → /settings)
+- ✅ Section landing pages with TileGrid navigation:
+  - `/apps` - Apps landing page (Federation, Clubs, Seasons, Competitions, Matches)
+  - `/content` - Content landing page (Media Library, AI Studio, Video Projects, Image Projects)
+  - `/settings` - Settings landing page (Preferences, Templates, Organisation, Platform/Features)
+- ✅ Panel B hidden on non-APP routes (/apps, /content, /settings, /medialib, /studio)
+- ✅ AppsPage links synced with Panel A context (useAppSelection hook)
 
 ### 2026-02-05: Feature Flags / Content Availability
 - ✅ Created `ContentAvailabilityCard` component for org/project scope management
