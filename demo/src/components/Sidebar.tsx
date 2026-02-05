@@ -1241,19 +1241,20 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
               className="sidebar-expand-button"
               style={{
                   position: 'absolute',
-                  top: 8,
-                  right: 8,
+                  top: 65,
+                  right: -14,
                   width: 32,
                   height: 32,
                   borderRadius: '6px',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  border: 'none',
+                  border: '1px solid var(--sidebar-a-border)',
                   cursor: 'pointer',
                   color: 'var(--sidebar-a-text)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   transition: 'all 0.15s ease',
+                  zIndex: 25,
               }}
               onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
