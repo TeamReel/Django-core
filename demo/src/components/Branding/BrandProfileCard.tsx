@@ -33,8 +33,12 @@ interface BrandProfile {
 }
 
 interface BrandProfileCardProps {
-  projectId: string;
+  projectId?: string;
   projectName?: string;
+  organisationId?: string;
+  organisationName?: string;
+  seasonId?: string;
+  seasonName?: string;
 }
 
 const TOKEN_TYPE_ICONS: Record<string, React.ElementType> = {
@@ -58,12 +62,23 @@ const isColorValue = (value: string): boolean => {
 
 const unwrapEnvelope = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
-export default function BrandProfileCard({ projectId, projectName }: BrandProfileCardProps) {
+export default function BrandProfileCard({
+  projectId,
+  projectName,
+  organisationId,
+  organisationName,
+  seasonId,
+  seasonName
+}: BrandProfileCardProps) {
   const [profile, setProfile] = useState<BrandProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const apiBaseUrl = getApiBaseUrl();
+
+  // Determine entity type and display name
+  const entityType = seasonId ? 'season' : projectId ? 'project' : 'organisation';
+  const entityName = seasonName || projectName || organisationName || 'this entity';
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -71,9 +86,21 @@ export default function BrandProfileCard({ projectId, projectName }: BrandProfil
       setError(null);
 
       try {
-        // Fetch brand profile for this project
+        // Build query params based on entity type
+        let queryParam = '';
+        if (projectId) {
+          queryParam = `project=${encodeURIComponent(projectId)}`;
+        } else if (organisationId) {
+          queryParam = `organisation=${encodeURIComponent(organisationId)}`;
+        } else {
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch brand profile for this entity
         const res = await fetch(
-          `${apiBaseUrl}/api/v1/branding/profiles/?project=${encodeURIComponent(projectId)}`,
+          `${apiBaseUrl}/api/v1/branding/profiles/?${queryParam}`,
           { credentials: 'include' }
         );
 
@@ -115,10 +142,12 @@ export default function BrandProfileCard({ projectId, projectName }: BrandProfil
       }
     };
 
-    if (projectId) {
+    if (projectId || organisationId) {
       fetchProfile();
+    } else {
+      setLoading(false);
     }
-  }, [apiBaseUrl, projectId]);
+  }, [apiBaseUrl, projectId, organisationId]);
 
   // Group tokens by type
   const tokensByType = React.useMemo(() => {
@@ -172,10 +201,12 @@ export default function BrandProfileCard({ projectId, projectName }: BrandProfil
             <Text weight="bold" size="md">Brand Identity</Text>
           </div>
           <Text color="secondary">
-            No brand profile configured for {projectName || 'this club'}.
+            No brand profile configured for {entityName}.
           </Text>
           <Text size="sm" color="secondary">
-            Contact your federation administrator to set up branding.
+            {entityType === 'organisation'
+              ? 'Set up a brand profile to define your federation\'s visual identity.'
+              : 'Contact your federation administrator to set up branding.'}
           </Text>
         </Stack>
       </Card>

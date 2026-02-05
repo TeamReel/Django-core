@@ -50,6 +50,7 @@ import { UsersList } from './directory/UsersList';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import MobileTabBar from '../../components/MobileTabBar';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
+import BrandProfileCard from '../../components/Branding/BrandProfileCard';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -1627,6 +1628,7 @@ export const OrganisationDetailPage: React.FC = () => {
           { id: 'competitions', label: 'Competitions' },
           { id: 'matches', label: 'Matches' },
           { id: 'users', label: 'Users' },
+          { id: 'identity', label: 'Identity' },
           { id: 'settings', label: 'Settings' },
         ]}
         activeTab={activeTab}
@@ -2026,6 +2028,13 @@ export const OrganisationDetailPage: React.FC = () => {
 
         {activeTab === 'users' && orgIdForDirectoryLists && (
           <UsersList preselectedOrgId={orgIdForDirectoryLists} />
+        )}
+
+        {activeTab === 'identity' && org && (
+          <BrandProfileCard
+            organisationId={String(org.id)}
+            organisationName={org.name}
+          />
         )}
 
         {activeTab === 'settings' && org && (

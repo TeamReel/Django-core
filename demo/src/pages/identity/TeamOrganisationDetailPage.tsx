@@ -16,6 +16,7 @@ import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySett
 import MobileTabBar from '../../components/MobileTabBar';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
+import BrandProfileCard from '../../components/Branding/BrandProfileCard';
 
 const getCsrfToken = (): string => {
   try {
@@ -807,6 +808,7 @@ export default function TeamOrganisationDetailPage() {
             { id: 'matches', label: 'Matches' },
             { id: 'members', label: 'Squad' },
             { id: 'balance', label: 'Balance' },
+            { id: 'identity', label: 'Identity' },
           ]}
           activeTab={activeTabFromUrl}
         />
@@ -1265,6 +1267,13 @@ export default function TeamOrganisationDetailPage() {
 
           {activeTabFromUrl === 'transactions' && orgIdForDirectoryLists && teamIdForDirectoryLists && (
             <TeamCreditsTab view="transactions" projectId={teamIdForDirectoryLists} projectName={team.name} organisationId={orgIdForDirectoryLists} />
+          )}
+
+          {activeTabFromUrl === 'identity' && team && (
+            <BrandProfileCard
+              projectId={String(team.id)}
+              projectName={team.name}
+            />
           )}
         </PageContent>
       </div>

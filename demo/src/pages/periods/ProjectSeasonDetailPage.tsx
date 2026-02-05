@@ -1,5 +1,6 @@
 ﻿import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
+import BrandProfileCard from '../../components/Branding/BrandProfileCard';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
@@ -1318,6 +1319,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             { id: 'media', label: 'Media' },
             { id: 'content', label: 'Content' },
             { id: 'transactions', label: 'Transactions' },
+            { id: 'identity', label: 'Identity' },
           ]}
           activeTab={activeTab}
         />
@@ -3058,6 +3060,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === 'identity' && season && project && (
+            <BrandProfileCard
+              projectId={String(project.id)}
+              projectName={project.name}
+              seasonId={String(season.id)}
+              seasonName={season.name}
+            />
           )}
         </PageContent>
 

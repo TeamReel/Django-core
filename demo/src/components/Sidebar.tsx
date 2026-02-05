@@ -498,6 +498,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Competitions', path: makeOrgSectionUrl(orgId, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeOrgSectionUrl(orgId, 'matches'), icon: Timer },
                     { label: 'Members', path: makeOrgSectionUrl(orgId, 'users'), icon: Users },
+                    { label: 'Identity', path: makeOrgSectionUrl(orgId, 'identity'), icon: Palette },
                     { label: 'Settings', path: makeOrgSectionUrl(orgId, 'settings'), icon: Settings },
                 ];
                 break;
@@ -520,6 +521,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                         { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
                         { label: 'Members', path: makeTabUrl(baseUrl, 'users'), icon: Users },
+                        { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                         { label: 'Audit', path: makeTabUrl(baseUrl, 'audit'), icon: Scroll },
                         { label: 'Governance', path: makeTabUrl(baseUrl, 'governance'), icon: BookOpen },
                         { label: 'Operations', path: makeTabUrl(baseUrl, 'operations'), icon: Settings },
@@ -568,6 +570,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Members', path: makeTabUrl(baseUrl, 'members'), icon: Users },
                     { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
             }
@@ -613,6 +616,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
                     { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
             }
@@ -1248,7 +1252,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                   height: 32,
                   borderRadius: '6px',
                   backgroundColor: 'transparent',
-                  border: '1px solid var(--sidebar-a-border)',
+                  border: 'none',
                   cursor: 'pointer',
                   color: 'var(--sidebar-a-text)',
                   display: 'flex',
