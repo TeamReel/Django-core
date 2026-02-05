@@ -1,53 +1,53 @@
 """
-Seed BrandAssets for Ajax, PSV, Feyenoord
+Seed Design Tokens for Ajax, PSV, Feyenoord Brand Profiles
+Note: BrandAssets require file_id (NOT NULL), so we only seed tokens here
 """
 from branding.models import BrandProfile, BrandAsset, DesignToken
 
-# Get brand profiles
+# Get brand profiles for the 3 main clubs
 profiles = BrandProfile.objects.filter(name__icontains='brand')
 print(f'Found {profiles.count()} brand profiles')
 
-for profile in profiles:
-    print(f'\nProfile: {profile.name}')
-
-    # Determine club name
-    club_name = profile.name.split()[0]  # 'Ajax Brand Identity' -> 'Ajax'
-
-    # Create assets for logo and logo_dark
-    for asset_type in ['logo', 'logo_dark', 'icon', 'banner']:
-        existing = BrandAsset.objects.filter(profile=profile, asset_type=asset_type).first()
-        if existing:
-            print(f'  {asset_type}: already exists (id={existing.id})')
-            continue
-
-        alt_text = f'{club_name} {asset_type.replace("_", " ").title()}'
-        asset = BrandAsset.objects.create(
-            profile=profile,
-            asset_type=asset_type,
-            alt_text=alt_text,
-            is_active=True,
-        )
-        print(f'  {asset_type}: CREATED (id={asset.id})')
-
-# Also add more design tokens if missing
+# Design tokens to add
 TOKEN_ADDITIONS = {
     'Ajax': [
         ('shadow_sm', '0 1px 2px rgba(200, 16, 46, 0.1)', 'shadow'),
         ('shadow_md', '0 4px 6px rgba(200, 16, 46, 0.15)', 'shadow'),
         ('button_radius', '8px', 'radius'),
         ('card_radius', '12px', 'radius'),
+        ('font_size_sm', '12px', 'font'),
+        ('font_size_base', '14px', 'font'),
+        ('font_size_lg', '18px', 'font'),
+        ('spacing_xs', '4px', 'spacing'),
+        ('spacing_sm', '8px', 'spacing'),
+        ('spacing_md', '16px', 'spacing'),
+        ('spacing_lg', '24px', 'spacing'),
     ],
     'PSV': [
         ('shadow_sm', '0 1px 2px rgba(237, 28, 36, 0.1)', 'shadow'),
         ('shadow_md', '0 4px 6px rgba(237, 28, 36, 0.15)', 'shadow'),
         ('button_radius', '6px', 'radius'),
         ('card_radius', '10px', 'radius'),
+        ('font_size_sm', '12px', 'font'),
+        ('font_size_base', '14px', 'font'),
+        ('font_size_lg', '18px', 'font'),
+        ('spacing_xs', '4px', 'spacing'),
+        ('spacing_sm', '8px', 'spacing'),
+        ('spacing_md', '16px', 'spacing'),
+        ('spacing_lg', '24px', 'spacing'),
     ],
     'Feyenoord': [
         ('shadow_sm', '0 1px 2px rgba(238, 28, 37, 0.1)', 'shadow'),
         ('shadow_md', '0 4px 6px rgba(238, 28, 37, 0.15)', 'shadow'),
         ('button_radius', '4px', 'radius'),
         ('card_radius', '8px', 'radius'),
+        ('font_size_sm', '12px', 'font'),
+        ('font_size_base', '14px', 'font'),
+        ('font_size_lg', '18px', 'font'),
+        ('spacing_xs', '4px', 'spacing'),
+        ('spacing_sm', '8px', 'spacing'),
+        ('spacing_md', '16px', 'spacing'),
+        ('spacing_lg', '24px', 'spacing'),
     ],
 }
 
@@ -74,8 +74,9 @@ for profile in profiles:
 
 print('\n=== SUMMARY ===')
 for profile in profiles:
-    token_count = DesignToken.objects.filter(profile=profile).count()
-    asset_count = BrandAsset.objects.filter(profile=profile).count()
-    print(f'{profile.name}: {token_count} tokens, {asset_count} assets')
+    if profile.name.split()[0] in TOKEN_ADDITIONS:
+        token_count = DesignToken.objects.filter(profile=profile).count()
+        asset_count = BrandAsset.objects.filter(profile=profile).count()
+        print(f'{profile.name}: {token_count} tokens, {asset_count} assets')
 
 print('\nDone!')
