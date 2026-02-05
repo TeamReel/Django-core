@@ -192,18 +192,22 @@ class FeatureFlagViewSet(viewsets.ModelViewSet):
 
         Query parameters:
         - organisation_id: Optional organisation ID for org scope
+        - project_id: Optional project ID for project scope
 
         Returns list of flags with:
         - key
         - description
         - enabled (effective value)
-        - resolution_source ('global', 'override', 'organisation')
+        - resolution_source ('global', 'override', 'organisation', 'project')
         - global_value
         - org_value (if applicable)
+        - project_value (if applicable)
         - global_id
         - org_override_id
+        - project_override_id
         """
         organisation_id = request.query_params.get("organisation_id")
+        project_id = request.query_params.get("project_id")
 
         # 1. Get all GLOBAL flags (the baseline)
         global_flags = FeatureFlag.objects.filter(scope_type="GLOBAL")
@@ -217,70 +221,74 @@ class FeatureFlagViewSet(viewsets.ModelViewSet):
             )
             org_flags_map = {f.key: f for f in org_flags}
 
-        # Collect all unique keys from both global and org flags
-        all_keys = set(global_flags_map.keys()) | set(org_flags_map.keys())
+        # 3. Get PROJECT flags if project_id provided
+        project_flags_map = {}
+        if project_id:
+            project_flags = FeatureFlag.objects.filter(scope_type="PROJECT", project_id=project_id)
+            project_flags_map = {f.key: f for f in project_flags}
+
+        # Collect all unique keys from global, org, and project flags
+        all_keys = (
+            set(global_flags_map.keys()) | set(org_flags_map.keys()) | set(project_flags_map.keys())
+        )
 
         results = []
         for key in all_keys:
             g_flag = global_flags_map.get(key)
             org_flag = org_flags_map.get(key)
+            project_flag = project_flags_map.get(key)
 
-            # Determine effective value and source
-            if org_flag:
-                # MASTER SWITCH: If global flag is explicitly disabled, it overrides everything
-                # (but org overrides remain stored and will become active if global is re-enabled)
-                if g_flag and g_flag.enabled is False:
-                    # Global is disabled (master switch) - feature is disabled everywhere
-                    enabled = False
-                    org_val = org_flag.enabled  # Store the override value
-                    org_override_id = str(org_flag.id)
-                    resolution_source = "global_disabled"  # Show why it's disabled
-                    global_val = g_flag.enabled
-                    global_id = str(g_flag.id)
-                    description = g_flag.description
-                else:
-                    # Normal case: org override is active
-                    enabled = org_flag.enabled
-                    org_val = org_flag.enabled
-                    org_override_id = str(org_flag.id)
+            # Initialize values
+            global_val = g_flag.enabled if g_flag else None
+            global_id = str(g_flag.id) if g_flag else None
+            org_val = org_flag.enabled if org_flag else None
+            org_override_id = str(org_flag.id) if org_flag else None
+            project_val = project_flag.enabled if project_flag else None
+            project_override_id = str(project_flag.id) if project_flag else None
+            description = (
+                (g_flag or org_flag or project_flag).description
+                if (g_flag or org_flag or project_flag)
+                else ""
+            )
 
-                    if g_flag:
-                        # Org override of a global flag
-                        resolution_source = "override"
-                        global_val = g_flag.enabled
-                        global_id = str(g_flag.id)
-                        description = g_flag.description
-                    else:
-                        # Standalone org flag (no global counterpart)
-                        resolution_source = "organisation"
-                        global_val = None
-                        global_id = None
-                        description = org_flag.description
-            elif g_flag:
+            # Determine effective value with hierarchy: GLOBAL (master) > ORG > PROJECT
+            # If global is disabled, everything is disabled (master switch)
+            if g_flag and g_flag.enabled is False:
+                enabled = False
+                resolution_source = "global_disabled"
+            elif org_flag and org_flag.enabled is False:
+                # Org disabled overrides project
+                enabled = False
+                resolution_source = "org_disabled"
+            elif project_flag is not None:
+                # Project override is active
+                enabled = project_flag.enabled
+                resolution_source = "project"
+            elif org_flag is not None:
+                # Org override is active
+                enabled = org_flag.enabled
+                resolution_source = "organisation"
+            elif g_flag is not None:
                 # Global flag only
                 enabled = g_flag.enabled
                 resolution_source = "global"
-                global_val = g_flag.enabled
-                org_val = None
-                global_id = str(g_flag.id)
-                org_override_id = None
-                description = g_flag.description
             else:
-                # Should not happen, but handle gracefully
+                # Should not happen
                 continue
 
             results.append(
                 {
                     "key": key,
-                    "name": key.replace("_", " ").title(),  # Simple name generation
+                    "name": key.replace("_", " ").title(),
                     "description": description,
                     "enabled": enabled,
-                    "resolutionSource": resolution_source,  # Match frontend naming
+                    "resolutionSource": resolution_source,
                     "global_value": global_val,
                     "org_value": org_val,
+                    "project_value": project_val,
                     "global_id": global_id,
                     "org_override_id": org_override_id,
-                    # Add rollout_percentage placeholder (not in model yet, but UI expects it)
+                    "project_override_id": project_override_id,
                     "rollout_percentage": 100,
                 }
             )
