@@ -217,7 +217,7 @@ export const FeatureFlagsPage: React.FC = () => {
       window.removeEventListener('featureFlagsChanged', handleStorageChange);
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [useApi, isSuperadmin, initialLoadDone, autoSeeded]);
+  }, [useApi, isSuperadmin, initialLoadDone]);
 
   // Toggle flag (GLOBAL-only for superadmins)
   const handleToggleFlag = async (flag: FeatureFlag | ApiFeatureFlag) => {
