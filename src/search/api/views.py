@@ -198,7 +198,7 @@ class SearchAPIView(APIView):
             a list of instance IDs from root to the original anchor.
         """
         from organisations.models import Organisation
-        from projects.models import Project
+        from projects.models import Project, ProjectMembership
         from activities.models import Period, Activity
 
         path = [str(instance.pk)]
@@ -207,6 +207,24 @@ class SearchAPIView(APIView):
         # Navigate up based on instance type
         if isinstance(instance, Organisation):
             # Already at root
+            return instance, path
+
+        elif isinstance(instance, ProjectMembership):
+            # Member -> Project -> Organisation
+            if instance.project:
+                project = instance.project
+                path.insert(0, str(project.pk))
+
+                while project.parent_project:
+                    project = project.parent_project
+                    path.insert(0, str(project.pk))
+
+                if project.organisation:
+                    path.insert(0, str(project.organisation.pk))
+                    return project.organisation, path
+
+                return project, path
+
             return instance, path
 
         elif isinstance(instance, Project):

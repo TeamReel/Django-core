@@ -470,6 +470,7 @@ SITE_NAME = "Django Core"  # Used in page titles (<title> tag) and branding (hea
 SEARCH_HIERARCHY_RESOLVERS: dict[str, str] = {
     "organisations.organisation": "search.hierarchy.resolvers.OrganisationHierarchyResolver",
     "projects.project": "search.hierarchy.resolvers.ProjectHierarchyResolver",
+    "projects.projectmembership": "search.hierarchy.resolvers.ProjectMembershipHierarchyResolver",
     "activities.period": "search.hierarchy.resolvers.PeriodHierarchyResolver",
     "activities.activity": "search.hierarchy.resolvers.ActivityHierarchyResolver",
 }
@@ -479,6 +480,7 @@ SEARCH_HIERARCHY_RESOLVERS: dict[str, str] = {
 SEARCH_HIERARCHY_ANCHOR_TYPES: list[str] = [
     "organisations.organisation",
     "projects.project",
+    "projects.projectmembership",
     "activities.period",
 ]
 

@@ -267,3 +267,15 @@ class ActivityHierarchyResolver(BaseHierarchyResolver):
     def get_children(self, instance) -> list[HierarchyNode]:
         """Matches have no children."""
         return []
+
+
+class ProjectMembershipHierarchyResolver(BaseHierarchyResolver):
+    """
+    Resolver for ProjectMembership entities (members).
+
+    Members are leaf nodes - no children.
+    """
+
+    def get_children(self, instance) -> list[HierarchyNode]:
+        """Members have no children."""
+        return []
