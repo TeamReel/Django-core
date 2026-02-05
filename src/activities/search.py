@@ -15,7 +15,14 @@ class PeriodIndex(SearchIndex):
 
     def get_body_text(self, obj):
         """Returns the full text content to be indexed."""
-        return f"{obj.name} {obj.description or ''}"
+        # Include project and organisation names to make seasons findable by club name
+        parts = [
+            obj.name,
+            obj.description or "",
+            obj.project.name if obj.project else "",
+            obj.organisation.name,
+        ]
+        return " ".join(filter(None, parts))
 
     def get_title(self, obj):
         """Returns the title for the search result."""
@@ -62,7 +69,16 @@ class ActivityIndex(SearchIndex):
 
     def get_body_text(self, obj):
         """Returns the full text content to be indexed."""
-        parts = [obj.title, obj.description or "", obj.location or "", obj.activity_type]
+        # Include names of participants (teams) and context (competition/season)
+        parts = [
+            obj.title,
+            obj.description or "",
+            obj.location or "",
+            obj.activity_type,
+            obj.project.name if obj.project else "",
+            obj.opponent_project.name if obj.opponent_project else "",
+            obj.period.name if obj.period else "",
+        ]
         return " ".join(filter(None, parts))
 
     def get_title(self, obj):
