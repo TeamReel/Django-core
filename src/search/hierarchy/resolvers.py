@@ -183,8 +183,8 @@ class PeriodHierarchyResolver(BaseHierarchyResolver):
                 period=competition,
                 activity_type="match",
             )
-            .select_related("home_project", "away_project")
-            .order_by("-start_datetime")[: self._per_level_limit]
+            .select_related("project", "opponent_project")
+            .order_by("-start_time")[: self._per_level_limit]
         )
 
         return [
@@ -192,7 +192,7 @@ class PeriodHierarchyResolver(BaseHierarchyResolver):
                 id=str(match.id),
                 type="match",
                 title=match.title
-                or f"{match.home_project.name if match.home_project else '?'} vs {match.away_project.name if match.away_project else '?'}",
+                or f"{match.project.name if match.project else '?'} vs {match.opponent_project.name if match.opponent_project else '?'}",
                 url=f"/apps/match/{match.id}",
                 description=None,
                 instance=None,  # Don't recurse into matches

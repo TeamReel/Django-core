@@ -482,8 +482,9 @@ SEARCH_HIERARCHY_ANCHOR_TYPES: list[str] = [
     "activities.period",
 ]
 
-# Maximum depth for hierarchy traversal (default: 3 levels)
-SEARCH_HIERARCHY_MAX_DEPTH = int(os.getenv("SEARCH_HIERARCHY_MAX_DEPTH", "3"))
+# Maximum depth for hierarchy traversal
+# TeamReel hierarchy: Org(0) → Club(1) → Team(2) → Season(3) → Competition(4) → Match(5)
+SEARCH_HIERARCHY_MAX_DEPTH = int(os.getenv("SEARCH_HIERARCHY_MAX_DEPTH", "6"))
 
 # Maximum total nodes in a single hierarchy response (default: 100)
 SEARCH_HIERARCHY_MAX_NODES = int(os.getenv("SEARCH_HIERARCHY_MAX_NODES", "100"))

@@ -336,13 +336,15 @@ class SearchAPIView(APIView):
         from search.hierarchy.nodes import HierarchyNode
         from django.conf import settings
 
-        max_depth = getattr(settings, "SEARCH_HIERARCHY_MAX_DEPTH", 5)
+        max_depth = getattr(settings, "SEARCH_HIERARCHY_MAX_DEPTH", 8)
         if depth > max_depth:
             return None
 
         current_id = str(current.pk)
         is_in_path = current_id in anchor_path
         is_anchor = current_id == anchor_path[-1] if anchor_path else False
+        # When anchor_path is empty, we're expanding below the anchor - always expand
+        expand_all = len(anchor_path) == 0
 
         # Determine node type and URL
         model_name = current._meta.model_name
@@ -380,7 +382,7 @@ class SearchAPIView(APIView):
         children = []
         resolver = get_resolver(current, request)
 
-        if resolver and (is_in_path or is_anchor):
+        if resolver and (is_in_path or is_anchor or expand_all):
             # Get all direct children
             child_nodes = resolver.get_children(current)
 
@@ -401,8 +403,8 @@ class SearchAPIView(APIView):
                     )
                     if expanded_child:
                         children.append(expanded_child)
-                elif is_anchor:
-                    # We're at the anchor - expand all children
+                elif is_anchor or expand_all:
+                    # We're at/below the anchor - expand all children recursively
                     expanded_child = self._build_focused_tree(
                         child_node.instance, [], anchor_instance, request, depth + 1
                     )
