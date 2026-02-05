@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getResolvedFlag } from '../utils/featureFlagStorage';
 import { fetchFlags } from '../utils/featureFlagsApi';
+import { getActiveContext } from '../utils/activeContext';
 import { useAuth } from '@django-core/auth-ui';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
@@ -155,6 +156,25 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
             'isSuperadmin:',
             isSuperadmin
           );
+        }
+
+        // If no org/project in localStorage, attempt to read active context from backend
+        if (!orgId || !projectId) {
+          try {
+            const activeContext = await getActiveContext();
+            const contextOrgId = activeContext?.organisation?.id || activeContext?.org?.id || null;
+            const contextProjectId = activeContext?.project?.id || activeContext?.club?.id || null;
+            if (!orgId && contextOrgId) orgId = String(contextOrgId);
+            if (!projectId && contextProjectId) projectId = String(contextProjectId);
+            if (DEBUG_LOGS) {
+              console.log('[useFeatureFlag] Active context fallback:', {
+                contextOrgId: orgId,
+                contextProjectId: projectId,
+              });
+            }
+          } catch (contextErr) {
+            if (DEBUG_LOGS) console.debug('[useFeatureFlag] Active context fetch failed:', contextErr);
+          }
         }
 
         // Try to fetch from API first
