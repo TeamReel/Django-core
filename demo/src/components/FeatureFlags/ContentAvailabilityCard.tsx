@@ -484,14 +484,18 @@ export default function ContentAvailabilityCard({
                     <td style={compactTdStyle}>{row.subtype}</td>
                     <td style={compactTdStyle}>{row.style}</td>
                     <td style={compactTdStyle}>
-                      <Badge variant={row.globalValue ? 'success' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
-                        {row.globalValue === null ? '—' : row.globalValue ? 'On' : 'Off'}
+                      <Badge variant={row.globalValue ? 'success' : row.globalValue === false ? 'default' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
+                        {row.globalValue === null ? 'On' : row.globalValue ? 'On' : 'Off'}
                       </Badge>
                     </td>
                     <td style={compactTdStyle}>
-                      <Badge variant={orgDisplay ? 'success' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
-                        {orgDisplay === null ? '—' : orgDisplay ? 'On' : 'Off'}
-                      </Badge>
+                      {orgDisplay === null ? (
+                        <span style={{ color: 'var(--app-text-muted)', fontSize: '11px', fontStyle: 'italic' }}>Inherit</span>
+                      ) : (
+                        <Badge variant={orgDisplay ? 'success' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
+                          {orgDisplay ? 'On' : 'Off'}
+                        </Badge>
+                      )}
                     </td>
                     {scopeType === 'PROJECT' && (
                       <td style={compactTdStyle}>

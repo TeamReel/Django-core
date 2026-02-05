@@ -232,12 +232,22 @@ export default function HierarchyMatchDetailPage() {
   };
 
   const isTemplateEnabled = (template: ContentTemplate): boolean => {
-    if (!templateFlagMap || Object.keys(templateFlagMap).length === 0) return true;
+    if (!templateFlagMap || Object.keys(templateFlagMap).length === 0) {
+      console.log('[Content Flags] No flags loaded, allowing template:', template.name);
+      return true;
+    }
     const keys = buildTemplateFlagKeys(template);
     for (const key of keys) {
       const normalized = normalizeFlagKey(key);
-      if (normalized in templateFlagMap) return Boolean(templateFlagMap[normalized]);
+      if (normalized in templateFlagMap) {
+        const enabled = Boolean(templateFlagMap[normalized]);
+        if (!enabled) {
+          console.log('[Content Flags] Template DISABLED by flag:', template.name, 'key:', normalized, 'value:', enabled);
+        }
+        return enabled;
+      }
     }
+    console.log('[Content Flags] No matching flag for template, allowing:', template.name, 'keys tried:', keys);
     return true;
   };
 
@@ -303,11 +313,14 @@ export default function HierarchyMatchDetailPage() {
     if (!org?.id) return;
     setTemplateFlagsLoading(true);
     try {
+      console.log('[Content Flags] Fetching flags for org:', org.id, 'club/project:', club?.id);
       const flags = await fetchFlags(String(org.id), club?.id ? String(club.id) : undefined);
+      console.log('[Content Flags] Raw flags received:', flags.length, flags.filter(f => f.key.includes('goal')));
       const map: Record<string, boolean> = {};
       flags.forEach((flag) => {
         map[normalizeFlagKey(flag.key)] = Boolean(flag.enabled);
       });
+      console.log('[Content Flags] Flag map (goal keys):', Object.entries(map).filter(([k]) => k.includes('goal')));
       setTemplateFlagMap(map);
     } catch (err) {
       console.error('[Content] Failed to fetch template availability flags:', err);
