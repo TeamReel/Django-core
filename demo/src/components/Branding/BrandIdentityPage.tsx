@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Text, Stack, Alert, Badge, Button } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import BrandProfileEditModal from './BrandProfileEditModal';
 import {
   Palette,
   Image,
@@ -459,7 +460,7 @@ function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
 }
 
 // Profile header with stats
-function ProfileHeader({ profile, entityName }: { profile: BrandProfile; entityName: string }) {
+function ProfileHeader({ profile, entityName, onEdit }: { profile: BrandProfile; entityName: string; onEdit?: () => void }) {
   return (
     <Card style={{ padding: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -505,11 +506,8 @@ function ProfileHeader({ profile, entityName }: { profile: BrandProfile; entityN
         </div>
 
         {/* Edit button - enabled based on permissions */}
-        {profile.can_edit && (
-          <Button variant="outline" size="sm" onClick={() => {
-            // TODO: Open edit modal or navigate to edit page
-            console.log('Edit profile:', profile.id);
-          }}>
+        {profile.can_edit && onEdit && (
+          <Button variant="outline" size="sm" onClick={onEdit}>
             <Edit size={14} />
             Edit Profile
           </Button>
@@ -637,6 +635,7 @@ export default function BrandIdentityPage({
   const [profile, setProfile] = useState<BrandProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const apiBaseUrl = getApiBaseUrl();
 
@@ -644,22 +643,22 @@ export default function BrandIdentityPage({
   const entityType = seasonId ? 'season' : projectId ? 'project' : 'organisation';
   const entityName = seasonName || projectName || organisationName || 'this entity';
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      setError(null);
+  // Fetch profile function (can be called to refresh data)
+  const fetchProfile = async () => {
+    setLoading(true);
+    setError(null);
 
-      try {
-        // Build query params based on entity type
-        let queryParam = '';
-        if (projectId) {
-          queryParam = `project=${encodeURIComponent(projectId)}`;
-        } else if (organisationId) {
-          queryParam = `organisation=${encodeURIComponent(organisationId)}`;
-        } else {
-          setProfile(null);
-          setLoading(false);
-          return;
+    try {
+      // Build query params based on entity type
+      let queryParam = '';
+      if (projectId) {
+        queryParam = `project=${encodeURIComponent(projectId)}`;
+      } else if (organisationId) {
+        queryParam = `organisation=${encodeURIComponent(organisationId)}`;
+      } else {
+        setProfile(null);
+        setLoading(false);
+        return;
         }
 
         // Fetch brand profile for this entity
@@ -704,13 +703,15 @@ export default function BrandIdentityPage({
       } finally {
         setLoading(false);
       }
-    };
+  };
 
+  useEffect(() => {
     if (projectId || organisationId) {
       fetchProfile();
     } else {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiBaseUrl, projectId, organisationId]);
 
   // Group tokens by type
@@ -764,7 +765,11 @@ export default function BrandIdentityPage({
   return (
     <Stack direction="column" gap="4">
       {/* Profile Header */}
-      <ProfileHeader profile={profile} entityName={entityName} />
+      <ProfileHeader
+        profile={profile}
+        entityName={entityName}
+        onEdit={() => setIsEditModalOpen(true)}
+      />
 
       {/* Color Palette */}
       <ColorPaletteSection colors={colorTokens} />
@@ -777,6 +782,19 @@ export default function BrandIdentityPage({
 
       {/* Brand Assets */}
       <BrandAssetsSection assets={profile.assets || []} />
+
+      {/* Edit Modal */}
+      {profile.can_edit && (
+        <BrandProfileEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSaved={() => {
+            setIsEditModalOpen(false);
+            fetchProfile(); // Refresh data after save
+          }}
+          profile={profile}
+        />
+      )}
     </Stack>
   );
 }
