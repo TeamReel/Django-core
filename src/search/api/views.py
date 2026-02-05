@@ -267,10 +267,11 @@ class SearchAPIView(APIView):
 
     def resolve_hierarchy(self, instance, request):
         """
-        Generate hierarchy tree starting from the root entity.
+        Generate hierarchy tree focused on the anchor entity.
 
-        Navigates up from the anchor to find the root (Organisation),
-        then builds the tree downward, marking the path to the anchor.
+        Builds a tree that:
+        1. Shows the path from root to anchor (with limited siblings)
+        2. Fully expands the anchor with all its children
 
         Args:
             instance: Django model instance (anchor - the search result)
@@ -279,8 +280,6 @@ class SearchAPIView(APIView):
         Returns:
             Tuple of (tree: HierarchyNode, anchor_path: list[str]) or (None, None)
         """
-        from search.hierarchy.registry import get_resolver
-        from search.hierarchy.nodes import HierarchyNode
         import logging
 
         logger = logging.getLogger(__name__)
@@ -296,37 +295,11 @@ class SearchAPIView(APIView):
                 anchor_path,
             )
 
-            # Get resolver for root type
-            resolver = get_resolver(root, request)
-            if not resolver:
-                logger.info("No resolver found for root %s", root.__class__.__name__)
+            # Build focused tree from root, expanding the path to anchor
+            root_node = self._build_focused_tree(root, anchor_path, instance, request)
+
+            if root_node is None:
                 return None, None
-
-            # Build root node
-            root_title = getattr(root, "name", None) or getattr(root, "title", None) or str(root)
-            root_url = None
-            if hasattr(root, "get_absolute_url"):
-                try:
-                    root_url = root.get_absolute_url()
-                except Exception:
-                    pass
-            elif hasattr(root, "slug"):
-                root_url = f"/apps/identity/organisations/{root.slug}"
-
-            root_type = f"{root._meta.app_label}.{root._meta.model_name}"
-
-            # Build children tree
-            children = resolver.build_tree(root)
-
-            root_node = HierarchyNode(
-                id=str(root.pk),
-                type=root_type.split(".")[-1],  # Just model name
-                title=root_title,
-                url=root_url,
-                description=getattr(root, "description", None),
-                children=children,
-                instance=None,  # Don't store instance in output
-            )
 
             return root_node, anchor_path
 
@@ -340,6 +313,124 @@ class SearchAPIView(APIView):
                 exc_info=True,
             )
             return None, None
+
+    def _build_focused_tree(self, current, anchor_path, anchor_instance, request, depth=0):
+        """
+        Build a tree node that focuses on the anchor path.
+
+        For nodes IN the path: fully expand children
+        For the anchor itself: expand all children recursively
+        For siblings not in path: show but don't expand
+
+        Args:
+            current: Current entity to build node for
+            anchor_path: List of IDs from root to anchor
+            anchor_instance: The actual anchor entity
+            request: HttpRequest for resolver
+            depth: Current recursion depth
+
+        Returns:
+            HierarchyNode or None
+        """
+        from search.hierarchy.registry import get_resolver
+        from search.hierarchy.nodes import HierarchyNode
+        from django.conf import settings
+
+        max_depth = getattr(settings, "SEARCH_HIERARCHY_MAX_DEPTH", 5)
+        if depth > max_depth:
+            return None
+
+        current_id = str(current.pk)
+        is_in_path = current_id in anchor_path
+        is_anchor = current_id == anchor_path[-1] if anchor_path else False
+
+        # Determine node type and URL
+        model_name = current._meta.model_name
+        node_type = model_name
+
+        # Special handling for projects (club vs team)
+        if model_name == "project":
+            if current.parent_project is None:
+                node_type = "club"
+            else:
+                node_type = "team"
+
+        # Special handling for periods (season vs competition)
+        if model_name == "period":
+            if current.parent_period is None:
+                node_type = "season"
+            else:
+                node_type = "competition"
+
+        # Build URL
+        url = None
+        if hasattr(current, "get_absolute_url"):
+            try:
+                url = current.get_absolute_url()
+            except Exception:
+                pass
+        elif hasattr(current, "slug"):
+            if model_name == "organisation":
+                url = f"/apps/identity/organisations/{current.slug}"
+
+        # Get title
+        title = getattr(current, "name", None) or getattr(current, "title", None) or str(current)
+
+        # Get children
+        children = []
+        resolver = get_resolver(current, request)
+
+        if resolver and (is_in_path or is_anchor):
+            # Get all direct children
+            child_nodes = resolver.get_children(current)
+
+            for child_node in child_nodes:
+                if child_node.instance is None:
+                    # Leaf node, add as-is
+                    children.append(child_node)
+                    continue
+
+                child_id = str(child_node.instance.pk)
+                child_in_path = child_id in anchor_path
+                child_is_anchor = child_id == anchor_path[-1] if anchor_path else False
+
+                if child_in_path or child_is_anchor:
+                    # Recursively build this branch
+                    expanded_child = self._build_focused_tree(
+                        child_node.instance, anchor_path, anchor_instance, request, depth + 1
+                    )
+                    if expanded_child:
+                        children.append(expanded_child)
+                elif is_anchor:
+                    # We're at the anchor - expand all children
+                    expanded_child = self._build_focused_tree(
+                        child_node.instance, [], anchor_instance, request, depth + 1
+                    )
+                    if expanded_child:
+                        children.append(expanded_child)
+                else:
+                    # Sibling not in path - show but don't expand
+                    children.append(
+                        HierarchyNode(
+                            id=child_node.id,
+                            type=child_node.type,
+                            title=child_node.title,
+                            url=child_node.url,
+                            description=child_node.description,
+                            children=[],
+                            instance=None,
+                        )
+                    )
+
+        return HierarchyNode(
+            id=current_id,
+            type=node_type,
+            title=title,
+            url=url,
+            description=getattr(current, "description", None),
+            children=children,
+            instance=None,
+        )
 
     def _add_hierarchy_to_response(self, request, entries):
         """
