@@ -53,9 +53,9 @@ export const FeatureFlagsPage: React.FC = () => {
   const [apiError, setApiError] = useState<string | null>(null);
   const [seedMessage, setSeedMessage] = useState<string | null>(null);
   const [autoSeeded, setAutoSeeded] = useState(false);
-  const [filterType, setFilterType] = useState('');
-  const [filterSubtype, setFilterSubtype] = useState('');
-  const [filterStyle, setFilterStyle] = useState('');
+  const [filterType, setFilterType] = useState<string>('all');
+  const [filterSubtype, setFilterSubtype] = useState<string>('all');
+  const [filterStyle, setFilterStyle] = useState<string>('all');
 
   // This page is GLOBAL-only
   const editMode = 'global';
@@ -295,11 +295,37 @@ export const FeatureFlagsPage: React.FC = () => {
       const subtype = parts[2] || '';
       const styleIndex = parts.findIndex((p) => p === 'style');
       const style = styleIndex >= 0 ? parts[styleIndex + 1] || '' : '';
-      if (filterType && !type.includes(filterType)) return false;
-      if (filterSubtype && !subtype.includes(filterSubtype)) return false;
-      if (filterStyle && !style.includes(filterStyle)) return false;
+      if (filterType !== 'all' && type !== filterType) return false;
+      if (filterSubtype !== 'all' && subtype !== filterSubtype) return false;
+      if (filterStyle !== 'all' && style !== filterStyle) return false;
       return true;
     });
+
+  // Extract unique values for filter dropdowns
+  const uniqueTypes = Array.from(new Set(
+    flags
+      .filter((flag) => String(flag.key || '').startsWith('content__'))
+      .map((flag) => String(flag.key || '').split('__')[1])
+      .filter(Boolean)
+  )).sort();
+
+  const uniqueSubtypes = Array.from(new Set(
+    flags
+      .filter((flag) => String(flag.key || '').startsWith('content__'))
+      .map((flag) => String(flag.key || '').split('__')[2])
+      .filter(Boolean)
+  )).sort();
+
+  const uniqueStyles = Array.from(new Set(
+    flags
+      .filter((flag) => String(flag.key || '').startsWith('content__'))
+      .map((flag) => {
+        const parts = String(flag.key || '').split('__');
+        const styleIndex = parts.findIndex((p) => p === 'style');
+        return styleIndex >= 0 ? parts[styleIndex + 1] || '' : '';
+      })
+      .filter(Boolean)
+  )).sort();
 
   return (
     <>
@@ -346,28 +372,76 @@ export const FeatureFlagsPage: React.FC = () => {
           To manage organisation-specific overrides, go to <strong>Organisation → Settings tab</strong>.
         </Alert>
 
-        <Card className="mb-4">
-          <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-            <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              placeholder="Filter by type (e.g. pre_match)"
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value.trim().toLowerCase())}
-            />
-            <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              placeholder="Filter by subtype (e.g. flyer)"
-              value={filterSubtype}
-              onChange={(e) => setFilterSubtype(e.target.value.trim().toLowerCase())}
-            />
-            <input
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              placeholder="Filter by style (e.g. classic)"
-              value={filterStyle}
-              onChange={(e) => setFilterStyle(e.target.value.trim().toLowerCase())}
-            />
+        {/* Filters */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '12px',
+          marginBottom: '16px',
+          alignItems: 'center',
+        }}>
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid var(--app-border)',
+              borderRadius: '4px',
+              fontSize: '14px',
+              backgroundColor: 'var(--app-surface)',
+            }}
+          >
+            <option value="all">Type: All</option>
+            {uniqueTypes.map((type) => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+          <select
+            value={filterSubtype}
+            onChange={(e) => setFilterSubtype(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid var(--app-border)',
+              borderRadius: '4px',
+              fontSize: '14px',
+              backgroundColor: 'var(--app-surface)',
+            }}
+          >
+            <option value="all">Subtype: All</option>
+            {uniqueSubtypes.map((subtype) => (
+              <option key={subtype} value={subtype}>{subtype}</option>
+            ))}
+          </select>
+          <select
+            value={filterStyle}
+            onChange={(e) => setFilterStyle(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid var(--app-border)',
+              borderRadius: '4px',
+              fontSize: '14px',
+              backgroundColor: 'var(--app-surface)',
+            }}
+          >
+            <option value="all">Style: All</option>
+            {uniqueStyles.map((style) => (
+              <option key={style} value={style}>{style}</option>
+            ))}
+          </select>
+          <div style={{ marginLeft: 'auto' }}>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => {
+                setFilterType('all');
+                setFilterSubtype('all');
+                setFilterStyle('all');
+              }}
+            >
+              Clear
+            </Button>
           </div>
-        </Card>
+        </div>
 
         {/* Flags Table */}
         <Card>
@@ -385,39 +459,7 @@ export const FeatureFlagsPage: React.FC = () => {
           ) : displayFlags.length === 0 ? (
             <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               {useApi ? (
-                <div className="flex flex-col items-center gap-4">
-                  <p>No feature flags found in the database.</p>
-                  <Button
-                    variant="primary"
-                    onClick={async () => {
-                      try {
-                        setLoading(true);
-                        const result = await seedDefaultFlags();
-                        if (result.total === 0) {
-                          setSeedMessage('No active templates found. Create or activate templates first, then seed again.');
-                        } else if (result.created === 0) {
-                          setSeedMessage(`All ${result.total} flags already exist.`);
-                        } else {
-                          setSeedMessage(`Seeded ${result.created} of ${result.total} content flags.`);
-                        }
-                        // Reload
-                        const apiFlags = await fetchFlagsForScope('GLOBAL');
-                        const normalized = apiFlags.map((flag: any) => ({
-                          ...flag,
-                          global_id: flag.global_id || flag.id,
-                        }));
-                        setFlags(normalized);
-                      } catch (err) {
-                        console.error('Failed to seed flags:', err);
-                        setApiError('Failed to seed flags. Check console for details.');
-                      } finally {
-                        setLoading(false);
-                      }
-                    }}
-                  >
-                    Seed Default Flags
-                  </Button>
-                </div>
+                <p>No feature flags found in the database.</p>
               ) : (
                 'No feature flags available. Check console for errors.'
               )}
