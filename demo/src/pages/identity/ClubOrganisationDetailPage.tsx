@@ -17,7 +17,7 @@ import TeamCreditsTab from './detail/TeamCreditsTab';
 import ClubAssetsTab from './detail/ClubAssetsTab';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import MobileTabBar from '../../components/MobileTabBar';
-import ProjectEditModal from './ProjectEditModal';
+import EntityEditModal from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
@@ -1533,26 +1533,20 @@ export default function ClubOrganisationDetailPage() {
         project={club}
       />
 
-      <ProjectEditModal
-        opened={isProjectEditModalOpen}
+      <EntityEditModal
+        isOpen={isProjectEditModalOpen}
         onClose={() => setIsProjectEditModalOpen(false)}
-        project={club}
-        onSave={async (projectData) => {
-          if (!club) return;
-          const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCsrfToken(),
-            },
-            credentials: 'include',
-            body: JSON.stringify(projectData),
-          });
-          if (!res.ok) throw new Error('Failed to save club');
-          const raw = await res.json().catch(() => null);
-          const updated = (raw as any)?.data || raw || { ...club, ...projectData };
-          setClub(updated);
+        onSaved={() => {
+          fetchClubData();
+          fetchTeams();
         }}
+        entityType="club"
+        entityId={club?.id || ''}
+        entityName={club?.name}
+        organisationId={org?.id}
+        projectId={club?.id}
+        canEditGeneral={canEditProject(permissionContext)}
+        canEditBrand={canEditProject(permissionContext)}
       />
     </>
   );

@@ -19,9 +19,8 @@ import { useAuth } from '@django-core/auth-ui';
 import { Organisation, User, Project } from '../../types';
 import AppShell from '../../components/AppShell';
 import OrganisationDetailModal from './OrganisationDetailModal';
-import OrganisationEditModal from './OrganisationEditModal';
+import EntityEditModal from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
-import ProjectEditModal from './ProjectEditModal';
 import ProjectCreateModal from './ProjectCreateModal';
 import PeriodCreateModal from './PeriodCreateModal';
 import MatchCreateModal from './MatchCreateModal';
@@ -2531,11 +2530,21 @@ export const OrganisationDetailPage: React.FC = () => {
         organisation={org as any}
       />
 
-      <OrganisationEditModal
-        opened={isOrgEditModalOpen}
+      <EntityEditModal
+        isOpen={isOrgEditModalOpen}
         onClose={() => setIsOrgEditModalOpen(false)}
-        organisation={org as any}
-        onSave={saveOrganisationEdits}
+        onSaved={() => {
+          fetchOrgData();
+          fetchMembers();
+          fetchClubs();
+          fetchTeams();
+        }}
+        entityType="organisation"
+        entityId={id!}
+        entityName={org?.name}
+        organisationId={id}
+        canEditGeneral={canEditOrganisation(permissionContext)}
+        canEditBrand={canEditOrganisation(permissionContext)}
       />
 
       <UserDetailModal

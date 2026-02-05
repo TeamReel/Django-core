@@ -14,7 +14,7 @@ import { UsersList } from './directory/UsersList';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import MobileTabBar from '../../components/MobileTabBar';
-import ProjectEditModal from './ProjectEditModal';
+import EntityEditModal from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 
@@ -1289,25 +1289,23 @@ export default function TeamOrganisationDetailPage() {
         project={team}
       />
 
-      <ProjectEditModal
-        opened={isProjectEditModalOpen}
+      <EntityEditModal
+        isOpen={isProjectEditModalOpen}
         onClose={() => setIsProjectEditModalOpen(false)}
-        project={team}
-        onSave={async (projectData) => {
-          if (!team) return;
-          const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCsrfToken(),
-            },
-            credentials: 'include',
-            body: JSON.stringify(projectData),
-          });
-          if (!res.ok) throw new Error('Failed to save team');
-          const raw = await res.json().catch(() => null);
-          const updated = (raw as any)?.data || raw || { ...team, ...projectData };
-          setTeam(updated);
+        onSaved={() => {
+          fetchTeamData();
+          fetchSeasons();
+          fetchCompetitions();
+          fetchMatches();
+        }}
+        entityType="team"
+        entityId={team?.id || ''}
+        entityName={team?.name}
+        organisationId={org?.id}
+        projectId={team?.id}
+        canEditGeneral={canEditProject(permissionContext)}
+        canEditBrand={canEditProject(permissionContext)}
+      />
         }}
       />
     </>

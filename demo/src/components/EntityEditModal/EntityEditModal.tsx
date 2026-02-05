@@ -525,7 +525,8 @@ export default function EntityEditModal({
 
           const res = await fetch(endpoint, { credentials: 'include' });
           if (res.ok) {
-            const data = (await res.json()).data || (await res.json());
+            const json = await res.json();
+            const data = json.data || json;
             setEntityData(data);
             setOriginalEntityData(data);
           }
@@ -549,7 +550,8 @@ export default function EntityEditModal({
           );
 
           if (brandRes.ok) {
-            const brandData = (await brandRes.json()).data || (await brandRes.json());
+            const brandJson = await brandRes.json();
+            const brandData = brandJson.data || brandJson;
             const profiles = Array.isArray(brandData) ? brandData : brandData?.results || [];
 
             if (profiles.length > 0) {
@@ -559,7 +561,8 @@ export default function EntityEditModal({
                 { credentials: 'include' }
               );
               if (detailRes.ok) {
-                const detail = (await detailRes.json()).data || (await detailRes.json());
+                const detailJson = await detailRes.json();
+                const detail = detailJson.data || detailJson;
                 setBrandProfile(detail);
                 setTokens(detail.tokens || []);
                 setOriginalTokens(detail.tokens || []);
