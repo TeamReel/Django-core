@@ -1306,8 +1306,6 @@ export default function TeamOrganisationDetailPage() {
         canEditGeneral={canEditProject(permissionContext)}
         canEditBrand={canEditProject(permissionContext)}
       />
-        }}
-      />
     </>
   );
 }
