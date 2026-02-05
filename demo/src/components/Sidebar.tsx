@@ -327,6 +327,21 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             return null;
         }
 
+        // Hide Panel B for non-APP landing/section pages
+        if (
+            path === '/apps' ||
+            path === '/content' ||
+            path === '/settings' ||
+            path === '/medialib' ||
+            path.startsWith('/medialib/') ||
+            path === '/studio' ||
+            path.startsWith('/studio/') ||
+            path === '/content-templates' ||
+            path.startsWith('/content-templates/')
+        ) {
+            return null;
+        }
+
         const walletParam = new URLSearchParams(location.search || '').get('wallet');
         const isPersonalWallet = walletParam === 'personal';
 
