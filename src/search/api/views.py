@@ -184,32 +184,151 @@ class SearchAPIView(APIView):
 
         return instance, anchor_data
 
+    def _find_hierarchy_root(self, instance):
+        """
+        Navigate up the hierarchy to find the root entity (Organisation).
+
+        For Projects: Go up through parent_project to club, then to organisation
+        For Periods: Go to project, then up to organisation
+        For Activities: Go to period, then to project, then to organisation
+
+        Returns:
+            Tuple of (root_instance, path_to_anchor) where path_to_anchor is
+            a list of instance IDs from root to the original anchor.
+        """
+        from organisations.models import Organisation
+        from projects.models import Project
+        from activities.models import Period, Activity
+
+        path = [str(instance.pk)]
+        current = instance
+
+        # Navigate up based on instance type
+        if isinstance(instance, Organisation):
+            # Already at root
+            return instance, path
+
+        elif isinstance(instance, Project):
+            # Go up through parent projects to organisation
+            while current.parent_project:
+                current = current.parent_project
+                path.insert(0, str(current.pk))
+
+            # Now at club level, get organisation
+            if current.organisation:
+                path.insert(0, str(current.organisation.pk))
+                return current.organisation, path
+
+            # No organisation, use club as root
+            return current, path
+
+        elif isinstance(instance, Period):
+            # Period → Project → Organisation
+            if instance.project:
+                project = instance.project
+                path.insert(0, str(project.pk))
+
+                while project.parent_project:
+                    project = project.parent_project
+                    path.insert(0, str(project.pk))
+
+                if project.organisation:
+                    path.insert(0, str(project.organisation.pk))
+                    return project.organisation, path
+
+                return project, path
+
+            return instance, path
+
+        elif isinstance(instance, Activity):
+            # Activity → Period → Project → Organisation
+            if instance.period:
+                period = instance.period
+                path.insert(0, str(period.pk))
+
+                if period.project:
+                    project = period.project
+                    path.insert(0, str(project.pk))
+
+                    while project.parent_project:
+                        project = project.parent_project
+                        path.insert(0, str(project.pk))
+
+                    if project.organisation:
+                        path.insert(0, str(project.organisation.pk))
+                        return project.organisation, path
+
+                    return project, path
+
+            return instance, path
+
+        # Unknown type, use as-is
+        return instance, path
+
     def resolve_hierarchy(self, instance, request):
         """
-        Generate hierarchy tree for the given instance.
+        Generate hierarchy tree starting from the root entity.
+
+        Navigates up from the anchor to find the root (Organisation),
+        then builds the tree downward, marking the path to the anchor.
 
         Args:
-            instance: Django model instance (anchor)
+            instance: Django model instance (anchor - the search result)
             request: Current HttpRequest
 
         Returns:
-            List of HierarchyNode objects, or None on failure
+            Tuple of (tree: HierarchyNode, anchor_path: list[str]) or (None, None)
         """
         from search.hierarchy.registry import get_resolver
+        from search.hierarchy.nodes import HierarchyNode
         import logging
 
         logger = logging.getLogger(__name__)
 
         try:
-            # Get resolver for this instance type
-            resolver = get_resolver(instance, request)
-            if not resolver:
-                logger.info("No resolver found for %s", instance.__class__.__name__)
-                return None
+            # Find the root entity and path to anchor
+            root, anchor_path = self._find_hierarchy_root(instance)
 
-            # Build tree using resolver
-            tree = resolver.build_tree(instance)
-            return tree
+            logger.info(
+                "Hierarchy: anchor=%s, root=%s, path=%s",
+                instance.__class__.__name__,
+                root.__class__.__name__,
+                anchor_path,
+            )
+
+            # Get resolver for root type
+            resolver = get_resolver(root, request)
+            if not resolver:
+                logger.info("No resolver found for root %s", root.__class__.__name__)
+                return None, None
+
+            # Build root node
+            root_title = getattr(root, "name", None) or getattr(root, "title", None) or str(root)
+            root_url = None
+            if hasattr(root, "get_absolute_url"):
+                try:
+                    root_url = root.get_absolute_url()
+                except Exception:
+                    pass
+            elif hasattr(root, "slug"):
+                root_url = f"/apps/identity/organisations/{root.slug}"
+
+            root_type = f"{root._meta.app_label}.{root._meta.model_name}"
+
+            # Build children tree
+            children = resolver.build_tree(root)
+
+            root_node = HierarchyNode(
+                id=str(root.pk),
+                type=root_type.split(".")[-1],  # Just model name
+                title=root_title,
+                url=root_url,
+                description=getattr(root, "description", None),
+                children=children,
+                instance=None,  # Don't store instance in output
+            )
+
+            return root_node, anchor_path
 
         except Exception as e:
             # Fail-safe: log error but don't crash
@@ -220,7 +339,7 @@ class SearchAPIView(APIView):
                 e,
                 exc_info=True,
             )
-            return None
+            return None, None
 
     def _add_hierarchy_to_response(self, request, entries):
         """
@@ -273,14 +392,15 @@ class SearchAPIView(APIView):
                 instance, anchor_data = self.select_hierarchy_anchor(entries, request)
 
                 if instance and anchor_data:
-                    # Resolve hierarchy
-                    tree = self.resolve_hierarchy(instance, request)
+                    # Resolve hierarchy (returns root tree node and path to anchor)
+                    tree_root, anchor_path = self.resolve_hierarchy(instance, request)
 
-                    if tree is not None:
-                        # Serialize
+                    if tree_root is not None:
+                        # Serialize the tree (single root node, not a list)
                         hierarchy_data = {
                             "anchor": HierarchyAnchorSerializer(anchor_data).data,
-                            "tree": HierarchyNodeSerializer(tree, many=True).data,
+                            "tree": HierarchyNodeSerializer(tree_root).data,
+                            "anchor_path": anchor_path,  # IDs from root to anchor
                         }
 
                         # Log success
@@ -289,7 +409,8 @@ class SearchAPIView(APIView):
                             "Hierarchy generation completed",
                             extra={
                                 "anchor_type": anchor_data["type"],
-                                "node_count": len(tree) if tree else 0,
+                                "root_type": tree_root.type,
+                                "path_length": len(anchor_path),
                                 "duration_ms": duration_ms,
                             },
                         )

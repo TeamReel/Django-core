@@ -22,13 +22,18 @@ export interface HierarchyNode {
   is_truncated?: boolean;
 }
 
+export interface HierarchyAnchor {
+  id: string;
+  type: string;
+  title: string;
+  url?: string;
+  score?: number;
+}
+
 export interface HierarchyData {
-  anchor_id: string;
-  anchor_type: string;
-  anchor_title: string;
+  anchor: HierarchyAnchor;
   tree: HierarchyNode;
-  truncated: boolean;
-  total_nodes: number;
+  anchor_path: string[];  // IDs from root to anchor
 }
 
 export interface GroupedSearchResults {

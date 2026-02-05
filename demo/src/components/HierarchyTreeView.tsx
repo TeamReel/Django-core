@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import type { HierarchyNode, HierarchyData } from '../hooks/useSearch';
 
@@ -6,8 +6,18 @@ interface HierarchyTreeViewProps {
   hierarchy: HierarchyData;
 }
 
-function TreeNode({ node, depth = 0 }: { node: HierarchyNode; depth?: number }) {
-  const [isExpanded, setIsExpanded] = useState(depth < 2);
+interface TreeNodeProps {
+  node: HierarchyNode;
+  depth?: number;
+  anchorPath: string[];
+  anchorId: string;
+}
+
+function TreeNode({ node, depth = 0, anchorPath, anchorId }: TreeNodeProps) {
+  // Auto-expand nodes that are in the path to the anchor
+  const isInPath = anchorPath.includes(node.id);
+  const isAnchor = node.id === anchorId;
+  const [isExpanded, setIsExpanded] = useState(isInPath || depth < 1);
   const hasChildren = node.children && node.children.length > 0;
 
   const getTypeIcon = (type: string): string => {
@@ -38,6 +48,29 @@ function TreeNode({ node, depth = 0 }: { node: HierarchyNode; depth?: number }) 
     return colors[type.toLowerCase()] || '#6b7280';
   };
 
+  // Determine styling based on anchor status
+  const getNodeStyle = () => {
+    if (isAnchor) {
+      return {
+        background: 'var(--color-primary, #3b82f6)',
+        border: '2px solid var(--color-primary, #3b82f6)',
+        color: '#fff',
+      };
+    }
+    if (isInPath) {
+      return {
+        background: 'var(--color-bg-highlight, #fef3c7)',
+        border: '2px solid var(--color-warning, #f59e0b)',
+      };
+    }
+    return {
+      background: 'var(--color-bg-surface)',
+      border: '1px solid var(--color-border)',
+    };
+  };
+
+  const nodeStyle = getNodeStyle();
+
   return (
     <div style={{ marginLeft: depth > 0 ? '24px' : 0 }}>
       <div
@@ -46,10 +79,9 @@ function TreeNode({ node, depth = 0 }: { node: HierarchyNode; depth?: number }) 
           alignItems: 'center',
           gap: '8px',
           padding: '8px 12px',
-          background: depth === 0 ? 'var(--color-bg-highlight, #fef3c7)' : 'var(--color-bg-surface)',
           borderRadius: '6px',
           marginBottom: '4px',
-          border: depth === 0 ? '2px solid var(--color-primary, #f59e0b)' : '1px solid var(--color-border)',
+          ...nodeStyle,
         }}
       >
         {/* Expand/Collapse Toggle */}
@@ -62,12 +94,12 @@ function TreeNode({ node, depth = 0 }: { node: HierarchyNode; depth?: number }) 
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'none',
-              border: '1px solid var(--color-border)',
+              background: isAnchor ? 'rgba(255,255,255,0.2)' : 'none',
+              border: isAnchor ? '1px solid rgba(255,255,255,0.3)' : '1px solid var(--color-border)',
               borderRadius: '4px',
               cursor: 'pointer',
               fontSize: '12px',
-              color: 'var(--color-text-secondary)',
+              color: isAnchor ? '#fff' : 'var(--color-text-secondary)',
             }}
             aria-label={isExpanded ? 'Collapse' : 'Expand'}
           >
@@ -84,8 +116,8 @@ function TreeNode({ node, depth = 0 }: { node: HierarchyNode; depth?: number }) 
             textTransform: 'uppercase',
             padding: '2px 8px',
             borderRadius: '4px',
-            background: `${getTypeColor(node.type)}20`,
-            color: getTypeColor(node.type),
+            background: isAnchor ? 'rgba(255,255,255,0.2)' : `${getTypeColor(node.type)}20`,
+            color: isAnchor ? '#fff' : getTypeColor(node.type),
             letterSpacing: '0.5px',
           }}
         >
@@ -93,24 +125,38 @@ function TreeNode({ node, depth = 0 }: { node: HierarchyNode; depth?: number }) 
         </span>
 
         {/* Title/Link */}
-        <Link
-          to={node.url}
-          style={{
-            color: 'var(--color-text-primary)',
-            textDecoration: 'none',
-            fontWeight: depth === 0 ? '600' : '500',
-            flex: 1,
-          }}
-        >
-          {node.title}
-        </Link>
+        {node.url ? (
+          <Link
+            to={node.url}
+            style={{
+              color: isAnchor ? '#fff' : 'var(--color-text-primary)',
+              textDecoration: 'none',
+              fontWeight: isAnchor || isInPath ? '600' : '500',
+              flex: 1,
+            }}
+          >
+            {node.title}
+            {isAnchor && ' ← Search Result'}
+          </Link>
+        ) : (
+          <span
+            style={{
+              color: isAnchor ? '#fff' : 'var(--color-text-primary)',
+              fontWeight: isAnchor || isInPath ? '600' : '500',
+              flex: 1,
+            }}
+          >
+            {node.title}
+            {isAnchor && ' ← Search Result'}
+          </span>
+        )}
 
         {/* Truncation Indicator */}
         {node.is_truncated && (
           <span
             style={{
               fontSize: '11px',
-              color: 'var(--color-text-tertiary)',
+              color: isAnchor ? 'rgba(255,255,255,0.7)' : 'var(--color-text-tertiary)',
               fontStyle: 'italic',
             }}
           >
@@ -123,13 +169,19 @@ function TreeNode({ node, depth = 0 }: { node: HierarchyNode; depth?: number }) 
       {hasChildren && isExpanded && (
         <div
           style={{
-            borderLeft: '2px solid var(--color-border)',
+            borderLeft: isInPath ? '2px solid var(--color-primary, #3b82f6)' : '2px solid var(--color-border)',
             marginLeft: '12px',
             paddingLeft: '12px',
           }}
         >
           {node.children.map((child) => (
-            <TreeNode key={child.id} node={child} depth={depth + 1} />
+            <TreeNode
+              key={child.id}
+              node={child}
+              depth={depth + 1}
+              anchorPath={anchorPath}
+              anchorId={anchorId}
+            />
           ))}
         </div>
       )}
@@ -150,7 +202,28 @@ function TreeNode({ node, depth = 0 }: { node: HierarchyNode; depth?: number }) 
   );
 }
 
+function countNodes(node: HierarchyNode): number {
+  let count = 1;
+  if (node.children) {
+    for (const child of node.children) {
+      count += countNodes(child);
+    }
+  }
+  return count;
+}
+
 export default function HierarchyTreeView({ hierarchy }: HierarchyTreeViewProps) {
+  const anchorPath = hierarchy.anchor_path || [];
+  const anchorId = hierarchy.anchor?.id || anchorPath[anchorPath.length - 1] || '';
+
+  const totalNodes = useMemo(() => {
+    return hierarchy.tree ? countNodes(hierarchy.tree) : 0;
+  }, [hierarchy.tree]);
+
+  if (!hierarchy.tree) {
+    return null;
+  }
+
   return (
     <div
       style={{
@@ -186,12 +259,15 @@ export default function HierarchyTreeView({ hierarchy }: HierarchyTreeViewProps)
             color: 'var(--color-text-secondary)',
           }}
         >
-          {hierarchy.total_nodes} items
-          {hierarchy.truncated && ' (truncated)'}
+          {totalNodes} items • Showing "{hierarchy.anchor?.title}"
         </span>
       </div>
 
-      <TreeNode node={hierarchy.tree} />
+      <TreeNode
+        node={hierarchy.tree}
+        anchorPath={anchorPath}
+        anchorId={anchorId}
+      />
     </div>
   );
 }
