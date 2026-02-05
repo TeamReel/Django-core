@@ -36,7 +36,11 @@ class ProjectsConfig(AppConfig):
             "User removed from project",
             required_metadata_keys=["project_id", "user_id"],
         )
+        from search.registry import search_registry
+        from projects.models import ProjectMembership
+        from projects.search_indexes import ProjectMembershipIndex
 
+        search_registry.register(ProjectMembership, ProjectMembershipIndex)
         # Register audit events for invitations
         register_event_type(
             "project.invitation.created",

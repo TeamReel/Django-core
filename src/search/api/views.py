@@ -31,6 +31,7 @@ CATEGORY_TO_MODEL_LABELS = {
     "periods": ["activities.period"],
     "seasons": ["activities.period"],
     "competitions": ["activities.period"],
+    "members": ["projects.projectmembership"],
 }
 
 
@@ -632,7 +633,7 @@ class SearchAPIView(APIView):
             results = queryset[:100]
 
             # Frontend grouping order:
-            # Federation, Club, Team, Season, Competition, Match, User
+            # Federation, Club, Team, Season, Competition, Match, Member, User
             grouped: dict[str, list] = {
                 "organisations": [],
                 "clubs": [],
@@ -640,6 +641,7 @@ class SearchAPIView(APIView):
                 "seasons": [],
                 "competitions": [],
                 "matches": [],
+                "members": [],
                 "users": [],
             }
             max_per_group = 5
@@ -670,6 +672,8 @@ class SearchAPIView(APIView):
                         key = None
                 elif model_name == "user":
                     key = "users"
+                elif model_name == "projectmembership":
+                    key = "members"
                 elif model_name in {"organisation", "organization"}:
                     key = "organisations"
                 else:
@@ -687,6 +691,7 @@ class SearchAPIView(APIView):
                 "seasons",
                 "competitions",
                 "matches",
+                "members",
                 "users",
             ]:
                 if grouped.get(key):
