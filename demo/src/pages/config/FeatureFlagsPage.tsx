@@ -65,6 +65,11 @@ export const FeatureFlagsPage: React.FC = () => {
   // Derived state from context switcher
   const currentOrgId = context.organisation?.id ? String(context.organisation.id) : null;
 
+  const isThemeFlagKey = (key: string): boolean => {
+    const normalized = String(key || '').toLowerCase();
+    return normalized.includes('dark_mode') || normalized.includes('dark_theme');
+  };
+
   // Use useAuth for superadmin check (most reliable source)
   const isSuperadmin = Boolean((user as any)?.is_superuser) || String((user as any)?.role || '').toLowerCase() === 'superadmin';
 
@@ -253,6 +258,8 @@ export const FeatureFlagsPage: React.FC = () => {
     );
   }
 
+  const displayFlags = flags.filter((flag) => !isThemeFlagKey(flag.key));
+
   return (
     <>
       <PageHeader
@@ -305,7 +312,7 @@ export const FeatureFlagsPage: React.FC = () => {
                 (Demo Shell requires a valid backend session for this page)
               </div>
             </div>
-          ) : flags.length === 0 ? (
+          ) : displayFlags.length === 0 ? (
             <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               {useApi ? (
                 <div className="flex flex-col items-center gap-4">
@@ -342,7 +349,7 @@ export const FeatureFlagsPage: React.FC = () => {
                 { key: 'rollout_percentage', label: 'Rollout %' },
                 { key: 'actions', label: 'Actions' },
               ]}
-              rows={flags.map((flag) => {
+              rows={displayFlags.map((flag) => {
                 // GLOBAL mode - simple display
                 const displayEnabled = flag.enabled;
 

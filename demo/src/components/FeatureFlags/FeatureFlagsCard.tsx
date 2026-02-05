@@ -101,9 +101,17 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
     }
   };
 
+  const isThemeFlagKey = (key: string): boolean => {
+    const normalized = String(key || '').toLowerCase();
+    return normalized.includes('dark_mode') || normalized.includes('dark_theme');
+  };
+
+  const filteredGlobalFlags = globalFlags.filter((flag) => !isThemeFlagKey(flag.key));
+  const filteredScopeFlags = flags.filter((flag) => !isThemeFlagKey(flag.key));
+
   // Merge global and scope flags
-  const mergedFlags = globalFlags.map(gf => {
-    const scopeFlag = flags.find(f => f.key === gf.key);
+  const mergedFlags = filteredGlobalFlags.map(gf => {
+    const scopeFlag = filteredScopeFlags.find(f => f.key === gf.key);
     return {
       key: gf.key,
       description: gf.description,

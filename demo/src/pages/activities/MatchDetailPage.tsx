@@ -5,6 +5,7 @@ import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { fetchFlags } from '../../utils/featureFlagsApi';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import GovernanceSummaryCard from '../../components/Governance/GovernanceSummaryCard';
@@ -189,6 +190,8 @@ export default function HierarchyMatchDetailPage() {
   const [selectedContentTypeLabel, setSelectedContentTypeLabel] = useState<string>('');
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
   const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [templateFlagMap, setTemplateFlagMap] = useState<Record<string, boolean>>({});
+  const [templateFlagsLoading, setTemplateFlagsLoading] = useState(false);
 
   // Content Items - track generated content for this match
   type ContentItemStatus = 'queued' | 'generating' | 'completed' | 'failed' | 'approved' | 'rejected';
@@ -204,6 +207,39 @@ export default function HierarchyMatchDetailPage() {
   const [contentItemsLoading, setContentItemsLoading] = useState(false);
   const [selectedContentItem, setSelectedContentItem] = useState<ContentItem | null>(null);
   const [isContentPreviewOpen, setIsContentPreviewOpen] = useState(false);
+
+  const normalizeFlagKey = (value: string): string =>
+    String(value || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  const slugify = (value: string): string =>
+    String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/_/g, '-')
+      .replace(/[^a-z0-9-]/g, '');
+
+  const buildTemplateFlagKeys = (template: ContentTemplate): string[] => {
+    const type = slugify(template.template_type);
+    const subtype = slugify(template.template_subtype || template.template_type);
+    const style = slugify(template.style_variant || '');
+    if (!type || !subtype) return [];
+    const keys: string[] = [];
+    if (style) keys.push(`content.${type}.${subtype}.style.${style}`);
+    keys.push(`content.${type}.${subtype}`);
+    keys.push(`content.${type}`);
+    return keys;
+  };
+
+  const isTemplateEnabled = (template: ContentTemplate): boolean => {
+    if (!templateFlagMap || Object.keys(templateFlagMap).length === 0) return true;
+    const keys = buildTemplateFlagKeys(template);
+    for (const key of keys) {
+      const normalized = normalizeFlagKey(key);
+      if (normalized in templateFlagMap) return Boolean(templateFlagMap[normalized]);
+    }
+    return true;
+  };
 
   // Fetch content items for this match
   const fetchContentItems = useCallback(async () => {
@@ -263,6 +299,27 @@ export default function HierarchyMatchDetailPage() {
     setSelectedContentItem(null);
   };
 
+  const fetchTemplateAvailabilityFlags = useCallback(async () => {
+    if (!org?.id) return;
+    setTemplateFlagsLoading(true);
+    try {
+      const flags = await fetchFlags(String(org.id), club?.id ? String(club.id) : undefined);
+      const map: Record<string, boolean> = {};
+      flags.forEach((flag) => {
+        map[normalizeFlagKey(flag.key)] = Boolean(flag.enabled);
+      });
+      setTemplateFlagMap(map);
+    } catch (err) {
+      console.error('[Content] Failed to fetch template availability flags:', err);
+    } finally {
+      setTemplateFlagsLoading(false);
+    }
+  }, [org?.id, club?.id]);
+
+  useEffect(() => {
+    fetchTemplateAvailabilityFlags();
+  }, [fetchTemplateAvailabilityFlags]);
+
   // Fetch available templates for all content types
   const fetchAvailableTemplates = useCallback(async () => {
     setTemplatesLoading(true);
@@ -313,6 +370,17 @@ export default function HierarchyMatchDetailPage() {
 
         // Filter templates that match the sport (or have no sport = universal)
         const matchingTemplates = allTemplates.filter(t => {
+          const templateOrg = (t as any).organisation ?? null;
+          const templateProject = (t as any).project ?? null;
+
+          // If template is scoped to a specific organisation, enforce it
+          if (templateOrg && String(templateOrg) !== String(org?.id || '')) {
+            return false;
+          }
+          // If template is scoped to a specific project/club, enforce it
+          if (templateProject && String(templateProject) !== String(club?.id || '')) {
+            return false;
+          }
           // Template has no sport = universal, include it
           if (!t.sport) {
             console.log('[Content] ✓ Template', t.name, '- universal (no sport)');
@@ -371,8 +439,11 @@ export default function HierarchyMatchDetailPage() {
           return false;
         });
 
-        console.log('[Content] Matching templates for sport:', matchingTemplates.length);
-        console.log('[Content] Template details:', matchingTemplates.map(t => ({
+        // Apply feature flag availability (type/subtype/style)
+        const availabilityFiltered = matchingTemplates.filter((t) => isTemplateEnabled(t));
+
+        console.log('[Content] Matching templates for sport:', availabilityFiltered.length);
+        console.log('[Content] Template details:', availabilityFiltered.map(t => ({
           name: t.name,
           type: t.template_type,
           subtype: t.template_subtype,
@@ -381,7 +452,7 @@ export default function HierarchyMatchDetailPage() {
 
         // Group templates by subtype
         const grouped: Record<string, ContentTemplate[]> = {};
-        matchingTemplates.forEach(t => {
+        availabilityFiltered.forEach(t => {
           const subtype = t.template_subtype || t.template_type;
           if (!grouped[subtype]) grouped[subtype] = [];
           grouped[subtype].push(t);
@@ -393,7 +464,7 @@ export default function HierarchyMatchDetailPage() {
     } finally {
       setTemplatesLoading(false);
     }
-  }, [competition?.sport, org?.sport]);
+  }, [competition?.sport, org?.sport, org?.id, club?.id, templateFlagMap]);
 
   // Fetch templates when component mounts or sport changes
   useEffect(() => {

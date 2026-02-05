@@ -4,8 +4,6 @@ import type { Organisation } from '@django-core/context-switcher';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@django-core/theme-system';
-import { useFeatureFlag } from '../hooks/useFeatureFlag';
-import { useUserRole } from '../hooks/useUserRole';
 import { getApiBaseUrl } from '../utils/apiBase';
 
 interface NotificationResponse {
@@ -26,71 +24,7 @@ export default function TopNavigation() {
   const { mode: theme, setTheme } = useTheme();
   const [language, setLanguage] = useState<'EN' | 'NL' | 'DE'>('EN');
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
-  const { isSystemAdmin } = useUserRole();
-
-  // Check if theme toggle feature is enabled (from feature flags system)
-  const themeToggleEnabled = useFeatureFlag('dark_themeOverride', true); // Resolved with org overrides
-  const [themeToggleGlobalEnabled, setThemeToggleGlobalEnabled] = useState<boolean>(true); // Global value for superadmins
-
-  // For superadmins: Fetch the global flag value (not resolved with org overrides)
-  const normalizeFlagValue = (value: unknown): boolean | null => {
-    if (value === null || value === undefined) return null;
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'string') {
-      const lowered = value.trim().toLowerCase();
-      if (lowered === 'true') return true;
-      if (lowered === 'false') return false;
-    }
-    if (typeof value === 'number') return value !== 0;
-    return null;
-  };
-
-  useEffect(() => {
-    if (!isSystemAdmin) return;
-
-    const fetchGlobalFlag = async () => {
-      try {
-        const baseUrl = getApiBaseUrl();
-        const response = await fetch(`${baseUrl}/api/v1/settings/feature-flags/resolve-all/`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const flags = data.data?.results || data.results || data.data || data || [];
-          const themeFlag = flags.find((f: any) => ['dark_themeOverride', 'dark_theme', 'dark_mode'].includes(f.key));
-
-          if (themeFlag) {
-            const normalizedGlobal = normalizeFlagValue(themeFlag.global_value);
-            const normalizedEnabled = normalizeFlagValue(themeFlag.enabled);
-            const globalValue = normalizedGlobal ?? normalizedEnabled ?? true;
-            setThemeToggleGlobalEnabled(globalValue);
-          }
-        }
-      } catch (err) {
-        console.error('[TopNavigation] Error fetching global flag:', err);
-      }
-    };
-
-    fetchGlobalFlag();
-
-    // Listen for feature flag changes
-    const handleFlagChange = () => {
-      fetchGlobalFlag();
-    };
-
-    window.addEventListener('storage', handleFlagChange);
-    window.addEventListener('featureFlagsChanged' as any, handleFlagChange);
-
-    return () => {
-      window.removeEventListener('storage', handleFlagChange);
-      window.removeEventListener('featureFlagsChanged' as any, handleFlagChange);
-    };
-  }, [isSystemAdmin]);
+  const themeToggleEnabled = true; // Always show toggle
 
   // Load language from localStorage
   useEffect(() => {
@@ -188,8 +122,8 @@ export default function TopNavigation() {
 
       {user && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {/* Theme Toggle - for superadmin: check global flag only, for others: check resolved flag (with org overrides) */}
-          {(isSystemAdmin ? themeToggleGlobalEnabled : themeToggleEnabled) && (
+          {/* Theme Toggle */}
+          {themeToggleEnabled && (
             <button
               onClick={toggleTheme}
               style={{

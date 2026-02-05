@@ -31,7 +31,6 @@ import {
   Globe, Bell, Coins, LucideIcon, PanelLeftOpen, PanelLeftClose, Command, Plus
 } from 'lucide-react';
 import { AppIcon } from './AppIcon';
-import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { useUserRole } from './PermissionGuards';
 import ProfileAvatarDropdown from './ProfileAvatarDropdown';
 import { SearchBar } from './SearchBar';
@@ -80,8 +79,6 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   const debugLog = (...args: unknown[]) => {
     if (import.meta.env.DEV) console.log(...args);
   };
-  const themeToggleEnabled = useFeatureFlag('dark_themeOverride', true); // Theme toggle feature flag (resolved with org overrides)
-  const [themeToggleGlobalEnabled, setThemeToggleGlobalEnabled] = useState<boolean>(true); // Global flag value (for superadmins)
   const { isSystemAdmin, isLandAdmin, isOrgAdmin, hasOrgRole } = useUserRole();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -122,17 +119,6 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
     isPlatformRoute
   );
 
-  const normalizeFlagValue = (value: unknown): boolean | null => {
-    if (value === null || value === undefined) return null;
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'string') {
-      const lowered = value.trim().toLowerCase();
-      if (lowered === 'true') return true;
-      if (lowered === 'false') return false;
-    }
-    if (typeof value === 'number') return value !== 0;
-    return null;
-  };
 
   const orgIdForMyBalance = String((context as any)?.organisation?.id || '').trim();
   const currentUserId = (user as any)?.id;
@@ -262,57 +248,6 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
     }
   }, []);
 
-  // For superadmins: Fetch the global flag value (not resolved with org overrides)
-  useEffect(() => {
-    if (!isSystemAdmin) return; // Only for superadmins
-
-    const fetchGlobalFlag = async () => {
-      try {
-        // Fetch flags without org context to get global values
-        const baseUrl = getApiBaseUrl();
-        const response = await fetch(`${baseUrl}/api/v1/settings/feature-flags/resolve-all/`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const flags = data.data?.results || data.results || data.data || data || [];
-          const themeFlag = flags.find((f: any) => ['dark_themeOverride', 'dark_theme', 'dark_mode'].includes(f.key));
-
-          if (themeFlag) {
-            // For superadmins, ONLY use global_value (ignore resolved/org overrides)
-            const normalizedGlobal = normalizeFlagValue(themeFlag.global_value);
-            const normalizedEnabled = normalizeFlagValue(themeFlag.enabled);
-            const globalValue = normalizedGlobal ?? normalizedEnabled ?? true; // Default to true if nothing present
-            debugLog('[TopNavbar] Global dark_mode flag for superadmin:', globalValue, 'raw:', themeFlag);
-            setThemeToggleGlobalEnabled(globalValue);
-          }
-        }
-      } catch (err) {
-        console.error('[TopNavbar] Error fetching global flag:', err);
-      }
-    };
-
-    fetchGlobalFlag();
-
-    // Listen for feature flag changes
-    const handleFlagChange = () => {
-      debugLog('[TopNavbar] Feature flags changed, refetching global flag');
-      fetchGlobalFlag();
-    };
-
-    window.addEventListener('storage', handleFlagChange);
-    window.addEventListener('featureFlagsChanged' as any, handleFlagChange);
-
-    return () => {
-      window.removeEventListener('storage', handleFlagChange);
-      window.removeEventListener('featureFlagsChanged' as any, handleFlagChange);
-    };
-  }, [isSystemAdmin]);
 
   // Load language from localStorage
   useEffect(() => {
@@ -876,8 +811,8 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             </div>
             )}
 
-            {/* Theme Toggle - hidden on mobile, for superadmin: check global flag only, for others: check resolved flag (with org overrides) */}
-            {!isMobile && (isSystemAdmin ? themeToggleGlobalEnabled : themeToggleEnabled) && (
+            {/* Theme Toggle - hidden on mobile */}
+            {!isMobile && (
               <button
                 onClick={toggleTheme}
                 className="nav-icon-button"

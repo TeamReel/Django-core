@@ -197,11 +197,60 @@ export async function deleteOrgOverride(overrideId: string): Promise<void> {
 }
 
 export async function seedDefaultFlags(): Promise<void> {
-  const defaults = [
-    { key: 'dark_mode', description: 'Enable dark mode theme support', enabled: true },
-  ];
-
   const baseUrl = getApiBaseUrl();
+
+  const normalizeKey = (value: string): string =>
+    String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/_/g, '-')
+      .replace(/[^a-z0-9.-]/g, '');
+
+  const buildTemplateFlagKeys = (template: any): string[] => {
+    const type = normalizeKey(template?.template_type || '');
+    const subtype = normalizeKey(template?.template_subtype || template?.template_type || '');
+    const style = normalizeKey(template?.style_variant || '');
+
+    if (!type || !subtype) return [];
+
+    const keys = new Set<string>();
+    keys.add(`content.${type}`);
+    keys.add(`content.${type}.${subtype}`);
+    if (style) keys.add(`content.${type}.${subtype}.style.${style}`);
+    return Array.from(keys);
+  };
+
+  const fetchTemplates = async (): Promise<any[]> => {
+    try {
+      const params = new URLSearchParams();
+      params.append('is_active', 'true');
+      params.append('page_size', '500');
+      const res = await fetch(`${baseUrl}/api/v1/content-generation/templates/?${params.toString()}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) return [];
+      const data = await res.json();
+      const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
+      return Array.isArray(rawResults) ? rawResults : [];
+    } catch (err) {
+      console.warn('Failed to fetch templates for seeding flags', err);
+      return [];
+    }
+  };
+
+  const templates = await fetchTemplates();
+  const flagKeys = new Set<string>();
+  templates.forEach((template) => {
+    buildTemplateFlagKeys(template).forEach((key) => flagKeys.add(key));
+  });
+
+  const defaults = Array.from(flagKeys).map((key) => ({
+    key,
+    description: `Content template availability: ${key}`,
+    enabled: true,
+  }));
 
   for (const flag of defaults) {
     // Check if exists first (optional, but good for idempotency if we had a check endpoint)

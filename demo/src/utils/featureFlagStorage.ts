@@ -37,18 +37,7 @@ export interface FlagStorage {
   provisioning: Record<string, Record<string, boolean>>;
 }
 
-const DEFAULT_FLAGS: FeatureFlag[] = [
-  {
-    id: '2',
-    name: 'Dark Mode',
-    key: 'dark_mode',
-    description: 'Allow users to switch between light and dark themes',
-    enabled: true,
-    rollout_percentage: 100,
-    created_at: '2024-02-10T09:00:00Z',
-    updated_at: '2024-12-15T11:20:00Z',
-  },
-];
+const DEFAULT_FLAGS: FeatureFlag[] = [];
 
 /**
  * Get flag storage from localStorage

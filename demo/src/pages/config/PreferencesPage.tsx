@@ -13,7 +13,6 @@ import {
 } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
 import { useTheme } from '@django-core/theme-system';
-import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import { useAuth } from "@django-core/auth-ui";
 import { useLocation } from 'react-router-dom';
 import type { AuditEvent } from '../../types';
@@ -82,7 +81,6 @@ export const PreferencesPage: React.FC = () => {
   const location = useLocation();
   const { setTheme, mode, resolvedMode } = useTheme();
   const { user, setUser } = useAuth();
-  const darkModeEnabled = useFeatureFlag('dark_themeOverride', true); // Default enabled
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [initialPreferences, setInitialPreferences] = useState<UserPreferences | null>(null);
   const [effectivePrefs, setEffectivePrefs] = useState<I18nEffectivePreferences | null>(null);
@@ -1931,9 +1929,7 @@ export const PreferencesPage: React.FC = () => {
 
             {activeTab === 'personalisation' && (
               <>
-                {/* Theme Section - gated by dark_mode feature flag */}
-                {darkModeEnabled ? (
-                  <Card>
+                <Card>
                     <h3 className="text-lg font-semibold mb-4">Appearance</h3>
                     <div style={{ maxWidth: '800px' }}>
                       <label className="block text-sm font-medium mb-3">
@@ -2002,15 +1998,6 @@ export const PreferencesPage: React.FC = () => {
                       </p>
                     </div>
                   </Card>
-                ) : (
-                  <Card>
-                    <h3 className="text-lg font-semibold mb-4">Appearance</h3>
-                    <Alert variant="info">
-                      <strong>Theme settings disabled</strong> - The dark mode feature is currently disabled by a feature flag.
-                      Contact your administrator to enable theme customization.
-                    </Alert>
-                  </Card>
-                )}
 
                 {/* Localisation Section */}
                 <Card style={{ marginTop: '24px' }}>
