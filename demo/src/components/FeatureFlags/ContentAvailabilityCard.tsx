@@ -95,6 +95,7 @@ export default function ContentAvailabilityCard({
     const baseUrl = getApiBaseUrl();
     const params = new URLSearchParams();
     params.append('is_active', 'true');
+    params.append('is_latest', 'true');
     params.append('page_size', '500');
 
     const response = await fetch(`${baseUrl}/api/v1/content-generation/templates/?${params.toString()}`, {

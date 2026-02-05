@@ -383,11 +383,11 @@ export async function syncFlags(): Promise<{ total: number; created: number; upd
     return results;
   };
 
-  // Fetch all templates
+  // Fetch only active + latest templates (matches backend canonical set)
   const fetchTemplates = async (): Promise<any[]> => {
     try {
       const allTemplates: any[] = [];
-      let nextUrl: string | null = `${baseUrl}/api/v1/content-generation/templates/?page_size=200`;
+      let nextUrl: string | null = `${baseUrl}/api/v1/content-generation/templates/?page_size=200&is_active=true&is_latest=true`;
       while (nextUrl) {
         const res: Response = await fetch(nextUrl, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
         if (!res.ok) break;
