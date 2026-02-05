@@ -483,6 +483,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Competitions', path: makeOrgSectionUrl(orgId, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeOrgSectionUrl(orgId, 'matches'), icon: Timer },
                     { label: 'Members', path: makeOrgSectionUrl(orgId, 'users'), icon: Users },
+                    { label: 'Settings', path: makeOrgSectionUrl(orgId, 'settings'), icon: Settings },
                 ];
                 break;
             }
@@ -507,6 +508,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         { label: 'Audit', path: makeTabUrl(baseUrl, 'audit'), icon: Scroll },
                         { label: 'Governance', path: makeTabUrl(baseUrl, 'governance'), icon: BookOpen },
                         { label: 'Operations', path: makeTabUrl(baseUrl, 'operations'), icon: Settings },
+                        { label: 'Settings', path: makeTabUrl(baseUrl, 'settings'), icon: Settings },
                     ];
                     break;
                 }
@@ -573,6 +575,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                     { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                    { label: 'Settings', path: makeTabUrl(baseUrl, 'settings'), icon: Settings },
                 ];
                 break;
             }

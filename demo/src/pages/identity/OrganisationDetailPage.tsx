@@ -461,6 +461,7 @@ export const OrganisationDetailPage: React.FC = () => {
       { id: 'audit' as const, label: 'Audit' },
       { id: 'governance' as const, label: 'Governance' },
       { id: 'operations' as const, label: 'Operations (Admin)' },
+      { id: 'settings' as const, label: 'Settings' },
     ],
     []
   );
