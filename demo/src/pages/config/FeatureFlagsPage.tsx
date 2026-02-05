@@ -65,6 +65,7 @@ export const FeatureFlagsPage: React.FC = () => {
   const [filterStyle, setFilterStyle] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkUpdating, setBulkUpdating] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   // This page is GLOBAL-only
   const editMode = 'global';
@@ -339,8 +340,6 @@ export const FeatureFlagsPage: React.FC = () => {
       })
       .filter(Boolean)
   )).sort();
-
-  const [syncing, setSyncing] = useState(false);
 
   // Multi-select helpers
   const allSelected = displayFlags.length > 0 && displayFlags.every((f) => selectedIds.has(f.id));
