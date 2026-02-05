@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Text, Stack, Alert, Badge, Button } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
-import BrandProfileEditModal from './BrandProfileEditModal';
+import { EntityEditModal } from '../EntityEditModal';
+import type { EntityType } from '../EntityEditModal';
 import {
   Palette,
   Image,
@@ -785,14 +786,21 @@ export default function BrandIdentityPage({
 
       {/* Edit Modal */}
       {profile.can_edit && (
-        <BrandProfileEditModal
+        <EntityEditModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           onSaved={() => {
             setIsEditModalOpen(false);
             fetchProfile(); // Refresh data after save
           }}
-          profile={profile}
+          entityType={organisationId ? 'organisation' : 'club'}
+          entityId={organisationId || projectId || ''}
+          entityName={entityName}
+          organisationId={organisationId}
+          projectId={projectId}
+          initialBrandProfile={profile}
+          canEditGeneral={true}
+          canEditBrand={true}
         />
       )}
     </Stack>
