@@ -1246,7 +1246,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                   width: 32,
                   height: 32,
                   borderRadius: '6px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  backgroundColor: 'transparent',
                   border: '1px solid var(--sidebar-a-border)',
                   cursor: 'pointer',
                   color: 'var(--sidebar-a-text)',
@@ -1257,10 +1257,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                   zIndex: 25,
               }}
               onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
               }}
               onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
               }}
           >
               <AppIcon icon={PanelLeft} size={16} />
