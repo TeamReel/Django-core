@@ -983,48 +983,6 @@ export default function TeamOrganisationDetailPage() {
                 </Card>
               </div>
 
-              <IdentitySettingsCard
-                title="Team settings"
-                description="Used to prefill match creation (logo + default location)."
-                values={{
-                  logoUrl: String((team as any)?.metadata?.identity?.logo_url || ''),
-                  defaultLocation: String((team as any)?.metadata?.identity?.default_location || ''),
-                }}
-                canEdit={Boolean(team)}
-                onSave={async (next) => {
-                  if (!team) throw new Error('Team not loaded');
-                  const csrfToken = getCsrfToken();
-
-                  const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
-                    method: 'PATCH',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                      metadata: {
-                        ...((team as any)?.metadata || {}),
-                        identity: {
-                          ...(((team as any)?.metadata || {})?.identity || {}),
-                          logo_url: String(next.logoUrl || '').trim() || null,
-                          default_location: String(next.defaultLocation || '').trim() || null,
-                        },
-                      },
-                    }),
-                  });
-
-                  if (!res.ok) {
-                    const detail = await res.text().catch(() => '');
-                    throw new Error(detail || `Failed to save team settings (${res.status})`);
-                  }
-
-                  const raw = await res.json().catch(() => null);
-                  const updated: any = (raw?.data ?? raw) as any;
-                  setTeam((prev) => ({ ...(prev as any), ...(updated as any) }));
-                }}
-              />
-
               <Card>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Team Details</h3>
@@ -1270,10 +1228,56 @@ export default function TeamOrganisationDetailPage() {
           )}
 
           {activeTabFromUrl === 'identity' && team && (
-            <BrandIdentityPage
-              projectId={String(team.id)}
-              projectName={team.name}
-            />
+            <div className="space-y-6">
+              {/* Quick Settings - logo_url and default_location for match prefill */}
+              <IdentitySettingsCard
+                title="Quick Identity Settings"
+                description="Used to prefill match creation forms (logo + default location)."
+                values={{
+                  logoUrl: String((team as any)?.metadata?.identity?.logo_url || ''),
+                  defaultLocation: String((team as any)?.metadata?.identity?.default_location || ''),
+                }}
+                canEdit={Boolean(team)}
+                onSave={async (next) => {
+                  if (!team) throw new Error('Team not loaded');
+                  const csrfToken = getCsrfToken();
+
+                  const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
+                    method: 'PATCH',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                      metadata: {
+                        ...((team as any)?.metadata || {}),
+                        identity: {
+                          ...(((team as any)?.metadata || {})?.identity || {}),
+                          logo_url: String(next.logoUrl || '').trim() || null,
+                          default_location: String(next.defaultLocation || '').trim() || null,
+                        },
+                      },
+                    }),
+                  });
+
+                  if (!res.ok) {
+                    const detail = await res.text().catch(() => '');
+                    throw new Error(detail || `Failed to save team settings (${res.status})`);
+                  }
+
+                  const raw = await res.json().catch(() => null);
+                  const updated: any = (raw?.data ?? raw) as any;
+                  setTeam((prev) => ({ ...(prev as any), ...(updated as any) }));
+                }}
+              />
+
+              {/* Full Brand Profile - colors, fonts, assets from branding API */}
+              <BrandIdentityPage
+                projectId={String(team.id)}
+                projectName={team.name}
+              />
+            </div>
           )}
         </PageContent>
       </div>

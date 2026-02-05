@@ -1052,48 +1052,6 @@ export default function ClubOrganisationDetailPage() {
               {overviewError && <Alert variant="error">{overviewError}</Alert>}
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
-                              <IdentitySettingsCard
-                                title="Club settings"
-                                description="Used to prefill match creation (logo + default location)."
-                                values={{
-                                  logoUrl: String((club as any)?.metadata?.identity?.logo_url || ''),
-                                  defaultLocation: String((club as any)?.metadata?.identity?.default_location || ''),
-                                }}
-                                canEdit={Boolean(club)}
-                                onSave={async (next) => {
-                                  if (!club) throw new Error('Club not loaded');
-                                  const csrfToken = getCsrfToken();
-
-                                  const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/`, {
-                                    method: 'PATCH',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                      ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
-                                    },
-                                    credentials: 'include',
-                                    body: JSON.stringify({
-                                      metadata: {
-                                        ...((club as any)?.metadata || {}),
-                                        identity: {
-                                          ...(((club as any)?.metadata || {})?.identity || {}),
-                                          logo_url: String(next.logoUrl || '').trim() || null,
-                                          default_location: String(next.defaultLocation || '').trim() || null,
-                                        },
-                                      },
-                                    }),
-                                  });
-
-                                  if (!res.ok) {
-                                    const detail = await res.text().catch(() => '');
-                                    throw new Error(detail || `Failed to save club settings (${res.status})`);
-                                  }
-
-                                  const raw = await res.json().catch(() => null);
-                                  const updated = unwrapEnvelope<any>(raw);
-                                  setClub((prev) => ({ ...(prev as any), ...(updated as any) }));
-                                }}
-                              />
                 <Card style={{ padding: 16 }}>
                   <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
                     <div className="text-sm font-semibold text-gray-900">
@@ -1505,10 +1463,56 @@ export default function ClubOrganisationDetailPage() {
           )}
 
           {activeTabFromUrl === 'identity' && club && (
-            <BrandIdentityPage
-              projectId={String(club.id)}
-              projectName={club.name}
-            />
+            <div className="space-y-6">
+              {/* Quick Settings - logo_url and default_location for match prefill */}
+              <IdentitySettingsCard
+                title="Quick Identity Settings"
+                description="Used to prefill match creation forms (logo + default location)."
+                values={{
+                  logoUrl: String((club as any)?.metadata?.identity?.logo_url || ''),
+                  defaultLocation: String((club as any)?.metadata?.identity?.default_location || ''),
+                }}
+                canEdit={Boolean(club)}
+                onSave={async (next) => {
+                  if (!club) throw new Error('Club not loaded');
+                  const csrfToken = getCsrfToken();
+
+                  const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/`, {
+                    method: 'PATCH',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                      metadata: {
+                        ...((club as any)?.metadata || {}),
+                        identity: {
+                          ...(((club as any)?.metadata || {})?.identity || {}),
+                          logo_url: String(next.logoUrl || '').trim() || null,
+                          default_location: String(next.defaultLocation || '').trim() || null,
+                        },
+                      },
+                    }),
+                  });
+
+                  if (!res.ok) {
+                    const detail = await res.text().catch(() => '');
+                    throw new Error(detail || `Failed to save club settings (${res.status})`);
+                  }
+
+                  const raw = await res.json().catch(() => null);
+                  const updated = unwrapEnvelope<any>(raw);
+                  setClub((prev) => ({ ...(prev as any), ...(updated as any) }));
+                }}
+              />
+
+              {/* Full Brand Profile - colors, fonts, assets from branding API */}
+              <BrandIdentityPage
+                projectId={String(club.id)}
+                projectName={club.name}
+              />
+            </div>
           )}
 
           {activeTabFromUrl === 'settings' && club && orgIdForDirectoryLists && (

@@ -1496,60 +1496,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     <div className="space-y-6">
                       <Card>
                         <h3 className="text-lg font-semibold mb-3">Quick Actions</h3>
-                                              <IdentitySettingsCard
-                                                title="Season settings"
-                                                description="Optional identity fields (logo) used for downstream UI."
-                                                values={{
-                                                  logoUrl: String((season as any)?.metadata?.identity?.logo_url || ''),
-                                                  defaultLocation: String((season as any)?.metadata?.identity?.default_location || ''),
-                                                }}
-                                                canEdit={Boolean(userCanEditProject && season)}
-                                                onSave={async (next) => {
-                                                  if (!season?.id) throw new Error('Season not loaded');
-
-                                                  const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(String(season.id))}/`, {
-                                                    method: 'PATCH',
-                                                    headers: {
-                                                      'Content-Type': 'application/json',
-                                                      'X-CSRFToken': getCsrfToken(),
-                                                    },
-                                                    credentials: 'include',
-                                                    body: JSON.stringify({
-                                                      metadata: {
-                                                        ...((season as any)?.metadata || {}),
-                                                        identity: {
-                                                          ...(((season as any)?.metadata || {})?.identity || {}),
-                                                          logo_url: String(next.logoUrl || '').trim() || null,
-                                                          default_location: String(next.defaultLocation || '').trim() || null,
-                                                        },
-                                                      },
-                                                    }),
-                                                  });
-
-                                                  if (!res.ok) {
-                                                    const detail = await res.text().catch(() => '');
-                                                    throw new Error(detail || `Failed to save season settings (${res.status})`);
-                                                  }
-
-                                                  const raw = await res.json().catch(() => null);
-                                                  const updated: any = (raw?.data?.data || raw?.data || raw) as any;
-                                                  setSeason((prev: any) => ({ ...(prev as any), ...(updated as any) }));
-                                                }}
-                                              />
-
-                        {/* Season Assets Card for sponsor override */}
-                        <SeasonAssetsCard
-                          seasonId={String(season?.id || '')}
-                          seasonName={String(season?.name || '')}
-                          seasonMetadata={(season as any)?.metadata || {}}
-                          clubAssets={(club as any)?.metadata?.teamreel_assets}
-                          onAssetsUpdated={() => {
-                            // Reload to get updated metadata
-                            window.location.reload();
-                          }}
-                        />
 
                         <div className="space-y-2">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                            onClick={() => navigateToTab('identity')}
+                          >
+                            Brand Identity Settings
+                          </Button>
                           <Button
                             variant="secondary"
                             size="sm"
@@ -3063,12 +3019,69 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           )}
 
           {activeTab === 'identity' && season && project && (
-            <BrandIdentityPage
-              projectId={String(project.id)}
-              projectName={project.name}
-              seasonId={String(season.id)}
-              seasonName={season.name}
-            />
+            <div className="space-y-6">
+              {/* Quick Settings - logo_url and default_location for match prefill */}
+              <IdentitySettingsCard
+                title="Season Identity Settings"
+                description="Optional identity fields (logo + default location) used for downstream UI."
+                values={{
+                  logoUrl: String((season as any)?.metadata?.identity?.logo_url || ''),
+                  defaultLocation: String((season as any)?.metadata?.identity?.default_location || ''),
+                }}
+                canEdit={Boolean(userCanEditProject && season)}
+                onSave={async (next) => {
+                  if (!season?.id) throw new Error('Season not loaded');
+
+                  const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(String(season.id))}/`, {
+                    method: 'PATCH',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'X-CSRFToken': getCsrfToken(),
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                      metadata: {
+                        ...((season as any)?.metadata || {}),
+                        identity: {
+                          ...(((season as any)?.metadata || {})?.identity || {}),
+                          logo_url: String(next.logoUrl || '').trim() || null,
+                          default_location: String(next.defaultLocation || '').trim() || null,
+                        },
+                      },
+                    }),
+                  });
+
+                  if (!res.ok) {
+                    const detail = await res.text().catch(() => '');
+                    throw new Error(detail || `Failed to save season settings (${res.status})`);
+                  }
+
+                  const raw = await res.json().catch(() => null);
+                  const updated: any = (raw?.data?.data || raw?.data || raw) as any;
+                  setSeason((prev: any) => ({ ...(prev as any), ...(updated as any) }));
+                }}
+              />
+
+              {/* Season Assets - sponsor overlay */}
+              <SeasonAssetsCard
+                seasonId={String(season?.id || '')}
+                seasonName={String(season?.name || '')}
+                seasonMetadata={(season as any)?.metadata || {}}
+                clubAssets={(club as any)?.metadata?.teamreel_assets}
+                onAssetsUpdated={() => {
+                  // Reload to get updated metadata
+                  window.location.reload();
+                }}
+              />
+
+              {/* Full Brand Profile - colors, fonts, assets from branding API */}
+              <BrandIdentityPage
+                projectId={String(project.id)}
+                projectName={project.name}
+                seasonId={String(season.id)}
+                seasonName={season.name}
+              />
+            </div>
           )}
         </PageContent>
 
