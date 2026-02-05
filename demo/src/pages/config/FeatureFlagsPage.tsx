@@ -142,6 +142,7 @@ export const FeatureFlagsPage: React.FC = () => {
       if (useApi) {
         try {
           setApiError(null);
+          setLoading(true);
           // GLOBAL mode only - no org context
           debugLog('[FeatureFlagsPage] Fetching GLOBAL flags from API');
           let apiFlags = await fetchFlagsForScope('GLOBAL');
@@ -186,12 +187,15 @@ export const FeatureFlagsPage: React.FC = () => {
           setUseApi(false);
           const resolvedFlags = getAllFlagsWithResolution(null);
           setFlags(resolvedFlags);
+        } finally {
+          setLoading(false);
         }
       } else {
         // In demo mode (localStorage), fetch global flags
         const resolvedFlags = getAllFlagsWithResolution(null);
         debugLog('[FeatureFlagsPage] Loaded GLOBAL flags from storage. Count:', resolvedFlags.length);
         setFlags(resolvedFlags);
+        setLoading(false);
       }
     };
 
@@ -213,7 +217,7 @@ export const FeatureFlagsPage: React.FC = () => {
       window.removeEventListener('featureFlagsChanged', handleStorageChange);
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [useApi, isSuperadmin, initialLoadDone]);
+  }, [useApi, isSuperadmin, initialLoadDone, autoSeeded]);
 
   // Toggle flag (GLOBAL-only for superadmins)
   const handleToggleFlag = async (flag: FeatureFlag | ApiFeatureFlag) => {
