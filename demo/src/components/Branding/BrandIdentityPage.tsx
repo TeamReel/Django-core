@@ -40,7 +40,7 @@ interface BrandAsset {
   id: string;
   alt_text?: string;
   asset_type: string;
-  file_url?: string;
+  url?: string;
 }
 
 interface BrandProfile {
@@ -417,9 +417,9 @@ function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
                     padding: '16px',
                   }}
                 >
-                  {asset.file_url ? (
+                  {asset.url ? (
                     <img
-                      src={asset.file_url}
+                      src={asset.url}
                       alt={asset.alt_text || asset.asset_type}
                       style={{
                         maxWidth: '100%',
@@ -460,26 +460,63 @@ function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
   );
 }
 
-// Profile header with stats
+// Profile header with stats and logo preview
 function ProfileHeader({ profile, entityName, onEdit }: { profile: BrandProfile; entityName: string; onEdit?: () => void }) {
+  // Find logo asset (prefer logo_light, fallback to logo_dark or any logo)
+  const logoAsset = profile.assets?.find((a) =>
+    a.asset_type === 'logo_light' || a.asset_type === 'logo_dark' || a.asset_type.includes('logo')
+  );
+
   return (
     <Card style={{ padding: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-          <div
-            style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-dark, var(--app-primary)) 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-            }}
-          >
-            <Sparkles size={28} />
-          </div>
+          {/* Logo or fallback icon */}
+          {logoAsset?.url ? (
+            <div
+              style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '12px',
+                border: '1px solid var(--app-border)',
+                backgroundColor: 'var(--app-surface-alt, #f8f8f8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '8px',
+                overflow: 'hidden',
+              }}
+            >
+              <img
+                src={logoAsset.url}
+                alt={logoAsset.alt_text || `${entityName} logo`}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                }}
+                onError={(e) => {
+                  // Hide broken image and show fallback
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </div>
+          ) : (
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-dark, var(--app-primary)) 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+              }}
+            >
+              <Sparkles size={28} />
+            </div>
+          )}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Text weight="bold" size="lg">{profile.name}</Text>

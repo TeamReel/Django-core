@@ -55,7 +55,7 @@ interface BrandAsset {
   id: string;
   alt_text?: string;
   asset_type: string;
-  file_url?: string;
+  url?: string;
 }
 
 interface BrandProfile {
