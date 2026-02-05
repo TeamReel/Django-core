@@ -238,6 +238,13 @@ export const FeatureFlagsPage: React.FC = () => {
            debugLog('[FeatureFlagsPage] API: Updating global flag:', apiFlag.global_id, newState);
            await updateGlobalFlag(apiFlag.global_id, newState);
         } else if (currentOrgId) {
+           // Validate: org admins cannot enable when global is disabled
+           if (!isSuperadmin && newState === true && apiFlag.global_value === false) {
+             alert('Cannot enable this feature flag. Organisation admins can only be more restrictive than the global setting.\n\nGlobal setting is currently disabled.');
+             setUpdating(false);
+             return;
+           }
+
            // Org Override or standalone org flag
            if ((apiFlag.resolutionSource === 'override' || apiFlag.resolutionSource === 'organisation') && apiFlag.org_override_id) {
              debugLog('[FeatureFlagsPage] API: Updating org flag:', apiFlag.org_override_id, newState);
@@ -595,7 +602,16 @@ export const FeatureFlagsPage: React.FC = () => {
                 const displayEnabled = flag.enabled;
 
                 // Disabled state (cannot edit)
-                const isDisabled = !isSuperadmin && !currentOrgId;
+                let isDisabled = !isSuperadmin && !currentOrgId;
+                let disabledReason = '';
+
+                // Additional validation: prevent enabling when global is disabled (org admin only)
+                if (!isSuperadmin && editMode === 'org' && !displayEnabled && globalValue === false) {
+                  isDisabled = true;
+                  disabledReason = 'Cannot enable: Global setting is disabled. Organisation admins can only be more restrictive than the global setting.';
+                } else if (!isSuperadmin && !currentOrgId) {
+                  disabledReason = 'Select an organisation to manage feature flags.';
+                }
 
                 // Global Setting Column
                 let globalSettingNode: React.ReactNode = <span className="text-gray-400">-</span>;
@@ -668,6 +684,7 @@ export const FeatureFlagsPage: React.FC = () => {
                         size="sm"
                         variant={displayEnabled ? 'outline' : 'primary'}
                         disabled={isDisabled}
+                        title={isDisabled && disabledReason ? disabledReason : undefined}
                         onClick={(e: React.MouseEvent) => {
                           e.preventDefault();
                           e.stopPropagation();
