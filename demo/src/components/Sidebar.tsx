@@ -1232,7 +1232,39 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             })}
         </div>
 
-        {/* Collapse Toggle Removed */}
+        {/* Expand Button - visible when Panel A is collapsed */}
+        {!isOpen && (
+          <button
+              onClick={toggle}
+              title="Expand Sidebar"
+              aria-label="Expand Sidebar"
+              className="sidebar-expand-button"
+              style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  width: 32,
+                  height: 32,
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--sidebar-a-text)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+              }}
+          >
+              <AppIcon icon={PanelLeft} size={16} />
+          </button>
+        )}
       </aside>
 
       {/* --- PANEL B: SECONDARY CONTEXT SIDEBAR --- */}
