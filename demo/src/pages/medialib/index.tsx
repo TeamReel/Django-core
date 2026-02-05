@@ -204,7 +204,7 @@ const MediaLibraryPage: React.FC = () => {
                                 {/* Results Summary */}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <Text size="sm" color="secondary">
-                                        {items.length} item{items.length !== 1 ? 's' : ''} found
+                                        {(items || []).length} item{(items || []).length !== 1 ? 's' : ''} found
                                         {selectedTags.length > 0 && ` • Filtered by ${selectedTags.length} tag${selectedTags.length !== 1 ? 's' : ''}`}
                                     </Text>
                                 </div>

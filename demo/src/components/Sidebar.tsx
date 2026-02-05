@@ -1030,7 +1030,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             position: 'relative'
         }}
       >
-        {/* Collapse/Expand Toggle - positioned at top-right corner, between Panel A, B and TopNavbar */}
+        {/* Collapse/Expand Toggle - inside Panel A header area */}
         <button
             onClick={toggle}
             title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
@@ -1038,34 +1038,32 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             className="sidebar-collapse-button"
             style={{
                 position: 'absolute',
-                top: 12,
-                right: -14,
-                width: 28,
-                height: 28,
-                borderRadius: '50%',
-                backgroundColor: 'var(--app-surface)',
-                border: '1px solid var(--app-border)',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                top: 18,
+                right: 12,
+                width: 32,
+                height: 32,
+                borderRadius: '6px',
+                backgroundColor: 'transparent',
+                border: 'none',
                 cursor: 'pointer',
-                color: 'var(--app-muted-text)',
+                color: 'var(--sidebar-a-text)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                zIndex: 2001,
+                zIndex: 10,
                 transition: 'all 0.15s ease',
+                opacity: 0.7,
             }}
             onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--app-surface-hover)';
-                e.currentTarget.style.color = 'var(--app-text)';
-                e.currentTarget.style.boxShadow = '0 3px 12px rgba(0, 0, 0, 0.2)';
+                e.currentTarget.style.backgroundColor = 'var(--sidebar-a-hover-bg)';
+                e.currentTarget.style.opacity = '1';
             }}
             onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--app-surface)';
-                e.currentTarget.style.color = 'var(--app-muted-text)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.opacity = '0.7';
             }}
         >
-            <AppIcon icon={isOpen ? PanelLeftClose : PanelLeft} size={14} />
+            <AppIcon icon={isOpen ? PanelLeftClose : PanelLeft} size={20} />
         </button>
 
         {/* LOGO AREA */}
