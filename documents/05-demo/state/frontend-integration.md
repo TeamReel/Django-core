@@ -1,6 +1,6 @@
 # Frontend Integration Status
 
-> Last updated: 2026-02-05 (Panel A collapse/expand + section landing pages)
+> Last updated: 2026-02-05 (Identity tab on all detail pages)
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.
 
@@ -107,12 +107,15 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 - **Backend**: 102 BrandProfiles, 612 DesignTokens
 - **Frontend**:
   - ✅ IdentitySettingsCard (basic identity fields)
-  - ❌ Geen BrandProfile editor
-  - ❌ Geen DesignToken viewer/editor
-  - ❌ Geen design token preview
+  - ✅ BrandProfileCard (read-only profile viewer with design tokens)
+  - ✅ Identity tab op alle detail pages (Organisation, Club, Team, Season)
+  - ✅ Token grouping by type (Colors, Typography, Spacing, Border Radius)
+  - ✅ Color swatch preview voor color tokens
+  - ❌ Geen BrandProfile editor (create/update)
+  - ❌ Geen BrandAsset viewer
 - **TODO**:
-  - [ ] BrandProfilePage toevoegen
-  - [ ] DesignTokensCard component
+  - [ ] BrandProfile create/edit form
+  - [ ] BrandAsset upload component
   - [ ] Token inheritance display (org → project → season)
 
 ---
@@ -205,6 +208,18 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 
 ## Recent Completions
 
+### 2026-02-05: Identity Tab on All Detail Pages
+- ✅ BrandProfileCard component (read-only brand profile viewer)
+- ✅ Design tokens grouped by type (Colors, Typography, Spacing, Border Radius)
+- ✅ Color swatch preview for color tokens
+- ✅ Identity tab added to:
+  - OrganisationDetailPage (with organisationId support)
+  - ClubOrganisationDetailPage (with projectId support)
+  - TeamOrganisationDetailPage (with projectId support)
+  - ProjectSeasonDetailPage (with seasonId support)
+- ✅ Panel B navigation updated with Identity tab for all entity types
+- ✅ Collapse button border removed for cleaner look
+
 ### 2026-02-05: Panel A Collapse/Expand + Section Landing Pages
 - ✅ Collapse button in OVERVIEW section header (was in top-left logo area)
 - ✅ Expand button visible when Panel A collapsed (absolute positioned on border)
@@ -235,7 +250,7 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 | `/api/v1/content-generation/templates/` | ContentTemplatesPage | ✅ |
 | `/api/v1/media/items/` | useMediaLibrary | ✅ |
 | `/api/v1/media/tags/` | useMasterData (mediaTagsByCategory) | ✅ |
-| `/api/v1/branding/profiles/` | - | ❌ Niet aangeroepen |
+| `/api/v1/branding/profiles/` | BrandProfileCard | ✅ |
 | `/api/v1/branding/tokens/` | - | ❌ Niet aangeroepen |
 | `/api/v1/sport-configuration/sports/` | useSports | ✅ |
 | `/api/v1/sport-configuration/formations/` | useSports | ✅ |
