@@ -1031,47 +1031,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             paddingTop: 57, // Account for fixed TopNavbar height
         }}
       >
-        {/* Collapse/Expand Toggle - compact header */}
-        <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: isOpen ? 'flex-end' : 'center',
-            padding: '8px 12px',
-        }}>
-            <button
-                onClick={toggle}
-                title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-                aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-                className="sidebar-collapse-button"
-                style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '6px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'var(--sidebar-a-text)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.15s ease',
-                    flexShrink: 0,
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                }}
-            >
-                <AppIcon icon={isOpen ? PanelLeftClose : PanelLeft} size={18} />
-            </button>
-        </div>
-
         {/* Global Navigation (Panel A) */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px', overflowY: 'auto' }}>
 
-            {panelASections.map((section) => {
+            {panelASections.map((section, sectionIndex) => {
                 const path = location.pathname;
                 const walletParam = new URLSearchParams(location.search || '').get('wallet');
                 const isPersonalWallet = walletParam === 'personal';
@@ -1124,30 +1087,66 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                <div key={section.id} style={{ marginBottom: section.bottom ? 0 : 16 }}>
                     {/* Section Label (Only if open) - clickable to landing page */}
                     {isOpen && section.title && (
-                        <Link
-                          to={
-                            section.id === 'overview' ? '/dashboard' :
-                            section.id === 'app' ? '/apps' :
-                            section.id === 'content' ? '/content' :
-                            section.id === 'settings' ? '/settings' :
-                            section.id === 'help' ? '/docs' :
-                            '/dashboard'
-                          }
-                          style={{
-                            display: 'block',
-                            padding: '0 12px',
-                            marginBottom: 6,
-                            fontSize: 10,
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            opacity: sectionIsActive ? 1 : 0.5,
-                            color: sectionIsActive ? 'var(--sidebar-a-active-text)' : 'var(--sidebar-a-text)',
-                            textDecoration: 'none',
-                            cursor: 'pointer',
-                          }}
-                        >
-                            {section.title}
-                        </Link>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                          <Link
+                            to={
+                              section.id === 'overview' ? '/dashboard' :
+                              section.id === 'app' ? '/apps' :
+                              section.id === 'content' ? '/content' :
+                              section.id === 'settings' ? '/settings' :
+                              section.id === 'help' ? '/docs' :
+                              '/dashboard'
+                            }
+                            style={{
+                              flex: 1,
+                              padding: '0 12px',
+                              marginBottom: 6,
+                              fontSize: 10,
+                              fontWeight: 700,
+                              textTransform: 'uppercase',
+                              opacity: sectionIsActive ? 1 : 0.5,
+                              color: sectionIsActive ? 'var(--sidebar-a-active-text)' : 'var(--sidebar-a-text)',
+                              textDecoration: 'none',
+                              cursor: 'pointer',
+                            }}
+                          >
+                              {section.title}
+                          </Link>
+
+                          {/* Collapse button only on first section */}
+                          {sectionIndex === 0 && (
+                            <button
+                                onClick={toggle}
+                                title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+                                aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+                                className="sidebar-collapse-button"
+                                style={{
+                                    width: 28,
+                                    height: 28,
+                                    borderRadius: '6px',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: 'var(--sidebar-a-text)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.15s ease',
+                                    flexShrink: 0,
+                                    marginRight: '12px',
+                                    marginBottom: '6px',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                                }}
+                            >
+                                <AppIcon icon={isOpen ? PanelLeftClose : PanelLeft} size={16} />
+                            </button>
+                          )}
+                        </div>
                     )}
 
                     {section.items.map((item, index) => (
