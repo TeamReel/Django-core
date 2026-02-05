@@ -52,7 +52,9 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
       });
       if (globalRes.ok) {
         const globalData = await globalRes.json();
-        setGlobalFlags(globalData.results || globalData || []);
+        // Handle B13 response envelope: data.results or data.data.results or results or data
+        const globalArray = globalData?.data?.results || globalData?.results || globalData?.data || globalData;
+        setGlobalFlags(Array.isArray(globalArray) ? globalArray : []);
       }
 
       // Fetch scope-specific flags
@@ -62,7 +64,9 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
       );
       if (scopeRes.ok) {
         const scopeData = await scopeRes.json();
-        setFlags(scopeData.results || scopeData || []);
+        // Handle B13 response envelope
+        const scopeArray = scopeData?.data?.results || scopeData?.results || scopeData?.data || scopeData;
+        setFlags(Array.isArray(scopeArray) ? scopeArray : []);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load flags');
