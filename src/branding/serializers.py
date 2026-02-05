@@ -57,16 +57,21 @@ class BrandProfileSerializer(serializers.ModelSerializer):
     def get_can_edit(self, obj: BrandProfile) -> bool:
         """Check if current user can edit this brand profile.
 
-        Write access rules:
-        - Organisation admins can modify org brands
-        - Organisation admins can modify ALL project brands within their org (cascade)
-        - Project admins can only modify their own project brands
+        Write access rules (in order of precedence):
+        1. Superusers can edit everything
+        2. Organisation admins can modify org brands AND all project brands in their org
+        3. Project admins (club level) can modify club brand AND all team brands
+        4. Project admins (team level) can only modify their team brand
         """
         request = self.context.get("request")
         if not request or not request.user or not request.user.is_authenticated:
             return False
 
         user = request.user
+
+        # Superuser can edit everything
+        if user.is_superuser:
+            return True
 
         if obj.organisation:
             # Org brand: must be org admin
@@ -75,16 +80,30 @@ class BrandProfileSerializer(serializers.ModelSerializer):
             ).exists()
 
         if obj.project:
-            # Project brand: project admin OR org admin (cascade)
+            # Project brand: check hierarchy
+            project = obj.project
+
+            # Direct project admin
             is_project_admin = user.project_memberships.filter(
-                project=obj.project, role="admin", deleted_at__isnull=True
+                project=project, role="admin", deleted_at__isnull=True
             ).exists()
+            if is_project_admin:
+                return True
 
+            # Parent project admin (club admin can edit team brands)
+            if project.parent_project:
+                is_parent_admin = user.project_memberships.filter(
+                    project=project.parent_project, role="admin", deleted_at__isnull=True
+                ).exists()
+                if is_parent_admin:
+                    return True
+
+            # Org admin (cascade - can edit all project brands in org)
             is_org_admin = user.organisation_memberships.filter(
-                organisation=obj.project.organisation, role="admin", is_active=True
+                organisation=project.organisation, role="admin", is_active=True
             ).exists()
-
-            return is_project_admin or is_org_admin
+            if is_org_admin:
+                return True
 
         return False
 

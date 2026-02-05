@@ -2,8 +2,10 @@
 Permission classes for B33 Brand Identity Manager.
 
 Implements cascade permission control:
+- Superusers can modify everything
 - Organisation admins can modify org brands AND all child project brands
-- Project admins can only modify their own project brands
+- Club admins can modify club brand AND all team brands
+- Team admins can only modify their own team brand
 - All org/project members have read access
 """
 
@@ -15,13 +17,15 @@ class BrandProfilePermission(permissions.BasePermission):
     Cascade permissions for brand profiles.
 
     Read access:
+    - Superusers can read everything
     - Organisation members can read org brands
     - Project members can read project brands
 
     Write access (create, update, delete):
-    - Organisation admins can modify org brands
-    - Organisation admins can modify ALL project brands within their org (cascade)
-    - Project admins can only modify their own project brands
+    - Superusers can modify everything
+    - Organisation admins can modify org brands AND all project brands in their org
+    - Club admins can modify club brand AND all team brands
+    - Team admins can only modify their own team brand
     """
 
     def has_permission(self, request, view):
@@ -31,6 +35,10 @@ class BrandProfilePermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         """Check permissions for specific brand profile object."""
         user = request.user
+
+        # Superuser can do everything
+        if user.is_superuser:
+            return True
 
         # Read permissions (GET, HEAD, OPTIONS)
         if request.method in permissions.SAFE_METHODS:
@@ -63,16 +71,29 @@ class BrandProfilePermission(permissions.BasePermission):
             ).exists()
 
         if obj.project:
-            # Project brand: project admin OR org admin (cascade)
+            project = obj.project
+
+            # Direct project admin
             is_project_admin = user.project_memberships.filter(
-                project=obj.project, role="admin", deleted_at__isnull=True
+                project=project, role="admin", deleted_at__isnull=True
             ).exists()
+            if is_project_admin:
+                return True
 
+            # Parent project admin (club admin can edit team brands)
+            if project.parent_project:
+                is_parent_admin = user.project_memberships.filter(
+                    project=project.parent_project, role="admin", deleted_at__isnull=True
+                ).exists()
+                if is_parent_admin:
+                    return True
+
+            # Org admin (cascade - can edit all project brands in org)
             is_org_admin = user.organisation_memberships.filter(
-                organisation=obj.project.organisation, role="admin", is_active=True
+                organisation=project.organisation, role="admin", is_active=True
             ).exists()
-
-            return is_project_admin or is_org_admin
+            if is_org_admin:
+                return True
 
         return False
 
