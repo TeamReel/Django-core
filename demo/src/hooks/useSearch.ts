@@ -12,6 +12,25 @@ export interface SearchResult {
   highlight: string;
 }
 
+export interface HierarchyNode {
+  id: string;
+  type: string;
+  title: string;
+  url: string;
+  description?: string;
+  children: HierarchyNode[];
+  is_truncated?: boolean;
+}
+
+export interface HierarchyData {
+  anchor_id: string;
+  anchor_type: string;
+  anchor_title: string;
+  tree: HierarchyNode;
+  truncated: boolean;
+  total_nodes: number;
+}
+
 export interface GroupedSearchResults {
   clubs?: SearchResult[];
   teams?: SearchResult[];
@@ -23,6 +42,7 @@ export interface GroupedSearchResults {
   users?: SearchResult[];
   organisations?: SearchResult[];
   projects?: SearchResult[];
+  hierarchy?: HierarchyData;
 }
 
 export interface PaginatedSearchResults {
@@ -143,6 +163,55 @@ export function useSearch() {
     []
   );
 
+  const searchHierarchical = useCallback(async (query: string): Promise<GroupedSearchResults | null> => {
+    if (!query.trim()) {
+      return null;
+    }
+
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    abortControllerRef.current = new AbortController();
+    setIsSearching(true);
+    setError(null);
+
+    try {
+      const baseUrl = getApiBaseUrl();
+      const api = createApiClient({ baseUrl });
+
+      let endpoint = '/api/v1/search/';
+      if (baseUrl.includes('/api/v1')) {
+        endpoint = '/search/';
+      }
+
+      const params = new URLSearchParams({ q: query, hierarchy: 'true' });
+      console.log(`[useSearch] Searching hierarchical: "${query}" at ${baseUrl}${endpoint}`);
+
+      const response = await api.get<any>(`${endpoint}?${params.toString()}`, {
+        signal: abortControllerRef.current.signal,
+      });
+
+      console.log('[useSearch] Hierarchy Response:', response);
+
+      // Handle envelope format { status: 'success', data: { ... } }
+      if (response.data && response.data.data) {
+        return response.data.data;
+      }
+      return response.data ?? null;
+    } catch (err: any) {
+      console.error('[useSearch] Hierarchy Error:', err);
+      if (err.name === 'AbortError') {
+        return null;
+      }
+      setError(err.message || 'Hierarchical search failed');
+      return null;
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -155,6 +224,7 @@ export function useSearch() {
   return {
     searchGlobal,
     searchFiltered,
+    searchHierarchical,
     isSearching,
     error,
   };

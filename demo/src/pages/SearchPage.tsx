@@ -2,18 +2,20 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useSearch, type GroupedSearchResults, type PaginatedSearchResults, type SearchResult } from '../hooks/useSearch';
 import AppShell from '../components/AppShell';
+import HierarchyTreeView from '../components/HierarchyTreeView';
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const typesParam = searchParams.get('types');
+  const showHierarchy = searchParams.get('hierarchy') === 'true';
   // Memoize types array to prevent infinite loop in useEffect
   const types = useMemo(() => typesParam?.split(',').filter(Boolean) || [], [typesParam]);
   const page = parseInt(searchParams.get('page') || '1', 10);
 
   const [groupedResults, setGroupedResults] = useState<GroupedSearchResults | null>(null);
   const [paginatedResults, setPaginatedResults] = useState<PaginatedSearchResults | null>(null);
-  const { searchGlobal, searchFiltered, isSearching, error } = useSearch();
+  const { searchGlobal, searchFiltered, searchHierarchical, isSearching, error } = useSearch();
 
   const isFiltered = types.length > 0;
 
@@ -22,11 +24,13 @@ export default function SearchPage() {
     if (query.trim()) {
       if (isFiltered) {
         searchFiltered(query, types, page).then(setPaginatedResults);
+      } else if (showHierarchy) {
+        searchHierarchical(query).then(setGroupedResults);
       } else {
         searchGlobal(query).then(setGroupedResults);
       }
     }
-  }, [query, types, page, isFiltered, searchGlobal, searchFiltered]);
+  }, [query, types, page, isFiltered, showHierarchy, searchGlobal, searchFiltered, searchHierarchical]);
 
   const handleCategoryClick = (category: string) => {
     setSearchParams({ q: query, types: category });
@@ -34,6 +38,14 @@ export default function SearchPage() {
 
   const handleClearFilter = () => {
     setSearchParams({ q: query });
+  };
+
+  const handleHierarchyToggle = () => {
+    if (showHierarchy) {
+      setSearchParams({ q: query });
+    } else {
+      setSearchParams({ q: query, hierarchy: 'true' });
+    }
   };
 
   const handlePageChange = (newPage: number) => {
@@ -89,9 +101,33 @@ export default function SearchPage() {
     <AppShell>
       <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ marginBottom: '24px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px', color: 'var(--color-text-primary)' }}>
-            Search Results
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <h1 style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-text-primary)' }}>
+              Search Results
+            </h1>
+            {/* Hierarchy Toggle */}
+            {query && !isFiltered && (
+              <button
+                onClick={handleHierarchyToggle}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  background: showHierarchy ? 'var(--color-primary, #3b82f6)' : 'var(--color-bg-surface)',
+                  color: showHierarchy ? '#fff' : 'var(--color-text-primary)',
+                  border: showHierarchy ? 'none' : '1px solid var(--color-border)',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                🌳 {showHierarchy ? 'Hierarchy On' : 'Show Hierarchy'}
+              </button>
+            )}
+          </div>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '16px' }}>
             {query ? (
               <>
@@ -145,9 +181,18 @@ export default function SearchPage() {
           </div>
         )}
 
+        {/* Hierarchy Tree View (when enabled) */}
+        {!isSearching && !error && groupedResults?.hierarchy && showHierarchy && (
+          <div style={{ marginBottom: '32px' }}>
+            <HierarchyTreeView hierarchy={groupedResults.hierarchy} />
+          </div>
+        )}
+
         {!isSearching && !error && groupedResults && !isFiltered && (
           <div style={{ display: 'grid', gap: '32px' }}>
-            {(Object.entries(groupedResults) as [string, SearchResult[]][]).map(([category, results]) => {
+            {(Object.entries(groupedResults) as [string, SearchResult[]][])
+              .filter(([category]) => category !== 'hierarchy')
+              .map(([category, results]) => {
               if (!results || results.length === 0) return null;
               return (
                 <div key={category}>

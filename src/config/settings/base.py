@@ -465,13 +465,22 @@ SITE_NAME = "Django Core"  # Used in page titles (<title> tag) and branding (hea
 # Search Hierarchy Configuration (B39 Feature 045)
 # ==============================================================================
 
-# Registry of hierarchy resolvers (populated by product apps)
-# Format: {"anchor_type": ResolverClass}
-SEARCH_HIERARCHY_RESOLVERS: dict[str, type] = {}
+# Registry of hierarchy resolvers - maps content type labels to resolver classes
+# Format: {"app_label.model": "dotted.path.to.ResolverClass"}
+SEARCH_HIERARCHY_RESOLVERS: dict[str, str] = {
+    "organisations.organisation": "search.hierarchy.resolvers.OrganisationHierarchyResolver",
+    "projects.project": "search.hierarchy.resolvers.ProjectHierarchyResolver",
+    "activities.period": "search.hierarchy.resolvers.PeriodHierarchyResolver",
+    "activities.activity": "search.hierarchy.resolvers.ActivityHierarchyResolver",
+}
 
 # List of searchable anchor types for hierarchical navigation
-# Populated by registered resolvers at runtime
-SEARCH_HIERARCHY_ANCHOR_TYPES: list[str] = []
+# Types listed here can be used as the root of a hierarchy tree
+SEARCH_HIERARCHY_ANCHOR_TYPES: list[str] = [
+    "organisations.organisation",
+    "projects.project",
+    "activities.period",
+]
 
 # Maximum depth for hierarchy traversal (default: 3 levels)
 SEARCH_HIERARCHY_MAX_DEPTH = int(os.getenv("SEARCH_HIERARCHY_MAX_DEPTH", "3"))
