@@ -113,12 +113,14 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
           }
         }
 
-        // Get current organisation context from localStorage
-        // ContextSwitcher uses 'django-core:currentOrgId', not 'demo_context'
+        // Get current organisation/project context from localStorage
+        // ContextSwitcher uses 'django-core:currentOrgId' and 'django-core:currentProjectId'
         let orgId: string | null = null;
+        let projectId: string | null = null;
 
-        // Try django-core key first (used by ContextSwitcher)
+        // Try django-core keys first (used by ContextSwitcher)
         orgId = localStorage.getItem('django-core:currentOrgId');
+        projectId = localStorage.getItem('django-core:currentProjectId');
 
         // Fallback to demo_context if available
         if (!orgId) {
@@ -127,6 +129,7 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
             try {
               const context = JSON.parse(contextStr);
               orgId = context.organisationId || null;
+              projectId = context.projectId || null;
             } catch (e) {
               if (DEBUG_LOGS) console.debug('[useFeatureFlag] Failed to parse demo_context:', e);
             }
@@ -146,8 +149,9 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
 
         if (DEBUG_LOGS) {
           console.log(
-            `[useFeatureFlag] Checking flag "${flagKey}" for orgId:`,
+            `[useFeatureFlag] Checking flag "${flagKey}" for orgId/projectId:`,
             orgId,
+            projectId,
             'isSuperadmin:',
             isSuperadmin
           );
@@ -155,7 +159,7 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
 
         // Try to fetch from API first
         try {
-          const apiFlags = await fetchFlags(orgId);
+          const apiFlags = await fetchFlags(orgId, projectId);
           const flag = resolveFlagMatch(apiFlags, flagKey);
           if (DEBUG_LOGS) console.log(`[useFeatureFlag] API result for "${flagKey}":`, flag);
           if (flag !== undefined) {
