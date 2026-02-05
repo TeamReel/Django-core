@@ -227,12 +227,12 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
       let nextUrl: string | null = `${baseUrl}/api/v1/content-generation/templates/?is_active=true&page_size=100`;
 
       while (nextUrl) {
-        const res = await fetch(nextUrl, {
+        const res: Response = await fetch(nextUrl, {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
         });
         if (!res.ok) break;
-        const data = await res.json();
+        const data: any = await res.json();
         const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
         const list = Array.isArray(rawResults) ? rawResults : [];
         allTemplates.push(...list);
