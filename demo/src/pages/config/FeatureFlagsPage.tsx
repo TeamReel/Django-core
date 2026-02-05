@@ -27,6 +27,12 @@ import {
   setGlobalFlag,
   type FeatureFlag,
 } from '../../utils/featureFlagStorage';
+import {
+  compactTableStyle,
+  compactThStyle,
+  compactTdStyle,
+  actionButtonStyle,
+} from '../../utils/directoryStyles';
 
 /**
  * T013 - Feature Flags Page (GLOBAL Management)
@@ -537,74 +543,76 @@ export const FeatureFlagsPage: React.FC = () => {
               )}
             </div>
           ) : (
-            <Table
-              columns={[
-                {
-                  key: 'select',
-                  label: (
-                    <input
-                      type="checkbox"
-                      checked={allSelected}
-                      onChange={handleSelectAll}
-                      style={{ cursor: 'pointer' }}
-                    />
-                  ) as any,
-                },
-                { key: 'type', label: 'Type' },
-                { key: 'subtype', label: 'Subtype' },
-                { key: 'style', label: 'Style' },
-                { key: 'enabled', label: 'Global' },
-                { key: 'actions', label: 'Actions' },
-              ]}
-              rows={displayFlags.map((flag) => {
-                // Parse key to extract type/subtype/style
-                const parts = String(flag.key || '').split('__');
-                const type = parts[1] || '';
-                const subtype = parts[2] || '';
-                const styleIndex = parts.findIndex((p) => p === 'style');
-                const style = styleIndex >= 0 ? parts[styleIndex + 1] || '' : '';
-                const displayEnabled = flag.enabled;
-                const isSelected = selectedIds.has(flag.id);
+            <div className="overflow-x-auto">
+              <table style={compactTableStyle}>
+                <thead>
+                  <tr>
+                    <th style={{ ...compactThStyle, width: '40px' }}>
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={handleSelectAll}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </th>
+                    <th style={{ ...compactThStyle, width: '12%' }}>Type</th>
+                    <th style={{ ...compactThStyle, width: '15%' }}>Subtype</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Style</th>
+                    <th style={{ ...compactThStyle, width: '30%' }}>Description</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Global</th>
+                    <th style={{ ...compactThStyle, width: '10%' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayFlags.map((flag) => {
+                    const parts = String(flag.key || '').split('__');
+                    const type = parts[1] || '';
+                    const subtype = parts[2] || '';
+                    const styleIndex = parts.findIndex((p) => p === 'style');
+                    const style = styleIndex >= 0 ? parts[styleIndex + 1] || '' : '';
+                    const displayEnabled = flag.enabled;
+                    const isSelected = selectedIds.has(flag.id);
 
-                const rowData: any = {
-                  id: flag.id,
-                  select: (
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleSelectOne(flag.id)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                  ),
-                  type: type || '—',
-                  subtype: subtype || '—',
-                  style: style || '—',
-                  enabled: (
-                    <Badge variant={displayEnabled ? 'success' : 'default'}>
-                      {displayEnabled ? 'Enabled' : 'Disabled'}
-                    </Badge>
-                  ),
-                  actions: (
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <Button
-                        size="sm"
-                        variant={displayEnabled ? 'outline' : 'primary'}
-                        title={displayEnabled ? 'Disable this feature globally' : 'Enable this feature globally'}
-                        onClick={(e: React.MouseEvent) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleToggleFlag(flag);
-                        }}
-                      >
-                        {displayEnabled ? 'Disable' : 'Enable'}
-                      </Button>
-                    </div>
-                  ),
-                };
-
-                return rowData;
-              })}
-            />
+                    return (
+                      <tr key={flag.id}>
+                        <td style={compactTdStyle}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelectOne(flag.id)}
+                            style={{ cursor: 'pointer' }}
+                          />
+                        </td>
+                        <td style={compactTdStyle}>{type || '—'}</td>
+                        <td style={compactTdStyle}>{subtype || '—'}</td>
+                        <td style={compactTdStyle}>{style || '—'}</td>
+                        <td style={{ ...compactTdStyle, maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {flag.description || '—'}
+                        </td>
+                        <td style={compactTdStyle}>
+                          <Badge variant={displayEnabled ? 'success' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
+                            {displayEnabled ? 'On' : 'Off'}
+                          </Badge>
+                        </td>
+                        <td style={compactTdStyle}>
+                          <button
+                            style={actionButtonStyle(displayEnabled ? 'neutral' : 'primary')}
+                            title={displayEnabled ? 'Disable globally' : 'Enable globally'}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleToggleFlag(flag);
+                            }}
+                          >
+                            {displayEnabled ? 'Disable' : 'Enable'}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </Card>
 

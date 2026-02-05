@@ -207,24 +207,52 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
       .replace(/-/g, '_')
       .replace(/[^a-z0-9_]/g, '');
 
-  const buildTemplateFlagKeys = (template: any): string[] => {
+  const titleCase = (value: string): string =>
+    String(value || '')
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
+
+  // Build flag info with description from template
+  const buildTemplateFlagInfo = (template: any): Array<{ key: string; description: string }> => {
     const type = normalizeKey(template?.template_type || '');
     const subtype = normalizeKey(template?.template_subtype || template?.template_type || '');
     const style = normalizeKey(template?.style_variant || '');
+    const templateName = template?.name || '';
 
     if (!type || !subtype) return [];
 
-    const keys = new Set<string>();
-    keys.add(`content__${type}`);
-    keys.add(`content__${type}__${subtype}`);
-    if (style) keys.add(`content__${type}__${subtype}__style__${style}`);
-    return Array.from(keys);
+    const results: Array<{ key: string; description: string }> = [];
+
+    // Type-level flag
+    results.push({
+      key: `content__${type}`,
+      description: `${titleCase(type)} content templates`,
+    });
+
+    // Subtype-level flag
+    results.push({
+      key: `content__${type}__${subtype}`,
+      description: templateName || `${titleCase(type)} - ${titleCase(subtype)}`,
+    });
+
+    // Style-level flag
+    if (style) {
+      results.push({
+        key: `content__${type}__${subtype}__style__${style}`,
+        description: templateName || `${titleCase(type)} - ${titleCase(subtype)} (${titleCase(style)})`,
+      });
+    }
+
+    return results;
   };
 
   const fetchTemplates = async (): Promise<any[]> => {
     try {
       const allTemplates: any[] = [];
-      let nextUrl: string | null = `${baseUrl}/api/v1/content-generation/templates/?is_active=true&page_size=100`;
+      // Fetch ALL templates (not just active) to ensure we get everything
+      let nextUrl: string | null = `${baseUrl}/api/v1/content-generation/templates/?page_size=200`;
 
       while (nextUrl) {
         const res: Response = await fetch(nextUrl, {
@@ -244,6 +272,7 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
         }
       }
 
+      debugLog('[seedDefaultFlags] Fetched templates:', allTemplates.length);
       return allTemplates;
     } catch (err) {
       console.warn('Failed to fetch templates for seeding flags', err);
@@ -252,22 +281,25 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
   };
 
   const templates = await fetchTemplates();
-  const flagKeys = new Set<string>();
+
+  // Build flags with descriptions from templates
+  const flagMap = new Map<string, { key: string; description: string }>();
   templates.forEach((template) => {
-    buildTemplateFlagKeys(template).forEach((key) => flagKeys.add(key));
+    buildTemplateFlagInfo(template).forEach((info) => {
+      // Keep the first (most specific) description for each key
+      if (!flagMap.has(info.key)) {
+        flagMap.set(info.key, info);
+      }
+    });
   });
 
-  const defaults = Array.from(flagKeys).map((key) => ({
-    key,
-    description: `Content template availability: ${key}`,
-    enabled: true,
-  }));
+  const defaults = Array.from(flagMap.values());
+
+  debugLog('[seedDefaultFlags] Will seed flags:', defaults.length);
 
   let created = 0;
   let failed = 0;
   for (const flag of defaults) {
-    // Check if exists first (optional, but good for idempotency if we had a check endpoint)
-    // For now, just try to create. If it fails (unique constraint), we ignore.
     try {
       const res = await fetch(`${baseUrl}${API_BASE}/`, {
         method: 'POST',
@@ -281,7 +313,7 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
           scope_type: 'GLOBAL',
           key: flag.key,
           description: flag.description,
-          enabled: flag.enabled,
+          enabled: true,
         }),
       });
       if (res.ok) {

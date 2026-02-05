@@ -5,7 +5,6 @@
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
-import { Table } from '../../shims/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import {
   createScopeOverride,
@@ -15,6 +14,12 @@ import {
   type ApiFeatureFlag,
   type ScopeType,
 } from '../../utils/featureFlagsApi';
+import {
+  compactTableStyle,
+  compactThStyle,
+  compactTdStyle,
+  actionButtonStyle,
+} from '../../utils/directoryStyles';
 
 interface ContentTemplate {
   id: number;
@@ -455,99 +460,108 @@ export default function ContentAvailabilityCard({
       {filteredRows.length === 0 ? (
         <div className="p-8 text-center text-gray-500">No templates match the current filters.</div>
       ) : (
-        <Table
-          columns={[
-            {
-              key: 'select',
-              label: (
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={handleSelectAll}
-                  style={{ cursor: 'pointer' }}
-                />
-              ) as any,
-            },
-            { key: 'type', label: 'Type' },
-            { key: 'subtype', label: 'Subtype' },
-            { key: 'style', label: 'Style' },
-            { key: 'global', label: 'Global' },
-            ...(scopeType === 'PROJECT'
-              ? [{ key: 'org', label: 'Org' }, { key: 'project', label: 'Project' }]
-              : [{ key: 'org', label: 'Org' }]),
-            { key: 'effective', label: 'Effective' },
-            { key: 'actions', label: 'Actions' },
-          ]}
-          rows={filteredRows.map((row) => {
-            const isUpdating = updatingKey === row.key;
-            const orgDisplay = row.orgValue;
-            const projectDisplay = row.projectValue;
-            const isSelected = selectedIds.has(row.id);
-
-            return {
-              id: row.id,
-              select: (
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => handleSelectOne(row.id)}
-                  style={{ cursor: 'pointer' }}
-                />
-              ),
-              type: row.type,
-              subtype: row.subtype,
-              style: row.style,
-              global: (
-                <Badge variant={row.globalValue ? 'success' : 'default'}>
-                  {row.globalValue === null ? '—' : row.globalValue ? 'Enabled' : 'Disabled'}
-                </Badge>
-              ),
-              org: (
-                <Badge variant={orgDisplay ? 'success' : 'default'}>
-                  {orgDisplay === null ? '—' : orgDisplay ? 'Enabled' : 'Disabled'}
-                </Badge>
-              ),
-              project: scopeType === 'PROJECT' ? (
-                projectDisplay === null || projectDisplay === undefined ? (
-                  <span className="text-gray-500 text-sm italic">Inherited</span>
+        <div className="overflow-x-auto">
+          <table style={compactTableStyle}>
+            <thead>
+              <tr>
+                <th style={{ ...compactThStyle, width: '40px' }}>
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={handleSelectAll}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </th>
+                <th style={{ ...compactThStyle, width: '15%' }}>Type</th>
+                <th style={{ ...compactThStyle, width: '18%' }}>Subtype</th>
+                <th style={{ ...compactThStyle, width: '12%' }}>Style</th>
+                <th style={{ ...compactThStyle, width: '8%' }}>Global</th>
+                {scopeType === 'PROJECT' ? (
+                  <>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Org</th>
+                    <th style={{ ...compactThStyle, width: '8%' }}>Project</th>
+                  </>
                 ) : (
-                  <Badge variant={projectDisplay ? 'success' : 'default'}>
-                    {projectDisplay ? 'Enabled' : 'Disabled'}
-                  </Badge>
-                )
-              ) : null,
-              effective: (
-                <Badge variant={row.effectiveValue ? 'success' : 'default'}>
-                  {row.effectiveValue ? 'Enabled' : 'Disabled'}
-                </Badge>
-              ),
-              actions: (
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <Button
-                    size="sm"
-                    variant={row.effectiveValue ? 'outline' : 'primary'}
-                    disabled={isUpdating || (row.disableEnable && !row.effectiveValue)}
-                    title={row.disableEnable && !row.effectiveValue ? row.disabledReason : undefined}
-                    onClick={() => handleToggle(row)}
-                  >
-                    {isUpdating ? '...' : row.effectiveValue ? 'Disable' : 'Enable'}
-                  </Button>
-                  {row.overrideId && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleReset(row)}
-                      disabled={isUpdating}
-                      title="Reset to higher-level defaults"
-                    >
-                      Reset
-                    </Button>
-                  )}
-                </div>
-              ),
-            };
-          })}
-        />
+                  <th style={{ ...compactThStyle, width: '8%' }}>Org</th>
+                )}
+                <th style={{ ...compactThStyle, width: '8%' }}>Effective</th>
+                <th style={{ ...compactThStyle, width: '15%' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRows.map((row) => {
+                const isUpdating = updatingKey === row.key;
+                const orgDisplay = row.orgValue;
+                const projectDisplay = row.projectValue;
+                const isSelected = selectedIds.has(row.id);
+
+                return (
+                  <tr key={row.id}>
+                    <td style={compactTdStyle}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleSelectOne(row.id)}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </td>
+                    <td style={compactTdStyle}>{row.type}</td>
+                    <td style={compactTdStyle}>{row.subtype}</td>
+                    <td style={compactTdStyle}>{row.style}</td>
+                    <td style={compactTdStyle}>
+                      <Badge variant={row.globalValue ? 'success' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
+                        {row.globalValue === null ? '—' : row.globalValue ? 'On' : 'Off'}
+                      </Badge>
+                    </td>
+                    <td style={compactTdStyle}>
+                      <Badge variant={orgDisplay ? 'success' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
+                        {orgDisplay === null ? '—' : orgDisplay ? 'On' : 'Off'}
+                      </Badge>
+                    </td>
+                    {scopeType === 'PROJECT' && (
+                      <td style={compactTdStyle}>
+                        {projectDisplay === null || projectDisplay === undefined ? (
+                          <span style={{ color: 'var(--app-text-muted)', fontSize: '11px', fontStyle: 'italic' }}>Inherit</span>
+                        ) : (
+                          <Badge variant={projectDisplay ? 'success' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
+                            {projectDisplay ? 'On' : 'Off'}
+                          </Badge>
+                        )}
+                      </td>
+                    )}
+                    <td style={compactTdStyle}>
+                      <Badge variant={row.effectiveValue ? 'success' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
+                        {row.effectiveValue ? 'On' : 'Off'}
+                      </Badge>
+                    </td>
+                    <td style={compactTdStyle}>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button
+                          style={actionButtonStyle(row.effectiveValue ? 'neutral' : 'primary')}
+                          disabled={isUpdating || (row.disableEnable && !row.effectiveValue)}
+                          title={row.disableEnable && !row.effectiveValue ? row.disabledReason : undefined}
+                          onClick={() => handleToggle(row)}
+                        >
+                          {isUpdating ? '...' : row.effectiveValue ? 'Disable' : 'Enable'}
+                        </button>
+                        {row.overrideId && (
+                          <button
+                            style={actionButtonStyle('neutral')}
+                            onClick={() => handleReset(row)}
+                            disabled={isUpdating}
+                            title="Reset"
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </Card>
   );
