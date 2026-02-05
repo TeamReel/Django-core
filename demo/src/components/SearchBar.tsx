@@ -187,8 +187,10 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
 
           {!isSearching && results && totalResults > 0 && (
             <div>
-              {(Object.keys(results) as Array<keyof GroupedSearchResults>).map((category) => {
-                const categoryResults = results[category];
+              {(Object.keys(results) as Array<keyof GroupedSearchResults>)
+                .filter((category) => category !== 'hierarchy')
+                .map((category) => {
+                const categoryResults = results[category] as SearchResult[] | undefined;
                 if (!categoryResults || categoryResults.length === 0) return null;
 
                 return (
