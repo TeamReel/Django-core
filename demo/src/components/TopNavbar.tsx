@@ -165,8 +165,8 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   // appNavGroup removed (moved to Sidebar)
 
   // Docker-style hover timers
-  const hoverTimerRef = useRef<Record<string, NodeJS.Timeout>>({});
-  const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const hoverTimerRef = useRef<Record<string, number>>({});
+  const closeTimerRef = useRef<number | null>(null);
   const isDropdownHoveredRef = useRef(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 

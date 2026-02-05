@@ -155,7 +155,7 @@ export const AuditLogPage: React.FC = () => {
     if (page !== '1' || dateFrom || dateTo || !authUser) return;
 
     let ws: WebSocket | null = null;
-    let reconnectTimer: NodeJS.Timeout;
+    let reconnectTimer: number;
     let isMounted = true;
 
     const connect = async () => {
