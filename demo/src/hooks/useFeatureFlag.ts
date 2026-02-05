@@ -20,6 +20,42 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
   const { user } = useAuth();
   const [isEnabled, setIsEnabled] = useState<boolean>(defaultEnabled);
 
+  const normalizeKey = (key: string): string => key.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  const normalizeFlagValue = (value: unknown): boolean | null => {
+    if (value === null || value === undefined) return null;
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      const lowered = value.trim().toLowerCase();
+      if (lowered === 'true') return true;
+      if (lowered === 'false') return false;
+    }
+    if (typeof value === 'number') return value !== 0;
+    return null;
+  };
+
+  const resolveFlagMatch = (flags: any[], key: string) => {
+    const direct = flags.find((f) => f.key === key);
+    if (direct) return direct;
+
+    const normalizedTarget = normalizeKey(key);
+    const normalizedMatch = flags.find((f) => normalizeKey(String(f.key || '')) === normalizedTarget);
+    if (normalizedMatch) return normalizedMatch;
+
+    // Alias support for historical dark theme keys
+    const aliases = new Map<string, string[]>([
+      ['dark_theme_override', ['dark_themeoverride', 'darkthemeoverride', 'dark_theme', 'darktheme', 'dark_mode', 'darkmode']]
+    ]);
+
+    for (const [canonical, aliasList] of aliases.entries()) {
+      if (normalizedTarget === normalizeKey(canonical) || aliasList.includes(normalizedTarget)) {
+        return flags.find((f) => aliasList.includes(normalizeKey(String(f.key || ''))) || normalizeKey(String(f.key || '')) === normalizeKey(canonical));
+      }
+    }
+
+    return undefined;
+  };
+
   useEffect(() => {
     const checkFlag = async () => {
       try {
@@ -120,13 +156,14 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
         // Try to fetch from API first
         try {
           const apiFlags = await fetchFlags(orgId);
-          const flag = apiFlags.find(f => f.key === flagKey);
+          const flag = resolveFlagMatch(apiFlags, flagKey);
           if (DEBUG_LOGS) console.log(`[useFeatureFlag] API result for "${flagKey}":`, flag);
           if (flag !== undefined) {
             if (DEBUG_LOGS) {
               console.log(`[useFeatureFlag] Setting "${flagKey}" enabled to:`, flag.enabled);
             }
-            setIsEnabled(flag.enabled);
+            const normalizedEnabled = normalizeFlagValue(flag.enabled);
+            setIsEnabled(normalizedEnabled ?? defaultEnabled);
             return;
           }
         } catch (apiErr) {
