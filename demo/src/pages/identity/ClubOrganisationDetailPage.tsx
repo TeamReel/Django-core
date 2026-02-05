@@ -20,6 +20,7 @@ import MobileTabBar from '../../components/MobileTabBar';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import FeatureFlagsCard from '../../components/FeatureFlags/FeatureFlagsCard';
+import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 
 type Organisation = {
   id: string;
@@ -1509,6 +1510,14 @@ export default function ClubOrganisationDetailPage() {
                 scopeName={club.name}
                 title="Feature Flags"
               />
+              {orgIdForDirectoryLists && (
+                <ContentAvailabilityCard
+                  scopeType="PROJECT"
+                  organisationId={String(orgIdForDirectoryLists)}
+                  projectId={String(club.id)}
+                  scopeName={club.name}
+                />
+              )}
             </div>
           )}
         </PageContent>
