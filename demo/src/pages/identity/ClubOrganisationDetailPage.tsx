@@ -1538,10 +1538,17 @@ export default function ClubOrganisationDetailPage() {
         onClose={() => setIsProjectEditModalOpen(false)}
         onSaved={() => window.location.reload()}
         entityType="club"
-        entityId={club?.id || ''}
+        entityId={club?.slug || club?.id || ''}
         entityName={club?.name}
-        organisationId={org?.id}
-        projectId={club?.id}
+        organisationId={org?.slug || org?.id}
+        projectId={club?.slug || club?.id}
+        initialEntityData={club ? {
+          id: String(club.id),
+          name: club.name || '',
+          slug: club.slug,
+          description: (club as any).description,
+          is_active: (club as any).is_active ?? true,
+        } : undefined}
         canEditGeneral={true}
         canEditBrand={true}
       />

@@ -1294,10 +1294,17 @@ export default function TeamOrganisationDetailPage() {
         onClose={() => setIsProjectEditModalOpen(false)}
         onSaved={() => window.location.reload()}
         entityType="team"
-        entityId={team?.id || ''}
+        entityId={team?.slug || team?.id || ''}
         entityName={team?.name}
-        organisationId={org?.id}
-        projectId={team?.id}
+        organisationId={org?.slug || org?.id}
+        projectId={team?.slug || team?.id}
+        initialEntityData={team ? {
+          id: String(team.id),
+          name: team.name || '',
+          slug: team.slug,
+          description: (team as any).description,
+          is_active: (team as any).is_active ?? true,
+        } : undefined}
         canEditGeneral={true}
         canEditBrand={true}
       />

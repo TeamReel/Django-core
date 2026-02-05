@@ -2536,9 +2536,17 @@ export const OrganisationDetailPage: React.FC = () => {
         onClose={() => setIsOrgEditModalOpen(false)}
         onSaved={() => window.location.reload()}
         entityType="organisation"
-        entityId={id!}
+        entityId={currentOrgSlug || id!}
         entityName={org?.name}
-        organisationId={id}
+        organisationId={currentOrgSlug || id!}
+        initialEntityData={org ? {
+          id: String(org.id),
+          name: org.name,
+          slug: org.slug,
+          description: (org as any).description,
+          is_active: (org as any).is_active ?? true,
+          sport_id: (org as any).sport?.id || (org as any).sport_id || null,
+        } : undefined}
         canEditGeneral={canEditOrganisation(permissionContext)}
         canEditBrand={canEditOrganisation(permissionContext)}
       />

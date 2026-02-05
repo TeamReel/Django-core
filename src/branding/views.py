@@ -54,21 +54,37 @@ class BrandProfileViewSet(viewsets.ModelViewSet):
         """Filter queryset by query parameters.
 
         Supported filters:
-        - organisation: UUID of organisation
-        - project: UUID of project
+        - organisation: UUID or slug of organisation
+        - project: UUID or slug of project
         - is_active: Boolean string ('true'/'false')
         """
         qs = super().get_queryset()
 
-        # Filter by organisation
-        org_id = self.request.query_params.get("organisation")
-        if org_id:
-            qs = qs.filter(organisation_id=org_id)
+        # Filter by organisation (supports both UUID and slug)
+        org_param = self.request.query_params.get("organisation")
+        if org_param:
+            # Try UUID first, fallback to slug lookup
+            try:
+                import uuid
 
-        # Filter by project
-        project_id = self.request.query_params.get("project")
-        if project_id:
-            qs = qs.filter(project_id=project_id)
+                uuid.UUID(org_param)
+                qs = qs.filter(organisation_id=org_param)
+            except (ValueError, AttributeError):
+                # Not a valid UUID, try slug lookup
+                qs = qs.filter(organisation__slug=org_param)
+
+        # Filter by project (supports both UUID and slug)
+        project_param = self.request.query_params.get("project")
+        if project_param:
+            # Try UUID first, fallback to slug lookup
+            try:
+                import uuid
+
+                uuid.UUID(project_param)
+                qs = qs.filter(project_id=project_param)
+            except (ValueError, AttributeError):
+                # Not a valid UUID, try slug lookup
+                qs = qs.filter(project__slug=project_param)
 
         # Filter by active status
         is_active = self.request.query_params.get("is_active")
