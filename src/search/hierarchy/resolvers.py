@@ -62,18 +62,22 @@ class ProjectHierarchyResolver(BaseHierarchyResolver):
     """
     Resolver for Project entities (clubs and teams).
 
-    For clubs (root projects): Shows teams (child projects)
-    For teams (child projects): Shows seasons
+    For clubs (root projects): Shows teams (child projects) + club members
+    For teams (child projects): Shows seasons + squad members
     """
 
     def get_children(self, instance) -> list[HierarchyNode]:
         """Get children based on project type (club vs team)."""
         if instance.parent_project is None:
-            # This is a club - show teams
-            return self._get_teams(instance)
+            # This is a club - show teams + club members
+            children = self._get_teams(instance)
+            children.extend(self._get_members(instance, is_club=True))
+            return children
         else:
-            # This is a team - show seasons
-            return self._get_seasons(instance)
+            # This is a team - show seasons + squad members
+            children = self._get_seasons(instance)
+            children.extend(self._get_members(instance, is_club=False))
+            return children
 
     def _get_teams(self, club) -> list[HierarchyNode]:
         """Get teams (child projects) for a club."""
@@ -127,6 +131,58 @@ class ProjectHierarchyResolver(BaseHierarchyResolver):
             )
             for season in seasons
         ]
+
+    def _get_members(self, project, is_club: bool = False) -> list[HierarchyNode]:
+        """Get members (squad) for a project (club or team)."""
+        from projects.models import ProjectMembership
+
+        memberships = (
+            ProjectMembership.objects.filter(
+                project=project,
+                deleted_at__isnull=True,  # Only active memberships
+            )
+            .select_related("user", "period")
+            .order_by("user__last_name", "user__first_name")[: self._per_level_limit]
+        )
+
+        # Build URL path components
+        org_slug = project.organisation.slug if project.organisation else "unknown"
+        if is_club:
+            base_url = f"/apps/identity/organisations/{org_slug}/clubs/{project.slug}/members"
+        else:
+            club_slug = project.parent_project.slug if project.parent_project else "unknown"
+            base_url = f"/apps/identity/organisations/{org_slug}/clubs/{club_slug}/teams/{project.slug}/squad"
+
+        nodes = []
+        for membership in memberships:
+            user = membership.user
+            # Build display name
+            name = user.get_full_name() or user.username or user.email
+
+            # Add position/number from metadata if available
+            position = membership.metadata.get("position", "") if membership.metadata else ""
+            shirt_number = membership.metadata.get("shirt_number") if membership.metadata else None
+            description = None
+            if position or shirt_number:
+                parts = []
+                if shirt_number:
+                    parts.append(f"#{shirt_number}")
+                if position:
+                    parts.append(position)
+                description = " ".join(parts)
+
+            nodes.append(
+                HierarchyNode(
+                    id=str(membership.id),
+                    type="member",
+                    title=name,
+                    url=f"{base_url}/{membership.id}",
+                    description=description,
+                    instance=None,  # Members are leaf nodes
+                )
+            )
+
+        return nodes
 
 
 class PeriodHierarchyResolver(BaseHierarchyResolver):
