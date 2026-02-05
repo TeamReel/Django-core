@@ -56,6 +56,8 @@ export const FeatureFlagsPage: React.FC = () => {
   const [filterType, setFilterType] = useState<string>('all');
   const [filterSubtype, setFilterSubtype] = useState<string>('all');
   const [filterStyle, setFilterStyle] = useState<string>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkUpdating, setBulkUpdating] = useState(false);
 
   // This page is GLOBAL-only
   const editMode = 'global';
@@ -327,6 +329,52 @@ export const FeatureFlagsPage: React.FC = () => {
       .filter(Boolean)
   )).sort();
 
+  // Multi-select helpers
+  const allSelected = displayFlags.length > 0 && displayFlags.every((f) => selectedIds.has(f.id));
+  const someSelected = selectedIds.size > 0;
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(displayFlags.map((f) => f.id)));
+    }
+  };
+
+  const handleSelectOne = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedIds(next);
+  };
+
+  const handleBulkUpdate = async (enabled: boolean) => {
+    if (selectedIds.size === 0) return;
+    setBulkUpdating(true);
+    try {
+      const toUpdate = displayFlags.filter((f) => selectedIds.has(f.id));
+      for (const flag of toUpdate) {
+        await updateGlobalFlag(flag.id, enabled);
+      }
+      // Reload flags
+      const apiFlags = await fetchFlagsForScope('GLOBAL');
+      const normalized = apiFlags.map((flag: any) => ({
+        ...flag,
+        global_id: flag.global_id || flag.id,
+      }));
+      setFlags(normalized);
+      setSelectedIds(new Set());
+    } catch (err) {
+      console.error('Bulk update failed:', err);
+      alert('Bulk update failed. Check console for details.');
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
+
   return (
     <>
       <PageHeader
@@ -428,7 +476,30 @@ export const FeatureFlagsPage: React.FC = () => {
               <option key={style} value={style}>{style}</option>
             ))}
           </select>
-          <div style={{ marginLeft: 'auto' }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {someSelected && (
+              <>
+                <span style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
+                  {selectedIds.size} selected
+                </span>
+                <Button
+                  variant="primary"
+                  size="md"
+                  disabled={bulkUpdating}
+                  onClick={() => handleBulkUpdate(true)}
+                >
+                  {bulkUpdating ? '...' : 'Enable Selected'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="md"
+                  disabled={bulkUpdating}
+                  onClick={() => handleBulkUpdate(false)}
+                >
+                  {bulkUpdating ? '...' : 'Disable Selected'}
+                </Button>
+              </>
+            )}
             <Button
               variant="secondary"
               size="md"
@@ -436,6 +507,7 @@ export const FeatureFlagsPage: React.FC = () => {
                 setFilterType('all');
                 setFilterSubtype('all');
                 setFilterStyle('all');
+                setSelectedIds(new Set());
               }}
             >
               Clear
@@ -467,6 +539,17 @@ export const FeatureFlagsPage: React.FC = () => {
           ) : (
             <Table
               columns={[
+                {
+                  key: 'select',
+                  label: (
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={handleSelectAll}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  ) as any,
+                },
                 { key: 'type', label: 'Type' },
                 { key: 'subtype', label: 'Subtype' },
                 { key: 'style', label: 'Style' },
@@ -481,9 +564,18 @@ export const FeatureFlagsPage: React.FC = () => {
                 const styleIndex = parts.findIndex((p) => p === 'style');
                 const style = styleIndex >= 0 ? parts[styleIndex + 1] || '' : '';
                 const displayEnabled = flag.enabled;
+                const isSelected = selectedIds.has(flag.id);
 
                 const rowData: any = {
                   id: flag.id,
+                  select: (
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleSelectOne(flag.id)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  ),
                   type: type || '—',
                   subtype: subtype || '—',
                   style: style || '—',

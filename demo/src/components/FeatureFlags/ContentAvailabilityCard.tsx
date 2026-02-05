@@ -83,6 +83,8 @@ export default function ContentAvailabilityCard({
   const [filterType, setFilterType] = useState<string>('all');
   const [filterSubtype, setFilterSubtype] = useState<string>('all');
   const [filterStyle, setFilterStyle] = useState<string>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkUpdating, setBulkUpdating] = useState(false);
 
   const fetchTemplates = useCallback(async () => {
     const baseUrl = getApiBaseUrl();
@@ -240,6 +242,60 @@ export default function ContentAvailabilityCard({
     });
   }, [rows, filterType, filterSubtype, filterStyle]);
 
+  // Multi-select helpers
+  const allSelected = filteredRows.length > 0 && filteredRows.every((r) => selectedIds.has(r.id));
+  const someSelected = selectedIds.size > 0;
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredRows.map((r) => r.id)));
+    }
+  };
+
+  const handleSelectOne = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedIds(next);
+  };
+
+  const handleBulkUpdate = async (enabled: boolean) => {
+    if (selectedIds.size === 0) return;
+    setBulkUpdating(true);
+    try {
+      const toUpdate = filteredRows.filter((r) => selectedIds.has(r.id));
+      for (const row of toUpdate) {
+        // Check hierarchy: can't enable if parent is disabled
+        if (enabled && row.disableEnable) {
+          console.warn(`Skipping ${row.key}: ${row.disabledReason}`);
+          continue;
+        }
+        if (row.overrideId) {
+          await updateOrgOverride(row.overrideId, enabled);
+        } else {
+          await createScopeOverride(
+            scopeType as ScopeType,
+            scopeType === 'PROJECT' ? String(projectId) : String(organisationId),
+            row.key,
+            enabled
+          );
+        }
+      }
+      await fetchAvailabilityFlags();
+      setSelectedIds(new Set());
+    } catch (err) {
+      console.error('Bulk update failed:', err);
+      alert('Bulk update failed. Check console for details.');
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
+
   const handleToggle = async (row: typeof rows[number]) => {
     if (updatingKey) return;
 
@@ -357,7 +413,30 @@ export default function ContentAvailabilityCard({
             <option key={style} value={style}>{style}</option>
           ))}
         </select>
-        <div style={{ marginLeft: 'auto' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {someSelected && (
+            <>
+              <span style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
+                {selectedIds.size} selected
+              </span>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={bulkUpdating}
+                onClick={() => handleBulkUpdate(true)}
+              >
+                {bulkUpdating ? '...' : 'Enable'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={bulkUpdating}
+                onClick={() => handleBulkUpdate(false)}
+              >
+                {bulkUpdating ? '...' : 'Disable'}
+              </Button>
+            </>
+          )}
           <Button
             variant="secondary"
             size="sm"
@@ -365,6 +444,7 @@ export default function ContentAvailabilityCard({
               setFilterType('all');
               setFilterSubtype('all');
               setFilterStyle('all');
+              setSelectedIds(new Set());
             }}
           >
             Clear
@@ -377,6 +457,17 @@ export default function ContentAvailabilityCard({
       ) : (
         <Table
           columns={[
+            {
+              key: 'select',
+              label: (
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={handleSelectAll}
+                  style={{ cursor: 'pointer' }}
+                />
+              ) as any,
+            },
             { key: 'type', label: 'Type' },
             { key: 'subtype', label: 'Subtype' },
             { key: 'style', label: 'Style' },
@@ -391,9 +482,18 @@ export default function ContentAvailabilityCard({
             const isUpdating = updatingKey === row.key;
             const orgDisplay = row.orgValue;
             const projectDisplay = row.projectValue;
+            const isSelected = selectedIds.has(row.id);
 
             return {
               id: row.id,
+              select: (
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => handleSelectOne(row.id)}
+                  style={{ cursor: 'pointer' }}
+                />
+              ),
               type: row.type,
               subtype: row.subtype,
               style: row.style,
