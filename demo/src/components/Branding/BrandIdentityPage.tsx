@@ -49,6 +49,7 @@ interface BrandProfile {
   is_active: boolean;
   token_count: number;
   asset_count: number;
+  can_edit?: boolean;
   tokens?: DesignToken[];
   assets?: BrandAsset[];
   created_at: string;
@@ -503,11 +504,16 @@ function ProfileHeader({ profile, entityName }: { profile: BrandProfile; entityN
           </div>
         </div>
 
-        {/* Edit button placeholder */}
-        <Button variant="outline" size="sm" disabled>
-          <Edit size={14} />
-          Edit Profile
-        </Button>
+        {/* Edit button - enabled based on permissions */}
+        {profile.can_edit && (
+          <Button variant="outline" size="sm" onClick={() => {
+            // TODO: Open edit modal or navigate to edit page
+            console.log('Edit profile:', profile.id);
+          }}>
+            <Edit size={14} />
+            Edit Profile
+          </Button>
+        )}
       </div>
 
       {/* Stats */}

@@ -19,6 +19,7 @@ class BrandProfileSerializer(serializers.ModelSerializer):
 
     token_count = serializers.SerializerMethodField()
     asset_count = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = BrandProfile
@@ -30,6 +31,7 @@ class BrandProfileSerializer(serializers.ModelSerializer):
             "is_active",
             "token_count",
             "asset_count",
+            "can_edit",
             "created_at",
             "updated_at",
             "created_by",
@@ -41,6 +43,7 @@ class BrandProfileSerializer(serializers.ModelSerializer):
             "updated_at",
             "token_count",
             "asset_count",
+            "can_edit",
         ]
 
     def get_token_count(self, obj: BrandProfile) -> int:
@@ -50,6 +53,40 @@ class BrandProfileSerializer(serializers.ModelSerializer):
     def get_asset_count(self, obj: BrandProfile) -> int:
         """Return count of active brand assets for this profile."""
         return obj.brand_assets.filter(is_active=True).count()
+
+    def get_can_edit(self, obj: BrandProfile) -> bool:
+        """Check if current user can edit this brand profile.
+
+        Write access rules:
+        - Organisation admins can modify org brands
+        - Organisation admins can modify ALL project brands within their org (cascade)
+        - Project admins can only modify their own project brands
+        """
+        request = self.context.get("request")
+        if not request or not request.user or not request.user.is_authenticated:
+            return False
+
+        user = request.user
+
+        if obj.organisation:
+            # Org brand: must be org admin
+            return user.organisation_memberships.filter(
+                organisation=obj.organisation, role="admin", is_active=True
+            ).exists()
+
+        if obj.project:
+            # Project brand: project admin OR org admin (cascade)
+            is_project_admin = user.project_memberships.filter(
+                project=obj.project, role="admin", deleted_at__isnull=True
+            ).exists()
+
+            is_org_admin = user.organisation_memberships.filter(
+                organisation=obj.project.organisation, role="admin", is_active=True
+            ).exists()
+
+            return is_project_admin or is_org_admin
+
+        return False
 
     def validate(self, data: dict) -> dict:
         """Ensure org XOR project constraint.
