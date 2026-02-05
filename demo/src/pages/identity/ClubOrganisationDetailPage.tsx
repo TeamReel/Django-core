@@ -1510,7 +1510,7 @@ export default function ClubOrganisationDetailPage() {
 
               {/* Full Brand Profile - colors, fonts, assets from branding API */}
               <BrandIdentityPage
-                projectId={String(club.id)}
+                projectId={club.slug || String(club.id)}
                 projectName={club.name}
               />
             </div>

@@ -55,12 +55,12 @@ class BrandProfileViewSet(viewsets.ModelViewSet):
 
         Supported filters:
         - organisation: UUID or slug of organisation
-        - project: UUID or slug of project
+        - project: ID (integer), UUID, or slug of project
         - is_active: Boolean string ('true'/'false')
         """
         qs = super().get_queryset()
 
-        # Filter by organisation (supports both UUID and slug)
+        # Filter by organisation (supports UUID and slug)
         org_param = self.request.query_params.get("organisation")
         if org_param:
             # Try UUID first, fallback to slug lookup
@@ -73,18 +73,22 @@ class BrandProfileViewSet(viewsets.ModelViewSet):
                 # Not a valid UUID, try slug lookup
                 qs = qs.filter(organisation__slug=org_param)
 
-        # Filter by project (supports both UUID and slug)
+        # Filter by project (supports ID, UUID, and slug)
         project_param = self.request.query_params.get("project")
         if project_param:
-            # Try UUID first, fallback to slug lookup
-            try:
-                import uuid
+            # Try integer ID first (projects use int PKs)
+            if project_param.isdigit():
+                qs = qs.filter(project_id=int(project_param))
+            else:
+                # Try UUID, fallback to slug lookup
+                try:
+                    import uuid
 
-                uuid.UUID(project_param)
-                qs = qs.filter(project_id=project_param)
-            except (ValueError, AttributeError):
-                # Not a valid UUID, try slug lookup
-                qs = qs.filter(project__slug=project_param)
+                    uuid.UUID(project_param)
+                    qs = qs.filter(project_id=project_param)
+                except (ValueError, AttributeError):
+                    # Not a valid UUID, try slug lookup
+                    qs = qs.filter(project__slug=project_param)
 
         # Filter by active status
         is_active = self.request.query_params.get("is_active")

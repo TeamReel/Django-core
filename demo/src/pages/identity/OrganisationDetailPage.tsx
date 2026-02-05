@@ -2033,7 +2033,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
         {activeTab === 'identity' && org && (
           <BrandIdentityPage
-            organisationId={String(org.id)}
+            organisationId={org.slug || String(org.id)}
             organisationName={org.name}
           />
         )}
