@@ -5,7 +5,6 @@
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
 import {
   createScopeOverride,
   deleteOrgOverride,
@@ -21,31 +20,12 @@ import {
   actionButtonStyle,
 } from '../../utils/directoryStyles';
 
-interface ContentTemplate {
-  id: number;
-  name: string;
-  description: string | null;
-  template_type: string;
-  template_subtype: string | null;
-  style_variant: string | null;
-  organisation?: number | null;
-  project?: number | null;
-}
-
 interface ContentAvailabilityCardProps {
   scopeType: 'ORGANISATION' | 'PROJECT';
   organisationId: string;
   projectId?: string | null;
   scopeName: string;
 }
-
-const slugify = (value: string): string =>
-  String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '_')
-    .replace(/-/g, '_')
-    .replace(/[^a-z0-9_]/g, '');
 
 const titleCase = (value: string): string =>
   String(value || '')
@@ -54,33 +34,12 @@ const titleCase = (value: string): string =>
     .trim()
     .replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
 
-const buildTemplateFlagKeys = (template: ContentTemplate): string[] => {
-  const type = slugify(template.template_type);
-  const subtype = slugify(template.template_subtype || template.template_type);
-  const style = slugify(template.style_variant || '');
-  if (!type || !subtype) return [];
-  const keys: string[] = [];
-  if (style) keys.push(`content__${type}__${subtype}__style__${style}`);
-  keys.push(`content__${type}__${subtype}`);
-  keys.push(`content__${type}`);
-  return keys;
-};
-
-const getFlagKeyForTemplate = (template: ContentTemplate): string => {
-  const type = slugify(template.template_type);
-  const subtype = slugify(template.template_subtype || template.template_type);
-  const style = slugify(template.style_variant || '');
-  if (style) return `content__${type}__${subtype}__style__${style}`;
-  return `content__${type}__${subtype}`;
-};
-
 export default function ContentAvailabilityCard({
   scopeType,
   organisationId,
   projectId,
   scopeName,
 }: ContentAvailabilityCardProps) {
-  const [templates, setTemplates] = useState<ContentTemplate[]>([]);
   const [flags, setFlags] = useState<ApiFeatureFlag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,47 +50,6 @@ export default function ContentAvailabilityCard({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkUpdating, setBulkUpdating] = useState(false);
 
-  const fetchTemplates = useCallback(async () => {
-    const baseUrl = getApiBaseUrl();
-    const params = new URLSearchParams();
-    params.append('is_active', 'true');
-    params.append('is_latest', 'true');
-    params.append('page_size', '500');
-
-    const response = await fetch(`${baseUrl}/api/v1/content-generation/templates/?${params.toString()}`, {
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch templates (${response.status})`);
-    }
-
-    const data = await response.json();
-    const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
-    const list: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
-
-    const filtered = list.filter((t) => {
-      const templateOrg = t.organisation ?? null;
-      const templateProject = t.project ?? null;
-
-      if (templateOrg && String(templateOrg) !== String(organisationId)) return false;
-
-      if (scopeType === 'ORGANISATION') {
-        // Org settings should not include project-scoped templates
-        if (templateProject) return false;
-      }
-
-      if (scopeType === 'PROJECT') {
-        if (templateProject && String(templateProject) !== String(projectId || '')) return false;
-      }
-
-      return true;
-    });
-
-    setTemplates(filtered);
-  }, [organisationId, projectId, scopeType]);
-
   const fetchAvailabilityFlags = useCallback(async () => {
     const scopedFlags = await fetchFlags(organisationId, scopeType === 'PROJECT' ? projectId || undefined : undefined);
     setFlags(scopedFlags.filter((flag) => String(flag.key || '').startsWith('content__')));
@@ -141,88 +59,112 @@ export default function ContentAvailabilityCard({
     setLoading(true);
     setError(null);
     try {
-      await Promise.all([fetchTemplates(), fetchAvailabilityFlags()]);
+      await fetchAvailabilityFlags();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load content availability');
     } finally {
       setLoading(false);
     }
-  }, [fetchAvailabilityFlags, fetchTemplates]);
+  }, [fetchAvailabilityFlags]);
 
   useEffect(() => {
     reloadAll();
   }, [reloadAll]);
 
-  const flagMap = useMemo(() => {
-    const map = new Map<string, ApiFeatureFlag>();
-    flags.forEach((flag) => {
-      map.set(flag.key, flag);
-    });
-    return map;
-  }, [flags]);
+  // Parse flag key into type/subtype/style components
+  const parseFlagKey = (key: string): { type: string; subtype: string; style: string } | null => {
+    // Format: content__type or content__type__subtype or content__type__subtype__style__X
+    const parts = key.replace(/^content__/, '').split('__');
+    if (parts.length === 0 || !parts[0]) return null;
+
+    const type = parts[0];
+    let subtype = '';
+    let style = '';
+
+    if (parts.length >= 2 && parts[1] !== 'style') {
+      subtype = parts[1];
+    }
+
+    const styleIdx = parts.indexOf('style');
+    if (styleIdx !== -1 && parts[styleIdx + 1]) {
+      style = parts[styleIdx + 1];
+    }
+
+    return { type, subtype, style };
+  };
 
   const rows = useMemo(() => {
-    const seen = new Set<string>();
+    // Generate rows from FLAGS (not templates) to show all levels including type-only and subtype-only
+    const rowList: Array<{
+      id: string;
+      key: string;
+      type: string;
+      subtype: string;
+      style: string;
+      globalValue: boolean | null;
+      orgValue: boolean | null;
+      projectValue: boolean | null | undefined;
+      effectiveValue: boolean;
+      disableEnable: boolean;
+      disabledReason: string;
+      overrideId: string | null;
+    }> = [];
 
-    return templates
-      .map((template) => {
-        const key = getFlagKeyForTemplate(template);
-        if (seen.has(key)) return null;
-        seen.add(key);
+    flags.forEach((flag) => {
+      const parsed = parseFlagKey(flag.key);
+      if (!parsed) return;
 
-        const flag = flagMap.get(key);
-        const globalValue = flag?.global_value ?? null;
-        const orgValue = flag?.org_value ?? null;
-        const projectValue = flag?.project_value ?? null;
-        const effectiveValue = flag?.enabled ?? true;
+      const globalValue = flag?.global_value ?? null;
+      const orgValue = flag?.org_value ?? null;
+      const projectValue = flag?.project_value ?? null;
+      const effectiveValue = flag?.enabled ?? true;
 
-        const isGlobalDisabled = globalValue === false;
-        const isOrgDisabled = orgValue === false;
+      const isGlobalDisabled = globalValue === false;
+      const isOrgDisabled = orgValue === false;
 
-        const disableEnable = scopeType === 'PROJECT'
-          ? (isGlobalDisabled || isOrgDisabled)
-          : isGlobalDisabled;
+      const disableEnable = scopeType === 'PROJECT'
+        ? (isGlobalDisabled || isOrgDisabled)
+        : isGlobalDisabled;
 
-        let disabledReason = '';
-        if (disableEnable) {
-          disabledReason = isGlobalDisabled
-            ? 'Cannot enable: Global setting is disabled.'
-            : 'Cannot enable: Organisation setting is disabled.';
-        }
+      let disabledReason = '';
+      if (disableEnable) {
+        disabledReason = isGlobalDisabled
+          ? 'Cannot enable: Global setting is disabled.'
+          : 'Cannot enable: Organisation setting is disabled.';
+      }
 
-        return {
-          id: key,
-          key,
-          type: titleCase(template.template_type),
-          subtype: titleCase(template.template_subtype || template.template_type),
-          style: template.style_variant ? titleCase(template.style_variant) : '—',
-          globalValue,
-          orgValue,
-          projectValue,
-          effectiveValue,
-          disableEnable,
-          disabledReason,
-          overrideId:
-            scopeType === 'PROJECT'
-              ? flag?.project_override_id || null
-              : flag?.org_override_id || null,
-        };
-      })
-      .filter(Boolean) as Array<{
-        id: string;
-        key: string;
-        type: string;
-        subtype: string;
-        style: string;
-        globalValue: boolean | null;
-        orgValue: boolean | null;
-        projectValue: boolean | null | undefined;
-        effectiveValue: boolean;
-        disableEnable: boolean;
-        disabledReason: string;
-        overrideId: string | null;
-      }>;
-  }, [flagMap, scopeType, templates]);
+      rowList.push({
+        id: flag.key,
+        key: flag.key,
+        type: titleCase(parsed.type),
+        subtype: parsed.subtype ? titleCase(parsed.subtype) : '—',
+        style: parsed.style ? titleCase(parsed.style) : '—',
+        globalValue,
+        orgValue,
+        projectValue,
+        effectiveValue,
+        disableEnable,
+        disabledReason,
+        overrideId:
+          scopeType === 'PROJECT'
+            ? flag?.project_override_id || null
+            : flag?.org_override_id || null,
+      });
+    });
+
+    // Sort: type, then subtype, then style
+    return rowList.sort((a, b) => {
+      if (a.type !== b.type) return a.type.localeCompare(b.type);
+      if (a.subtype !== b.subtype) {
+        if (a.subtype === '—') return -1;
+        if (b.subtype === '—') return 1;
+        return a.subtype.localeCompare(b.subtype);
+      }
+      if (a.style === '—') return -1;
+      if (b.style === '—') return 1;
+      return a.style.localeCompare(b.style);
+    });
+  }, [flags, scopeType]);
 
   // Extract unique values for filter dropdowns
   const uniqueTypes = useMemo(() =>
