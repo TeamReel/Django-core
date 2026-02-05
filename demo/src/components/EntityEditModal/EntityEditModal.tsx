@@ -13,6 +13,7 @@ interface EntityEditModalProps {
   organisationId?: string;
   projectId?: string;
   initialBrandProfile?: any;
+  initialEntityData?: any;
   canEditGeneral?: boolean;
   canEditBrand?: boolean;
 }
