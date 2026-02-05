@@ -17,21 +17,14 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { useNavigate } from 'react-router-dom';
 import {
-  fetchFlags,
+  fetchFlagsForScope,
   updateGlobalFlag,
-  createOrgOverride,
-  updateOrgOverride,
-  deleteOrgOverride,
   seedDefaultFlags,
   type ApiFeatureFlag
 } from '../../utils/featureFlagsApi';
 import {
   getAllFlagsWithResolution,
   setGlobalFlag,
-  setOrgFlag,
-  setOrgProvisioning,
-  removeOrgFlag,
-  hasOrgOverride,
   type FeatureFlag,
 } from '../../utils/featureFlagStorage';
 
@@ -138,8 +131,12 @@ export const FeatureFlagsPage: React.FC = () => {
           setApiError(null);
           // GLOBAL mode only - no org context
           debugLog('[FeatureFlagsPage] Fetching GLOBAL flags from API');
-          const apiFlags = await fetchFlags(null);
-          setFlags(apiFlags);
+          const apiFlags = await fetchFlagsForScope('GLOBAL');
+          const normalized = apiFlags.map((flag: any) => ({
+            ...flag,
+            global_id: flag.global_id || flag.id,
+          }));
+          setFlags(normalized);
         } catch (err: any) {
           console.warn('API failed:', err);
 
@@ -206,14 +203,19 @@ export const FeatureFlagsPage: React.FC = () => {
       const apiFlag = flag as ApiFeatureFlag;
       try {
         // Superadmin toggles global default
-        debugLog('[FeatureFlagsPage] API: Updating global flag:', apiFlag.global_id, newState);
-        await updateGlobalFlag(apiFlag.global_id, newState);
+        const globalId = apiFlag.global_id || (apiFlag as any).id;
+        debugLog('[FeatureFlagsPage] API: Updating global flag:', globalId, newState);
+        await updateGlobalFlag(String(globalId), newState);
 
         // Reload flags to reflect changes
         debugLog('[FeatureFlagsPage] Reloading GLOBAL flags after update');
-        const apiFlags = await fetchFlags(null);
-        debugLog('[FeatureFlagsPage] Reloaded flags:', apiFlags);
-        setFlags(apiFlags);
+        const apiFlags = await fetchFlagsForScope('GLOBAL');
+        const normalized = apiFlags.map((flag: any) => ({
+          ...flag,
+          global_id: flag.global_id || flag.id,
+        }));
+        debugLog('[FeatureFlagsPage] Reloaded flags:', normalized);
+        setFlags(normalized);
 
         // Trigger featureFlagsChanged event so other components (like theme toggle) can react
         window.dispatchEvent(new CustomEvent('featureFlagsChanged'));
@@ -337,8 +339,12 @@ export const FeatureFlagsPage: React.FC = () => {
                           setSeedMessage(`Seeded ${result.created} of ${result.total} content flags.`);
                         }
                         // Reload
-                        const apiFlags = await fetchFlags(null);
-                        setFlags(apiFlags);
+                        const apiFlags = await fetchFlagsForScope('GLOBAL');
+                        const normalized = apiFlags.map((flag: any) => ({
+                          ...flag,
+                          global_id: flag.global_id || flag.id,
+                        }));
+                        setFlags(normalized);
                       } catch (err) {
                         console.error('Failed to seed flags:', err);
                         setApiError('Failed to seed flags. Check console for details.');
