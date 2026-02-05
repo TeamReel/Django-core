@@ -1,6 +1,6 @@
 ﻿import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
-import BrandProfileCard from '../../components/Branding/BrandProfileCard';
+import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
@@ -3063,7 +3063,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           )}
 
           {activeTab === 'identity' && season && project && (
-            <BrandProfileCard
+            <BrandIdentityPage
               projectId={String(project.id)}
               projectName={project.name}
               seasonId={String(season.id)}

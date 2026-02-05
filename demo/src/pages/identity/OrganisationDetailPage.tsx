@@ -50,7 +50,7 @@ import { UsersList } from './directory/UsersList';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import MobileTabBar from '../../components/MobileTabBar';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
-import BrandProfileCard from '../../components/Branding/BrandProfileCard';
+import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -2031,7 +2031,7 @@ export const OrganisationDetailPage: React.FC = () => {
         )}
 
         {activeTab === 'identity' && org && (
-          <BrandProfileCard
+          <BrandIdentityPage
             organisationId={String(org.id)}
             organisationName={org.name}
           />

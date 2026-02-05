@@ -20,7 +20,7 @@ import MobileTabBar from '../../components/MobileTabBar';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
-import BrandProfileCard from '../../components/Branding/BrandProfileCard';
+import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 
 type Organisation = {
   id: string;
@@ -1505,7 +1505,7 @@ export default function ClubOrganisationDetailPage() {
           )}
 
           {activeTabFromUrl === 'identity' && club && (
-            <BrandProfileCard
+            <BrandIdentityPage
               projectId={String(club.id)}
               projectName={club.name}
             />

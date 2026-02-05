@@ -16,7 +16,7 @@ import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySett
 import MobileTabBar from '../../components/MobileTabBar';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
-import BrandProfileCard from '../../components/Branding/BrandProfileCard';
+import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 
 const getCsrfToken = (): string => {
   try {
@@ -1270,7 +1270,7 @@ export default function TeamOrganisationDetailPage() {
           )}
 
           {activeTabFromUrl === 'identity' && team && (
-            <BrandProfileCard
+            <BrandIdentityPage
               projectId={String(team.id)}
               projectName={team.name}
             />
