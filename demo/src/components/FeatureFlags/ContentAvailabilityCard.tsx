@@ -80,6 +80,9 @@ export default function ContentAvailabilityCard({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingKey, setUpdatingKey] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<string>('all');
+  const [filterSubtype, setFilterSubtype] = useState<string>('all');
+  const [filterStyle, setFilterStyle] = useState<string>('all');
 
   const fetchTemplates = useCallback(async () => {
     const baseUrl = getApiBaseUrl();
@@ -213,6 +216,30 @@ export default function ContentAvailabilityCard({
       }>;
   }, [flagMap, scopeType, templates]);
 
+  // Extract unique values for filter dropdowns
+  const uniqueTypes = useMemo(() =>
+    Array.from(new Set(rows.map((r) => r.type))).sort(),
+    [rows]
+  );
+  const uniqueSubtypes = useMemo(() =>
+    Array.from(new Set(rows.map((r) => r.subtype))).sort(),
+    [rows]
+  );
+  const uniqueStyles = useMemo(() =>
+    Array.from(new Set(rows.map((r) => r.style).filter((s) => s !== '—'))).sort(),
+    [rows]
+  );
+
+  // Apply filters
+  const filteredRows = useMemo(() => {
+    return rows.filter((row) => {
+      if (filterType !== 'all' && row.type !== filterType) return false;
+      if (filterSubtype !== 'all' && row.subtype !== filterSubtype) return false;
+      if (filterStyle !== 'all' && (row.style === '—' || row.style !== filterStyle)) return false;
+      return true;
+    });
+  }, [rows, filterType, filterSubtype, filterStyle]);
+
   const handleToggle = async (row: typeof rows[number]) => {
     if (updatingKey) return;
 
@@ -273,8 +300,80 @@ export default function ContentAvailabilityCard({
         </Alert>
       )}
 
-      {rows.length === 0 ? (
-        <div className="p-8 text-center text-gray-500">No templates found.</div>
+      {/* Filters */}
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '12px',
+        marginBottom: '16px',
+        alignItems: 'center',
+        padding: '0 16px',
+      }}>
+        <select
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Type: All</option>
+          {uniqueTypes.map((type) => (
+            <option key={type} value={type}>{type}</option>
+          ))}
+        </select>
+        <select
+          value={filterSubtype}
+          onChange={(e) => setFilterSubtype(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Subtype: All</option>
+          {uniqueSubtypes.map((subtype) => (
+            <option key={subtype} value={subtype}>{subtype}</option>
+          ))}
+        </select>
+        <select
+          value={filterStyle}
+          onChange={(e) => setFilterStyle(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            border: '1px solid var(--app-border)',
+            borderRadius: '4px',
+            fontSize: '14px',
+            backgroundColor: 'var(--app-surface)',
+          }}
+        >
+          <option value="all">Style: All</option>
+          {uniqueStyles.map((style) => (
+            <option key={style} value={style}>{style}</option>
+          ))}
+        </select>
+        <div style={{ marginLeft: 'auto' }}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              setFilterType('all');
+              setFilterSubtype('all');
+              setFilterStyle('all');
+            }}
+          >
+            Clear
+          </Button>
+        </div>
+      </div>
+
+      {filteredRows.length === 0 ? (
+        <div className="p-8 text-center text-gray-500">No templates match the current filters.</div>
       ) : (
         <Table
           columns={[
@@ -288,7 +387,7 @@ export default function ContentAvailabilityCard({
             { key: 'effective', label: 'Effective' },
             { key: 'actions', label: 'Actions' },
           ]}
-          rows={rows.map((row) => {
+          rows={filteredRows.map((row) => {
             const isUpdating = updatingKey === row.key;
             const orgDisplay = row.orgValue;
             const projectDisplay = row.projectValue;

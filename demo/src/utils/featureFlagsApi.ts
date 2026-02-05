@@ -223,17 +223,28 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
 
   const fetchTemplates = async (): Promise<any[]> => {
     try {
-      const params = new URLSearchParams();
-      params.append('is_active', 'true');
-      params.append('page_size', '500');
-      const res = await fetch(`${baseUrl}/api/v1/content-generation/templates/?${params.toString()}`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!res.ok) return [];
-      const data = await res.json();
-      const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
-      return Array.isArray(rawResults) ? rawResults : [];
+      const allTemplates: any[] = [];
+      let nextUrl: string | null = `${baseUrl}/api/v1/content-generation/templates/?is_active=true&page_size=100`;
+
+      while (nextUrl) {
+        const res = await fetch(nextUrl, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (!res.ok) break;
+        const data = await res.json();
+        const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
+        const list = Array.isArray(rawResults) ? rawResults : [];
+        allTemplates.push(...list);
+
+        // Check for next page
+        nextUrl = data?.data?.next || data?.next || null;
+        if (nextUrl && !nextUrl.startsWith('http')) {
+          nextUrl = `${baseUrl}${nextUrl}`;
+        }
+      }
+
+      return allTemplates;
     } catch (err) {
       console.warn('Failed to fetch templates for seeding flags', err);
       return [];

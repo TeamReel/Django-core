@@ -467,32 +467,30 @@ export const FeatureFlagsPage: React.FC = () => {
           ) : (
             <Table
               columns={[
-                { key: 'name', label: 'Feature Flag' },
-                { key: 'enabled', label: 'Global Setting' },
-                { key: 'rollout_percentage', label: 'Rollout %' },
+                { key: 'type', label: 'Type' },
+                { key: 'subtype', label: 'Subtype' },
+                { key: 'style', label: 'Style' },
+                { key: 'enabled', label: 'Global' },
                 { key: 'actions', label: 'Actions' },
               ]}
               rows={displayFlags.map((flag) => {
-                // GLOBAL mode - simple display
+                // Parse key to extract type/subtype/style
+                const parts = String(flag.key || '').split('__');
+                const type = parts[1] || '';
+                const subtype = parts[2] || '';
+                const styleIndex = parts.findIndex((p) => p === 'style');
+                const style = styleIndex >= 0 ? parts[styleIndex + 1] || '' : '';
                 const displayEnabled = flag.enabled;
 
                 const rowData: any = {
                   id: flag.id,
-                  name: (
-                    <div>
-                      <div className="font-medium text-gray-900 dark:text-gray-100">{flag.name}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{flag.description}</div>
-                    </div>
-                  ),
+                  type: type || '—',
+                  subtype: subtype || '—',
+                  style: style || '—',
                   enabled: (
                     <Badge variant={displayEnabled ? 'success' : 'default'}>
                       {displayEnabled ? 'Enabled' : 'Disabled'}
                     </Badge>
-                  ),
-                  rollout_percentage: (
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {flag.rollout_percentage}%
-                    </span>
                   ),
                   actions: (
                     <div style={{ display: 'flex', gap: '8px' }}>
