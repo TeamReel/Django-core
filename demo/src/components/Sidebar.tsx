@@ -590,6 +590,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                     { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                     { label: 'Settings', path: makeTabUrl(baseUrl, 'settings'), icon: Settings },
                 ];
                 break;

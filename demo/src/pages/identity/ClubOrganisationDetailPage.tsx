@@ -1039,6 +1039,8 @@ export default function ClubOrganisationDetailPage() {
             { id: 'members', label: 'Members' },
             { id: 'assets', label: 'Assets' },
             { id: 'balance', label: 'Balance' },
+            { id: 'transactions', label: 'Transactions' },
+            { id: 'identity', label: 'Identity' },
             { id: 'settings', label: 'Settings' },
           ]}
           activeTab={activeTabFromUrl}
@@ -1502,19 +1504,20 @@ export default function ClubOrganisationDetailPage() {
             <TeamCreditsTab view="transactions" projectId={clubIdForDirectoryLists} projectName={club.name} organisationId={orgIdForDirectoryLists} />
           )}
 
+          {activeTabFromUrl === 'identity' && club && (
+            <BrandProfileCard
+              projectId={String(club.id)}
+              projectName={club.name}
+            />
+          )}
+
           {activeTabFromUrl === 'settings' && club && orgIdForDirectoryLists && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <BrandProfileCard
-                projectId={String(club.id)}
-                projectName={club.name}
-              />
-              <ContentAvailabilityCard
-                scopeType="PROJECT"
-                organisationId={String(orgIdForDirectoryLists)}
-                projectId={String(club.id)}
-                scopeName={club.name}
-              />
-            </div>
+            <ContentAvailabilityCard
+              scopeType="PROJECT"
+              organisationId={String(orgIdForDirectoryLists)}
+              projectId={String(club.id)}
+              scopeName={club.name}
+            />
           )}
         </PageContent>
       </div>
