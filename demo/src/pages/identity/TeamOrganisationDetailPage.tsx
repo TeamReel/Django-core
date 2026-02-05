@@ -14,7 +14,7 @@ import { UsersList } from './directory/UsersList';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import MobileTabBar from '../../components/MobileTabBar';
-import EntityEditModal from '../../components/EntityEditModal';
+import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 
@@ -1292,19 +1292,14 @@ export default function TeamOrganisationDetailPage() {
       <EntityEditModal
         isOpen={isProjectEditModalOpen}
         onClose={() => setIsProjectEditModalOpen(false)}
-        onSaved={() => {
-          fetchTeamData();
-          fetchSeasons();
-          fetchCompetitions();
-          fetchMatches();
-        }}
+        onSaved={() => window.location.reload()}
         entityType="team"
         entityId={team?.id || ''}
         entityName={team?.name}
         organisationId={org?.id}
         projectId={team?.id}
-        canEditGeneral={canEditProject(permissionContext)}
-        canEditBrand={canEditProject(permissionContext)}
+        canEditGeneral={true}
+        canEditBrand={true}
       />
     </>
   );

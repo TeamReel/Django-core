@@ -17,7 +17,7 @@ import TeamCreditsTab from './detail/TeamCreditsTab';
 import ClubAssetsTab from './detail/ClubAssetsTab';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import MobileTabBar from '../../components/MobileTabBar';
-import EntityEditModal from '../../components/EntityEditModal';
+import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
@@ -1536,17 +1536,14 @@ export default function ClubOrganisationDetailPage() {
       <EntityEditModal
         isOpen={isProjectEditModalOpen}
         onClose={() => setIsProjectEditModalOpen(false)}
-        onSaved={() => {
-          fetchClubData();
-          fetchTeams();
-        }}
+        onSaved={() => window.location.reload()}
         entityType="club"
         entityId={club?.id || ''}
         entityName={club?.name}
         organisationId={org?.id}
         projectId={club?.id}
-        canEditGeneral={canEditProject(permissionContext)}
-        canEditBrand={canEditProject(permissionContext)}
+        canEditGeneral={true}
+        canEditBrand={true}
       />
     </>
   );
