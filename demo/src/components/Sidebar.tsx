@@ -1030,49 +1030,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             position: 'relative'
         }}
       >
-        {/* Collapse/Expand Toggle - inside Panel A header area */}
-        <button
-            onClick={toggle}
-            title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-            aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-            className="sidebar-collapse-button"
-            style={{
-                position: 'absolute',
-                top: 18,
-                right: 12,
-                width: 32,
-                height: 32,
-                borderRadius: '6px',
-                backgroundColor: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--sidebar-a-text)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 10,
-                transition: 'all 0.15s ease',
-                opacity: 0.7,
-            }}
-            onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--sidebar-a-hover-bg)';
-                e.currentTarget.style.opacity = '1';
-            }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.opacity = '0.7';
-            }}
-        >
-            <AppIcon icon={isOpen ? PanelLeftClose : PanelLeft} size={20} />
-        </button>
-
-        {/* LOGO AREA */}
+        {/* LOGO AREA with Collapse Button */}
         <div style={{
             height: 64,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: isOpen ? 'flex-start' : 'center',
-            padding: isOpen ? '0 20px' : '0',
+            justifyContent: 'space-between',
+            padding: isOpen ? '0 12px 0 20px' : '0 12px',
             borderBottom: '1px solid var(--sidebar-a-border)',
             marginBottom: 16
         }}>
@@ -1084,11 +1048,73 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     <span style={{ marginLeft: 12, fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em', color: 'var(--sidebar-a-text)' }}>TeamReel</span>
                 </div>
              ) : (
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)' }}>
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, color: 'var(--app-link)', margin: '0 auto' }}>
                     <AppIcon icon={Command} size={24} />
                 </span>
              )}
+
+            {/* Collapse/Expand Toggle */}
+            <button
+                onClick={toggle}
+                title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+                aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+                className="sidebar-collapse-button"
+                style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '6px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--sidebar-a-text)',
+                    display: isOpen ? 'flex' : 'none',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.15s ease',
+                    flexShrink: 0,
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                }}
+            >
+                <AppIcon icon={PanelLeftClose} size={18} />
+            </button>
         </div>
+
+        {/* Expand button when collapsed - shown below logo */}
+        {!isOpen && (
+            <button
+                onClick={toggle}
+                title="Expand Sidebar"
+                aria-label="Expand Sidebar"
+                className="sidebar-expand-button"
+                style={{
+                    width: 40,
+                    height: 32,
+                    margin: '0 auto 16px',
+                    borderRadius: '6px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--sidebar-a-text)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                }}
+            >
+                <AppIcon icon={PanelLeft} size={18} />
+            </button>
+        )}
 
 
         {/* Global Navigation (Panel A) */}
