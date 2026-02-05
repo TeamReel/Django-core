@@ -20,6 +20,7 @@ import MobileTabBar from '../../components/MobileTabBar';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
+import BrandProfileCard from '../../components/Branding/BrandProfileCard';
 
 type Organisation = {
   id: string;
@@ -1502,12 +1503,18 @@ export default function ClubOrganisationDetailPage() {
           )}
 
           {activeTabFromUrl === 'settings' && club && orgIdForDirectoryLists && (
-            <ContentAvailabilityCard
-              scopeType="PROJECT"
-              organisationId={String(orgIdForDirectoryLists)}
-              projectId={String(club.id)}
-              scopeName={club.name}
-            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <BrandProfileCard
+                projectId={String(club.id)}
+                projectName={club.name}
+              />
+              <ContentAvailabilityCard
+                scopeType="PROJECT"
+                organisationId={String(orgIdForDirectoryLists)}
+                projectId={String(club.id)}
+                scopeName={club.name}
+              />
+            </div>
           )}
         </PageContent>
       </div>
