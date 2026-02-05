@@ -1,6 +1,6 @@
 # Database Model Counts
 
-> Last updated: 2026-02-04 21:15
+> Last updated: 2026-02-05 (Feature Flags synced)
 
 **Database**: postgresql (switchback.proxy.rlwy.net)
 
@@ -19,6 +19,22 @@
 | MediaTags | 78 |
 | BrandProfiles | 102 |
 | DesignTokens | 612 |
+| **FeatureFlags** | **44 GLOBAL content flags** |
+
+## Feature Flags (B10)
+
+44 GLOBAL content availability flags synced from templates:
+
+| template_type | Type Flag | Subtype Flags | Style Flags |
+|---------------|-----------|---------------|-------------|
+| during_match | 1 | 3 (goal, end_score, score_update) | 7 |
+| pre_match | 1 | 4 (lineup, flyer, walkon, anthem) | 0 |
+| post_match | 1 | 2 (highlights, match_summary) | 0 |
+| member | 1 | 7 (profile_photo, legacy_photo, closeup, intro, in_tenue, lineup, flyer) | 0 |
+| season | 1 | 2 (season_recap, transformation) | 0 |
+| **Total** | **5** | **18** | **7** |
+
+**Hierarchy**: GLOBAL → ORGANISATION → PROJECT (each level can disable, lower levels inherit)
 
 ## Content Generation (B31)
 

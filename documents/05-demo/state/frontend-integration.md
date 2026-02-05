@@ -1,6 +1,6 @@
 # Frontend Integration Status
 
-> Last updated: 2026-02-04 21:15
+> Last updated: 2026-02-05 (Feature Flags integration complete)
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.
 
@@ -35,6 +35,20 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 ### B08 Permissions ✅
 - **Backend**: 23 permissions, 5 roles
 - **Frontend**: PermissionGuards, role assignment UI
+- **Status**: ✅ Volledig
+
+### B10 Feature Flags ✅ (NEW)
+- **Backend**: 44 GLOBAL content flags, hierarchical override system (GLOBAL → ORG → PROJECT)
+- **Frontend**:
+  - ✅ FeatureFlagsPage (global flag management, sync from templates)
+  - ✅ ContentAvailabilityCard (org/project scope toggles)
+  - ✅ Settings tab in OrganisationDetailPage en ClubOrganisationDetailPage
+  - ✅ `/api/v1/settings/feature-flags/resolve-all/` met project_id support
+  - ✅ MatchDetailPage filtert templates op basis van enabled flags
+- **Flag Hierarchy**:
+  - Type level: `content__during_match` (master switch)
+  - Subtype level: `content__during_match__goal` (category switch)
+  - Style level: `content__during_match__goal__style__arms_wide` (fine-grained)
 - **Status**: ✅ Volledig
 
 ---
@@ -189,10 +203,24 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 
 ---
 
+## Recent Completions
+
+### 2026-02-05: Feature Flags / Content Availability
+- ✅ Created `ContentAvailabilityCard` component for org/project scope management
+- ✅ Added Settings tab to OrganisationDetailPage and ClubOrganisationDetailPage
+- ✅ Extended `/resolve-all/` endpoint to support `project_id` parameter
+- ✅ Synced 44 GLOBAL content flags from templates (type/subtype/style hierarchy)
+- ✅ Integrated flag checking in MatchDetailPage template filtering
+- ✅ Display labels mapping (goal → "Goal Celebration", etc.)
+
+---
+
 ## API Endpoints Checklist
 
 | Endpoint | Hook/Component | Status |
 |----------|----------------|--------|
+| `/api/v1/settings/feature-flags/` | FeatureFlagsPage | ✅ |
+| `/api/v1/settings/feature-flags/resolve-all/` | ContentAvailabilityCard, MatchDetailPage | ✅ |
 | `/api/v1/content-generation/templates/` | ContentTemplatesPage | ✅ |
 | `/api/v1/media/items/` | useMediaLibrary | ✅ |
 | `/api/v1/media/tags/` | - | ❌ Niet aangeroepen |
