@@ -212,6 +212,7 @@ export default function ClubOrganisationDetailPage() {
       'assets',
       'balance',
       'transactions',
+      'identity',
       'settings',
     ]);
     return allowed.has(normalized) ? normalized : 'overview';

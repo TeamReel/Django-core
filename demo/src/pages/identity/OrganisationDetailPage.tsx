@@ -225,6 +225,7 @@ export const OrganisationDetailPage: React.FC = () => {
       'audit',
       'governance',
       'operations',
+      'identity',
       'settings',
     ]);
     return allowed.has(raw) ? raw : 'overview';

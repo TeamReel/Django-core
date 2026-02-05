@@ -184,6 +184,7 @@ export default function TeamOrganisationDetailPage() {
       'members',
       'balance',
       'transactions',
+      'identity',
     ]);
     return allowed.has(normalized) ? normalized : 'overview';
   }, [location.search]);
