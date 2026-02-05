@@ -52,7 +52,7 @@ const TEMPLATE_CATEGORIES = [
     label: 'Member',
     icon: '👤',
     types: ['member'],
-    subtypes: ['member_intro', 'member_goal_celebration', 'member_in_tenue', 'member_legacy_closeup', 'member_legacy_in_tenue'],
+    subtypes: ['profile_photo', 'legacy_photo', 'closeup', 'member_intro', 'member_goal_celebration', 'member_in_tenue', 'member_legacy_closeup', 'member_legacy_in_tenue'],
   },
   {
     id: 'custom',
@@ -72,14 +72,17 @@ const SUBTYPE_LABELS: Record<string, string> = {
   // During-Match
   goal: 'Goal Celebration',
   score_update: 'Score Update',
-  end_score: 'Final Score',
   // Post-Match
+  end_score: 'Final Score',
   match_summary: 'Match Summary',
   highlights: 'Highlights Reel',
   // Season
   transformation: 'Then vs Now',
   season_recap: 'Season Recap',
   // Member
+  profile_photo: 'Profile Photo',
+  legacy_photo: 'Legacy Photo',
+  closeup: 'Close-up',
   member_intro: 'Short Intro',
   member_goal_celebration: 'Goal Celebration',
   member_in_tenue: 'In Tenue',

@@ -47,6 +47,8 @@ class GenerationTemplateSerializer(serializers.ModelSerializer):
             "parent_template_name",
             "is_latest",
             "description",
+            "template_type",
+            "template_subtype",
             "input_schema",
             "pipeline_config",
             "provider",

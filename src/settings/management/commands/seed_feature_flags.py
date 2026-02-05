@@ -1,125 +1,99 @@
 """
-Seed feature flags for Ajax, PSV, and Feyenoord demo data.
-Creates B10 feature flags at organisation and project scope.
+Seed dark_theme feature flag at global, organisation, and project scope.
+
+Usage:
+    python manage.py seed_feature_flags
+
+Creates:
+- 1 GLOBAL dark_theme flag (default: disabled)
+- 1 dark_theme flag per organisation
+- 1 dark_theme flag per project (club/team)
+
+Admins can then enable dark theme per scope level.
 """
+
 from django.core.management.base import BaseCommand
+
 from organisations.models import Organisation
+from projects.models import Project
 from settings.models import FeatureFlag, ScopeType
 
 
-# Feature flags for TeamReel football SaaS
-FEATURE_FLAGS = [
-    {
-        "key": "match_analysis",
-        "description": "Enable AI-powered match analysis features",
-        "default": True,
-    },
-    {
-        "key": "video_highlights",
-        "description": "Enable automatic video highlight generation",
-        "default": True,
-    },
-    {
-        "key": "player_stats",
-        "description": "Enable advanced player statistics dashboard",
-        "default": True,
-    },
-    {
-        "key": "formation_editor",
-        "description": "Enable drag-and-drop formation editor",
-        "default": True,
-    },
-    {
-        "key": "ai_scouting",
-        "description": "Enable AI scouting recommendations (beta)",
-        "default": False,
-    },
-    {
-        "key": "export_pdf",
-        "description": "Enable PDF export for reports",
-        "default": True,
-    },
-    {
-        "key": "live_tracking",
-        "description": "Enable live GPS tracking integration (premium)",
-        "default": False,
-    },
-    {
-        "key": "parent_portal",
-        "description": "Enable parent/guardian portal access",
-        "default": False,
-    },
-]
-
-
 class Command(BaseCommand):
-    help = "Seed feature flags for organisations (Ajax/PSV/Feyenoord or all)"
-
-    def add_arguments(self, parser):
-        parser.add_argument(
-            "--all",
-            action="store_true",
-            help="Seed for all organisations, not just Dutch clubs",
-        )
+    help = "Seed dark_theme feature flag for global, organisations, and projects"
 
     def handle(self, *args, **options):
-        club_names = ["Ajax", "PSV", "Feyenoord"]
+        stats = {"global": 0, "org": 0, "project": 0}
 
-        # Get organisations - prefer Dutch clubs, fallback to all
-        orgs = Organisation.objects.filter(name__in=club_names)
-        if not orgs.exists():
-            if options.get("all"):
-                orgs = Organisation.objects.all()[:5]  # Limit to first 5
-                self.stdout.write(
-                    f"Using first 5 available orgs: {list(orgs.values_list('name', flat=True))}"
-                )
-            else:
-                self.stdout.write(
-                    self.style.WARNING("No Dutch clubs found. Use --all for other orgs.")
-                )
-                orgs = Organisation.objects.all()[:3]  # Use any 3
-                if not orgs.exists():
-                    self.stdout.write(self.style.ERROR("No organisations found at all."))
-                    return
+        # 1. Global flag (superadmin can enable for whole app)
+        self.stdout.write("\n=== Global Scope ===")
+        flag, created = FeatureFlag.objects.update_or_create(
+            key="dark_theme",
+            scope_type=ScopeType.GLOBAL,
+            organisation=None,
+            project=None,
+            user=None,
+            defaults={
+                "enabled": False,
+                "description": "Enable dark theme for the application UI",
+            },
+        )
+        stats["global"] = 1
+        status = "Created" if created else "Updated"
+        self.stdout.write(f"  {status}: dark_theme (GLOBAL) = {flag.enabled}")
 
-        created_flags = 0
+        # 2. Organisation-scoped flags
+        self.stdout.write("\n=== Organisation Scope ===")
+        orgs = Organisation.objects.exclude(name__startswith="test_").exclude(
+            name__startswith="Test_"
+        )
 
-        # Create global flags first
-        for flag_def in FEATURE_FLAGS:
+        for org in orgs:
             flag, created = FeatureFlag.objects.update_or_create(
-                key=flag_def["key"],
-                scope_type=ScopeType.GLOBAL,
-                organisation=None,
+                key="dark_theme",
+                scope_type=ScopeType.ORGANISATION,
+                organisation=org,
                 project=None,
                 user=None,
                 defaults={
-                    "enabled": flag_def["default"],
-                    "description": flag_def["description"],
+                    "enabled": False,
+                    "description": f"Enable dark theme for {org.name}",
                 },
             )
-            if created:
-                created_flags += 1
-                self.stdout.write(f"  Created GLOBAL flag: {flag.key}")
+            stats["org"] += 1
+            self.stdout.write(f"  {org.name}: dark_theme = {flag.enabled}")
 
-        # Create org-scoped flags for each club
-        for org in orgs:
-            for flag_def in FEATURE_FLAGS:
-                flag, created = FeatureFlag.objects.update_or_create(
-                    key=flag_def["key"],
-                    scope_type=ScopeType.ORGANISATION,
-                    organisation=org,
-                    project=None,
-                    user=None,
-                    defaults={
-                        "enabled": flag_def["default"],
-                        "description": f"{flag_def['description']} ({org.name})",
-                    },
-                )
-                if created:
-                    created_flags += 1
+        # 3. Project-scoped flags (clubs/teams)
+        self.stdout.write("\n=== Project Scope ===")
+        projects = Project.objects.exclude(name__startswith="test_").exclude(
+            name__startswith="Test_"
+        )
 
-            self.stdout.write(f"Created {len(FEATURE_FLAGS)} flags for {org.name}")
+        for project in projects:
+            flag, created = FeatureFlag.objects.update_or_create(
+                key="dark_theme",
+                scope_type=ScopeType.PROJECT,
+                organisation=None,
+                project=project,
+                user=None,
+                defaults={
+                    "enabled": False,
+                    "description": f"Enable dark theme for {project.name}",
+                },
+            )
+            stats["project"] += 1
+
+        self.stdout.write(f"  Created/updated {stats['project']} project flags")
 
         # Summary
-        total = FeatureFlag.objects.count()
-        self.stdout.write(self.style.SUCCESS(f"\nTotal flags: {total} (new: {created_flags})"))
+        total = sum(stats.values())
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"\n✓ dark_theme flags seeded: {stats['global']} global, "
+                f"{stats['org']} org, {stats['project']} project (total: {total})"
+            )
+        )
+        self.stdout.write("\nUsage:")
+        self.stdout.write("  - Superadmin: Enable GLOBAL to turn on dark theme for everyone")
+        self.stdout.write("  - Org admin: Enable ORGANISATION to turn on for all clubs in org")
+        self.stdout.write("  - Club admin: Enable PROJECT to turn on for specific club/team")

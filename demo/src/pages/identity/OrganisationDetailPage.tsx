@@ -49,6 +49,7 @@ import { MatchesList } from './directory/MatchesList';
 import { UsersList } from './directory/UsersList';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import MobileTabBar from '../../components/MobileTabBar';
+import FeatureFlagsCard from '../../components/FeatureFlags/FeatureFlagsCard';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -223,6 +224,7 @@ export const OrganisationDetailPage: React.FC = () => {
       'audit',
       'governance',
       'operations',
+      'settings',
     ]);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
@@ -1624,6 +1626,7 @@ export const OrganisationDetailPage: React.FC = () => {
           { id: 'competitions', label: 'Competitions' },
           { id: 'matches', label: 'Matches' },
           { id: 'users', label: 'Users' },
+          { id: 'settings', label: 'Settings' },
         ]}
         activeTab={activeTab}
       />
@@ -2022,6 +2025,17 @@ export const OrganisationDetailPage: React.FC = () => {
 
         {activeTab === 'users' && orgIdForDirectoryLists && (
           <UsersList preselectedOrgId={orgIdForDirectoryLists} />
+        )}
+
+        {activeTab === 'settings' && org && (
+          <div className="space-y-6">
+            <FeatureFlagsCard
+              scopeType="ORGANISATION"
+              scopeId={String(org.id)}
+              scopeName={org.name}
+              title="Feature Flags"
+            />
+          </div>
         )}
 
       </PageContent>

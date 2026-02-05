@@ -19,6 +19,7 @@ import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySett
 import MobileTabBar from '../../components/MobileTabBar';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
+import FeatureFlagsCard from '../../components/FeatureFlags/FeatureFlagsCard';
 
 type Organisation = {
   id: string;
@@ -210,6 +211,7 @@ export default function ClubOrganisationDetailPage() {
       'assets',
       'balance',
       'transactions',
+      'settings',
     ]);
     return allowed.has(normalized) ? normalized : 'overview';
   }, [location.search]);
@@ -1036,6 +1038,7 @@ export default function ClubOrganisationDetailPage() {
             { id: 'members', label: 'Members' },
             { id: 'assets', label: 'Assets' },
             { id: 'balance', label: 'Balance' },
+            { id: 'settings', label: 'Settings' },
           ]}
           activeTab={activeTabFromUrl}
         />
@@ -1496,6 +1499,17 @@ export default function ClubOrganisationDetailPage() {
 
           {activeTabFromUrl === 'transactions' && orgIdForDirectoryLists && clubIdForDirectoryLists && (
             <TeamCreditsTab view="transactions" projectId={clubIdForDirectoryLists} projectName={club.name} organisationId={orgIdForDirectoryLists} />
+          )}
+
+          {activeTabFromUrl === 'settings' && club && (
+            <div className="space-y-6">
+              <FeatureFlagsCard
+                scopeType="PROJECT"
+                scopeId={String(club.id)}
+                scopeName={club.name}
+                title="Feature Flags"
+              />
+            </div>
           )}
         </PageContent>
       </div>

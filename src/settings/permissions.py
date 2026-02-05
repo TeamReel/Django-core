@@ -256,15 +256,41 @@ class ScopeAwarePermission(BasePermission):
                 return False
 
             # Project settings - check project permission
-            has_permission = evaluate_permission(
-                user=user,
-                permission=permission_code,
-                resource=project,
-                context={
-                    "scope": "PROJECT",
-                    "project_id": resource_id,
-                },
-            )
+            # For edit operations, check projects.update first (preferred)
+            # Then fallback to settings.edit for backwards compatibility
+            if permission_code == "settings.edit":
+                # Try projects.update first (project admins have this)
+                has_permission = evaluate_permission(
+                    user=user,
+                    permission="projects.update",
+                    resource=project,
+                    context={
+                        "scope": "PROJECT",
+                        "project_id": resource_id,
+                    },
+                )
+                # Fallback to settings.edit if projects.update failed
+                if not has_permission:
+                    has_permission = evaluate_permission(
+                        user=user,
+                        permission=permission_code,
+                        resource=project,
+                        context={
+                            "scope": "PROJECT",
+                            "project_id": resource_id,
+                        },
+                    )
+            else:
+                # For settings.view or other permissions, use as-is
+                has_permission = evaluate_permission(
+                    user=user,
+                    permission=permission_code,
+                    resource=project,
+                    context={
+                        "scope": "PROJECT",
+                        "project_id": resource_id,
+                    },
+                )
             return has_permission
 
 

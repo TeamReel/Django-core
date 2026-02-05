@@ -64,6 +64,55 @@ class OutputType(models.TextChoices):
     JSON = "json", "JSON"
 
 
+class TemplateType(models.TextChoices):
+    """Template context types - determines where template is available."""
+
+    MEMBER = "member", "Member"
+    SEASON = "season", "Season"
+    PRE_MATCH = "pre_match", "Pre-Match"
+    DURING_MATCH = "during_match", "During Match"
+    POST_MATCH = "post_match", "Post-Match"
+    CUSTOM = "custom", "Custom"
+
+
+class TemplateSubtype(models.TextChoices):
+    """Template subtypes - specific content formats within each type."""
+
+    # Member subtypes
+    PROFILE_PHOTO = "profile_photo", "Profile Photo"
+    LEGACY_PHOTO = "legacy_photo", "Legacy Photo"
+    IN_TENUE = "in_tenue", "In Tenue"
+    CLOSEUP = "closeup", "Close-up"
+    SHORT_INTRO = "short_intro", "Short Intro"
+    CELEBRATION = "celebration", "Celebration"
+    LEGACY_IN_TENUE = "legacy_in_tenue", "Legacy in Tenue"
+
+    # Season subtypes
+    TRANSFORMATION = "transformation", "Then vs Now"
+    SEASON_RECAP = "season_recap", "Season Recap"
+
+    # Pre-Match subtypes
+    FLYER = "flyer", "Match Flyer"
+    LINEUP = "lineup", "Lineup Announcement"
+    WALKON = "walkon", "Walk-on Video"
+    ANTHEM = "anthem", "Anthem Video"
+
+    # During-Match subtypes
+    GOAL = "goal", "Goal Celebration"
+    SCORE_UPDATE = "score_update", "Score Update"
+
+    # Post-Match subtypes
+    END_SCORE = "end_score", "Final Score"
+    MATCH_SUMMARY = "match_summary", "Match Summary"
+    HIGHLIGHTS = "highlights", "Highlights Reel"
+
+    # Custom subtypes
+    CUSTOM_LOGO = "custom_logo", "Logo"
+    CUSTOM_TENUE = "custom_tenue", "Tenue"
+    CUSTOM_TENUE_LOGO = "custom_tenue_logo", "Tenue + Logo"
+    CUSTOM_TENUE_LOGO_SPONSOR = "custom_tenue_logo_sponsor", "Tenue + Logo + Sponsor"
+
+
 # Semantic version regex: 1.0.0, 2.1.3, etc.
 SEMVER_REGEX = re.compile(r"^\d+\.\d+\.\d+$")
 
@@ -132,6 +181,22 @@ class GenerationTemplate(models.Model):
     description = models.TextField(
         blank=True,
         help_text="Template purpose and usage notes",
+    )
+
+    template_type = models.CharField(
+        max_length=20,
+        choices=TemplateType.choices,
+        default=TemplateType.CUSTOM,
+        db_index=True,
+        help_text="Context where template is available (member, season, match phase)",
+    )
+
+    template_subtype = models.CharField(
+        max_length=30,
+        choices=TemplateSubtype.choices,
+        blank=True,
+        db_index=True,
+        help_text="Specific content format within the type",
     )
 
     input_schema = models.JSONField(

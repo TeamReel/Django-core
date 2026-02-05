@@ -773,6 +773,63 @@ class Command(BaseCommand):
                             }
                         )
 
+                    # Profile Photo - clean professional headshot
+                    template_definitions.append(
+                        {
+                            "name": f"{role_label} Profile Photo - Professional ({sport_label})",
+                            "template_type": TemplateType.MEMBER,
+                            "template_subtype": TemplateSubtype.PROFILE_PHOTO,
+                            "style_variant": "Professional",
+                            "ai_workflow_id": f"wf_member_profile_photo_{role}_professional_{sport_key}",
+                            "sport_variant": sport_key,
+                            "credits_required": 1,
+                            "input_requirements": {
+                                "members": {
+                                    role_key: {"count": 1, "asset_types": ["raw_photo"]},
+                                },
+                            },
+                            "description": f"Professional profile photo for {role}",
+                        }
+                    )
+
+                    # Legacy Photo - vintage style portrait
+                    template_definitions.append(
+                        {
+                            "name": f"{role_label} Legacy Photo - Vintage ({sport_label})",
+                            "template_type": TemplateType.MEMBER,
+                            "template_subtype": TemplateSubtype.LEGACY_PHOTO,
+                            "style_variant": "Vintage",
+                            "ai_workflow_id": f"wf_member_legacy_photo_{role}_vintage_{sport_key}",
+                            "sport_variant": sport_key,
+                            "credits_required": 1,
+                            "input_requirements": {
+                                "members": {
+                                    role_key: {"count": 1, "asset_types": ["profile_photo"]},
+                                },
+                            },
+                            "description": f"Vintage-style legacy photo for {role}",
+                        }
+                    )
+
+                    # Close-up - dramatic portrait
+                    template_definitions.append(
+                        {
+                            "name": f"{role_label} Close-up - Dramatic ({sport_label})",
+                            "template_type": TemplateType.MEMBER,
+                            "template_subtype": TemplateSubtype.CLOSEUP,
+                            "style_variant": "Dramatic",
+                            "ai_workflow_id": f"wf_member_closeup_{role}_dramatic_{sport_key}",
+                            "sport_variant": sport_key,
+                            "credits_required": 1,
+                            "input_requirements": {
+                                "members": {
+                                    role_key: {"count": 1, "asset_types": ["profile_photo"]},
+                                },
+                            },
+                            "description": f"Dramatic close-up portrait for {role}",
+                        }
+                    )
+
                     # In Tenue - requires profile_photo and tenue (season asset)
                     template_definitions.append(
                         {

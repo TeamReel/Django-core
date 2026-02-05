@@ -52,6 +52,9 @@ class TemplateSubtype(models.TextChoices):
     TRANSFORMATION = "transformation", "Then vs Now"
     SEASON_RECAP = "season_recap", "Season Recap"
     # Member templates (no sport required)
+    PROFILE_PHOTO = "profile_photo", "Profile Photo"
+    LEGACY_PHOTO = "legacy_photo", "Legacy Photo"
+    CLOSEUP = "closeup", "Close-up"
     MEMBER_INTRO = "member_intro", "Short Intro"
     MEMBER_GOAL_CELEBRATION = "member_goal_celebration", "Goal Celebration"
     MEMBER_IN_TENUE = "member_in_tenue", "In Tenue"

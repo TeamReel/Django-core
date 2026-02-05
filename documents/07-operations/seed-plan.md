@@ -28,26 +28,87 @@
 
 ## Seed Actions Required
 
-### 1. Branding Seed - Clubs (B33)
+### 1. Theme Feature Flag Seed (B10)
 
-**Goal:** 1 BrandProfile per Club (Project with parent_project=null)
+**Goal:** One `dark_theme` flag per organisation and club with cascade logic.
 
-**Clubs in Database (98 total by federation):**
-| Federation | Clubs | Example |
-|------------|-------|---------|
-| KNVB | ~20 | Roda, Heino, SVD, etc. |
-| FIGC | ~20 | AC Milan, Inter, Juventus, AS Roma, etc. |
-| DFB | ~20 | Bayern, Dortmund, etc. |
-| RBFA | ~20 | Club Brugge, Anderlecht, etc. |
-| The FA | ~20 | Liverpool, Arsenal, Chelsea, etc. |
+**Permission Model:**
+| Role | Can Edit | Scope |
+|------|----------|-------|
+| Superadmin | All | GLOBAL, ORG, PROJECT |
+| Land Admin | Own org only | ORGANISATION |
+| Club Admin | Own club only | PROJECT |
 
-**Color Generation Strategy:**
-- Known clubs: Use official club colors (hardcoded)
-- Unknown clubs: Generate colors based on club name hash (deterministic)
+**Resolution Order (highest wins):**
+```
+GLOBAL → ORGANISATION → PROJECT
+```
+If ORG disables dark theme, all clubs under it are disabled regardless of club setting.
 
 **Expected Result:**
-- 98 new BrandProfiles (1 per club)
-- 588 new DesignTokens (6 per club)
+- 1 GLOBAL flag (system default: light)
+- 5 ORGANISATION flags (1 per federation)
+- 97 PROJECT flags (1 per club)
+- Total: 103 dark_theme flags
+
+**Command:**
+```bash
+python manage.py seed_theme_flags
+```
+
+---
+
+### 2. Media Tags Seed (B35)
+
+**What are MediaTags?**
+Tags for categorizing media items (photos, videos, documents) in the MediaLib.
+
+**Two types:**
+1. **System Tags** (is_system=True, project=None)
+   - Global tags available to ALL projects
+   - Managed by superadmin only
+   - Example: "goal", "training", "match-highlight"
+
+2. **Project Tags** (is_system=False, project=FK)
+   - Project-specific tags
+   - Managed by club/project admins
+   - Example: "approved", "featured", "draft"
+
+**System Tags (15):**
+| Tag | Description |
+|-----|-------------|
+| match-highlight | Key match moments |
+| goal | Goal clips |
+| save | Goalkeeper saves |
+| tackle | Defensive plays |
+| training | Training footage |
+| interview | Player/coach interviews |
+| press-conference | Press events |
+| fan-content | User-generated content |
+| stadium | Venue media |
+| team-photo | Team pictures |
+| player-portrait | Individual portraits |
+| action-shot | In-game action |
+| celebration | Goal celebrations |
+| lineup | Starting XI graphics |
+| tactics-board | Formation visuals |
+
+**Project Tags (12 per project, 4 categories):**
+| Category | Tags |
+|----------|------|
+| media_type | video, photo, document, graphic |
+| source | official, broadcast, social-media, user-generated |
+| status | raw, edited, approved, published |
+| priority | featured, archive, draft |
+
+**Expected Result:**
+- 15 system-wide MediaTags
+- 12 × 97 = ~1164 project-scoped tags
+
+**Command:**
+```bash
+python manage.py seed_media_tags
+```
 
 ---
 

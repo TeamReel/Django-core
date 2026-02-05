@@ -10,15 +10,22 @@ const debugLog = (...args: unknown[]) => {
 export interface ApiFeatureFlag extends FeatureFlag {
   global_id: string;
   org_override_id: string | null;
+  project_override_id?: string | null;
   global_value: boolean | null;
   org_value: boolean | null;
+  project_value?: boolean | null;
 }
 
-export async function fetchFlags(orgId: string | null): Promise<ApiFeatureFlag[]> {
+export type ScopeType = 'GLOBAL' | 'ORGANISATION' | 'PROJECT';
+
+export async function fetchFlags(orgId: string | null, projectId?: string | null): Promise<ApiFeatureFlag[]> {
   const baseUrl = getApiBaseUrl();
   const url = new URL(`${baseUrl}${API_BASE}/resolve-all/`, window.location.origin);
   if (orgId) {
     url.searchParams.append('organisation_id', orgId);
+  }
+  if (projectId) {
+    url.searchParams.append('project_id', projectId);
   }
 
   const response = await fetch(url.toString(), {
@@ -35,6 +42,33 @@ export async function fetchFlags(orgId: string | null): Promise<ApiFeatureFlag[]
 
   const data = await response.json();
   // Handle B13 response envelope
+  return data.data?.results || data.results || data.data || data || [];
+}
+
+export async function fetchFlagsForScope(scopeType: ScopeType, scopeId?: string): Promise<ApiFeatureFlag[]> {
+  const baseUrl = getApiBaseUrl();
+  const url = new URL(`${baseUrl}${API_BASE}/`, window.location.origin);
+  url.searchParams.append('scope_type', scopeType);
+
+  if (scopeType === 'ORGANISATION' && scopeId) {
+    url.searchParams.append('organisation', scopeId);
+  } else if (scopeType === 'PROJECT' && scopeId) {
+    url.searchParams.append('project', scopeId);
+  }
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch flags: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
   return data.data?.results || data.results || data.data || data || [];
 }
 
@@ -57,7 +91,27 @@ export async function updateGlobalFlag(flagId: string, enabled: boolean): Promis
 }
 
 export async function createOrgOverride(orgId: string, key: string, enabled: boolean): Promise<void> {
+  return createScopeOverride('ORGANISATION', orgId, key, enabled);
+}
+
+export async function createProjectOverride(projectId: string, key: string, enabled: boolean): Promise<void> {
+  return createScopeOverride('PROJECT', projectId, key, enabled);
+}
+
+export async function createScopeOverride(scopeType: ScopeType, scopeId: string, key: string, enabled: boolean): Promise<void> {
   const baseUrl = getApiBaseUrl();
+  const body: Record<string, unknown> = {
+    scope_type: scopeType,
+    key: key,
+    enabled: enabled,
+  };
+
+  if (scopeType === 'ORGANISATION') {
+    body.organisation = scopeId;
+  } else if (scopeType === 'PROJECT') {
+    body.project = scopeId;
+  }
+
   const response = await fetch(`${baseUrl}${API_BASE}/`, {
     method: 'POST',
     headers: {
@@ -66,16 +120,12 @@ export async function createOrgOverride(orgId: string, key: string, enabled: boo
       'X-CSRFToken': getCsrfToken(),
     },
     credentials: 'include',
-    body: JSON.stringify({
-      scope_type: 'ORGANISATION',
-      organisation: orgId,
-      key: key,
-      enabled: enabled,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to create org override: ${response.statusText}`);
+    const errorText = await response.text();
+    throw new Error(`Failed to create ${scopeType.toLowerCase()} override: ${response.statusText} - ${errorText}`);
   }
 }
 
