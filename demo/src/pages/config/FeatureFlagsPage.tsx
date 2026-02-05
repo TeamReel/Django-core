@@ -47,7 +47,7 @@ import {
 
 export const FeatureFlagsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { context, organisations, switchContext } = useContextSwitcher();
+  const { context, organisations } = useContextSwitcher();
   const { user } = useAuth();
   const debugLog = (...args: unknown[]) => {
     if (import.meta.env.DEV) console.log(...args);
@@ -64,20 +64,10 @@ export const FeatureFlagsPage: React.FC = () => {
 
   // Derived state from context switcher
   const currentOrgId = context.organisation?.id ? String(context.organisation.id) : null;
-  const currentOrgName = context.organisation?.name || '';
 
   // Use useAuth for superadmin check (most reliable source)
   const isSuperadmin = Boolean((user as any)?.is_superuser) || String((user as any)?.role || '').toLowerCase() === 'superadmin';
 
-  // Debug log the full user object to understand structure
-  useEffect(() => {
-    console.log('[FeatureFlagsPage] User object:', user);
-    console.log('[FeatureFlagsPage] isSuperadmin check:', {
-      is_superuser: (user as any)?.is_superuser,
-      role: (user as any)?.role,
-      computed_isSuperadmin: isSuperadmin,
-    });
-  }, [user, isSuperadmin]);
 
   // Breadcrumb context switcher setup
   const {

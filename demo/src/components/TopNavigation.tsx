@@ -33,6 +33,18 @@ export default function TopNavigation() {
   const [themeToggleGlobalEnabled, setThemeToggleGlobalEnabled] = useState<boolean>(true); // Global value for superadmins
 
   // For superadmins: Fetch the global flag value (not resolved with org overrides)
+  const normalizeFlagValue = (value: unknown): boolean | null => {
+    if (value === null || value === undefined) return null;
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      const lowered = value.trim().toLowerCase();
+      if (lowered === 'true') return true;
+      if (lowered === 'false') return false;
+    }
+    if (typeof value === 'number') return value !== 0;
+    return null;
+  };
+
   useEffect(() => {
     if (!isSystemAdmin) return;
 
@@ -50,12 +62,12 @@ export default function TopNavigation() {
         if (response.ok) {
           const data = await response.json();
           const flags = data.data?.results || data.results || data.data || data || [];
-          const themeFlag = flags.find((f: any) => f.key === 'dark_themeOverride');
+          const themeFlag = flags.find((f: any) => ['dark_themeOverride', 'dark_theme', 'dark_mode'].includes(f.key));
 
           if (themeFlag) {
-            const globalValue = themeFlag.global_value !== null && themeFlag.global_value !== undefined
-              ? themeFlag.global_value
-              : true;
+            const normalizedGlobal = normalizeFlagValue(themeFlag.global_value);
+            const normalizedEnabled = normalizeFlagValue(themeFlag.enabled);
+            const globalValue = normalizedGlobal ?? normalizedEnabled ?? true;
             setThemeToggleGlobalEnabled(globalValue);
           }
         }

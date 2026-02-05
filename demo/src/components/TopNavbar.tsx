@@ -102,11 +102,37 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
     }
   }, [onOpenSearchRef]);
 
+  const isPlatformRoute = (
+    location.pathname.startsWith('/health') ||
+    location.pathname.startsWith('/cache-performance') ||
+    location.pathname.startsWith('/flags') ||
+    location.pathname.startsWith('/integration') ||
+    location.pathname.startsWith('/design-system') ||
+    location.pathname.startsWith('/observability') ||
+    location.pathname.startsWith('/security') ||
+    location.pathname.startsWith('/constitution') ||
+    location.pathname.startsWith('/api-docs') ||
+    location.pathname.startsWith('/platform')
+  );
+
   const showBreadcrumbs = !(
     location.pathname.startsWith('/notifications') ||
     location.pathname.startsWith('/login') ||
-    location.pathname.startsWith('/register')
+    location.pathname.startsWith('/register') ||
+    isPlatformRoute
   );
+
+  const normalizeFlagValue = (value: unknown): boolean | null => {
+    if (value === null || value === undefined) return null;
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      const lowered = value.trim().toLowerCase();
+      if (lowered === 'true') return true;
+      if (lowered === 'false') return false;
+    }
+    if (typeof value === 'number') return value !== 0;
+    return null;
+  };
 
   const orgIdForMyBalance = String((context as any)?.organisation?.id || '').trim();
   const currentUserId = (user as any)?.id;
@@ -255,13 +281,13 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
         if (response.ok) {
           const data = await response.json();
           const flags = data.data?.results || data.results || data.data || data || [];
-          const themeFlag = flags.find((f: any) => f.key === 'dark_themeOverride');
+          const themeFlag = flags.find((f: any) => ['dark_themeOverride', 'dark_theme', 'dark_mode'].includes(f.key));
 
           if (themeFlag) {
             // For superadmins, ONLY use global_value (ignore resolved/org overrides)
-            const globalValue = themeFlag.global_value !== null && themeFlag.global_value !== undefined
-              ? themeFlag.global_value
-              : true; // Default to true if no global value found
+            const normalizedGlobal = normalizeFlagValue(themeFlag.global_value);
+            const normalizedEnabled = normalizeFlagValue(themeFlag.enabled);
+            const globalValue = normalizedGlobal ?? normalizedEnabled ?? true; // Default to true if nothing present
             debugLog('[TopNavbar] Global dark_mode flag for superadmin:', globalValue, 'raw:', themeFlag);
             setThemeToggleGlobalEnabled(globalValue);
           }
