@@ -69,6 +69,16 @@ export const FeatureFlagsPage: React.FC = () => {
   // Use useAuth for superadmin check (most reliable source)
   const isSuperadmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
 
+  // Debug log the full user object to understand structure
+  useEffect(() => {
+    console.log('[FeatureFlagsPage] User object:', user);
+    console.log('[FeatureFlagsPage] isSuperadmin check:', {
+      is_superuser: (user as any)?.is_superuser,
+      role: (user as any)?.role,
+      computed_isSuperadmin: isSuperadmin,
+    });
+  }, [user, isSuperadmin]);
+
   // Breadcrumb context switcher setup
   const {
     organisationOptions,
