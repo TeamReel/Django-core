@@ -196,7 +196,7 @@ export async function deleteOrgOverride(overrideId: string): Promise<void> {
   }
 }
 
-export async function seedDefaultFlags(): Promise<void> {
+export async function seedDefaultFlags(): Promise<{ total: number; created: number }> {
   const baseUrl = getApiBaseUrl();
 
   const normalizeKey = (value: string): string =>
@@ -252,11 +252,12 @@ export async function seedDefaultFlags(): Promise<void> {
     enabled: true,
   }));
 
+  let created = 0;
   for (const flag of defaults) {
     // Check if exists first (optional, but good for idempotency if we had a check endpoint)
     // For now, just try to create. If it fails (unique constraint), we ignore.
     try {
-      await fetch(`${baseUrl}${API_BASE}/`, {
+      const res = await fetch(`${baseUrl}${API_BASE}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -271,10 +272,13 @@ export async function seedDefaultFlags(): Promise<void> {
           enabled: flag.enabled,
         }),
       });
+      if (res.ok) created += 1;
     } catch (e) {
       console.warn(`Failed to seed flag ${flag.key} (might already exist)`);
     }
   }
+
+  return { total: defaults.length, created };
 }
 
 function getCsrfToken(): string {

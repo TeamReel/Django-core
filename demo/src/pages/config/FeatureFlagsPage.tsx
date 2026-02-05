@@ -58,6 +58,7 @@ export const FeatureFlagsPage: React.FC = () => {
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [useApi, setUseApi] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [seedMessage, setSeedMessage] = useState<string | null>(null);
 
   // This page is GLOBAL-only
   const editMode = 'global';
@@ -292,6 +293,11 @@ export const FeatureFlagsPage: React.FC = () => {
       <PageContent>
         {/* Info Alert */}
         <Alert variant="info" className="mb-4">
+                  {seedMessage && (
+                    <Alert variant="info" className="mb-4">
+                      {seedMessage}
+                    </Alert>
+                  )}
           <strong>Global Feature Flags:</strong> These are master switches for the entire application.
           When a global flag is <strong>disabled</strong>, it overrides all organisation and project settings.
           Organisations can create more restrictive overrides (disable when global is enabled) but cannot enable when global is disabled.
@@ -322,7 +328,14 @@ export const FeatureFlagsPage: React.FC = () => {
                     onClick={async () => {
                       try {
                         setLoading(true);
-                        await seedDefaultFlags();
+                        const result = await seedDefaultFlags();
+                        if (result.total === 0) {
+                          setSeedMessage('No active templates found. Create or activate templates first, then seed again.');
+                        } else if (result.created === 0) {
+                          setSeedMessage(`All ${result.total} flags already exist.`);
+                        } else {
+                          setSeedMessage(`Seeded ${result.created} of ${result.total} content flags.`);
+                        }
                         // Reload
                         const apiFlags = await fetchFlags(null);
                         setFlags(apiFlags);
