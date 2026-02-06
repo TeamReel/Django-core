@@ -9,7 +9,7 @@ TeamReel (Option A) notes:
 
 from api.pagination import BaseAPIPagination
 from django.db import connection
-from django.db.models import Count, Q
+from django.db.models import Count, OuterRef, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -201,12 +201,23 @@ class PeriodViewSet(viewsets.ModelViewSet):
             )
 
         # Project memberships table may be absent in some demo DBs.
+        # Count members for THIS specific period (season), not all team members.
         if not table_names or "projects_membership" in table_names:
-            annotations["members_count"] = Count(
-                "project__memberships",
-                filter=Q(project__memberships__deleted_at__isnull=True),
-                distinct=True,
+            from projects.models import ProjectMembership
+            from django.db.models import Subquery
+
+            # Subquery to count memberships that belong to this specific period
+            members_subquery = Subquery(
+                ProjectMembership.objects.filter(
+                    project=OuterRef("project"),
+                    period=OuterRef("pk"),
+                    deleted_at__isnull=True,
+                )
+                .values("project")
+                .annotate(cnt=Count("id"))
+                .values("cnt")[:1]
             )
+            annotations["members_count"] = members_subquery
 
         queryset = queryset.annotate(**annotations)
 
