@@ -16,10 +16,11 @@ class ProjectMembershipIndex(SearchIndex):
         return f"{user.get_full_name()} {user.email} {project.name} {obj.get_role_display()}"
 
     def get_title(self, obj):
-        return obj.user.get_full_name() or obj.user.username
+        name = obj.user.get_full_name() or obj.user.username
+        return f"{name} - {obj.project.name}"
 
     def get_description(self, obj):
-        return f"{obj.get_role_display()} - {obj.project.name}"
+        return f"{obj.user.email} • {obj.get_role_display()}"
 
     def get_url(self, obj):
         project = obj.project
