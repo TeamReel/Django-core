@@ -20,7 +20,10 @@ class ProjectMembershipIndex(SearchIndex):
         return f"{name} - {obj.project.name}"
 
     def get_description(self, obj):
-        return f"{obj.user.email} • {obj.get_role_display()}"
+        desc = f"{obj.user.email} • {obj.get_role_display()}"
+        if obj.period:
+            desc += f" ({obj.period.name})"
+        return desc
 
     def get_url(self, obj):
         project = obj.project
