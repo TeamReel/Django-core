@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
   LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder,
-      Bell, CreditCard, UserCircle, Star, PanelLeftClose, PanelLeft, Calendar, Film
+      Bell, CreditCard, UserCircle, Star, PanelLeftClose, PanelLeft, Calendar, Film, Fingerprint
 } from 'lucide-react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -538,6 +538,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 title = 'User';
                 items = [
                     { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Fingerprint },
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
                     { label: 'Federations', path: makeTabUrl(baseUrl, 'federations'), icon: Globe },
                     { label: 'Clubs', path: makeTabUrl(baseUrl, 'clubs'), icon: Shield },
@@ -640,6 +641,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     title = 'Member';
                                     items = [
                                         { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                                        { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Fingerprint },
                                         { label: 'Profile Photo', path: makeTabUrl(baseUrl, 'profile'), icon: UserCircle },
                                         { label: 'Legacy Photo', path: makeTabUrl(baseUrl, 'legacy_photo'), icon: Timer },
                                         { label: 'In Tenue', path: makeTabUrl(baseUrl, 'kit'), icon: Shirt },

@@ -770,6 +770,123 @@ export default function ProjectSeasonMemberDetailPage() {
                     </div>
                   </Card>
                 ))}
+
+                {/* Identity Tab - Profile photo and user info */}
+                {activeTab === 'identity' && (
+                  <Card>
+                    <div style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '24px' }}>🪪</span>
+                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Identity</div>
+                        </div>
+                      </div>
+
+                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                        Profile photo and personal information for this member.
+                      </div>
+
+                      <div style={{ marginTop: '20px' }}>
+                        {/* Profile Photo Section */}
+                        <div style={{ marginBottom: '24px' }}>
+                          <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Profile Photo</div>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
+                            <div style={{
+                              width: '160px',
+                              height: '160px',
+                              borderRadius: '12px',
+                              overflow: 'hidden',
+                              backgroundColor: 'var(--app-surface-secondary)',
+                              border: '2px solid var(--app-border)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                              {membership?.user?.avatar_url ? (
+                                <img
+                                  src={membership.user.avatar_url}
+                                  alt={getUserDisplayName(membership)}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                  }}
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <div style={{ fontSize: '48px', opacity: 0.3 }}>👤</div>
+                              )}
+                            </div>
+                            <div style={{ flex: 1, minWidth: '200px' }}>
+                              <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px', opacity: 0.7 }}>
+                                Photo URL (from user account)
+                              </div>
+                              <div style={{
+                                padding: '10px 12px',
+                                background: 'var(--app-surface-secondary)',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontFamily: 'monospace',
+                                wordBreak: 'break-all',
+                                color: membership?.user?.avatar_url ? 'var(--app-text)' : 'var(--app-muted-text)',
+                              }}>
+                                {membership?.user?.avatar_url || 'No profile photo set'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* User Information Section */}
+                        <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '20px' }}>
+                          <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>User Information</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                            <div>
+                              <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Name</div>
+                              <div style={{ fontSize: '14px', fontWeight: 500 }}>{getUserDisplayName(membership)}</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Email</div>
+                              <div style={{ fontSize: '14px', fontWeight: 500 }}>{membership?.user?.email || '—'}</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>User ID</div>
+                              <div style={{ fontSize: '12px', fontFamily: 'monospace', opacity: 0.8 }}>{membership?.user?.id || '—'}</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Membership ID</div>
+                              <div style={{ fontSize: '12px', fontFamily: 'monospace', opacity: 0.8 }}>{membership?.id || '—'}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Role/Position Section */}
+                        <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '20px', marginTop: '20px' }}>
+                          <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Role & Position</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                            <div>
+                              <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Role</div>
+                              <Badge variant="default">{membership?.role || 'member'}</Badge>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Position</div>
+                              <div style={{ fontSize: '14px', fontWeight: 500 }}>
+                                {(membership as any)?.metadata?.position || (membership as any)?.position || '—'}
+                              </div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Jersey Number</div>
+                              <div style={{ fontSize: '14px', fontWeight: 500 }}>
+                                {(membership as any)?.metadata?.jersey_number || (membership as any)?.jersey_number || '—'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                )}
               </div>
 
               <div className="space-y-6">

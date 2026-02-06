@@ -1106,7 +1106,7 @@ export default function ClubOrganisationDetailPage() {
           }
         />
 
-        {/* Mobile Tab Bar */}
+        {/* Mobile Tab Bar (hidden on desktop) */}
         <MobileTabBar
           tabs={[
             { id: 'overview', label: 'Overview' },
