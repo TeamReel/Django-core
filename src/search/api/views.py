@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
+import unicodedata
 from django.db import connection
 from django.contrib.postgres.search import SearchHeadline, SearchQuery
 from django.contrib.contenttypes.models import ContentType
@@ -695,23 +696,40 @@ class SearchAPIView(APIView):
                 elif model_name == "user":
                     try:
                         obj = entry.content_object
-                        # Robust deduplication: lower, strip, and ignore empty
+                        # Robust deduplication: lower, strip, remove accents
                         email = getattr(obj, "email", "")
+                        norm_email = ""
                         if email:
-                            email = email.lower().strip()
+                            # NORMALIZE: NFKD decomposes chars, encode ASCII ignores non-ascii/accents
+                            norm_email = (
+                                unicodedata.normalize("NFKD", email.lower().strip())
+                                .encode("ASCII", "ignore")
+                                .decode("utf-8")
+                            )
 
-                        if email and email in seen_users:
+                        if norm_email and norm_email in seen_users:
                             continue
-                        if email:
-                            seen_users.add(email)
+                        if norm_email:
+                            seen_users.add(norm_email)
                         key = "users"
                     except Exception:
                         key = "users"
                 elif model_name == "projectmembership":
                     try:
                         obj = entry.content_object
-                        # Deduplicate by (user, project)
-                        dedup_key = (obj.user_id, obj.project_id)
+
+                        # Deduplicate by (normalized_email, project) to handle duplicate user accounts
+                        u_email = getattr(obj.user, "email", "")
+                        if u_email:
+                            u_norm = (
+                                unicodedata.normalize("NFKD", u_email.lower().strip())
+                                .encode("ASCII", "ignore")
+                                .decode("utf-8")
+                            )
+                        else:
+                            u_norm = str(obj.user_id)
+
+                        dedup_key = (u_norm, obj.project_id)
                         if dedup_key in seen_members:
                             continue
                         seen_members.add(dedup_key)
