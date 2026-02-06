@@ -695,7 +695,11 @@ class SearchAPIView(APIView):
                 elif model_name == "user":
                     try:
                         obj = entry.content_object
-                        email = getattr(obj, "email", "").lower()
+                        # Robust deduplication: lower, strip, and ignore empty
+                        email = getattr(obj, "email", "")
+                        if email:
+                            email = email.lower().strip()
+
                         if email and email in seen_users:
                             continue
                         if email:
