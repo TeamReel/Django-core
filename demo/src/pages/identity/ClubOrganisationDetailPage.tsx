@@ -505,23 +505,46 @@ export default function ClubOrganisationDetailPage() {
 
     const loadBrandLogo = async () => {
       if (activeTabFromUrl !== 'identity') return;
-      const clubSlug = String(club?.slug || clubSlugOrId || '').trim();
-      if (!clubSlug) return;
+
+      // We need the project ID to query branding. Get it from the club data.
+      const projectId = club?.id || club?.project_id;
+      if (!projectId) {
+        console.log('No project ID available for brand logo load');
+        return;
+      }
 
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/?project=${encodeURIComponent(clubSlug)}`, {
+        // Step 1: Get the brand profile for this project
+        const profileRes = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/?project=${projectId}`, {
           credentials: 'include',
         });
-        if (!res.ok) return;
-        const json = await res.json().catch(() => null);
-        const profiles = json?.data?.results || json?.results || json?.data || [];
+        if (!profileRes.ok) {
+          console.log('Brand profile fetch failed:', profileRes.status);
+          return;
+        }
+        const profileJson = await profileRes.json().catch(() => null);
+        const profiles = profileJson?.data?.results || profileJson?.results || profileJson?.data || [];
         const profile = Array.isArray(profiles) ? profiles[0] : profiles;
 
-        if (!profile) return;
+        if (!profile?.id) {
+          console.log('No brand profile found for project', projectId);
+          return;
+        }
+
+        // Step 2: Get the assets for this brand profile
+        const assetsRes = await fetch(`${apiBaseUrl}/api/v1/branding/assets/?profile=${profile.id}`, {
+          credentials: 'include',
+        });
+        if (!assetsRes.ok) {
+          console.log('Brand assets fetch failed:', assetsRes.status);
+          return;
+        }
+        const assetsJson = await assetsRes.json().catch(() => null);
+        const assets = assetsJson?.data?.results || assetsJson?.results || assetsJson?.data || [];
+        const assetList = Array.isArray(assets) ? assets : [];
 
         // Find logo asset
-        const assets = profile?.assets || [];
-        const logoAsset = assets.find((a: any) =>
+        const logoAsset = assetList.find((a: any) =>
           a.asset_type === 'logo' ||
           a.asset_type === 'logo_light' ||
           a.asset_type === 'logo_dark' ||
@@ -538,6 +561,7 @@ export default function ClubOrganisationDetailPage() {
             const s3Url = `https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${url}`;
             setBrandLogoUrl(s3Url);
           }
+          console.log('Brand logo loaded:', url);
         }
       } catch (e) {
         console.error('Failed to load brand logo:', e);
@@ -548,7 +572,7 @@ export default function ClubOrganisationDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeTabFromUrl, apiBaseUrl, club?.slug, clubSlugOrId]);
+  }, [activeTabFromUrl, apiBaseUrl, club?.id, club?.project_id]);
 
   const orgKeyForRoutes = useMemo(() => {
     const slug = String(org?.slug || resolvedOrgSlug || '').trim();
