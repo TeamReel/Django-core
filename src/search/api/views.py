@@ -122,7 +122,7 @@ class SearchAPIView(APIView):
 
         # Filter and rank results
         candidates = []
-        for idx, entry in enumerate(entries[:3]):  # Top 3 only
+        for idx, entry in enumerate(entries[:10]):  # Look at top 10 results to find an anchor
             # Get ContentType label
             label = f"{entry.content_type.app_label}.{entry.content_type.model}"
 
