@@ -30,12 +30,20 @@ class ProjectMembershipIndex(SearchIndex):
         org_slug = project.organisation.slug if project.organisation else "_"
 
         if project.parent_project:
-            # Team member
+            # Team member - URL structure: /{org}/{club}/{team}/{season}/{membership_id}
             club_slug = project.parent_project.slug
-            return f"/apps/identity/organisations/{org_slug}/clubs/{club_slug}/teams/{project.slug}/squad/{obj.id}"
+            # Include season slug if period is set
+            if obj.period:
+                from django.utils.text import slugify
+
+                season_slug = slugify(obj.period.name)
+                return f"/{org_slug}/{club_slug}/{project.slug}/{season_slug}/{obj.id}"
+            else:
+                # Fallback: team page without season
+                return f"/{org_slug}/{club_slug}/{project.slug}"
         else:
-            # Club member
-            return f"/apps/identity/organisations/{org_slug}/clubs/{project.slug}/members/{obj.id}"
+            # Club member - URL structure: /{org}/{club}
+            return f"/{org_slug}/{project.slug}"
 
     def get_visible_ids(self, user):
         if user.is_superuser:

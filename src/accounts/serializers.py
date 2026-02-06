@@ -77,13 +77,9 @@ class UserListSerializer(serializers.ModelSerializer):
         ]
 
     def get_avatar_url(self, obj):
-        avatar = getattr(obj, "avatar", None)
-        if not avatar:
-            return None
-        try:
-            return avatar.url
-        except Exception:
-            return None
+        from accounts.utils import get_avatar_url
+
+        return get_avatar_url(getattr(obj, "avatar", None))
 
     def get_role(self, obj):
         """Return the canonical platform role slug.

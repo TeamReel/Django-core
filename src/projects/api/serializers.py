@@ -13,9 +13,16 @@ User = get_user_model()
 class UserNestedSerializer(serializers.ModelSerializer):
     """Serializer for nested user data."""
 
+    avatar_url = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "email", "first_name", "last_name"]
+        fields = ["id", "email", "first_name", "last_name", "avatar_url"]
+
+    def get_avatar_url(self, obj):
+        from accounts.utils import get_avatar_url
+
+        return get_avatar_url(getattr(obj, "avatar", None))
 
 
 class ProjectMembershipSerializer(serializers.ModelSerializer):
