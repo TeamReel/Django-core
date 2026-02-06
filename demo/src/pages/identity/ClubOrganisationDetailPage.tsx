@@ -148,6 +148,9 @@ export default function ClubOrganisationDetailPage() {
   const [overviewMembers, setOverviewMembers] = useState<OverviewMember[]>([]);
   const [overviewCounts, setOverviewCounts] = useState<{ teams: number; seasons: number; members: number } | null>(null);
 
+  // Brand identity state for club logo
+  const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
+
   const visibleHierarchyTeams = useMemo(() => {
     const q = String(hierarchySearch || '').trim().toLowerCase();
     if (!q) return hierarchyTeams;
@@ -495,6 +498,57 @@ export default function ClubOrganisationDetailPage() {
       cancelled = true;
     };
   }, [activeTabFromUrl, apiBaseUrl, clubIdForDirectoryLists]);
+
+  // Load brand profile logo when identity tab is active
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadBrandLogo = async () => {
+      if (activeTabFromUrl !== 'identity') return;
+      const clubSlug = String(club?.slug || clubSlugOrId || '').trim();
+      if (!clubSlug) return;
+
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/?project=${encodeURIComponent(clubSlug)}`, {
+          credentials: 'include',
+        });
+        if (!res.ok) return;
+        const json = await res.json().catch(() => null);
+        const profiles = json?.data?.results || json?.results || json?.data || [];
+        const profile = Array.isArray(profiles) ? profiles[0] : profiles;
+
+        if (!profile) return;
+
+        // Find logo asset
+        const assets = profile?.assets || [];
+        const logoAsset = assets.find((a: any) =>
+          a.asset_type === 'logo' ||
+          a.asset_type === 'logo_light' ||
+          a.asset_type === 'logo_dark' ||
+          String(a.asset_type || '').includes('logo')
+        );
+
+        if (logoAsset?.url && !cancelled) {
+          // Convert relative path to full S3 URL
+          const url = logoAsset.url;
+          if (url.startsWith('http')) {
+            setBrandLogoUrl(url);
+          } else {
+            // Construct S3 URL
+            const s3Url = `https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${url}`;
+            setBrandLogoUrl(s3Url);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load brand logo:', e);
+      }
+    };
+
+    void loadBrandLogo();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTabFromUrl, apiBaseUrl, club?.slug, clubSlugOrId]);
 
   const orgKeyForRoutes = useMemo(() => {
     const slug = String(org?.slug || resolvedOrgSlug || '').trim();
@@ -1483,9 +1537,9 @@ export default function ClubOrganisationDetailPage() {
                       flexShrink: 0,
                     }}
                   >
-                    {(club as any)?.metadata?.identity?.logo_url ? (
+                    {((club as any)?.metadata?.identity?.logo_url || brandLogoUrl) ? (
                       <img
-                        src={(club as any).metadata.identity.logo_url}
+                        src={(club as any)?.metadata?.identity?.logo_url || brandLogoUrl || ''}
                         alt={`${club.name} logo`}
                         style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 8 }}
                         onError={(e) => {
@@ -1503,21 +1557,24 @@ export default function ClubOrganisationDetailPage() {
                     <div style={{ color: 'var(--app-muted-text)', fontSize: 13, marginBottom: 12 }}>
                       This logo is used as the club's visual identity across the platform.
                     </div>
-                    {(club as any)?.metadata?.identity?.logo_url ? (
+                    {((club as any)?.metadata?.identity?.logo_url || brandLogoUrl) ? (
                       <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
                         <strong>Logo URL:</strong>{' '}
                         <a
-                          href={(club as any).metadata.identity.logo_url}
+                          href={(club as any)?.metadata?.identity?.logo_url || brandLogoUrl || ''}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{ color: '#007bff', wordBreak: 'break-all' }}
                         >
-                          {(club as any).metadata.identity.logo_url}
+                          {(club as any)?.metadata?.identity?.logo_url || brandLogoUrl}
                         </a>
+                        {brandLogoUrl && !(club as any)?.metadata?.identity?.logo_url && (
+                          <span style={{ marginLeft: 8, color: '#28a745', fontWeight: 600 }}>(from Brand Profile)</span>
+                        )}
                       </div>
                     ) : (
                       <div style={{ fontSize: 12, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
-                        No logo configured. Set it below in Quick Identity Settings.
+                        No logo configured. Set it below in Quick Identity Settings or upload via Brand Profile.
                       </div>
                     )}
                   </div>
