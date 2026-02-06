@@ -17,6 +17,7 @@ urlpatterns = [
     path("auth/profile/", views.update_profile, name="api_update_profile"),
     path("auth/change-password/", views.change_password, name="api_change_password"),
     path("auth/avatar/", views.update_avatar, name="api_update_avatar"),
+    path("auth/avatar/set-path/", views.set_avatar_from_path, name="api_set_avatar_path"),
     path(
         "auth/password-reset/",
         views.password_reset_request_api,

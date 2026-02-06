@@ -1920,6 +1920,102 @@ def update_avatar(request):
 
 
 @api_view(["POST"])
+def set_avatar_from_path(request):
+    """Set the authenticated user's avatar from an existing S3 path.
+
+    This is useful when migrating existing images (e.g., player photos from SoccerWiki)
+    to be used as user avatars without re-uploading.
+
+    Request body:
+        {
+            "path": "players/12345.png"  # Relative path in S3 bucket
+        }
+    """
+    if not request.user.is_authenticated:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "not_authenticated",
+                    "message": "Authentication credentials were not provided.",
+                    "details": {},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    user = request.user
+    path = (request.data or {}).get("path", "").strip()
+
+    if not path:
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "Validation failed",
+                    "details": {"path": ["This field is required"]},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Validate path doesn't contain directory traversal
+    if ".." in path or path.startswith("/"):
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "validation_error",
+                    "message": "Validation failed",
+                    "details": {"path": ["Invalid path"]},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Set the avatar path directly (this will be resolved to S3 URL by get_avatar_url)
+    try:
+        # The ImageField.name stores the relative path
+        user.avatar.name = path
+        user.save(update_fields=["avatar"])
+        audit_log.record(
+            "auth.avatar_path_set", user=user, request=request, metadata={"path": path}
+        )
+    except Exception:
+        import logging
+
+        logging.getLogger(__name__).exception(
+            "Avatar path set failed", extra={"user_id": getattr(user, "id", None)}
+        )
+        return Response(
+            {
+                "status": "error",
+                "error": {
+                    "code": "server_error",
+                    "message": "Failed to set avatar path. Please try again.",
+                    "details": {"correlation_id": getattr(request, "correlation_id", None)},
+                },
+                "meta": {"timestamp": timezone.now().isoformat()},
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    serializer = UserListSerializer(user)
+    return Response(
+        {
+            "status": "success",
+            "data": serializer.data,
+            "meta": {"timestamp": timezone.now().isoformat()},
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def password_reset_request_api(request):
     """API endpoint for password reset request with no email enumeration."""

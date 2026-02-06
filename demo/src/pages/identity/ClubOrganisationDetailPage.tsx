@@ -561,7 +561,7 @@ export default function ClubOrganisationDetailPage() {
             const s3Url = `https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${url}`;
             setBrandLogoUrl(s3Url);
           }
-          console.log('Brand logo loaded:', url);
+            console.log('Brand logo loaded:', s3Url || url);
         }
       } catch (e) {
         console.error('Failed to load brand logo:', e);
@@ -572,7 +572,7 @@ export default function ClubOrganisationDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeTabFromUrl, apiBaseUrl, club?.id]);
+  }, [activeTabFromUrl, apiBaseUrl, club]);
 
   const orgKeyForRoutes = useMemo(() => {
     const slug = String(org?.slug || resolvedOrgSlug || '').trim();
