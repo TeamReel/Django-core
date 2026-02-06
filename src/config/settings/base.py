@@ -491,11 +491,8 @@ SEARCH_HIERARCHY_MAX_DEPTH = int(os.getenv("SEARCH_HIERARCHY_MAX_DEPTH", "6"))
 # Maximum total nodes in a single hierarchy response (default: 100)
 SEARCH_HIERARCHY_MAX_NODES = int(os.getenv("SEARCH_HIERARCHY_MAX_NODES", "100"))
 
-# Maximum siblings per level (to prevent massive trees)
+# Maximum siblings per level (to prevent massive trees) (default: 50)
 SEARCH_HIERARCHY_PER_LEVEL_LIMIT = int(os.getenv("SEARCH_HIERARCHY_PER_LEVEL_LIMIT", "50"))
-
-# Maximum children per node (default: 5)
-SEARCH_HIERARCHY_PER_LEVEL_LIMIT = int(os.getenv("SEARCH_HIERARCHY_PER_LEVEL_LIMIT", "5"))
 
 # Enable/disable hierarchical navigation feature
 SEARCH_HIERARCHY_ENABLED = os.getenv("SEARCH_HIERARCHY_ENABLED", "true").lower() == "true"
