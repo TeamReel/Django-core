@@ -225,8 +225,16 @@ export const UserDetailPage: React.FC = () => {
   const [userBalanceError, setUserBalanceError] = useState<string | null>(null);
   const [userBalanceReloadToken, setUserBalanceReloadToken] = useState(0);
 
+  // Identity tab state
+  const [identityEditing, setIdentityEditing] = useState(false);
+  const [identityFirstName, setIdentityFirstName] = useState('');
+  const [identityLastName, setIdentityLastName] = useState('');
+  const [identitySaving, setIdentitySaving] = useState(false);
+  const [identitySaveError, setIdentitySaveError] = useState<string | null>(null);
+  const [identitySaveSuccess, setIdentitySaveSuccess] = useState(false);
+
   const allowedTabs = useMemo(
-    () => new Set(['overview', 'balance', 'hierarchy', 'federations', 'clubs', 'teams', 'seasons', 'competitions', 'matches', 'transactions']),
+    () => new Set(['overview', 'identity', 'balance', 'hierarchy', 'federations', 'clubs', 'teams', 'seasons', 'competitions', 'matches', 'transactions']),
     []
   );
 
@@ -1144,6 +1152,202 @@ export const UserDetailPage: React.FC = () => {
                   <Badge variant={user.is_active ? 'success' : 'error'}>{user.is_active ? 'Active' : 'Inactive'}</Badge>
                 </div>
               </div>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'identity' && user && (
+          <div className="space-y-6">
+            {/* Profile Photo Section */}
+            <Card style={{ padding: 20 }}>
+              <h3 style={{ marginTop: 0, marginBottom: 16 }}>Profile Photo</h3>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24 }}>
+                <div
+                  style={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--app-surface-alt, #f5f5f5)',
+                    border: '2px solid var(--app-border)',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  {(user as any).avatar_url ? (
+                    <img
+                      src={(user as any).avatar_url}
+                      alt={`${userDisplayName} avatar`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: 48, color: 'var(--app-muted-text)' }}>
+                      {String(user.first_name || user.email || '?').charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ color: 'var(--app-muted-text)', fontSize: 13, marginBottom: 8 }}>
+                    This is the user's primary profile photo. It's displayed across the platform.
+                  </div>
+                  {(user as any).avatar_url && (
+                    <div style={{ marginTop: 8, fontSize: 12, color: 'var(--app-muted-text)' }}>
+                      <strong>URL:</strong>{' '}
+                      <a
+                        href={(user as any).avatar_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#007bff', wordBreak: 'break-all' }}
+                      >
+                        {(user as any).avatar_url}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+
+            {/* Profile Details Section */}
+            <Card style={{ padding: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h3 style={{ marginTop: 0, marginBottom: 0 }}>Profile Details</h3>
+                {!identityEditing && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIdentityFirstName(user.first_name || '');
+                      setIdentityLastName(user.last_name || '');
+                      setIdentityEditing(true);
+                      setIdentitySaveError(null);
+                      setIdentitySaveSuccess(false);
+                    }}
+                    style={actionButtonStyle('primary')}
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+
+              {identitySaveSuccess && (
+                <Alert variant="success" style={{ marginBottom: 16 }}>
+                  Profile updated successfully!
+                </Alert>
+              )}
+
+              {identitySaveError && (
+                <Alert variant="error" style={{ marginBottom: 16 }}>
+                  {identitySaveError}
+                </Alert>
+              )}
+
+              {identityEditing ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>First Name</label>
+                    <Input
+                      value={identityFirstName}
+                      onChange={(e) => setIdentityFirstName((e.target as any).value)}
+                      placeholder="First name"
+                      disabled={identitySaving}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Last Name</label>
+                    <Input
+                      value={identityLastName}
+                      onChange={(e) => setIdentityLastName((e.target as any).value)}
+                      placeholder="Last name"
+                      disabled={identitySaving}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Email</label>
+                    <Input value={user.email || ''} disabled />
+                    <div style={{ fontSize: 12, color: 'var(--app-muted-text)', marginTop: 4 }}>
+                      Email cannot be changed here.
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    <button
+                      type="button"
+                      disabled={identitySaving}
+                      onClick={async () => {
+                        setIdentitySaving(true);
+                        setIdentitySaveError(null);
+                        setIdentitySaveSuccess(false);
+                        try {
+                          await handleSaveUser({
+                            first_name: identityFirstName,
+                            last_name: identityLastName,
+                          });
+                          await fetchUser();
+                          setIdentityEditing(false);
+                          setIdentitySaveSuccess(true);
+                          setTimeout(() => setIdentitySaveSuccess(false), 3000);
+                        } catch (e) {
+                          setIdentitySaveError(e instanceof Error ? e.message : 'Failed to save');
+                        } finally {
+                          setIdentitySaving(false);
+                        }
+                      }}
+                      style={{
+                        ...ctaButtonStyle('primary'),
+                        opacity: identitySaving ? 0.6 : 1,
+                        cursor: identitySaving ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {identitySaving ? 'Saving…' : 'Save Changes'}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={identitySaving}
+                      onClick={() => {
+                        setIdentityEditing(false);
+                        setIdentitySaveError(null);
+                      }}
+                      style={ctaButtonStyle('neutral')}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '12px 16px' }}>
+                  <div style={{ color: 'var(--app-muted-text)' }}>First Name</div>
+                  <div style={{ fontWeight: 600 }}>{user.first_name || '—'}</div>
+
+                  <div style={{ color: 'var(--app-muted-text)' }}>Last Name</div>
+                  <div style={{ fontWeight: 600 }}>{user.last_name || '—'}</div>
+
+                  <div style={{ color: 'var(--app-muted-text)' }}>Email</div>
+                  <div>{user.email || '—'}</div>
+
+                  <div style={{ color: 'var(--app-muted-text)' }}>Role</div>
+                  <div>
+                    <Badge variant={String(user.role || '').toLowerCase() === 'superadmin' ? 'primary' : 'default'}>
+                      {user.role || 'User'}
+                    </Badge>
+                  </div>
+
+                  <div style={{ color: 'var(--app-muted-text)' }}>Status</div>
+                  <div>
+                    <Badge variant={user.is_active ? 'success' : 'error'}>
+                      {user.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
+
+                  <div style={{ color: 'var(--app-muted-text)' }}>Last Login</div>
+                  <div>{user.last_login ? new Date(user.last_login).toLocaleString() : '—'}</div>
+
+                  <div style={{ color: 'var(--app-muted-text)' }}>Date Joined</div>
+                  <div>{user.date_joined ? new Date(user.date_joined).toLocaleString() : '—'}</div>
+                </div>
+              )}
             </Card>
           </div>
         )}

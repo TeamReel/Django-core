@@ -1465,6 +1465,65 @@ export default function ClubOrganisationDetailPage() {
 
           {activeTabFromUrl === 'identity' && club && (
             <div className="space-y-6">
+              {/* Club Logo Preview Section */}
+              <Card style={{ padding: 24 }}>
+                <h3 style={{ marginTop: 0, marginBottom: 16 }}>Club Logo</h3>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24 }}>
+                  <div
+                    style={{
+                      width: 120,
+                      height: 120,
+                      borderRadius: 12,
+                      backgroundColor: 'var(--app-surface-alt, #f5f5f5)',
+                      border: '2px solid var(--app-border)',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {(club as any)?.metadata?.identity?.logo_url ? (
+                      <img
+                        src={(club as any).metadata.identity.logo_url}
+                        alt={`${club.name} logo`}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 8 }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: 48, color: 'var(--app-muted-text)', fontWeight: 700 }}>
+                        {String(club.name || '?').charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>{club.name}</div>
+                    <div style={{ color: 'var(--app-muted-text)', fontSize: 13, marginBottom: 12 }}>
+                      This logo is used as the club's visual identity across the platform.
+                    </div>
+                    {(club as any)?.metadata?.identity?.logo_url ? (
+                      <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
+                        <strong>Logo URL:</strong>{' '}
+                        <a
+                          href={(club as any).metadata.identity.logo_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#007bff', wordBreak: 'break-all' }}
+                        >
+                          {(club as any).metadata.identity.logo_url}
+                        </a>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 12, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
+                        No logo configured. Set it below in Quick Identity Settings.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Card>
+
               {/* Quick Settings - logo_url and default_location for match prefill */}
               <IdentitySettingsCard
                 title="Quick Identity Settings"
