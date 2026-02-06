@@ -668,6 +668,7 @@ class SearchAPIView(APIView):
             # Deduplication sets
             seen_members: set[tuple] = set()
             seen_users: set[str] = set()
+            seen_user_names: set[str] = set()
 
             for entry in results:
                 model_name = entry.content_type.model
@@ -707,11 +708,30 @@ class SearchAPIView(APIView):
                                 .decode("utf-8")
                             )
 
+                        # Improve User Deduplication: Also check Full Name to merge duplicate accounts
+                        # e.g., "Lisandro Martínez" (manchester-united.demo) vs (manchesterunited.demo)
+                        full_name = (
+                            f"{getattr(obj, 'first_name', '')} {getattr(obj, 'last_name', '')}"
+                        )
+                        norm_name = (
+                            unicodedata.normalize("NFKD", full_name.lower().strip())
+                            .encode("ASCII", "ignore")
+                            .decode("utf-8")
+                        )
+
+                        # Check for existing email OR existing name
                         if norm_email and norm_email in seen_users:
                             continue
+                        if norm_name and norm_name in seen_user_names:
+                            continue
+
                         if norm_email:
                             seen_users.add(norm_email)
+                        if norm_name:
+                            seen_user_names.add(norm_name)
+
                         key = "users"
+
                     except Exception:
                         key = "users"
                 elif model_name == "projectmembership":
