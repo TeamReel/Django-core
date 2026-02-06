@@ -664,6 +664,10 @@ class SearchAPIView(APIView):
             }
             max_per_group = 5
 
+            # Deduplication sets
+            seen_members: set[tuple] = set()
+            seen_users: set[str] = set()
+
             for entry in results:
                 model_name = entry.content_type.model
 
@@ -689,9 +693,27 @@ class SearchAPIView(APIView):
                     except (AttributeError, TypeError, ValueError):
                         key = None
                 elif model_name == "user":
-                    key = "users"
+                    try:
+                        obj = entry.content_object
+                        email = getattr(obj, "email", "").lower()
+                        if email and email in seen_users:
+                            continue
+                        if email:
+                            seen_users.add(email)
+                        key = "users"
+                    except Exception:
+                        key = "users"
                 elif model_name == "projectmembership":
-                    key = "members"
+                    try:
+                        obj = entry.content_object
+                        # Deduplicate by (user, project)
+                        dedup_key = (obj.user_id, obj.project_id)
+                        if dedup_key in seen_members:
+                            continue
+                        seen_members.add(dedup_key)
+                        key = "members"
+                    except Exception:
+                        key = "members"
                 elif model_name in {"organisation", "organization"}:
                     key = "organisations"
                 else:
