@@ -507,7 +507,7 @@ export default function ClubOrganisationDetailPage() {
       if (activeTabFromUrl !== 'identity') return;
 
       // We need the project ID to query branding. Get it from the club data.
-      const projectId = club?.id || club?.project_id;
+      const projectId = club?.id;
       if (!projectId) {
         console.log('No project ID available for brand logo load');
         return;
@@ -572,7 +572,7 @@ export default function ClubOrganisationDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeTabFromUrl, apiBaseUrl, club?.id, club?.project_id]);
+  }, [activeTabFromUrl, apiBaseUrl, club?.id]);
 
   const orgKeyForRoutes = useMemo(() => {
     const slug = String(org?.slug || resolvedOrgSlug || '').trim();
