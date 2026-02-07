@@ -655,8 +655,8 @@ export default function EntityEditModal({
 
   // Logo upload handler
   const handleLogoUpload = async (file: File): Promise<string | null> => {
-    if (!organisationId) {
-      setError('Organisation ID required for uploads');
+    if (!organisationId || !entityId) {
+      setError('Organisation ID and entity ID required for uploads');
       return null;
     }
 
@@ -668,7 +668,9 @@ export default function EntityEditModal({
       formData.append('file', file);
       formData.append('is_public', 'true');
 
-      const fileRes = await fetch(`${apiBaseUrl}/api/v1/files/`, {
+      // Use path_prefix to organize logos in S3: logos/{entity_slug_or_id}/
+      const pathPrefix = `logos/${entityId}`;
+      const fileRes = await fetch(`${apiBaseUrl}/api/v1/files/?path_prefix=${encodeURIComponent(pathPrefix)}`, {
         method: 'POST',
         credentials: 'include',
         headers: {

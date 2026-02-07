@@ -67,11 +67,14 @@ export default function EditClubModal({
       formData.append('file', file);
       formData.append('is_public', 'true');
 
-      const fileRes = await fetch(`${apiBaseUrl}/api/v1/files/`, {
+      // Use path_prefix to organize logos in S3: logos/{club_slug_or_id}/
+      const pathPrefix = `logos/${club?.slug || club?.id || 'unknown'}`;
+      const fileRes = await fetch(`${apiBaseUrl}/api/v1/files/?path_prefix=${encodeURIComponent(pathPrefix)}`, {
         method: 'POST',
         credentials: 'include',
         headers: {
           'X-Organization-ID': orgId,
+          'X-CSRFToken': getCsrfToken(),
         },
         body: formData,
       });

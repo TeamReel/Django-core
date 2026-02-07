@@ -73,11 +73,19 @@ class FileViewSet(viewsets.ModelViewSet):
         file_obj = serializer.validated_data["file"]
         is_public = serializer.validated_data.get("is_public", False)
 
+        # Get optional path prefix from query params (e.g., "kits/home" or "avatars")
+        path_prefix = self.request.query_params.get("path_prefix", "").strip("/")
+
         # Save to backend
         backend = get_storage_backend()
-        # Generate a unique path: org_id/uuid/filename
+        # Generate a unique path
         file_uuid = uuid.uuid4()
-        storage_path = f"{org_id}/{file_uuid}/{file_obj.name}"
+
+        # Build storage path: org_id/[path_prefix/]uuid/filename
+        if path_prefix:
+            storage_path = f"{org_id}/{path_prefix}/{file_uuid}/{file_obj.name}"
+        else:
+            storage_path = f"{org_id}/{file_uuid}/{file_obj.name}"
 
         saved_path = backend.save(storage_path, file_obj)
 
@@ -96,6 +104,20 @@ class FileViewSet(viewsets.ModelViewSet):
         # Trigger thumbnail generation for image files
         if file_obj.content_type and file_obj.content_type.startswith("image/"):
             generate_thumbnail.delay(str(file_asset.id))
+
+        # Store in serializer instance for response
+        self.file_asset = file_asset
+
+    def create(self, request, *args, **kwargs):
+        """
+        Override create to return the file asset.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        # Return the created file asset using FileAssetSerializer
+        output_serializer = FileAssetSerializer(self.file_asset)
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
         """

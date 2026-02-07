@@ -193,8 +193,8 @@ function ClubKitsTab({
 
   // Handle kit upload
   const handleUpload = async (file: File, kitTypeId: string) => {
-    if (!brandProfileId || !orgId) {
-      setError('No brand profile or organization available');
+    if (!brandProfileId || !orgId || !club?.slug) {
+      setError('No brand profile, organization or club slug available');
       return;
     }
 
@@ -202,12 +202,14 @@ function ClubKitsTab({
     setError(null);
 
     try {
-      // Step 1: Upload file to FileAsset API
+      // Step 1: Upload file to FileAsset API with path_prefix for organized S3 structure
       const formData = new FormData();
       formData.append('file', file);
       formData.append('is_public', 'true');
 
-      const fileRes = await fetch(`${apiBaseUrl}/api/v1/files/`, {
+      // Use path_prefix to organize kits in S3: kits/{club_slug}/{kit_type}/
+      const pathPrefix = `kits/${club.slug}/${kitTypeId}`;
+      const fileRes = await fetch(`${apiBaseUrl}/api/v1/files/?path_prefix=${encodeURIComponent(pathPrefix)}`, {
         method: 'POST',
         credentials: 'include',
         headers: {
