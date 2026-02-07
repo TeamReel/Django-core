@@ -117,9 +117,16 @@ class FileViewSet(viewsets.ModelViewSet):
                 raise
             logger.info(f"FileAsset created with id {file_asset.id}")
 
-            # Trigger thumbnail generation for image files
+            # Trigger thumbnail generation for image files (non-blocking)
             if file_obj.content_type and file_obj.content_type.startswith("image/"):
-                generate_thumbnail.delay(str(file_asset.id))
+                try:
+                    generate_thumbnail.delay(str(file_asset.id))
+                except Exception as celery_err:
+                    logger.warning(
+                        f"Could not queue thumbnail generation for {file_asset.id}: "
+                        f"{type(celery_err).__name__}: {celery_err}. "
+                        "Celery broker may not be available."
+                    )
 
             # Store in serializer instance for response
             self.file_asset = file_asset
