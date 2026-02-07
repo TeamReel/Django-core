@@ -450,6 +450,7 @@ export default function ClubOrganisationDetailPage() {
       'balance',
       'transactions',
       'identity',
+      'kits',
       'settings',
     ]);
     return allowed.has(normalized) ? normalized : 'overview';
@@ -748,61 +749,53 @@ export default function ClubOrganisationDetailPage() {
       }
 
       try {
-        // Step 1: Get the brand profile for this project
-        const profileRes = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/?project=${projectId}`, {
+        // Step 1: Get the brand profile list for this project to find profile ID
+        const profileListRes = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/?project=${projectId}`, {
           credentials: 'include',
         });
-        if (!profileRes.ok) {
-          console.log('Brand profile fetch failed:', profileRes.status);
+        if (!profileListRes.ok) {
+          console.log('Brand profile list fetch failed:', profileListRes.status);
           return;
         }
-        const profileJson = await profileRes.json().catch(() => null);
-        console.log('Brand profile response:', profileJson);
+        const profileListJson = await profileListRes.json().catch(() => null);
+        console.log('Brand profile list response:', profileListJson);
 
-        // Handle both list response and single object response
-        const profileData = profileJson?.data;
-        let profile: any = null;
-        let assetList: any[] = [];
+        // Get profile ID from list response
+        const profileListData = profileListJson?.data;
+        let profileId: string | null = null;
 
-        if (profileData?.results && Array.isArray(profileData.results)) {
-          // List response - get first profile
-          profile = profileData.results[0];
-        } else if (profileData?.id) {
-          // Single object response (detail view)
-          profile = profileData;
-        } else if (Array.isArray(profileData)) {
-          profile = profileData[0];
+        if (profileListData?.results && Array.isArray(profileListData.results) && profileListData.results.length > 0) {
+          profileId = profileListData.results[0]?.id;
+        } else if (profileListData?.id) {
+          profileId = profileListData.id;
+        } else if (Array.isArray(profileListData) && profileListData.length > 0) {
+          profileId = profileListData[0]?.id;
         }
 
-        if (!profile?.id) {
+        if (!profileId) {
           console.log('No brand profile found for project', projectId);
           return;
         }
 
         // Store the brand profile ID for use by other tabs (like Kits)
         if (!cancelled) {
-          setBrandProfileId(profile.id);
+          setBrandProfileId(profileId);
         }
 
-        // Check if assets are already embedded in the profile response
-        if (profile.assets && Array.isArray(profile.assets) && profile.assets.length > 0) {
-          console.log('Using embedded assets from profile:', profile.assets);
-          assetList = profile.assets;
-        } else {
-          // Step 2: Fetch assets separately if not embedded
-          console.log('Fetching assets separately for profile:', profile.id);
-          const assetsRes = await fetch(`${apiBaseUrl}/api/v1/branding/assets/?profile=${profile.id}`, {
-            credentials: 'include',
-          });
-          if (!assetsRes.ok) {
-            console.log('Brand assets fetch failed:', assetsRes.status);
-            return;
-          }
-          const assetsJson = await assetsRes.json().catch(() => null);
-          console.log('Brand assets response:', assetsJson);
-          const assets = assetsJson?.data?.results || assetsJson?.results || assetsJson?.data || [];
-          assetList = Array.isArray(assets) ? assets : [];
+        // Step 2: Fetch the profile DETAIL endpoint which includes embedded assets
+        console.log('Fetching profile detail for:', profileId);
+        const profileDetailRes = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/${profileId}/`, {
+          credentials: 'include',
+        });
+        if (!profileDetailRes.ok) {
+          console.log('Brand profile detail fetch failed:', profileDetailRes.status);
+          return;
         }
+        const profileDetailJson = await profileDetailRes.json().catch(() => null);
+        console.log('Brand profile detail response:', profileDetailJson);
+
+        const profile = profileDetailJson?.data || profileDetailJson;
+        const assetList = profile?.assets || [];
 
         // Find logo asset
         const logoAsset = assetList.find((a: any) =>
@@ -1386,6 +1379,7 @@ export default function ClubOrganisationDetailPage() {
             { id: 'balance', label: 'Balance' },
             { id: 'transactions', label: 'Transactions' },
             { id: 'identity', label: 'Identity' },
+            { id: 'kits', label: 'Kits' },
             { id: 'settings', label: 'Settings' },
           ]}
           activeTab={activeTabFromUrl}
