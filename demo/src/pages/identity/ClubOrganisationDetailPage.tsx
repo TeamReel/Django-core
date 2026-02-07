@@ -18,7 +18,6 @@ import ClubAssetsTab from './detail/ClubAssetsTab';
 import MobileTabBar from '../../components/MobileTabBar';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
-import EditClubModal from '../../components/EditClubModal';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 
@@ -213,6 +212,7 @@ function ClubKitsTab({
         credentials: 'include',
         headers: {
           'X-Organization-ID': orgId,
+          'X-CSRFToken': getCsrfToken(),
         },
         body: formData,
       });
@@ -239,6 +239,7 @@ function ClubKitsTab({
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
           },
           body: JSON.stringify({
             file: fileId,
@@ -255,6 +256,7 @@ function ClubKitsTab({
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
           },
           body: JSON.stringify({
             profile: brandProfileId,
@@ -485,7 +487,6 @@ export default function ClubOrganisationDetailPage() {
   const [activatingContext, setActivatingContext] = useState(false);
   const [isProjectEditModalOpen, setIsProjectEditModalOpen] = useState(false);
   const [isProjectDetailModalOpen, setIsProjectDetailModalOpen] = useState(false);
-  const [isEditClubModalOpen, setIsEditClubModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -1939,7 +1940,7 @@ export default function ClubOrganisationDetailPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setIsEditClubModalOpen(true)}
+                    onClick={() => setIsProjectEditModalOpen(true)}
                   >
                     {((club as any)?.metadata?.identity?.logo_url || brandLogoUrl) ? 'Change Logo' : 'Add Logo'}
                   </Button>
@@ -2007,7 +2008,7 @@ export default function ClubOrganisationDetailPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setIsEditClubModalOpen(true)}
+                    onClick={() => setIsProjectEditModalOpen(true)}
                   >
                     Edit Settings
                   </Button>
@@ -2084,19 +2085,10 @@ export default function ClubOrganisationDetailPage() {
           slug: club.slug,
           description: (club as any).description,
           is_active: (club as any).is_active ?? true,
+          metadata: (club as any).metadata || {},
         } : undefined}
         canEditGeneral={true}
         canEditBrand={true}
-      />
-
-      <EditClubModal
-        opened={isEditClubModalOpen}
-        onClose={() => setIsEditClubModalOpen(false)}
-        club={club}
-        orgId={String(orgIdForDirectoryLists || '')}
-        onSave={(updatedClub) => {
-          setClub((prev) => ({ ...(prev as any), ...(updatedClub as any) }));
-        }}
       />
     </>
   );

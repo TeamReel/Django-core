@@ -75,6 +75,12 @@ interface EntityData {
   description?: string;
   is_active?: boolean;
   sport_id?: string | null;
+  metadata?: {
+    identity?: {
+      logo_url?: string;
+      default_location?: string;
+    };
+  };
 }
 
 interface EntityEditModalProps {
@@ -234,10 +240,51 @@ interface GeneralTabProps {
   formData: Partial<EntityData>;
   setFormData: React.Dispatch<React.SetStateAction<Partial<EntityData>>>;
   disabled?: boolean;
+  orgId?: string;
+  onLogoUpload?: (file: File) => Promise<string | null>;
+  uploading?: boolean;
 }
 
-function GeneralTab({ entityType, formData, setFormData, disabled }: GeneralTabProps) {
+function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogoUpload, uploading }: GeneralTabProps) {
   const label = ENTITY_LABELS[entityType];
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const logoUrl = formData.metadata?.identity?.logo_url || '';
+  const defaultLocation = formData.metadata?.identity?.default_location || '';
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onLogoUpload) {
+      const url = await onLogoUpload(file);
+      if (url) {
+        setFormData((prev) => ({
+          ...prev,
+          metadata: {
+            ...(prev.metadata || {}),
+            identity: {
+              ...(prev.metadata?.identity || {}),
+              logo_url: url,
+            },
+          },
+        }));
+      }
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const updateIdentity = (key: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      metadata: {
+        ...(prev.metadata || {}),
+        identity: {
+          ...(prev.metadata?.identity || {}),
+          [key]: value || null,
+        },
+      },
+    }));
+  };
 
   return (
     <div style={{ display: 'grid', gap: '16px' }}>
@@ -301,6 +348,108 @@ function GeneralTab({ entityType, formData, setFormData, disabled }: GeneralTabP
           }}
         />
       </label>
+
+      {/* Logo Upload - only for clubs and teams */}
+      {(entityType === 'club' || entityType === 'team') && (
+        <div style={{ display: 'grid', gap: '6px' }}>
+          <Text size="sm" weight="bold">Logo</Text>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+            <div
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 8,
+                border: '2px dashed var(--app-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'var(--app-surface-alt)',
+                overflow: 'hidden',
+                flexShrink: 0,
+              }}
+            >
+              {uploading ? (
+                <Loader2 size={24} style={{ animation: 'spin 1s linear infinite' }} />
+              ) : logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt="Logo preview"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 4 }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              ) : (
+                <span style={{ fontSize: 28, color: 'var(--app-muted-text)', fontWeight: 700 }}>
+                  {String(formData.name || '?').charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={disabled || uploading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {uploading ? 'Uploading...' : logoUrl ? 'Change Logo' : 'Upload Logo'}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleFileSelect}
+              />
+              <Text size="sm" color="secondary" style={{ marginTop: 4 }}>
+                PNG or JPG, recommended 200x200px
+              </Text>
+              {logoUrl && (
+                <button
+                  type="button"
+                  onClick={() => updateIdentity('logo_url', '')}
+                  style={{
+                    marginTop: 4,
+                    padding: '2px 6px',
+                    fontSize: 11,
+                    color: 'var(--app-error, #dc2626)',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                  }}
+                >
+                  Remove logo
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Default Location - only for clubs and teams */}
+      {(entityType === 'club' || entityType === 'team') && (
+        <label style={{ display: 'grid', gap: '6px' }}>
+          <Text size="sm" weight="bold">Default Match Location</Text>
+          <input
+            type="text"
+            value={defaultLocation}
+            onChange={(e) => updateIdentity('default_location', e.target.value)}
+            disabled={disabled}
+            placeholder="e.g., Johan Cruijff ArenA, Amsterdam"
+            style={{
+              padding: '10px 12px',
+              borderRadius: '6px',
+              border: '1px solid var(--app-border)',
+              background: disabled ? 'var(--app-surface-alt)' : 'var(--app-surface)',
+              color: 'var(--app-text)',
+              fontSize: '14px',
+              opacity: disabled ? 0.7 : 1,
+            }}
+          />
+          <Text size="sm" color="secondary">
+            Used to prefill the location when creating new matches
+          </Text>
+        </label>
+      )}
 
       <label
         style={{
@@ -500,8 +649,56 @@ export default function EntityEditModal({
   // UI state
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Logo upload handler
+  const handleLogoUpload = async (file: File): Promise<string | null> => {
+    if (!organisationId) {
+      setError('Organisation ID required for uploads');
+      return null;
+    }
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('is_public', 'true');
+
+      const fileRes = await fetch(`${apiBaseUrl}/api/v1/files/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'X-Organization-ID': organisationId,
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: formData,
+      });
+
+      if (!fileRes.ok) {
+        const errText = await fileRes.text();
+        throw new Error(`File upload failed: ${fileRes.status} - ${errText}`);
+      }
+
+      const fileData = await fileRes.json();
+      const storagePath = fileData?.data?.storage_path || fileData?.storage_path;
+
+      if (!storagePath) {
+        throw new Error('No storage path returned from upload');
+      }
+
+      // Construct S3 URL
+      return `https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${storagePath}`;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Upload failed');
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
 
   // Fetch data on open
   useEffect(() => {
@@ -585,11 +782,15 @@ export default function EntityEditModal({
   }, [isOpen, entityId, entityType, apiBaseUrl, initialEntityData, initialBrandProfile, organisationId, projectId]);
 
   // Check for unsaved changes
+  const hasMetadataChanges =
+    JSON.stringify(entityData.metadata?.identity) !== JSON.stringify(originalEntityData.metadata?.identity);
+
   const hasGeneralChanges =
     entityData.name !== originalEntityData.name ||
     entityData.description !== originalEntityData.description ||
     entityData.is_active !== originalEntityData.is_active ||
-    entityData.slug !== originalEntityData.slug;
+    entityData.slug !== originalEntityData.slug ||
+    hasMetadataChanges;
 
   const hasBrandChanges =
     deletedTokenIds.length > 0 ||
@@ -615,6 +816,16 @@ export default function EntityEditModal({
             ? `${apiBaseUrl}/api/v1/organisations/${entityId}/`
             : `${apiBaseUrl}/api/v1/projects/${entityId}/`;
 
+        // Build body with metadata merge
+        const existingMetadata = originalEntityData.metadata || {};
+        const updatedMetadata = {
+          ...existingMetadata,
+          identity: {
+            ...(existingMetadata.identity || {}),
+            ...entityData.metadata?.identity,
+          },
+        };
+
         const res = await fetch(endpoint, {
           method: 'PATCH',
           headers: {
@@ -627,6 +838,7 @@ export default function EntityEditModal({
             description: entityData.description,
             is_active: entityData.is_active,
             ...(entityType === 'organisation' && entityData.slug ? { slug: entityData.slug } : {}),
+            metadata: updatedMetadata,
           }),
         });
 
@@ -800,97 +1012,113 @@ export default function EntityEditModal({
           </button>
         </div>
 
-        {/* Tabs */}
+        {/* Main Content Area with Sidebar */}
         <div
           style={{
             display: 'flex',
-            gap: '4px',
-            padding: '12px 20px',
-            borderBottom: '1px solid var(--app-border)',
-            background: 'var(--app-surface-alt, rgba(0,0,0,0.02))',
-          }}
-        >
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key as typeof activeTab)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 16px',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: activeTab === tab.key ? 600 : 400,
-                  backgroundColor: activeTab === tab.key ? 'var(--app-primary, #3b82f6)' : 'transparent',
-                  color: activeTab === tab.key ? 'white' : 'var(--app-text-secondary)',
-                }}
-              >
-                <Icon size={14} />
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Content */}
-        <div
-          style={{
             flex: 1,
-            overflow: 'auto',
-            padding: '20px',
+            overflow: 'hidden',
           }}
         >
-          {/* Loading */}
-          {loading && (
-            <div style={{ padding: '32px', textAlign: 'center' }}>
-              <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', opacity: 0.5 }} />
-              <Text color="secondary" style={{ marginTop: '12px' }}>
-                Loading...
-              </Text>
-            </div>
-          )}
+          {/* Sidebar Tabs (Vertical) */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+              padding: '16px 12px',
+              borderRight: '1px solid var(--app-border)',
+              background: 'var(--app-surface-alt, rgba(0,0,0,0.02))',
+              minWidth: '160px',
+            }}
+          >
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key as typeof activeTab)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '10px 12px',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontWeight: activeTab === tab.key ? 600 : 400,
+                    backgroundColor: activeTab === tab.key ? 'var(--app-primary, #3b82f6)' : 'transparent',
+                    color: activeTab === tab.key ? 'white' : 'var(--app-text-secondary)',
+                    textAlign: 'left',
+                    width: '100%',
+                  }}
+                >
+                  <Icon size={16} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
 
-          {/* Alerts */}
-          {error && (
-            <Alert variant="error" style={{ marginBottom: '16px' }}>
-              <AlertCircle size={16} />
-              {error}
-            </Alert>
-          )}
-          {success && (
-            <Alert variant="success" style={{ marginBottom: '16px' }}>
-              <CheckCircle size={16} />
-              {success}
-            </Alert>
-          )}
+          {/* Content */}
+          <div
+            style={{
+              flex: 1,
+              overflow: 'auto',
+              padding: '20px',
+            }}
+          >
+            {/* Loading */}
+            {loading && (
+              <div style={{ padding: '32px', textAlign: 'center' }}>
+                <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', opacity: 0.5 }} />
+                <Text color="secondary" style={{ marginTop: '12px' }}>
+                  Loading...
+                </Text>
+              </div>
+            )}
 
-          {/* Tab content */}
-          {!loading && activeTab === 'general' && (
-            <GeneralTab
-              entityType={entityType}
-              formData={entityData}
-              setFormData={setEntityData}
-              disabled={!canEditGeneral}
-            />
-          )}
+            {/* Alerts */}
+            {error && (
+              <Alert variant="error" style={{ marginBottom: '16px' }}>
+                <AlertCircle size={16} />
+                {error}
+              </Alert>
+            )}
+            {success && (
+              <Alert variant="success" style={{ marginBottom: '16px' }}>
+                <CheckCircle size={16} />
+                {success}
+              </Alert>
+            )}
 
-          {!loading && activeTab === 'brand' && (
-            <BrandTab
-              brandProfile={brandProfile}
-              tokens={tokens}
-              setTokens={setTokens}
-              newTokens={newTokens}
-              setNewTokens={setNewTokens}
-              deletedTokenIds={deletedTokenIds}
-              setDeletedTokenIds={setDeletedTokenIds}
-              disabled={!canEditBrand}
-            />
-          )}
+            {/* Tab content */}
+            {!loading && activeTab === 'general' && (
+              <GeneralTab
+                entityType={entityType}
+                formData={entityData}
+                setFormData={setEntityData}
+                disabled={!canEditGeneral}
+                orgId={organisationId}
+                onLogoUpload={handleLogoUpload}
+                uploading={uploading}
+              />
+            )}
+
+            {!loading && activeTab === 'brand' && (
+              <BrandTab
+                brandProfile={brandProfile}
+                tokens={tokens}
+                setTokens={setTokens}
+                newTokens={newTokens}
+                setNewTokens={setNewTokens}
+                deletedTokenIds={deletedTokenIds}
+                setDeletedTokenIds={setDeletedTokenIds}
+                disabled={!canEditBrand}
+              />
+            )}
+          </div>
         </div>
 
         {/* Footer */}
