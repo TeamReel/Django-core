@@ -130,58 +130,173 @@ function ClubKitsTab({
   club,
   apiBaseUrl,
   brandProfileId,
+  orgId,
+  onKitUploaded,
 }: {
   club: Project;
   apiBaseUrl: string;
   brandProfileId: string | null;
+  orgId: string;
+  onKitUploaded?: () => void;
 }) {
   const [kits, setKits] = useState<KitAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingType, setUploadingType] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [selectedKitType, setSelectedKitType] = useState<string | null>(null);
 
   // Load kit assets from brand profile
+  const loadKits = React.useCallback(async () => {
+    if (!brandProfileId) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/v1/branding/assets/?profile=${brandProfileId}`, {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to load assets: ${res.status}`);
+      }
+      const json = await res.json();
+      const assets = json?.data?.results || json?.data || json?.results || [];
+      const assetList = Array.isArray(assets) ? assets : [];
+
+      // Filter to only kit assets
+      const kitAssets = assetList.filter((a: any) =>
+        String(a.asset_type || '').startsWith('kit_')
+      );
+
+      setKits(kitAssets);
+      setLoading(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load kits');
+      setLoading(false);
+    }
+  }, [apiBaseUrl, brandProfileId]);
+
   useEffect(() => {
     let cancelled = false;
 
-    const loadKits = async () => {
-      if (!brandProfileId) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/branding/assets/?profile=${brandProfileId}`, {
-          credentials: 'include',
-        });
-        if (!res.ok) {
-          throw new Error(`Failed to load assets: ${res.status}`);
-        }
-        const json = await res.json();
-        const assets = json?.data?.results || json?.data || json?.results || [];
-        const assetList = Array.isArray(assets) ? assets : [];
-
-        // Filter to only kit assets
-        const kitAssets = assetList.filter((a: any) =>
-          String(a.asset_type || '').startsWith('kit_')
-        );
-
-        if (!cancelled) {
-          setKits(kitAssets);
-          setLoading(false);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : 'Failed to load kits');
-          setLoading(false);
-        }
+    const doLoad = async () => {
+      if (!cancelled) {
+        await loadKits();
       }
     };
 
-    void loadKits();
+    void doLoad();
     return () => {
       cancelled = true;
     };
-  }, [apiBaseUrl, brandProfileId]);
+  }, [loadKits]);
+
+  // Handle kit upload
+  const handleUpload = async (file: File, kitTypeId: string) => {
+    if (!brandProfileId || !orgId) {
+      setError('No brand profile or organization available');
+      return;
+    }
+
+    setUploadingType(kitTypeId);
+    setError(null);
+
+    try {
+      // Step 1: Upload file to FileAsset API
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('is_public', 'true');
+
+      const fileRes = await fetch(`${apiBaseUrl}/api/v1/files/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'X-Organization-ID': orgId,
+        },
+        body: formData,
+      });
+
+      if (!fileRes.ok) {
+        const errText = await fileRes.text();
+        throw new Error(`File upload failed: ${fileRes.status} - ${errText}`);
+      }
+
+      const fileData = await fileRes.json();
+      const fileId = fileData?.data?.id || fileData?.id;
+
+      if (!fileId) {
+        throw new Error('No file ID returned from upload');
+      }
+
+      // Step 2: Check if a BrandAsset already exists for this type
+      const existingKit = kits.find((k) => k.asset_type === kitTypeId);
+
+      if (existingKit) {
+        // Update existing asset with new file
+        const updateRes = await fetch(`${apiBaseUrl}/api/v1/branding/assets/${existingKit.id}/`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            file: fileId,
+          }),
+        });
+
+        if (!updateRes.ok) {
+          throw new Error(`Failed to update brand asset: ${updateRes.status}`);
+        }
+      } else {
+        // Create new BrandAsset linking to the uploaded file
+        const assetRes = await fetch(`${apiBaseUrl}/api/v1/branding/assets/`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            profile: brandProfileId,
+            file: fileId,
+            asset_type: kitTypeId,
+            alt_text: `${club.name} ${KIT_TYPES.find((t) => t.id === kitTypeId)?.label || kitTypeId}`,
+            is_active: true,
+          }),
+        });
+
+        if (!assetRes.ok) {
+          const errText = await assetRes.text();
+          throw new Error(`Failed to create brand asset: ${assetRes.status} - ${errText}`);
+        }
+      }
+
+      // Reload kits
+      await loadKits();
+      onKitUploaded?.();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Upload failed');
+    } finally {
+      setUploadingType(null);
+      setSelectedKitType(null);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && selectedKitType) {
+      void handleUpload(file, selectedKitType);
+    }
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const triggerUpload = (kitTypeId: string) => {
+    setSelectedKitType(kitTypeId);
+    fileInputRef.current?.click();
+  };
 
   const getKitForType = (typeId: string): KitAsset | undefined => {
     return kits.find((k) => k.asset_type === typeId);
@@ -260,7 +375,12 @@ function ClubKitsTab({
                     marginBottom: 12,
                   }}
                 >
-                  {imageUrl ? (
+                  {uploadingType === kitType.id ? (
+                    <div style={{ textAlign: 'center', color: 'var(--app-muted-text)' }}>
+                      <div style={{ fontSize: 24, marginBottom: 8 }}>⏳</div>
+                      <div style={{ fontSize: 12 }}>Uploading...</div>
+                    </div>
+                  ) : imageUrl ? (
                     <img
                       src={imageUrl}
                       alt={kitType.label}
@@ -282,12 +402,10 @@ function ClubKitsTab({
                     size="sm"
                     variant="outline"
                     style={{ flex: 1 }}
-                    onClick={() => {
-                      // TODO: Implement upload functionality
-                      alert(`Upload ${kitType.label} - Coming soon!\n\nThis will use the Brand Assets API to upload a new kit image.`);
-                    }}
+                    disabled={uploadingType === kitType.id}
+                    onClick={() => triggerUpload(kitType.id)}
                   >
-                    {kit ? 'Replace' : 'Upload'}
+                    {uploadingType === kitType.id ? 'Uploading...' : kit ? 'Replace' : 'Upload'}
                   </Button>
                   {kit && (
                     <Button
@@ -313,6 +431,15 @@ function ClubKitsTab({
             );
           })}
         </div>
+
+        {/* Hidden file input for uploads */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handleFileSelect}
+        />
       </Card>
 
       <Card style={{ padding: 24 }}>
@@ -734,12 +861,13 @@ export default function ClubOrganisationDetailPage() {
     };
   }, [activeTabFromUrl, apiBaseUrl, clubIdForDirectoryLists]);
 
-  // Load brand profile logo when identity tab is active
+  // Load brand profile logo when identity or kits tab is active
   useEffect(() => {
     let cancelled = false;
 
     const loadBrandLogo = async () => {
-      if (activeTabFromUrl !== 'identity') return;
+      // Load for both identity and kits tabs
+      if (activeTabFromUrl !== 'identity' && activeTabFromUrl !== 'kits') return;
 
       // We need the project ID to query branding. Get it from the club data.
       const projectId = club?.id;
@@ -1842,23 +1970,15 @@ export default function ClubOrganisationDetailPage() {
                       This logo is used as the club's visual identity across the platform.
                     </div>
                     {((club as any)?.metadata?.identity?.logo_url || brandLogoUrl) ? (
-                      <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
-                        <strong>Logo URL:</strong>{' '}
-                        <a
-                          href={(club as any)?.metadata?.identity?.logo_url || brandLogoUrl || ''}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ color: '#007bff', wordBreak: 'break-all' }}
-                        >
-                          {(club as any)?.metadata?.identity?.logo_url || brandLogoUrl}
-                        </a>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <span style={{ fontSize: 12, color: '#28a745', fontWeight: 600 }}>✓ Logo configured</span>
                         {brandLogoUrl && !(club as any)?.metadata?.identity?.logo_url && (
-                          <span style={{ marginLeft: 8, color: '#28a745', fontWeight: 600 }}>(from Brand Profile)</span>
+                          <span style={{ fontSize: 11, color: 'var(--app-muted-text)' }}>(from Brand Profile)</span>
                         )}
                       </div>
                     ) : (
                       <div style={{ fontSize: 12, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
-                        No logo configured. Set it below in Quick Identity Settings or upload via Brand Profile.
+                        No logo configured. Upload via Brand Profile below.
                       </div>
                     )}
                   </div>
@@ -1916,11 +2036,12 @@ export default function ClubOrganisationDetailPage() {
             </div>
           )}
 
-          {activeTabFromUrl === 'kits' && club && (
+          {activeTabFromUrl === 'kits' && club && orgIdForDirectoryLists && (
             <ClubKitsTab
               club={club}
               apiBaseUrl={apiBaseUrl}
               brandProfileId={brandProfileId}
+              orgId={String(orgIdForDirectoryLists)}
             />
           )}
 

@@ -352,20 +352,15 @@ function IdentityTabContent({
                 )}
               </div>
               <div style={{ flex: 1, minWidth: '200px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px', opacity: 0.7 }}>
-                  Photo URL (from user account)
-                </div>
-                <div style={{
-                  padding: '10px 12px',
-                  background: 'var(--app-surface-secondary)',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  fontFamily: 'monospace',
-                  wordBreak: 'break-all',
-                  color: membership?.user?.avatar_url ? 'var(--app-text)' : 'var(--app-muted-text)',
-                }}>
-                  {membership?.user?.avatar_url || 'No profile photo set'}
-                </div>
+                {membership?.user?.avatar_url ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 13, color: '#28a745', fontWeight: 600 }}>✓ Profile photo set</span>
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 13, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
+                    No profile photo set
+                  </div>
+                )}
               </div>
             </div>
           </div>
