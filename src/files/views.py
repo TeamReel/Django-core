@@ -98,16 +98,23 @@ class FileViewSet(viewsets.ModelViewSet):
             logger.info(f"File saved as {saved_path}")
 
             # Create FileAsset
-            file_asset = FileAsset.objects.create(
-                id=file_uuid,
-                organization=organization,
-                uploaded_by=user,
-                original_name=file_obj.name,
-                storage_path=saved_path,
-                file_size=file_obj.size,
-                mime_type=file_obj.content_type or "application/octet-stream",
-                is_public=is_public,
-            )
+            try:
+                file_asset = FileAsset.objects.create(
+                    id=file_uuid,
+                    organization=organization,
+                    uploaded_by=user,
+                    original_name=file_obj.name,
+                    storage_path=saved_path,
+                    file_size=file_obj.size,
+                    mime_type=file_obj.content_type or "application/octet-stream",
+                    is_public=is_public,
+                )
+            except Exception as db_err:
+                logger.error(
+                    f"Failed to create FileAsset: {type(db_err).__name__}: {db_err}. "
+                    f"Storage path: {saved_path}, file_uuid: {file_uuid}"
+                )
+                raise
             logger.info(f"FileAsset created with id {file_asset.id}")
 
             # Trigger thumbnail generation for image files
@@ -124,15 +131,24 @@ class FileViewSet(viewsets.ModelViewSet):
         """
         Override create to return the file asset.
         """
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        # Return the created file asset using FileAssetSerializer
-        file_asset = getattr(self, "file_asset", None)
-        if not file_asset:
-            raise ValueError("File asset was not created during upload")
-        output_serializer = FileAssetSerializer(file_asset)
-        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            # Return the created file asset using FileAssetSerializer
+            file_asset = getattr(self, "file_asset", None)
+            if not file_asset:
+                logger.error("File asset was not created during upload (self.file_asset not set)")
+                raise ValueError("File asset was not created during upload")
+            output_serializer = FileAssetSerializer(file_asset)
+            return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            logger.exception(f"Error in create(): {type(e).__name__}: {e}")
+            raise
 
     def perform_destroy(self, instance):
         """
