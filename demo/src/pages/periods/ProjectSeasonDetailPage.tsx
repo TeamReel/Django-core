@@ -1,7 +1,7 @@
 ﻿import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
-import { IdentityTab } from '../../components/IdentityTab';
+import { AssetsTab } from '../../components/AssetsTab';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
@@ -400,7 +400,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'identity']);
+    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'assets', 'identity']);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
 
@@ -1320,6 +1320,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             { id: 'media', label: 'Media' },
             { id: 'content', label: 'Content' },
             { id: 'transactions', label: 'Transactions' },
+            { id: 'assets', label: 'Assets' },
             { id: 'identity', label: 'Identity' },
           ]}
           activeTab={activeTab}
@@ -3019,10 +3020,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             </div>
           )}
 
-          {activeTab === 'identity' && season && project && (
+          {activeTab === 'assets' && season && project && (
             <div className="space-y-6">
-              {/* Brand Identity - logos, kits, sponsors with inheritance from club */}
-              <IdentityTab
+              {/* Brand Assets - logos, kits, sponsors with inheritance from club */}
+              <AssetsTab
                 level="season"
                 organisationId={String(org?.id || orgId || '')}
                 projectId={String(project.id)}
@@ -3079,19 +3080,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 seasonMetadata={(season as any)?.metadata || {}}
                 clubAssets={(club as any)?.metadata?.teamreel_assets}
                 onAssetsUpdated={() => {
-                  // Reload to get updated metadata
                   window.location.reload();
                 }}
               />
-
-              {/* Full Brand Profile - colors, fonts, assets from branding API */}
-              <BrandIdentityPage
-                projectId={String(project.id)}
-                projectName={project.name}
-                seasonId={String(season.id)}
-                seasonName={season.name}
-              />
             </div>
+          )}
+
+          {activeTab === 'identity' && season && project && (
+            <BrandIdentityPage
+              projectId={String(project.id)}
+              projectName={project.name}
+              seasonId={String(season.id)}
+              seasonName={season.name}
+            />
           )}
         </PageContent>
 

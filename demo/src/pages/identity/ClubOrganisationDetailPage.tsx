@@ -20,7 +20,7 @@ import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
-import { IdentityTab } from '../../components/IdentityTab';
+import { AssetsTab } from '../../components/AssetsTab';
 
 type Organisation = {
   id: string;
@@ -1914,16 +1914,26 @@ export default function ClubOrganisationDetailPage() {
             <UsersList preselectedOrgId={orgSlugForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
           )}
 
-          {activeTabFromUrl === 'assets' && club && (
-            <ClubAssetsTab
-              clubId={String(club.id)}
-              clubName={club.name}
-              clubMetadata={(club as any)?.metadata || {}}
-              onAssetsUpdated={() => {
-                // Reload club data to get updated metadata
-                window.location.reload();
-              }}
-            />
+          {activeTabFromUrl === 'assets' && club && orgIdForDirectoryLists && (
+            <div className="space-y-6">
+              {/* Brand Assets: Logo, Sponsor, Kits, Location */}
+              <AssetsTab
+                level="club"
+                organisationId={String(orgIdForDirectoryLists)}
+                projectId={club.slug || String(club.id)}
+                entityName={club.name}
+              />
+
+              {/* Generic File Assets */}
+              <ClubAssetsTab
+                clubId={String(club.id)}
+                clubName={club.name}
+                clubMetadata={(club as any)?.metadata || {}}
+                onAssetsUpdated={() => {
+                  window.location.reload();
+                }}
+              />
+            </div>
           )}
 
           {activeTabFromUrl === 'balance' && orgIdForDirectoryLists && clubIdForDirectoryLists && (
@@ -1935,21 +1945,10 @@ export default function ClubOrganisationDetailPage() {
           )}
 
           {activeTabFromUrl === 'identity' && club && orgIdForDirectoryLists && (
-            <div className="space-y-6">
-              {/* Unified Identity Tab: Logo, Sponsor, Kits, Location */}
-              <IdentityTab
-                level="club"
-                organisationId={String(orgIdForDirectoryLists)}
-                projectId={club.slug || String(club.id)}
-                entityName={club.name}
-              />
-
-              {/* Full Brand Profile - colors, fonts, design tokens */}
-              <BrandIdentityPage
-                projectId={club.slug || String(club.id)}
-                projectName={club.name}
-              />
-            </div>
+            <BrandIdentityPage
+              projectId={club.slug || String(club.id)}
+              projectName={club.name}
+            />
           )}
 
           {activeTabFromUrl === 'kits' && club && orgIdForDirectoryLists && (

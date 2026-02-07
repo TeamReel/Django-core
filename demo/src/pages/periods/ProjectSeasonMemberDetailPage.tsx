@@ -12,7 +12,7 @@ import { canEditProject } from '../../utils/permissions';
 import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext, setActiveContext } from '../../utils/activeContext';
 import { MEDIA_SLOTS, MediaSlotId, MemberMediaForm } from '../../constants/mediaSlots';
 import { getApiBaseUrl } from '../../utils/apiBase';
-import { IdentityTab } from '../../components/IdentityTab';
+import { AssetsTab } from '../../components/AssetsTab';
 import MobileTabBar from '../../components/MobileTabBar';
 
 type Project = {
@@ -947,6 +947,7 @@ export default function ProjectSeasonMemberDetailPage() {
           { id: 'intro', label: 'Short Intro' },
           { id: 'celebration', label: 'Celebration' },
           { id: 'legacy', label: 'Legacy in Tenue' },
+          { id: 'assets', label: 'Assets' },
           { id: 'identity', label: 'Identity' },
         ]}
         activeTab={activeTab}
@@ -1133,20 +1134,21 @@ export default function ProjectSeasonMemberDetailPage() {
                   </Card>
                 ))}
 
-                {/* Identity Tab - Profile photo and user info */}
+                {/* Assets Tab - inherited brand assets from team/club */}
+                {activeTab === 'assets' && (
+                  <AssetsTab
+                    level="member"
+                    organisationId={String(org?.id || '')}
+                    projectId={project?.id ? String(project.id) : undefined}
+                    parentProjectId={club?.id ? String(club.id) : undefined}
+                    entityName={getUserDisplayName(membership)}
+                    readOnly
+                  />
+                )}
+
+                {/* Identity Tab - Member-specific profile and role editing */}
                 {activeTab === 'identity' && (
                   <div className="space-y-6">
-                    {/* Brand Identity - inherited kit + sponsor from team/club */}
-                    <IdentityTab
-                      level="member"
-                      organisationId={String(org?.id || '')}
-                      projectId={project?.id ? String(project.id) : undefined}
-                      parentProjectId={club?.id ? String(club.id) : undefined}
-                      entityName={getUserDisplayName(membership)}
-                      readOnly
-                    />
-
-                    {/* Member-specific profile and role editing */}
                     <IdentityTabContent
                       membership={membership}
                       project={project}

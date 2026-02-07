@@ -16,7 +16,7 @@ import MatchEditModal from '../identity/MatchEditModal';
 import ContentGenerationModal, { CONTENT_TYPES, type ContentTemplate } from '../identity/ContentGenerationModal';
 import { actionButtonStyle } from '../identity/detail/detailStyles';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
-import { IdentityTab } from '../../components/IdentityTab';
+import { AssetsTab } from '../../components/AssetsTab';
 import MobileTabBar from '../../components/MobileTabBar';
 
 type Organisation = {
@@ -602,7 +602,7 @@ export default function HierarchyMatchDetailPage() {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'content', 'lineup', 'transactions', 'details', 'identity']);
+    const allowed = new Set(['overview', 'content', 'lineup', 'transactions', 'details', 'assets', 'identity']);
     if (allowed.has(raw)) return raw;
     const legacyMap: Record<string, string> = {
       hierarchy: 'details',
@@ -2111,6 +2111,7 @@ export default function HierarchyMatchDetailPage() {
             { id: 'lineup', label: 'Lineup' },
             { id: 'transactions', label: 'Transactions' },
             { id: 'details', label: 'Details' },
+            { id: 'assets', label: 'Assets' },
             { id: 'identity', label: 'Identity' },
           ]}
           activeTab={activeTab}
@@ -2665,8 +2666,8 @@ export default function HierarchyMatchDetailPage() {
             </div>
           )}
 
-          {activeTab === 'identity' && match && (
-            <IdentityTab
+          {activeTab === 'assets' && match && (
+            <AssetsTab
               level="match"
               organisationId={String(org?.id || '')}
               projectId={String(match?.project?.id || project?.id || '')}
@@ -2674,6 +2675,12 @@ export default function HierarchyMatchDetailPage() {
               entityName={match.title}
               readOnly
             />
+          )}
+
+          {activeTab === 'identity' && match && (
+            <div style={{ padding: 16, color: 'var(--vscode-descriptionForeground, #888)', fontSize: 13 }}>
+              <p>Design tokens worden geërfd van het seizoen/team. Ga naar de club- of teampagina om kleuren, fonts en spacing aan te passen.</p>
+            </div>
           )}
 
           {activeTab === 'lineup' && (

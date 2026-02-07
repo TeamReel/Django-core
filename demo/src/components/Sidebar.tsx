@@ -619,6 +619,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
                     { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                    { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
@@ -643,7 +644,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     title = 'Member';
                                     items = [
                                         { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
-                                        { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Fingerprint },
                                         { label: 'Profile Photo', path: makeTabUrl(baseUrl, 'profile'), icon: UserCircle },
                                         { label: 'Legacy Photo', path: makeTabUrl(baseUrl, 'legacy_photo'), icon: Timer },
                                         { label: 'In Tenue', path: makeTabUrl(baseUrl, 'kit'), icon: Shirt },
@@ -651,6 +651,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                         { label: 'Short Intro', path: makeTabUrl(baseUrl, 'intro'), icon: Sparkles },
                                         { label: 'Celebration', path: makeTabUrl(baseUrl, 'celebration'), icon: Trophy },
                                         { label: 'Legacy in Tenue', path: makeTabUrl(baseUrl, 'legacy'), icon: Trophy },
+                                        { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
+                                        { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Fingerprint },
                                     ];
                                     break;
                                 }
@@ -683,6 +685,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
                     { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                    { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
@@ -708,6 +711,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     { label: 'Lineup', path: makeTabUrl(baseUrl, 'lineup'), icon: Users },
                                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                                     { label: 'Details', path: makeTabUrl(baseUrl, 'details'), icon: Globe },
+                                    { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                                 ];
                                 break;
@@ -730,6 +734,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
                     { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                    { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;

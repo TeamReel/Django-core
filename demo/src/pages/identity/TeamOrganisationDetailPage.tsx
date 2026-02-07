@@ -17,7 +17,7 @@ import MobileTabBar from '../../components/MobileTabBar';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
-import { IdentityTab } from '../../components/IdentityTab';
+import { AssetsTab } from '../../components/AssetsTab';
 
 const getCsrfToken = (): string => {
   try {
@@ -185,6 +185,7 @@ export default function TeamOrganisationDetailPage() {
       'members',
       'balance',
       'transactions',
+      'assets',
       'identity',
       'kits',
     ]);
@@ -812,6 +813,7 @@ export default function TeamOrganisationDetailPage() {
             { id: 'members', label: 'Squad' },
             { id: 'balance', label: 'Balance' },
             { id: 'transactions', label: 'Transactions' },
+            { id: 'assets', label: 'Assets' },
             { id: 'identity', label: 'Identity' },
             { id: 'kits', label: 'Kits' },
           ]}
@@ -1232,43 +1234,41 @@ export default function TeamOrganisationDetailPage() {
             <TeamCreditsTab view="transactions" projectId={teamIdForDirectoryLists} projectName={team.name} organisationId={orgIdForDirectoryLists} />
           )}
 
-          {activeTabFromUrl === 'identity' && team && org && (
-            <div className="space-y-6">
-              {/* Unified Identity Tab: inherited kits+logo, sponsor choice */}
-              <IdentityTab
-                level="team"
-                organisationId={String(org.id)}
-                projectId={String(team.id)}
-                parentProjectId={club ? String(club.id) : undefined}
-                entityName={team.name}
-                sponsorMode={((team as any)?.metadata?.sponsor_mode as 'club' | 'custom') || 'club'}
-                onSponsorModeChange={async (mode) => {
-                  if (!team) return;
-                  const csrfToken = getCsrfToken();
-                  const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}) },
-                    credentials: 'include',
-                    body: JSON.stringify({ metadata: { ...((team as any)?.metadata || {}), sponsor_mode: mode } }),
-                  });
-                  if (res.ok) {
-                    const raw = await res.json().catch(() => null);
-                    const updated: any = (raw?.data ?? raw) as any;
-                    setTeam((prev) => ({ ...(prev as any), ...(updated as any) }));
-                  }
-                }}
-              />
+          {activeTabFromUrl === 'assets' && team && org && (
+            <AssetsTab
+              level="team"
+              organisationId={String(org.id)}
+              projectId={String(team.id)}
+              parentProjectId={club ? String(club.id) : undefined}
+              entityName={team.name}
+              sponsorMode={((team as any)?.metadata?.sponsor_mode as 'club' | 'custom') || 'club'}
+              onSponsorModeChange={async (mode) => {
+                if (!team) return;
+                const csrfToken = getCsrfToken();
+                const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json', ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}) },
+                  credentials: 'include',
+                  body: JSON.stringify({ metadata: { ...((team as any)?.metadata || {}), sponsor_mode: mode } }),
+                });
+                if (res.ok) {
+                  const raw = await res.json().catch(() => null);
+                  const updated: any = (raw?.data ?? raw) as any;
+                  setTeam((prev) => ({ ...(prev as any), ...(updated as any) }));
+                }
+              }}
+            />
+          )}
 
-              {/* Full Brand Profile - colors, fonts, design tokens */}
-              <BrandIdentityPage
-                projectId={String(team.id)}
-                projectName={team.name}
-              />
-            </div>
+          {activeTabFromUrl === 'identity' && team && org && (
+            <BrandIdentityPage
+              projectId={String(team.id)}
+              projectName={team.name}
+            />
           )}
 
           {activeTabFromUrl === 'kits' && team && org && (
-            <IdentityTab
+            <AssetsTab
               level="team"
               organisationId={String(org.id)}
               projectId={String(team.id)}
