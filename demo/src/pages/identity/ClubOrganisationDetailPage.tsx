@@ -15,10 +15,10 @@ import { MatchesList } from './directory/MatchesList';
 import { UsersList } from './directory/UsersList';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import ClubAssetsTab from './detail/ClubAssetsTab';
-import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import MobileTabBar from '../../components/MobileTabBar';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
+import EditClubModal from '../../components/EditClubModal';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 
@@ -485,6 +485,7 @@ export default function ClubOrganisationDetailPage() {
   const [activatingContext, setActivatingContext] = useState(false);
   const [isProjectEditModalOpen, setIsProjectEditModalOpen] = useState(false);
   const [isProjectDetailModalOpen, setIsProjectDetailModalOpen] = useState(false);
+  const [isEditClubModalOpen, setIsEditClubModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -1933,7 +1934,16 @@ export default function ClubOrganisationDetailPage() {
             <div className="space-y-6">
               {/* Club Logo Preview Section */}
               <Card style={{ padding: 24 }}>
-                <h3 style={{ marginTop: 0, marginBottom: 16 }}>Club Logo</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                  <h3 style={{ margin: 0 }}>Club Logo</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditClubModalOpen(true)}
+                  >
+                    {((club as any)?.metadata?.identity?.logo_url || brandLogoUrl) ? 'Change Logo' : 'Add Logo'}
+                  </Button>
+                </div>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24 }}>
                   <div
                     style={{
@@ -1978,7 +1988,7 @@ export default function ClubOrganisationDetailPage() {
                       </div>
                     ) : (
                       <div style={{ fontSize: 12, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
-                        No logo configured. Upload via Brand Profile below.
+                        Click "Add Logo" to upload your club's logo.
                       </div>
                     )}
                   </div>
@@ -1986,47 +1996,44 @@ export default function ClubOrganisationDetailPage() {
               </Card>
 
               {/* Quick Settings - logo_url and default_location for match prefill */}
-              <IdentitySettingsCard
-                title="Quick Identity Settings"
-                description="Used to prefill match creation forms (logo + default location)."
-                values={{
-                  logoUrl: String((club as any)?.metadata?.identity?.logo_url || ''),
-                  defaultLocation: String((club as any)?.metadata?.identity?.default_location || ''),
-                }}
-                canEdit={Boolean(club)}
-                onSave={async (next) => {
-                  if (!club) throw new Error('Club not loaded');
-                  const csrfToken = getCsrfToken();
+              <Card style={{ padding: 24 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                  <div>
+                    <h3 style={{ marginTop: 0, marginBottom: 4 }}>Club Settings</h3>
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--app-muted-text)' }}>
+                      Logo and default match location used across the platform.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditClubModalOpen(true)}
+                  >
+                    Edit Settings
+                  </Button>
+                </div>
 
-                  const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/`, {
-                    method: 'PATCH',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                      metadata: {
-                        ...((club as any)?.metadata || {}),
-                        identity: {
-                          ...(((club as any)?.metadata || {})?.identity || {}),
-                          logo_url: String(next.logoUrl || '').trim() || null,
-                          default_location: String(next.defaultLocation || '').trim() || null,
-                        },
-                      },
-                    }),
-                  });
-
-                  if (!res.ok) {
-                    const detail = await res.text().catch(() => '');
-                    throw new Error(detail || `Failed to save club settings (${res.status})`);
-                  }
-
-                  const raw = await res.json().catch(() => null);
-                  const updated = unwrapEnvelope<any>(raw);
-                  setClub((prev) => ({ ...(prev as any), ...(updated as any) }));
-                }}
-              />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)', marginBottom: 4 }}>
+                      Logo
+                    </div>
+                    <div style={{ fontSize: 14, color: 'var(--app-text)' }}>
+                      {(club as any)?.metadata?.identity?.logo_url || brandLogoUrl
+                        ? '✓ Configured'
+                        : '—'}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)', marginBottom: 4 }}>
+                      Default Match Location
+                    </div>
+                    <div style={{ fontSize: 14, color: 'var(--app-text)' }}>
+                      {(club as any)?.metadata?.identity?.default_location || '—'}
+                    </div>
+                  </div>
+                </div>
+              </Card>
 
               {/* Full Brand Profile - colors, fonts, assets from branding API */}
               <BrandIdentityPage
@@ -2080,6 +2087,16 @@ export default function ClubOrganisationDetailPage() {
         } : undefined}
         canEditGeneral={true}
         canEditBrand={true}
+      />
+
+      <EditClubModal
+        opened={isEditClubModalOpen}
+        onClose={() => setIsEditClubModalOpen(false)}
+        club={club}
+        orgId={String(orgIdForDirectoryLists || '')}
+        onSave={(updatedClub) => {
+          setClub((prev) => ({ ...(prev as any), ...(updatedClub as any) }));
+        }}
       />
     </>
   );

@@ -163,6 +163,7 @@ if "https://teamreel.app" not in CORS_ALLOWED_ORIGINS:
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "x-organisation-id",
+    "x-organization-id",  # US spelling for file uploads (X-Organization-ID)
     "x-project-id",
 ]
 
@@ -229,3 +230,22 @@ LOGGING = {
         },
     },
 }
+
+# ==============================================================================
+# AWS S3 / File Storage Configuration (B22/B35)
+# ==============================================================================
+# Required env vars:
+#   AWS_ACCESS_KEY_ID
+#   AWS_SECRET_ACCESS_KEY
+# Optional env vars:
+#   AWS_S3_BUCKET_NAME (default: teamreel-assets-demo)
+#   AWS_S3_REGION (default: eu-north-1)
+
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID", default=None)
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY", default=None)
+AWS_S3_BUCKET_NAME = env("AWS_S3_BUCKET_NAME", default="teamreel-assets-demo")
+AWS_S3_REGION = env("AWS_S3_REGION", default="eu-north-1")
+
+# Use S3 backend when AWS credentials are configured
+if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
+    FILES_STORAGE_BACKEND = "files.backends.s3.S3StorageBackend"
