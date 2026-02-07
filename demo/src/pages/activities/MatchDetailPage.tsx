@@ -17,6 +17,7 @@ import ContentGenerationModal, { CONTENT_TYPES, type ContentTemplate } from '../
 import { actionButtonStyle } from '../identity/detail/detailStyles';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { IdentityTab } from '../../components/IdentityTab';
+import MobileTabBar from '../../components/MobileTabBar';
 
 type Organisation = {
   id: string;
@@ -2101,6 +2102,19 @@ export default function HierarchyMatchDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Mobile Tab Bar */}
+        <MobileTabBar
+          tabs={[
+            { id: 'overview', label: 'Overview' },
+            { id: 'content', label: 'Content' },
+            { id: 'lineup', label: 'Lineup' },
+            { id: 'transactions', label: 'Transactions' },
+            { id: 'details', label: 'Details' },
+            { id: 'identity', label: 'Identity' },
+          ]}
+          activeTab={activeTab}
+        />
 
         <PageContent>
           {activeTab === 'overview' && (

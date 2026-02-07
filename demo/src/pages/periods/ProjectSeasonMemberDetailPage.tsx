@@ -13,6 +13,7 @@ import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext, setActiveContext } from
 import { MEDIA_SLOTS, MediaSlotId, MemberMediaForm } from '../../constants/mediaSlots';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { IdentityTab } from '../../components/IdentityTab';
+import MobileTabBar from '../../components/MobileTabBar';
 
 type Project = {
   id: string;
@@ -933,6 +934,22 @@ export default function ProjectSeasonMemberDetailPage() {
             </Button>
           </div>
         }
+      />
+
+      {/* Mobile Tab Bar */}
+      <MobileTabBar
+        tabs={[
+          { id: 'overview', label: 'Overview' },
+          { id: 'profile', label: 'Profile Photo' },
+          { id: 'legacy_photo', label: 'Legacy Photo' },
+          { id: 'kit', label: 'In Tenue' },
+          { id: 'closeup', label: 'Close-up' },
+          { id: 'intro', label: 'Short Intro' },
+          { id: 'celebration', label: 'Celebration' },
+          { id: 'legacy', label: 'Legacy in Tenue' },
+          { id: 'identity', label: 'Identity' },
+        ]}
+        activeTab={activeTab}
       />
 
       <PageContent>

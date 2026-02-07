@@ -572,6 +572,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
+                    { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
                 ];
                 break;
             }
@@ -682,6 +683,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
                     { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
             }
@@ -706,6 +708,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     { label: 'Lineup', path: makeTabUrl(baseUrl, 'lineup'), icon: Users },
                                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                                     { label: 'Details', path: makeTabUrl(baseUrl, 'details'), icon: Globe },
+                                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                                 ];
                                 break;
                         }
@@ -727,6 +730,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
                     { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
             }

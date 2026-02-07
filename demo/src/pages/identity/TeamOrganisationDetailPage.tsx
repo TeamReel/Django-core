@@ -811,6 +811,7 @@ export default function TeamOrganisationDetailPage() {
             { id: 'matches', label: 'Matches' },
             { id: 'members', label: 'Squad' },
             { id: 'balance', label: 'Balance' },
+            { id: 'transactions', label: 'Transactions' },
             { id: 'identity', label: 'Identity' },
             { id: 'kits', label: 'Kits' },
           ]}
