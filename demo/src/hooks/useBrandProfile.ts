@@ -219,8 +219,10 @@ export function useBrandProfile({
 
       if (!listRes.ok) throw new Error(`Failed to fetch profiles: ${listRes.status}`);
 
-      const listData = await listRes.json();
-      const profiles = listData.results || listData;
+      const listJson = await listRes.json();
+      // Unwrap API envelope: {"status":"success","data":{...}}
+      const listData = listJson?.data || listJson;
+      const profiles = listData?.results || (Array.isArray(listData) ? listData : []);
 
       if (!profiles.length) {
         setProfile(null);
@@ -239,7 +241,9 @@ export function useBrandProfile({
 
       if (!detailRes.ok) throw new Error(`Failed to fetch profile detail: ${detailRes.status}`);
 
-      const detail: BrandProfile = await detailRes.json();
+      const detailJson = await detailRes.json();
+      // Unwrap API envelope
+      const detail: BrandProfile = detailJson?.data || detailJson;
       setProfile(detail);
       setAssets(detail.assets || []);
     } catch (err) {
@@ -295,7 +299,8 @@ export function useBrandProfile({
         );
 
         if (!fileRes.ok) throw new Error(`File upload failed: ${fileRes.status}`);
-        const fileData = await fileRes.json();
+        const fileJson = await fileRes.json();
+        const fileData = fileJson?.data || fileJson;
 
         // Step 2: Create or update BrandAsset
         const existing = assets.find((a) => a.asset_type === assetType);
@@ -317,7 +322,8 @@ export function useBrandProfile({
             }
           );
           if (!updateRes.ok) throw new Error(`Asset update failed: ${updateRes.status}`);
-          brandAsset = await updateRes.json();
+          const updateJson = await updateRes.json();
+          brandAsset = updateJson?.data || updateJson;
         } else {
           // Create new
           const createRes = await fetch(
@@ -338,7 +344,8 @@ export function useBrandProfile({
             }
           );
           if (!createRes.ok) throw new Error(`Asset create failed: ${createRes.status}`);
-          brandAsset = await createRes.json();
+          const createJson = await createRes.json();
+          brandAsset = createJson?.data || createJson;
         }
 
         // Refresh all assets
