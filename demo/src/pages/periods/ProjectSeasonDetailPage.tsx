@@ -2,6 +2,7 @@
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 import { AssetsTab } from '../../components/AssetsTab';
+import { KitsTab } from '../../components/KitsTab';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
@@ -210,6 +211,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
   const [selectedEditMember, setSelectedEditMember] = useState<any | null>(null);
 
+  // Brand profile ID for Kits tab
+  const [brandProfileId, setBrandProfileId] = useState<string | null>(null);
+
   // Content generation state
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
   const [templatesLoading, setTemplatesLoading] = useState(false);
@@ -400,7 +404,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'assets', 'identity']);
+    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'assets', 'identity', 'kits']);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
 
@@ -637,6 +641,28 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
     run();
   }, [apiBaseUrl, orgSlugOrId, projectSlugOrId, effectiveSeasonId, isTeamRoute, clubSlugOrId]);
+
+  // ── Load brand profile ID for Kits tab ──
+  useEffect(() => {
+    if (!project?.id) return;
+    let cancelled = false;
+
+    const loadBrandProfile = async () => {
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/?project=${project.id}`, { credentials: 'include' });
+        if (!res.ok) return;
+        const json = await res.json();
+        const data = json?.data || json;
+        const results = data?.results || (Array.isArray(data) ? data : []);
+        if (results.length > 0 && !cancelled) {
+          setBrandProfileId(results[0]?.id || null);
+        }
+      } catch { /* ignore */ }
+    };
+
+    void loadBrandProfile();
+    return () => { cancelled = true; };
+  }, [apiBaseUrl, project?.id]);
 
   // Fetch season squad memberships (season-scoped roster)
   useEffect(() => {
@@ -1321,6 +1347,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             { id: 'content', label: 'Content' },
             { id: 'transactions', label: 'Transactions' },
             { id: 'assets', label: 'Assets' },
+            { id: 'kits', label: 'Kits' },
             { id: 'identity', label: 'Identity' },
           ]}
           activeTab={activeTab}
@@ -3084,6 +3111,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 }}
               />
             </div>
+          )}
+
+          {activeTab === 'kits' && season && project && (
+            <KitsTab
+              projectSlug={project.slug || String(project.id)}
+              projectName={project.name}
+              brandProfileId={brandProfileId}
+              orgId={String(org?.id || '')}
+            />
           )}
 
           {activeTab === 'identity' && season && project && (

@@ -571,6 +571,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Members', path: makeTabUrl(baseUrl, 'members'), icon: Users },
                     { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                    { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                     { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
                 ];
@@ -620,6 +621,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
+                    { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
@@ -686,6 +688,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
+                    { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
@@ -735,6 +738,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
+                    { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Text, Stack, Alert, Badge, Button } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getAssetUrl as resolveAssetUrl } from '../../hooks/useBrandProfile';
 import { EntityEditModal } from '../EntityEditModal';
 import type { EntityType } from '../EntityEditModal';
 import {
@@ -466,13 +467,14 @@ function ProfileHeader({ profile, entityName, onEdit }: { profile: BrandProfile;
   const logoAsset = profile.assets?.find((a) =>
     a.asset_type === 'logo_light' || a.asset_type === 'logo_dark' || a.asset_type.includes('logo')
   );
+  const logoUrl = logoAsset?.url ? resolveAssetUrl(logoAsset.url) : null;
 
   return (
     <Card style={{ padding: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
           {/* Logo or fallback icon */}
-          {logoAsset?.url ? (
+          {logoUrl ? (
             <div
               style={{
                 width: '80px',
@@ -488,8 +490,8 @@ function ProfileHeader({ profile, entityName, onEdit }: { profile: BrandProfile;
               }}
             >
               <img
-                src={logoAsset.url}
-                alt={logoAsset.alt_text || `${entityName} logo`}
+                src={logoUrl}
+                alt={logoAsset?.alt_text || `${entityName} logo`}
                 style={{
                   maxWidth: '100%',
                   maxHeight: '100%',

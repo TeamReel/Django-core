@@ -91,7 +91,7 @@ function AssetCard({
   } else if (isCombined) {
     badgeColor = '#8b5cf6'; // purple
     badgeText = 'AI Combined';
-  } else if (isProcessed && !['watermark', 'favicon', 'font_file', 'location_photo', 'other'].includes(assetType)) {
+  } else if (isProcessed && !['watermark', 'favicon', 'font_file', 'location_photo', 'other', 'logo_light', 'logo_dark', 'sponsor_logo'].includes(assetType)) {
     badgeColor = '#10b981'; // green
     badgeText = 'AI Bewerkt';
   }

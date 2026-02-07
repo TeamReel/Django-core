@@ -18,6 +18,7 @@ import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 import { AssetsTab } from '../../components/AssetsTab';
+import { KitsTab } from '../../components/KitsTab';
 
 const getCsrfToken = (): string => {
   try {
@@ -168,6 +169,7 @@ export default function TeamOrganisationDetailPage() {
   const [activeContext, setActiveContextState] = useState<any | null>(null);
   const [isProjectEditModalOpen, setIsProjectEditModalOpen] = useState(false);
   const [isProjectDetailModalOpen, setIsProjectDetailModalOpen] = useState(false);
+  const [brandProfileId, setBrandProfileId] = useState<string | null>(null);
 
   const [clubTeamsForSwitcher, setClubTeamsForSwitcher] = useState<Project[]>([]);
   const [clubTeamsForSwitcherLoading, setClubTeamsForSwitcherLoading] = useState(false);
@@ -634,6 +636,28 @@ export default function TeamOrganisationDetailPage() {
       cancelled = true;
     };
   }, [apiBaseUrl, clubIdForDirectoryLists, org?.slug, resolvedOrgSlug]);
+
+  // ── Load brand profile ID for Kits tab ──
+  useEffect(() => {
+    if (!team?.id) return;
+    let cancelled = false;
+
+    const loadBrandProfile = async () => {
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/?project=${team.id}`, { credentials: 'include' });
+        if (!res.ok) return;
+        const json = await res.json();
+        const data = json?.data || json;
+        const results = data?.results || (Array.isArray(data) ? data : []);
+        if (results.length > 0 && !cancelled) {
+          setBrandProfileId(results[0]?.id || null);
+        }
+      } catch { /* ignore */ }
+    };
+
+    void loadBrandProfile();
+    return () => { cancelled = true; };
+  }, [apiBaseUrl, team?.id]);
 
   const backToClubHref = useMemo(() => {
     if (!orgKeyForRoutes || !clubKeyForRoutes) return '/federations';
@@ -1268,14 +1292,11 @@ export default function TeamOrganisationDetailPage() {
           )}
 
           {activeTabFromUrl === 'kits' && team && org && (
-            <AssetsTab
-              level="team"
-              organisationId={String(org.id)}
-              projectId={String(team.id)}
-              parentProjectId={club ? String(club.id) : undefined}
-              entityName={team.name}
-              sponsorMode={((team as any)?.metadata?.sponsor_mode as 'club' | 'custom') || 'club'}
-              readOnly
+            <KitsTab
+              projectSlug={team.slug || String(team.id)}
+              projectName={team.name}
+              brandProfileId={brandProfileId}
+              orgId={String(org.id)}
             />
           )}
         </PageContent>

@@ -1,0 +1,1 @@
+export { KitsTab } from './KitsTab';

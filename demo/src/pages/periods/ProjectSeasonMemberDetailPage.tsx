@@ -1029,7 +1029,93 @@ export default function ProjectSeasonMemberDetailPage() {
                 )}
 
                 {/* Dynamic media slot tabs */}
-                {MEDIA_SLOTS.map((slot) => activeTab === slot.id && (
+                {/* Profile Photo tab — photo picker like Identity */}
+                {activeTab === 'profile' && (
+                  <Card>
+                    <div style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '24px' }}>📷</span>
+                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Profile Photo</div>
+                        </div>
+                        <Badge variant={userCanEditProject ? 'default' : 'info'}>
+                          {userCanEditProject ? 'Editable' : 'Read-only'}
+                        </Badge>
+                      </div>
+
+                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                        Select or upload a profile photo for this member.
+                      </div>
+
+                      <div style={{ marginTop: '20px' }}>
+                        {/* Current profile photo */}
+                        <div style={{ marginBottom: '24px' }}>
+                          <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Current Photo</div>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
+                            <div style={{
+                              width: '160px',
+                              height: '160px',
+                              borderRadius: '12px',
+                              overflow: 'hidden',
+                              backgroundColor: 'var(--app-surface-secondary)',
+                              border: '2px solid var(--app-border)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                              {(form.profile?.url || membership?.user?.avatar_url) ? (
+                                <img
+                                  src={form.profile?.url || membership?.user?.avatar_url}
+                                  alt={getUserDisplayName(membership)}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                />
+                              ) : (
+                                <div style={{ fontSize: '48px', opacity: 0.3 }}>👤</div>
+                              )}
+                            </div>
+                            <div style={{ flex: 1, minWidth: '200px' }}>
+                              {(form.profile?.url || membership?.user?.avatar_url) ? (
+                                <span style={{ fontSize: 13, color: '#28a745', fontWeight: 600 }}>✓ Profile photo set</span>
+                              ) : (
+                                <div style={{ fontSize: 13, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
+                                  No profile photo set
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Upload area */}
+                        <div style={{
+                          padding: '24px',
+                          border: '2px dashed var(--app-border)',
+                          borderRadius: '8px',
+                          textAlign: 'center',
+                          opacity: userCanEditProject ? 1 : 0.5,
+                        }}>
+                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>📤</div>
+                          <div style={{ fontSize: '14px', fontWeight: 600 }}>Upload Profile Photo</div>
+                          <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>
+                            Drag & drop or click to upload
+                          </div>
+                          <div style={{ fontSize: '11px', opacity: 0.5, marginTop: '8px' }}>
+                            (File upload coming soon)
+                          </div>
+                        </div>
+                      </div>
+
+                      {!userCanEditProject && (
+                        <div style={{ marginTop: '16px' }}>
+                          <Alert variant="info">You don't have permission to edit this member's media.</Alert>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                )}
+
+                {/* Other media slot tabs — preview + upload only (no URL/caption inputs) */}
+                {MEDIA_SLOTS.filter((s) => s.id !== 'profile').map((slot) => activeTab === slot.id && (
                   <Card key={slot.id}>
                     <div style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
@@ -1047,36 +1133,6 @@ export default function ProjectSeasonMemberDetailPage() {
                       </div>
 
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginTop: '20px' }}>
-                        <div>
-                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>
-                            Media URL {slot.id === 'intro' || slot.id === 'celebration' ? '(image or video)' : '(image)'}
-                          </div>
-                          <Input
-                            value={form[slot.id]?.url || ''}
-                            onChange={(e) => setForm((prev) => ({
-                              ...prev,
-                              [slot.id]: { ...prev[slot.id], url: e.target.value }
-                            }))}
-                            placeholder="https://..."
-                            disabled={!userCanEditProject}
-                          />
-                        </div>
-
-                        <div>
-                          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>
-                            Caption / Description
-                          </div>
-                          <Input
-                            value={form[slot.id]?.caption || ''}
-                            onChange={(e) => setForm((prev) => ({
-                              ...prev,
-                              [slot.id]: { ...prev[slot.id], caption: e.target.value }
-                            }))}
-                            placeholder="Optional caption..."
-                            disabled={!userCanEditProject}
-                          />
-                        </div>
-
                         {form[slot.id]?.url && (
                           <div>
                             <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Preview</div>
@@ -1120,7 +1176,7 @@ export default function ProjectSeasonMemberDetailPage() {
                             Drag & drop or click to upload
                           </div>
                           <div style={{ fontSize: '11px', opacity: 0.5, marginTop: '8px' }}>
-                            (File upload coming soon - use URL for now)
+                            (File upload coming soon)
                           </div>
                         </div>
                       </div>
