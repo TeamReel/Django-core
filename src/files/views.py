@@ -54,6 +54,10 @@ class FileViewSet(viewsets.ModelViewSet):
         """
         Handle file upload and creation of FileAsset.
         """
+        import logging
+
+        logger = logging.getLogger(__name__)
+
         user = self.request.user
         org_id = self.request.headers.get("X-Organization-ID")
 
@@ -66,6 +70,7 @@ class FileViewSet(viewsets.ModelViewSet):
                 id=org_id, memberships__user=user, memberships__is_active=True
             )
         except (Organisation.DoesNotExist, ValidationError) as err:
+            logger.error(f"Org not found or user not member: org_id={org_id}, user={user}")
             raise PermissionDenied(
                 {"detail": "You do not have access to this organization."}
             ) from err
@@ -76,37 +81,44 @@ class FileViewSet(viewsets.ModelViewSet):
         # Get optional path prefix from query params (e.g., "kits/home" or "avatars")
         path_prefix = self.request.query_params.get("path_prefix", "").strip("/")
 
-        # Save to backend
-        backend = get_storage_backend()
-        # Generate a unique path
-        file_uuid = uuid.uuid4()
+        try:
+            # Save to backend
+            backend = get_storage_backend()
+            # Generate a unique path
+            file_uuid = uuid.uuid4()
 
-        # Build storage path: org_id/[path_prefix/]uuid/filename
-        if path_prefix:
-            storage_path = f"{org_id}/{path_prefix}/{file_uuid}/{file_obj.name}"
-        else:
-            storage_path = f"{org_id}/{file_uuid}/{file_obj.name}"
+            # Build storage path: org_id/[path_prefix/]uuid/filename
+            if path_prefix:
+                storage_path = f"{org_id}/{path_prefix}/{file_uuid}/{file_obj.name}"
+            else:
+                storage_path = f"{org_id}/{file_uuid}/{file_obj.name}"
 
-        saved_path = backend.save(storage_path, file_obj)
+            logger.info(f"Uploading file to {storage_path}")
+            saved_path = backend.save(storage_path, file_obj)
+            logger.info(f"File saved as {saved_path}")
 
-        # Create FileAsset
-        file_asset = FileAsset.objects.create(
-            id=file_uuid,
-            organization=organization,
-            uploaded_by=user,
-            original_name=file_obj.name,
-            storage_path=saved_path,
-            file_size=file_obj.size,
-            mime_type=file_obj.content_type or "application/octet-stream",
-            is_public=is_public,
-        )
+            # Create FileAsset
+            file_asset = FileAsset.objects.create(
+                id=file_uuid,
+                organization=organization,
+                uploaded_by=user,
+                original_name=file_obj.name,
+                storage_path=saved_path,
+                file_size=file_obj.size,
+                mime_type=file_obj.content_type or "application/octet-stream",
+                is_public=is_public,
+            )
+            logger.info(f"FileAsset created with id {file_asset.id}")
 
-        # Trigger thumbnail generation for image files
-        if file_obj.content_type and file_obj.content_type.startswith("image/"):
-            generate_thumbnail.delay(str(file_asset.id))
+            # Trigger thumbnail generation for image files
+            if file_obj.content_type and file_obj.content_type.startswith("image/"):
+                generate_thumbnail.delay(str(file_asset.id))
 
-        # Store in serializer instance for response
-        self.file_asset = file_asset
+            # Store in serializer instance for response
+            self.file_asset = file_asset
+        except Exception as e:
+            logger.exception(f"Error during file upload: {e}")
+            raise
 
     def create(self, request, *args, **kwargs):
         """
@@ -116,7 +128,10 @@ class FileViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         # Return the created file asset using FileAssetSerializer
-        output_serializer = FileAssetSerializer(self.file_asset)
+        file_asset = getattr(self, "file_asset", None)
+        if not file_asset:
+            raise ValueError("File asset was not created during upload")
+        output_serializer = FileAssetSerializer(file_asset)
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
