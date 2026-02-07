@@ -554,14 +554,15 @@ export default function ClubOrganisationDetailPage() {
         if (logoAsset?.url && !cancelled) {
           // Convert relative path to full S3 URL
           const url = logoAsset.url;
+          let finalUrl = url;
           if (url.startsWith('http')) {
             setBrandLogoUrl(url);
           } else {
             // Construct S3 URL
-            const s3Url = `https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${url}`;
-            setBrandLogoUrl(s3Url);
+            finalUrl = `https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${url}`;
+            setBrandLogoUrl(finalUrl);
           }
-            console.log('Brand logo loaded:', s3Url || url);
+          console.log('Brand logo loaded:', finalUrl);
         }
       } catch (e) {
         console.error('Failed to load brand logo:', e);
