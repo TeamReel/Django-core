@@ -201,6 +201,14 @@ class BrandAsset(models.Model):
         ("watermark", "Watermark"),
         ("favicon", "Favicon"),
         ("font_file", "Font File"),
+        # Kit/Tenue types for sports teams
+        ("kit_home", "Home Kit"),
+        ("kit_away", "Away Kit"),
+        ("kit_third", "Third Kit"),
+        ("kit_goalkeeper", "Goalkeeper Kit"),
+        ("kit_coach", "Coach Kit"),
+        ("kit_assistant", "Assistant Kit"),
+        ("kit_training", "Training Kit"),
         ("other", "Other"),
     ]
 

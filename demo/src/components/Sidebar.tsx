@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
   LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder,
-      Bell, CreditCard, UserCircle, Star, PanelLeftClose, PanelLeft, Calendar, Film, Fingerprint
+      Bell, CreditCard, UserCircle, Star, PanelLeftClose, PanelLeft, Calendar, Film, Fingerprint, Scissors
 } from 'lucide-react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -595,6 +595,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
+                    { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
                     { label: 'Settings', path: makeTabUrl(baseUrl, 'settings'), icon: Settings },
                 ];
                 break;

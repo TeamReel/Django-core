@@ -99,6 +99,239 @@ const getTeamParentId = (t: any): string => {
   return parent != null ? String(typeof parent === 'object' ? parent.id : parent) : '';
 };
 
+// Kit types for the Kits tab
+const KIT_TYPES = [
+  { id: 'kit_home', label: 'Home Kit', description: 'Primary home match kit' },
+  { id: 'kit_away', label: 'Away Kit', description: 'Away match kit' },
+  { id: 'kit_third', label: 'Third Kit', description: 'Alternative third kit' },
+  { id: 'kit_goalkeeper', label: 'Goalkeeper Kit', description: 'Goalkeeper specific kit' },
+  { id: 'kit_coach', label: 'Coach Kit', description: 'Coaching staff kit' },
+  { id: 'kit_assistant', label: 'Assistant Kit', description: 'Assistant staff kit' },
+  { id: 'kit_training', label: 'Training Kit', description: 'Training and practice kit' },
+] as const;
+
+type KitAsset = {
+  id: string;
+  asset_type: string;
+  url?: string;
+  alt_text?: string;
+  file_details?: {
+    id: string;
+    name: string;
+    size: number;
+    content_type: string;
+  };
+};
+
+/**
+ * Club Kits Tab - displays and manages kit/tenue assets for the club
+ */
+function ClubKitsTab({
+  club,
+  apiBaseUrl,
+  brandProfileId,
+}: {
+  club: Project;
+  apiBaseUrl: string;
+  brandProfileId: string | null;
+}) {
+  const [kits, setKits] = useState<KitAsset[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load kit assets from brand profile
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadKits = async () => {
+      if (!brandProfileId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/v1/branding/assets/?profile=${brandProfileId}`, {
+          credentials: 'include',
+        });
+        if (!res.ok) {
+          throw new Error(`Failed to load assets: ${res.status}`);
+        }
+        const json = await res.json();
+        const assets = json?.data?.results || json?.data || json?.results || [];
+        const assetList = Array.isArray(assets) ? assets : [];
+
+        // Filter to only kit assets
+        const kitAssets = assetList.filter((a: any) =>
+          String(a.asset_type || '').startsWith('kit_')
+        );
+
+        if (!cancelled) {
+          setKits(kitAssets);
+          setLoading(false);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : 'Failed to load kits');
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadKits();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBaseUrl, brandProfileId]);
+
+  const getKitForType = (typeId: string): KitAsset | undefined => {
+    return kits.find((k) => k.asset_type === typeId);
+  };
+
+  const getKitImageUrl = (kit: KitAsset | undefined): string | null => {
+    if (!kit?.url) return null;
+    if (kit.url.startsWith('http')) return kit.url;
+    return `https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${kit.url}`;
+  };
+
+  if (loading) {
+    return (
+      <Card style={{ padding: 24 }}>
+        <div style={{ textAlign: 'center', color: 'var(--app-muted-text)' }}>
+          Loading kits...
+        </div>
+      </Card>
+    );
+  }
+
+  if (!brandProfileId) {
+    return (
+      <Card style={{ padding: 24 }}>
+        <Alert variant="warning">
+          No brand profile found for this club. Create a brand profile on the Identity tab first to manage kits.
+        </Alert>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card style={{ padding: 24 }}>
+        <h3 style={{ marginTop: 0, marginBottom: 8 }}>Club Kits / Tenues</h3>
+        <p style={{ color: 'var(--app-muted-text)', fontSize: 13, marginBottom: 24 }}>
+          Manage your club's kit designs for different roles and occasions.
+        </p>
+
+        {error && (
+          <Alert variant="error" style={{ marginBottom: 16 }}>
+            {error}
+          </Alert>
+        )}
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+          {KIT_TYPES.map((kitType) => {
+            const kit = getKitForType(kitType.id);
+            const imageUrl = getKitImageUrl(kit);
+
+            return (
+              <div
+                key={kitType.id}
+                style={{
+                  border: '1px solid var(--app-border)',
+                  borderRadius: 12,
+                  padding: 16,
+                  backgroundColor: 'var(--app-surface)',
+                }}
+              >
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>{kitType.label}</div>
+                <div style={{ fontSize: 12, color: 'var(--app-muted-text)', marginBottom: 16 }}>
+                  {kitType.description}
+                </div>
+
+                <div
+                  style={{
+                    width: '100%',
+                    aspectRatio: '3/4',
+                    backgroundColor: 'var(--app-surface-secondary)',
+                    borderRadius: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    marginBottom: 12,
+                  }}
+                >
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={kitType.label}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div style={{ textAlign: 'center', color: 'var(--app-muted-text)' }}>
+                      <div style={{ fontSize: 48, opacity: 0.3, marginBottom: 8 }}>👕</div>
+                      <div style={{ fontSize: 12 }}>No image uploaded</div>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    style={{ flex: 1 }}
+                    onClick={() => {
+                      // TODO: Implement upload functionality
+                      alert(`Upload ${kitType.label} - Coming soon!\n\nThis will use the Brand Assets API to upload a new kit image.`);
+                    }}
+                  >
+                    {kit ? 'Replace' : 'Upload'}
+                  </Button>
+                  {kit && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (imageUrl) {
+                          window.open(imageUrl, '_blank');
+                        }
+                      }}
+                    >
+                      View
+                    </Button>
+                  )}
+                </div>
+
+                {kit && (
+                  <div style={{ marginTop: 8, fontSize: 11, color: 'var(--app-muted-text)' }}>
+                    <strong>File:</strong> {kit.file_details?.name || 'Unknown'}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      <Card style={{ padding: 24 }}>
+        <h4 style={{ marginTop: 0, marginBottom: 8 }}>How to add kits</h4>
+        <p style={{ color: 'var(--app-muted-text)', fontSize: 13, marginBottom: 12 }}>
+          Kit images should be high-quality photos or renders showing the complete kit design.
+          Recommended image size: 600x800 pixels (3:4 aspect ratio).
+        </p>
+        <ul style={{ margin: 0, paddingLeft: 20, color: 'var(--app-muted-text)', fontSize: 13 }}>
+          <li>Use PNG or JPEG format for best quality</li>
+          <li>Include front view of the full kit (shirt, shorts, socks)</li>
+          <li>Keep background transparent or neutral for cleaner display</li>
+          <li>Upload separate images for each kit variant</li>
+        </ul>
+      </Card>
+    </div>
+  );
+}
+
 export default function ClubOrganisationDetailPage() {
   const { orgId, projectId } = useParams<{ orgId: string; projectId: string }>();
   const navigate = useNavigate();
@@ -150,6 +383,7 @@ export default function ClubOrganisationDetailPage() {
 
   // Brand identity state for club logo
   const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
+  const [brandProfileId, setBrandProfileId] = useState<string | null>(null);
 
   const visibleHierarchyTeams = useMemo(() => {
     const q = String(hierarchySearch || '').trim().toLowerCase();
@@ -523,25 +757,52 @@ export default function ClubOrganisationDetailPage() {
           return;
         }
         const profileJson = await profileRes.json().catch(() => null);
-        const profiles = profileJson?.data?.results || profileJson?.results || profileJson?.data || [];
-        const profile = Array.isArray(profiles) ? profiles[0] : profiles;
+        console.log('Brand profile response:', profileJson);
+
+        // Handle both list response and single object response
+        const profileData = profileJson?.data;
+        let profile: any = null;
+        let assetList: any[] = [];
+
+        if (profileData?.results && Array.isArray(profileData.results)) {
+          // List response - get first profile
+          profile = profileData.results[0];
+        } else if (profileData?.id) {
+          // Single object response (detail view)
+          profile = profileData;
+        } else if (Array.isArray(profileData)) {
+          profile = profileData[0];
+        }
 
         if (!profile?.id) {
           console.log('No brand profile found for project', projectId);
           return;
         }
 
-        // Step 2: Get the assets for this brand profile
-        const assetsRes = await fetch(`${apiBaseUrl}/api/v1/branding/assets/?profile=${profile.id}`, {
-          credentials: 'include',
-        });
-        if (!assetsRes.ok) {
-          console.log('Brand assets fetch failed:', assetsRes.status);
-          return;
+        // Store the brand profile ID for use by other tabs (like Kits)
+        if (!cancelled) {
+          setBrandProfileId(profile.id);
         }
-        const assetsJson = await assetsRes.json().catch(() => null);
-        const assets = assetsJson?.data?.results || assetsJson?.results || assetsJson?.data || [];
-        const assetList = Array.isArray(assets) ? assets : [];
+
+        // Check if assets are already embedded in the profile response
+        if (profile.assets && Array.isArray(profile.assets) && profile.assets.length > 0) {
+          console.log('Using embedded assets from profile:', profile.assets);
+          assetList = profile.assets;
+        } else {
+          // Step 2: Fetch assets separately if not embedded
+          console.log('Fetching assets separately for profile:', profile.id);
+          const assetsRes = await fetch(`${apiBaseUrl}/api/v1/branding/assets/?profile=${profile.id}`, {
+            credentials: 'include',
+          });
+          if (!assetsRes.ok) {
+            console.log('Brand assets fetch failed:', assetsRes.status);
+            return;
+          }
+          const assetsJson = await assetsRes.json().catch(() => null);
+          console.log('Brand assets response:', assetsJson);
+          const assets = assetsJson?.data?.results || assetsJson?.results || assetsJson?.data || [];
+          assetList = Array.isArray(assets) ? assets : [];
+        }
 
         // Find logo asset
         const logoAsset = assetList.find((a: any) =>
@@ -550,6 +811,8 @@ export default function ClubOrganisationDetailPage() {
           a.asset_type === 'logo_dark' ||
           String(a.asset_type || '').includes('logo')
         );
+
+        console.log('Found logo asset:', logoAsset);
 
         if (logoAsset?.url && !cancelled) {
           // Convert relative path to full S3 URL
@@ -563,6 +826,8 @@ export default function ClubOrganisationDetailPage() {
             setBrandLogoUrl(finalUrl);
           }
           console.log('Brand logo loaded:', finalUrl);
+        } else {
+          console.log('No logo asset found in assets:', assetList);
         }
       } catch (e) {
         console.error('Failed to load brand logo:', e);
@@ -1655,6 +1920,14 @@ export default function ClubOrganisationDetailPage() {
                 projectName={club.name}
               />
             </div>
+          )}
+
+          {activeTabFromUrl === 'kits' && club && (
+            <ClubKitsTab
+              club={club}
+              apiBaseUrl={apiBaseUrl}
+              brandProfileId={brandProfileId}
+            />
           )}
 
           {activeTabFromUrl === 'settings' && club && orgIdForDirectoryLists && (
