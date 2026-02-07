@@ -80,8 +80,8 @@ function AssetCard({
   const url = asset ? getAssetUrl(asset.url) : null;
 
   const isUploadType = assetType.endsWith('_upload');
-  const isProcessed = !isUploadType && !assetType.endsWith('_combined');
-  const isCombined = assetType.endsWith('_combined');
+  const isCombined = assetType.endsWith('_combined') || assetType === 'logo_dark';
+  const isProcessed = !isUploadType && !isCombined;
 
   let badgeColor = '#6b7280'; // gray
   let badgeText = '';
@@ -91,7 +91,7 @@ function AssetCard({
   } else if (isCombined) {
     badgeColor = '#8b5cf6'; // purple
     badgeText = 'AI Combined';
-  } else if (isProcessed && !['watermark', 'favicon', 'font_file', 'location_photo', 'other', 'logo_light', 'logo_dark', 'sponsor_logo'].includes(assetType)) {
+  } else if (isProcessed && !['watermark', 'favicon', 'font_file', 'location_photo', 'other'].includes(assetType)) {
     badgeColor = '#10b981'; // green
     badgeText = 'AI Bewerkt';
   }
@@ -177,7 +177,7 @@ function AssetCard({
       <div style={{ padding: '8px 10px' }}>
         <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{label}</div>
 
-        {!readOnly && isUploadType && onUpload && (
+        {!readOnly && onUpload && (
           <>
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -281,7 +281,7 @@ export function AssetsTab({
     uploadAsset,
     refresh,
   } = useBrandProfile({
-    organisationId: level === 'organisation' ? organisationId : undefined,
+    organisationId,
     projectId: level !== 'organisation' ? projectId : undefined,
   });
 
@@ -345,8 +345,8 @@ export function AssetsTab({
               readOnly={readOnly}
               aspectRatio="1 / 1"
             />
-            <AssetCard label="Logo" assetType="logo_light" asset={getAsset('logo_light')} readOnly aspectRatio="1 / 1" />
-            <AssetCard label="Logo (dark)" assetType="logo_dark" asset={getAsset('logo_dark')} readOnly aspectRatio="1 / 1" />
+            <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} aspectRatio="1 / 1" />
+            <AssetCard label="Logo (compleet)" assetType="logo_dark" asset={getAsset('logo_dark')} onUpload={handleUpload} aspectRatio="1 / 1" />
           </AssetGrid>
         </Section>
       </div>
@@ -358,11 +358,11 @@ export function AssetsTab({
     return (
       <div style={{ padding: 16 }}>
         {/* Logo */}
-        <Section title="Logo" description="Upload het clublogo. De AI maakt er een gestandaardiseerde versie van.">
+        <Section title="Logo" description="Upload het clublogo → AI bewerkt → AI combined (light + dark).">
           <AssetGrid>
             <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} aspectRatio="1 / 1" />
-            <AssetCard label="Logo" assetType="logo_light" asset={getAsset('logo_light')} readOnly aspectRatio="1 / 1" />
-            <AssetCard label="Logo (dark)" assetType="logo_dark" asset={getAsset('logo_dark')} readOnly aspectRatio="1 / 1" />
+            <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} aspectRatio="1 / 1" />
+            <AssetCard label="Logo (compleet)" assetType="logo_dark" asset={getAsset('logo_dark')} onUpload={handleUpload} aspectRatio="1 / 1" />
           </AssetGrid>
         </Section>
 
@@ -370,7 +370,7 @@ export function AssetsTab({
         <Section title="Sponsor" description="Upload het sponsor logo. Wordt gestandaardiseerd door AI.">
           <AssetGrid>
             <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} aspectRatio="1 / 1" />
-            <AssetCard label="Sponsor" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} readOnly aspectRatio="1 / 1" />
+            <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} aspectRatio="1 / 1" />
           </AssetGrid>
         </Section>
 
@@ -397,13 +397,13 @@ export function AssetsTab({
                   label={`${role.label} (bewerkt)`}
                   assetType={processedType}
                   asset={getAsset(processedType)}
-                  readOnly
+                  onUpload={handleUpload}
                 />
                 <AssetCard
                   label={`${role.label} (compleet)`}
                   assetType={combinedType}
                   asset={getAsset(combinedType)}
-                  readOnly
+                  onUpload={handleUpload}
                 />
               </AssetGrid>
             </Section>
