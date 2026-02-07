@@ -21,6 +21,7 @@ import ProjectDetailModal from './ProjectDetailModal';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 import { AssetsTab } from '../../components/AssetsTab';
+import { AssetCompletionMatrix } from '../../components/AssetCompletionMatrix';
 
 type Organisation = {
   id: string;
@@ -578,6 +579,7 @@ export default function ClubOrganisationDetailPage() {
       'competitions',
       'matches',
       'members',
+      'media',
       'assets',
       'balance',
       'transactions',
@@ -1508,6 +1510,7 @@ export default function ClubOrganisationDetailPage() {
             { id: 'competitions', label: 'Competitions' },
             { id: 'matches', label: 'Matches' },
             { id: 'members', label: 'Members' },
+            { id: 'media', label: 'Media' },
             { id: 'assets', label: 'Assets' },
             { id: 'balance', label: 'Balance' },
             { id: 'transactions', label: 'Transactions' },
@@ -1912,6 +1915,16 @@ export default function ClubOrganisationDetailPage() {
 
           {activeTabFromUrl === 'members' && orgSlugForDirectoryLists && clubIdForDirectoryLists && (
             <UsersList preselectedOrgId={orgSlugForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
+          )}
+
+          {activeTabFromUrl === 'media' && club && orgIdForDirectoryLists && (
+            <div className="space-y-6">
+              <AssetCompletionMatrix
+                projectId={club.slug || String(club.id)}
+                entityName={club.name}
+                title="Asset Completion Matrix"
+              />
+            </div>
           )}
 
           {activeTabFromUrl === 'assets' && club && orgIdForDirectoryLists && (

@@ -19,6 +19,7 @@ import ProjectDetailModal from './ProjectDetailModal';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 import { AssetsTab } from '../../components/AssetsTab';
 import { KitsTab } from '../../components/KitsTab';
+import { MemberMediaMatrix } from '../../components/MemberMediaMatrix';
 
 const getCsrfToken = (): string => {
   try {
@@ -125,6 +126,50 @@ const mergeUniqueById = <T extends { id: any }>(items: T[]): T[] => {
   return out;
 };
 
+/**
+ * Lazy-loading wrapper for MemberMediaMatrix on the team page.
+ * Fetches all project members when mounted (i.e. when media tab is active).
+ */
+function MediaMatrixLoader({ apiBaseUrl, teamId }: { apiBaseUrl: string; teamId: string }) {
+  const [members, setMembers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!teamId) return;
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(
+          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/?page_size=200`,
+          { credentials: 'include' },
+        );
+        if (!res.ok) throw new Error(`Failed to load members (${res.status})`);
+        const json = await res.json();
+        const data = json?.data || json;
+        const results = data?.results || (Array.isArray(data) ? data : []);
+        if (!cancelled) setMembers(results);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load members');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, [apiBaseUrl, teamId]);
+
+  return (
+    <MemberMediaMatrix
+      members={members}
+      membersLoading={loading}
+      membersError={error}
+    />
+  );
+}
+
 export default function TeamOrganisationDetailPage() {
   const { orgId, clubId, projectId } = useParams<{ orgId: string; clubId: string; projectId: string }>();
   const navigate = useNavigate();
@@ -185,6 +230,7 @@ export default function TeamOrganisationDetailPage() {
       'competitions',
       'matches',
       'members',
+      'media',
       'balance',
       'transactions',
       'assets',
@@ -835,6 +881,7 @@ export default function TeamOrganisationDetailPage() {
             { id: 'competitions', label: 'Competitions' },
             { id: 'matches', label: 'Matches' },
             { id: 'members', label: 'Squad' },
+            { id: 'media', label: 'Media' },
             { id: 'balance', label: 'Balance' },
             { id: 'transactions', label: 'Transactions' },
             { id: 'assets', label: 'Assets' },
@@ -1256,6 +1303,25 @@ export default function TeamOrganisationDetailPage() {
 
           {activeTabFromUrl === 'transactions' && orgIdForDirectoryLists && teamIdForDirectoryLists && (
             <TeamCreditsTab view="transactions" projectId={teamIdForDirectoryLists} projectName={team.name} organisationId={orgIdForDirectoryLists} />
+          )}
+
+          {activeTabFromUrl === 'media' && team && org && (
+            <div className="space-y-6">
+              <Card>
+                <div style={{ padding: '16px 16px 0 16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+                    <span style={{ fontSize: 24 }}>📊</span>
+                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Media Completion Matrix</h3>
+                  </div>
+                </div>
+                <div style={{ padding: 16 }}>
+                  <MediaMatrixLoader
+                    apiBaseUrl={apiBaseUrl}
+                    teamId={String(team.id)}
+                  />
+                </div>
+              </Card>
+            </div>
           )}
 
           {activeTabFromUrl === 'assets' && team && org && (
