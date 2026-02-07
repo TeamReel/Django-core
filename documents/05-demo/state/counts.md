@@ -1,6 +1,6 @@
 # Database Model Counts
 
-> Last updated: 2026-02-05 21:11 (Brand Assets seeded)
+> Last updated: 2026-02-07 (SoccerWiki import + Kit upload UI)
 
 **Database**: postgresql (switchback.proxy.rlwy.net)
 
@@ -10,7 +10,7 @@
 |----------|-------|--------|
 | Organisations | 8 | - |
 | Projects | 325 | - |
-| Users | 2,781 | +1 |
+| Users | 2,781 | - |
 | Project Memberships | 3,773 | - |
 | Org Memberships | 2,284 | - |
 | Sports | 15 | - |
@@ -18,21 +18,21 @@
 | ContentTemplates | 320 | - |
 | MediaTags | 78 | - |
 | BrandProfiles | 102 | - |
-| DesignTokens | 645 | +33 |
-| **BrandAssets** | **71** | **+71 NEW** |
-| **FileAssets** | **66** | **+66 NEW** |
+| DesignTokens | 645 | - |
+| BrandAssets | 71 | - |
+| FileAssets | 66 | - |
 | FeatureFlags | 44 | - |
 
-## 🎯 Next Action: Fix Brand Identity Display
+## 🎯 Current Status: Identity & Kits UI Complete
 
-**Problem**: Brand profiles laden correct, maar logo's worden niet getoond (404 errors op Wikipedia URLs).
+**Completed**:
+- ✅ Club logos loaded from S3 bucket (`logos/clubs/{id}.png`)
+- ✅ Player photos loaded from S3 bucket (`players/{soccerwiki_id}.png`)
+- ✅ Kit types added to BrandAsset model (home, away, third, goalkeeper, coach, assistant, training)
+- ✅ Kits tab in Club detail page with full upload functionality
+- ✅ Logo/photo URL displays removed, replaced with status indicators
 
-**Status**:
-- ✅ Ajax logo URL bijgewerkt naar werkende versie
-- ❌ Andere club logo URLs nog broken (Wikipedia thumbnail format)
-- ❌ KNVB logo 404 error
-
-**Volgende stap**: Fix logo URLs voor alle clubs of verwijder broken assets
+**Next**: Test kit upload flow in production
 
 ## Project Hierarchy
 

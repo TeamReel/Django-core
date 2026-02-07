@@ -1,17 +1,18 @@
 # Frontend Integration Status
 
-> Last updated: 2026-02-05 21:11 (Brand Assets seeded, logo display WIP)
+> Last updated: 2026-02-07 (SoccerWiki import + Kit upload UI)
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.
 
-## 🎯 Current Focus: Brand Identity Display
+## 🎯 Current Focus: Identity & Media Complete
 
-**Status**: BrandAssets seeded (71), maar logo's tonen nog niet correct
-- ✅ Ajax logo URL gefixed (werkend)
-- ❌ Andere club logos: Wikipedia thumbnail URLs geven 404
-- ❌ KNVB logo: 404 error
+**Status**: Brand Identity & Kit Management fully integrated
+- ✅ Club logos from S3 (`logos/clubs/{id}.png`)
+- ✅ Player photos from S3 (`players/{soccerwiki_id}.png`)
+- ✅ Kit upload UI (FileAsset + BrandAsset flow)
+- ✅ Simplified photo/logo status displays (no URL clutter)
 
-**Volgende actie**: Fix broken logo URLs of verwijder ze tijdelijk
+**Next**: Media Library upload functionality
 
 ## Legend
 
@@ -112,8 +113,8 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - [ ] Upload nieuwe MediaItems (presigned URL flow)
   - [ ] Tag management UI (CRUD voor project-specifieke tags)
 
-### B33 Branding 🟡
-- **Backend**: 102 BrandProfiles, 645 DesignTokens, **71 BrandAssets**, **66 FileAssets**
+### B33 Branding ✅
+- **Backend**: 102 BrandProfiles, 645 DesignTokens, 71 BrandAssets, 66 FileAssets
 - **Frontend**:
   - ✅ IdentitySettingsCard (basic identity fields)
   - ✅ BrandProfileCard (read-only profile viewer with design tokens)
@@ -121,15 +122,15 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - ✅ Token grouping by type (Colors, Typography, Spacing, Border Radius)
   - ✅ Color swatch preview voor color tokens
   - ✅ ProfileHeader met logo preview component
-  - 🟡 BrandAssets seeded maar logo URLs deels broken (Wikipedia 404s)
+  - ✅ Club logos from S3 bucket (seeded via SoccerWiki import)
+  - ✅ Player photos from S3 bucket (seeded via SoccerWiki import)
+  - ✅ **Kits tab** in Club detail page with upload functionality
+  - ✅ Kit asset types: home, away, third, goalkeeper, coach, assistant, training
+  - ✅ Upload flow: FileAsset → BrandAsset with asset_type
+  - ✅ Simplified status displays (no URL clutter)
   - ❌ Geen BrandProfile editor (create/update)
-- **CURRENT ISSUE**: Logo URLs geven 404
-  - ✅ Ajax logo gefixed (werkende URL)
-  - ❌ Andere clubs/orgs nog broken
 - **TODO**:
-  - [ ] Fix broken logo URLs
   - [ ] BrandProfile create/edit form
-  - [ ] BrandAsset upload component
   - [ ] Token inheritance display (org → project → season)
 
 ---
@@ -220,9 +221,12 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - [ ] Task queue status widget (optional)
   - [ ] Async job progress indicator
 
-### B35 File Storage ❌
-- **Backend**: FileAsset model (0 items)
-- **Frontend**: Geen directe file upload UI
+### B35 File Storage 🟡
+- **Backend**: FileAsset model (66 items from SoccerWiki import)
+- **Frontend**:
+  - ✅ File upload via Kit management (ClubKitsTab)
+  - ✅ X-Organization-ID header for org-scoped uploads
+  - ❌ General file upload component in MediaLibrary
 - **TODO**:
   - [ ] File upload component in MediaLibrary
   - [ ] Presigned URL upload flow
@@ -258,6 +262,22 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 ---
 
 ## Recent Completions
+
+### 2026-02-07: Kit Upload & Identity UI Cleanup
+- ✅ Kit asset types added to BrandAsset model (home, away, third, goalkeeper, coach, assistant, training)
+- ✅ Kits tab added to Club detail page (Panel B sidebar with Scissors icon)
+- ✅ Full kit upload flow: FileAsset creation → BrandAsset linking
+- ✅ Replace existing kit functionality (PATCH existing BrandAsset)
+- ✅ Upload progress indicator per kit type
+- ✅ Removed URL displays from club logo and member photo sections
+- ✅ Simple status indicators: "✓ Logo configured" / "No logo configured"
+- ✅ Fixed brandProfileId loading for Kits tab (was only loading for Identity tab)
+
+### 2026-02-06: SoccerWiki Data Import
+- ✅ Eredivisie club logos imported to S3 (`logos/clubs/{club_id}.png`)
+- ✅ Player photos imported to S3 (`players/{soccerwiki_id}.png`)
+- ✅ User avatar_url updated with S3 photo URLs
+- ✅ Brand logo display fixed (profile DETAIL endpoint, not LIST)
 
 ### 2026-02-05: Identity Tab on All Detail Pages
 - ✅ BrandProfileCard component (read-only brand profile viewer)
@@ -308,6 +328,6 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 | `/api/v1/branding/tokens/` | - | ❌ Niet aangeroepen |
 | `/api/v1/sport-configuration/sports/` | useSports | ✅ |
 | `/api/v1/sport-configuration/formations/` | useSports | ✅ |
-| `/api/v1/files/` | - | ❌ Niet aangeroepen |
+| `/api/v1/files/` | ClubKitsTab (kit upload) | ✅ |
 | `/api/v1/generative/templates/` | - | ⚪ Backend n/a |
 | `/api/v1/generative/requests/` | - | ⚪ Backend n/a |
