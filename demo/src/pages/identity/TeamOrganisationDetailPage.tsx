@@ -17,6 +17,7 @@ import MobileTabBar from '../../components/MobileTabBar';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
+import { IdentityTab } from '../../components/IdentityTab';
 
 const getCsrfToken = (): string => {
   try {
@@ -185,6 +186,7 @@ export default function TeamOrganisationDetailPage() {
       'balance',
       'transactions',
       'identity',
+      'kits',
     ]);
     return allowed.has(normalized) ? normalized : 'overview';
   }, [location.search]);
@@ -810,6 +812,7 @@ export default function TeamOrganisationDetailPage() {
             { id: 'members', label: 'Squad' },
             { id: 'balance', label: 'Balance' },
             { id: 'identity', label: 'Identity' },
+            { id: 'kits', label: 'Kits' },
           ]}
           activeTab={activeTabFromUrl}
         />
@@ -1228,57 +1231,51 @@ export default function TeamOrganisationDetailPage() {
             <TeamCreditsTab view="transactions" projectId={teamIdForDirectoryLists} projectName={team.name} organisationId={orgIdForDirectoryLists} />
           )}
 
-          {activeTabFromUrl === 'identity' && team && (
+          {activeTabFromUrl === 'identity' && team && org && (
             <div className="space-y-6">
-              {/* Quick Settings - logo_url and default_location for match prefill */}
-              <IdentitySettingsCard
-                title="Quick Identity Settings"
-                description="Used to prefill match creation forms (logo + default location)."
-                values={{
-                  logoUrl: String((team as any)?.metadata?.identity?.logo_url || ''),
-                  defaultLocation: String((team as any)?.metadata?.identity?.default_location || ''),
-                }}
-                canEdit={Boolean(team)}
-                onSave={async (next) => {
-                  if (!team) throw new Error('Team not loaded');
+              {/* Unified Identity Tab: inherited kits+logo, sponsor choice */}
+              <IdentityTab
+                level="team"
+                organisationId={String(org.id)}
+                projectId={String(team.id)}
+                parentProjectId={club ? String(club.id) : undefined}
+                entityName={team.name}
+                sponsorMode={((team as any)?.metadata?.sponsor_mode as 'club' | 'custom') || 'club'}
+                onSponsorModeChange={async (mode) => {
+                  if (!team) return;
                   const csrfToken = getCsrfToken();
-
                   const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
                     method: 'PATCH',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
-                    },
+                    headers: { 'Content-Type': 'application/json', ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}) },
                     credentials: 'include',
-                    body: JSON.stringify({
-                      metadata: {
-                        ...((team as any)?.metadata || {}),
-                        identity: {
-                          ...(((team as any)?.metadata || {})?.identity || {}),
-                          logo_url: String(next.logoUrl || '').trim() || null,
-                          default_location: String(next.defaultLocation || '').trim() || null,
-                        },
-                      },
-                    }),
+                    body: JSON.stringify({ metadata: { ...((team as any)?.metadata || {}), sponsor_mode: mode } }),
                   });
-
-                  if (!res.ok) {
-                    const detail = await res.text().catch(() => '');
-                    throw new Error(detail || `Failed to save team settings (${res.status})`);
+                  if (res.ok) {
+                    const raw = await res.json().catch(() => null);
+                    const updated: any = (raw?.data ?? raw) as any;
+                    setTeam((prev) => ({ ...(prev as any), ...(updated as any) }));
                   }
-
-                  const raw = await res.json().catch(() => null);
-                  const updated: any = (raw?.data ?? raw) as any;
-                  setTeam((prev) => ({ ...(prev as any), ...(updated as any) }));
                 }}
               />
 
-              {/* Full Brand Profile - colors, fonts, assets from branding API */}
+              {/* Full Brand Profile - colors, fonts, design tokens */}
               <BrandIdentityPage
                 projectId={String(team.id)}
                 projectName={team.name}
               />
             </div>
+          )}
+
+          {activeTabFromUrl === 'kits' && team && org && (
+            <IdentityTab
+              level="team"
+              organisationId={String(org.id)}
+              projectId={String(team.id)}
+              parentProjectId={club ? String(club.id) : undefined}
+              entityName={team.name}
+              sponsorMode={((team as any)?.metadata?.sponsor_mode as 'club' | 'custom') || 'club'}
+              readOnly
+            />
           )}
         </PageContent>
       </div>

@@ -20,6 +20,7 @@ import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
+import { IdentityTab } from '../../components/IdentityTab';
 
 type Organisation = {
   id: string;
@@ -1933,112 +1934,17 @@ export default function ClubOrganisationDetailPage() {
             <TeamCreditsTab view="transactions" projectId={clubIdForDirectoryLists} projectName={club.name} organisationId={orgIdForDirectoryLists} />
           )}
 
-          {activeTabFromUrl === 'identity' && club && (
+          {activeTabFromUrl === 'identity' && club && orgIdForDirectoryLists && (
             <div className="space-y-6">
-              {/* Club Logo Preview Section */}
-              <Card style={{ padding: 24 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                  <h3 style={{ margin: 0 }}>Club Logo</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsProjectEditModalOpen(true)}
-                  >
-                    {((club as any)?.metadata?.identity?.logo_url || brandLogoUrl) ? 'Change Logo' : 'Add Logo'}
-                  </Button>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24 }}>
-                  <div
-                    style={{
-                      width: 120,
-                      height: 120,
-                      borderRadius: 12,
-                      backgroundColor: 'var(--app-surface-alt, #f5f5f5)',
-                      border: '2px solid var(--app-border)',
-                      overflow: 'hidden',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {((club as any)?.metadata?.identity?.logo_url || brandLogoUrl) ? (
-                      <img
-                        src={(club as any)?.metadata?.identity?.logo_url || brandLogoUrl || ''}
-                        alt={`${club.name} logo`}
-                        style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 8 }}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <span style={{ fontSize: 48, color: 'var(--app-muted-text)', fontWeight: 700 }}>
-                        {String(club.name || '?').charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>{club.name}</div>
-                    <div style={{ color: 'var(--app-muted-text)', fontSize: 13, marginBottom: 12 }}>
-                      This logo is used as the club's visual identity across the platform.
-                    </div>
-                    {((club as any)?.metadata?.identity?.logo_url || brandLogoUrl) ? (
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <span style={{ fontSize: 12, color: '#28a745', fontWeight: 600 }}>✓ Logo configured</span>
-                        {brandLogoUrl && !(club as any)?.metadata?.identity?.logo_url && (
-                          <span style={{ fontSize: 11, color: 'var(--app-muted-text)' }}>(from Brand Profile)</span>
-                        )}
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: 12, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
-                        Click "Add Logo" to upload your club's logo.
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Card>
+              {/* Unified Identity Tab: Logo, Sponsor, Kits, Location */}
+              <IdentityTab
+                level="club"
+                organisationId={String(orgIdForDirectoryLists)}
+                projectId={club.slug || String(club.id)}
+                entityName={club.name}
+              />
 
-              {/* Quick Settings - logo_url and default_location for match prefill */}
-              <Card style={{ padding: 24 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                  <div>
-                    <h3 style={{ marginTop: 0, marginBottom: 4 }}>Club Settings</h3>
-                    <p style={{ margin: 0, fontSize: 13, color: 'var(--app-muted-text)' }}>
-                      Logo and default match location used across the platform.
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsProjectEditModalOpen(true)}
-                  >
-                    Edit Settings
-                  </Button>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)', marginBottom: 4 }}>
-                      Logo
-                    </div>
-                    <div style={{ fontSize: 14, color: 'var(--app-text)' }}>
-                      {(club as any)?.metadata?.identity?.logo_url || brandLogoUrl
-                        ? '✓ Configured'
-                        : '—'}
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)', marginBottom: 4 }}>
-                      Default Match Location
-                    </div>
-                    <div style={{ fontSize: 14, color: 'var(--app-text)' }}>
-                      {(club as any)?.metadata?.identity?.default_location || '—'}
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Full Brand Profile - colors, fonts, assets from branding API */}
+              {/* Full Brand Profile - colors, fonts, design tokens */}
               <BrandIdentityPage
                 projectId={club.slug || String(club.id)}
                 projectName={club.name}

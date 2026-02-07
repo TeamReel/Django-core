@@ -12,6 +12,7 @@ import { canEditProject } from '../../utils/permissions';
 import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext, setActiveContext } from '../../utils/activeContext';
 import { MEDIA_SLOTS, MediaSlotId, MemberMediaForm } from '../../constants/mediaSlots';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { IdentityTab } from '../../components/IdentityTab';
 
 type Project = {
   id: string;
@@ -1117,12 +1118,25 @@ export default function ProjectSeasonMemberDetailPage() {
 
                 {/* Identity Tab - Profile photo and user info */}
                 {activeTab === 'identity' && (
-                  <IdentityTabContent
-                    membership={membership}
-                    project={project}
-                    apiBaseUrl={apiBaseUrl}
-                    onMembershipUpdate={(updated) => setMembership(updated)}
-                  />
+                  <div className="space-y-6">
+                    {/* Brand Identity - inherited kit + sponsor from team/club */}
+                    <IdentityTab
+                      level="member"
+                      organisationId={String(org?.id || '')}
+                      projectId={project?.id ? String(project.id) : undefined}
+                      parentProjectId={club?.id ? String(club.id) : undefined}
+                      entityName={getUserDisplayName(membership)}
+                      readOnly
+                    />
+
+                    {/* Member-specific profile and role editing */}
+                    <IdentityTabContent
+                      membership={membership}
+                      project={project}
+                      apiBaseUrl={apiBaseUrl}
+                      onMembershipUpdate={(updated) => setMembership(updated)}
+                    />
+                  </div>
                 )}
               </div>
 

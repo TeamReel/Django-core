@@ -196,19 +196,46 @@ class BrandAsset(models.Model):
     """Brand asset (logo, watermark, etc) linked to file storage."""
 
     ASSET_TYPE_CHOICES = [
-        ("logo_light", "Logo (Light Mode)"),
-        ("logo_dark", "Logo (Dark Mode)"),
+        # ── Logo ──
+        ("logo_upload", "Logo (Raw Upload)"),
+        ("logo_light", "Logo (Light Mode - AI Processed)"),
+        ("logo_dark", "Logo (Dark Mode - AI Processed)"),
         ("watermark", "Watermark"),
         ("favicon", "Favicon"),
         ("font_file", "Font File"),
-        # Kit/Tenue types for sports teams
-        ("kit_home", "Home Kit"),
-        ("kit_away", "Away Kit"),
-        ("kit_third", "Third Kit"),
-        ("kit_goalkeeper", "Goalkeeper Kit"),
-        ("kit_coach", "Coach Kit"),
-        ("kit_assistant", "Assistant Kit"),
-        ("kit_training", "Training Kit"),
+        # ── Sponsor ──
+        ("sponsor_logo_upload", "Sponsor Logo (Raw Upload)"),
+        ("sponsor_logo", "Sponsor Logo (AI Processed)"),
+        # ── Kit: Home ──
+        ("kit_home_upload", "Home Kit (Raw Upload)"),
+        ("kit_home", "Home Kit (AI Processed)"),
+        ("kit_home_combined", "Home Kit (Combined: Kit+Logo+Sponsor)"),
+        # ── Kit: Away ──
+        ("kit_away_upload", "Away Kit (Raw Upload)"),
+        ("kit_away", "Away Kit (AI Processed)"),
+        ("kit_away_combined", "Away Kit (Combined: Kit+Logo+Sponsor)"),
+        # ── Kit: Third ──
+        ("kit_third_upload", "Third Kit (Raw Upload)"),
+        ("kit_third", "Third Kit (AI Processed)"),
+        ("kit_third_combined", "Third Kit (Combined: Kit+Logo+Sponsor)"),
+        # ── Kit: Goalkeeper ──
+        ("kit_goalkeeper_upload", "Goalkeeper Kit (Raw Upload)"),
+        ("kit_goalkeeper", "Goalkeeper Kit (AI Processed)"),
+        ("kit_goalkeeper_combined", "Goalkeeper Kit (Combined: Kit+Logo+Sponsor)"),
+        # ── Kit: Coach ──
+        ("kit_coach_upload", "Coach Kit (Raw Upload)"),
+        ("kit_coach", "Coach Kit (AI Processed)"),
+        ("kit_coach_combined", "Coach Kit (Combined: Kit+Logo+Sponsor)"),
+        # ── Kit: Assistant ──
+        ("kit_assistant_upload", "Assistant Kit (Raw Upload)"),
+        ("kit_assistant", "Assistant Kit (AI Processed)"),
+        ("kit_assistant_combined", "Assistant Kit (Combined: Kit+Logo+Sponsor)"),
+        # ── Kit: Training ──
+        ("kit_training_upload", "Training Kit (Raw Upload)"),
+        ("kit_training", "Training Kit (AI Processed)"),
+        ("kit_training_combined", "Training Kit (Combined: Kit+Logo+Sponsor)"),
+        # ── Location & Other ──
+        ("location_photo", "Location Photo"),
         ("other", "Other"),
     ]
 

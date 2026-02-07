@@ -1,6 +1,7 @@
 ﻿import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
+import { IdentityTab } from '../../components/IdentityTab';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
@@ -3020,6 +3021,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
           {activeTab === 'identity' && season && project && (
             <div className="space-y-6">
+              {/* Brand Identity - logos, kits, sponsors with inheritance from club */}
+              <IdentityTab
+                level="season"
+                organisationId={String(org?.id || orgId || '')}
+                projectId={String(project.id)}
+                parentProjectId={club?.id ? String(club.id) : undefined}
+                entityName={season.name}
+              />
+
               {/* Quick Settings - logo_url and default_location for match prefill */}
               <IdentitySettingsCard
                 title="Season Identity Settings"

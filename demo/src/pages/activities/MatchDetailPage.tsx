@@ -16,6 +16,7 @@ import MatchEditModal from '../identity/MatchEditModal';
 import ContentGenerationModal, { CONTENT_TYPES, type ContentTemplate } from '../identity/ContentGenerationModal';
 import { actionButtonStyle } from '../identity/detail/detailStyles';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
+import { IdentityTab } from '../../components/IdentityTab';
 
 type Organisation = {
   id: string;
@@ -600,7 +601,7 @@ export default function HierarchyMatchDetailPage() {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'content', 'lineup', 'transactions', 'details']);
+    const allowed = new Set(['overview', 'content', 'lineup', 'transactions', 'details', 'identity']);
     if (allowed.has(raw)) return raw;
     const legacyMap: Record<string, string> = {
       hierarchy: 'details',
@@ -2648,6 +2649,17 @@ export default function HierarchyMatchDetailPage() {
                 </div>
               </Card>
             </div>
+          )}
+
+          {activeTab === 'identity' && match && (
+            <IdentityTab
+              level="match"
+              organisationId={String(org?.id || '')}
+              projectId={String(match?.project?.id || project?.id || '')}
+              parentProjectId={undefined}
+              entityName={match.title}
+              readOnly
+            />
           )}
 
           {activeTab === 'lineup' && (
