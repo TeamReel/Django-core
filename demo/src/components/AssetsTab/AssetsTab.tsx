@@ -361,6 +361,7 @@ export function AssetsTab({
   const [aiPreselectedTemplate, setAiPreselectedTemplate] = useState<string | undefined>();
   const [aiPreviousResultUrl, setAiPreviousResultUrl] = useState<string | null>(null);
   const [aiCustomInputs, setAiCustomInputs] = useState<Record<string, string | null>>({});
+  const [aiInitialParams, setAiInitialParams] = useState<Record<string, string>>({});
 
   // History State
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -433,13 +434,23 @@ export function AssetsTab({
 
   // Input assets for AI generation
   const baseAiInputAssets = React.useMemo(() => {
-    const logoAsset = getAsset('logo_upload');
-    const sponsorAsset = getAsset('sponsor_logo_upload');
+    // We want EFFECTIVE assets for generation context, so if I generate a kit at season level,
+    // I use the season's effective logo and sponsor (which might be inherited).
+    const getEff = (type: string) => {
+        const own = getAsset(type);
+        if (own) return own;
+        if (parentProjectId && parentBrand.getAsset) return parentBrand.getAsset(type);
+        return undefined;
+    };
+
+    const logoAsset = getEff('logo_upload');
+    const sponsorAsset = getEff('sponsor_logo_upload');
+
     return {
       logo: logoAsset ? getAssetUrl(logoAsset.url) : null,
       sponsor: sponsorAsset ? getAssetUrl(sponsorAsset.url) : null,
     };
-  }, [getAsset]);
+  }, [getAsset, parentBrand, parentProjectId]);
 
   const handleImprove = (assetType: string) => {
     // Map asset type to template
@@ -447,6 +458,7 @@ export function AssetsTab({
 
     // Determine reference asset type based on outcome asset type
     let referenceAssetType: string | null = null;
+    let initialParams: Record<string, string> = {};
 
     if (assetType === 'logo_light' || assetType === 'logo_dark') {
         templateId = 'logo_standardize';
@@ -457,12 +469,15 @@ export function AssetsTab({
     } else if (assetType.includes('kit_home')) {
         templateId = 'tenue_generate';
         referenceAssetType = 'kit_home_upload';
+        initialParams['kit_type'] = 'home';
     } else if (assetType.includes('kit_away')) {
         templateId = 'tenue_generate';
         referenceAssetType = 'kit_away_upload';
+        initialParams['kit_type'] = 'away';
     } else if (assetType.includes('kit_third')) {
         templateId = 'tenue_generate';
         referenceAssetType = 'kit_third_upload';
+        initialParams['kit_type'] = 'third';
     } else if (assetType.includes('kit_goalkeeper')) {
         templateId = 'keeper_tenue';
         referenceAssetType = 'kit_goalkeeper_upload';
@@ -472,14 +487,23 @@ export function AssetsTab({
     }
 
     if (templateId) {
-       const asset = getAsset(assetType);
+       // Look for effective asset if local is missing, to allow "Improving" an inherited asset into a local one
+       const getEff = (type: string) => {
+           const own = getAsset(type);
+           if (own) return own;
+           if (parentProjectId && parentBrand.getAsset) return parentBrand.getAsset(type);
+           return undefined;
+       };
+
+       const asset = getEff(assetType);
        setAiPreviousResultUrl(asset ? getAssetUrl(asset.url) : null);
        setAiPreselectedTemplate(templateId);
+       setAiInitialParams(initialParams);
 
        // Build inputs specific to this flow
        const inputs: Record<string, string | null> = { ...baseAiInputAssets };
        if (referenceAssetType) {
-           const refAsset = getAsset(referenceAssetType);
+           const refAsset = getEff(referenceAssetType);
            if (refAsset) inputs['reference'] = getAssetUrl(refAsset.url);
        }
        setAiCustomInputs(inputs);
@@ -534,7 +558,7 @@ export function AssetsTab({
         {/* AI Generation Button */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
           <button
-            onClick={() => { setAiPreselectedTemplate(undefined); setShowAiModal(true); }}
+            onClick={() => { setAiPreselectedTemplate(undefined); setAiInitialParams({}); setShowAiModal(true); }}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -553,7 +577,7 @@ export function AssetsTab({
             🎨 AI Asset Genereren
           </button>
           <button
-            onClick={() => { setAiPreselectedTemplate('tenue_generate'); setShowAiModal(true); }}
+            onClick={() => { setAiPreselectedTemplate('tenue_generate'); setAiInitialParams({ kit_type: 'home' }); setShowAiModal(true); }}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -570,7 +594,7 @@ export function AssetsTab({
             👕 Tenue
           </button>
           <button
-            onClick={() => { setAiPreselectedTemplate('keeper_tenue'); setShowAiModal(true); }}
+            onClick={() => { setAiPreselectedTemplate('keeper_tenue'); setAiInitialParams({}); setShowAiModal(true); }}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -587,7 +611,7 @@ export function AssetsTab({
             🧤 Keeper
           </button>
           <button
-            onClick={() => { setAiPreselectedTemplate('tracksuit_generate'); setShowAiModal(true); }}
+            onClick={() => { setAiPreselectedTemplate('tracksuit_generate'); setAiInitialParams({}); setShowAiModal(true); }}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -650,6 +674,7 @@ export function AssetsTab({
           organisationId={organisationId}
           inputAssets={aiCustomInputs}
           previousResultUrl={aiPreviousResultUrl}
+          initialParams={aiInitialParams}
           onAssetSaved={refresh}
         />
 
@@ -888,25 +913,107 @@ export function AssetsTab({
           </div>
 
           {/* Kits - combined with this season's sponsor */}
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Tenues (dit seizoen)</div>
-            <AssetGrid>
-              {KIT_ROLES.slice(0, 4).map((role) => {
+          <div style={{ marginTop: 24 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Tenues (dit seizoen)</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 16 }}>
+              {KIT_ROLES.map((role) => {
+                const uploadType = `kit_${role.id}_upload`;
+                const processedType = `kit_${role.id}`;
                 const combinedType = `kit_${role.id}_combined`;
+
+                // Effective asset for display (inherited or local combined)
                 const eff = getEffectiveAsset(combinedType);
+
+                // Check for local override
+                const localUpload = getAsset(uploadType);
+                const localProcessed = getAsset(processedType);
+                const isOverridden = !!localUpload || !!localProcessed;
+
                 return (
-                  <AssetCard
-                    key={role.id}
-                    label={`${role.icon} ${role.label}`}
-                    assetType={combinedType}
-                    asset={eff.asset}
-                    inherited={eff.inherited}
-                    inheritedFrom={eff.inherited ? 'Team' : undefined}
-                    readOnly
-                  />
+                  <div key={role.id} style={{ background: '#252526', padding: 12, borderRadius: 8, border: '1px solid #333' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: 18 }}>{role.icon}</span>
+                            <span style={{ fontWeight: 600, fontSize: 13 }}>{role.label}</span>
+                            {isOverridden && <span style={{ fontSize: 10, background: '#eab308', color: '#000', padding: '2px 6px', borderRadius: 4 }}>Aangepast</span>}
+                         </div>
+                         {/* If overridden, allow clearing the override specific to this role (both upload and processed) */}
+                         {!readOnly && isOverridden && (
+                            <button
+                                onClick={() => { if(window.confirm('Aangepast tenue verwijderen en weer erven van club?')) { handleDelete(uploadType); handleDelete(processedType); } }}
+                                style={{ color: '#ef4444', fontSize: 11, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                            >
+                                Herstel
+                            </button>
+                         )}
+                     </div>
+
+                    <AssetGrid>
+                      {/* 1. Visual Result (Inherited or Final) */}
+                      {/* If not overridden, we show the inherited result. */}
+                      {!isOverridden && (
+                          <AssetCard
+                            label="Resultaat (Geërfd)"
+                            assetType={combinedType}
+                            asset={eff.asset}
+                            inherited={true}
+                            inheritedFrom="Club"
+                            readOnly
+                          />
+                      )}
+
+                      {/* 2. Controls to Override */}
+                      {!readOnly && (
+                          <>
+                              <AssetCard
+                                label={isOverridden ? "Upload (Bron)" : "Upload (Override)"}
+                                assetType={uploadType}
+                                asset={localUpload}
+                                onUpload={handleUpload}
+                                onDelete={handleDelete}
+                              />
+                              {isOverridden && (
+                                  <AssetCard
+                                    label="Bewerkt (AI)"
+                                    assetType={processedType}
+                                    asset={localProcessed}
+                                    onUpload={handleUpload}
+                                    onDelete={handleDelete}
+                                    onImprove={handleImprove}
+                                  />
+                              )}
+                          </>
+                      )}
+
+                      {/* 3. AI Helper Button (if not overridden) */}
+                      {!readOnly && !isOverridden && (
+                           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
+                                <button
+                                    onClick={() => handleImprove(processedType)} // This will use effective assets as base
+                                    style={{
+                                        padding: '8px 12px',
+                                        fontSize: 12,
+                                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: 6,
+                                        cursor: 'pointer',
+                                        textAlign: 'center',
+                                        fontWeight: 500
+                                    }}
+                                >
+                                    ✨ Genereer met AI
+                                </button>
+                                <span style={{ fontSize: 10, color: '#888', textAlign: 'center', lineHeight: 1.4 }}>
+                                    Genereert een nieuw tenue voor dit seizoen.<br/>(Gebruikt seizoens- of clubsponsor)
+                                </span>
+                           </div>
+                      )}
+                    </AssetGrid>
+                  </div>
                 );
               })}
-            </AssetGrid>
+            </div>
           </div>
         </Section>
       </div>

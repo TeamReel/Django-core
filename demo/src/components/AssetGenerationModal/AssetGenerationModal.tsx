@@ -50,6 +50,8 @@ interface AssetGenerationModalProps {
   inputAssets?: Record<string, string | null>;
   /** Previous AI Result URL (for improvements) */
   previousResultUrl?: string | null;
+  /** Initial parameter overrides (e.g. for pre-selecting output type) */
+  initialParams?: Record<string, string>;
   /** Callback after a variant is accepted and saved */
   onAssetSaved?: () => void;
 }
@@ -293,6 +295,7 @@ export default function AssetGenerationModal({
   organisationId,
   inputAssets = {},
   previousResultUrl,
+  initialParams = {},
   onAssetSaved,
 }: AssetGenerationModalProps) {
   // State
@@ -332,9 +335,16 @@ export default function AssetGenerationModal({
       Object.entries(selectedTemplate.parameters).forEach(([key, param]) => {
         defaults[key] = param.default;
       });
+
+      // Apply initialParams overrides if any
+      if (initialParams) {
+         Object.entries(initialParams).forEach(([key, val]) => {
+             defaults[key] = val;
+         });
+      }
       setParams(defaults);
     }
-  }, [selectedTemplate]);
+  }, [selectedTemplate, initialParams]);
 
   // Reset when modal opens
   useEffect(() => {

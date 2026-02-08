@@ -873,7 +873,16 @@ def list_asset_history_view(request: Request) -> Response:
         try:
             from projects.models import Project
 
-            p = Project.objects.get(id=project_id)
+            # Try UUID first
+            try:
+                p = Project.objects.get(id=project_id)
+            except (ValueError, Exception):
+                # Fallback to slug lookup if supported, or other field
+                # Assuming 'slug' field exists or we can't find it
+                p = Project.objects.filter(slug=project_id).first()
+                if not p:
+                    raise Exception("Project not found")
+
             filters["organization"] = p.organisation
         except:  # noqa: E722
             return Response({"error": "Project not found"}, status=404)
@@ -946,8 +955,13 @@ def restore_asset_version_view(request: Request) -> Response:
         from projects.models import Project
 
         try:
-            p = Project.objects.get(id=project_id)
-            organisation = p.organisation
+            try:
+                p = Project.objects.get(id=project_id)
+            except (ValueError, Exception):
+                p = Project.objects.filter(slug=project_id).first()
+
+            if p:
+                organisation = p.organisation
         except:  # noqa: E722
             pass
     elif organisation_id:
