@@ -150,7 +150,9 @@ class FileViewSet(viewsets.ModelViewSet):
 
                         new_prefix = f"{base_path}/{category}"
 
-                        storage_path = f"{new_prefix}/{file_obj.name}"
+                        # Include UUID for uniqueness to prevent duplicate storage_path conflicts
+                        file_uuid = uuid.uuid4()
+                        storage_path = f"{new_prefix}/{file_uuid}/{file_obj.name}"
                         logger.info(f"Fixed storage path: {path_prefix} -> {storage_path}")
 
             except Exception as e:
