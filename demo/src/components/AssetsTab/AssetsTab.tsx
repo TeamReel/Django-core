@@ -428,7 +428,7 @@ export function AssetsTab({
        setAiPreselectedTemplate(templateId);
 
        // Build inputs specific to this flow
-       const inputs = { ...baseAiInputAssets };
+       const inputs: Record<string, string | null> = { ...baseAiInputAssets };
        if (referenceAssetType) {
            const refAsset = getAsset(referenceAssetType);
            if (refAsset) inputs['reference'] = getAssetUrl(refAsset.url);
