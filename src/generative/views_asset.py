@@ -599,10 +599,10 @@ class SaveAssetInputSerializer(serializers.Serializer):
         allow_null=True,
         help_text="Organisation ID for brand lookup",
     )
-    project_id = serializers.UUIDField(
+    project_id = serializers.CharField(
         required=False,
         allow_null=True,
-        help_text="Project ID for brand lookup",
+        help_text="Project ID (UUID) or Slug for brand lookup",
     )
     asset_type = serializers.CharField(
         required=True,
@@ -642,13 +642,37 @@ def save_asset_view(request: Request) -> Response:
     project = None
 
     if project_id:
-        try:
-            from projects.models import Project
+        from projects.models import Project
+        import uuid
 
-            project = Project.objects.select_related("organisation").get(id=project_id)
-            organisation = project.organisation
-        except Project.DoesNotExist:
-            logger.warning(f"Project {project_id} not found")
+        # Try to parse as UUID
+        is_uuid = False
+        try:
+            uuid.UUID(str(project_id))
+            is_uuid = True
+        except ValueError:
+            is_uuid = False
+
+        if is_uuid:
+            try:
+                project = Project.objects.select_related("organisation").get(id=project_id)
+                organisation = project.organisation
+            except Project.DoesNotExist:
+                logger.warning(f"Project with ID {project_id} not found")
+        else:
+            # Try to lookup by slug
+            try:
+                # If we have organisation_id, prevent cross-org lookup if possible,
+                # but Project slug is usually unique or scoped.
+                # Assuming Project has a 'slug' field.
+                query = {"slug": project_id}
+                if organisation_id:
+                    query["organisation__id"] = organisation_id
+
+                project = Project.objects.select_related("organisation").get(**query)
+                organisation = project.organisation
+            except (Project.DoesNotExist, Exception) as e:
+                logger.warning(f"Project with slug '{project_id}' not found: {e}")
 
     if not organisation and organisation_id:
         try:
