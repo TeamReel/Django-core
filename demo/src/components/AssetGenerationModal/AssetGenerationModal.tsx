@@ -303,7 +303,13 @@ export default function AssetGenerationModal({
   const [params, setParams] = useState<Record<string, string>>({});
   const [variantCount, setVariantCount] = useState(2);
   const [extraInstructions, setExtraInstructions] = useState('');
-  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackFields, setFeedbackFields] = useState({
+      colors: '',
+      pattern: '',
+      logo: '',
+      collar: '',
+      other: ''
+  });
   const [selectedVariantIdx, setSelectedVariantIdx] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [referenceSource, setReferenceSource] = useState<'upload' | 'previous'>('previous'); // Prefer existing result for iteration
@@ -342,7 +348,7 @@ export default function AssetGenerationModal({
       }
       setSelectedVariantIdx(null);
       setExtraInstructions('');
-      setFeedbackText('');
+      setFeedbackFields({ colors: '', pattern: '', logo: '', collar: '', other: '' });
       generation.reset();
     }
   }, [isOpen, preSelectedTemplate]);
@@ -414,10 +420,19 @@ export default function AssetGenerationModal({
 
     // Combine original instructions with new feedback if present
     let prompt = extraInstructions;
-    if (feedbackText.trim()) {
+
+    const parts = [];
+    if (feedbackFields.colors) parts.push(`KLEUREN: ${feedbackFields.colors}`);
+    if (feedbackFields.pattern) parts.push(`PATROON: ${feedbackFields.pattern}`);
+    if (feedbackFields.logo) parts.push(`LOGOS/SPONSOR: ${feedbackFields.logo}`);
+    if (feedbackFields.collar) parts.push(`KRAAG/MOUWEN: ${feedbackFields.collar}`);
+    if (feedbackFields.other) parts.push(`OVERIG: ${feedbackFields.other}`);
+
+    if (parts.length > 0) {
+        const feedbackBlock = parts.join('\n- ');
         prompt = prompt
-            ? `${prompt}\n\nFEEDBACK/REFINEMENT: ${feedbackText}`
-            : `FEEDBACK/REFINEMENT: ${feedbackText}`;
+            ? `${prompt}\n\nFEEDBACK/REFINEMENT:\n- ${feedbackBlock}`
+            : `FEEDBACK/REFINEMENT:\n- ${feedbackBlock}`;
     }
 
     setSelectedVariantIdx(null);
@@ -822,25 +837,53 @@ export default function AssetGenerationModal({
 
                     {/* Feedback / Refine */}
                     <div style={{ marginTop: 20, borderTop: '1px solid var(--vscode-widget-border, #333)', paddingTop: 16 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Niet helemaal goed? Verbeter het:</div>
-                        <textarea
-                          value={feedbackText}
-                          onChange={(e) => setFeedbackText(e.target.value)}
-                          placeholder="Bijv. 'Maak het logo iets groter', 'Verander de achtergrond naar donkergrijs'..."
-                          style={{
-                            width: '100%',
-                            padding: '8px 10px',
-                            marginBottom: 8,
-                            fontSize: 13,
-                            background: 'var(--vscode-input-background, #3c3c3c)',
-                            color: 'var(--vscode-input-foreground, #ccc)',
-                            border: '1px solid var(--vscode-input-border, #3c3c3c)',
-                            borderRadius: 4,
-                            outline: 'none',
-                            minHeight: 50,
-                            fontFamily: 'inherit',
-                          }}
-                        />
+                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Combineer & Verbeter Varianten:</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                           {[
+                             { id: 'colors', label: 'Kleuren (Vb: "Rood zoals V1")' },
+                             { id: 'pattern', label: 'Patroon (Vb: "Strepen zoals V2")' },
+                             { id: 'logo', label: 'Logo/Sponsor' },
+                             { id: 'collar', label: 'Kraag/Mouwen' },
+                           ].map(field => (
+                             <div key={field.id}>
+                               <label style={{display:'block', fontSize:11, marginBottom:4, color:'var(--vscode-descriptionForeground, #888)'}}>{field.label}</label>
+                               <input
+                                  type="text"
+                                  value={(feedbackFields as any)[field.id]}
+                                  onChange={(e) => setFeedbackFields(prev => ({ ...prev, [field.id]: e.target.value }))}
+                                  style={{
+                                    width: '100%',
+                                    padding: '6px 8px',
+                                    fontSize: 12,
+                                    background: 'var(--vscode-input-background, #3c3c3c)',
+                                    color: 'var(--vscode-input-foreground, #ccc)',
+                                    border: '1px solid var(--vscode-input-border, #3c3c3c)',
+                                    borderRadius: 4,
+                                    outline: 'none',
+                                  }}
+                               />
+                             </div>
+                           ))}
+                        </div>
+                        <div style={{ marginTop: 12 }}>
+                           <label style={{display:'block', fontSize:11, marginBottom:4, color:'var(--vscode-descriptionForeground, #888)'}}>Overig / Specifiek</label>
+                           <input
+                              type="text"
+                              value={feedbackFields.other}
+                              onChange={(e) => setFeedbackFields(prev => ({ ...prev, other: e.target.value }))}
+                              placeholder="Bijv. 'Sokken wit', 'Meer contrast in foto'..."
+                              style={{
+                                width: '100%',
+                                padding: '6px 8px',
+                                fontSize: 12,
+                                background: 'var(--vscode-input-background, #3c3c3c)',
+                                color: 'var(--vscode-input-foreground, #ccc)',
+                                border: '1px solid var(--vscode-input-border, #3c3c3c)',
+                                borderRadius: 4,
+                                outline: 'none',
+                              }}
+                           />
+                        </div>
                     </div>
                   </div>
                 )}

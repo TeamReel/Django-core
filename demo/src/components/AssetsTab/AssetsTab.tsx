@@ -569,34 +569,43 @@ export function AssetsTab({
           onAssetSaved={refresh}
         />
 
-        {/* Logo */}
-        <Section title="Logo" description="Upload het clublogo → AI bewerkt → AI combined (light + dark).">
-          <AssetGrid>
-            <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-            <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} aspectRatio="1 / 1" />
-            <AssetCard label="Logo (compleet)" assetType="logo_dark" asset={getAsset('logo_dark')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} aspectRatio="1 / 1" />
-          </AssetGrid>
-        </Section>
+        {/* Assets Top Row: Logo & Sponsor */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: 24, marginBottom: 24 }}>
+          {/* Logo */}
+          <div style={{ background: '#252526', padding: 16, borderRadius: 8, border: '1px solid #333' }}>
+             <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Logo</h3>
+             <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het clublogo → AI bewerkt → AI combined (light + dark).</p>
+             <AssetGrid>
+                <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
+                <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} aspectRatio="1 / 1" />
+                <AssetCard label="Logo (compleet)" assetType="logo_dark" asset={getAsset('logo_dark')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} aspectRatio="1 / 1" />
+             </AssetGrid>
+          </div>
 
-        {/* Sponsor */}
-        <Section title="Sponsor" description="Upload het sponsor logo. Wordt gestandaardiseerd door AI.">
-          <AssetGrid>
-            <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-            <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} aspectRatio="1 / 1" />
-          </AssetGrid>
-        </Section>
+          {/* Sponsor */}
+          <div style={{ background: '#252526', padding: 16, borderRadius: 8, border: '1px solid #333' }}>
+             <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Sponsor</h3>
+             <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het sponsor logo. Wordt gestandaardiseerd door AI.</p>
+             <AssetGrid>
+                <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
+                <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} aspectRatio="1 / 1" />
+             </AssetGrid>
+          </div>
+        </div>
 
-        {/* Kits per role */}
+        {/* Kits Grid */}
+        <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Tenues</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
         {KIT_ROLES.map((role) => {
           const uploadType = `kit_${role.id}_upload`;
           const processedType = `kit_${role.id}`;
 
           return (
-            <Section
-              key={role.id}
-              title={`${role.icon} ${role.label} Tenue`}
-              description={`Upload → AI bewerkt`}
-            >
+            <div key={role.id} style={{ background: '#252526', padding: 12, borderRadius: 8, border: '1px solid #333' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: 18 }}>{role.icon}</span>
+                    <span style={{ fontWeight: 600, fontSize: 13 }}>{role.label}</span>
+                </div>
               <AssetGrid>
                 <AssetCard
                   label={`${role.label} (upload)`}
@@ -614,9 +623,10 @@ export function AssetsTab({
                   onImprove={handleImprove}
                 />
               </AssetGrid>
-            </Section>
+            </div>
           );
         })}
+        </div>
 
         {/* Location */}
         <Section title="📍 Locatie" description="Stadion of veld foto's.">

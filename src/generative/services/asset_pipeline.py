@@ -223,7 +223,15 @@ def generate_asset(
 
             if image_bytes:
                 # Generate unique filename
-                param_str = "_".join(f"{k}-{v}" for k, v in sorted(params.items()))
+                # Exclude user_instruction to prevent filename explosion (>255 chars)
+                safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
+                param_str = "_".join(f"{k}-{v}" for k, v in sorted(safe_params.items()))
+
+                # Truncate param string to ~100 chars to satisfy DB limits (FileAsset.original_name is 255)
+                # and filesystem limits.
+                if len(param_str) > 100:
+                    param_str = param_str[:97] + "..."
+
                 filename = f"{template_id}_{param_str}_v{i+1}_{int(time.time())}.png"
 
                 results.append(
