@@ -14,6 +14,56 @@ Quick reference for development. Use this for context injection in new modules.
 | Teams | 227 |
 | Seasons | 108 |
 | Competitions | 571 |
+| Matches | 865 |
+| Members | 2,780+ |
+| Participations | 1,409 |
+
+## Complete Hierarchy Tree
+
+```
+Organisation (Federation)
+├── Club (Project, parent=null)
+│   ├── Team (Project, parent=Club)
+│   │   └── Season (Period, type=season)
+│   │       └── Competition (Period, type=competition, parent=Season)
+│   │           └── Match (Activity, period=Competition)
+│   │               └── Event (goal, card, substitution, etc.)
+│   └── Member* (can attach at any level)
+└── Member* (org-level staff)
+
+* Member inheritance: If attached to Season → auto-visible at Team, Club, Org
+```
+
+## Entity Relationships
+
+### Match (Activity)
+| Field | Type | Description |
+|-------|------|-------------|
+| `period` | FK → Competition | Competition this match belongs to |
+| `project` | FK → Team | Team playing the match |
+| `activity_type` | string | "match" |
+| `scheduled_at` | datetime | Match date/time |
+| `opponent` | FK → Project | Away team (nullable) |
+| `home_score` / `away_score` | int | Final scores |
+
+### Member (User + Participation)
+| Scope | How | Example |
+|-------|-----|---------|
+| Organisation | `OrganisationMembership` | Federation staff |
+| Club | `ProjectMembership` to club | Club director |
+| Team | `ProjectMembership` to team | Coach, physio |
+| Season | `Participation` to period | Player in 2024/25 squad |
+
+**Inheritance Rule**: Participation at Season → visible at parent Competition, Team, Club, Org
+
+### Participation (B29)
+| Field | Type | Description |
+|-------|------|-------------|
+| `user` | FK → User | The member |
+| `project` | FK → Team | Team context |
+| `period` | FK → Season | Season context |
+| `role` | string | player, staff, coach |
+| `squad_number` | int | Jersey number (optional) |
 
 ## Organisations (Federations)
 
@@ -112,6 +162,25 @@ players/{soccerwiki_id}.png   → (still in use for player photos)
 | `season` | Season 2024/2025 | None |
 | `competition` | Eredivisie, Cup, European | Season |
 
+## Match Data (per Competition)
+
+| Competition | Matches | Events |
+|-------------|---------|--------|
+| Eredivisie | ~34/team | goals, cards, subs |
+| Cup | ~5-7/team | goals, cards, subs |
+| European | ~6-14/team | goals, cards, subs |
+
+## Member Types (Participation Roles)
+
+| Role | Description | Typical Scope |
+|------|-------------|---------------|
+| `player` | Squad member | Season → Team |
+| `coach` | Head coach | Team or Season |
+| `assistant` | Assistant coach | Team or Season |
+| `staff` | Technical staff | Team, Club, or Org |
+| `medical` | Medical staff | Team or Club |
+| `director` | Board member | Club or Org |
+
 ## Season Availability
 
 | Club | Seasons |
@@ -159,4 +228,26 @@ Copy this block for quick context:
 - Test Team: Ajax 1 (slug: ajax-1, id: 94)
 - S3 Path: clubs/{slug}-{id}/logo/{uuid}/file.ext
 - Team Path: clubs/{club}/teams/{team}/logo/{uuid}/file.ext
+- Match: Activity under Competition (Period)
+- Member: User + Participation (season-scoped, inherits up)
+```
+
+## Entity-Specific S3 Paths
+
+```
+# Club assets
+clubs/{slug}-{id}/logo/{uuid}/...
+clubs/{slug}-{id}/kits/home/{uuid}/...
+
+# Team assets
+clubs/{club}/teams/{slug}-{id}/logo/{uuid}/...
+clubs/{club}/teams/{slug}-{id}/kits/home/{uuid}/...
+
+# Member assets (player photos)
+players/{soccerwiki_id}.png           # Legacy (SoccerWiki import)
+members/{user-id}/photo/{uuid}/...    # Future canonical
+
+# Match assets
+matches/{match-id}/thumbnail/{uuid}/...
+matches/{match-id}/highlights/{uuid}/...
 ```
