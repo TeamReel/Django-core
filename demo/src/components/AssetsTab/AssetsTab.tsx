@@ -63,6 +63,7 @@ interface AssetCardProps {
   inheritedFrom?: string;
   readOnly?: boolean;
   onUpload?: (file: File, assetType: string) => void;
+  onDelete?: (assetType: string) => void;
   aspectRatio?: string;
 }
 
@@ -74,6 +75,7 @@ function AssetCard({
   inheritedFrom,
   readOnly = false,
   onUpload,
+  onDelete,
   aspectRatio = '3 / 4',
 }: AssetCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -208,6 +210,29 @@ function AssetCard({
           </>
         )}
 
+        {!readOnly && onDelete && url && (
+          <button
+            onClick={() => {
+              if (window.confirm('Weet je zeker dat je dit asset wilt verwijderen?')) {
+                onDelete(assetType);
+              }
+            }}
+            style={{
+              width: '100%',
+              padding: '4px 8px',
+              fontSize: 11,
+              cursor: 'pointer',
+              background: 'transparent',
+              color: '#ef4444',
+              border: '1px solid #ef4444',
+              borderRadius: 4,
+              marginTop: 4,
+            }}
+          >
+            Verwijderen
+          </button>
+        )}
+
         {asset && (
           <div style={{ fontSize: 10, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 4 }}>
             {new Date(asset.updated_at).toLocaleDateString('nl-NL')}
@@ -279,6 +304,7 @@ export function AssetsTab({
     getAsset,
     getAssetUrl: getAssetUrlByType,
     uploadAsset,
+    deleteAsset,
     refresh,
   } = useBrandProfile({
     organisationId,
@@ -300,6 +326,10 @@ export function AssetsTab({
     const prefix = `${level}s/${slug}/${assetType.replace('_upload', '')}`;
     await uploadAsset(file, assetType, prefix);
     setUploading(null);
+  };
+
+  const handleDelete = async (assetType: string) => {
+    await deleteAsset(assetType);
   };
 
   // Helper: get asset from this level OR parent
@@ -342,11 +372,12 @@ export function AssetsTab({
               assetType="logo_upload"
               asset={getAsset('logo_upload')}
               onUpload={handleUpload}
+              onDelete={handleDelete}
               readOnly={readOnly}
               aspectRatio="1 / 1"
             />
-            <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} aspectRatio="1 / 1" />
-            <AssetCard label="Logo (compleet)" assetType="logo_dark" asset={getAsset('logo_dark')} onUpload={handleUpload} aspectRatio="1 / 1" />
+            <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
+            <AssetCard label="Logo (compleet)" assetType="logo_dark" asset={getAsset('logo_dark')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
           </AssetGrid>
         </Section>
       </div>
@@ -360,17 +391,17 @@ export function AssetsTab({
         {/* Logo */}
         <Section title="Logo" description="Upload het clublogo → AI bewerkt → AI combined (light + dark).">
           <AssetGrid>
-            <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} aspectRatio="1 / 1" />
-            <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} aspectRatio="1 / 1" />
-            <AssetCard label="Logo (compleet)" assetType="logo_dark" asset={getAsset('logo_dark')} onUpload={handleUpload} aspectRatio="1 / 1" />
+            <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
+            <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
+            <AssetCard label="Logo (compleet)" assetType="logo_dark" asset={getAsset('logo_dark')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
           </AssetGrid>
         </Section>
 
         {/* Sponsor */}
         <Section title="Sponsor" description="Upload het sponsor logo. Wordt gestandaardiseerd door AI.">
           <AssetGrid>
-            <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} aspectRatio="1 / 1" />
-            <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} aspectRatio="1 / 1" />
+            <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
+            <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
           </AssetGrid>
         </Section>
 
@@ -392,18 +423,21 @@ export function AssetsTab({
                   assetType={uploadType}
                   asset={getAsset(uploadType)}
                   onUpload={handleUpload}
+                  onDelete={handleDelete}
                 />
                 <AssetCard
                   label={`${role.label} (bewerkt)`}
                   assetType={processedType}
                   asset={getAsset(processedType)}
                   onUpload={handleUpload}
+                  onDelete={handleDelete}
                 />
                 <AssetCard
                   label={`${role.label} (compleet)`}
                   assetType={combinedType}
                   asset={getAsset(combinedType)}
                   onUpload={handleUpload}
+                  onDelete={handleDelete}
                 />
               </AssetGrid>
             </Section>
@@ -418,6 +452,7 @@ export function AssetsTab({
               assetType="location_photo"
               asset={getAsset('location_photo')}
               onUpload={handleUpload}
+              onDelete={handleDelete}
               aspectRatio="16 / 9"
             />
           </AssetGrid>
@@ -497,7 +532,7 @@ export function AssetsTab({
               ); })()
             ) : (
               <>
-                <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} aspectRatio="1 / 1" />
+                <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
                 <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} readOnly aspectRatio="1 / 1" />
               </>
             )}
@@ -576,6 +611,7 @@ export function AssetsTab({
                   assetType="sponsor_logo_upload"
                   asset={getAsset('sponsor_logo_upload')}
                   onUpload={handleUpload}
+                  onDelete={handleDelete}
                   aspectRatio="1 / 1"
                 />
               )}

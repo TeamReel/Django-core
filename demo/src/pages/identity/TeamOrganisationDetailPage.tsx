@@ -20,6 +20,7 @@ import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 import { AssetsTab } from '../../components/AssetsTab';
 import { KitsTab } from '../../components/KitsTab';
 import { MemberMediaMatrix } from '../../components/MemberMediaMatrix';
+import { AssetCompletionMatrix } from '../../components/AssetCompletionMatrix';
 
 const getCsrfToken = (): string => {
   try {
@@ -1307,17 +1308,23 @@ export default function TeamOrganisationDetailPage() {
 
           {activeTabFromUrl === 'media' && team && org && (
             <div className="space-y-6">
+              <AssetCompletionMatrix
+                projectId={team.slug || String(team.id)}
+                entityName={team.name}
+                title="Asset Completion Matrix"
+              />
+
               <Card>
                 <div style={{ padding: '16px 16px 0 16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-                    <span style={{ fontSize: 24 }}>📊</span>
-                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Media Completion Matrix</h3>
+                    <span style={{ fontSize: 24 }}>👥</span>
+                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Member Media Matrix</h3>
                   </div>
                 </div>
                 <div style={{ padding: 16 }}>
                   <MediaMatrixLoader
                     apiBaseUrl={apiBaseUrl}
-                    teamId={String(team.id)}
+                    teamId={team.slug || String(team.id)}
                   />
                 </div>
               </Card>

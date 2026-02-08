@@ -181,6 +181,8 @@ interface UseBrandProfileReturn {
   getAssetUrl: (assetType: string) => string | null;
   /** Upload a file and create/update a BrandAsset */
   uploadAsset: (file: File, assetType: string, pathPrefix?: string) => Promise<BrandAsset | null>;
+  /** Delete (deactivate) a BrandAsset by asset type */
+  deleteAsset: (assetType: string) => Promise<boolean>;
 }
 
 function getCsrfToken(): string {
@@ -360,6 +362,36 @@ export function useBrandProfile({
     [apiBase, organisationId, profile, assets, fetchProfile]
   );
 
+  const deleteAsset = useCallback(
+    async (assetType: string): Promise<boolean> => {
+      if (!profile) return false;
+
+      const existing = assets.find((a) => a.asset_type === assetType);
+      if (!existing) return false;
+
+      try {
+        const res = await fetch(
+          `${apiBase}/api/v1/branding/profiles/${profile.id}/assets/${existing.id}/`,
+          {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+              'X-CSRFToken': getCsrfToken(),
+            },
+          }
+        );
+        if (!res.ok && res.status !== 204) throw new Error(`Delete failed: ${res.status}`);
+        await fetchProfile();
+        return true;
+      } catch (err) {
+        console.error('[useBrandProfile] Delete error:', err);
+        setError(err instanceof Error ? err.message : 'Delete failed');
+        return false;
+      }
+    },
+    [apiBase, profile, assets, fetchProfile]
+  );
+
   return {
     profile,
     assets,
@@ -369,6 +401,7 @@ export function useBrandProfile({
     getAsset,
     getAssetUrl: getAssetUrlByType,
     uploadAsset,
+    deleteAsset,
   };
 }
 
