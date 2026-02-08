@@ -13,6 +13,8 @@ import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext, setActiveContext } from
 import { MEDIA_SLOTS, MediaSlotId, MemberMediaForm } from '../../constants/mediaSlots';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { AssetsTab } from '../../components/AssetsTab';
+import { AssetGenerationModal } from '../../components/AssetGenerationModal';
+import { useBrandProfile, getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
 import MobileTabBar from '../../components/MobileTabBar';
 
 type Project = {
@@ -637,6 +639,47 @@ export default function ProjectSeasonMemberDetailPage() {
 
   const [form, setForm] = useState<MemberMediaForm>(() => createEmptyMediaForm());
 
+  // AI Generation Modal State
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiPreselectedTemplate, setAiPreselectedTemplate] = useState<string | undefined>();
+  const [aiSelectedKitUrl, setAiSelectedKitUrl] = useState<string | null>(null);
+  const [aiSelectedKitType, setAiSelectedKitType] = useState<string>('home');
+
+  // Fetch parent brand assets (from club) for tenue inheritance
+  const clubId = club?.id || project?.id;
+  const clubBrand = useBrandProfile(
+    clubId ? String(clubId) : '',
+    String(org?.id || ''),
+    !!clubId
+  );
+
+  // Get effective kits from club brand
+  const effectiveKits = useMemo(() => {
+    const kits: { id: string; label: string; icon: string; url: string | null }[] = [];
+    for (const role of KIT_ROLES) {
+      // Try combined first, then processed
+      let asset = clubBrand.getAsset?.(`kit_${role.id}_combined`) || clubBrand.getAsset?.(`kit_${role.id}`);
+      kits.push({
+        id: role.id,
+        label: role.label,
+        icon: role.icon,
+        url: asset ? getAssetUrl(asset.url) : null,
+      });
+    }
+    return kits;
+  }, [clubBrand]);
+
+  // Handler to open AI modal for a specific template
+  const openAiModal = (templateId: string, defaultKitType?: string) => {
+    setAiPreselectedTemplate(templateId);
+    const kitType = defaultKitType || 'home';
+    setAiSelectedKitType(kitType);
+    // Find the kit URL for the selected type
+    const kit = effectiveKits.find(k => k.id === kitType);
+    setAiSelectedKitUrl(kit?.url || null);
+    setShowAiModal(true);
+  };
+
   useEffect(() => {
     if (!membership) return;
     setForm(readAssetsFromMembership(membership));
@@ -1115,7 +1158,8 @@ export default function ProjectSeasonMemberDetailPage() {
                 )}
 
                 {/* Other media slot tabs — preview + upload only (no URL/caption inputs) */}
-                {MEDIA_SLOTS.filter((s) => s.id !== 'profile').map((slot) => activeTab === slot.id && (
+                {/* AI-generative slots (kit, closeup) are handled separately below */}
+                {MEDIA_SLOTS.filter((s) => s.id !== 'profile' && s.id !== 'kit' && s.id !== 'closeup').map((slot) => activeTab === slot.id && (
                   <Card key={slot.id}>
                     <div style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
@@ -1189,6 +1233,279 @@ export default function ProjectSeasonMemberDetailPage() {
                     </div>
                   </Card>
                 ))}
+
+                {/* In Tenue (Kit) Tab - AI Generative with tenue selector */}
+                {activeTab === 'kit' && (
+                  <Card>
+                    <div style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '24px' }}>👕</span>
+                          <div style={{ fontSize: '16px', fontWeight: 800 }}>In Tenue</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <Badge variant={userCanEditProject ? 'default' : 'info'}>
+                            {userCanEditProject ? 'Editable' : 'Read-only'}
+                          </Badge>
+                          {userCanEditProject && (
+                            <Button
+                              size="sm"
+                              onClick={() => openAiModal('fullbody_in_tenue')}
+                              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', border: 'none' }}
+                            >
+                              ✨ AI Genereren
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                        Fullbody foto van de speler in het seizoenstenue. Selecteer een tenue en genereer met AI.
+                      </div>
+
+                      {/* Current result preview */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginTop: '20px' }}>
+                        {form.kit?.url && (
+                          <div>
+                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Huidig Resultaat</div>
+                            <div style={{
+                              border: '1px solid var(--app-border)',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              background: '#f3f4f6',
+                              maxWidth: '300px',
+                            }}>
+                              <img
+                                src={form.kit.url}
+                                alt="In Tenue"
+                                style={{ width: '100%', maxHeight: '400px', objectFit: 'contain' }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Tenue Selector */}
+                        <div style={{ marginTop: '16px' }}>
+                          <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Selecteer Tenue (van Seizoen)</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px' }}>
+                            {effectiveKits.map((kit) => (
+                              <button
+                                key={kit.id}
+                                onClick={() => {
+                                  setAiSelectedKitType(kit.id);
+                                  setAiSelectedKitUrl(kit.url);
+                                }}
+                                style={{
+                                  padding: '12px 8px',
+                                  border: aiSelectedKitType === kit.id
+                                    ? '2px solid #6366f1'
+                                    : '1px solid var(--app-border)',
+                                  borderRadius: '8px',
+                                  background: aiSelectedKitType === kit.id
+                                    ? 'rgba(99, 102, 241, 0.1)'
+                                    : 'var(--app-surface)',
+                                  cursor: 'pointer',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                {kit.url ? (
+                                  <img
+                                    src={kit.url}
+                                    alt={kit.label}
+                                    style={{ width: '60px', height: '80px', objectFit: 'contain', margin: '0 auto 8px' }}
+                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                  />
+                                ) : (
+                                  <div style={{ width: '60px', height: '80px', background: '#e5e7eb', borderRadius: '4px', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                                    {kit.icon}
+                                  </div>
+                                )}
+                                <div style={{ fontSize: '11px', fontWeight: 600 }}>{kit.icon} {kit.label}</div>
+                                {!kit.url && <div style={{ fontSize: '10px', color: '#888' }}>Niet beschikbaar</div>}
+                              </button>
+                            ))}
+                          </div>
+                          {!effectiveKits.some(k => k.url) && (
+                            <Alert variant="warning" style={{ marginTop: '12px' }}>
+                              Geen tenues beschikbaar. Upload eerst tenues op de club-pagina.
+                            </Alert>
+                          )}
+                        </div>
+
+                        {/* AI Generation CTA */}
+                        {userCanEditProject && effectiveKits.some(k => k.url) && (
+                          <div style={{ marginTop: '20px', padding: '20px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))', borderRadius: '8px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '32px', marginBottom: '8px' }}>✨</div>
+                            <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>Genereer met AI</div>
+                            <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '16px' }}>
+                              Gebruik de profielfoto en het geselecteerde tenue om een fullbody foto te genereren.
+                            </div>
+                            <Button onClick={() => openAiModal('fullbody_in_tenue', aiSelectedKitType)}>
+                              🎨 Start AI Generatie
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Manual upload fallback */}
+                        <div style={{
+                          padding: '24px',
+                          border: '2px dashed var(--app-border)',
+                          borderRadius: '8px',
+                          textAlign: 'center',
+                          opacity: userCanEditProject ? 1 : 0.5,
+                          marginTop: '16px',
+                        }}>
+                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>📤</div>
+                          <div style={{ fontSize: '14px', fontWeight: 600 }}>Of upload handmatig</div>
+                          <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>
+                            Drag & drop of klik om te uploaden
+                          </div>
+                        </div>
+                      </div>
+
+                      {!userCanEditProject && (
+                        <div style={{ marginTop: '16px' }}>
+                          <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                )}
+
+                {/* Close-up Tab - AI Generative */}
+                {activeTab === 'closeup' && (
+                  <Card>
+                    <div style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '24px' }}>📸</span>
+                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Close-up</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <Badge variant={userCanEditProject ? 'default' : 'info'}>
+                            {userCanEditProject ? 'Editable' : 'Read-only'}
+                          </Badge>
+                          {userCanEditProject && (
+                            <Button
+                              size="sm"
+                              onClick={() => openAiModal('closeup_in_tenue')}
+                              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', border: 'none' }}
+                            >
+                              ✨ AI Genereren
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                        Close-up portret van de speler in het seizoenstenue. Transparante achtergrond.
+                      </div>
+
+                      {/* Current result preview */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginTop: '20px' }}>
+                        {form.closeup?.url && (
+                          <div>
+                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Huidig Resultaat</div>
+                            <div style={{
+                              border: '1px solid var(--app-border)',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              background: '#f3f4f6',
+                              maxWidth: '300px',
+                            }}>
+                              <img
+                                src={form.closeup.url}
+                                alt="Close-up"
+                                style={{ width: '100%', maxHeight: '400px', objectFit: 'contain' }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Tenue Selector for close-up */}
+                        <div style={{ marginTop: '16px' }}>
+                          <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Selecteer Tenue (van Seizoen)</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px' }}>
+                            {effectiveKits.map((kit) => (
+                              <button
+                                key={kit.id}
+                                onClick={() => {
+                                  setAiSelectedKitType(kit.id);
+                                  setAiSelectedKitUrl(kit.url);
+                                }}
+                                style={{
+                                  padding: '12px 8px',
+                                  border: aiSelectedKitType === kit.id
+                                    ? '2px solid #6366f1'
+                                    : '1px solid var(--app-border)',
+                                  borderRadius: '8px',
+                                  background: aiSelectedKitType === kit.id
+                                    ? 'rgba(99, 102, 241, 0.1)'
+                                    : 'var(--app-surface)',
+                                  cursor: 'pointer',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                {kit.url ? (
+                                  <img
+                                    src={kit.url}
+                                    alt={kit.label}
+                                    style={{ width: '60px', height: '80px', objectFit: 'contain', margin: '0 auto 8px' }}
+                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                  />
+                                ) : (
+                                  <div style={{ width: '60px', height: '80px', background: '#e5e7eb', borderRadius: '4px', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                                    {kit.icon}
+                                  </div>
+                                )}
+                                <div style={{ fontSize: '11px', fontWeight: 600 }}>{kit.icon} {kit.label}</div>
+                                {!kit.url && <div style={{ fontSize: '10px', color: '#888' }}>Niet beschikbaar</div>}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* AI Generation CTA */}
+                        {userCanEditProject && effectiveKits.some(k => k.url) && (
+                          <div style={{ marginTop: '20px', padding: '20px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))', borderRadius: '8px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '32px', marginBottom: '8px' }}>✨</div>
+                            <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>Genereer met AI</div>
+                            <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '16px' }}>
+                              Gebruik de profielfoto en het geselecteerde tenue om een close-up portret te genereren.
+                            </div>
+                            <Button onClick={() => openAiModal('closeup_in_tenue', aiSelectedKitType)}>
+                              🎨 Start AI Generatie
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Manual upload fallback */}
+                        <div style={{
+                          padding: '24px',
+                          border: '2px dashed var(--app-border)',
+                          borderRadius: '8px',
+                          textAlign: 'center',
+                          opacity: userCanEditProject ? 1 : 0.5,
+                          marginTop: '16px',
+                        }}>
+                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>📤</div>
+                          <div style={{ fontSize: '14px', fontWeight: 600 }}>Of upload handmatig</div>
+                          <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>
+                            Drag & drop of klik om te uploaden
+                          </div>
+                        </div>
+                      </div>
+
+                      {!userCanEditProject && (
+                        <div style={{ marginTop: '16px' }}>
+                          <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                )}
 
                 {/* Assets Tab - inherited brand assets from team/club */}
                 {activeTab === 'assets' && (
@@ -1280,6 +1597,41 @@ export default function ProjectSeasonMemberDetailPage() {
           </Button>
         </div>
       )}
+
+      {/* AI Asset Generation Modal */}
+      <AssetGenerationModal
+        isOpen={showAiModal}
+        onClose={() => {
+          setShowAiModal(false);
+          setAiSelectedKitUrl(null);
+        }}
+        context="member"
+        preSelectedTemplate={aiPreselectedTemplate}
+        projectId={clubId || ''}
+        organisationId={String(org?.id || '')}
+        inputAssets={{
+          logo: clubBrand.getAsset?.('logo_upload')
+            ? getAssetUrl(clubBrand.getAsset('logo_upload')!.url)
+            : null,
+          sponsor: clubBrand.getAsset?.('sponsor_logo_upload')
+            ? getAssetUrl(clubBrand.getAsset('sponsor_logo_upload')!.url)
+            : null,
+          reference: aiSelectedKitUrl,
+          person: form.profile?.url || membership?.user?.avatar_url || null,
+        }}
+        previousResultUrl={
+          aiPreselectedTemplate === 'fullbody_in_tenue'
+            ? form.kit?.url || null
+            : aiPreselectedTemplate === 'closeup_in_tenue'
+              ? form.closeup?.url || null
+              : null
+        }
+        onAssetSaved={() => {
+          // Refresh membership data to get updated media URLs
+          // For now, just close the modal - the user can refresh
+          setShowAiModal(false);
+        }}
+      />
     </AppShell>
   );
 }
