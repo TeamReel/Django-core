@@ -83,18 +83,23 @@ class FileViewSet(viewsets.ModelViewSet):
         path_prefix = self.request.query_params.get("path_prefix", "").strip("/")
         storage_path = None
 
-        # Schema Alignment: Intercept legacy frontend paths for Logos
-        # Frontend currently sends "logos/{slug_or_id}"
+        # Schema Alignment: Intercept legacy frontend paths for structured storage
         # We rewrite this to Canonical Structure:
-        # - Club: clubs/{slug}-{id}/logo/
-        # - Team: clubs/{club-slug}-{club-id}/teams/{team-slug}-{team-id}/logo/
-        if path_prefix and (path_prefix.startswith("logos/") or path_prefix.startswith("clubs/")):
+        # - Club: clubs/{slug}-{id}/{category}/
+        # - Team: clubs/{club-slug}-{club-id}/teams/{team-slug}-{team-id}/{category}/
+        if path_prefix and (
+            path_prefix.startswith("logos/")
+            or path_prefix.startswith("clubs/")
+            or path_prefix.startswith("teams/")
+        ):
             try:
                 parts = path_prefix.split("/")
                 if len(parts) >= 2:
+                    prefix_type = parts[0]
                     identifier = parts[1]
-                    project = None
+                    rest = parts[2:] if len(parts) > 2 else []
 
+                    project = None
                     # 1. Try Integer ID
                     if identifier.isdigit():
                         project = Project.objects.filter(
@@ -108,13 +113,29 @@ class FileViewSet(viewsets.ModelViewSet):
                         ).first()
 
                     if project:
+                        # Determine Base Path
                         if project.parent_project:
                             # Team Context
                             club = project.parent_project
-                            new_prefix = f"clubs/{club.slug}-{club.id}/teams/{project.slug}-{project.id}/logo"
+                            base_path = (
+                                f"clubs/{club.slug}-{club.id}/teams/{project.slug}-{project.id}"
+                            )
                         else:
                             # Club Context
-                            new_prefix = f"clubs/{project.slug}-{project.id}/logo"
+                            base_path = f"clubs/{project.slug}-{project.id}"
+
+                        # Determine Category/Suffix
+                        if prefix_type == "logos":
+                            # Legacy behavior: 'logos/x' -> '.../logo'
+                            category = "logo"
+                        elif rest:
+                            # Preserve existing subfolders (e.g. 'sponsor_logo', 'kits/home')
+                            category = "/".join(rest)
+                        else:
+                            # Fallback if no category provided in path
+                            category = "general"
+
+                        new_prefix = f"{base_path}/{category}"
 
                         storage_path = f"{new_prefix}/{file_obj.name}"
                         logger.info(f"Fixed storage path: {path_prefix} -> {storage_path}")
