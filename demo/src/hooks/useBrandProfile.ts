@@ -183,6 +183,10 @@ interface UseBrandProfileReturn {
   uploadAsset: (file: File, assetType: string, pathPrefix?: string) => Promise<BrandAsset | null>;
   /** Delete (deactivate) a BrandAsset by asset type */
   deleteAsset: (assetType: string) => Promise<boolean>;
+  /** Fetch history for a specific asset type */
+  fetchHistory: (assetType: string) => Promise<Array<{id: string, url: string, created_at: string, original_name: string}>>;
+  /** Restore a previous version */
+  restoreAsset: (fileAssetId: string, assetType: string) => Promise<boolean>;
 }
 
 function getCsrfToken(): string {
@@ -392,6 +396,56 @@ export function useBrandProfile({
     [apiBase, profile, assets, fetchProfile]
   );
 
+  const fetchHistory = useCallback(
+    async (assetType: string) => {
+      try {
+         const params = new URLSearchParams();
+         if (projectId) params.set('project_id', String(projectId));
+         else if (organisationId) params.set('organisation_id', organisationId);
+         params.set('asset_type', assetType);
+
+         const res = await fetch(`${apiBase}/api/v1/generative/assets/history/?${params}`, {
+             credentials: 'include'
+         });
+         if (!res.ok) throw new Error('Failed to fetch history');
+         const json = await res.json();
+         return json.history || [];
+      } catch (e) {
+         console.error(e);
+         return [];
+      }
+    },
+    [apiBase, projectId, organisationId]
+  );
+
+  const restoreAsset = useCallback(
+    async (fileAssetId: string, assetType: string) => {
+       try {
+         const res = await fetch(`${apiBase}/api/v1/generative/assets/restore/`, {
+             method: 'POST',
+             credentials: 'include',
+             headers: {
+                 'Content-Type': 'application/json',
+                 'X-CSRFToken': getCsrfToken()
+             },
+             body: JSON.stringify({
+                 file_asset_id: fileAssetId,
+                 asset_type: assetType,
+                 project_id: projectId,
+                 organisation_id: organisationId
+             })
+         });
+         if (!res.ok) throw new Error('Restore failed');
+         await fetchProfile(); // Reload
+         return true;
+       } catch (e) {
+          console.error(e);
+          return false;
+       }
+    },
+    [apiBase, projectId, organisationId, fetchProfile]
+  );
+
   return {
     profile,
     assets,
@@ -402,6 +456,8 @@ export function useBrandProfile({
     getAssetUrl: getAssetUrlByType,
     uploadAsset,
     deleteAsset,
+    fetchHistory,
+    restoreAsset,
   };
 }
 

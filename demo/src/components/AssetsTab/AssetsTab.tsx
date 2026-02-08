@@ -66,6 +66,7 @@ interface AssetCardProps {
   onUpload?: (file: File, assetType: string) => void;
   onDelete?: (assetType: string) => void;
   onImprove?: (assetType: string) => void;
+  onShowHistory?: (assetType: string) => void;
   aspectRatio?: string;
 }
 
@@ -79,6 +80,7 @@ function AssetCard({
   onUpload,
   onDelete,
   onImprove,
+  onShowHistory,
   aspectRatio = '3 / 4',
 }: AssetCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -135,6 +137,27 @@ function AssetCard({
           >
             {badgeText}
           </span>
+        )}
+
+        {/* History Button - always show if processed type, even if no asset set yet (might have history) */}
+        {!readOnly && onShowHistory && isProcessed && !['watermark', 'favicon', 'font_file', 'location_photo', 'other'].includes(assetType) && (
+            <button
+                onClick={() => onShowHistory(assetType)}
+                style={{
+                  position: 'absolute',
+                  top: 6,
+                  right: badgeText ? 80 : 6, // Position left of badge if exists
+                  background: 'rgba(0,0,0,0.6)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 4,
+                  fontSize: 12,
+                  padding: '2px 6px',
+                  cursor: 'pointer'
+                }}
+            >
+             ⏱️
+            </button>
         )}
 
         {/* Inherited badge */}
@@ -339,7 +362,33 @@ export function AssetsTab({
   const [aiPreviousResultUrl, setAiPreviousResultUrl] = useState<string | null>(null);
   const [aiCustomInputs, setAiCustomInputs] = useState<Record<string, string | null>>({});
 
+  // History State
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyAssetType, setHistoryAssetType] = useState<string | null>(null);
+  const [historyList, setHistoryList] = useState<Array<{id: string, url: string, created_at: string, original_name: string}>>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
   const sponsorMode = externalSponsorMode || 'club';
+
+  const { fetchHistory, restoreAsset } = useBrandProfile({ projectId, organisationId, autoFetch: false }); // Reuse hook for methods
+
+  const handleShowHistory = async (assetType: string) => {
+      setHistoryAssetType(assetType);
+      setShowHistoryModal(true);
+      setLoadingHistory(true);
+      const list = await fetchHistory(assetType);
+      setHistoryList(list);
+      setLoadingHistory(false);
+  };
+
+  const handleRestore = async (fileAssetId: string) => {
+      if (!historyAssetType) return;
+      if (confirm('Weet je zeker dat je deze versie wilt herstellen? De huidige versie wordt overschreven (maar blijft in de geschiedenis).')) {
+          await restoreAsset(fileAssetId, historyAssetType);
+          setShowHistoryModal(false);
+          refresh(); // Reload main assets to show new active one
+      }
+  };
 
   const handleUpload = async (file: File, assetType: string) => {
     setUploading(assetType);
@@ -556,7 +605,42 @@ export function AssetsTab({
           </button>
         </div>
 
-        {/* AI Generation Modal */}
+        {/* History Modal */}
+        {showHistoryModal && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ background: '#1e1e1e', border: '1px solid #333', borderRadius: 8, padding: 20, width: 500, maxHeight: '80vh', overflow: 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                        <h3 style={{ margin: 0, fontSize: 16 }}>Versiegeschiedenis</h3>
+                        <button onClick={() => setShowHistoryModal(false)} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer' }}>✕</button>
+                    </div>
+                    {loadingHistory ? (
+                        <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>Geschiedenis laden...</div>
+                    ) : historyList.length === 0 ? (
+                        <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>Geen eerdere versies gevonden.</div>
+                    ) : (
+                        <div style={{ display: 'grid', gap: 12 }}>
+                           {historyList.map(item => (
+                               <div key={item.id} style={{ display: 'flex', gap: 12, padding: 10, background: '#252526', borderRadius: 6, alignItems: 'center' }}>
+                                   <div style={{ width: 60, height: 80, background: `url(${item.url}) center/contain no-repeat`, backgroundSize: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                                   <div style={{ flex: 1 }}>
+                                       <div style={{ fontSize: 12, fontWeight: 600 }}>{new Date(item.created_at).toLocaleString()}</div>
+                                       <div style={{ fontSize: 11, color: '#888' }}>{item.original_name}</div>
+                                   </div>
+                                   <button
+                                     onClick={() => handleRestore(item.id)}
+                                     style={{ padding: '6px 12px', background: '#094771', color: '#fff', border: 'none', borderRadius: 4, fontSize: 12, cursor: 'pointer' }}
+                                   >
+                                     Herstellen
+                                   </button>
+                               </div>
+                           ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        )}
+
+        {/* AI Generation Generation Modal */}
         <AssetGenerationModal
           isOpen={showAiModal}
           onClose={() => { setShowAiModal(false); setAiPreviousResultUrl(null); }}
@@ -621,6 +705,7 @@ export function AssetsTab({
                   onUpload={handleUpload}
                   onDelete={handleDelete}
                   onImprove={handleImprove}
+                  onShowHistory={handleShowHistory}
                 />
               </AssetGrid>
             </div>
