@@ -16,6 +16,10 @@ interface GeneratedOutput {
     storage_path: string;
     file_size_bytes: number;
     mime_type: string;
+    // Created record IDs
+    file_asset_id?: string | null;
+    brand_asset_id?: string | null;
+    media_item_id?: string | null;
   } | null;
   metadata: Record<string, unknown>;
 }
@@ -172,10 +176,14 @@ interface ContentGenerationModalProps {
     project_id?: string | number;
   } | null;
   organisationSport?: { id: number | string; name: string; slug?: string } | null;
+  /** Organisation ID for brand/storage scoping */
+  organisationId?: string | null;
   /** Pre-selected template - skips type/template selection */
   template?: ContentTemplate | null;
   /** Content type label for header */
   contentTypeLabel?: string;
+  /** Asset type for BrandAsset linking (e.g. logo_light, kit_home) */
+  assetType?: string | null;
 }
 
 // Group participations by functional role
@@ -220,8 +228,10 @@ export default function ContentGenerationModal({
   matchData,
   season,
   organisationSport,
+  organisationId,
   template: initialTemplate,
   contentTypeLabel,
+  assetType,
 }: ContentGenerationModalProps) {
   const [step, setStep] = useState<'type' | 'template' | 'members' | 'confirm' | 'generating' | 'success' | 'error'>('type');
   const [selectedType, setSelectedType] = useState<{ type: string; subtype: string; label: string } | null>(null);
@@ -511,6 +521,15 @@ export default function ContentGenerationModal({
           variant_count: 1,
           input_images: {},
           input_image_urls: {},
+          // === Context for S3 folder structure & record creation ===
+          project_id: matchData?.project?.id || null,
+          organisation_id: organisationId || null,
+          activity_id: matchData?.id || null,
+          // Asset type for BrandAsset linking
+          asset_type: assetType || selectedTemplate?.template_subtype || null,
+          // Storage options
+          save_to_brand: true,
+          save_to_media_library: true,
         }),
       });
 

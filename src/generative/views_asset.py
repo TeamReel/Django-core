@@ -62,6 +62,45 @@ class AssetGenerateInputSerializer(serializers.Serializer):
         help_text="Input images as URLs. Keys: logo, sponsor, reference_photo, person_photo",
     )
 
+    # === Context for S3 folder structure (media-architecture.md) ===
+    project_id = serializers.UUIDField(
+        required=False,
+        allow_null=True,
+        help_text="Project ID for scoping storage and brand lookup",
+    )
+    organisation_id = serializers.UUIDField(
+        required=False,
+        allow_null=True,
+        help_text="Organisation ID for fallback brand lookup",
+    )
+    membership_id = serializers.UUIDField(
+        required=False,
+        allow_null=True,
+        help_text="Membership ID for member-specific content",
+    )
+    activity_id = serializers.UUIDField(
+        required=False,
+        allow_null=True,
+        help_text="Activity ID (match/training) for activity-specific content",
+    )
+
+    # === Asset type for BrandAsset linking ===
+    asset_type = serializers.CharField(
+        required=False,
+        allow_null=True,
+        help_text="BrandAsset type (e.g. logo_light, kit_home, kit_away_combined)",
+    )
+
+    # === Storage options ===
+    save_to_brand = serializers.BooleanField(
+        default=True,
+        help_text="Create BrandAsset record after generation",
+    )
+    save_to_media_library = serializers.BooleanField(
+        default=True,
+        help_text="Create MediaItem record for rich media features",
+    )
+
 
 class StorageInfoSerializer(serializers.Serializer):
     """Storage info for saved files."""
@@ -73,6 +112,10 @@ class StorageInfoSerializer(serializers.Serializer):
     file_size_kb = serializers.FloatField()
     mime_type = serializers.CharField()
     created_at = serializers.CharField()
+    # IDs for created records
+    file_asset_id = serializers.UUIDField(required=False, allow_null=True)
+    brand_asset_id = serializers.UUIDField(required=False, allow_null=True)
+    media_item_id = serializers.UUIDField(required=False, allow_null=True)
 
 
 class AssetVariantSerializer(serializers.Serializer):
@@ -144,6 +187,15 @@ def generate_asset_view(request: Request) -> Response:
     input_images_b64 = serializer.validated_data.get("input_images", {})
     input_image_urls = serializer.validated_data.get("input_image_urls", {})
 
+    # === Context for storage and record creation ===
+    project_id = serializer.validated_data.get("project_id")
+    organisation_id = serializer.validated_data.get("organisation_id")
+    # membership_id is available for future member-scoped storage
+    activity_id = serializer.validated_data.get("activity_id")
+    asset_type = serializer.validated_data.get("asset_type")
+    save_to_brand = serializer.validated_data.get("save_to_brand", True)
+    save_to_media_library = serializer.validated_data.get("save_to_media_library", True)
+
     # Decode base64 images
     input_images: dict[str, bytes] = {}
     for key, b64_str in input_images_b64.items():
@@ -202,6 +254,38 @@ def generate_asset_view(request: Request) -> Response:
     storage = get_storage_backend()
     storage_backend_name = storage.__class__.__name__
 
+    # Lookup project/organisation for proper scoping
+    project = None
+    organisation = None
+    if project_id:
+        try:
+            from projects.models import Project
+
+            project = Project.objects.select_related("organisation").get(id=project_id)
+            organisation = project.organisation
+        except Project.DoesNotExist:
+            logger.warning(f"Project {project_id} not found")
+    if not organisation and organisation_id:
+        try:
+            from organisations.models import Organisation
+
+            organisation = Organisation.objects.get(id=organisation_id)
+        except Organisation.DoesNotExist:
+            logger.warning(f"Organisation {organisation_id} not found")
+
+    # Lookup activity for activity-scoped storage
+    activity = None
+    if activity_id:
+        try:
+            from activities.models import Activity
+
+            activity = Activity.objects.get(id=activity_id)
+        except Activity.DoesNotExist:
+            logger.warning(f"Activity {activity_id} not found")
+
+    # Get current user for ownership
+    current_user = request.user if request.user.is_authenticated else None
+
     clean_variants = []
     for r in results:
         variant_data = {
@@ -227,7 +311,7 @@ def generate_asset_view(request: Request) -> Response:
                 filename = r.get("filename") or f"generated_{r['variant_index']}.png"
                 mime_type = r.get("mime_type") or "image/png"
 
-                # Build proper S3 path based on context from params
+                # Build proper S3 path based on context (media-architecture.md)
                 timestamp = timezone.now().strftime("%Y%m%d")
                 unique_suffix = str(uuid_module.uuid4())[:8]
 
@@ -246,8 +330,22 @@ def generate_asset_view(request: Request) -> Response:
                 else:
                     unique_filename = f"{filename}_{timestamp}_{unique_suffix}"
 
-                # Build path: generated/{template_type}/{subtype}/{filename}
-                storage_path_prefix = f"generated/{asset_folder}/{unique_filename}"
+                # Build hierarchical path based on context (media-architecture.md)
+                # Priority: activity > project > organisation > generic
+                if activity:
+                    storage_path_prefix = (
+                        f"activities/{activity.id}/generated/{asset_folder}/{unique_filename}"
+                    )
+                elif project:
+                    storage_path_prefix = (
+                        f"projects/{project.id}/generated/{asset_folder}/{unique_filename}"
+                    )
+                elif organisation:
+                    storage_path_prefix = (
+                        f"orgs/{organisation.id}/generated/{asset_folder}/{unique_filename}"
+                    )
+                else:
+                    storage_path_prefix = f"generated/{asset_folder}/{unique_filename}"
 
                 # Save to storage backend
                 file_obj = ContentFile(image_bytes, name=filename)
@@ -259,6 +357,124 @@ def generate_asset_view(request: Request) -> Response:
                 except Exception:
                     presigned_url = storage.url(storage_path) if hasattr(storage, "url") else None
 
+                # ===================================================================
+                # CREATE FILEASSET (B22 File Storage)
+                # ===================================================================
+                file_asset = None
+                file_asset_id = None
+                if organisation:
+                    try:
+                        from files.models import FileAsset
+
+                        file_asset = FileAsset.objects.create(
+                            organization=organisation,
+                            uploaded_by=current_user,
+                            original_name=filename,
+                            storage_path=storage_path,
+                            file_size=len(image_bytes),
+                            mime_type=mime_type,
+                            is_public=False,
+                            metadata={
+                                "source": "ai_generation",
+                                "template_id": template_id,
+                                "template_type": context_type,
+                                "template_subtype": context_subtype,
+                                "variant_index": r["variant_index"],
+                            },
+                        )
+                        file_asset_id = file_asset.id
+                        logger.info(f"   📄 FileAsset created: {file_asset_id}")
+                    except Exception as fa_error:  # noqa: BLE001
+                        logger.warning(f"Failed to create FileAsset: {fa_error}")
+
+                # ===================================================================
+                # CREATE BRANDASSET (B33 Brand Identity Manager)
+                # ===================================================================
+                brand_asset = None
+                brand_asset_id = None
+                if save_to_brand and file_asset and asset_type:
+                    try:
+                        from branding.models import BrandAsset, BrandProfile
+
+                        # Get the effective brand profile
+                        brand_profile = BrandProfile.get_effective_brand(
+                            organisation=organisation,
+                            project=project,
+                        )
+
+                        if brand_profile:
+                            # Check if asset_type already exists - update or create
+                            brand_asset, created = BrandAsset.objects.update_or_create(
+                                profile=brand_profile,
+                                asset_type=asset_type,
+                                defaults={
+                                    "file": file_asset,
+                                    "alt_text": f"AI-generated {asset_type.replace('_', ' ')}",
+                                    "is_active": True,
+                                },
+                            )
+                            brand_asset_id = brand_asset.id
+                            action = "created" if created else "updated"
+                            logger.info(
+                                f"   🎨 BrandAsset {action}: {brand_asset_id} (type={asset_type})"
+                            )
+                        else:
+                            logger.warning(
+                                f"No BrandProfile found for org={organisation_id} project={project_id}"
+                            )
+                    except Exception as ba_error:  # noqa: BLE001
+                        logger.warning(f"Failed to create BrandAsset: {ba_error}")
+
+                # ===================================================================
+                # CREATE MEDIAITEM (B35 Smart Asset Library)
+                # ===================================================================
+                media_item = None
+                media_item_id = None
+                if save_to_media_library and file_asset and project:
+                    try:
+                        from medialib.models import MediaItem, MediaItemRelation, MediaItemState
+
+                        media_item = MediaItem.objects.create(
+                            project=project,
+                            file=file_asset,
+                            title=f"Generated {context_type} - {context_subtype or 'variant'}",
+                            description=f"AI-generated content from template {template_id}",
+                            mime_type=mime_type,
+                            file_size_bytes=len(image_bytes),
+                            state=MediaItemState.PROCESSED,
+                            extraction_metadata={
+                                "source": "ai_generation",
+                                "template_id": template_id,
+                                "template_type": context_type,
+                                "template_subtype": context_subtype,
+                                "variant_index": r["variant_index"],
+                            },
+                            created_by=current_user,
+                            activity=activity,
+                        )
+                        media_item_id = media_item.id
+                        logger.info(f"   🎬 MediaItem created: {media_item_id}")
+
+                        # Create MediaItemRelation to link to activity if present
+                        if activity:
+                            from django.contrib.contenttypes.models import ContentType
+
+                            activity_ct = ContentType.objects.get_for_model(activity)
+                            MediaItemRelation.objects.create(
+                                media_item=media_item,
+                                content_type=activity_ct,
+                                object_id=activity.id,
+                                relation_type="generated_for",
+                                metadata={"template_id": template_id},
+                                created_by=current_user,
+                            )
+                            logger.info(
+                                f"   🔗 MediaItemRelation created for Activity {activity.id}"
+                            )
+                    except Exception as mi_error:  # noqa: BLE001
+                        logger.warning(f"Failed to create MediaItem: {mi_error}")
+
+                # Build storage_info with all IDs
                 variant_data["presigned_url"] = presigned_url
                 variant_data["storage_info"] = {
                     "storage_backend": storage_backend_name,
@@ -268,6 +484,9 @@ def generate_asset_view(request: Request) -> Response:
                     "file_size_kb": round(len(image_bytes) / 1024, 1),
                     "mime_type": mime_type,
                     "created_at": timezone.now().isoformat(),
+                    "file_asset_id": str(file_asset_id) if file_asset_id else None,
+                    "brand_asset_id": str(brand_asset_id) if brand_asset_id else None,
+                    "media_item_id": str(media_item_id) if media_item_id else None,
                 }
 
                 logger.info(

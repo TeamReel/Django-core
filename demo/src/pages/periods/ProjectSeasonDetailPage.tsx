@@ -3645,6 +3645,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           onClose={closeContentModal}
           matchData={null}
           organisationSport={org?.sport || null}
+          organisationId={org?.id || null}
           template={selectedTemplate}
           contentTypeLabel={selectedContentTypeLabel}
         />

@@ -1954,6 +1954,7 @@ export default function HierarchyMatchDetailPage() {
             matchData={match}
             season={season}
             organisationSport={org?.sport}
+            organisationId={org?.id || orgId}
             template={selectedTemplate}
             contentTypeLabel={selectedContentTypeLabel}
         />
