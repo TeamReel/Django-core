@@ -50,6 +50,13 @@ redis>=5.0.0,<6.0
 # HTTP client for webhook notifications
 requests>=2.31.0,<3.0
 
+# AI Generation Pipeline (B34)
+openai>=1.0.0
+langgraph-sdk>=0.1.0
+
+# AWS S3 Storage (B35 File Storage)
+boto3>=1.34.0,<2.0
+
 # Scaffolding CLI (B20)
 click>=8.1.0,<9.0
 jinja2>=3.1.0,<4.0  # Template rendering engine

@@ -37,7 +37,11 @@ def get_storage_backend() -> StorageBackend:
             logger.info("Auto-detected AWS credentials, using S3StorageBackend")
             return backend
         except Exception as exc:
-            logger.warning("AWS credentials found but S3 backend failed: %s", exc)
+            logger.error(
+                "AWS credentials found but S3 backend failed to initialize: %s. Using LocalStorageBackend as fallback.",
+                exc,
+                exc_info=True,
+            )
 
     # 3. Fallback
     return LocalStorageBackend()
