@@ -102,6 +102,14 @@ def cleanup_legacy_folders(dry_run=True):
                         deletion_candidates.append(key)
                         logger.info(f"DELETE CANDIDATE: {key} (Team ID: {proj_id})")
 
+            # Special case for reported 'clubs/ajax-ajax/' artifact
+            if 'clubs/ajax-ajax/' in key:
+                 if FileAsset.objects.filter(storage_path=key).exists():
+                     logger.warning(f"SKIP (In Use): {key} (ajax-ajax artifact)")
+                 else:
+                     deletion_candidates.append(key)
+                     logger.info(f"DELETE CANDIDATE: {key} (Legacy 'ajax-ajax' artifact)")
+
     logger.info("-" * 40)
     logger.info(f"Scanned {processed_count} objects.")
     logger.info(f"Found {len(deletion_candidates)} legacy artifacts.")
