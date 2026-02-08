@@ -112,6 +112,19 @@ class FileViewSet(viewsets.ModelViewSet):
                             slug=identifier, organisation_id=org_id
                         ).first()
 
+                    # 3. Rescue: Try to fix "slug-slug" pattern (e.g. ajax-ajax)
+                    # This handles cases where frontend might incorrectly double the slug
+                    if not project and "-" in identifier:
+                        sub_parts = identifier.split("-")
+                        if len(sub_parts) == 2 and sub_parts[0] == sub_parts[1]:
+                            project = Project.objects.filter(
+                                slug=sub_parts[0], organisation_id=org_id
+                            ).first()
+                            if project:
+                                logger.info(
+                                    f"Fixed double-slug identifier: {identifier} -> {sub_parts[0]}"
+                                )
+
                     if project:
                         # Determine Base Path
                         if project.parent_project:
