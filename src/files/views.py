@@ -87,11 +87,13 @@ class FileViewSet(viewsets.ModelViewSet):
             # Generate a unique path
             file_uuid = uuid.uuid4()
 
-            # Build storage path: org_id/[path_prefix/]uuid/filename
+            # Build storage path
+            # Design Decision: Trust path_prefix if provided (allows "clubs/ajax/..." structure)
+            # Otherwise fall back to org-scoped "uploads/"
             if path_prefix:
-                storage_path = f"{org_id}/{path_prefix}/{file_uuid}/{file_obj.name}"
+                storage_path = f"{path_prefix}/{file_uuid}/{file_obj.name}"
             else:
-                storage_path = f"{org_id}/{file_uuid}/{file_obj.name}"
+                storage_path = f"uploads/{org_id}/{file_uuid}/{file_obj.name}"
 
             logger.info(f"Uploading file to {storage_path}")
             saved_path = backend.save(storage_path, file_obj)

@@ -322,8 +322,24 @@ export function AssetsTab({
 
   const handleUpload = async (file: File, assetType: string) => {
     setUploading(assetType);
-    const slug = entityName?.toLowerCase().replace(/\s+/g, '-') || 'entity';
-    const prefix = `${level}s/${slug}/${assetType.replace('_upload', '')}`;
+
+    let folder = `${level}s`; // default fallback
+    let pathId = entityName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'entity';
+
+    if (level === 'organisation') {
+      folder = 'orgs';
+      pathId = organisationId;
+    } else if (level === 'club') {
+      folder = 'clubs';
+      // "ID en slug gecombineerd" -> unique path like "ajax-uuid"
+      const slug = entityName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'club';
+      const pid = projectId?.toString() || '';
+      pathId = pid ? `${slug}-${pid}` : slug;
+    }
+
+    const typeFolder = assetType.replace('_upload', '');
+    const prefix = `${folder}/${pathId}/${typeFolder}`;
+
     await uploadAsset(file, assetType, prefix);
     setUploading(null);
   };
