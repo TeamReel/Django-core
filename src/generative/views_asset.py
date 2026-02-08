@@ -553,3 +553,271 @@ def list_asset_templates_view(request: Request) -> Response:  # noqa: ARG001
         )
 
     return Response({"templates": templates}, status=status.HTTP_200_OK)
+
+
+# =============================================================================
+# Save Asset Endpoint
+# =============================================================================
+
+
+class SaveAssetInputSerializer(serializers.Serializer):
+    """Input for saving a generated asset as BrandAsset."""
+
+    # The generated file reference
+    storage_path = serializers.CharField(
+        required=False,
+        allow_null=True,
+        help_text="S3 storage path of the generated file",
+    )
+    presigned_url = serializers.URLField(
+        required=False,
+        allow_null=True,
+        help_text="Presigned URL to fetch the image",
+    )
+    image_base64 = serializers.CharField(
+        required=False,
+        allow_null=True,
+        help_text="Base64 encoded image data",
+    )
+    filename = serializers.CharField(
+        required=False,
+        allow_null=True,
+        help_text="Original filename",
+    )
+    mime_type = serializers.CharField(
+        default="image/png",
+        help_text="MIME type of the image",
+    )
+    file_size_bytes = serializers.IntegerField(
+        default=0,
+        help_text="File size in bytes",
+    )
+
+    # Context
+    organisation_id = serializers.UUIDField(
+        required=False,
+        allow_null=True,
+        help_text="Organisation ID for brand lookup",
+    )
+    project_id = serializers.UUIDField(
+        required=False,
+        allow_null=True,
+        help_text="Project ID for brand lookup",
+    )
+    asset_type = serializers.CharField(
+        required=True,
+        help_text="BrandAsset type (e.g. logo_light, sponsor_logo, kit_home)",
+    )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])  # Demo mode — tighten for production
+def save_asset_view(request: Request) -> Response:
+    """Save a generated asset as BrandAsset.
+
+    This endpoint takes a generated image (by storage_path, URL, or base64)
+    and creates the corresponding FileAsset + BrandAsset records.
+
+    POST /api/v1/generative/assets/save/
+    """
+    serializer = SaveAssetInputSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    storage_path = serializer.validated_data.get("storage_path")
+    presigned_url = serializer.validated_data.get("presigned_url")
+    image_base64 = serializer.validated_data.get("image_base64")
+    filename = serializer.validated_data.get("filename") or "saved_asset.png"
+    mime_type = serializer.validated_data.get("mime_type") or "image/png"
+    file_size_bytes = serializer.validated_data.get("file_size_bytes") or 0
+    organisation_id = serializer.validated_data.get("organisation_id")
+    project_id = serializer.validated_data.get("project_id")
+    asset_type = serializer.validated_data.get("asset_type")
+
+    logger.info(
+        f"🎯 Save asset request: type={asset_type}, org={organisation_id}, project={project_id}"
+    )
+
+    # Lookup organisation and project
+    organisation = None
+    project = None
+
+    if project_id:
+        try:
+            from projects.models import Project
+
+            project = Project.objects.select_related("organisation").get(id=project_id)
+            organisation = project.organisation
+        except Project.DoesNotExist:
+            logger.warning(f"Project {project_id} not found")
+
+    if not organisation and organisation_id:
+        try:
+            from organisations.models import Organisation
+
+            organisation = Organisation.objects.get(id=organisation_id)
+        except Organisation.DoesNotExist:
+            logger.warning(f"Organisation {organisation_id} not found")
+
+    if not organisation:
+        return Response(
+            {"error": "Organisation not found. Provide organisation_id or project_id."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Get image bytes
+    image_bytes = None
+
+    if image_base64:
+        try:
+            # Handle data URI prefix
+            if "," in image_base64:
+                image_base64 = image_base64.split(",", 1)[1]
+            image_bytes = base64.b64decode(image_base64)
+            file_size_bytes = len(image_bytes)
+        except Exception as e:
+            return Response(
+                {"error": f"Invalid base64 data: {e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+    elif presigned_url:
+        try:
+            import requests as http_requests
+
+            resp = http_requests.get(presigned_url, timeout=30)
+            resp.raise_for_status()
+            image_bytes = resp.content
+            file_size_bytes = len(image_bytes)
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to fetch image from URL: {e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+    elif storage_path:
+        # Image already in S3, just create records pointing to it
+        pass
+    else:
+        return Response(
+            {"error": "Provide image_base64, presigned_url, or storage_path"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    current_user = request.user if request.user.is_authenticated else None
+
+    # If we have image bytes, save to proper storage location
+    final_storage_path = storage_path
+    if image_bytes and not storage_path:
+        try:
+            from django.core.files.base import ContentFile
+            from django.utils import timezone
+
+            import uuid as uuid_module
+
+            from files.utils import get_storage_backend
+
+            storage = get_storage_backend()
+
+            timestamp = timezone.now().strftime("%Y%m%d")
+            unique_suffix = str(uuid_module.uuid4())[:8]
+
+            # Build proper path for brand assets
+            name_parts = filename.rsplit(".", 1)
+            if len(name_parts) == 2:
+                name, ext = name_parts
+                unique_filename = f"{name}_{timestamp}_{unique_suffix}.{ext}"
+            else:
+                unique_filename = f"{filename}_{timestamp}_{unique_suffix}"
+
+            # Store in organisation's brand folder
+            storage_path_prefix = f"orgs/{organisation.id}/brand/{asset_type}/{unique_filename}"
+
+            file_obj = ContentFile(image_bytes, name=filename)
+            final_storage_path = storage.save(storage_path_prefix, file_obj)
+
+            logger.info(f"💾 Saved to storage: {final_storage_path}")
+        except Exception as e:
+            logger.exception(f"Failed to save to storage: {e}")
+            return Response(
+                {"error": f"Failed to save to storage: {e}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    # Create FileAsset record
+    file_asset = None
+    try:
+        from files.models import FileAsset
+
+        file_asset = FileAsset.objects.create(
+            organization=organisation,
+            uploaded_by=current_user,
+            original_name=filename,
+            storage_path=final_storage_path,
+            file_size=file_size_bytes,
+            mime_type=mime_type,
+            is_public=False,
+            metadata={
+                "source": "ai_generation_saved",
+                "asset_type": asset_type,
+            },
+        )
+        logger.info(f"📄 FileAsset created: {file_asset.id}")
+    except Exception as e:
+        logger.exception(f"Failed to create FileAsset: {e}")
+        return Response(
+            {"error": f"Failed to create FileAsset: {e}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    # Create or update BrandAsset record
+    brand_asset = None
+    try:
+        from branding.models import BrandAsset, BrandProfile
+
+        # Get the effective brand profile
+        brand_profile = BrandProfile.get_effective_brand(
+            organisation=organisation,
+            project=project,
+        )
+
+        if not brand_profile:
+            # Create a default brand profile for this organisation
+            brand_profile = BrandProfile.objects.create(
+                organisation=organisation,
+                name=f"{organisation.name} Brand",
+                is_active=True,
+                created_by=current_user,
+            )
+            logger.info(f"🆕 Created new BrandProfile: {brand_profile.id}")
+
+        # Create or update the BrandAsset
+        brand_asset, created = BrandAsset.objects.update_or_create(
+            profile=brand_profile,
+            asset_type=asset_type,
+            defaults={
+                "file": file_asset,
+                "alt_text": f"AI-processed {asset_type.replace('_', ' ')}",
+                "is_active": True,
+            },
+        )
+        action = "created" if created else "updated"
+        logger.info(f"🎨 BrandAsset {action}: {brand_asset.id} (type={asset_type})")
+
+    except Exception as e:
+        logger.exception(f"Failed to create BrandAsset: {e}")
+        return Response(
+            {"error": f"Failed to create BrandAsset: {e}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    return Response(
+        {
+            "status": "success",
+            "message": f"Asset saved as {asset_type}",
+            "data": {
+                "file_asset_id": str(file_asset.id) if file_asset else None,
+                "brand_asset_id": str(brand_asset.id) if brand_asset else None,
+                "storage_path": final_storage_path,
+                "asset_type": asset_type,
+            },
+        },
+        status=status.HTTP_201_CREATED,
+    )

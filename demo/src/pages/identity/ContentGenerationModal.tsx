@@ -7,7 +7,35 @@ function getCsrfToken(): string {
   return match ? match[1] : '';
 }
 
-// Generated output data
+// Generated output data - single variant
+interface GeneratedVariant {
+  variant_index: number;
+  image_base64: string | null;
+  presigned_url: string | null;
+  mime_type: string | null;
+  filename: string | null;
+  error: string | null;
+  storage_info: {
+    storage_backend: string;
+    storage_path: string;
+    file_size_bytes: number;
+    mime_type: string;
+    // Created record IDs
+    file_asset_id?: string | null;
+    brand_asset_id?: string | null;
+    media_item_id?: string | null;
+  } | null;
+  metadata: Record<string, unknown>;
+}
+
+// Full generation response
+interface GenerationResponse {
+  template_id: string;
+  variant_count: number;
+  variants: GeneratedVariant[];
+}
+
+// Legacy interface for backwards compatibility
 interface GeneratedOutput {
   image_base64: string | null;
   presigned_url: string | null;
@@ -243,6 +271,12 @@ export default function ContentGenerationModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // NEW: Multiple variants support
+  const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[]>([]);
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(0);
+  const [savingAsset, setSavingAsset] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
   // Selected members per role
   const [selectedMembers, setSelectedMembers] = useState<Record<string, string[]>>({
     goalkeeper: [],
@@ -335,6 +369,11 @@ export default function ContentGenerationModal({
       setError(null);
       setGenerationError(null);
       setGeneratedOutput(null);
+      // Reset variant selection
+      setGeneratedVariants([]);
+      setSelectedVariantIndex(0);
+      setSavingAsset(false);
+      setSaveSuccess(false);
 
       // If template is provided, skip to members step
       if (initialTemplate) {
@@ -489,6 +528,9 @@ export default function ContentGenerationModal({
     setStep('generating');
     setGenerationError(null);
     setGeneratedOutput(null);
+    setGeneratedVariants([]);
+    setSelectedVariantIndex(0);
+    setSaveSuccess(false);
 
     // Simulate initial progress
     let p = 0;
@@ -499,6 +541,12 @@ export default function ContentGenerationModal({
     }, 500);
 
     try {
+      // Determine variant count based on template type
+      // Logo/sponsor standardize should show multiple options
+      const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
+      const isStandardize = templateSubtype.includes('standardize') || templateSubtype.includes('logo') || templateSubtype.includes('sponsor');
+      const variantCount = isStandardize ? 3 : 1;
+
       // Call the real generation API
       const response = await fetch(`${getApiBaseUrl()}/api/v1/generative/assets/generate/`, {
         method: 'POST',
@@ -518,18 +566,18 @@ export default function ContentGenerationModal({
             project_name: matchData?.project?.name,
             opponent_name: matchData?.opponent_project?.name,
           },
-          variant_count: 1,
+          variant_count: variantCount,
           input_images: {},
           input_image_urls: {},
           // === Context for S3 folder structure & record creation ===
           project_id: matchData?.project?.id || null,
           organisation_id: organisationId || null,
           activity_id: matchData?.id || null,
-          // Asset type for BrandAsset linking
+          // Asset type for BrandAsset linking - DON'T save automatically, let user choose
           asset_type: assetType || selectedTemplate?.template_subtype || null,
-          // Storage options
-          save_to_brand: true,
-          save_to_media_library: true,
+          // Don't auto-save to brand - user will select variant first
+          save_to_brand: false,
+          save_to_media_library: false,
         }),
       });
 
@@ -543,18 +591,30 @@ export default function ContentGenerationModal({
       const data = await response.json();
       console.log('🎉 Generation response:', data);
 
-      // Get the first variant
-      const variant = data.variants?.[0];
-      if (variant?.error) {
-        throw new Error(variant.error);
+      // Get all variants (from data.data.variants or data.variants)
+      const responseData = data.data || data;
+      const variants: GeneratedVariant[] = responseData.variants || [];
+
+      // Check for errors
+      const firstError = variants.find((v: GeneratedVariant) => v.error);
+      if (firstError?.error) {
+        throw new Error(firstError.error);
       }
 
-      setGeneratedOutput({
-        image_base64: variant?.image_base64 || null,
-        presigned_url: variant?.presigned_url || null,
-        storage_info: variant?.storage_info || null,
-        metadata: variant?.metadata || {},
-      });
+      // Store all variants
+      setGeneratedVariants(variants);
+      setSelectedVariantIndex(0);
+
+      // Also set legacy generatedOutput for backwards compatibility
+      const firstVariant = variants[0];
+      if (firstVariant) {
+        setGeneratedOutput({
+          image_base64: firstVariant.image_base64 || null,
+          presigned_url: firstVariant.presigned_url || null,
+          storage_info: firstVariant.storage_info || null,
+          metadata: firstVariant.metadata || {},
+        });
+      }
 
       setProgress(100);
       setTimeout(() => setStep('success'), 300);
@@ -564,6 +624,85 @@ export default function ContentGenerationModal({
       console.error('❌ Generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Generation failed');
       setStep('error');
+    }
+  };
+
+  // Save selected variant as BrandAsset
+  const handleSaveAsAsset = async () => {
+    const selectedVariant = generatedVariants[selectedVariantIndex];
+    if (!selectedVariant) return;
+
+    setSavingAsset(true);
+    setSaveSuccess(false);
+
+    try {
+      // Determine the asset type based on template
+      const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
+      let brandAssetType = assetType;
+
+      // Map template subtype to BrandAsset type
+      if (templateSubtype.includes('logo')) {
+        brandAssetType = 'logo_light'; // AI-processed logo
+      } else if (templateSubtype.includes('sponsor')) {
+        brandAssetType = 'sponsor_logo'; // AI-processed sponsor
+      } else if (templateSubtype.includes('kit') || templateSubtype.includes('tenue')) {
+        const kitType = (selectedTemplate as ContentTemplate & { params?: { kit_type?: string } })?.params?.kit_type || 'home';
+        brandAssetType = `kit_${kitType}`; // e.g. kit_home, kit_away
+      }
+
+      // Call API to save as BrandAsset
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/generative/assets/save/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({
+          // Pass the storage path of the selected variant
+          storage_path: selectedVariant.storage_info?.storage_path,
+          presigned_url: selectedVariant.presigned_url,
+          image_base64: selectedVariant.image_base64,
+          filename: selectedVariant.filename,
+          mime_type: selectedVariant.mime_type || 'image/png',
+          file_size_bytes: selectedVariant.storage_info?.file_size_bytes || 0,
+          // Context
+          organisation_id: organisationId,
+          project_id: matchData?.project?.id,
+          // Asset type for BrandAsset
+          asset_type: brandAssetType,
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData?.error || errData?.detail || `Failed to save: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Saved as BrandAsset:', result);
+
+      setSaveSuccess(true);
+
+      // Update the variant's storage_info with the new IDs
+      const updatedVariants = [...generatedVariants];
+      if (result.data?.brand_asset_id || result.brand_asset_id) {
+        updatedVariants[selectedVariantIndex] = {
+          ...selectedVariant,
+          storage_info: {
+            ...selectedVariant.storage_info!,
+            brand_asset_id: result.data?.brand_asset_id || result.brand_asset_id,
+            file_asset_id: result.data?.file_asset_id || result.file_asset_id,
+          },
+        };
+        setGeneratedVariants(updatedVariants);
+      }
+
+    } catch (err) {
+      console.error('❌ Failed to save as asset:', err);
+      setGenerationError(err instanceof Error ? err.message : 'Failed to save as asset');
+    } finally {
+      setSavingAsset(false);
     }
   };
 
@@ -990,56 +1129,113 @@ export default function ContentGenerationModal({
 
           {/* Success */}
           {step === 'success' && (
-            <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-              <div className="text-6xl mb-4">✨</div>
-              <h3 className="text-2xl font-bold mb-2">Content Ready!</h3>
-              <p className="text-gray-600 mb-6 max-w-sm">
-                Your {selectedType?.label} graphic has been generated.
+            <div className="flex flex-col items-center justify-center h-full py-8 text-center overflow-y-auto">
+              <div className="text-4xl mb-2">✨</div>
+              <h3 className="text-xl font-bold mb-1">
+                {generatedVariants.length > 1 ? 'Select Your Favorite' : 'Content Ready!'}
+              </h3>
+              <p className="text-gray-600 mb-4 max-w-sm text-sm">
+                {generatedVariants.length > 1
+                  ? `${generatedVariants.length} variants generated. Select one to save.`
+                  : `Your ${selectedType?.label || 'content'} has been generated.`
+                }
               </p>
 
-              {/* Show generated image */}
-              {generatedOutput?.image_base64 ? (
-                <div className="mb-6">
-                  <img
-                    src={`data:image/png;base64,${generatedOutput.image_base64}`}
-                    alt="Generated content"
-                    className="max-w-md max-h-80 rounded-lg border shadow-lg"
-                  />
-                </div>
-              ) : generatedOutput?.presigned_url ? (
-                <div className="mb-6">
-                  <img
-                    src={generatedOutput.presigned_url}
-                    alt="Generated content"
-                    className="max-w-md max-h-80 rounded-lg border shadow-lg"
-                  />
-                </div>
-              ) : (
-                <div className="aspect-video w-80 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border flex items-center justify-center text-gray-400 mb-6">
-                  [No preview available]
-                </div>
-              )}
+              {/* Multiple variants grid */}
+              {generatedVariants.length > 1 ? (
+                <div className="w-full max-w-2xl mb-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {generatedVariants.map((variant, index) => {
+                      const isSelected = selectedVariantIndex === index;
+                      const imageSrc = variant.image_base64
+                        ? `data:${variant.mime_type || 'image/png'};base64,${variant.image_base64}`
+                        : variant.presigned_url;
 
-              {/* Storage info */}
-              {generatedOutput?.storage_info && (
-                <div className="p-4 bg-green-50 text-green-800 rounded-lg text-sm border border-green-200 max-w-md mb-4">
-                  <div className="font-semibold mb-2">📦 Image Storage Info</div>
-                  <div className="text-xs space-y-1 text-left">
-                    <div><strong>Backend:</strong> {generatedOutput.storage_info.storage_backend}</div>
-                    <div><strong>Path:</strong> {generatedOutput.storage_info.storage_path}</div>
-                    <div><strong>Size:</strong> {(generatedOutput.storage_info.file_size_bytes / 1024).toFixed(1)} KB</div>
-                    <div><strong>Type:</strong> {generatedOutput.storage_info.mime_type}</div>
+                      return (
+                        <div
+                          key={variant.variant_index}
+                          onClick={() => setSelectedVariantIndex(index)}
+                          className={`relative cursor-pointer rounded-lg border-2 overflow-hidden transition-all ${
+                            isSelected
+                              ? 'border-blue-500 ring-2 ring-blue-200 shadow-lg'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          {imageSrc ? (
+                            <img
+                              src={imageSrc}
+                              alt={`Variant ${index + 1}`}
+                              className="w-full h-32 object-contain bg-gray-50"
+                            />
+                          ) : (
+                            <div className="w-full h-32 bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+                              No preview
+                            </div>
+                          )}
+                          <div className={`absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                            isSelected ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 text-blue-500">
+                              ✓
+                            </div>
+                          )}
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs py-1 px-2">
+                            {variant.storage_info ? `${(variant.storage_info.file_size_bytes / 1024).toFixed(0)} KB` : 'Preview'}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
+              ) : (
+                // Single variant display
+                <>
+                  {generatedOutput?.image_base64 ? (
+                    <div className="mb-4">
+                      <img
+                        src={`data:image/png;base64,${generatedOutput.image_base64}`}
+                        alt="Generated content"
+                        className="max-w-md max-h-64 rounded-lg border shadow-lg"
+                      />
+                    </div>
+                  ) : generatedOutput?.presigned_url ? (
+                    <div className="mb-4">
+                      <img
+                        src={generatedOutput.presigned_url}
+                        alt="Generated content"
+                        className="max-w-md max-h-64 rounded-lg border shadow-lg"
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-video w-64 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border flex items-center justify-center text-gray-400 mb-4">
+                      [No preview available]
+                    </div>
+                  )}
+                </>
               )}
 
-              {/* Metadata */}
-              {generatedOutput?.metadata && Object.keys(generatedOutput.metadata).length > 0 && (
+              {/* Save success message */}
+              {saveSuccess && (
+                <div className="p-3 bg-green-100 text-green-800 rounded-lg text-sm border border-green-200 max-w-md mb-4">
+                  ✅ <strong>Saved!</strong> The selected variant has been saved as a brand asset.
+                </div>
+              )}
+
+              {/* Selected variant info */}
+              {generatedVariants[selectedVariantIndex]?.storage_info && (
                 <details className="p-3 bg-gray-50 rounded-lg text-sm border max-w-md mb-4 text-left">
-                  <summary className="cursor-pointer font-medium">🔍 Generation Metadata</summary>
-                  <pre className="mt-2 text-xs overflow-auto max-h-40">
-                    {JSON.stringify(generatedOutput.metadata, null, 2)}
-                  </pre>
+                  <summary className="cursor-pointer font-medium">📦 Storage Info (Variant {selectedVariantIndex + 1})</summary>
+                  <div className="mt-2 text-xs space-y-1">
+                    <div><strong>Backend:</strong> {generatedVariants[selectedVariantIndex].storage_info?.storage_backend}</div>
+                    <div><strong>Path:</strong> {generatedVariants[selectedVariantIndex].storage_info?.storage_path}</div>
+                    <div><strong>Size:</strong> {((generatedVariants[selectedVariantIndex].storage_info?.file_size_bytes || 0) / 1024).toFixed(1)} KB</div>
+                    {generatedVariants[selectedVariantIndex].storage_info?.brand_asset_id && (
+                      <div className="text-green-600"><strong>BrandAsset ID:</strong> {generatedVariants[selectedVariantIndex].storage_info?.brand_asset_id}</div>
+                    )}
+                  </div>
                 </details>
               )}
             </div>
@@ -1089,26 +1285,42 @@ export default function ContentGenerationModal({
             )}
             {step === 'success' && (
               <>
-                <Button variant="secondary" onClick={onClose}>Close</Button>
-                {generatedOutput?.image_base64 && (
-                  <Button onClick={() => {
-                    // Download base64 image
-                    const link = document.createElement('a');
-                    link.href = `data:image/png;base64,${generatedOutput.image_base64}`;
-                    link.download = `generated-${selectedType?.subtype || 'content'}-${Date.now()}.png`;
-                    link.click();
-                  }}>
+                <Button variant="ghost" onClick={onClose}>Cancel</Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    // Regenerate with same settings
+                    handleGenerateInternal();
+                  }}
+                >
+                  🔄 Regenerate
+                </Button>
+                {/* Download selected variant */}
+                {generatedVariants[selectedVariantIndex] && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      const variant = generatedVariants[selectedVariantIndex];
+                      if (variant.image_base64) {
+                        const link = document.createElement('a');
+                        link.href = `data:${variant.mime_type || 'image/png'};base64,${variant.image_base64}`;
+                        link.download = variant.filename || `generated-variant-${selectedVariantIndex + 1}.png`;
+                        link.click();
+                      } else if (variant.presigned_url) {
+                        window.open(variant.presigned_url, '_blank');
+                      }
+                    }}
+                  >
                     ⬇️ Download
                   </Button>
                 )}
-                {generatedOutput?.presigned_url && !generatedOutput?.image_base64 && (
-                  <Button onClick={() => {
-                    // Open presigned URL in new tab for download
-                    window.open(generatedOutput.presigned_url!, '_blank');
-                  }}>
-                    ⬇️ Download
-                  </Button>
-                )}
+                {/* Save as BrandAsset button */}
+                <Button
+                  onClick={handleSaveAsAsset}
+                  disabled={savingAsset || saveSuccess}
+                >
+                  {savingAsset ? '⏳ Saving...' : saveSuccess ? '✅ Saved' : '💾 Save as Asset'}
+                </Button>
               </>
             )}
           </div>
