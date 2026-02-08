@@ -106,7 +106,7 @@ OUTPUT SPECIFICATIONS:
         "id": "tenue_generate",
         "name": "Tenue Genereren",
         "category": "tenue",
-        "description": "Genereer een realistisch voetbaltenue (shirt + broek + sokken) met logo en sponsor.",
+        "description": "Genereer een realistisch voetbaltenue (shirt + broek + sokken).",
         "input_requirements": ["logo", "sponsor", "reference_photo"],
         "parameters": {
             "sleeves": {
@@ -127,6 +127,30 @@ OUTPUT SPECIFICATIONS:
                 "options": ["home", "away", "third"],
                 "default": "home",
             },
+            "shirt_base": {
+                "label": "Shirt Kleur",
+                "type": "select",
+                "options": ["auto_home", "auto_away_contrast", "white", "black", "red", "blue", "green", "yellow", "orange", "purple", "navy", "maroon", "sky_blue"],
+                "default": "auto_home",
+            },
+            "pattern_style": {
+                "label": "Patroon",
+                "type": "select",
+                "options": ["solid", "vertical_stripes", "horizontal_hoops", "diagonal_sash", "half_half", "pinstripes", "subtle_graphic"],
+                "default": "solid",
+            },
+            "shorts_style": {
+                "label": "Broek Kleur",
+                "type": "select",
+                "options": ["match_shirt", "white", "black", "navy", "contrast"],
+                "default": "match_shirt",
+            },
+            "socks_style": {
+                "label": "Sokken Kleur",
+                "type": "select",
+                "options": ["match_shirt", "match_shorts", "white", "black", "contrast"],
+                "default": "match_shirt",
+            },
         },
         "preprocessing": {
             "logo": "square_pad_512",
@@ -134,13 +158,17 @@ OUTPUT SPECIFICATIONS:
         },
         "prompt_template": """Create a MODERN, REALISTIC football kit layout (Flat Lay Photography).
 
-CORE DESIGN DNA (Follow these colors/patterns strictly):
-{kit_analysis}
-
-PHYSICAL CONFIGURATION:
-- SLEEVES: {sleeves_label} (Must be clearly visible).
-- NECKLINE: {neck_label}.
+DESIGN CONFIGURATION (PRIORITY OVER CONTEXT):
+- SHIRT COLOR: {shirt_base_description}.
+- PATTERN: {pattern_style_description}.
+- SHORTS COLOR: {shorts_style_description}.
+- SOCKS COLOR: {socks_style_description}.
 - KIT TYPE: {kit_type_label}.
+- SLEEVES: {sleeves_label}.
+- NECKLINE: {neck_label}.
+
+TEAM CONTEXT (Use for crest/sponsor style and secondary accents, but apply the specific colors defined above):
+{kit_analysis}
 
 COMPOSITION & FRAMING (CRITICAL):
 - FULL BODY SHOT: You must show the ENTIRE shirt, ENTIRE shorts, and complete pair of socks.
@@ -149,13 +177,13 @@ COMPOSITION & FRAMING (CRITICAL):
 - Orientation: Vertical Portrait.
 
 INTEGRATION:
-- LOGO: Use the provided Club Logo EXACTLY as-is on LEFT CHEST. Realistic embroidery texture. Do NOT invent, simplify, or alter the logo — copy it pixel-perfect from the provided image.
-- SPONSOR: Use the provided Sponsor image EXACTLY as-is CENTERED on chest. Realistic heat-press texture. Do NOT alter.
+- LOGO: Use provided Club Logo on LEFT CHEST. Realistic embroidery.
+- SPONSOR: Use provided Sponsor image CENTERED on chest.
 
 STYLE:
-- Aesthetic: Clean, high-end commercial sportswear photography.
-- Background: Neutral light grey concrete texture. Soft shadows.
-- Cloth Physics: Natural folds, not perfectly flat, realistic table lay.
+- Clean, high-end commercial sportswear photography.
+- Neutral light grey concrete texture background.
+- Natural cloth folds.
 """,
     },
 
@@ -166,13 +194,13 @@ STYLE:
         "id": "keeper_tenue",
         "name": "Keeperstenue Genereren",
         "category": "keeper",
-        "description": "Genereer een keeperstenue met opvallende kleur, logo en sponsor.",
+        "description": "Genereer een keeperstenue met opvallende kleur.",
         "input_requirements": ["logo", "sponsor", "reference_photo"],
         "parameters": {
             "sleeves": {
                 "label": "Mouwen",
                 "type": "select",
-                "options": ["long"],
+                "options": ["long", "short"],
                 "default": "long",
             },
             "neck": {
@@ -182,10 +210,22 @@ STYLE:
                 "default": "round",
             },
             "keeper_color": {
-                "label": "Keeper Kleur",
+                "label": "Hoofdkleur",
                 "type": "select",
-                "options": ["neon_green", "neon_orange", "purple", "neon_yellow", "pink"],
+                "options": ["neon_green", "neon_orange", "purple", "neon_yellow", "pink", "black", "red", "blue", "grey"],
                 "default": "neon_green",
+            },
+            "pattern_style": {
+                "label": "Patroon",
+                "type": "select",
+                "options": ["solid", "graphic_print", "camo", "geometric", "gradient"],
+                "default": "solid",
+            },
+            "shorts_style": {
+                "label": "Broek Kleur",
+                "type": "select",
+                "options": ["match_shirt", "black", "contrast"],
+                "default": "match_shirt",
             },
         },
         "preprocessing": {
@@ -194,31 +234,32 @@ STYLE:
         },
         "prompt_template": """Create a MODERN, REALISTIC GOALKEEPER football kit layout (Flat Lay Photography).
 
-GOALKEEPER KIT SPECIFICATIONS:
+GOALKEEPER SPECIFICATIONS:
 - Primary Color: {keeper_color_label}.
-- IMPORTANT: The goalkeeper kit must be a CONTRASTING color that is COMPLETELY DIFFERENT from the team's outfield kit colors. Goalkeepers NEVER wear the same colors as outfield players.
-- Design: Professional goalkeeper jersey with padded elbows and protective elements.
-- SLEEVES: {sleeves_label} (goalkeepers typically wear long sleeves).
-- NECKLINE: {neck_label}.
-- Shorts: Same color as goalkeeper shirt OR black.
+- Pattern: {pattern_style_description}.
+- Shorts: {shorts_style_description}.
 - Socks: Matching goalkeeper primary color.
-- GOALKEEPER GLOVES: Place a pair of professional goalkeeper gloves next to the kit.
+- SLEEVES: {sleeves_label}.
+- NECKLINE: {neck_label}.
+- Design: Padded elbows and protective elements characteristic of goalkeeper gears.
+- GLOVES: Place a pair of matching professional goalkeeper gloves next to the kit.
 
-TEAM CONTEXT (for logo/sponsor only, NOT for kit colors):
+IMPORTANT: The goalkeeper kit must be DISTINCT from standard outfield players.
+
+TEAM CONTEXT (for logo/style reference):
 {kit_analysis}
 
-COMPOSITION & FRAMING (CRITICAL):
-- FULL BODY SHOT: ENTIRE shirt, ENTIRE shorts, ENTIRE socks, and goalkeeper gloves ALL visible.
-- DO NOT CROP any part of the kit.
-- Orientation: Vertical Portrait. Maximize frame usage.
+COMPOSITION & FRAMING:
+- FULL BODY SHOT: ENTIRE shirt, shorts, socks, and gloves visible.
+- Vertically oriented, do not crop.
 
 INTEGRATION:
-- LOGO: Use the provided Club Logo EXACTLY as-is on LEFT CHEST. Realistic embroidery. Do NOT invent or alter the logo.
-- SPONSOR: Use the provided Sponsor image EXACTLY as-is CENTERED on chest. Realistic heat-press.
+- LOGO: Left chest, realistic embroidery.
+- SPONSOR: Center chest, realistic heat-press.
 
 STYLE:
 - Clean, high-end sportswear photography.
-- Neutral light grey background. Natural fabric folds.
+- Neutral light grey background.
 """,
     },
 
@@ -229,20 +270,26 @@ STYLE:
         "id": "tracksuit_generate",
         "name": "Trainingspak Genereren",
         "category": "tracksuit",
-        "description": "Genereer een trainingspak (jas + broek) met clublogo.",
+        "description": "Genereer een trainingspak (jas + broek).",
         "input_requirements": ["logo", "reference_photo"],
         "parameters": {
             "style": {
                 "label": "Stijl",
                 "type": "select",
-                "options": ["modern_slim", "classic", "windbreaker"],
+                "options": ["modern_slim", "classic", "windbreaker", "hoodie"],
                 "default": "modern_slim",
             },
-            "color_scheme": {
-                "label": "Kleurschema",
+            "tracksuit_color": {
+                "label": "Kleur",
                 "type": "select",
-                "options": ["team_colors", "black_accent", "navy_accent"],
-                "default": "team_colors",
+                "options": ["team_primary", "black", "navy", "grey", "team_secondary", "red", "blue"],
+                "default": "team_primary",
+            },
+            "accent_color": {
+                "label": "Accent",
+                "type": "select",
+                "options": ["team_secondary", "white", "black", "neon", "gold", "silver"],
+                "default": "team_secondary",
             },
         },
         "preprocessing": {
@@ -250,27 +297,26 @@ STYLE:
         },
         "prompt_template": """Create a MODERN, REALISTIC football TRACKSUIT layout (Flat Lay Photography).
 
-TRACKSUIT SPECIFICATIONS:
-- Style: {style_label} fit tracksuit.
-- Color Scheme: {color_scheme_description}.
-- Jacket: Full-zip jacket with stand-up collar, two side pockets.
-- Pants: Matching tracksuit pants with tapered/slim leg, zip ankles.
+TRACKSUIT CONFIGURATION:
+- Base Color: {tracksuit_color_description}.
+- Accent/Trim Color: {accent_color_description}.
+- Style: {style_label} fit.
+- Components: Full-zip jacket (or hoodie if specified) + Matching pants.
 
-TEAM CONTEXT (use these colors):
+TEAM CONTEXT (Use for color reference if 'team_primary' selected):
 {kit_analysis}
 
-COMPOSITION & FRAMING:
-- FULL SHOT: Show ENTIRE jacket and ENTIRE pants.
-- Jacket laid out on top, pants below, neatly arranged.
-- DO NOT CROP any part.
-- Orientation: Vertical Portrait. Maximize frame.
+COMPOSITION:
+- FULL SHOT: Show ENTIRE jacket/top and ENTIRE pants.
+- Organized layout (top above pants).
+- No cropping.
 
 INTEGRATION:
-- LOGO: Use the provided Club Logo EXACTLY as-is on LEFT CHEST of jacket. It must be CLEARLY VISIBLE and LARGE ENOUGH to recognize. Realistic embroidery texture. Do NOT invent, simplify, or alter the logo in any way — copy it pixel-perfect from the provided image.
+- LOGO: Left chest, highly visible realistic embroidery.
 
 STYLE:
-- Clean commercial sportswear photography.
-- Neutral light grey background. Natural fabric texture and folds.
+- Professional presentation.
+- Neutral background.
 """,
     },
 
