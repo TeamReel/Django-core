@@ -25,6 +25,7 @@ import {
   type BrandAsset,
   type BrandProfile,
 } from '../../hooks/useBrandProfile';
+import { AssetGenerationModal } from '../AssetGenerationModal';
 
 // ============================================================================
 // Types
@@ -318,6 +319,8 @@ export function AssetsTab({
   });
 
   const [uploading, setUploading] = useState<string | null>(null);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiPreselectedTemplate, setAiPreselectedTemplate] = useState<string | undefined>();
   const sponsorMode = externalSponsorMode || 'club';
 
   const handleUpload = async (file: File, assetType: string) => {
@@ -404,6 +407,91 @@ export function AssetsTab({
   if (level === 'club') {
     return (
       <div style={{ padding: 16 }}>
+        {/* AI Generation Button */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          <button
+            onClick={() => { setAiPreselectedTemplate(undefined); setShowAiModal(true); }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 20px',
+              fontSize: 13,
+              fontWeight: 600,
+              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              transition: 'opacity 0.15s',
+            }}
+          >
+            🎨 AI Asset Genereren
+          </button>
+          <button
+            onClick={() => { setAiPreselectedTemplate('tenue_generate'); setShowAiModal(true); }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '10px 16px',
+              fontSize: 12,
+              background: 'transparent',
+              color: 'var(--vscode-foreground, #ccc)',
+              border: '1px solid var(--vscode-widget-border, #444)',
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            👕 Tenue
+          </button>
+          <button
+            onClick={() => { setAiPreselectedTemplate('keeper_tenue'); setShowAiModal(true); }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '10px 16px',
+              fontSize: 12,
+              background: 'transparent',
+              color: 'var(--vscode-foreground, #ccc)',
+              border: '1px solid var(--vscode-widget-border, #444)',
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            🧤 Keeper
+          </button>
+          <button
+            onClick={() => { setAiPreselectedTemplate('tracksuit_generate'); setShowAiModal(true); }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '10px 16px',
+              fontSize: 12,
+              background: 'transparent',
+              color: 'var(--vscode-foreground, #ccc)',
+              border: '1px solid var(--vscode-widget-border, #444)',
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            🏃 Training
+          </button>
+        </div>
+
+        {/* AI Generation Modal */}
+        <AssetGenerationModal
+          isOpen={showAiModal}
+          onClose={() => setShowAiModal(false)}
+          context="club"
+          preSelectedTemplate={aiPreselectedTemplate}
+          projectId={projectId || ''}
+          organisationId={organisationId}
+          onAssetSaved={refresh}
+        />
+
         {/* Logo */}
         <Section title="Logo" description="Upload het clublogo → AI bewerkt → AI combined (light + dark).">
           <AssetGrid>

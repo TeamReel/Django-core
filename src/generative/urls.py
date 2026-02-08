@@ -17,6 +17,7 @@ from .views import (
     GenerationTemplateViewSet,
     health_check,
 )
+from .views_asset import generate_asset_view, list_asset_templates_view
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -27,5 +28,9 @@ router.register(r"outputs", GenerationOutputViewSet, basename="generation-output
 # URL patterns
 urlpatterns = [
     path("health/", health_check, name="generative-health-check"),
+    # Asset generation (TeamReel demo)
+    path("assets/generate/", generate_asset_view, name="asset-generate"),
+    path("assets/templates/", list_asset_templates_view, name="asset-templates-list"),
+    # Standard CRUD
     path("", include(router.urls)),
 ]
