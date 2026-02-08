@@ -35,6 +35,13 @@ function getSecureMimeType(base64: string | null, declaredType: string | undefin
   return declaredType || 'image/png';
 }
 
+/** Info about a saved asset returned from the callback */
+export interface SavedAssetInfo {
+  storagePath: string | null;
+  assetType: string;
+  presignedUrl?: string | null;
+}
+
 interface AssetGenerationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -52,8 +59,8 @@ interface AssetGenerationModalProps {
   previousResultUrl?: string | null;
   /** Initial parameter overrides (e.g. for pre-selecting output type) */
   initialParams?: Record<string, string>;
-  /** Callback after a variant is accepted and saved */
-  onAssetSaved?: () => void;
+  /** Callback after a variant is accepted and saved. Receives info about the saved asset. */
+  onAssetSaved?: (info?: SavedAssetInfo) => void;
 }
 
 type ModalStep = 'template' | 'configure' | 'results';
@@ -421,7 +428,14 @@ export default function AssetGenerationModal({
     const success = await generation.acceptVariant(selectedVariantIdx);
     setSaving(false);
     if (success) {
-      onAssetSaved?.();
+      // Get the selected variant to pass storage info to callback
+      const selectedVariant = generation.variants.find(v => v.variant_index === selectedVariantIdx);
+      const savedInfo: SavedAssetInfo = {
+        storagePath: selectedVariant?.storage_info?.storage_path || null,
+        assetType: getEffectiveOutputAssetType(),
+        presignedUrl: selectedVariant?.presigned_url || null,
+      };
+      onAssetSaved?.(savedInfo);
       onClose();
     }
   };

@@ -13,7 +13,7 @@ import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext, setActiveContext } from
 import { MEDIA_SLOTS, MediaSlotId, MemberMediaForm } from '../../constants/mediaSlots';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { AssetsTab } from '../../components/AssetsTab';
-import { AssetGenerationModal } from '../../components/AssetGenerationModal';
+import { AssetGenerationModal, type SavedAssetInfo } from '../../components/AssetGenerationModal';
 import { useBrandProfile, getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
 import MobileTabBar from '../../components/MobileTabBar';
 
@@ -678,6 +678,47 @@ export default function ProjectSeasonMemberDetailPage() {
     const kit = effectiveKits.find(k => k.id === kitType);
     setAiSelectedKitUrl(kit?.url || null);
     setShowAiModal(true);
+  };
+
+  // Handler to update membership metadata (e.g., for deleting assets)
+  const handleMetadataUpdate = async (newMetadata: any) => {
+    if (!project || !membership) return;
+
+    setSaving(true);
+    setSaveError(null);
+
+    try {
+      const csrfToken = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('csrftoken='))
+        ?.split('=')[1] || '';
+
+      const res = await fetch(
+        `${apiBaseUrl}/api/v1/projects/${project.id}/members/${membership.id}/`,
+        {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+          },
+          body: JSON.stringify({ metadata: newMetadata }),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(`Failed to update: ${res.status}`);
+      }
+
+      const json = await res.json();
+      const updated = json?.data || json;
+      setMembership(updated);
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : 'Failed to update');
+      console.error('Metadata update failed:', e);
+    } finally {
+      setSaving(false);
+    }
   };
 
   useEffect(() => {
@@ -1507,16 +1548,251 @@ export default function ProjectSeasonMemberDetailPage() {
                   </Card>
                 )}
 
-                {/* Assets Tab - inherited brand assets from team/club */}
+                {/* Assets Tab - Member-specific generated assets */}
                 {activeTab === 'assets' && (
-                  <AssetsTab
-                    level="member"
-                    organisationId={String(org?.id || '')}
-                    projectId={project?.id ? String(project.id) : undefined}
-                    parentProjectId={club?.id ? String(club.id) : undefined}
-                    entityName={getUserDisplayName(membership)}
-                    readOnly
-                  />
+                  <Card>
+                    <div style={{ padding: '20px' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '4px' }}>🎨 Gegenereerde Assets</h3>
+                      <p style={{ fontSize: '13px', color: 'var(--vscode-descriptionForeground)', marginBottom: '20px' }}>
+                        AI-gegenereerde afbeeldingen van dit lid in het teamtenue.
+                      </p>
+
+                      {/* Fullbody Assets Grid */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>👕 Fullbody in Tenue</h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
+                          {effectiveKits.map((kit) => {
+                            // Check if we have a generated fullbody for this kit type
+                            // For now, we only have form.kit which is the "home" fullbody
+                            const isHome = kit.id === 'home';
+                            const assetUrl = isHome ? form.kit?.url : null;
+
+                            return (
+                              <div
+                                key={`fullbody-${kit.id}`}
+                                style={{
+                                  border: '1px solid var(--vscode-widget-border, #333)',
+                                  borderRadius: '8px',
+                                  overflow: 'hidden',
+                                  background: 'var(--vscode-editor-background)',
+                                }}
+                              >
+                                {/* Preview */}
+                                <div
+                                  style={{
+                                    aspectRatio: '3/4',
+                                    background: assetUrl
+                                      ? `url(${getAssetUrl(assetUrl)}) center/contain no-repeat`
+                                      : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                    position: 'relative',
+                                    minHeight: '200px',
+                                  }}
+                                >
+                                  {!assetUrl && (
+                                    <div style={{
+                                      position: 'absolute',
+                                      inset: 0,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: 'var(--vscode-descriptionForeground)',
+                                      fontSize: '12px',
+                                    }}>
+                                      Niet gegenereerd
+                                    </div>
+                                  )}
+                                  {assetUrl && (
+                                    <span style={{
+                                      position: 'absolute',
+                                      top: '6px',
+                                      right: '6px',
+                                      background: '#10b981',
+                                      color: '#fff',
+                                      fontSize: '10px',
+                                      padding: '2px 6px',
+                                      borderRadius: '4px',
+                                      fontWeight: 600,
+                                    }}>
+                                      AI
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Label + Actions */}
+                                <div style={{ padding: '10px' }}>
+                                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
+                                    {kit.icon} {kit.label}
+                                  </div>
+                                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => openAiModal('fullbody_in_tenue', kit.id)}
+                                      style={{ fontSize: '11px', padding: '4px 8px' }}
+                                    >
+                                      {assetUrl ? '🔄 Opnieuw' : '✨ Genereer'}
+                                    </Button>
+                                    {assetUrl && (
+                                      <>
+                                        <Button
+                                          size="sm"
+                                          variant="secondary"
+                                          onClick={() => openAiModal('fullbody_in_tenue', kit.id)}
+                                          style={{ fontSize: '11px', padding: '4px 8px' }}
+                                        >
+                                          Verbeter
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={async () => {
+                                            if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
+                                            setForm((prev) => ({ ...prev, kit: { url: '', caption: '' } }));
+                                            // Also save to backend
+                                            const updated = mergeAssetsIntoMetadata(
+                                              membership?.metadata,
+                                              { ...form, kit: { url: '', caption: '' } }
+                                            );
+                                            await handleMetadataUpdate(updated);
+                                          }}
+                                          style={{ fontSize: '11px', padding: '4px 8px', color: '#ef4444' }}
+                                        >
+                                          🗑️
+                                        </Button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Closeup Assets Grid */}
+                      <div>
+                        <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>📸 Close-up in Tenue</h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
+                          {effectiveKits.map((kit) => {
+                            const isHome = kit.id === 'home';
+                            const assetUrl = isHome ? form.closeup?.url : null;
+
+                            return (
+                              <div
+                                key={`closeup-${kit.id}`}
+                                style={{
+                                  border: '1px solid var(--vscode-widget-border, #333)',
+                                  borderRadius: '8px',
+                                  overflow: 'hidden',
+                                  background: 'var(--vscode-editor-background)',
+                                }}
+                              >
+                                {/* Preview */}
+                                <div
+                                  style={{
+                                    aspectRatio: '1/1',
+                                    background: assetUrl
+                                      ? `url(${getAssetUrl(assetUrl)}) center/contain no-repeat`
+                                      : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                    position: 'relative',
+                                    minHeight: '150px',
+                                  }}
+                                >
+                                  {!assetUrl && (
+                                    <div style={{
+                                      position: 'absolute',
+                                      inset: 0,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: 'var(--vscode-descriptionForeground)',
+                                      fontSize: '12px',
+                                    }}>
+                                      Niet gegenereerd
+                                    </div>
+                                  )}
+                                  {assetUrl && (
+                                    <span style={{
+                                      position: 'absolute',
+                                      top: '6px',
+                                      right: '6px',
+                                      background: '#10b981',
+                                      color: '#fff',
+                                      fontSize: '10px',
+                                      padding: '2px 6px',
+                                      borderRadius: '4px',
+                                      fontWeight: 600,
+                                    }}>
+                                      AI
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Label + Actions */}
+                                <div style={{ padding: '10px' }}>
+                                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
+                                    {kit.icon} {kit.label}
+                                  </div>
+                                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => openAiModal('closeup_in_tenue', kit.id)}
+                                      style={{ fontSize: '11px', padding: '4px 8px' }}
+                                    >
+                                      {assetUrl ? '🔄 Opnieuw' : '✨ Genereer'}
+                                    </Button>
+                                    {assetUrl && (
+                                      <>
+                                        <Button
+                                          size="sm"
+                                          variant="secondary"
+                                          onClick={() => openAiModal('closeup_in_tenue', kit.id)}
+                                          style={{ fontSize: '11px', padding: '4px 8px' }}
+                                        >
+                                          Verbeter
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={async () => {
+                                            if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
+                                            setForm((prev) => ({ ...prev, closeup: { url: '', caption: '' } }));
+                                            const updated = mergeAssetsIntoMetadata(
+                                              membership?.metadata,
+                                              { ...form, closeup: { url: '', caption: '' } }
+                                            );
+                                            await handleMetadataUpdate(updated);
+                                          }}
+                                          style={{ fontSize: '11px', padding: '4px 8px', color: '#ef4444' }}
+                                        >
+                                          🗑️
+                                        </Button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Team/Club Assets Section */}
+                      <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--vscode-widget-border)' }}>
+                        <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>🏟️ Geërfde Team Assets</h4>
+                        <p style={{ fontSize: '12px', color: 'var(--vscode-descriptionForeground)', marginBottom: '16px' }}>
+                          Deze assets worden geërfd van het team/seizoen en worden gebruikt als basis voor generatie.
+                        </p>
+                        <AssetsTab
+                          level="member"
+                          organisationId={String(org?.id || '')}
+                          projectId={project?.id ? String(project.id) : undefined}
+                          parentProjectId={club?.id ? String(club.id) : undefined}
+                          entityName={getUserDisplayName(membership)}
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                  </Card>
                 )}
 
                 {/* Identity Tab - Member-specific profile and role editing */}
@@ -1629,10 +1905,33 @@ export default function ProjectSeasonMemberDetailPage() {
               ? form.closeup?.url || null
               : null
         }
-        onAssetSaved={() => {
-          // Refresh membership data to get updated media URLs
-          // For now, just close the modal - the user can refresh
+        onAssetSaved={async (savedInfo) => {
           setShowAiModal(false);
+
+          // If we have storage info, save it to membership metadata
+          if (savedInfo?.storagePath) {
+            const assetType = savedInfo.assetType;
+
+            // Determine which slot to update based on asset type
+            let slotId: keyof MemberMediaForm | null = null;
+            if (assetType.startsWith('member_in_tenue')) {
+              slotId = 'kit'; // For now, all fullbody goes to 'kit' slot
+            } else if (assetType.startsWith('member_closeup')) {
+              slotId = 'closeup'; // For now, all closeup goes to 'closeup' slot
+            }
+
+            if (slotId) {
+              const newForm = {
+                ...form,
+                [slotId]: { url: savedInfo.storagePath, caption: '' },
+              };
+              setForm(newForm);
+
+              // Save to membership metadata
+              const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm);
+              await handleMetadataUpdate(updatedMeta);
+            }
+          }
         }}
       />
     </AppShell>
