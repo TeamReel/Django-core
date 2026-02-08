@@ -1,5 +1,6 @@
 import uuid
 
+from projects.models import Project
 from organisations.models import Organisation
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -80,6 +81,46 @@ class FileViewSet(viewsets.ModelViewSet):
 
         # Get optional path prefix from query params (e.g., "kits/home" or "avatars")
         path_prefix = self.request.query_params.get("path_prefix", "").strip("/")
+        storage_path = None
+
+        # Schema Alignment: Intercept legacy frontend paths for Logos
+        # Frontend currently sends "logos/{slug_or_id}"
+        # We rewrite this to Canonical Structure:
+        # - Club: clubs/{slug}-{id}/logo/
+        # - Team: clubs/{club-slug}-{club-id}/teams/{team-slug}-{team-id}/logo/
+        if path_prefix and (path_prefix.startswith("logos/") or path_prefix.startswith("clubs/")):
+            try:
+                parts = path_prefix.split("/")
+                if len(parts) >= 2:
+                    identifier = parts[1]
+                    project = None
+
+                    # 1. Try Integer ID
+                    if identifier.isdigit():
+                        project = Project.objects.filter(
+                            id=int(identifier), organisation_id=org_id
+                        ).first()
+
+                    # 2. Try Slug
+                    if not project:
+                        project = Project.objects.filter(
+                            slug=identifier, organisation_id=org_id
+                        ).first()
+
+                    if project:
+                        if project.parent_project:
+                            # Team Context
+                            club = project.parent_project
+                            new_prefix = f"clubs/{club.slug}-{club.id}/teams/{project.slug}-{project.id}/logo"
+                        else:
+                            # Club Context
+                            new_prefix = f"clubs/{project.slug}-{project.id}/logo"
+
+                        storage_path = f"{new_prefix}/{file_obj.name}"
+                        logger.info(f"Fixed storage path: {path_prefix} -> {storage_path}")
+
+            except Exception as e:
+                logger.warning(f"Project resolution failed for path {path_prefix}: {e}")
 
         try:
             # Save to backend
@@ -87,13 +128,14 @@ class FileViewSet(viewsets.ModelViewSet):
             # Generate a unique path
             file_uuid = uuid.uuid4()
 
-            # Build storage path
-            # Design Decision: Trust path_prefix if provided (allows "clubs/ajax/..." structure)
-            # Otherwise fall back to org-scoped "uploads/"
-            if path_prefix:
-                storage_path = f"{path_prefix}/{file_uuid}/{file_obj.name}"
-            else:
-                storage_path = f"uploads/{org_id}/{file_uuid}/{file_obj.name}"
+            # Build storage path if not already enforced
+            if not storage_path:
+                # Design Decision: Trust path_prefix if provided (allows "clubs/ajax/..." structure)
+                # Otherwise fall back to org-scoped "uploads/"
+                if path_prefix:
+                    storage_path = f"{path_prefix}/{file_uuid}/{file_obj.name}"
+                else:
+                    storage_path = f"uploads/{org_id}/{file_uuid}/{file_obj.name}"
 
             logger.info(f"Uploading file to {storage_path}")
             saved_path = backend.save(storage_path, file_obj)
