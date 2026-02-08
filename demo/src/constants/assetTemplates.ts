@@ -14,6 +14,14 @@ export interface TemplateParameter {
   type: 'select';
   options: { value: string; label: string }[];
   default: string;
+  /** Only show this parameter if another parameter has a specific value */
+  visibleIf?: {
+    param: string;
+    /** Show if param value is one of these */
+    includes?: string[];
+    /** Show if param value is NOT one of these */
+    excludes?: string[];
+  };
 }
 
 export interface AssetTemplate {
@@ -142,6 +150,7 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
         default: 'home',
       },
       shirt_base: {
+        visibleIf: { param: 'kit_type', excludes: ['home'] },
         label: 'Shirt Kleur',
         type: 'select',
         options: [
@@ -162,6 +171,7 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
         default: 'auto_home',
       },
       pattern_style: {
+        visibleIf: { param: 'kit_type', excludes: ['home'] },
         label: 'Patroon',
         type: 'select',
         options: [
@@ -176,6 +186,7 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
         default: 'solid',
       },
       shorts_style: {
+        visibleIf: { param: 'kit_type', excludes: ['home'] },
         label: 'Broek Kleur',
         type: 'select',
         options: [
@@ -188,6 +199,7 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
         default: 'match_shirt',
       },
       socks_style: {
+        visibleIf: { param: 'kit_type', excludes: ['home'] },
         label: 'Sokken Kleur',
         type: 'select',
         options: [

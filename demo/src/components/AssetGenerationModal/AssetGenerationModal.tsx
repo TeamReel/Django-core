@@ -551,17 +551,33 @@ export default function AssetGenerationModal({
               </div>
 
               {/* Parameters */}
-              {Object.entries(selectedTemplate.parameters).map(([key, param]) => (
-                <ParameterSelect
-                  key={key}
-                  label={param.label}
-                  value={params[key] || param.default}
-                  options={param.options}
-                  onChange={(val) =>
-                    setParams((prev) => ({ ...prev, [key]: val }))
+              {Object.entries(selectedTemplate.parameters).map(([key, param]) => {
+                // Check visibility condition
+                if (param.visibleIf) {
+                  const dependencyValue = params[param.visibleIf.param];
+                  if (param.visibleIf.includes) {
+                    if (!param.visibleIf.includes.includes(dependencyValue)) {
+                      return null;
+                    }
+                  } else if (param.visibleIf.excludes) {
+                    if (param.visibleIf.excludes.includes(dependencyValue)) {
+                      return null;
+                    }
                   }
-                />
-              ))}
+                }
+
+                return (
+                  <ParameterSelect
+                    key={key}
+                    label={param.label}
+                    value={params[key] || param.default}
+                    options={param.options}
+                    onChange={(val) =>
+                      setParams((prev) => ({ ...prev, [key]: val }))
+                    }
+                  />
+                );
+              })}
 
               {/* Variant count */}
               <div style={{ marginBottom: 12 }}>
