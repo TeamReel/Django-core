@@ -540,9 +540,21 @@ def resolve_prompt(template_id: str, params: dict, kit_analysis: str = "", extra
         "kit_analysis": kit_analysis,
     }
 
+    # Determine effectively active kit_type for logic controls
+    kit_type_default = template["parameters"].get("kit_type", {}).get("default", "home")
+    active_kit_type = params.get("kit_type", kit_type_default)
+    is_home_kit_design = (template_id == "tenue_generate" and active_kit_type == "home")
+
     # Resolve each parameter
     for param_key, param_def in template["parameters"].items():
         value = params.get(param_key, param_def["default"])
+
+        # FIX: For Home Kit, force design parameters to follow reference analysis
+        # avoiding accidental overrides by default values (e.g. "solid" pattern)
+        if is_home_kit_design and param_key in ["shirt_base", "pattern_style", "shorts_style", "socks_style"]:
+             replacements[f"{param_key}_label"] = "MATCH REFERENCE"
+             replacements[f"{param_key}_description"] = "Strictly follow the design pattern and colors from the reference photo team context."
+             continue
 
         # Get human-readable description
         if param_key in PARAM_RESOLVERS and value in PARAM_RESOLVERS[param_key]:
