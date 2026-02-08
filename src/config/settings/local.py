@@ -65,3 +65,6 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }
+
+# AI Generation (B34) - read from environment
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", None)

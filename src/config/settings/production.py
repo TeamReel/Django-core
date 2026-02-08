@@ -249,3 +249,9 @@ AWS_S3_REGION = env("AWS_S3_REGION", default="eu-north-1")
 # Use S3 backend when AWS credentials are configured
 if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
     FILES_STORAGE_BACKEND = "files.backends.s3.S3StorageBackend"
+
+# ==============================================================================
+# AI Generation (B34 Generative Pipelines)
+# ==============================================================================
+# Google Gemini / Imagen API key for asset generation pipeline
+GOOGLE_API_KEY = env("GOOGLE_API_KEY", default=None)
