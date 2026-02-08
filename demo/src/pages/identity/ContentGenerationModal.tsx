@@ -1,6 +1,24 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Button, Badge } from '@django-core/design-system';
+import { Button, Badge, Alert } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
+
+function getCsrfToken(): string {
+  const match = document.cookie.match(/csrftoken=([^;]+)/);
+  return match ? match[1] : '';
+}
+
+// Generated output data
+interface GeneratedOutput {
+  image_base64: string | null;
+  presigned_url: string | null;
+  storage_info: {
+    storage_backend: string;
+    storage_path: string;
+    file_size_bytes: number;
+    mime_type: string;
+  } | null;
+  metadata: Record<string, unknown>;
+}
 
 // Asset type labels
 const ASSET_TYPE_LABELS: Record<string, string> = {
@@ -205,11 +223,13 @@ export default function ContentGenerationModal({
   template: initialTemplate,
   contentTypeLabel,
 }: ContentGenerationModalProps) {
-  const [step, setStep] = useState<'type' | 'template' | 'members' | 'confirm' | 'generating' | 'success'>('type');
+  const [step, setStep] = useState<'type' | 'template' | 'members' | 'confirm' | 'generating' | 'success' | 'error'>('type');
   const [selectedType, setSelectedType] = useState<{ type: string; subtype: string; label: string } | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
   const [progress, setProgress] = useState(0);
   const [templates, setTemplates] = useState<ContentTemplate[]>([]);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+  const [generatedOutput, setGeneratedOutput] = useState<GeneratedOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -303,6 +323,8 @@ export default function ContentGenerationModal({
       setSelectedMembers({ goalkeeper: [], player: [], coach: [], assistant: [] });
       setTemplates([]);
       setError(null);
+      setGenerationError(null);
+      setGeneratedOutput(null);
 
       // If template is provided, skip to members step
       if (initialTemplate) {
@@ -453,20 +475,77 @@ export default function ContentGenerationModal({
     });
   };
 
-  const handleGenerateInternal = () => {
+  const handleGenerateInternal = async () => {
     setStep('generating');
+    setGenerationError(null);
+    setGeneratedOutput(null);
 
-    // Simulate generation
+    // Simulate initial progress
     let p = 0;
-    const interval = setInterval(() => {
-      p += Math.random() * 20;
-      if (p >= 100) {
-        p = 100;
-        clearInterval(interval);
-        setTimeout(() => setStep('success'), 500);
+    const progressInterval = setInterval(() => {
+      p += Math.random() * 10;
+      if (p > 85) p = 85; // Cap at 85% while waiting for API
+      setProgress(Math.min(p, 85));
+    }, 500);
+
+    try {
+      // Call the real generation API
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/generative/assets/generate/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({
+          template_id: selectedTemplate?.id?.toString() || 'default',
+          params: {
+            template_type: selectedType?.type || selectedTemplate?.template_type,
+            template_subtype: selectedType?.subtype || selectedTemplate?.template_subtype,
+            style_variant: selectedTemplate?.style_variant || 'default',
+            // Include match context
+            match_id: matchData?.id,
+            project_name: matchData?.project?.name,
+            opponent_name: matchData?.opponent_project?.name,
+          },
+          variant_count: 1,
+          input_images: {},
+          input_image_urls: {},
+        }),
+      });
+
+      clearInterval(progressInterval);
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData?.error || errData?.detail || `API Error: ${response.status}`);
       }
-      setProgress(Math.min(p, 100));
-    }, 400);
+
+      const data = await response.json();
+      console.log('🎉 Generation response:', data);
+
+      // Get the first variant
+      const variant = data.variants?.[0];
+      if (variant?.error) {
+        throw new Error(variant.error);
+      }
+
+      setGeneratedOutput({
+        image_base64: variant?.image_base64 || null,
+        presigned_url: variant?.presigned_url || null,
+        storage_info: variant?.storage_info || null,
+        metadata: variant?.metadata || {},
+      });
+
+      setProgress(100);
+      setTimeout(() => setStep('success'), 300);
+
+    } catch (err) {
+      clearInterval(progressInterval);
+      console.error('❌ Generation failed:', err);
+      setGenerationError(err instanceof Error ? err.message : 'Generation failed');
+      setStep('error');
+    }
   };
 
   const handleGenerate = () => {
@@ -898,11 +977,70 @@ export default function ContentGenerationModal({
               <p className="text-gray-600 mb-6 max-w-sm">
                 Your {selectedType?.label} graphic has been generated.
               </p>
-              <div className="aspect-video w-80 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border flex items-center justify-center text-gray-400 mb-6">
-                [Preview]
-              </div>
-              <div className="p-4 bg-blue-50 text-blue-800 rounded-lg text-sm border border-blue-200 max-w-md">
-                <strong>Note:</strong> Full generation pipeline coming in B34. This is a UI preview.
+
+              {/* Show generated image */}
+              {generatedOutput?.image_base64 ? (
+                <div className="mb-6">
+                  <img
+                    src={`data:image/png;base64,${generatedOutput.image_base64}`}
+                    alt="Generated content"
+                    className="max-w-md max-h-80 rounded-lg border shadow-lg"
+                  />
+                </div>
+              ) : generatedOutput?.presigned_url ? (
+                <div className="mb-6">
+                  <img
+                    src={generatedOutput.presigned_url}
+                    alt="Generated content"
+                    className="max-w-md max-h-80 rounded-lg border shadow-lg"
+                  />
+                </div>
+              ) : (
+                <div className="aspect-video w-80 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border flex items-center justify-center text-gray-400 mb-6">
+                  [No preview available]
+                </div>
+              )}
+
+              {/* Storage info */}
+              {generatedOutput?.storage_info && (
+                <div className="p-4 bg-green-50 text-green-800 rounded-lg text-sm border border-green-200 max-w-md mb-4">
+                  <div className="font-semibold mb-2">📦 Image Storage Info</div>
+                  <div className="text-xs space-y-1 text-left">
+                    <div><strong>Backend:</strong> {generatedOutput.storage_info.storage_backend}</div>
+                    <div><strong>Path:</strong> {generatedOutput.storage_info.storage_path}</div>
+                    <div><strong>Size:</strong> {(generatedOutput.storage_info.file_size_bytes / 1024).toFixed(1)} KB</div>
+                    <div><strong>Type:</strong> {generatedOutput.storage_info.mime_type}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Metadata */}
+              {generatedOutput?.metadata && Object.keys(generatedOutput.metadata).length > 0 && (
+                <details className="p-3 bg-gray-50 rounded-lg text-sm border max-w-md mb-4 text-left">
+                  <summary className="cursor-pointer font-medium">🔍 Generation Metadata</summary>
+                  <pre className="mt-2 text-xs overflow-auto max-h-40">
+                    {JSON.stringify(generatedOutput.metadata, null, 2)}
+                  </pre>
+                </details>
+              )}
+            </div>
+          )}
+
+          {/* Error */}
+          {step === 'error' && (
+            <div className="flex flex-col items-center justify-center h-full py-12 text-center">
+              <div className="text-6xl mb-4">❌</div>
+              <h3 className="text-2xl font-bold mb-2 text-red-600">Generation Failed</h3>
+              <Alert variant="error" className="max-w-md mb-6">
+                {generationError || 'An unknown error occurred'}
+              </Alert>
+              <div className="flex gap-3">
+                <Button variant="secondary" onClick={() => setStep('confirm')}>
+                  ← Try Again
+                </Button>
+                <Button variant="ghost" onClick={onClose}>
+                  Close
+                </Button>
               </div>
             </div>
           )}
@@ -917,7 +1055,7 @@ export default function ContentGenerationModal({
             )}
           </div>
           <div className="flex gap-3">
-            {step !== 'generating' && step !== 'success' && (
+            {step !== 'generating' && step !== 'success' && step !== 'error' && (
               <Button variant="ghost" onClick={onClose}>Cancel</Button>
             )}
             {step === 'members' && (
@@ -933,7 +1071,25 @@ export default function ContentGenerationModal({
             {step === 'success' && (
               <>
                 <Button variant="secondary" onClick={onClose}>Close</Button>
-                <Button onClick={() => alert('Download coming in B34')}>Download</Button>
+                {generatedOutput?.image_base64 && (
+                  <Button onClick={() => {
+                    // Download base64 image
+                    const link = document.createElement('a');
+                    link.href = `data:image/png;base64,${generatedOutput.image_base64}`;
+                    link.download = `generated-${selectedType?.subtype || 'content'}-${Date.now()}.png`;
+                    link.click();
+                  }}>
+                    ⬇️ Download
+                  </Button>
+                )}
+                {generatedOutput?.presigned_url && !generatedOutput?.image_base64 && (
+                  <Button onClick={() => {
+                    // Open presigned URL in new tab for download
+                    window.open(generatedOutput.presigned_url!, '_blank');
+                  }}>
+                    ⬇️ Download
+                  </Button>
+                )}
               </>
             )}
           </div>

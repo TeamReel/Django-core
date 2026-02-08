@@ -63,6 +63,18 @@ class AssetGenerateInputSerializer(serializers.Serializer):
     )
 
 
+class StorageInfoSerializer(serializers.Serializer):
+    """Storage info for saved files."""
+
+    storage_backend = serializers.CharField()
+    storage_path = serializers.CharField()
+    original_name = serializers.CharField()
+    file_size_bytes = serializers.IntegerField()
+    file_size_kb = serializers.FloatField()
+    mime_type = serializers.CharField()
+    created_at = serializers.CharField()
+
+
 class AssetVariantSerializer(serializers.Serializer):
     """Output for a single generated variant."""
 
@@ -72,6 +84,8 @@ class AssetVariantSerializer(serializers.Serializer):
     filename = serializers.CharField(allow_null=True)
     error = serializers.CharField(required=False, allow_null=True)
     metadata = serializers.DictField(required=False)
+    presigned_url = serializers.CharField(required=False, allow_null=True)
+    storage_info = StorageInfoSerializer(required=False, allow_null=True)
 
 
 class AssetGenerateOutputSerializer(serializers.Serializer):
@@ -182,19 +196,92 @@ def generate_asset_view(request: Request) -> Response:
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    # Strip binary image_bytes from response (keep only base64)
+    # Save generated images to storage and include storage info in response
+    from files.utils import get_storage_backend
+
+    storage = get_storage_backend()
+    storage_backend_name = storage.__class__.__name__
+
     clean_variants = []
     for r in results:
-        clean_variants.append(
-            {
-                "variant_index": r["variant_index"],
-                "image_base64": r.get("image_base64"),
-                "mime_type": r.get("mime_type"),
-                "filename": r.get("filename"),
-                "error": r.get("error"),
-                "metadata": r.get("metadata"),
-            }
-        )
+        variant_data = {
+            "variant_index": r["variant_index"],
+            "image_base64": r.get("image_base64"),
+            "mime_type": r.get("mime_type"),
+            "filename": r.get("filename"),
+            "error": r.get("error"),
+            "metadata": r.get("metadata"),
+            "presigned_url": None,
+            "storage_info": None,
+        }
+
+        # If we have image bytes, save to storage
+        image_bytes = r.get("image_bytes")
+        if image_bytes and not r.get("error"):
+            try:
+                from django.core.files.base import ContentFile
+                from django.utils import timezone
+
+                import uuid as uuid_module
+
+                filename = r.get("filename") or f"generated_{r['variant_index']}.png"
+                mime_type = r.get("mime_type") or "image/png"
+
+                # Build proper S3 path based on context from params
+                timestamp = timezone.now().strftime("%Y%m%d")
+                unique_suffix = str(uuid_module.uuid4())[:8]
+
+                # Determine storage folder from params context
+                context_type = params.get("template_type", "output")
+                context_subtype = params.get("template_subtype", "")
+                asset_folder = (
+                    f"{context_type}/{context_subtype}" if context_subtype else context_type
+                )
+
+                # Add unique suffix to filename
+                name_parts = filename.rsplit(".", 1)
+                if len(name_parts) == 2:
+                    name, ext = name_parts
+                    unique_filename = f"{name}_{timestamp}_{unique_suffix}.{ext}"
+                else:
+                    unique_filename = f"{filename}_{timestamp}_{unique_suffix}"
+
+                # Build path: generated/{template_type}/{subtype}/{filename}
+                storage_path_prefix = f"generated/{asset_folder}/{unique_filename}"
+
+                # Save to storage backend
+                file_obj = ContentFile(image_bytes, name=filename)
+                storage_path = storage.save(storage_path_prefix, file_obj)
+
+                # Generate access URL
+                try:
+                    presigned_url = storage.get_url(storage_path, signed=True)
+                except Exception:
+                    presigned_url = storage.url(storage_path) if hasattr(storage, "url") else None
+
+                variant_data["presigned_url"] = presigned_url
+                variant_data["storage_info"] = {
+                    "storage_backend": storage_backend_name,
+                    "storage_path": storage_path,
+                    "original_name": filename,
+                    "file_size_bytes": len(image_bytes),
+                    "file_size_kb": round(len(image_bytes) / 1024, 1),
+                    "mime_type": mime_type,
+                    "created_at": timezone.now().isoformat(),
+                }
+
+                logger.info(
+                    f"✅ Generated image saved!\n"
+                    f"   📦 Storage: {storage_backend_name}\n"
+                    f"   📁 Path: {storage_path}\n"
+                    f"   📊 Size: {len(image_bytes):,} bytes"
+                )
+
+            except Exception as save_error:  # noqa: BLE001
+                logger.warning(f"Failed to save generated image to storage: {save_error}")
+                # Continue without storage info - base64 is still available
+
+        clean_variants.append(variant_data)
 
     output = {
         "template_id": template_id,

@@ -22,12 +22,79 @@ class GenerationFileService:
     """File storage for generation outputs."""
 
     @staticmethod
+    def build_storage_path(
+        filename: str,
+        organisation_id: int,
+        context: dict | None = None,
+    ) -> str:
+        """Build S3 storage path according to media-architecture.md.
+
+        S3 folder structure:
+        - orgs/{org_id}/generated/...
+        - clubs/{club_slug}/generated/...
+        - teams/{team_slug}/generated/...
+        - members/{membership_id}/generated/...
+        - matches/{activity_slug}/generated/...
+
+        Args:
+            filename: Original filename
+            organisation_id: Organisation ID
+            context: Optional context dict with keys:
+                - club_slug: For club-level storage
+                - team_slug: For team-level storage
+                - membership_id: For member-level storage
+                - activity_slug: For match-level storage
+                - asset_type: Type of generated asset (e.g., 'kit', 'player_card')
+
+        Returns:
+            S3 path string
+        """
+        import uuid
+        from django.utils import timezone
+
+        context = context or {}
+        timestamp = timezone.now().strftime("%Y%m%d")
+        unique_suffix = str(uuid.uuid4())[:8]
+
+        # Determine base path based on context
+        if context.get("activity_slug"):
+            # Match-level: matches/{activity_slug}/generated/
+            base = f"matches/{context['activity_slug']}/generated"
+        elif context.get("membership_id"):
+            # Member-level: members/{membership_id}/generated/
+            base = f"members/{context['membership_id']}/generated"
+        elif context.get("team_slug"):
+            # Team-level: teams/{team_slug}/generated/
+            base = f"teams/{context['team_slug']}/generated"
+        elif context.get("club_slug"):
+            # Club-level: clubs/{club_slug}/generated/
+            base = f"clubs/{context['club_slug']}/generated"
+        else:
+            # Default: orgs/{org_id}/generated/
+            base = f"orgs/{organisation_id}/generated"
+
+        # Add asset type subfolder if provided
+        asset_type = context.get("asset_type", "output")
+        base = f"{base}/{asset_type}"
+
+        # Build unique filename
+        name_parts = filename.rsplit(".", 1)
+        if len(name_parts) == 2:
+            name, ext = name_parts
+            unique_filename = f"{name}_{timestamp}_{unique_suffix}.{ext}"
+        else:
+            unique_filename = f"{filename}_{timestamp}_{unique_suffix}"
+
+        return f"{base}/{unique_filename}"
+
+    @staticmethod
     def store_output_file(
         content: bytes,
         filename: str,
         mime_type: str,
         user_id: int,
         organisation_id: int,
+        context: dict | None = None,
     ) -> str:
         """Store output file in B22 FileAsset.
 
@@ -37,6 +104,7 @@ class GenerationFileService:
             mime_type: MIME type (e.g., 'image/png', 'video/mp4')
             user_id: User ID who requested generation
             organisation_id: Organisation ID for storage quota
+            context: Optional context for S3 path (club_slug, team_slug, etc.)
 
         Returns:
             FileAsset UUID as string
@@ -49,10 +117,18 @@ class GenerationFileService:
         from files.utils import get_storage_backend
 
         try:
-            # Step 1: Save to storage backend first
+            # Build proper S3 path according to media architecture
+            storage_path = GenerationFileService.build_storage_path(
+                filename=filename,
+                organisation_id=organisation_id,
+                context=context,
+            )
+
+            # Step 1: Save to storage backend
             file_obj = ContentFile(content, name=filename)
             storage = get_storage_backend()
-            storage_path = storage.save(filename, file_obj)
+            storage_backend_name = storage.__class__.__name__
+            storage_path = storage.save(storage_path, file_obj)
 
             # Step 2: Create FileAsset model record
             record = FileAsset.objects.create(
@@ -65,6 +141,22 @@ class GenerationFileService:
                 metadata={"category": "generation_output"},
             )
 
+            # Generate access URL for logging
+            try:
+                access_url = storage.get_url(storage_path, signed=True)
+            except Exception:
+                access_url = f"(URL generation failed - path: {storage_path})"
+
+            # Log with clear storage location info
+            logger.info(
+                f"✅ Generated image stored successfully!\n"
+                f"   📦 Storage Backend: {storage_backend_name}\n"
+                f"   📁 Storage Path: {storage_path}\n"
+                f"   🔗 Access URL: {access_url}\n"
+                f"   🆔 File ID: {record.id}\n"
+                f"   📄 Filename: {filename}\n"
+                f"   📊 Size: {len(content):,} bytes ({len(content) / 1024:.1f} KB)",
+            )
             logger.info(
                 "Stored output file in B22",
                 extra={
@@ -74,6 +166,8 @@ class GenerationFileService:
                     "mime_type": mime_type,
                     "user_id": user_id,
                     "storage_path": storage_path,
+                    "storage_backend": storage_backend_name,
+                    "access_url": access_url,
                 },
             )
 

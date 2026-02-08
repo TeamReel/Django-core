@@ -1,13 +1,16 @@
 """Google Gemini image generation and editing executor.
 
 Uses Gemini 2.0 Flash for multimodal image understanding and generation,
-and Imagen 3 for high-quality image generation via Vertex AI.
+and Imagen 4 for high-quality image generation via Google AI API.
 
 Supported operations:
 - Image generation from text prompt
 - Image editing (input image + edit instructions)
 - Image variation (generate similar versions)
 - Image analysis (describe/understand image)
+
+Updated Feb 2026: Uses google.genai SDK (not deprecated google.generativeai)
+Models: gemini-2.0-flash, imagen-4.0-generate-001
 """
 
 import base64
@@ -28,52 +31,50 @@ class GeminiImageExecutor(BasePipelineExecutor):
     """Executor for Gemini/Imagen image operations.
 
     Supports multiple modes:
-    - generate: Text → Image (Imagen 3)
+    - generate: Text → Image (Imagen 4)
     - edit: Image + Text → Edited Image (Gemini 2.0 Flash + Imagen)
     - analyze: Image → Text description (Gemini 2.0 Flash)
-    - variation: Image → Similar variations (Imagen 3)
+    - variation: Image → Similar variations (Imagen 4)
 
-    Pricing (per image, USD):
-    - Imagen 3: $0.04 per image (1024x1024)
-    - Gemini 2.0 Flash: $0.00001875 per image input, $0.000075 per 1K output tokens
+    Pricing (per image, USD) - Feb 2026:
+    - Imagen 4: $0.03 per image (standard), $0.06 (ultra)
+    - Gemini 2.0 Flash: ~$0.001 per request
     """
 
-    # Pricing per operation (USD) - update as needed
+    # Pricing per operation (USD) - Feb 2026
     PRICING = {
-        "imagen-3": {"generate": Decimal("0.04"), "variation": Decimal("0.04")},
+        "imagen-4": {"generate": Decimal("0.03"), "variation": Decimal("0.03")},
         "gemini-2.0-flash": {
             "analyze": Decimal("0.001"),  # ~image + 500 tokens output
-            "edit": Decimal("0.05"),  # analysis + generation
+            "edit": Decimal("0.04"),  # analysis + generation
         },
     }
 
-    # Supported output sizes
-    SUPPORTED_SIZES = ["256x256", "512x512", "1024x1024", "1536x1536"]
+    # Supported aspect ratios for Imagen 4
+    SUPPORTED_ASPECT_RATIOS = ["1:1", "16:9", "9:16", "4:3", "3:4"]
 
     @property
     def provider_name(self) -> str:
         """Return provider identifier."""
-        return "gemini"
+        return "gemini_image"
 
-    def _get_gemini_client(self):
-        """Get Google Generative AI client."""
+    def _get_genai_client(self):
+        """Get Google GenAI client (new SDK)."""
         try:
-            import google.generativeai as genai
+            from google import genai
         except ImportError as e:
             raise ImportError(
-                "google-generativeai package required. Install with: "
-                "pip install google-generativeai"
+                "google-genai package required. Install with: " "pip install google-genai"
             ) from e
 
         api_key = getattr(settings, "GOOGLE_API_KEY", None)
         if not api_key:
             raise ValueError("GOOGLE_API_KEY not configured in settings")
 
-        genai.configure(api_key=api_key)
-        return genai
+        return genai.Client(api_key=api_key)
 
     def _get_vertex_client(self):
-        """Get Vertex AI client for Imagen 3."""
+        """Get Vertex AI client for Imagen (fallback/enterprise)."""
         try:
             from google.cloud import aiplatform
             from vertexai.preview.vision_models import ImageGenerationModel
@@ -90,7 +91,7 @@ class GeminiImageExecutor(BasePipelineExecutor):
             raise ValueError("GOOGLE_CLOUD_PROJECT not configured in settings")
 
         aiplatform.init(project=project_id, location=location)
-        return ImageGenerationModel.from_pretrained("imagen-3.0-generate-001")
+        return ImageGenerationModel.from_pretrained("imagen-4.0-generate-001")
 
     async def execute(
         self,
@@ -178,18 +179,28 @@ class GeminiImageExecutor(BasePipelineExecutor):
         negative_prompt = template_config.get("negative_prompt", "")
 
         try:
-            model = self._get_vertex_client()
+            # Use new google.genai SDK with API key (no Vertex needed)
+            from google.genai import types
 
-            # Generate image
-            response = model.generate_images(
-                prompt=prompt,
+            client = self._get_genai_client()
+
+            # Build config
+            config = types.GenerateImagesConfig(
                 number_of_images=1,
                 aspect_ratio=aspect_ratio,
-                negative_prompt=negative_prompt if negative_prompt else None,
-                safety_filter_level="block_few",  # Allow most content
+                safety_filter_level="BLOCK_LOW_AND_ABOVE",
+            )
+            if negative_prompt:
+                config.negative_prompt = negative_prompt
+
+            # Generate image with Imagen 4
+            response = client.models.generate_images(
+                model="imagen-4.0-generate-001",
+                prompt=prompt,
+                config=config,
             )
 
-            if not response.images:
+            if not response.generated_images:
                 return ExecutionResult(
                     success=False,
                     output_type="image",
@@ -197,25 +208,13 @@ class GeminiImageExecutor(BasePipelineExecutor):
                     error_category=ErrorCategory.PERMANENT,
                 )
 
-            # Get image bytes
-            image = response.images[0]
-            image_bytes = (
-                image._pil_image.tobytes() if hasattr(image, "_pil_image") else image._image_bytes
-            )
-
-            # Convert to PNG
-            from PIL import Image
-
-            pil_image = (
-                Image.open(BytesIO(image_bytes))
-                if isinstance(image_bytes, bytes)
-                else image._pil_image
-            )
+            # Save image to bytes
+            image = response.generated_images[0]
             output_buffer = BytesIO()
-            pil_image.save(output_buffer, format="PNG")
+            image.image.save(output_buffer, format="PNG")
             output_bytes = output_buffer.getvalue()
 
-            cost = self.PRICING["imagen-3"]["generate"]
+            cost = self.PRICING["imagen-4"]["generate"]
 
             return ExecutionResult(
                 success=True,
@@ -223,7 +222,7 @@ class GeminiImageExecutor(BasePipelineExecutor):
                 file_content=ContentFile(output_bytes, name="generated.png"),
                 actual_cost=cost,
                 metadata={
-                    "model": "imagen-3.0-generate-001",
+                    "model": "imagen-4.0-generate-001",
                     "mode": "generate",
                     "size": size,
                     "aspect_ratio": aspect_ratio,
@@ -288,7 +287,9 @@ class GeminiImageExecutor(BasePipelineExecutor):
             )
 
         try:
-            genai = self._get_gemini_client()
+            from google.genai import types
+
+            client = self._get_genai_client()
 
             # Load image
             if image_base64:
@@ -296,19 +297,11 @@ class GeminiImageExecutor(BasePipelineExecutor):
             else:
                 import httpx
 
-                async with httpx.AsyncClient() as client:
-                    response = await client.get(image_url)
+                async with httpx.AsyncClient() as http_client:
+                    response = await http_client.get(image_url)
                     image_data = response.content
 
-            # Step 1: Analyze image with Gemini
-            model = genai.GenerativeModel("gemini-2.0-flash-exp")
-
-            # Create image part for Gemini
-            image_part = {
-                "mime_type": "image/png",
-                "data": base64.b64encode(image_data).decode("utf-8"),
-            }
-
+            # Step 1: Analyze image with Gemini 2.0 Flash
             analysis_prompt = f"""Analyze this image in detail. Describe:
 1. Main subject and composition
 2. Colors and style
@@ -319,25 +312,40 @@ Then, explain how to modify it according to this instruction: {prompt}
 
 Provide a detailed prompt for regenerating this image with the requested changes."""
 
-            analysis_response = model.generate_content([analysis_prompt, image_part])
+            # Build content with image for analysis
+            content = types.Content(
+                parts=[
+                    types.Part(text=analysis_prompt),
+                    types.Part(inline_data=types.Blob(mime_type="image/png", data=image_data)),
+                ]
+            )
+
+            analysis_response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=content,
+            )
             enhanced_prompt = analysis_response.text
 
             # Inject brand context
             if brand_context:
                 enhanced_prompt = self._enhance_prompt_with_brand(enhanced_prompt, brand_context)
 
-            # Step 2: Generate edited version with Imagen
-            imagen_model = self._get_vertex_client()
-
+            # Step 2: Generate edited version with Imagen 4
             aspect_ratio = template_config.get("aspect_ratio", "1:1")
-            response = imagen_model.generate_images(
-                prompt=enhanced_prompt,
+
+            gen_config = types.GenerateImagesConfig(
                 number_of_images=1,
                 aspect_ratio=aspect_ratio,
-                safety_filter_level="block_few",
+                safety_filter_level="BLOCK_LOW_AND_ABOVE",
             )
 
-            if not response.images:
+            response = client.models.generate_images(
+                model="imagen-4.0-generate-001",
+                prompt=enhanced_prompt,
+                config=gen_config,
+            )
+
+            if not response.generated_generated_images:
                 return ExecutionResult(
                     success=False,
                     output_type="image",
@@ -345,17 +353,10 @@ Provide a detailed prompt for regenerating this image with the requested changes
                     error_category=ErrorCategory.PERMANENT,
                 )
 
-            # Get image bytes
-            image = response.images[0]
-            from PIL import Image
-
-            pil_image = (
-                image._pil_image
-                if hasattr(image, "_pil_image")
-                else Image.open(BytesIO(image._image_bytes))
-            )
+            # Save image to bytes
+            image = response.generated_images[0]
             output_buffer = BytesIO()
-            pil_image.save(output_buffer, format="PNG")
+            image.image.save(output_buffer, format="PNG")
             output_bytes = output_buffer.getvalue()
 
             cost = self.PRICING["gemini-2.0-flash"]["edit"]
@@ -366,7 +367,7 @@ Provide a detailed prompt for regenerating this image with the requested changes
                 file_content=ContentFile(output_bytes, name="edited.png"),
                 actual_cost=cost,
                 metadata={
-                    "model": "gemini-2.0-flash + imagen-3",
+                    "model": "gemini-2.0-flash + imagen-4",
                     "mode": "edit",
                     "original_prompt": prompt,
                     "enhanced_prompt": enhanced_prompt[:500],  # Truncate for metadata
@@ -410,7 +411,9 @@ Provide a detailed prompt for regenerating this image with the requested changes
             )
 
         try:
-            genai = self._get_gemini_client()
+            from google.genai import types
+
+            client = self._get_genai_client()
 
             # Load image
             if image_base64:
@@ -418,18 +421,22 @@ Provide a detailed prompt for regenerating this image with the requested changes
             else:
                 import httpx
 
-                async with httpx.AsyncClient() as client:
-                    response = await client.get(image_url)
+                async with httpx.AsyncClient() as http_client:
+                    response = await http_client.get(image_url)
                     image_data = response.content
 
-            model = genai.GenerativeModel("gemini-2.0-flash-exp")
+            # Build content with image
+            content = types.Content(
+                parts=[
+                    types.Part(text=analysis_prompt),
+                    types.Part(inline_data=types.Blob(mime_type="image/png", data=image_data)),
+                ]
+            )
 
-            image_part = {
-                "mime_type": "image/png",
-                "data": base64.b64encode(image_data).decode("utf-8"),
-            }
-
-            response = model.generate_content([analysis_prompt, image_part])
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=content,
+            )
             analysis_text = response.text
 
             cost = self.PRICING["gemini-2.0-flash"]["analyze"]
@@ -440,7 +447,7 @@ Provide a detailed prompt for regenerating this image with the requested changes
                 content=analysis_text,
                 actual_cost=cost,
                 metadata={
-                    "model": "gemini-2.0-flash-exp",
+                    "model": "gemini-2.0-flash",
                     "mode": "analyze",
                     "prompt": analysis_prompt,
                 },
@@ -530,7 +537,7 @@ Provide a detailed prompt for regenerating this image with the requested changes
         mode = template_config.get("mode", "generate")
 
         if mode in ("generate", "variation"):
-            base_cost = self.PRICING["imagen-3"]["generate"]
+            base_cost = self.PRICING["imagen-4"]["generate"]
         elif mode == "edit":
             base_cost = self.PRICING["gemini-2.0-flash"]["edit"]
         elif mode == "analyze":

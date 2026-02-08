@@ -23,6 +23,16 @@ export interface GenerationVariant {
   filename: string | null;
   error?: string | null;
   metadata?: Record<string, unknown>;
+  presigned_url?: string | null;
+  storage_info?: {
+    storage_backend: string;
+    storage_path: string;
+    original_name: string;
+    file_size_bytes: number;
+    file_size_kb: number;
+    mime_type: string;
+    created_at: string;
+  } | null;
 }
 
 type GenerationStep = 'idle' | 'submitting' | 'completed' | 'error';
@@ -139,6 +149,8 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             filename: v.filename,
             error: v.error,
             metadata: v.metadata,
+            presigned_url: v.presigned_url,
+            storage_info: v.storage_info,
           })
         );
 

@@ -44,4 +44,12 @@ def get_storage_backend() -> StorageBackend:
             )
 
     # 3. Fallback
+    media_root = getattr(settings, "MEDIA_ROOT", "media/")
+    media_url = getattr(settings, "MEDIA_URL", "/media/")
+    logger.info(
+        f"📂 Using LocalStorageBackend\n"
+        f"   📁 MEDIA_ROOT: {media_root}\n"
+        f"   🔗 MEDIA_URL: {media_url}\n"
+        f"   💡 Files will be stored locally in: {media_root}"
+    )
     return LocalStorageBackend()

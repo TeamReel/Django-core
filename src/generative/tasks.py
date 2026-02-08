@@ -250,14 +250,41 @@ def _handle_success(request_id: int, *, result: Any, duration_seconds: float) ->
                     }
                     mime_type = mime_type_map.get(output_type, "application/octet-stream")
 
+                # Build storage context from template and request metadata
+                storage_context = {
+                    "asset_type": request.template.template_subtype
+                    or request.template.template_type
+                    or "output",
+                }
+                # Add context from request input_data if available
+                if request.input_data:
+                    if request.input_data.get("club_slug"):
+                        storage_context["club_slug"] = request.input_data["club_slug"]
+                    if request.input_data.get("team_slug"):
+                        storage_context["team_slug"] = request.input_data["team_slug"]
+                    if request.input_data.get("membership_id"):
+                        storage_context["membership_id"] = request.input_data["membership_id"]
+                    if request.input_data.get("activity_slug"):
+                        storage_context["activity_slug"] = request.input_data["activity_slug"]
+
                 file_id = GenerationFileService.store_output_file(
                     content=file_content,
                     filename=filename,
                     mime_type=mime_type,
                     user_id=request.requester_id,
                     organisation_id=request.template.organisation_id,
+                    context=storage_context,
                 )
 
+                logger.info(
+                    f"🎉 Generation request {request_id} completed!\n"
+                    f"   📝 Template: {request.template.name}\n"
+                    f"   🖼️  Output Type: {output_type}\n"
+                    f"   🆔 File ID: {file_id}\n"
+                    f"   📄 Filename: {filename}\n"
+                    f"   📊 Size: {len(file_content):,} bytes\n"
+                    f"   ⏱️  Duration: {duration_seconds:.2f}s"
+                )
                 logger.info(
                     "Stored file output",
                     extra={

@@ -267,6 +267,7 @@ class GenerationOutputSerializer(serializers.ModelSerializer):
             "text_content",
             "metadata",
             "presigned_url",
+            "storage_info",
             "expires_at",
             "is_expired",
             "created_at",
@@ -276,6 +277,35 @@ class GenerationOutputSerializer(serializers.ModelSerializer):
             "expires_at",
             "created_at",
         ]
+
+    storage_info = serializers.SerializerMethodField()
+
+    def get_storage_info(self, obj: GenerationOutput) -> dict | None:
+        """Get storage location info for file outputs.
+
+        Returns details about where the file is stored for debugging/transparency.
+        """
+        if not obj.file_id:
+            return None
+
+        try:
+            from files.models import FileAsset
+            from files.utils import get_storage_backend
+
+            asset = FileAsset.objects.get(id=obj.file_id, is_deleted=False)
+            storage = get_storage_backend()
+
+            return {
+                "storage_backend": storage.__class__.__name__,
+                "storage_path": asset.storage_path,
+                "original_name": asset.original_name,
+                "file_size_bytes": asset.file_size,
+                "file_size_kb": round(asset.file_size / 1024, 1),
+                "mime_type": asset.mime_type,
+                "created_at": asset.created_at.isoformat(),
+            }
+        except Exception:
+            return {"error": "Could not retrieve storage info"}
 
     def get_presigned_url(self, obj: GenerationOutput) -> str | None:
         """Generate presigned URL for file_id if exists.
