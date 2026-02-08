@@ -82,6 +82,14 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
   const [variants, setVariants] = useState<GenerationVariant[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+
+  // Store context for saving
+  const [context, setContext] = useState<{
+    projectId: string | number;
+    organisationId: string;
+    outputAssetType?: string;
+  } | null>(null);
+
   const abortRef = useRef<AbortController | null>(null);
   const apiBase = getApiBaseUrl();
 
@@ -94,6 +102,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
     setVariants([]);
     setError(null);
     setProgress(0);
+    setContext(null);
   }, []);
 
   const submit = useCallback(
@@ -107,6 +116,13 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
       setError(null);
       setProgress(10);
       setVariants([]);
+
+      // Store context for later saving
+      setContext({
+        projectId: params.projectId,
+        organisationId: params.organisationId,
+        outputAssetType: params.outputAssetType
+      });
 
       // Simulate progress while waiting (generation takes 30-90s)
       const progressTimer = setInterval(() => {
@@ -140,8 +156,12 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
         const json = await res.json();
 
+        // Handle standardized API response format { status: "success", data: { variants: [] } }
+        const responseData = json.data || json;
+        const variantsList = responseData.variants || [];
+
         // Map response variants
-        const generatedVariants: GenerationVariant[] = (json.variants || []).map(
+        const generatedVariants: GenerationVariant[] = variantsList.map(
           (v: GenerationVariant) => ({
             variant_index: v.variant_index,
             image_base64: v.image_base64,
@@ -153,6 +173,8 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             storage_info: v.storage_info,
           })
         );
+
+        console.log(`Parsed ${generatedVariants.length} variants from response`);
 
         setVariants(generatedVariants);
         setStep('completed');
@@ -169,13 +191,57 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
   const acceptVariant = useCallback(
     async (variantIndex: number): Promise<boolean> => {
-      // In the synchronous flow, "accepting" means the frontend
-      // will upload the selected variant's base64 image to the brand profile.
-      // The actual upload is handled by the caller (modal component).
-      // This is a placeholder that returns true for now.
-      return true;
+      const selectedVariant = variants.find(v => v.variant_index === variantIndex);
+      if (!selectedVariant) {
+        console.error('Selected variant not found');
+        return false;
+      }
+
+      // Use stored context or fall back defaults if missing (should not happen if flow followed)
+      const orgId = context?.organisationId;
+      const projId = context?.projectId;
+      const assetType = context?.outputAssetType;
+
+      if (!orgId) {
+         console.error('Missing organisation context for saving asset');
+         return false;
+      }
+
+      try {
+        const response = await fetch(`${apiBase}/api/v1/generative/assets/save/`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+          },
+          body: JSON.stringify({
+            storage_path: selectedVariant.storage_info?.storage_path,
+            presigned_url: selectedVariant.presigned_url,
+            image_base64: selectedVariant.image_base64,
+            filename: selectedVariant.filename,
+            mime_type: selectedVariant.mime_type || 'image/png',
+            file_size_bytes: selectedVariant.storage_info?.file_size_bytes || 0,
+            organisation_id: orgId,
+            project_id: projId,
+            asset_type: assetType,
+          }),
+        });
+
+        if (!response.ok) {
+           const errData = await response.json().catch(() => ({}));
+           console.error('Failed to save asset:', errData);
+           throw new Error(errData?.error || 'Failed to save asset');
+        }
+
+        return true;
+      } catch (e) {
+        console.error('Error saving asset:', e);
+        setError(e instanceof Error ? e.message : 'Opslaan mislukt');
+        return false;
+      }
     },
-    []
+    [apiBase, variants, context]
   );
 
   return {

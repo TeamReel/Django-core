@@ -25,6 +25,16 @@ import { useAssetGeneration } from '../../hooks/useAssetGeneration';
 // Types
 // ============================================================================
 
+// Helper to detect mime type from base64 signature
+function getSecureMimeType(base64: string | null, declaredType: string | undefined | null): string {
+  if (!base64) return declaredType || 'image/png';
+  if (base64.startsWith('/9j/')) return 'image/jpeg';
+  if (base64.startsWith('iVBORw0KGgo')) return 'image/png';
+  if (base64.startsWith('R0lGOD')) return 'image/gif';
+  if (base64.startsWith('UklGR')) return 'image/webp';
+  return declaredType || 'image/png';
+}
+
 interface AssetGenerationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -147,13 +157,16 @@ function VariantCard({
   selected,
   onClick,
 }: {
-  variant: { variant_index: number; image_base64: string | null; error?: string | null };
+  variant: { variant_index: number; image_base64: string | null; mime_type: string | null; error?: string | null };
   selected: boolean;
   onClick: () => void;
 }) {
-  const imageSrc = variant.image_base64
-    ? `data:image/png;base64,${variant.image_base64}`
-    : undefined;
+  let imageSrc: string | undefined;
+
+  if (variant.image_base64) {
+    const mime = getSecureMimeType(variant.image_base64, variant.mime_type);
+    imageSrc = `data:${mime};base64,${variant.image_base64}`;
+  }
 
   return (
     <button
@@ -753,7 +766,7 @@ export default function AssetGenerationModal({
                     opacity: selectedVariantIdx !== null ? 1 : 0.5,
                   }}
                 >
-                  {saving ? 'Opslaan...' : '✅ Opslaan als asset'}
+                  {saving ? 'Opslaan...' : '💾 Opslaan als asset'}
                 </button>
               </>
             )}
