@@ -330,12 +330,24 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     name: 'Speler Fullbody',
     icon: '🧑‍🤝‍🧑',
     category: 'fullbody',
-    description: 'Plaats een persoon in het volledige tenue (transparante achtergrond).',
-    inputRequirements: ['person', 'logo', 'sponsor', 'reference'],
-    requiredAssetTypes: ['logo_upload', 'sponsor_logo_upload'],
-    outputAssetType: 'member_in_tenue',
+    description: 'Plaats een persoon in het geselecteerde tenue (transparante achtergrond). Het tenue wordt EXACT overgenomen.',
+    inputRequirements: ['person', 'reference'],
+    requiredAssetTypes: [],
+    outputAssetType: 'member_in_tenue', // Will be suffixed with kit_type (e.g., member_in_tenue_home)
     creditsCost: 2,
     parameters: {
+      kit_type: {
+        label: 'Tenue Type',
+        type: 'select',
+        options: [
+          { value: 'home', label: 'Thuistenue' },
+          { value: 'away', label: 'Uittenue' },
+          { value: 'third', label: 'Derde tenue' },
+          { value: 'goalkeeper', label: 'Keeperstenue' },
+          { value: 'training', label: 'Trainingstenue' },
+        ],
+        default: 'home',
+      },
       sleeves: {
         label: 'Mouwen',
         type: 'select',
@@ -372,12 +384,24 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     name: 'Speler Close-up',
     icon: '📸',
     category: 'closeup',
-    description: 'Close-up portret in tenue (transparante achtergrond).',
-    inputRequirements: ['person', 'logo', 'sponsor', 'reference'],
-    requiredAssetTypes: ['logo_upload', 'sponsor_logo_upload'],
-    outputAssetType: 'member_closeup',
+    description: 'Close-up portret in het geselecteerde tenue (transparante achtergrond). Het tenue wordt EXACT overgenomen.',
+    inputRequirements: ['person', 'reference'],
+    requiredAssetTypes: [],
+    outputAssetType: 'member_closeup', // Will be suffixed with kit_type (e.g., member_closeup_home)
     creditsCost: 2,
     parameters: {
+      kit_type: {
+        label: 'Tenue Type',
+        type: 'select',
+        options: [
+          { value: 'home', label: 'Thuistenue' },
+          { value: 'away', label: 'Uittenue' },
+          { value: 'third', label: 'Derde tenue' },
+          { value: 'goalkeeper', label: 'Keeperstenue' },
+          { value: 'training', label: 'Trainingstenue' },
+        ],
+        default: 'home',
+      },
       neck: {
         label: 'Hals',
         type: 'select',

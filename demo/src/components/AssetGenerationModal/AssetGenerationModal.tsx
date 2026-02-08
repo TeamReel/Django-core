@@ -388,21 +388,13 @@ export default function AssetGenerationModal({
        // If set to 'upload', it falls back to inputAssets['reference'] which is already set above
     }
 
-    // Determine effective output asset type based on parameters
-    let effectiveOutputAssetType = selectedTemplate.outputAssetType;
-    if (selectedTemplate.id === 'tenue_generate') {
-         if (params['kit_type'] === 'away') effectiveOutputAssetType = 'kit_away';
-         else if (params['kit_type'] === 'third') effectiveOutputAssetType = 'kit_third';
-         else effectiveOutputAssetType = 'kit_home';
-    }
-
     generation.submit({
       templateId: selectedTemplate.id,
       parameters: params,
       variantCount,
       projectId,
       organisationId,
-      outputAssetType: effectiveOutputAssetType,
+      outputAssetType: getEffectiveOutputAssetType(),
       inputImageUrls: validInputs,
       userPrompt: extraInstructions,
     });
@@ -418,6 +410,24 @@ export default function AssetGenerationModal({
       onAssetSaved?.();
       onClose();
     }
+  };
+
+  // Helper to determine effective output asset type based on template and params
+  const getEffectiveOutputAssetType = () => {
+    if (!selectedTemplate) return 'unknown';
+    let effectiveOutputAssetType = selectedTemplate.outputAssetType;
+    if (selectedTemplate.id === 'tenue_generate') {
+      if (params['kit_type'] === 'away') effectiveOutputAssetType = 'kit_away';
+      else if (params['kit_type'] === 'third') effectiveOutputAssetType = 'kit_third';
+      else effectiveOutputAssetType = 'kit_home';
+    } else if (selectedTemplate.id === 'fullbody_in_tenue') {
+      const kitType = params['kit_type'] || 'home';
+      effectiveOutputAssetType = `member_in_tenue_${kitType}`;
+    } else if (selectedTemplate.id === 'closeup_in_tenue') {
+      const kitType = params['kit_type'] || 'home';
+      effectiveOutputAssetType = `member_closeup_${kitType}`;
+    }
+    return effectiveOutputAssetType;
   };
 
   const handleRegenerate = () => {
@@ -460,7 +470,7 @@ export default function AssetGenerationModal({
       variantCount,
       projectId,
       organisationId,
-      outputAssetType: selectedTemplate.outputAssetType,
+      outputAssetType: getEffectiveOutputAssetType(),
       inputImageUrls: validInputs,
       userPrompt: prompt,
     });

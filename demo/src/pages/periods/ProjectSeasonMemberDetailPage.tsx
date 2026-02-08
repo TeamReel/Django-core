@@ -1619,6 +1619,9 @@ export default function ProjectSeasonMemberDetailPage() {
           reference: aiSelectedKitUrl,
           person: form.profile?.url || membership?.user?.avatar_url || null,
         }}
+        initialParams={{
+          kit_type: aiSelectedKitType,
+        }}
         previousResultUrl={
           aiPreselectedTemplate === 'fullbody_in_tenue'
             ? form.kit?.url || null

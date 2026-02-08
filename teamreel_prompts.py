@@ -353,19 +353,28 @@ STYLE:
             "logo": "square_pad_512",
             "sponsor": "pad_512_landscape",
         },
-        "prompt_template": """Create a FULL BODY portrait of this person wearing a complete football kit.
+        "prompt_template": """DRESS this person in the EXACT football kit shown in the reference image.
 
-PERSON: Use the provided person photo. Preserve their face, hair, and body proportions EXACTLY.
+CRITICAL INSTRUCTION - KIT REPRODUCTION:
+The reference image shows a complete football kit (shirt, shorts, socks). You MUST reproduce this kit EXACTLY:
+- SAME colors, patterns, stripes, and design details
+- SAME logo placement and appearance
+- SAME sponsor placement and appearance
+- SAME collar/neckline style
+- DO NOT modify, reinterpret, or "improve" the kit design in any way
+- The person should look like they are WEARING the exact kit from the reference photo
 
-KIT SPECIFICATIONS:
-{kit_analysis}
+PERSON: Use the provided person photo. Preserve their face, hair, skin tone, and body proportions EXACTLY.
+
+KIT FROM REFERENCE:
+- Reproduce the EXACT kit design from the reference image
 - SLEEVES: {sleeves_label}.
 - Role: {role_label}.
 
 POSE: {pose_label}.
 
 EQUIPMENT:
-- Football boots (modern style, matching team colors).
+- Football boots (modern style, matching the kit colors from reference).
 {role_equipment}
 
 COMPOSITION:
@@ -374,15 +383,16 @@ COMPOSITION:
 - Professional sports photography lighting.
 - Background: PURE SOLID COLOR BACKGROUND (single flat color, no gradients, no scenery, no stadium). Use a bright green (#00FF00) or bright blue (#0000FF) chroma-key background so it can be easily removed later.
 
-INTEGRATION:
-- LOGO: Use the provided Club Logo EXACTLY as-is on LEFT CHEST of shirt. Do NOT alter.
-- SPONSOR: Use the provided Sponsor image EXACTLY as-is CENTERED on chest of shirt.
-
 STYLE:
 - High-end professional football player portrait.
 - Sharp focus on person, clean edges, no shadows on background.
 - Even studio lighting, slight rim light for depth.
 - The person must be FULLY SEPARATED from the background (no blending).
+
+FINAL CHECK:
+- Does the kit match the reference EXACTLY? Same colors, same patterns, same logos?
+- Is the full body visible from head to toe?
+- Is the background a solid chroma-key color?
 """,
     },
 
@@ -413,20 +423,24 @@ STYLE:
             "logo": "square_pad_512",
             "sponsor": "pad_512_landscape",
         },
-        "prompt_template": """Create a CLOSE-UP portrait of this person wearing the football kit.
+        "prompt_template": """DRESS this person in the EXACT football kit shown in the reference image.
 
-PERSON: Use the provided person photo. Preserve their face EXACTLY.
+CRITICAL INSTRUCTION - KIT REPRODUCTION:
+The reference image shows a complete football kit. You MUST reproduce this kit EXACTLY on the person:
+- SAME colors, patterns, stripes, and design details
+- SAME logo placement and appearance
+- SAME sponsor placement and appearance
+- SAME neckline/collar style
+- DO NOT modify, reinterpret, or "improve" the kit design in any way
 
-KIT SPECIFICATIONS:
-{kit_analysis}
-- NECKLINE: {neck_label}.
+PERSON: Use the provided person photo. Preserve their face, hair, skin tone EXACTLY.
 
 FRAMING:
 - Close-up: From MID-CHEST up to top of head. BOTH SHOULDERS must be FULLY visible.
 - The head must NEVER be cropped at the top.
 - Face, neck, both shoulders, and upper chest clearly visible.
-- Club logo on left chest must be visible.
-- Sponsor on center chest should be partially visible.
+- Club logo on left chest must be visible (as shown in reference kit).
+- Sponsor on center chest should be partially visible (as shown in reference kit).
 
 EXPRESSION: {expression_label}.
 
@@ -435,14 +449,15 @@ COMPOSITION:
 - Background: PURE SOLID COLOR BACKGROUND (single flat color, no gradients, no scenery). Use bright green (#00FF00) or bright blue (#0000FF) chroma-key background for easy removal.
 - Sharp focus on face and upper body.
 
-INTEGRATION:
-- LOGO: Use the provided Club Logo EXACTLY as-is visible on LEFT CHEST.
-- SPONSOR: Use the provided Sponsor image EXACTLY as-is visible CENTERED on chest.
-
 STYLE:
 - High-end player card / media day photography style.
 - Natural skin tones, professional even studio lighting.
 - Person must be FULLY SEPARATED from the background (clean edges, no shadow bleed).
+
+FINAL CHECK:
+- Does the visible kit portion match the reference EXACTLY? Same colors, same patterns, same logos?
+- Is the background a solid chroma-key color?
+- Are both shoulders fully visible?
 """,
     },
 }
