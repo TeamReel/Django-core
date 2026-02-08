@@ -17,7 +17,13 @@ from .views import (
     GenerationTemplateViewSet,
     health_check,
 )
-from .views_asset import generate_asset_view, list_asset_templates_view, save_asset_view
+from .views_asset import (
+    generate_asset_view,
+    list_asset_history_view,
+    list_asset_templates_view,
+    restore_asset_version_view,
+    save_asset_view,
+)
 
 # Create router and register viewsets
 router = DefaultRouter()
@@ -32,6 +38,8 @@ urlpatterns = [
     path("assets/generate/", generate_asset_view, name="asset-generate"),
     path("assets/save/", save_asset_view, name="asset-save"),
     path("assets/templates/", list_asset_templates_view, name="asset-templates-list"),
+    path("assets/history/", list_asset_history_view, name="asset-history"),
+    path("assets/restore/", restore_asset_version_view, name="asset-restore"),
     # Standard CRUD
     path("", include(router.urls)),
 ]

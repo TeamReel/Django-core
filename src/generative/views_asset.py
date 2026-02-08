@@ -376,6 +376,7 @@ def generate_asset_view(request: Request) -> Response:
                             is_public=False,
                             metadata={
                                 "source": "ai_generation",
+                                "asset_type": asset_type,  # Tag with intended asset type (e.g. kit_home)
                                 "template_id": template_id,
                                 "template_type": context_type,
                                 "template_subtype": context_subtype,
@@ -845,3 +846,137 @@ def save_asset_view(request: Request) -> Response:
         },
         status=status.HTTP_201_CREATED,
     )
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def list_asset_history_view(request: Request) -> Response:
+    """List historical file assets for a specific asset type.
+
+    GET /api/v1/generative/assets/history/?project_id=...&asset_type=kit_home
+    """
+    project_id = request.query_params.get("project_id")
+    organisation_id = request.query_params.get("organisation_id")
+    asset_type = request.query_params.get("asset_type")
+    limit = int(request.query_params.get("limit", 5))
+
+    if not asset_type:
+        return Response({"error": "asset_type required"}, status=400)
+
+    from files.models import FileAsset
+
+    filters = {"metadata__asset_type": asset_type, "is_deleted": False}
+
+    # Scoping
+    if project_id:
+        # Resolve org from project if possible, but FileAsset is linked to Org
+        try:
+            from projects.models import Project
+
+            p = Project.objects.get(id=project_id)
+            filters["organization"] = p.organisation
+        except:  # noqa: E722
+            return Response({"error": "Project not found"}, status=404)
+    elif organisation_id:
+        filters["organization_id"] = organisation_id
+    else:
+        return Response({"error": "project_id or organisation_id required"}, status=400)
+
+    # Query recent files
+    assets_qs = FileAsset.objects.filter(**filters).order_by("-created_at")[:limit]
+
+    # Serialize
+    from files.utils import get_storage_backend
+
+    storage = get_storage_backend()
+
+    history = []
+    for asset in assets_qs:
+        url = None
+        try:
+            url = storage.get_url(asset.storage_path, signed=True)
+        except Exception:
+            url = storage.url(asset.storage_path) if hasattr(storage, "url") else None
+
+        history.append(
+            {
+                "id": str(asset.id),
+                "url": url,
+                "created_at": asset.created_at,
+                "original_name": asset.original_name,
+                "variant_index": asset.metadata.get("variant_index"),
+            }
+        )
+
+    return Response({"history": history})
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def restore_asset_version_view(request: Request) -> Response:
+    """Restore a previous FileAsset as the active BrandAsset.
+
+    POST /api/v1/generative/assets/restore/
+    {
+        "file_asset_id": "...",
+        "project_id": "...",
+        "asset_type": "kit_home"
+    }
+    """
+    file_asset_id = request.data.get("file_asset_id")
+    project_id = request.data.get("project_id")
+    organisation_id = request.data.get("organisation_id")
+    asset_type = request.data.get("asset_type")
+
+    if not file_asset_id or not asset_type:
+        return Response({"error": "file_asset_id and asset_type required"}, status=400)
+
+    from branding.models import BrandAsset, BrandProfile
+    from files.models import FileAsset
+
+    try:
+        file_asset = FileAsset.objects.get(id=file_asset_id)
+    except FileAsset.DoesNotExist:
+        return Response({"error": "FileAsset not found"}, status=404)
+
+    # Find BrandProfile
+    organisation = None
+    p = None
+    if project_id:
+        from projects.models import Project
+
+        try:
+            p = Project.objects.get(id=project_id)
+            organisation = p.organisation
+        except:  # noqa: E722
+            pass
+    elif organisation_id:
+        from organisations.models import Organisation
+
+        try:
+            organisation = Organisation.objects.get(id=organisation_id)
+        except:  # noqa: E722
+            pass
+
+    if not organisation:
+        return Response({"error": "Context required"}, status=400)
+
+    brand_profile = BrandProfile.get_effective_brand(
+        organisation=organisation, project=p if project_id else None
+    )
+
+    if not brand_profile:
+        return Response({"error": "BrandProfile not found"}, status=404)
+
+    # Update BrandAsset
+    BrandAsset.objects.update_or_create(
+        profile=brand_profile,
+        asset_type=asset_type,
+        defaults={
+            "file": file_asset,
+            "is_active": True,
+            "alt_text": f"Restored version: {file_asset.original_name}",
+        },
+    )
+
+    return Response({"status": "restored", "url": str(file_asset.id)})
