@@ -63,6 +63,20 @@ const ASSET_TYPE_LABELS: Record<string, string> = {
   legacy: 'Legacy in Tenue',
 };
 
+// Helper to detect mime type from base64 signature
+const getSecureMimeType = (base64: string | null, declaredType: string | null): string => {
+  if (!base64) return declaredType || 'image/png';
+  // JPEG signature
+  if (base64.startsWith('/9j/')) return 'image/jpeg';
+  // PNG signature
+  if (base64.startsWith('iVBORw0KGgo')) return 'image/png';
+  // GIF signature
+  if (base64.startsWith('R0lGODdh') || base64.startsWith('R0lGODlh')) return 'image/gif';
+  // WebP signature
+  if (base64.startsWith('UklGR')) return 'image/webp';
+  return declaredType || 'image/png';
+};
+
 export interface ContentTemplate {
   id: number;
   name: string;
@@ -595,6 +609,8 @@ export default function ContentGenerationModal({
       const responseData = data.data || data;
       const variants: GeneratedVariant[] = responseData.variants || [];
 
+      console.log(`📦 Parsed ${variants.length} variants from response`);
+
       // Check for errors
       const firstError = variants.find((v: GeneratedVariant) => v.error);
       if (firstError?.error) {
@@ -614,6 +630,28 @@ export default function ContentGenerationModal({
           storage_info: firstVariant.storage_info || null,
           metadata: firstVariant.metadata || {},
         });
+      } else {
+        // Fallback if no variants array but fields exist at root
+        if (responseData.image_base64 || responseData.presigned_url) {
+           console.log('⚠️ No variants array found, falling back to legacy single variant extraction');
+           const singleVariant: GeneratedVariant = {
+              variant_index: 0,
+              image_base64: responseData.image_base64,
+              presigned_url: responseData.presigned_url,
+              mime_type: responseData.mime_type,
+              filename: responseData.filename,
+              error: null,
+              storage_info: responseData.storage_info,
+              metadata: responseData.metadata || {}
+           };
+           setGeneratedVariants([singleVariant]);
+           setGeneratedOutput({
+              image_base64: singleVariant.image_base64,
+              presigned_url: singleVariant.presigned_url,
+              storage_info: singleVariant.storage_info,
+              metadata: singleVariant.metadata
+           });
+        }
       }
 
       setProgress(100);
@@ -1147,8 +1185,15 @@ export default function ContentGenerationModal({
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {generatedVariants.map((variant, index) => {
                       const isSelected = selectedVariantIndex === index;
+
+                      // Calculate image source with secure mime type detection
+                      let mimeType = variant.mime_type;
+                      if (variant.image_base64) {
+                         mimeType = getSecureMimeType(variant.image_base64, variant.mime_type);
+                      }
+
                       const imageSrc = variant.image_base64
-                        ? `data:${variant.mime_type || 'image/png'};base64,${variant.image_base64}`
+                        ? `data:${mimeType};base64,${variant.image_base64}`
                         : variant.presigned_url;
 
                       return (
@@ -1196,7 +1241,7 @@ export default function ContentGenerationModal({
                   {generatedOutput?.image_base64 ? (
                     <div className="mb-4">
                       <img
-                        src={`data:image/png;base64,${generatedOutput.image_base64}`}
+                        src={`data:${getSecureMimeType(generatedOutput.image_base64, generatedOutput.storage_info?.mime_type || 'image/png')};base64,${generatedOutput.image_base64}`}
                         alt="Generated content"
                         className="max-w-md max-h-64 rounded-lg border shadow-lg"
                       />
@@ -1303,8 +1348,16 @@ export default function ContentGenerationModal({
                       const variant = generatedVariants[selectedVariantIndex];
                       if (variant.image_base64) {
                         const link = document.createElement('a');
-                        link.href = `data:${variant.mime_type || 'image/png'};base64,${variant.image_base64}`;
-                        link.download = variant.filename || `generated-variant-${selectedVariantIndex + 1}.png`;
+                        const mimeType = getSecureMimeType(variant.image_base64, variant.mime_type);
+                        link.href = `data:${mimeType};base64,${variant.image_base64}`;
+
+                        // Ensure filename extension matches actual mime type
+                        let filename = variant.filename || `generated-variant-${selectedVariantIndex + 1}`;
+                        if (mimeType === 'image/jpeg' && (filename.endsWith('.png') || !filename.includes('.'))) {
+                            filename = filename.replace(/\.png$/i, '') + '.jpg';
+                        }
+
+                        link.download = filename;
                         link.click();
                       } else if (variant.presigned_url) {
                         window.open(variant.presigned_url, '_blank');
