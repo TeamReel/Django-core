@@ -287,27 +287,35 @@ class BrandAssetSerializer(serializers.ModelSerializer):
         }
 
     def get_url(self, obj: BrandAsset) -> str | None:
-        """Return presigned S3 URL for secure access.
+        """Return a usable URL for the asset file.
 
-        Generates a time-limited presigned URL (1 hour) instead of a raw
-        storage path, since the S3 bucket does not allow public reads.
+        Uses the configured storage backend to generate a presigned or public
+        URL. In production (S3) this returns a presigned URL. In development
+        (local) this returns a local media path.
 
         Args:
             obj: BrandAsset instance
 
         Returns:
-            Presigned URL string or None if no file attached
+            URL string or None if no file attached
         """
         if not obj.file or not obj.file.storage_path:
             return None
         try:
-            from files.backends.s3 import S3StorageBackend
+            from files.utils import get_storage_backend
 
-            backend = S3StorageBackend()
-            return backend.get_url(obj.file.storage_path, signed=True, expiry_seconds=3600)
-        except Exception:
-            # Fallback to raw path if S3 backend unavailable
-            return obj.get_url()
+            backend = get_storage_backend()
+            return backend.get_url(obj.file.storage_path, signed=True)
+        except Exception as exc:
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "Failed to generate URL for asset %s (path=%s): %s",
+                obj.id,
+                obj.file.storage_path,
+                exc,
+            )
+            return None
 
     def validate(self, data: dict) -> dict:
         """Check for duplicate asset_type per profile.

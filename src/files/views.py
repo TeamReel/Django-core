@@ -167,13 +167,15 @@ class FileViewSet(viewsets.ModelViewSet):
     def download(self, request, pk=None):
         """
         Get a download URL for the file.
+
+        Returns a presigned URL (S3) or local media URL depending on backend.
         """
         instance = self.get_object()
         backend = get_storage_backend()
 
         try:
-            url = backend.url(instance.storage_path)
-            return Response({"url": url, "expires_in": 3600})  # 1 hour default for signed URLs
+            url = backend.get_url(instance.storage_path, signed=True)
+            return Response({"url": url, "expires_in": 3600})
         except NotImplementedError:
             return Response(
                 {"detail": "Download URL generation not supported by current backend."},
