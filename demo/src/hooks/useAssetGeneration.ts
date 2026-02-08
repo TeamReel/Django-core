@@ -66,6 +66,8 @@ export interface SubmitParams {
   inputImageUrls?: Record<string, string>;
   /** Input images as base64 strings (if already loaded) */
   inputImages?: Record<string, string>;
+  /** Optional user instruction text */
+  userPrompt?: string;
 }
 
 // ============================================================================
@@ -133,6 +135,12 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
       }, 2000);
 
       try {
+        // Inject user instruction into params if present
+        const finalParams = { ...params.parameters };
+        if (params.userPrompt) {
+            finalParams['user_instruction'] = params.userPrompt;
+        }
+
         const res = await fetch(`${apiBase}/api/v1/generative/assets/generate/`, {
           method: 'POST',
           signal: controller.signal,
@@ -143,7 +151,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           },
           body: JSON.stringify({
             template_id: params.templateId,
-            params: params.parameters,
+            params: finalParams,
             variant_count: params.variantCount,
             input_images: params.inputImages || {},
             input_image_urls: params.inputImageUrls || {},

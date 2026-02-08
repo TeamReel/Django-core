@@ -299,6 +299,8 @@ export default function AssetGenerationModal({
   );
   const [params, setParams] = useState<Record<string, string>>({});
   const [variantCount, setVariantCount] = useState(2);
+  const [extraInstructions, setExtraInstructions] = useState('');
+  const [feedbackText, setFeedbackText] = useState('');
   const [selectedVariantIdx, setSelectedVariantIdx] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -335,6 +337,8 @@ export default function AssetGenerationModal({
         setModalStep('template');
       }
       setSelectedVariantIdx(null);
+      setExtraInstructions('');
+      setFeedbackText('');
       generation.reset();
     }
   }, [isOpen, preSelectedTemplate]);
@@ -364,6 +368,7 @@ export default function AssetGenerationModal({
       organisationId,
       outputAssetType: selectedTemplate.outputAssetType,
       inputImageUrls: validInputs,
+      userPrompt: extraInstructions,
     });
     setModalStep('results');
   };
@@ -380,9 +385,33 @@ export default function AssetGenerationModal({
   };
 
   const handleRegenerate = () => {
+    if (!selectedTemplate) return;
+
+    // Use the same inputs but add feedback text if provided
+    const validInputs: Record<string, string> = {};
+    Object.entries(inputAssets).forEach(([key, val]) => {
+      if (val) validInputs[key] = val;
+    });
+
+    // Combine original instructions with new feedback if present
+    let prompt = extraInstructions;
+    if (feedbackText.trim()) {
+        prompt = prompt
+            ? `${prompt}\n\nFEEDBACK/REFINEMENT: ${feedbackText}`
+            : `FEEDBACK/REFINEMENT: ${feedbackText}`;
+    }
+
     setSelectedVariantIdx(null);
-    generation.reset();
-    setModalStep('configure');
+    generation.submit({
+      templateId: selectedTemplate.id,
+      parameters: params,
+      variantCount,
+      projectId,
+      organisationId,
+      outputAssetType: selectedTemplate.outputAssetType,
+      inputImageUrls: validInputs,
+      userPrompt: prompt,
+    });
   };
 
   const handleClose = () => {
@@ -584,6 +613,38 @@ export default function AssetGenerationModal({
                   Kosten: {variantCount * selectedTemplate.creditsCost} credits
                 </div>
               </div>
+
+              {/* Extra Instructions */}
+              <div style={{ marginBottom: 16 }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    marginBottom: 4,
+                    color: 'var(--vscode-foreground, #ccc)',
+                  }}
+                >
+                  Extra instructies (optioneel)
+                </label>
+                <textarea
+                  value={extraInstructions}
+                  onChange={(e) => setExtraInstructions(e.target.value)}
+                  placeholder="Bijv. 'Gebruik felle kleuren', 'Geen strepen op mouwen', 'Witte sponsortekst'..."
+                  style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    fontSize: 13,
+                    background: 'var(--vscode-input-background, #3c3c3c)',
+                    color: 'var(--vscode-input-foreground, #ccc)',
+                    border: '1px solid var(--vscode-input-border, #3c3c3c)',
+                    borderRadius: 4,
+                    outline: 'none',
+                    minHeight: 60,
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </div>
             </div>
           )}
 
@@ -666,6 +727,29 @@ export default function AssetGenerationModal({
                           onClick={() => setSelectedVariantIdx(v.variant_index)}
                         />
                       ))}
+                    </div>
+
+                    {/* Feedback / Refine */}
+                    <div style={{ marginTop: 20, borderTop: '1px solid var(--vscode-widget-border, #333)', paddingTop: 16 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Niet helemaal goed? Verbeter het:</div>
+                        <textarea
+                          value={feedbackText}
+                          onChange={(e) => setFeedbackText(e.target.value)}
+                          placeholder="Bijv. 'Maak het logo iets groter', 'Verander de achtergrond naar donkergrijs'..."
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            marginBottom: 8,
+                            fontSize: 13,
+                            background: 'var(--vscode-input-background, #3c3c3c)',
+                            color: 'var(--vscode-input-foreground, #ccc)',
+                            border: '1px solid var(--vscode-input-border, #3c3c3c)',
+                            borderRadius: 4,
+                            outline: 'none',
+                            minHeight: 50,
+                            fontFamily: 'inherit',
+                          }}
+                        />
                     </div>
                   </div>
                 )}

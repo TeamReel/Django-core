@@ -518,6 +518,12 @@ def resolve_prompt(template_id: str, params: dict, kit_analysis: str = "", extra
     for key, value in replacements.items():
         prompt = prompt.replace(f"{{{key}}}", str(value))
 
+    # Append user instruction if present in params (for iterative feedback)
+    user_instruction = params.get("user_instruction", "").strip()
+    if user_instruction:
+        prompt += f"\n\nADDITIONAL USER INSTRUCTIONS:\n{user_instruction}"
+        prompt += "\n\nIMPORTANT: Please strictly follow the additional user instructions above to refine the result."
+
     return prompt
 
 
