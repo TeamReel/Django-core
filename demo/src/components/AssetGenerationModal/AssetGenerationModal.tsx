@@ -378,13 +378,21 @@ export default function AssetGenerationModal({
        // If set to 'upload', it falls back to inputAssets['reference'] which is already set above
     }
 
+    // Determine effective output asset type based on parameters
+    let effectiveOutputAssetType = selectedTemplate.outputAssetType;
+    if (selectedTemplate.id === 'tenue_generate') {
+         if (params['kit_type'] === 'away') effectiveOutputAssetType = 'kit_away';
+         else if (params['kit_type'] === 'third') effectiveOutputAssetType = 'kit_third';
+         else effectiveOutputAssetType = 'kit_home';
+    }
+
     generation.submit({
       templateId: selectedTemplate.id,
       parameters: params,
       variantCount,
       projectId,
       organisationId,
-      outputAssetType: selectedTemplate.outputAssetType,
+      outputAssetType: effectiveOutputAssetType,
       inputImageUrls: validInputs,
       userPrompt: extraInstructions,
     });
