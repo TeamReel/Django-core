@@ -647,11 +647,11 @@ export default function ProjectSeasonMemberDetailPage() {
 
   // Fetch parent brand assets (from club) for tenue inheritance
   const clubId = club?.id || project?.id;
-  const clubBrand = useBrandProfile(
-    clubId ? String(clubId) : '',
-    String(org?.id || ''),
-    !!clubId
-  );
+  const clubBrand = useBrandProfile({
+    projectId: clubId ? String(clubId) : undefined,
+    organisationId: String(org?.id || ''),
+    autoFetch: !!clubId,
+  });
 
   // Get effective kits from club brand
   const effectiveKits = useMemo(() => {
