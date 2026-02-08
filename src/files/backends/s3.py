@@ -63,6 +63,10 @@ class S3StorageBackend(StorageBackend):
         """
         Save file to S3.
 
+        Tries to set public-read ACL for direct URL access. Falls back to
+        private if bucket has Block Public Access enabled (presigned URLs
+        will still work via get_url).
+
         Args:
             path: The object key (e.g., 'logos/clubs/180.png')
             file_obj: File-like object to upload
@@ -77,12 +81,22 @@ class S3StorageBackend(StorageBackend):
         if content_type:
             extra_args["ContentType"] = content_type
 
-        self._client.put_object(
-            Bucket=self.bucket_name,
-            Key=path,
-            Body=content,
-            **extra_args,
-        )
+        try:
+            self._client.put_object(
+                Bucket=self.bucket_name,
+                Key=path,
+                Body=content,
+                ACL="public-read",
+                **extra_args,
+            )
+        except Exception:
+            # Bucket may block public ACLs — upload without ACL
+            self._client.put_object(
+                Bucket=self.bucket_name,
+                Key=path,
+                Body=content,
+                **extra_args,
+            )
 
         return path
 
@@ -105,12 +119,22 @@ class S3StorageBackend(StorageBackend):
         if content_type:
             extra_args["ContentType"] = content_type
 
-        self._client.put_object(
-            Bucket=self.bucket_name,
-            Key=path,
-            Body=data,
-            **extra_args,
-        )
+        try:
+            self._client.put_object(
+                Bucket=self.bucket_name,
+                Key=path,
+                Body=data,
+                ACL="public-read",
+                **extra_args,
+            )
+        except Exception:
+            # Bucket may block public ACLs — upload without ACL
+            self._client.put_object(
+                Bucket=self.bucket_name,
+                Key=path,
+                Body=data,
+                **extra_args,
+            )
 
         return path
 
