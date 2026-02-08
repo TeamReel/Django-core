@@ -118,11 +118,14 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
       setVariants([]);
 
       // Store context for later saving
-      setContext({
+      const saveContext = {
         projectId: params.projectId,
         organisationId: params.organisationId,
         outputAssetType: params.outputAssetType
-      });
+      };
+      console.log('📝 Storing context for save:', saveContext);
+
+      setContext(saveContext);
 
       // Simulate progress while waiting (generation takes 30-90s)
       const progressTimer = setInterval(() => {
@@ -202,6 +205,14 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
       const projId = context?.projectId;
       const assetType = context?.outputAssetType;
 
+      console.log('💾 Accepting variant:', {
+        variantIndex,
+        context,
+        orgId,
+        assetType,
+        hasImage: !!selectedVariant.image_base64
+      });
+
       if (!orgId) {
          console.error('Missing organisation context for saving asset');
          return false;
@@ -229,8 +240,16 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         });
 
         if (!response.ok) {
-           const errData = await response.json().catch(() => ({}));
-           console.error('Failed to save asset:', errData);
+           const errText = await response.text();
+           console.error('Failed to save asset (raw):', errText);
+           let errData = {};
+           try {
+             errData = JSON.parse(errText);
+           } catch (e) {
+             // ignore
+           }
+           console.error('Failed to save asset (json):', errData);
+           // @ts-ignore
            throw new Error(errData?.error || 'Failed to save asset');
         }
 
