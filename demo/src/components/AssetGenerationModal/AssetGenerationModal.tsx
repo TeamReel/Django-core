@@ -46,6 +46,8 @@ interface AssetGenerationModalProps {
   projectId: string | number;
   /** Organisation ID */
   organisationId: string;
+  /** Available input assets (logo, sponsor, etc) as URLs */
+  inputAssets?: Record<string, string | null>;
   /** Callback after a variant is accepted and saved */
   onAssetSaved?: () => void;
 }
@@ -287,6 +289,7 @@ export default function AssetGenerationModal({
   preSelectedTemplate,
   projectId,
   organisationId,
+  inputAssets = {},
   onAssetSaved,
 }: AssetGenerationModalProps) {
   // State
@@ -346,6 +349,13 @@ export default function AssetGenerationModal({
 
   const handleGenerate = () => {
     if (!selectedTemplate) return;
+
+    // Filter out nulls from inputAssets
+    const validInputs: Record<string, string> = {};
+    Object.entries(inputAssets).forEach(([key, val]) => {
+      if (val) validInputs[key] = val;
+    });
+
     generation.submit({
       templateId: selectedTemplate.id,
       parameters: params,
@@ -353,6 +363,7 @@ export default function AssetGenerationModal({
       projectId,
       organisationId,
       outputAssetType: selectedTemplate.outputAssetType,
+      inputImageUrls: validInputs,
     });
     setModalStep('results');
   };

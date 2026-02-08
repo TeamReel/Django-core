@@ -364,6 +364,16 @@ export function AssetsTab({
     return { asset: undefined, inherited: false };
   };
 
+  // Input assets for AI generation
+  const aiInputAssets = React.useMemo(() => {
+    const logoAsset = getAsset('logo_upload');
+    const sponsorAsset = getAsset('sponsor_logo_upload');
+    return {
+      logo: logoAsset ? getAssetUrl(logoAsset.url) : null,
+      sponsor: sponsorAsset ? getAssetUrl(sponsorAsset.url) : null,
+    };
+  }, [getAsset]);
+
   if (loading || parentBrand.loading) {
     return (
       <div style={{ padding: 24, textAlign: 'center', color: 'var(--vscode-descriptionForeground, #888)' }}>
@@ -489,6 +499,7 @@ export function AssetsTab({
           preSelectedTemplate={aiPreselectedTemplate}
           projectId={projectId || ''}
           organisationId={organisationId}
+          inputAssets={aiInputAssets}
           onAssetSaved={refresh}
         />
 
