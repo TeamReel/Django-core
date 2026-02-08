@@ -388,6 +388,20 @@ export default function AssetGenerationModal({
        // If set to 'upload', it falls back to inputAssets['reference'] which is already set above
     }
 
+    // Map frontend keys to backend expected keys
+    // Frontend uses: person, reference
+    // Backend expects: person_photo, reference_photo
+    const mappedInputs: Record<string, string> = {};
+    Object.entries(validInputs).forEach(([key, val]) => {
+      if (key === 'person') {
+        mappedInputs['person_photo'] = val;
+      } else if (key === 'reference') {
+        mappedInputs['reference_photo'] = val;
+      } else {
+        mappedInputs[key] = val;
+      }
+    });
+
     generation.submit({
       templateId: selectedTemplate.id,
       parameters: params,
@@ -395,7 +409,7 @@ export default function AssetGenerationModal({
       projectId,
       organisationId,
       outputAssetType: getEffectiveOutputAssetType(),
-      inputImageUrls: validInputs,
+      inputImageUrls: mappedInputs,
       userPrompt: extraInstructions,
     });
     setModalStep('results');
@@ -446,6 +460,18 @@ export default function AssetGenerationModal({
        }
     }
 
+    // Map frontend keys to backend expected keys
+    const mappedInputs: Record<string, string> = {};
+    Object.entries(validInputs).forEach(([key, val]) => {
+      if (key === 'person') {
+        mappedInputs['person_photo'] = val;
+      } else if (key === 'reference') {
+        mappedInputs['reference_photo'] = val;
+      } else {
+        mappedInputs[key] = val;
+      }
+    });
+
     // Combine original instructions with new feedback if present
     let prompt = extraInstructions;
 
@@ -471,7 +497,7 @@ export default function AssetGenerationModal({
       projectId,
       organisationId,
       outputAssetType: getEffectiveOutputAssetType(),
-      inputImageUrls: validInputs,
+      inputImageUrls: mappedInputs,
       userPrompt: prompt,
     });
   };
