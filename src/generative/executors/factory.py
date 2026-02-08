@@ -23,18 +23,33 @@ def _get_langgraph_executor() -> Type[BasePipelineExecutor]:
         ) from e
 
 
+def _get_gemini_image_executor() -> Type[BasePipelineExecutor]:
+    """Lazy loader for GeminiImageExecutor to defer google-generativeai import."""
+    try:
+        from .gemini_image_executor import GeminiImageExecutor
+
+        return GeminiImageExecutor
+    except ImportError as e:
+        raise ImportError(
+            "Google Generative AI is not installed. Install with: "
+            "pip install google-generativeai google-cloud-aiplatform"
+        ) from e
+
+
 class ExecutorFactory:
     """Factory for creating pipeline executors based on provider.
 
     Supports runtime registration of custom executors for extensibility.
     """
 
-    # Only register OpenAI by default; LangGraph is lazy-loaded
+    # Only register OpenAI by default; LangGraph and Gemini are lazy-loaded
     _executors: dict[str, Type[BasePipelineExecutor]] = {
         "openai": OpenAIExecutor,
     }
     _lazy_executors: dict[str, callable] = {
         "langgraph": _get_langgraph_executor,
+        "gemini": _get_gemini_image_executor,
+        "gemini_image": _get_gemini_image_executor,  # Alias for clarity
     }
 
     @classmethod

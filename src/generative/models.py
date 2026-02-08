@@ -35,6 +35,8 @@ class ProviderChoices(models.TextChoices):
 
     OPENAI = "openai", "OpenAI"
     LANGGRAPH = "langgraph", "LangGraph"
+    GEMINI = "gemini", "Google Gemini"
+    GEMINI_IMAGE = "gemini_image", "Google Gemini (Image)"
 
 
 class RequestStatus(models.TextChoices):
