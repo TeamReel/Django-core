@@ -65,6 +65,7 @@ interface AssetCardProps {
   readOnly?: boolean;
   onUpload?: (file: File, assetType: string) => void;
   onDelete?: (assetType: string) => void;
+  onImprove?: (assetType: string) => void;
   aspectRatio?: string;
 }
 
@@ -77,23 +78,20 @@ function AssetCard({
   readOnly = false,
   onUpload,
   onDelete,
+  onImprove,
   aspectRatio = '3 / 4',
 }: AssetCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const url = asset ? getAssetUrl(asset.url) : null;
 
   const isUploadType = assetType.endsWith('_upload');
-  const isCombined = assetType.endsWith('_combined') || assetType === 'logo_dark';
-  const isProcessed = !isUploadType && !isCombined;
+  const isProcessed = !isUploadType; // Simplification as combined is removed
 
   let badgeColor = '#6b7280'; // gray
   let badgeText = '';
   if (isUploadType) {
     badgeColor = '#3b82f6'; // blue
     badgeText = 'Upload';
-  } else if (isCombined) {
-    badgeColor = '#8b5cf6'; // purple
-    badgeText = 'AI Combined';
   } else if (isProcessed && !['watermark', 'favicon', 'font_file', 'location_photo', 'other'].includes(assetType)) {
     badgeColor = '#10b981'; // green
     badgeText = 'AI Bewerkt';
@@ -181,7 +179,7 @@ function AssetCard({
         <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{label}</div>
 
         {!readOnly && onUpload && (
-          <>
+          <div style={{ display: 'grid', gridTemplateColumns: url ? '1fr 1fr' : '1fr', gap: 4 }}>
             <button
               onClick={() => fileInputRef.current?.click()}
               style={{
@@ -195,9 +193,26 @@ function AssetCard({
                 borderRadius: 4,
               }}
             >
-              {url ? 'Vervangen' : 'Uploaden'}
+              {url ? 'Vervang' : 'Uploaden'}
             </button>
-            <input
+            {url && onImprove && isProcessed && (
+                 <button
+                 onClick={() => onImprove(assetType)}
+                 style={{
+                   width: '100%',
+                   padding: '4px 8px',
+                   fontSize: 11,
+                   cursor: 'pointer',
+                   background: '#8b5cf6',
+                   color: '#fff',
+                   border: 'none',
+                   borderRadius: 4,
+                 }}
+               >
+                 Verbeter
+               </button>
+            )}
+             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
@@ -208,7 +223,7 @@ function AssetCard({
                 e.target.value = '';
               }}
             />
-          </>
+          </div>
         )}
 
         {!readOnly && onDelete && url && (
@@ -321,6 +336,9 @@ export function AssetsTab({
   const [uploading, setUploading] = useState<string | null>(null);
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiPreselectedTemplate, setAiPreselectedTemplate] = useState<string | undefined>();
+  const [aiPreviousResultUrl, setAiPreviousResultUrl] = useState<string | null>(null);
+  const [aiCustomInputs, setAiCustomInputs] = useState<Record<string, string | null>>({});
+
   const sponsorMode = externalSponsorMode || 'club';
 
   const handleUpload = async (file: File, assetType: string) => {
@@ -365,7 +383,7 @@ export function AssetsTab({
   };
 
   // Input assets for AI generation
-  const aiInputAssets = React.useMemo(() => {
+  const baseAiInputAssets = React.useMemo(() => {
     const logoAsset = getAsset('logo_upload');
     const sponsorAsset = getAsset('sponsor_logo_upload');
     return {
@@ -373,6 +391,53 @@ export function AssetsTab({
       sponsor: sponsorAsset ? getAssetUrl(sponsorAsset.url) : null,
     };
   }, [getAsset]);
+
+  const handleImprove = (assetType: string) => {
+    // Map asset type to template
+    let templateId: string | undefined;
+
+    // Determine reference asset type based on outcome asset type
+    let referenceAssetType: string | null = null;
+
+    if (assetType === 'logo_light' || assetType === 'logo_dark') {
+        templateId = 'logo_standardize';
+        referenceAssetType = 'logo_upload';
+    } else if (assetType === 'sponsor_logo') {
+        templateId = 'sponsor_standardize';
+        referenceAssetType = 'sponsor_logo_upload';
+    } else if (assetType.includes('kit_home')) {
+        templateId = 'tenue_generate';
+        referenceAssetType = 'kit_home_upload';
+    } else if (assetType.includes('kit_away')) {
+        templateId = 'tenue_generate';
+        referenceAssetType = 'kit_away_upload';
+    } else if (assetType.includes('kit_third')) {
+        templateId = 'tenue_generate';
+        referenceAssetType = 'kit_third_upload';
+    } else if (assetType.includes('kit_goalkeeper')) {
+        templateId = 'keeper_tenue';
+        referenceAssetType = 'kit_goalkeeper_upload';
+    } else if (assetType.includes('kit_training')) {
+        templateId = 'tracksuit_generate';
+        referenceAssetType = 'kit_training_upload';
+    }
+
+    if (templateId) {
+       const asset = getAsset(assetType);
+       setAiPreviousResultUrl(asset ? getAssetUrl(asset.url) : null);
+       setAiPreselectedTemplate(templateId);
+
+       // Build inputs specific to this flow
+       const inputs = { ...baseAiInputAssets };
+       if (referenceAssetType) {
+           const refAsset = getAsset(referenceAssetType);
+           if (refAsset) inputs['reference'] = getAssetUrl(refAsset.url);
+       }
+       setAiCustomInputs(inputs);
+
+       setShowAiModal(true);
+    }
+  };
 
   if (loading || parentBrand.loading) {
     return (
@@ -494,12 +559,13 @@ export function AssetsTab({
         {/* AI Generation Modal */}
         <AssetGenerationModal
           isOpen={showAiModal}
-          onClose={() => setShowAiModal(false)}
+          onClose={() => { setShowAiModal(false); setAiPreviousResultUrl(null); }}
           context="club"
           preSelectedTemplate={aiPreselectedTemplate}
           projectId={projectId || ''}
           organisationId={organisationId}
-          inputAssets={aiInputAssets}
+          inputAssets={aiCustomInputs}
+          previousResultUrl={aiPreviousResultUrl}
           onAssetSaved={refresh}
         />
 
@@ -507,8 +573,8 @@ export function AssetsTab({
         <Section title="Logo" description="Upload het clublogo → AI bewerkt → AI combined (light + dark).">
           <AssetGrid>
             <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-            <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-            <AssetCard label="Logo (compleet)" assetType="logo_dark" asset={getAsset('logo_dark')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
+            <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} aspectRatio="1 / 1" />
+            <AssetCard label="Logo (compleet)" assetType="logo_dark" asset={getAsset('logo_dark')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} aspectRatio="1 / 1" />
           </AssetGrid>
         </Section>
 
@@ -516,7 +582,7 @@ export function AssetsTab({
         <Section title="Sponsor" description="Upload het sponsor logo. Wordt gestandaardiseerd door AI.">
           <AssetGrid>
             <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-            <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
+            <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} aspectRatio="1 / 1" />
           </AssetGrid>
         </Section>
 
@@ -524,13 +590,12 @@ export function AssetsTab({
         {KIT_ROLES.map((role) => {
           const uploadType = `kit_${role.id}_upload`;
           const processedType = `kit_${role.id}`;
-          const combinedType = `kit_${role.id}_combined`;
 
           return (
             <Section
               key={role.id}
               title={`${role.icon} ${role.label} Tenue`}
-              description={`Upload → AI bewerkt → Gecombineerd met logo + sponsor`}
+              description={`Upload → AI bewerkt`}
             >
               <AssetGrid>
                 <AssetCard
@@ -546,13 +611,7 @@ export function AssetsTab({
                   asset={getAsset(processedType)}
                   onUpload={handleUpload}
                   onDelete={handleDelete}
-                />
-                <AssetCard
-                  label={`${role.label} (compleet)`}
-                  assetType={combinedType}
-                  asset={getAsset(combinedType)}
-                  onUpload={handleUpload}
-                  onDelete={handleDelete}
+                  onImprove={handleImprove}
                 />
               </AssetGrid>
             </Section>

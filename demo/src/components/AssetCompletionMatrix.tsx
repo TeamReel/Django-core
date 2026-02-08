@@ -41,7 +41,6 @@ interface AssetRow {
   icon: string;
   uploadType: string | null;
   processedType: string | null;
-  combinedType: string | null;
 }
 
 const ASSET_ROWS: AssetRow[] = [
@@ -50,28 +49,24 @@ const ASSET_ROWS: AssetRow[] = [
     icon: '🖼️',
     uploadType: 'logo_upload',
     processedType: 'logo_light',
-    combinedType: 'logo_dark',
   },
   {
     label: 'Sponsor',
     icon: '🤝',
     uploadType: 'sponsor_logo_upload',
     processedType: 'sponsor_logo',
-    combinedType: null,
   },
   ...KIT_ROLES.map((role) => ({
     label: `${role.label} Tenue`,
     icon: role.icon,
     uploadType: `kit_${role.id}_upload`,
     processedType: `kit_${role.id}`,
-    combinedType: `kit_${role.id}_combined`,
   })),
   {
     label: 'Locatie',
     icon: '📍',
     uploadType: 'location_photo',
     processedType: null,
-    combinedType: null,
   },
 ];
 
@@ -79,7 +74,6 @@ const ASSET_ROWS: AssetRow[] = [
 const PHASE_COLUMNS = [
   { key: 'upload' as const, label: 'Upload', color: '#3b82f6' },
   { key: 'processed' as const, label: 'AI Bewerkt', color: '#10b981' },
-  { key: 'combined' as const, label: 'Gecombineerd', color: '#8b5cf6' },
 ];
 
 // ============================================================================
@@ -130,14 +124,12 @@ export function AssetCompletionMatrix({
   const totalCells = ASSET_ROWS.reduce((sum, row) => {
     if (row.uploadType) sum++;
     if (row.processedType) sum++;
-    if (row.combinedType) sum++;
     return sum;
   }, 0);
 
   const filledCells = ASSET_ROWS.reduce((sum, row) => {
     if (row.uploadType && getAsset(row.uploadType)) sum++;
     if (row.processedType && getAsset(row.processedType)) sum++;
-    if (row.combinedType && getAsset(row.combinedType)) sum++;
     return sum;
   }, 0);
 
@@ -215,7 +207,6 @@ export function AssetCompletionMatrix({
             {ASSET_ROWS.map((row) => {
               const upload = getCellInfo(row.uploadType);
               const processed = getCellInfo(row.processedType);
-              const combined = getCellInfo(row.combinedType);
 
               return (
                 <tr key={row.label}>
@@ -245,20 +236,6 @@ export function AssetCompletionMatrix({
                         <span style={{ fontSize: 14 }}>{processed.exists ? '✅' : '⬜'}</span>
                         {processed.url && (
                           <img src={processed.url} alt="" style={thumbnailStyle} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                        )}
-                      </div>
-                    ) : (
-                      <span style={{ opacity: 0.3 }}>—</span>
-                    )}
-                  </td>
-
-                  {/* Gecombineerd */}
-                  <td style={{ ...tdStyle, textAlign: 'center' }}>
-                    {row.combinedType ? (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 14 }}>{combined.exists ? '✅' : '⬜'}</span>
-                        {combined.url && (
-                          <img src={combined.url} alt="" style={thumbnailStyle} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         )}
                       </div>
                     ) : (

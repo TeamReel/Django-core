@@ -48,6 +48,8 @@ interface AssetGenerationModalProps {
   organisationId: string;
   /** Available input assets (logo, sponsor, etc) as URLs */
   inputAssets?: Record<string, string | null>;
+  /** Previous AI Result URL (for improvements) */
+  previousResultUrl?: string | null;
   /** Callback after a variant is accepted and saved */
   onAssetSaved?: () => void;
 }
@@ -290,6 +292,7 @@ export default function AssetGenerationModal({
   projectId,
   organisationId,
   inputAssets = {},
+  previousResultUrl,
   onAssetSaved,
 }: AssetGenerationModalProps) {
   // State
@@ -303,6 +306,7 @@ export default function AssetGenerationModal({
   const [feedbackText, setFeedbackText] = useState('');
   const [selectedVariantIdx, setSelectedVariantIdx] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [referenceSource, setReferenceSource] = useState<'upload' | 'previous'>('previous'); // Prefer existing result for iteration
 
   const generation = useAssetGeneration();
 
@@ -360,6 +364,14 @@ export default function AssetGenerationModal({
       if (val) validInputs[key] = val;
     });
 
+    // Special handling for 'reference': use Previous Result if selected
+    if (selectedTemplate.inputRequirements.includes('reference')) {
+       if (referenceSource === 'previous' && previousResultUrl) {
+           validInputs['reference'] = previousResultUrl;
+       }
+       // If set to 'upload', it falls back to inputAssets['reference'] which is already set above
+    }
+
     generation.submit({
       templateId: selectedTemplate.id,
       parameters: params,
@@ -392,6 +404,13 @@ export default function AssetGenerationModal({
     Object.entries(inputAssets).forEach(([key, val]) => {
       if (val) validInputs[key] = val;
     });
+
+    // Special handling for 'reference': use Previous Result if selected
+    if (selectedTemplate.inputRequirements.includes('reference')) {
+       if (referenceSource === 'previous' && previousResultUrl) {
+           validInputs['reference'] = previousResultUrl;
+       }
+    }
 
     // Combine original instructions with new feedback if present
     let prompt = extraInstructions;
@@ -549,6 +568,62 @@ export default function AssetGenerationModal({
                   </div>
                 </div>
               </div>
+
+              {/* Source Selection (if applicable) */}
+              {selectedTemplate.inputRequirements.includes('reference') && previousResultUrl && inputAssets.reference && (
+                <div style={{ marginBottom: 16 }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      marginBottom: 6,
+                      color: 'var(--vscode-foreground, #ccc)',
+                    }}
+                  >
+                    Input Bron
+                  </label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => setReferenceSource('upload')}
+                      style={{
+                         flex: 1,
+                         padding: '8px 12px',
+                         border: referenceSource === 'upload' ? '2px solid var(--vscode-focusBorder, #007fd4)' : '1px solid var(--vscode-widget-border, #333)',
+                         background: referenceSource === 'upload' ? 'var(--vscode-list-activeSelectionBackground, #094771)' : 'transparent',
+                         color: 'var(--vscode-foreground, #ccc)',
+                         borderRadius: 6,
+                         cursor: 'pointer',
+                         fontSize: 13,
+                         textAlign: 'center'
+                      }}
+                    >
+                       Originele Upload
+                    </button>
+                    <button
+                      onClick={() => setReferenceSource('previous')}
+                      style={{
+                         flex: 1,
+                         padding: '8px 12px',
+                         border: referenceSource === 'previous' ? '2px solid var(--vscode-focusBorder, #007fd4)' : '1px solid var(--vscode-widget-border, #333)',
+                         background: referenceSource === 'previous' ? 'var(--vscode-list-activeSelectionBackground, #094771)' : 'transparent',
+                         color: 'var(--vscode-foreground, #ccc)',
+                         borderRadius: 6,
+                         cursor: 'pointer',
+                         fontSize: 13,
+                         textAlign: 'center'
+                      }}
+                    >
+                       Vorige AI Content
+                    </button>
+                  </div>
+                   <div style={{ fontSize: 11, color: '#888', marginTop: 4}}>
+                      {referenceSource === 'upload'
+                        ? 'Gebruikt de origineel geüploade foto als basis.'
+                        : 'Gebruikt het huidige AI resultaat als basis voor verdere aanpassingen.'}
+                   </div>
+                </div>
+              )}
 
               {/* Parameters */}
               {Object.entries(selectedTemplate.parameters).map(([key, param]) => {
