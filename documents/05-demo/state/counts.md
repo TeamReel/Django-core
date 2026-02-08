@@ -1,6 +1,6 @@
 # Database Model Counts
 
-> Last updated: 2026-02-07 (SoccerWiki import + Kit upload UI)
+> Last updated: 2026-02-08 (File upload path fix)
 
 **Database**: postgresql (switchback.proxy.rlwy.net)
 
@@ -19,20 +19,25 @@
 | MediaTags | 78 | - |
 | BrandProfiles | 102 | - |
 | DesignTokens | 645 | - |
-| BrandAssets | 71 | - |
-| FileAssets | 66 | - |
+| BrandAssets | 71 | + |
+| FileAssets | 66 | + |
 | FeatureFlags | 44 | - |
 
-## 🎯 Current Status: Identity & Kits UI Complete
+## 🎯 Current Status: File Upload & Storage ✅
 
 **Completed**:
 - ✅ Club logos loaded from S3 bucket (`logos/clubs/{id}.png`)
 - ✅ Player photos loaded from S3 bucket (`players/{soccerwiki_id}.png`)
-- ✅ Kit types added to BrandAsset model (home, away, third, goalkeeper, coach, assistant, training)
+- ✅ Kit types added to BrandAsset model
 - ✅ Kits tab in Club detail page with full upload functionality
 - ✅ Logo/photo URL displays removed, replaced with status indicators
+- ✅ **Fixed**: File upload paths now use canonical structure:
+  - Club: `clubs/{slug}-{id}/logo/{uuid}/filename.ext`
+  - Team: `clubs/{club-slug}-{club-id}/teams/{team-slug}-{team-id}/logo/{uuid}/filename.ext`
+- ✅ **Fixed**: Double-slug pattern (`ajax-ajax`) auto-resolved to correct project
+- ✅ **Fixed**: UUID added to prevent duplicate storage_path conflicts
 
-**Next**: Test kit upload flow in production
+**Next**: Media Library upload integration
 
 ## Project Hierarchy
 

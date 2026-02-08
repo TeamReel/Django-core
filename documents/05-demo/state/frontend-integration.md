@@ -1,16 +1,17 @@
 # Frontend Integration Status
 
-> Last updated: 2026-02-07 (SoccerWiki import + Kit upload UI)
+> Last updated: 2026-02-08 (File upload path fix)
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.
 
-## 🎯 Current Focus: Identity & Media Complete
+## 🎯 Current Focus: File Storage Complete
 
-**Status**: Brand Identity & Kit Management fully integrated
-- ✅ Club logos from S3 (`logos/clubs/{id}.png`)
+**Status**: File upload paths & storage fully working
+- ✅ Club logos from S3 (`clubs/{slug}-{id}/logo/{uuid}/...`)
 - ✅ Player photos from S3 (`players/{soccerwiki_id}.png`)
 - ✅ Kit upload UI (FileAsset + BrandAsset flow)
-- ✅ Simplified photo/logo status displays (no URL clutter)
+- ✅ Canonical path structure enforced by backend
+- ✅ Frontend path_prefix auto-corrected (double-slug fix)
 
 **Next**: Media Library upload functionality
 
@@ -221,15 +222,22 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - [ ] Task queue status widget (optional)
   - [ ] Async job progress indicator
 
-### B35 File Storage 🟡
-- **Backend**: FileAsset model (66 items from SoccerWiki import)
+### B35 File Storage ✅
+- **Backend**: FileAsset model, canonical path structure
+- **Path Structure**:
+  - Club: `clubs/{slug}-{id}/{category}/{uuid}/filename.ext`
+  - Team: `clubs/{club-slug}-{club-id}/teams/{team-slug}-{team-id}/{category}/{uuid}/filename.ext`
 - **Frontend**:
   - ✅ File upload via Kit management (ClubKitsTab)
   - ✅ X-Organization-ID header for org-scoped uploads
+  - ✅ path_prefix parameter for category routing
+  - ✅ Backend auto-corrects frontend path issues (double-slug, missing UUID)
   - ❌ General file upload component in MediaLibrary
+- **Backend Fixes** (2026-02-08):
+  - ✅ Double-slug pattern (`ajax-ajax`) → resolved to correct project (`ajax`)
+  - ✅ UUID added to all paths → prevents duplicate storage_path conflicts
 - **TODO**:
   - [ ] File upload component in MediaLibrary
-  - [ ] Presigned URL upload flow
 
 ---
 
@@ -262,6 +270,14 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 ---
 
 ## Recent Completions
+
+### 2026-02-08: File Upload Path Fix
+- ✅ Fixed canonical storage path structure for clubs and teams
+- ✅ Backend intercepts legacy frontend paths (`logos/`, `clubs/`, `teams/`)
+- ✅ Resolves project by ID or slug, rewrites to canonical path
+- ✅ Added double-slug rescue logic (`ajax-ajax` → `ajax`)
+- ✅ Added UUID to all project paths to prevent IntegrityError on duplicate filenames
+- ✅ Cleaned up legacy S3 folders (`clubs/ajax-ajax/`, root team folders)
 
 ### 2026-02-07: Kit Upload & Identity UI Cleanup
 - ✅ Kit asset types added to BrandAsset model (home, away, third, goalkeeper, coach, assistant, training)
