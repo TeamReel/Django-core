@@ -1,20 +1,43 @@
+import logging
+import os
+
 from django.conf import settings
 from django.utils.module_loading import import_string
 
 from files.backends.base import StorageBackend
 from files.backends.local import LocalStorageBackend
 
+logger = logging.getLogger(__name__)
+
 
 def get_storage_backend() -> StorageBackend:
     """
     Return the configured storage backend instance.
-    Defaults to LocalStorageBackend if not configured.
+
+    Priority:
+    1. Explicit FILES_STORAGE_BACKEND Django setting
+    2. Auto-detect: if AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY env vars exist → S3
+    3. Fallback: LocalStorageBackend
     """
+    # 1. Explicit Django setting
     backend_path = getattr(settings, "FILES_STORAGE_BACKEND", None)
     if backend_path:
         try:
             backend_cls = import_string(backend_path)
             return backend_cls()
-        except ImportError:
-            pass
+        except (ImportError, Exception) as exc:
+            logger.warning("Failed to load storage backend %s: %s", backend_path, exc)
+
+    # 2. Auto-detect AWS credentials in environment
+    if os.environ.get("AWS_ACCESS_KEY_ID") and os.environ.get("AWS_SECRET_ACCESS_KEY"):
+        try:
+            from files.backends.s3 import S3StorageBackend
+
+            backend = S3StorageBackend()
+            logger.info("Auto-detected AWS credentials, using S3StorageBackend")
+            return backend
+        except Exception as exc:
+            logger.warning("AWS credentials found but S3 backend failed: %s", exc)
+
+    # 3. Fallback
     return LocalStorageBackend()
