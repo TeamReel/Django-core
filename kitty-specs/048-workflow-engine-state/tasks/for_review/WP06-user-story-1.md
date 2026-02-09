@@ -6,11 +6,84 @@ phase: "Phase 1 - API"
 lane: "for_review"
 agent: "claude-sonnet-4.5"
 shell_pid: "73412"
+review_status: "has_feedback"
+reviewer_agent: "claude-sonnet-4.5"
+reviewer_shell_pid: "$PID"
 history:
   - timestamp: "2026-02-09T18:18:50Z"
     lane: "planned"
     agent: "system"
     action: "Prompt generated"
+---
+
+## Review Feedback (2026-02-09)
+
+**Reviewer**: claude-sonnet-4.5 | **Status**: ⚠️ NEEDS MINOR FIX | **Quality**: 95/100
+
+### Summary
+Excellent implementation with 11/14 tests passing. Core CRUD functionality validated. One test bug requires a one-line fix. Two test errors are from pre-existing conftest.py issue (not WP06 fault).
+
+### Issues to Fix
+
+#### 🔴 BLOCKING: Test Bug (Line 301)
+**File**: [tests/workflows/integration/test_template_api.py](tests/workflows/integration/test_template_api.py#L301)
+
+```python
+# ❌ WRONG - uses ActiveWorkflowManager which filters out inactive records
+assert (
+    WorkflowTemplate.objects.all().filter(id=workflow_template.id, is_active=False).exists()
+)
+
+# ✅ CORRECT - use all_objects manager to see inactive records
+assert (
+    WorkflowTemplate.all_objects.filter(id=workflow_template.id, is_active=False).exists()
+)
+```
+
+**Why**: `objects` is `ActiveWorkflowManager` which filters `is_active=True` by default. Even `.all()` doesn't bypass this filter. Must use `all_objects` manager.
+
+### Non-Blocking Issues
+
+#### ℹ️ INFO: Pre-existing conftest.py issue (Not WP06 fault)
+Two tests error due to `RuntimeError: Conflicting 'project' models`:
+- `test_update_template_with_active_instances_fails`
+- `test_update_template_with_force_update_succeeds`
+
+**Root cause**: `tests/conftest.py` imports both `projects.models.project.Project` and `src.projects.models.project.Project`. This is a test infrastructure issue unrelated to WP06 implementation.
+
+**Fix required**: Separate ticket to clean up conftest.py imports.
+
+### What Works ✅
+
+- **ViewSet Structure**: Correct DRF ModelViewSet pattern
+- **Permissions**: IsAdminUser for CUD, IsAuthenticated for R
+- **Force Update Logic**: Correctly checks `WorkflowInstance` count
+- **Soft-Delete**: Sets `is_active=False` with `update_fields`
+- **OpenAPI Docs**: Complete `@extend_schema` annotations
+- **URL Registration**: `/api/v1/workflows/templates/` routes working
+- **11 passing tests**: list, create, retrieve, update, delete permissions all validated
+
+### Test Results
+```
+11 passed, 1 failed, 2 errors (78.5% pass rate)
+✅ PASSED: All list, create, retrieve, update (no instances), permission tests
+❌ FAILED: test_delete_template_admin_soft_delete (wrong manager)
+⚠️ ERROR: 2 tests with project fixture (pre-existing conftest.py issue)
+```
+
+### Django Check
+```
+System check identified 194 issues (0 silenced).
+0 CRITICAL, 0 ERROR
+194 warnings (pre-existing drf_spectacular and security warnings, unrelated to WP06)
+```
+
+### Next Steps
+1. Fix line 301 in test file (change `objects` → `all_objects`)
+2. Re-run tests: `pytest tests/workflows/integration/test_template_api.py -v`
+3. Validate 12/14 passing (with 2 expected errors from conftest.py)
+4. Move back to `for_review` for re-approval
+
 ---
 
 # WP06 – User Story 1: Template CRUD API 🎯 MVP
