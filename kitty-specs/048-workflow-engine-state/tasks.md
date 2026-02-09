@@ -159,23 +159,24 @@ description: "Work package task list for B37 Workflow Engine & State Machine"
 
 ---
 
-## Work Package WP04: Validator & Hook Registry (Priority: P0)
+## Work Package WP04: Validator & Hook Registry (Priority: P0) ✅ COMPLETE
 
 **Goal**: Implement registration pattern for pluggable validators and hooks.
 **Independent Test**: Can register validators/hooks, retrieve them, use in tests with isolated registries.
-**Prompt**: `kitty-specs/048-workflow-engine-state/tasks/planned/WP04-registry-pattern.md`
+**Prompt**: `kitty-specs/048-workflow-engine-state/tasks/done/WP04-registry-pattern.md`
+**Status**: ✅ Approved 2026-02-09 by claude-reviewer
 
 ### Included Subtasks
-- [ ] T032 Create `ValidatorRegistry` class in `src/workflows/registry.py` with type hints
-- [ ] T033 Implement `@ValidatorRegistry.validator(name)` decorator
-- [ ] T034 Implement `ValidatorRegistry.get(name)` method with error handling
-- [ ] T035 [P] Create `HookRegistry` class in `src/workflows/registry.py` with type hints
-- [ ] T036 [P] Implement `@HookRegistry.hook(type, state)` decorator (on_enter, on_exit, on_transition)
-- [ ] T037 [P] Implement `HookRegistry.get_hooks(type, state)` method returning list
-- [ ] T038 Add registry initialization in `src/workflows/apps.py` (ready() method)
-- [ ] T039 Create example validator and hook in `src/workflows/examples.py` for documentation
-- [ ] T040 Write unit tests for registries in `tests/workflows/unit/test_registry.py` with isolation
-- [ ] T041 Document registry pattern in extension guide (update module README)
+- [x] T032 Create `ValidatorRegistry` class in `src/workflows/registry.py` with type hints
+- [x] T033 Implement `@ValidatorRegistry.validator(name)` decorator
+- [x] T034 Implement `ValidatorRegistry.get(name)` method with error handling
+- [x] T035 [P] Create `HookRegistry` class in `src/workflows/registry.py` with type hints
+- [x] T036 [P] Implement `@HookRegistry.hook(type, state)` decorator (on_enter, on_exit, on_transition)
+- [x] T037 [P] Implement `HookRegistry.get_hooks(type, state)` method returning list
+- [x] T038 Add registry initialization in `src/workflows/apps.py` (ready() method)
+- [x] T039 Create example validator and hook in `src/workflows/examples.py` for documentation
+- [x] T040 Write unit tests for registries in `tests/workflows/unit/test_registry.py` with isolation
+- [x] T041 Document registry pattern in extension guide (update module README)
 
 ### Constitutional Alignment
 - Principle II (Architecture): Extension points with stable API (decorator pattern)
