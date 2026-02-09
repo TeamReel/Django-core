@@ -21,6 +21,9 @@ class WorkflowInstanceSerializer(serializers.ModelSerializer):
     - available_actions: List of action names available from current state
     """
 
+    # Explicit FK field to include inactive workflows for validation
+    workflow = serializers.PrimaryKeyRelatedField(queryset=WorkflowTemplate.all_objects.all())
+
     workflow_name = serializers.CharField(source="workflow.name", read_only=True)
     workflow_version = serializers.CharField(source="workflow.version", read_only=True)
     created_by_username = serializers.CharField(
@@ -53,6 +56,8 @@ class WorkflowInstanceSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "id",
             "workflow_snapshot",
+            "current_state",  # Set by WorkflowEngine
+            "created_by",  # Set by request.user
             "version",
             "created_at",
             "updated_at",

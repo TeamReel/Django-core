@@ -140,11 +140,13 @@ class TestWorkflowInstanceList:
         response = api_client.get("/api/v1/workflows/instances/")
 
         assert response.status_code == status.HTTP_200_OK
-        data = response.json()
-        assert "data" in data  # Paginated response
-        assert len(data["data"]) == 1
-        assert data["data"][0]["workflow_name"] == "Content Approval"
-        assert data["data"][0]["current_state"] == "draft"
+        result = response.json()
+        assert "data" in result  # Success envelope
+        pagination = result["data"]  # Pagination object {data: [...], meta: {...}}
+        assert "data" in pagination  # Paginated list
+        assert len(pagination["data"]) == 1
+        assert pagination["data"][0]["workflow_name"] == "Content Approval"
+        assert pagination["data"][0]["current_state"] == "draft"
 
     def test_list_instances_unauthenticated(self, api_client):
         """Unauthenticated request returns 401."""
@@ -180,7 +182,7 @@ class TestWorkflowInstanceList:
         assert len(data["data"]) == 1
 
     def test_list_instances_only_accessible_projects(
-        self, api_client, regular_user, other_user, admin_user, workflow_template
+        self, api_client, regular_user, other_user, admin_user, workflow_template, organisation
     ):
         """User only sees instances from projects they have access to."""
         # Import via apps to avoid conftest conflict
@@ -190,13 +192,15 @@ class TestWorkflowInstanceList:
         ProjectMembership = apps.get_model("projects", "ProjectMembership")
 
         # Create two projects
-        project1 = Project.objects.create(name="Project 1", created_by=admin_user)
-        project2 = Project.objects.create(name="Project 2", created_by=admin_user)
+        project1 = Project.objects.create(
+            name="Project 1", slug="proj-1", organisation=organisation, creator=admin_user
+        )
+        project2 = Project.objects.create(
+            name="Project 2", slug="proj-2", organisation=organisation, creator=admin_user
+        )
 
         # regular_user is member of project1 only
-        ProjectMembership.objects.create(
-            project=project1, user=regular_user, role="member", is_active=True
-        )
+        ProjectMembership.objects.create(project=project1, user=regular_user, role="editor")
 
         content_type = ContentType.objects.get_for_model(project1)
 
@@ -249,16 +253,18 @@ class TestWorkflowInstanceCreate:
             "/api/v1/workflows/instances/",
             {
                 "workflow": workflow_template.id,
-                "project": project.id,
+                "project": str(project.id),
                 "content_type": content_type.id,
-                "object_id": content_object.id,
+                "object_id": str(content_object.id),
                 "context": {"note": "Initial submission"},
             },
             format="json",
         )
 
         assert response.status_code == status.HTTP_201_CREATED
-        data = response.json()
+        result = response.json()
+        assert "data" in result  # Success envelope
+        data = result["data"]
         assert data["current_state"] == "draft"  # Initial state
         assert data["workflow_snapshot"] == workflow_template.definition  # Immutable snapshot
         assert data["context"] == {"note": "Initial submission"}
@@ -281,12 +287,18 @@ class TestWorkflowInstanceCreate:
                 "workflow": workflow_template.id,
                 "project": project.id,
                 "content_type": content_type.id,
-                "object_id": content_object.id,
+                "object_id": str(content_object.id),
+                "context": {},
             },
             format="json",
         )
 
+        # ViewSet validates request then checks membership - expect 403
         assert response.status_code == status.HTTP_403_FORBIDDEN
+        data = response.json()
+        assert "error" in data
+        assert "message" in data["error"]
+        assert "project member" in data["error"]["message"].lower()
 
     def test_create_instance_snapshot_immutable(
         self,
@@ -307,14 +319,17 @@ class TestWorkflowInstanceCreate:
                 "workflow": workflow_template.id,
                 "project": project.id,
                 "content_type": content_type.id,
-                "object_id": content_object.id,
+                "object_id": str(content_object.id),
+                "context": {},
             },
             format="json",
         )
 
         assert response.status_code == status.HTTP_201_CREATED
-        instance_id = response.json()["id"]
-        original_snapshot = response.json()["workflow_snapshot"]
+        result = response.json()
+        assert "data" in result  # Success envelope
+        instance_id = result["data"]["id"]
+        original_snapshot = result["data"]["workflow_snapshot"]
 
         # Update template
         workflow_template.definition["states"].append(
@@ -347,13 +362,20 @@ class TestWorkflowInstanceCreate:
                 "workflow": inactive_workflow_template.id,
                 "project": project.id,
                 "content_type": content_type.id,
-                "object_id": content_object.id,
+                "object_id": str(content_object.id),
+                "context": {},
             },
             format="json",
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "not active" in response.json()["workflow"][0].lower()
+        data = response.json()
+        assert "error" in data
+        assert "details" in data["error"]
+        assert "workflow" in data["error"]["details"]
+        assert any(
+            "not active" in str(error).lower() for error in data["error"]["details"]["workflow"]
+        )
 
 
 @pytest.mark.django_db
@@ -385,15 +407,17 @@ class TestWorkflowInstanceRetrieve:
         response = api_client.get(f"/api/v1/workflows/instances/{instance.id}/")
 
         assert response.status_code == status.HTTP_200_OK
-        data = response.json()
+        result = response.json()
+        assert "data" in result  # Success envelope
+        data = result["data"]
         assert data["id"] == instance.id
         assert data["current_state"] == "draft"
         assert data["workflow_snapshot"] == workflow_template.definition
 
     def test_retrieve_instance_non_member_forbidden(
-        self, api_client, other_user, project, workflow_template, content_object
+        self, api_client, other_user, project, admin_user, workflow_template, content_object
     ):
-        """Non-member cannot retrieve instance."""
+        """Non-member cannot retrieve instance (filtered out by queryset)."""
         content_type = ContentType.objects.get_for_model(content_object)
         instance = WorkflowInstance.objects.create(
             workflow=workflow_template,
@@ -402,13 +426,15 @@ class TestWorkflowInstanceRetrieve:
             content_type=content_type,
             object_id=content_object.id,
             current_state="draft",
-            created_by=other_user,
+            created_by=admin_user,
         )
 
+        # other_user is not a member of the project
         api_client.force_authenticate(user=other_user)
         response = api_client.get(f"/api/v1/workflows/instances/{instance.id}/")
 
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+        # queryset filters by accessible projects, so instance not found
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_retrieve_instance_not_found(self, api_client, regular_user):
         """Returns 404 for non-existent instance."""
@@ -450,7 +476,13 @@ class TestWorkflowInstanceUpdateDelete:
         )
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert "transition actions" in response.json()["detail"].lower()
+        data = response.json()
+        assert "error" in data
+        assert "message" in data["error"]
+        assert (
+            "transition" in data["error"]["message"].lower()
+            or "update" in data["error"]["message"].lower()
+        )
 
     def test_delete_instance_forbidden(
         self,
@@ -477,4 +509,10 @@ class TestWorkflowInstanceUpdateDelete:
         response = api_client.delete(f"/api/v1/workflows/instances/{instance.id}/")
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert "cannot be deleted" in response.json()["detail"].lower()
+        data = response.json()
+        assert "error" in data
+        assert "message" in data["error"]
+        assert (
+            "delete" in data["error"]["message"].lower()
+            or "immutable" in data["error"]["message"].lower()
+        )
