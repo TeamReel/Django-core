@@ -66,24 +66,25 @@ description: "Work package task list for B37 Workflow Engine & State Machine"
 
 ---
 
-## Work Package WP02: Core Models & Migrations (Priority: P0)
+## Work Package WP02: Core Models & Migrations (Priority: P0) ✅ COMPLETE
 
 **Goal**: Implement all database models with indexes, constraints per data-model.md.
 **Independent Test**: Migrations apply cleanly, models can be created/queried via Django ORM.
-**Prompt**: `kitty-specs/048-workflow-engine-state/tasks/planned/WP02-core-models.md`
+**Prompt**: `kitty-specs/048-workflow-engine-state/tasks/done/WP02-core-models.md`
+**Status**: ✅ Approved 2026-02-09 by claude-reviewer
 
 ### Included Subtasks
-- [ ] T008 [P] Create `WorkflowTemplate` model in `src/workflows/models/template.py` with type hints
-- [ ] T009 [P] Create `WorkflowInstance` model in `src/workflows/models/instance.py` with type hints, GenericFK
-- [ ] T010 [P] Create `TransitionHistory` model in `src/workflows/models/history.py` with type hints
-- [ ] T011 [P] Create `ProjectPermissionOverride` model in `src/workflows/models/permissions.py` with type hints
-- [ ] T012 Create `src/workflows/models/__init__.py` to export all models
-- [ ] T013 Add model validators (context size 64KB, state consistency checks)
-- [ ] T014 Create initial migration `001_initial.py`
-- [ ] T015 Add indexes per data-model.md (project+state, content_type+object_id, etc.)
-- [ ] T016 Add unique constraints (ProjectPermissionOverride: project+workflow+action)
-- [ ] T017 Test migrations run cleanly with `python manage.py migrate --dry-run`
-- [ ] T018 Create factory_boy factories in `tests/workflows/factories.py` for all models
+- [x] T008 [P] Create `WorkflowTemplate` model in `src/workflows/models/template.py` with type hints
+- [x] T009 [P] Create `WorkflowInstance` model in `src/workflows/models/instance.py` with type hints, GenericFK
+- [x] T010 [P] Create `TransitionHistory` model in `src/workflows/models/history.py` with type hints
+- [x] T011 [P] Create `ProjectPermissionOverride` model in `src/workflows/models/permissions.py` with type hints
+- [x] T012 Create `src/workflows/models/__init__.py` to export all models
+- [x] T013 Add model validators (context size 64KB, state consistency checks)
+- [x] T014 Create initial migration `001_initial.py`
+- [x] T015 Add indexes per data-model.md (project+state, content_type+object_id, etc.)
+- [x] T016 Add unique constraints (ProjectPermissionOverride: project+workflow+action)
+- [x] T017 Test migrations run cleanly with `python manage.py migrate --dry-run`
+- [x] T018 Create factory_boy factories in `tests/workflows/factories.py` for all models
 
 ### Constitutional Alignment
 - Principle II (Architecture): Proper data modeling, foreign keys to existing apps (projects, auth)
