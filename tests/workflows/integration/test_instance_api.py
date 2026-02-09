@@ -38,12 +38,25 @@ def other_user(db, django_user_model):
 
 
 @pytest.fixture
-def project(db, admin_user):
+def organisation(db, admin_user):
+    """Create test organisation."""
+    from django.apps import apps
+
+    Organisation = apps.get_model("organisations", "Organisation")
+    return Organisation.objects.create(
+        name="Test Organisation", slug="test-org", creator=admin_user
+    )
+
+
+@pytest.fixture
+def project(db, organisation, admin_user):
     """Create test project."""
     from django.apps import apps
 
     Project = apps.get_model("projects", "Project")
-    return Project.objects.create(name="Test Project", created_by=admin_user)
+    return Project.objects.create(
+        name="Test Project", slug="test-project", organisation=organisation, creator=admin_user
+    )
 
 
 @pytest.fixture
@@ -52,9 +65,7 @@ def project_membership(db, project, regular_user):
     from django.apps import apps
 
     ProjectMembership = apps.get_model("projects", "ProjectMembership")
-    return ProjectMembership.objects.create(
-        project=project, user=regular_user, role="member", is_active=True
-    )
+    return ProjectMembership.objects.create(project=project, user=regular_user, role="editor")
 
 
 @pytest.fixture
@@ -64,7 +75,6 @@ def workflow_template(db, admin_user):
         name="Content Approval",
         version="1.0",
         description="Standard content approval workflow",
-        created_by=admin_user,
         is_active=True,
         definition={
             "states": [
@@ -86,7 +96,6 @@ def inactive_workflow_template(db, admin_user):
     return WorkflowTemplate.objects.create(
         name="Inactive Workflow",
         version="1.0",
-        created_by=admin_user,
         is_active=False,
         definition={
             "states": [{"name": "draft", "is_initial": True, "is_terminal": False}],

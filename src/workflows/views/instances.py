@@ -41,9 +41,9 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
         user = self.request.user
         Project = apps.get_model("projects", "Project")
 
-        # Get projects user has access to
+        # Get projects user has access to (memberships use deleted_at for soft delete)
         accessible_projects = Project.objects.filter(
-            memberships__user=user, memberships__is_active=True
+            memberships__user=user, memberships__deleted_at__isnull=True
         ).values_list("id", flat=True)
 
         return (
@@ -62,7 +62,9 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
         Raises:
             PermissionDenied: If user is not an active member
         """
-        is_member = project.memberships.filter(user=self.request.user, is_active=True).exists()
+        is_member = project.memberships.filter(
+            user=self.request.user, deleted_at__isnull=True
+        ).exists()
 
         if not is_member:
             raise PermissionDenied("You must be a project member to perform this action")
