@@ -297,10 +297,10 @@ class TestWorkflowTemplateDelete:
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
         # Verify soft-delete (record still exists but inactive)
-        # Use all() manager to see inactive records (default manager filters them out)
-        assert (
-            WorkflowTemplate.objects.all().filter(id=workflow_template.id, is_active=False).exists()
-        )
+        # Use all_objects manager to see inactive records (default manager filters them out)
+        assert WorkflowTemplate.all_objects.filter(
+            id=workflow_template.id, is_active=False
+        ).exists()
 
     def test_delete_template_non_admin_forbidden(self, api_client, regular_user, workflow_template):
         """Non-admin cannot delete template."""
