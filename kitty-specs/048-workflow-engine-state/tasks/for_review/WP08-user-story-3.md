@@ -106,3 +106,4 @@ Activity Log: 2026-02-09T18:18:50Z – Created
 ## Activity Log
 
 - 2026-02-09T20:25:28Z – system – shell_pid= – lane=doing – Starting implementation of Execute Transitions (User Story 3)
+- 2026-02-09T20:35:28Z – copilot – shell_pid= – lane=for_review – ViewSet custom actions complete, endpoint routing needs verification
