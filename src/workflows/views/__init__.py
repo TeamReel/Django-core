@@ -1,2 +1,7 @@
 """Views for workflows app."""
-# Views will be imported here as they are created
+
+from src.workflows.views.templates import WorkflowTemplateViewSet
+
+__all__ = [
+    "WorkflowTemplateViewSet",
+]

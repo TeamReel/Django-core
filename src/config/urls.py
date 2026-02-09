@@ -88,6 +88,8 @@ urlpatterns = [
     path("api/v1/generative/", include("src.generative.urls")),
     # B35: Smart Asset Library API
     path("api/v1/media/", include("medialib.urls")),
+    # B37: Workflow Engine & State Machine API
+    path("api/v1/workflows/", include("src.workflows.urls")),
     # B41: User Navigation State API
     path("api/v1/navigation/", include("navigation.urls")),
     # Security Baseline API
