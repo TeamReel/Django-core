@@ -3,11 +3,11 @@ work_package_id: "WP02"
 subtasks: ["T008", "T009", "T010", "T011", "T012", "T013", "T014", "T015", "T016", "T017", "T018"]
 title: "Core Models & Migrations"
 phase: "Phase 0 - Foundation"
-lane: "doing"
+lane: "for_review"
 assignee: "Claude"
 agent: "claude"
 shell_pid: "39876"
-review_status: ""
+review_status: "pending"
 reviewed_by: ""
 history:
   - timestamp: "2026-02-09T18:18:50Z"
@@ -20,6 +20,11 @@ history:
     agent: "claude"
     shell_pid: "39876"
     action: "Started core models implementation"
+  - timestamp: "2026-02-09T20:45:00Z"
+    lane: "for_review"
+    agent: "claude"
+    shell_pid: "39876"
+    action: "Completed all 11 subtasks, ready for code review"
 ---
 
 # Work Package Prompt: WP02 – Core Models & Migrations
