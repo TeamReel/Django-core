@@ -3,10 +3,10 @@ work_package_id: "WP02"
 subtasks: ["T008", "T009", "T010", "T011", "T012", "T013", "T014", "T015", "T016", "T017", "T018"]
 title: "Core Models & Migrations"
 phase: "Phase 0 - Foundation"
-lane: "planned"
-assignee: ""
-agent: ""
-shell_pid: ""
+lane: "doing"
+assignee: "Claude"
+agent: "claude"
+shell_pid: "39876"
 review_status: ""
 reviewed_by: ""
 history:
@@ -15,6 +15,11 @@ history:
     agent: "system"
     shell_pid: ""
     action: "Prompt generated via /spec-kitty.tasks"
+  - timestamp: "2026-02-09T20:35:00Z"
+    lane: "doing"
+    agent: "claude"
+    shell_pid: "39876"
+    action: "Started core models implementation"
 ---
 
 # Work Package Prompt: WP02 – Core Models & Migrations
