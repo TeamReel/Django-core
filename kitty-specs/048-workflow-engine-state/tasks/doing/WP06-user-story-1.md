@@ -3,7 +3,9 @@ work_package_id: "WP06"
 subtasks: ["T053", "T054", "T055", "T056", "T057", "T058", "T059", "T060", "T061", "T062", "T063", "T064"]
 title: "User Story 1 – Define Workflow Templates"
 phase: "Phase 1 - API"
-lane: "planned"
+lane: "doing"
+agent: "claude-sonnet-4.5"
+shell_pid: "73412"
 history:
   - timestamp: "2026-02-09T18:18:50Z"
     lane: "planned"
@@ -82,3 +84,7 @@ class WorkflowTemplateViewSet(viewsets.ModelViewSet):
 - [ ] Swagger annotations added
 
 Activity Log: 2026-02-09T18:18:50Z – Created
+
+## Activity Log
+
+- 2026-02-09T19:27:38Z – claude-sonnet-4.5 – shell_pid=73412 – lane=doing – Started implementation of User Story 1 - Template CRUD API
