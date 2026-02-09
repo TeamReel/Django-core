@@ -3,7 +3,7 @@ work_package_id: "WP06"
 subtasks: ["T053", "T054", "T055", "T056", "T057", "T058", "T059", "T060", "T061", "T062", "T063", "T064"]
 title: "User Story 1 – Define Workflow Templates"
 phase: "Phase 1 - API"
-lane: "for_review"
+lane: "planned"
 agent: "claude-sonnet-4.5"
 shell_pid: "73412"
 review_status: "has_feedback"
@@ -162,3 +162,4 @@ Activity Log: 2026-02-09T18:18:50Z – Created
 
 - 2026-02-09T19:27:38Z – claude-sonnet-4.5 – shell_pid=73412 – lane=doing – Started implementation of User Story 1 - Template CRUD API
 - 2026-02-09T19:35:49Z – claude-sonnet-4.5 – shell_pid=73412 – lane=for_review – Completed implementation - 11/14 tests passing, 2 skipped due to project fixture issue
+- 2026-02-09T19:42:08Z – claude-sonnet-4.5 – shell_pid=73412 – lane=planned – Review complete: needs one-line test fix (line 301 wrong manager)
