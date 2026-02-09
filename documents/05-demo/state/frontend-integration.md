@@ -1,19 +1,20 @@
 # Frontend Integration Status
 
-> Last updated: 2026-02-08 (File upload path fix)
+> Last updated: 2026-02-09 (AI Generation Integration Complete)
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.
 
-## 🎯 Current Focus: File Storage Complete
+## 🎯 Current Focus: AI Generation Complete ✅
 
-**Status**: File upload paths & storage fully working
-- ✅ Club logos from S3 (`clubs/{slug}-{id}/logo/{uuid}/...`)
-- ✅ Player photos from S3 (`players/{soccerwiki_id}.png`)
-- ✅ Kit upload UI (FileAsset + BrandAsset flow)
-- ✅ Canonical path structure enforced by backend
-- ✅ Frontend path_prefix auto-corrected (double-slug fix)
+**Status**: Full AI asset generation pipeline working
+- ✅ AssetGenerationModal with 3-step wizard
+- ✅ 6 templates (logo, sponsor, tenue, keeper, fullbody, closeup)
+- ✅ Member page with tenue selector + AI generation
+- ✅ Member Assets tab with CRUD per kit type
+- ✅ Club Assets tab with kit generation
+- ✅ Exact kit reproduction from reference images
 
-**Next**: Media Library upload functionality
+**Next**: B37 Workflow Engine & State Machine
 
 ## Legend
 
@@ -243,13 +244,32 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 
 ## Generation Modules
 
-### B34 Generative Pipelines ⚪
-- **Backend**: NOT MIGRATED (design complete)
-- **Frontend**: N/A
-- **TODO**:
-  - [ ] Backend migrations runnen
-  - [ ] GenerationRequest submit UI
-  - [ ] Job status polling/WebSocket
+### B34 Generative Pipelines ✅ (NEW)
+- **Backend**: Asset generation pipeline with Google Gemini
+  - `/api/v1/generative/assets/generate/` - Generate variants
+  - `/api/v1/generative/assets/save/` - Save accepted variant
+  - 6 prompt templates in `teamreel_prompts.py`
+- **Frontend**:
+  - ✅ AssetGenerationModal (3-step wizard: template → config → results)
+  - ✅ useAssetGeneration hook (submit, variants, acceptVariant)
+  - ✅ Template cards with icons and descriptions
+  - ✅ Parameter configuration (sleeves, neck, pose, expression, kit_type)
+  - ✅ Variant grid with selection
+  - ✅ Feedback/refinement form for iterations
+  - ✅ Previous result as reference option
+  - ✅ Input key mapping (person→person_photo, reference→reference_photo)
+- **Templates**:
+  - `logo_standardize` - Logo naar vierkant formaat
+  - `sponsor_standardize` - Sponsor logo standaardiseren
+  - `tenue_generate` - Voetbaltenue genereren
+  - `keeper_tenue` - Keeperstenue genereren
+  - `fullbody_in_tenue` - Speler fullbody in tenue
+  - `closeup_in_tenue` - Speler close-up in tenue
+- **Integration Points**:
+  - ✅ Club Assets tab (AssetsTab level="club")
+  - ✅ Member detail page (tenue selector + generation)
+  - ✅ Member Assets tab (generated fullbody/closeup per kit type)
+- **Status**: ✅ Volledig (iteratie mogelijk voor betere resultaten)
 
 ---
 
@@ -270,6 +290,20 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 ---
 
 ## Recent Completions
+
+### 2026-02-09: AI Generation Integration Complete
+- ✅ AssetGenerationModal with 3-step wizard (template selection → configuration → results)
+- ✅ 6 generation templates (logo, sponsor, tenue, keeper, fullbody_in_tenue, closeup_in_tenue)
+- ✅ useAssetGeneration hook with submit, variants, acceptVariant flow
+- ✅ Member detail page with tenue selector grid (home, away, third, goalkeeper, training)
+- ✅ Member Assets tab with CRUD for generated fullbody/closeup per kit type
+- ✅ Input key mapping fix (person→person_photo, reference→reference_photo)
+- ✅ Prompt engineering for exact kit reproduction from reference images
+- ✅ SavedAssetInfo callback with storagePath for membership metadata updates
+- ✅ Delete functionality for member generated assets
+- ✅ Multiple variants (1-4) with visual selection
+- ✅ Feedback/refinement form for iteration (colors, pattern, logo, collar)
+- ✅ Previous result as reference option for improvements
 
 ### 2026-02-08: File Upload Path Fix
 - ✅ Fixed canonical storage path structure for clubs and teams
@@ -345,5 +379,5 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 | `/api/v1/sport-configuration/sports/` | useSports | ✅ |
 | `/api/v1/sport-configuration/formations/` | useSports | ✅ |
 | `/api/v1/files/` | ClubKitsTab (kit upload) | ✅ |
-| `/api/v1/generative/templates/` | - | ⚪ Backend n/a |
-| `/api/v1/generative/requests/` | - | ⚪ Backend n/a |
+| `/api/v1/generative/assets/generate/` | useAssetGeneration | ✅ |
+| `/api/v1/generative/assets/save/` | useAssetGeneration | ✅ |

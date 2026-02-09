@@ -1,6 +1,6 @@
 # Database Model Counts
 
-> Last updated: 2026-02-08 (File upload path fix)
+> Last updated: 2026-02-09 (AI Generation Integration)
 
 **Database**: postgresql (switchback.proxy.rlwy.net)
 
@@ -23,21 +23,22 @@
 | FileAssets | 66 | + |
 | FeatureFlags | 44 | - |
 
-## 🎯 Current Status: File Upload & Storage ✅
+## 🎯 Current Status: AI Generation Complete ✅
 
 **Completed**:
-- ✅ Club logos loaded from S3 bucket (`logos/clubs/{id}.png`)
-- ✅ Player photos loaded from S3 bucket (`players/{soccerwiki_id}.png`)
-- ✅ Kit types added to BrandAsset model
-- ✅ Kits tab in Club detail page with full upload functionality
-- ✅ Logo/photo URL displays removed, replaced with status indicators
-- ✅ **Fixed**: File upload paths now use canonical structure:
-  - Club: `clubs/{slug}-{id}/logo/{uuid}/filename.ext`
-  - Team: `clubs/{club-slug}-{club-id}/teams/{team-slug}-{team-id}/logo/{uuid}/filename.ext`
-- ✅ **Fixed**: Double-slug pattern (`ajax-ajax`) auto-resolved to correct project
-- ✅ **Fixed**: UUID added to prevent duplicate storage_path conflicts
+- ✅ AI Asset Generation Modal with 3-step wizard (template → config → results)
+- ✅ 6 generation templates: logo, sponsor, tenue, keeper, fullbody_in_tenue, closeup_in_tenue
+- ✅ Member page with tenue selector and AI generation buttons
+- ✅ Member Assets tab with CRUD for generated fullbody/closeup per kit type
+- ✅ Kit type tracking (home, away, third, goalkeeper, training)
+- ✅ Input key mapping (person→person_photo, reference→reference_photo)
+- ✅ Prompt engineering for exact kit reproduction from reference
+- ✅ Asset save flow: BrandAsset for clubs, membership metadata for members
+- ✅ Multiple variants generation (1-4) with selection
+- ✅ Feedback/iteration loop for refinement
+- ✅ Previous result as reference for improvements
 
-**Next**: Media Library upload integration
+**Next**: B37 Workflow Engine & State Machine
 
 ## Project Hierarchy
 

@@ -1,6 +1,6 @@
 # Compact Hierarchy Reference
 
-> Last updated: 2026-02-08
+> Last updated: 2026-02-09
 > Full version: [hierarchy.md](hierarchy.md)
 
 Quick reference for development. Use this for context injection in new modules.
