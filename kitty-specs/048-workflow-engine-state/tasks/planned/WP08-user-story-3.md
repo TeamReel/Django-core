@@ -195,3 +195,4 @@ Activity Log: 2026-02-09T18:18:50Z – Created
 - 2026-02-09T20:42:04Z – copilot – shell_pid= – lane=doing – Starting implementation: Addressing routing feedback
 - 2026-02-09T20:55:00Z – claude – shell_pid=73412 – lane=doing – ✅ ROUTING FIXED: Identified root cause (queryset filter excluded project creators), applied fix to get_queryset() and check_project_membership(). Tests now hitting endpoints and executing business logic. 5/11 passing (up from 4/11). Remaining failures are permission-related, not routing issues.
 - 2026-02-09T20:56:16Z – claude – shell_pid= – lane=for_review – Routing issue fixed - custom actions now accessible. 5/11 tests passing (up from 4). Remaining failures are permission-related, not routing.
+- 2026-02-09T21:02:11Z – claude-reviewer – shell_pid= – lane=planned – Code review complete: ViewSet routing fixed correctly, but WorkflowEngine permission logic incomplete (project creators not checked)
