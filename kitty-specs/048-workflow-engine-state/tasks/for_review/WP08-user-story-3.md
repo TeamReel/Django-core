@@ -3,7 +3,7 @@ work_package_id: "WP08"
 subtasks: ["T076", "T077", "T078", "T079", "T080", "T081", "T082", "T083", "T084", "T085", "T086", "T087", "T088"]
 title: "User Story 3 – Execute State Transitions"
 phase: "Phase 2 - Implementation (Partial)"
-lane: "for_review"
+lane: "planned"
 history:
   - {timestamp: "2026-02-09T18:18:50Z", lane: "planned", agent: "system", action: "Prompt generated"}
   - {timestamp: "2026-02-09T20:25:28Z", lane: "doing", agent: "copilot", action: "Started implementation"}
@@ -12,10 +12,61 @@ history:
   - {timestamp: "2026-02-09T21:15:00Z", lane: "planned", agent: "copilot", action: "Code review complete - endpoint routing issue requires investigation"}
   - {timestamp: "2026-02-09T20:42:04Z", lane: "doing", agent: "claude", action: "Starting implementation: Addressing routing feedback"}
   - {timestamp: "2026-02-09T20:55:00Z", lane: "doing", agent: "claude", action: "FIXED routing issue: get_queryset() and check_project_membership() now include project creators"}
-agent: "claude"
-review_status: ""
-implementation_status: "85% complete"
-reviewed_by: "claude"
+  - {timestamp: "2026-02-09T20:56:16Z", lane: "for_review", agent: "claude", action: "Routing issue fixed - custom actions now accessible. 5/11 tests passing (up from 4). Remaining failures are permission-related, not routing."}
+  - {timestamp: "2026-02-09T21:10:00Z", lane: "planned", agent: "claude-reviewer", action: "Code review: Needs changes - ViewSet routing fixed correctly, but WorkflowEngine permission logic incomplete"}
+agent: "claude-reviewer"
+review_status: "has_feedback"
+implementation_status: "70% complete"
+reviewed_by: "claude-reviewer"
+---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Key Issues**:
+1. **Incomplete Permission Logic** - The ViewSet correctly allows project creators to access instances, but `WorkflowEngine._check_permission()` only checks `ProjectMembership` and doesn't include project creators. This causes 403 errors when creators try to execute transitions or get available actions.
+
+2. **Test Fixture Mismatch** - Tests authenticate as `admin_user` (project creator), but don't create a ProjectMembership for that user. The tests pass `project_membership` fixture which creates membership for `regular_user` instead. This exposes the permission gap.
+
+3. **Inconsistent Access Pattern** - Two different codepaths check project access:
+   - ViewSet: Uses `Q(creator=user) | Q(memberships__user=user)` ✅
+   - WorkflowEngine: Only checks `ProjectMembership.objects.get(user=user)` ❌
+
+   These need to be aligned for consistent behavior.
+
+**What Was Done Well**:
+- ✅ ViewSet routing fix is correct and well-implemented with Q objects
+- ✅ Documentation of the routing issue was thorough
+- ✅ Code structure is clean and follows DRF patterns
+- ✅ Test coverage exists for the scenarios
+- ✅ WP07 regression tests maintained (13/13 passing)
+
+**Action Items** (must complete before re-review):
+- [ ] Fix `WorkflowEngine._check_permission()` to include project creators:
+  ```python
+  # Check if user is project creator OR has membership
+  if user.id == instance.project.creator_id:
+      return True  # Project creators have implicit permission
+
+  # Check membership as before
+  try:
+      membership = ProjectMembership.objects.get(...)
+      return membership.role in required_roles
+  except ProjectMembership.DoesNotExist:
+      return False
+  ```
+- [ ] Consider creating a shared helper method/mixin for "has project access" checks to avoid duplication
+- [ ] Fix test fixtures: Either create membership for `admin_user` OR update tests to authenticate as `regular_user`
+- [ ] Verify all 11 tests pass after permission fix
+- [ ] Update implementation status when complete
+
+**Test Results Summary**:
+- Currently: 5/11 passing
+- Expected after fix: 11/11 passing (or identify which tests should legitimately fail)
+- Routing: ✅ Working correctly
+- Permission checks: ❌ Incomplete
+
 ---
 
 ## 🔧 Current Status: ROUTING FIXED - Permission Setup in Progress
