@@ -24,6 +24,30 @@ User = settings.AUTH_USER_MODEL
 
 
 # ============================================================================
+# Module-level instantiation tests for coverage
+# ============================================================================
+
+
+def test_serializer_classes_importable():
+    """Test that all serializer classes can be imported and instantiated."""
+    # This ensures the module-level code is covered
+    assert WorkflowTemplateSerializer is not None
+    assert WorkflowInstanceSerializer is not None
+    assert TransitionHistorySerializer is not None
+    assert ProjectPermissionOverrideSerializer is not None
+    assert TransitionExecuteSerializer is not None
+    assert AvailableActionsSerializer is not None
+
+    # Instantiate without data to test __init__ coverage
+    WorkflowTemplateSerializer()
+    WorkflowInstanceSerializer()
+    TransitionHistorySerializer()
+    ProjectPermissionOverrideSerializer()
+    TransitionExecuteSerializer()
+    AvailableActionsSerializer()
+
+
+# ============================================================================
 # Fixtures and Factories
 # ============================================================================
 
@@ -253,6 +277,194 @@ class TestWorkflowTemplateSerializer:
         assert not serializer.is_valid()
         assert "definition" in serializer.errors
 
+    def test_validate_invalid_version_format_missing_patch(self):
+        """Test invalid version format without patch number."""
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "1.0",
+                "definition": {
+                    "states": [{"name": "draft", "is_initial": True}],
+                    "transitions": [],
+                },
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "version" in serializer.errors
+
+    def test_validate_invalid_version_format_text(self):
+        """Test invalid version format with text."""
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "v1.0.0",
+                "definition": {
+                    "states": [{"name": "draft", "is_initial": True}],
+                    "transitions": [],
+                },
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "version" in serializer.errors
+
+    def test_validate_no_initial_state(self):
+        """Test definition without any initial state."""
+        invalid_definition = {
+            "states": [
+                {"name": "draft", "is_initial": False},
+                {"name": "review", "is_initial": False},
+            ],
+            "transitions": [],
+        }
+
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "1.0.0",
+                "definition": invalid_definition,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "definition" in serializer.errors
+
+    def test_validate_empty_states_list(self):
+        """Test definition with empty states list."""
+        invalid_definition = {
+            "states": [],
+            "transitions": [],
+        }
+
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "1.0.0",
+                "definition": invalid_definition,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "definition" in serializer.errors
+
+    def test_validate_transition_from_state_nonexistent(self):
+        """Test transition with nonexistent from_state."""
+        invalid_definition = {
+            "states": [
+                {"name": "draft", "is_initial": True},
+                {"name": "review", "is_initial": False},
+            ],
+            "transitions": [
+                {"from_state": "nonexistent", "to_state": "review", "action": "submit"}
+            ],
+        }
+
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "1.0.0",
+                "definition": invalid_definition,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "definition" in serializer.errors
+
+    def test_create_workflow_template(self, valid_workflow_definition):
+        """Test creating a new workflow template."""
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "New Workflow",
+                "description": "A new test workflow",
+                "version": "2.0.0",
+                "definition": valid_workflow_definition,
+                "is_active": True,
+            }
+        )
+
+        assert serializer.is_valid(), serializer.errors
+        template = serializer.save()
+
+        assert template.name == "New Workflow"
+        assert template.version == "2.0.0"
+        assert template.definition == valid_workflow_definition
+
+    def test_update_workflow_template(self, workflow_template):
+        """Test updating an existing workflow template."""
+        serializer = WorkflowTemplateSerializer(
+            workflow_template,
+            data={
+                "description": "Updated description",
+                "is_active": False,
+            },
+            partial=True,
+        )
+
+        assert serializer.is_valid(), serializer.errors
+        updated = serializer.save()
+
+        assert updated.description == "Updated description"
+        assert updated.is_active is False
+        # Name should remain unchanged
+        assert updated.name == workflow_template.name
+
+    def test_validate_definition_missing_transitions_key(self):
+        """Test definition without transitions key."""
+        invalid_definition = {
+            "states": [{"name": "draft", "is_initial": True}],
+            # Missing "transitions" key
+        }
+
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "1.0.0",
+                "definition": invalid_definition,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "definition" in serializer.errors
+
+    def test_validate_definition_missing_states_key(self):
+        """Test definition without states key."""
+        invalid_definition = {
+            # Missing "states" key
+            "transitions": [],
+        }
+
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "1.0.0",
+                "definition": invalid_definition,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "definition" in serializer.errors
+
+    def test_validate_state_name_empty(self):
+        """Test state with empty name."""
+        invalid_definition = {
+            "states": [
+                {"name": "", "is_initial": True},  # Empty name
+            ],
+            "transitions": [],
+        }
+
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "1.0.0",
+                "definition": invalid_definition,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "definition" in serializer.errors
+
 
 # ============================================================================
 # TestWorkflowInstanceSerializer
@@ -332,6 +544,163 @@ class TestWorkflowInstanceSerializer:
 
         assert not serializer.is_valid()
         assert "workflow" in serializer.errors
+
+    def test_validate_current_state_empty(self, workflow_template, user):
+        """Test that current_state cannot be empty."""
+        from django.apps import apps
+        import uuid
+
+        Project = apps.get_model("projects", "Project")
+        Organisation = apps.get_model("organisations", "Organisation")
+
+        org_name = f"Test Org {uuid.uuid4().hex[:8]}"
+        proj_name = f"Test Project {uuid.uuid4().hex[:8]}"
+
+        organisation = Organisation.objects.create(name=org_name, creator=user)
+        project = Project.objects.create(
+            name=proj_name,
+            organisation=organisation,
+            creator=user,
+        )
+
+        serializer = WorkflowInstanceSerializer(
+            data={
+                "workflow": workflow_template.id,
+                "project": project.id,
+                "content_type": 1,
+                "object_id": 1,
+                "current_state": "",  # Empty state
+                "context": {},
+                "created_by": user.id,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "current_state" in serializer.errors
+
+    def test_validate_state_not_in_workflow(self, workflow_template, user):
+        """Test that current_state must exist in workflow definition."""
+        from django.apps import apps
+        import uuid
+
+        Project = apps.get_model("projects", "Project")
+        Organisation = apps.get_model("organisations", "Organisation")
+
+        org_name = f"Test Org {uuid.uuid4().hex[:8]}"
+        proj_name = f"Test Project {uuid.uuid4().hex[:8]}"
+
+        organisation = Organisation.objects.create(name=org_name, creator=user)
+        project = Project.objects.create(
+            name=proj_name,
+            organisation=organisation,
+            creator=user,
+        )
+
+        serializer = WorkflowInstanceSerializer(
+            data={
+                "workflow": workflow_template.id,
+                "project": project.id,
+                "content_type": 1,
+                "object_id": 1,
+                "current_state": "nonexistent",  # Invalid state
+                "context": {},
+                "created_by": user.id,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "current_state" in serializer.errors
+
+    def test_create_workflow_instance_with_snapshot(self, workflow_template, user):
+        """Test creating a workflow instance captures workflow snapshot."""
+        from django.apps import apps
+        import uuid
+
+        Project = apps.get_model("projects", "Project")
+        Organisation = apps.get_model("organisations", "Organisation")
+
+        org_name = f"Test Org {uuid.uuid4().hex[:8]}"
+        proj_name = f"Test Project {uuid.uuid4().hex[:8]}"
+
+        organisation = Organisation.objects.create(name=org_name, creator=user)
+        project = Project.objects.create(
+            name=proj_name,
+            organisation=organisation,
+            creator=user,
+        )
+
+        serializer = WorkflowInstanceSerializer(
+            data={
+                "workflow": workflow_template.id,
+                "project": project.id,
+                "content_type": 1,
+                "object_id": 1,
+                "current_state": "draft",
+                "context": {"test": "value"},
+                "created_by": user.id,
+            }
+        )
+
+        assert serializer.is_valid(), serializer.errors
+        instance = serializer.save()
+
+        # Verify workflow_snapshot was captured
+        assert instance.workflow_snapshot == workflow_template.definition
+        assert instance.workflow_snapshot is not None
+
+    def test_update_workflow_instance(self, workflow_instance):
+        """Test updating a workflow instance."""
+        workflow_instance.save()
+
+        serializer = WorkflowInstanceSerializer(
+            workflow_instance,
+            data={
+                "current_state": "review",
+                "context": {"updated": "data"},
+            },
+            partial=True,
+        )
+
+        assert serializer.is_valid(), serializer.errors
+        updated_instance = serializer.save()
+
+        assert updated_instance.current_state == "review"
+        assert updated_instance.context == {"updated": "data"}
+        # workflow_snapshot should remain unchanged
+        assert updated_instance.workflow_snapshot == workflow_instance.workflow_snapshot
+
+    def test_validate_context_not_dict(self, workflow_template, user):
+        """Test that context must be a dict."""
+        from django.apps import apps
+        import uuid
+
+        Project = apps.get_model("projects", "Project")
+        Organisation = apps.get_model("organisations", "Organisation")
+
+        org_name = f"Test Org {uuid.uuid4().hex[:8]}"
+        proj_name = f"Test Project {uuid.uuid4().hex[:8]}"
+
+        organisation = Organisation.objects.create(name=org_name, creator=user)
+        project = Project.objects.create(
+            name=proj_name,
+            organisation=organisation,
+            creator=user,
+        )
+
+        serializer = WorkflowInstanceSerializer(
+            data={
+                "workflow": workflow_template.id,
+                "project": project.id,
+                "content_type": 1,
+                "object_id": 1,
+                "current_state": "draft",
+                "context": "not_a_dict",  # Invalid type
+                "created_by": user.id,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "context" in serializer.errors
 
 
 # ============================================================================
@@ -449,6 +818,127 @@ class TestProjectPermissionOverrideSerializer:
         assert "nonexistent" not in action_names
         assert "submit" in action_names
 
+    def test_validate_empty_required_roles(self, workflow_template, user):
+        """Test that required_roles cannot be empty."""
+        from django.apps import apps
+        import uuid
+
+        Project = apps.get_model("projects", "Project")
+        Organisation = apps.get_model("organisations", "Organisation")
+
+        org_name = f"Test Org {uuid.uuid4().hex[:8]}"
+        proj_name = f"Test Project {uuid.uuid4().hex[:8]}"
+
+        organisation = Organisation.objects.create(name=org_name, creator=user)
+        project = Project.objects.create(
+            name=proj_name,
+            organisation=organisation,
+            creator=user,
+        )
+
+        serializer = ProjectPermissionOverrideSerializer(
+            data={
+                "project": project.id,
+                "workflow": workflow_template.id,
+                "action_name": "submit",
+                "required_roles": [],  # Empty list
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "required_roles" in serializer.errors
+
+    def test_validate_invalid_role_type_not_string(self, workflow_template, user):
+        """Test that roles must be strings."""
+        from django.apps import apps
+        import uuid
+
+        Project = apps.get_model("projects", "Project")
+        Organisation = apps.get_model("organisations", "Organisation")
+
+        org_name = f"Test Org {uuid.uuid4().hex[:8]}"
+        proj_name = f"Test Project {uuid.uuid4().hex[:8]}"
+
+        organisation = Organisation.objects.create(name=org_name, creator=user)
+        project = Project.objects.create(
+            name=proj_name,
+            organisation=organisation,
+            creator=user,
+        )
+
+        serializer = ProjectPermissionOverrideSerializer(
+            data={
+                "project": project.id,
+                "workflow": workflow_template.id,
+                "action_name": "submit",
+                "required_roles": [123, "admin"],  # Contains non-string
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "required_roles" in serializer.errors
+
+    def test_validate_action_not_in_workflow_error_message(self, workflow_template, user):
+        """Test error message when action doesn't exist in workflow."""
+        from django.apps import apps
+        import uuid
+
+        Project = apps.get_model("projects", "Project")
+        Organisation = apps.get_model("organisations", "Organisation")
+
+        org_name = f"Test Org {uuid.uuid4().hex[:8]}"
+        proj_name = f"Test Project {uuid.uuid4().hex[:8]}"
+
+        organisation = Organisation.objects.create(name=org_name, creator=user)
+        project = Project.objects.create(
+            name=proj_name,
+            organisation=organisation,
+            creator=user,
+        )
+
+        serializer = ProjectPermissionOverrideSerializer(
+            data={
+                "project": project.id,
+                "workflow": workflow_template.id,
+                "action_name": "invalid_action",
+                "required_roles": ["admin"],
+            }
+        )
+
+        assert not serializer.is_valid()
+        # Error should include the invalid action name
+        assert "invalid_action" in str(serializer.errors)
+
+    def test_validate_action_name_empty_string(self, workflow_template, user):
+        """Test that action_name cannot be an empty string."""
+        from django.apps import apps
+        import uuid
+
+        Project = apps.get_model("projects", "Project")
+        Organisation = apps.get_model("organisations", "Organisation")
+
+        org_name = f"Test Org {uuid.uuid4().hex[:8]}"
+        proj_name = f"Test Project {uuid.uuid4().hex[:8]}"
+
+        organisation = Organisation.objects.create(name=org_name, creator=user)
+        project = Project.objects.create(
+            name=proj_name,
+            organisation=organisation,
+            creator=user,
+        )
+
+        serializer = ProjectPermissionOverrideSerializer(
+            data={
+                "project": project.id,
+                "workflow": workflow_template.id,
+                "action_name": "   ",  # Whitespace only
+                "required_roles": ["admin"],
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "action_name" in serializer.errors
+
 
 # ============================================================================
 # TestTransitionExecuteSerializer
@@ -527,6 +1017,35 @@ class TestTransitionExecuteSerializer:
 
         # Should fail or warn
         assert not serializer.is_valid() or "context_updates" in str(serializer.errors)
+
+    def test_serialize_minimal_execute_request(self):
+        """Test serialization with only required fields."""
+        data = {
+            "action": "submit",
+        }
+
+        serializer = TransitionExecuteSerializer(data=data)
+        assert serializer.is_valid()
+        assert serializer.validated_data["action"] == "submit"
+        assert serializer.validated_data.get("comment") is None
+        assert serializer.validated_data.get("context_updates") is None
+
+    def test_validate_context_updates_not_dict(self, workflow_instance):
+        """Test that context_updates must be a dict."""
+        workflow_instance.save()
+
+        data = {
+            "action": "submit",
+            "context_updates": "not_a_dict",  # Invalid type
+        }
+
+        serializer = TransitionExecuteSerializer(
+            data=data,
+            context={"instance": workflow_instance},
+        )
+
+        assert not serializer.is_valid()
+        assert "context_updates" in serializer.errors
 
 
 # ============================================================================
