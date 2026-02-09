@@ -3,7 +3,9 @@ work_package_id: "WP04"
 subtasks: ["T032", "T033", "T034", "T035", "T036", "T037", "T038", "T039", "T040", "T041"]
 title: "Validator & Hook Registry"
 phase: "Phase 0 - Foundation"
-lane: "planned"
+lane: "doing"
+agent: "claude"
+shell_pid: "39876"
 history:
   - timestamp: "2026-02-09T18:18:50Z"
     lane: "planned"
@@ -68,3 +70,7 @@ Use fixtures for isolated registries - don't pollute global state.
 - [ ] Documentation updated in README
 
 Activity Log: 2026-02-09T18:18:50Z – Created
+
+## Activity Log
+
+- 2026-02-09T18:03:36Z – claude – shell_pid=39876 – lane=doing – Started implementation of ValidatorRegistry and HookRegistry
