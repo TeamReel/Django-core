@@ -465,6 +465,252 @@ class TestWorkflowTemplateSerializer:
         assert not serializer.is_valid()
         assert "definition" in serializer.errors
 
+    def test_validate_name_uniqueness_on_update(self, workflow_template):
+        """Test name uniqueness validation when updating template."""
+        # Create another template with a different name
+        other_template = WorkflowTemplate.objects.create(
+            name="Other Template",
+            version="1.0.0",
+            definition={
+                "states": [{"name": "draft", "is_initial": True}],
+                "transitions": [],
+            },
+        )
+
+        # Try to update workflow_template to use the other template's name
+        serializer = WorkflowTemplateSerializer(
+            workflow_template,
+            data={
+                "name": "Other Template",  # Name already exists
+                "version": "1.0.0",
+                "definition": {
+                    "states": [{"name": "draft", "is_initial": True}],
+                    "transitions": [],
+                },
+            },
+        )
+
+        assert not serializer.is_valid()
+        assert "name" in serializer.errors
+        assert "already exists" in str(serializer.errors["name"][0]).lower()
+
+    def test_validate_duplicate_state_names(self):
+        """Test validation rejects duplicate state names."""
+        invalid_definition = {
+            "states": [
+                {"name": "draft", "is_initial": True},
+                {"name": "draft", "is_initial": False},  # Duplicate name
+            ],
+            "transitions": [],
+        }
+
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "1.0.0",
+                "definition": invalid_definition,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "definition" in serializer.errors
+        assert "duplicate" in str(serializer.errors["definition"][0]).lower()
+
+    def test_validate_transition_missing_keys(self):
+        """Test validation for transitions missing required keys."""
+        # Test missing 'from_state'
+        definition_missing_from = {
+            "states": [
+                {"name": "draft", "is_initial": True},
+                {"name": "review", "is_initial": False},
+            ],
+            "transitions": [{"to_state": "review", "action": "submit"}],  # Missing from_state
+        }
+
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "1.0.0",
+                "definition": definition_missing_from,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "definition" in serializer.errors
+        assert "from_state" in str(serializer.errors["definition"][0]).lower()
+
+        # Test missing 'to_state'
+        definition_missing_to = {
+            "states": [
+                {"name": "draft", "is_initial": True},
+                {"name": "review", "is_initial": False},
+            ],
+            "transitions": [{"from_state": "draft", "action": "submit"}],  # Missing to_state
+        }
+
+        serializer2 = WorkflowTemplateSerializer(
+            data={
+                "name": "Test2",
+                "version": "1.0.0",
+                "definition": definition_missing_to,
+            }
+        )
+
+        assert not serializer2.is_valid()
+        assert "definition" in serializer2.errors
+        assert "to_state" in str(serializer2.errors["definition"][0]).lower()
+
+        # Test missing 'action'
+        definition_missing_action = {
+            "states": [
+                {"name": "draft", "is_initial": True},
+                {"name": "review", "is_initial": False},
+            ],
+            "transitions": [{"from_state": "draft", "to_state": "review"}],  # Missing action
+        }
+
+        serializer3 = WorkflowTemplateSerializer(
+            data={
+                "name": "Test3",
+                "version": "1.0.0",
+                "definition": definition_missing_action,
+            }
+        )
+
+        assert not serializer3.is_valid()
+        assert "definition" in serializer3.errors
+        assert "action" in str(serializer3.errors["definition"][0]).lower()
+
+    def test_validate_transition_action_type(self):
+        """Test transition action must be non-empty string."""
+        # Test empty action string
+        definition_empty_action = {
+            "states": [
+                {"name": "draft", "is_initial": True},
+                {"name": "review", "is_initial": False},
+            ],
+            "transitions": [
+                {"from_state": "draft", "to_state": "review", "action": ""}  # Empty action
+            ],
+        }
+
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "1.0.0",
+                "definition": definition_empty_action,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "definition" in serializer.errors
+        assert "action" in str(serializer.errors["definition"][0]).lower()
+
+        # Test whitespace-only action
+        definition_whitespace_action = {
+            "states": [
+                {"name": "draft", "is_initial": True},
+                {"name": "review", "is_initial": False},
+            ],
+            "transitions": [
+                {"from_state": "draft", "to_state": "review", "action": "   "}  # Whitespace
+            ],
+        }
+
+        serializer2 = WorkflowTemplateSerializer(
+            data={
+                "name": "Test2",
+                "version": "1.0.0",
+                "definition": definition_whitespace_action,
+            }
+        )
+
+        assert not serializer2.is_valid()
+        assert "definition" in serializer2.errors
+
+    def test_validate_version_empty(self):
+        """Test that version cannot be empty or whitespace."""
+        # Test empty version
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "",  # Empty version
+                "definition": {
+                    "states": [{"name": "draft", "is_initial": True}],
+                    "transitions": [],
+                },
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "version" in serializer.errors
+
+        # Test whitespace-only version
+        serializer2 = WorkflowTemplateSerializer(
+            data={
+                "name": "Test2",
+                "version": "   ",  # Whitespace only
+                "definition": {
+                    "states": [{"name": "draft", "is_initial": True}],
+                    "transitions": [],
+                },
+            }
+        )
+
+        assert not serializer2.is_valid()
+        assert "version" in serializer2.errors
+
+    def test_validate_name_empty(self):
+        """Test that name cannot be empty or whitespace."""
+        # Test empty name
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "",  # Empty name
+                "version": "1.0.0",
+                "definition": {
+                    "states": [{"name": "draft", "is_initial": True}],
+                    "transitions": [],
+                },
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "name" in serializer.errors
+
+        # Test whitespace-only name
+        serializer2 = WorkflowTemplateSerializer(
+            data={
+                "name": "   ",  # Whitespace only
+                "version": "1.0.0",
+                "definition": {
+                    "states": [{"name": "draft", "is_initial": True}],
+                    "transitions": [],
+                },
+            }
+        )
+
+        assert not serializer2.is_valid()
+        assert "name" in serializer2.errors
+
+    def test_validate_transitions_not_list(self):
+        """Test that transitions must be a list."""
+        invalid_definition = {
+            "states": [{"name": "draft", "is_initial": True}],
+            "transitions": "not a list",  # Should be a list
+        }
+
+        serializer = WorkflowTemplateSerializer(
+            data={
+                "name": "Test",
+                "version": "1.0.0",
+                "definition": invalid_definition,
+            }
+        )
+
+        assert not serializer.is_valid()
+        assert "definition" in serializer.errors
+        assert "list" in str(serializer.errors["definition"][0]).lower()
+
 
 # ============================================================================
 # TestWorkflowInstanceSerializer
@@ -938,6 +1184,38 @@ class TestProjectPermissionOverrideSerializer:
 
         assert not serializer.is_valid()
         assert "action_name" in serializer.errors
+
+    def test_create_valid_permission_override(self, workflow_template, user):
+        """Test creating a valid permission override."""
+        from django.apps import apps
+        import uuid
+
+        Project = apps.get_model("projects", "Project")
+        Organisation = apps.get_model("organisations", "Organisation")
+
+        org_name = f"Test Org {uuid.uuid4().hex[:8]}"
+        proj_name = f"Test Project {uuid.uuid4().hex[:8]}"
+
+        organisation = Organisation.objects.create(name=org_name, creator=user)
+        project = Project.objects.create(
+            name=proj_name,
+            organisation=organisation,
+            creator=user,
+        )
+
+        serializer = ProjectPermissionOverrideSerializer(
+            data={
+                "project": project.id,
+                "workflow": workflow_template.id,
+                "action_name": "submit",  # Valid action that exists
+                "required_roles": ["admin", "coach"],  # Valid roles
+            }
+        )
+
+        assert serializer.is_valid(), f"Errors: {serializer.errors}"
+        override = serializer.save()
+        assert override.action_name == "submit"
+        assert override.required_roles == ["admin", "coach"]
 
 
 # ============================================================================
