@@ -3,16 +3,22 @@
 from typing import Any
 
 from django.apps import apps
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import QuerySet
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import viewsets
-from rest_framework.exceptions import PermissionDenied
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from src.workflows.models import WorkflowInstance
-from src.workflows.serializers import WorkflowInstanceSerializer
+from src.workflows.serializers import (
+    TransitionExecuteSerializer,
+    TransitionHistorySerializer,
+    WorkflowInstanceSerializer,
+)
 from src.workflows.services.engine import WorkflowEngine
 
 
@@ -199,3 +205,80 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Delete not allowed - instances are immutable."""
         raise PermissionDenied("Workflow instances cannot be deleted.")
+
+    @extend_schema(
+        summary="Execute state transition",
+        description="Execute a workflow transition (state change). Validates transition permissions, "
+        "executes validators, fires hooks, and records transition history. "
+        "Requires project membership and appropriate transition permissions.",
+        request=TransitionExecuteSerializer,
+        responses={200: TransitionHistorySerializer},
+        tags=["Transitions"],
+    )
+    @action(detail=True, methods=["post"])
+    def execute(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Execute state transition on workflow instance."""
+        instance = self.get_object()
+
+        # Check project membership
+        self.check_project_membership(instance.project)
+
+        # Deserialize and validate input
+        serializer = TransitionExecuteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Execute transition using workflow engine
+        engine = WorkflowEngine()
+        try:
+            history = engine.execute_transition(
+                instance=instance,
+                action=serializer.validated_data["action"],
+                user=request.user,
+                comment=serializer.validated_data.get("comment", ""),
+                context_updates=serializer.validated_data.get("context_updates"),
+            )
+        except DjangoValidationError as e:
+            # Convert Django validation errors to DRF format
+            raise ValidationError({"action": str(e)})
+
+        # Serialize and return transition history
+        output_serializer = TransitionHistorySerializer(history)
+        return Response(output_serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Get available actions",
+        description="Returns list of actions user can execute from the current state. "
+        "Each action includes the target state and required permissions.",
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "actions": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "action": {"type": "string"},
+                                "to_state": {"type": "string"},
+                                "required_permission": {"type": "string", "nullable": True},
+                            },
+                        },
+                    }
+                },
+            }
+        },
+        tags=["Transitions"],
+    )
+    @action(detail=True, methods=["get"])
+    def available_actions(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Get available actions for current instance state."""
+        instance = self.get_object()
+
+        # Check project membership
+        self.check_project_membership(instance.project)
+
+        # Get available actions from workflow engine
+        engine = WorkflowEngine()
+        actions = engine.get_available_actions(instance, request.user)
+
+        return Response({"actions": actions}, status=status.HTTP_200_OK)
