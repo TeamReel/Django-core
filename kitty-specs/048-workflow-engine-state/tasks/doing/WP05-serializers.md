@@ -3,7 +3,8 @@ work_package_id: "WP05"
 subtasks: ["T042", "T043", "T044", "T045", "T046", "T047", "T048", "T049", "T050", "T051", "T052"]
 title: "DRF Serializers"
 phase: "Phase 1 - API"
-lane: "planned"
+lane: "doing"
+agent: "system"
 history:
   - timestamp: "2026-02-09T18:18:50Z"
     lane: "planned"
@@ -44,3 +45,7 @@ Create serializers for all models with boundary validation.
 - [ ] Unit tests >85% coverage
 
 Activity Log: 2026-02-09T18:18:50Z – Created
+
+## Activity Log
+
+- 2026-02-09T18:17:28Z – system – shell_pid= – lane=doing – Started implementation of DRF Serializers
