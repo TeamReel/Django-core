@@ -3,10 +3,11 @@ work_package_id: "WP05"
 subtasks: ["T042", "T043", "T044", "T045", "T046", "T047", "T048", "T049", "T050", "T051", "T052"]
 title: "DRF Serializers"
 phase: "Phase 1 - API"
-lane: "planned"
-agent: "system"
+lane: "doing"
+agent: "claude-sonnet-4.5"
 review_status: "has_feedback"
 reviewed_by: "claude-reviewer"
+shell_pid: "39876"
 history:
   - timestamp: "2026-02-09T18:18:50Z"
     lane: "planned"
@@ -102,3 +103,4 @@ Activity Log: 2026-02-09T18:18:50Z – Created
 - 2026-02-09T18:17:28Z – system – shell_pid= – lane=doing – Started implementation of DRF Serializers
 - 2026-02-09T18:27:19Z – system – shell_pid= – lane=for_review – Ready for review - all 21 tests passing, 0 Django issues
 - 2026-02-09T18:45:31Z – system – shell_pid= – lane=planned – Code review feedback: Coverage requirement not met. 3 of 5 serializer files below 85% threshold. See Review Feedback section in prompt file for details.
+- 2026-02-09T18:46:48Z – claude-sonnet-4.5 – shell_pid=39876 – lane=doing – Addressing coverage feedback - adding tests for actions.py, template.py, permissions.py
