@@ -46,10 +46,13 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
         Project = apps.get_model("projects", "Project")
+        from django.db.models import Q
 
-        # Get projects user has access to (memberships use deleted_at for soft delete)
+        # Get projects user has access to:
+        # 1. Projects where user has a non-deleted membership
+        # 2. Projects created by the user (project creator has implicit access)
         accessible_projects = Project.objects.filter(
-            memberships__user=user, memberships__deleted_at__isnull=True
+            Q(memberships__user=user, memberships__deleted_at__isnull=True) | Q(creator=user)
         ).values_list("id", flat=True)
 
         return (
@@ -60,19 +63,21 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
 
     def check_project_membership(self, project) -> None:
         """
-        Verify user has active membership in project.
+        Verify user has active membership in project or is the project creator.
 
         Args:
             project: Project instance to check membership for
 
         Raises:
-            PermissionDenied: If user is not an active member
+            PermissionDenied: If user is not an active member and not the project creator
         """
         is_member = project.memberships.filter(
             user=self.request.user, deleted_at__isnull=True
         ).exists()
 
-        if not is_member:
+        is_creator = project.creator_id == self.request.user.id
+
+        if not (is_member or is_creator):
             raise PermissionDenied("You must be a project member to perform this action")
 
     @extend_schema(
