@@ -6,15 +6,38 @@ status: in_progress
 subtasks: T053-T062
 dependencies: WP01-WP04
 estimated_effort: 6-8 hours
-lane: "doing"
+lane: "planned"
+review_status: "has_feedback"
+reviewed_by: "copilot-reviewer"
 agent: "copilot-implementer"
 shell_pid: "$PID"
 ---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Key Issues**:
+1. **Insufficient Coverage**: Overall coverage for `src/video` is ~20%. Critical components like `ComposeProcessor` (11%), `ThumbnailProcessor` (14%), and `VideoService` (74%) are significantly below the 85% target.
+2. **Missing Processor Tests**: `tests/video/test_processors.py` only tests `TranscodeProcessor`. `ComposeProcessor` and `ThumbnailProcessor` are completely untested.
+3. **Missing Task Tests**: `compose_video` task is not tested.
+
+**What Was Done Well**:
+- URL configuration and Model definitions are solid.
+- API Views have good integration tests (>90% coverage).
+- `TranscodeProcessor` is well tested.
+
+**Action Items** (must complete before re-review):
+- [ ] Create `tests/video/test_processors_compose.py` to test `ComposeProcessor` logic.
+- [ ] Create `tests/video/test_processors_thumbnail.py` to test `ThumbnailProcessor` logic.
+- [ ] Add tests for `compose_video` and `generate_thumbnail` error cases in `tests/video/test_tasks.py`.
+- [ ] Increase `VideoService` coverage to >85% (add tests for complex validation logic).
 
 # WP07: Unit & Integration Tests
 
 ## Activity Log
 
+- 2026-02-10T15:55:00Z – copilot-reviewer – shell_pid=$PID – lane=for_review – Review findings: Needs Changes - Coverage insufficient
 - 2026-02-10T14:45:00Z – copilot-implementer – shell_pid=$PID – lane=doing – Started implementation
 
 ## Objective

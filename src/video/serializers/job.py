@@ -152,7 +152,7 @@ class VideoJobCreateSerializer(serializers.Serializer):
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         job_type = attrs.get("job_type")
         overlays = attrs.get("overlays")
-        if job_type != VideoJob.JobType.COMPOSE and overlays:
+        if job_type != JobType.COMPOSE and overlays:
             raise serializers.ValidationError(
                 {"overlays": "Overlays are only allowed for compose jobs."}
             )

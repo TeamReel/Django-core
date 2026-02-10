@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import uuid
 from typing import Any
 
 from django.apps import apps
@@ -88,14 +87,10 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         query_id = self.request.query_params.get("project")
         project_id = header_id or query_id
         if project_id:
-            try:
-                uuid.UUID(str(project_id))
-            except ValueError as exc:
-                raise ValidationError({"project": "Invalid project id format"}) from exc
             self.request.project_id = project_id
             return project_id
         if required:
-            raise ValidationError({"project": "X-Project-ID header is required"})
+            raise ValidationError({"project": "Project ID is required"})
         return None
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:

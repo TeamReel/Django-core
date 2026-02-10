@@ -8,7 +8,11 @@ from unittest.mock import MagicMock
 import pytest
 from pytest_factoryboy import register
 
+from tests.accounts.factories import UserFactory
 from .factories import (
+    OrganisationFactory,
+    ProjectFactory,
+    FileFactory,
     PlatformExportFactory,
     VideoJobFactory,
     VideoOverlayFactory,
@@ -19,6 +23,10 @@ if TYPE_CHECKING:
     from pytest_mock import MockerFixture
 
 # Register factories for automatic fixture creation
+register(UserFactory)
+register(OrganisationFactory)
+register(ProjectFactory)
+register(FileFactory)
 register(VideoPresetFactory)
 register(PlatformExportFactory)
 register(VideoJobFactory)
@@ -37,6 +45,12 @@ def mock_ffmpeg(mocker: MockerFixture) -> MagicMock:
     mock_result.stderr = b""
 
     return mocker.patch("subprocess.run", return_value=mock_result)
+
+
+@pytest.fixture
+def video_file(file_factory, project):
+    """Create a sample video file asset."""
+    return file_factory(organization=project.organisation)
 
 
 @pytest.fixture

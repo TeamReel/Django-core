@@ -5,7 +5,47 @@ from __future__ import annotations
 import factory
 from factory.django import DjangoModelFactory
 
+from files.models import FileAsset
+from projects.models import Project
+from organisations.models import Organisation
 from src.video.models import PlatformExport, VideoJob, VideoOverlay, VideoPreset
+
+
+class OrganisationFactory(DjangoModelFactory):
+    """Minimal factory for Organisation model."""
+
+    class Meta:
+        model = Organisation
+
+    name = factory.Sequence(lambda n: f"Test Org {n}")
+    slug = factory.Sequence(lambda n: f"test-org-{n}")
+    creator = factory.SubFactory("tests.accounts.factories.UserFactory")
+
+
+class ProjectFactory(DjangoModelFactory):
+    """Minimal factory for Project model."""
+
+    class Meta:
+        model = Project
+
+    name = factory.Sequence(lambda n: f"Test Project {n}")
+    slug = factory.Sequence(lambda n: f"test-project-{n}")
+    creator = factory.SubFactory("tests.accounts.factories.UserFactory")
+    organisation = factory.SubFactory(OrganisationFactory)
+
+
+class FileFactory(DjangoModelFactory):
+    """Minimal factory for FileAsset model."""
+
+    class Meta:
+        model = FileAsset
+
+    organization = factory.SubFactory(OrganisationFactory)
+    original_name = factory.Sequence(lambda n: f"video_{n}.mp4")
+    storage_path = factory.Sequence(lambda n: f"tests/video_{n}.mp4")
+    mime_type = "video/mp4"
+    file_size = 1024 * 1024 * 10  # 10MB
+    uploaded_by = factory.SubFactory("tests.accounts.factories.UserFactory")
 
 
 class VideoPresetFactory(DjangoModelFactory):
@@ -21,7 +61,7 @@ class VideoPresetFactory(DjangoModelFactory):
     video_codec = "libx264"
     audio_codec = "aac"
     resolution = "1920x1080"
-    bitrate_video = "5000k"
+    bitrate_video = 5000000
     bitrate_audio = "128k"
     framerate = 30
     crf = 23
@@ -33,18 +73,10 @@ class PlatformExportFactory(DjangoModelFactory):
 
     class Meta:
         model = PlatformExport
-        django_get_or_create = ("platform", "name")
 
-    platform = "instagram"
-    name = factory.Sequence(lambda n: f"Test Export {n}")
-    aspect_ratio = "16:9"
-    resolution = "1920x1080"
-    max_duration_seconds = 60
-    max_file_size_mb = 250
+    name = factory.Sequence(lambda n: f"Platform {n}")
+    platform = "tiktok"
     preset = factory.SubFactory(VideoPresetFactory)
-    crop_strategy = "crop"
-    recommended = False
-    is_active = True
 
 
 class VideoJobFactory(DjangoModelFactory):
@@ -53,14 +85,12 @@ class VideoJobFactory(DjangoModelFactory):
     class Meta:
         model = VideoJob
 
-    project = factory.SubFactory("tests.projects.factories.ProjectFactory")
+    project = factory.SubFactory(ProjectFactory)
     created_by = factory.SubFactory("tests.accounts.factories.UserFactory")
     job_type = "transcode"
-    status = "pending"
-    source_file = factory.SubFactory("tests.files.factories.FileFactory")
+    status = "queued"
+    input_file = factory.SubFactory(FileFactory)
     preset = factory.SubFactory(VideoPresetFactory)
-    priority = "normal"
-    progress_percent = 0
 
 
 class VideoOverlayFactory(DjangoModelFactory):
@@ -71,9 +101,8 @@ class VideoOverlayFactory(DjangoModelFactory):
 
     job = factory.SubFactory(VideoJobFactory)
     overlay_type = "text"
-    content = "Test Overlay"
+    content = "Sample Overlay"
     position_x = 10
     position_y = 10
-    start_time = 0
-    end_time = 5
-    config = {}
+    start_time = 0.0
+    end_time = 5.0
