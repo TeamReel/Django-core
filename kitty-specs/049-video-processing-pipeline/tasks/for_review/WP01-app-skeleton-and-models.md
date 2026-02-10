@@ -11,6 +11,7 @@ agent: "claude"
 shell_pid: "71676"
 review_status: "acknowledged"
 reviewed_by: "claude-reviewer"
+assignee: "claude"
 ---
 
 ## Review Feedback
