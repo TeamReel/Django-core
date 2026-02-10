@@ -6,7 +6,7 @@ status: planned
 subtasks: T031-T040
 dependencies: WP03
 estimated_effort: 4-6 hours
-lane: "doing"
+lane: "for_review"
 agent: "copilot-implementer"
 shell_pid: "71676"
 ---
@@ -300,3 +300,4 @@ video_worker_slow:
 ## Activity Log
 
 - 2026-02-10T14:20:52Z – copilot-implementer – shell_pid=71676 – lane=doing – Started implementation
+- 2026-02-10T14:25:12Z – copilot-implementer – shell_pid=71676 – lane=for_review – Ready for review
