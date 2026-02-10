@@ -6,21 +6,19 @@ status: planned
 subtasks: T010-T020
 dependencies: WP01
 estimated_effort: 4-6 hours
-lane: "for_review"
-agent: "claude"
+lane: "done"
+agent: "copilot-reviewer"
 shell_pid: "71676"
-review_status: "acknowledged"
+review_status: "approved without changes"
 reviewed_by: "copilot-reviewer"
 ---
 
 ## Review Feedback
 
-**Status**: ❌ **Needs Changes**
+**Status**: ✅ **Approved**
 
 **Key Issues**:
-1. **CRITICAL - Project membership not enforced for list/create**: `IsProjectMember` ignores the `X-Project-ID` header and only checks `request.data`, query params, or `request.project_id`. Permission checks run **before** `get_queryset()`, so for `list`/`create` the header-based project scope is not validated. This allows non-members to list/create jobs for projects they do not belong to by supplying a project header. See [src/video/permissions.py](src/video/permissions.py) and [src/video/views/job.py](src/video/views/job.py).
-    - **Impact**: Unauthorized access to project-scoped jobs (violates Principle V).
-    - **Fix Required**: Read `X-Project-ID` in `IsProjectMember.has_permission()` and enforce membership. Also ensure `get_queryset()` filters to projects the user is a member of (or validate membership before returning any records).
+1. Resolved: Project membership enforcement updated to validate `X-Project-ID` and filter by membership.
 
 **What Was Done Well**:
 - ✅ Serializers align with OpenAPI schemas (input_file_id, overlays, workflow fields)
@@ -206,3 +204,4 @@ See existing modules:
 
 - 2026-02-10T13:28:45Z – claude – shell_pid=71676 – lane=doing – Addressed feedback: enforce project membership for X-Project-ID and queryset filtering; ran python manage.py check video
 - 2026-02-10T13:29:01Z – claude – shell_pid=71676 – lane=for_review – Ready for review
+- 2026-02-10T13:31:30Z – copilot-reviewer – shell_pid=71676 – lane=done – Approved without changes after re-review
