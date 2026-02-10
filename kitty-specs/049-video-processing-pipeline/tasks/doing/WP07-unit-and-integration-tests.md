@@ -2,13 +2,20 @@
 wp: WP07
 title: Unit & Integration Tests
 priority: P2
-status: planned
+status: in_progress
 subtasks: T053-T062
 dependencies: WP01-WP04
 estimated_effort: 6-8 hours
+lane: "doing"
+agent: "copilot-implementer"
+shell_pid: "$PID"
 ---
 
 # WP07: Unit & Integration Tests
+
+## Activity Log
+
+- 2026-02-10T14:45:00Z – copilot-implementer – shell_pid=$PID – lane=doing – Started implementation
 
 ## Objective
 
