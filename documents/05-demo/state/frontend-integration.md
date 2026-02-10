@@ -4,19 +4,22 @@
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.
 
-## 🎯 Current Focus: B37 Workflow Engine Backend Complete ✅
+## 🎯 Current Focus: B55 Video Processing Pipeline Backend Complete ✅
 
 **Backend Status (Merged 2026-02-10)**:
-- ✅ Complete workflow state machine (templates, instances, transitions)
-- ✅ 3 seeded templates (Content Approval, Support Ticket, Invoice Approval)
-- ✅ Full REST API (10 endpoints)
-- ✅ Permission override system
-- ✅ Audit trail (TransitionHistory)
-- ✅ 210 tests passing
+- ✅ FFmpeg-based video processing (transcode, thumbnails, composition)
+- ✅ 4 models: VideoJob, VideoPreset, PlatformExport, VideoOverlay
+- ✅ 8 REST API endpoints
+- ✅ Tiered Celery queues (video_fast, video_slow)
+- ✅ Platform-specific exports (Instagram, TikTok, YouTube, Twitter)
+- ✅ B37 Workflow integration (optional)
+- ✅ 76 tests passing (73-97% coverage)
 
 **Frontend Status**: ❌ Not integrated yet
 
-**Next**: B37 Frontend Integration (Workflow UI components)
+**Next**: B55 Frontend Integration (Video Upload & Processing UI)
+
+**Previous**: B37 Workflow Engine (210 tests, not yet in frontend)
 
 ## Legend
 
@@ -162,6 +165,40 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - [ ] WorkflowHistoryTimeline (audit trail visualization)
   - [ ] Attach workflows to Match, Video, Member entities
   - [ ] Permission override UI in project settings
+
+---
+
+## Video Processing Module
+
+### B55 Video Processing Pipeline ❌
+- **Backend**: FFmpeg-based async video processing (merged 2026-02-10)
+  - VideoJob (transcode, thumbnail, compose jobs with status tracking)
+  - VideoPreset (1080p_standard, 720p_mobile, 480p_web, thumbnail)
+  - PlatformExport (Instagram 1:1/4:5/9:16, TikTok 9:16, YouTube 16:9, Twitter 16:9)
+  - VideoOverlay (logo, text, watermark overlays with positioning)
+  - Tiered Celery queues: video_fast (thumbnails), video_slow (transcoding)
+  - B37 Workflow integration (optional approval flows)
+- **API Endpoints** (8 total):
+  - `POST /api/v1/video/jobs/` - Create processing job
+  - `GET /api/v1/video/jobs/` - List jobs (paginated, filtered)
+  - `GET /api/v1/video/jobs/{id}/` - Job detail with progress
+  - `DELETE /api/v1/video/jobs/{id}/` - Cancel/delete job
+  - `POST /api/v1/video/jobs/{id}/retry/` - Retry failed job
+  - `GET /api/v1/video/presets/` - List encoding presets
+  - `GET /api/v1/video/platforms/` - List platform export configs
+  - `GET /api/v1/video/overlays/` - List overlays for job
+- **Frontend**: ❌ Geen UI components
+- **Status**: ❌ Backend klaar (76 tests, 73-97% coverage), frontend nog niet gestart
+- **TODO**:
+  - [ ] VideoUploadModal component (with drag-and-drop)
+  - [ ] VideoJobListPage (jobs table with status, progress bar)
+  - [ ] VideoJobDetailPage (job details, preview, retry button)
+  - [ ] PresetSelector component (quality/platform preset picker)
+  - [ ] PlatformExportOptions (Instagram/TikTok/YouTube format selectors)
+  - [ ] VideoPlayerWithOverlay (preview with logo/watermark)
+  - [ ] ThumbnailGeneratorModal (timestamp picker for frame extraction)
+  - [ ] Integrate with Member Assets (generate intro videos from photos)
+  - [ ] Integrate with Match Highlights (generate multi-clip compilations)
 
 ---
 

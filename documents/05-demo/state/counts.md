@@ -22,29 +22,33 @@
 | BrandAssets | 71 | - |
 | FileAssets | 66 | - |
 | FeatureFlags | 44 | - |
-| WorkflowTemplates | 3 | + NEW |
-| WorkflowInstances | 0 | + NEW |
-| TransitionHistory | 0 | + NEW |
+| WorkflowTemplates | 3 | - |
+| WorkflowInstances | 0 | - |
+| TransitionHistory | 0 | - |
+| VideoJobs | 0 | + NEW |
+| VideoPresets | 0 | + NEW |
+| PlatformExports | 0 | + NEW |
+| VideoOverlays | 0 | + NEW |
 
-## 🎯 Current Status: B37 Workflow Engine Merged ✅
+## 🎯 Current Status: B55 Video Processing Pipeline Merged ✅
 
 **Latest Merge (2026-02-10)**:
-- ✅ B37 Workflow Engine & State Machine merged to main (87 commits)
-- ✅ 3 workflow templates seeded (Content Approval, Support Ticket, Invoice Approval)
-- ✅ 210 tests passing (85 unit + 125 integration)
-- ✅ Complete API (templates, instances, transitions, permissions, history)
-- ✅ Django Admin interface for workflow management
-- ✅ Validator and Hook registries for extensibility
-- ✅ Audit trail with TransitionHistory
-- ✅ Permission override system per project
+- ✅ B55 Video Processing Pipeline merged to main (60+ commits)
+- ✅ FFmpeg-based async video transcoding, thumbnails, composition
+- ✅ 76 tests passing (73-97% coverage per module)
+- ✅ 4 new models: VideoJob, VideoPreset, PlatformExport, VideoOverlay
+- ✅ 8 REST API endpoints (jobs, presets, platforms, overlays)
+- ✅ Tiered Celery queues (video_fast, video_slow)
+- ✅ Platform-specific exports (Instagram, TikTok, YouTube, Twitter)
+- ✅ B37 Workflow integration (optional approval flows)
+- ✅ Complete documentation (README, quickstart, manual tests)
 
-**Previous (AI Generation Complete)**:
+**Previous Merges**:
+- ✅ B37 Workflow Engine & State Machine (87 commits, 210 tests)
 - ✅ AI Asset Generation Modal with 3-step wizard
 - ✅ 6 generation templates (logo, sponsor, tenue, keeper, fullbody, closeup)
-- ✅ Member Assets tab with kit-specific CRUD
-- ✅ Prompt engineering for exact kit reproduction
 
-**Next**: B37 Frontend Integration (Workflow UI)
+**Next**: B55 Frontend Integration (Video Upload & Processing UI)
 
 ## Project Hierarchy
 
@@ -160,9 +164,13 @@
 | generative | GenerationTemplate | - | ⚪ NOT MIGRATED |
 | generative | GenerationRequest | - | ⚪ NOT MIGRATED |
 | generative | GenerationOutput | - | ⚪ NOT MIGRATED |
-| **workflows** | **WorkflowTemplate** | **3** | **🟢 NEW** |
-| **workflows** | **WorkflowInstance** | **0** | **🔴 NEW** |
-| **workflows** | **TransitionHistory** | **0** | **🔴 NEW** |
-| **workflows** | **ProjectPermissionOverride** | **0** | **🔴 NEW** |
+| workflows | WorkflowTemplate | 3 | 🟢 OK |
+| workflows | WorkflowInstance | 0 | 🔴 EMPTY |
+| workflows | TransitionHistory | 0 | 🔴 EMPTY |
+| workflows | ProjectPermissionOverride | 0 | 🔴 EMPTY |
+| **video** | **VideoJob** | **0** | **🔴 NEW** |
+| **video** | **VideoPreset** | **0** | **🔴 NEW** |
+| **video** | **PlatformExport** | **0** | **🔴 NEW** |
+| **video** | **VideoOverlay** | **0** | **🔴 NEW** |
 
 **Legend**: 🟢 OK (3+) | 🟡 THIN (1-2) | 🔴 EMPTY (0) | ⚪ NOT MIGRATED
