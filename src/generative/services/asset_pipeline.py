@@ -440,24 +440,12 @@ def generate_video(
         # Download the generated video
         generated_video = operation.response.generated_videos[0]
 
-        # The video object contains the video data - download it to get bytes
-        # Use a temp file to save the video, then read the bytes
-        import tempfile
+        # Download video to BytesIO buffer
+        from io import BytesIO
 
-        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp_file:
-            tmp_path = tmp_file.name
-
-        # Save video to temp file
-        generated_video.video.save(tmp_path)
-
-        # Read the video bytes from the temp file
-        with open(tmp_path, "rb") as f:
-            video_bytes = f.read()
-
-        # Clean up temp file
-        import os as os_module
-
-        os_module.unlink(tmp_path)
+        video_buffer = BytesIO()
+        client.files.download(file=generated_video.video, file_path=video_buffer)
+        video_bytes = video_buffer.getvalue()
 
         # Generate filename
         safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
