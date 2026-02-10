@@ -1,6 +1,6 @@
 # Database Model Counts
 
-> Last updated: 2026-02-09 (AI Generation Integration)
+> Last updated: 2026-02-10 (B37 Workflow Engine Integration)
 
 **Database**: postgresql (switchback.proxy.rlwy.net)
 
@@ -19,26 +19,32 @@
 | MediaTags | 78 | - |
 | BrandProfiles | 102 | - |
 | DesignTokens | 645 | - |
-| BrandAssets | 71 | + |
-| FileAssets | 66 | + |
+| BrandAssets | 71 | - |
+| FileAssets | 66 | - |
 | FeatureFlags | 44 | - |
+| WorkflowTemplates | 3 | + NEW |
+| WorkflowInstances | 0 | + NEW |
+| TransitionHistory | 0 | + NEW |
 
-## 🎯 Current Status: AI Generation Complete ✅
+## 🎯 Current Status: B37 Workflow Engine Merged ✅
 
-**Completed**:
-- ✅ AI Asset Generation Modal with 3-step wizard (template → config → results)
-- ✅ 6 generation templates: logo, sponsor, tenue, keeper, fullbody_in_tenue, closeup_in_tenue
-- ✅ Member page with tenue selector and AI generation buttons
-- ✅ Member Assets tab with CRUD for generated fullbody/closeup per kit type
-- ✅ Kit type tracking (home, away, third, goalkeeper, training)
-- ✅ Input key mapping (person→person_photo, reference→reference_photo)
-- ✅ Prompt engineering for exact kit reproduction from reference
-- ✅ Asset save flow: BrandAsset for clubs, membership metadata for members
-- ✅ Multiple variants generation (1-4) with selection
-- ✅ Feedback/iteration loop for refinement
-- ✅ Previous result as reference for improvements
+**Latest Merge (2026-02-10)**:
+- ✅ B37 Workflow Engine & State Machine merged to main (87 commits)
+- ✅ 3 workflow templates seeded (Content Approval, Support Ticket, Invoice Approval)
+- ✅ 210 tests passing (85 unit + 125 integration)
+- ✅ Complete API (templates, instances, transitions, permissions, history)
+- ✅ Django Admin interface for workflow management
+- ✅ Validator and Hook registries for extensibility
+- ✅ Audit trail with TransitionHistory
+- ✅ Permission override system per project
 
-**Next**: B37 Workflow Engine & State Machine
+**Previous (AI Generation Complete)**:
+- ✅ AI Asset Generation Modal with 3-step wizard
+- ✅ 6 generation templates (logo, sponsor, tenue, keeper, fullbody, closeup)
+- ✅ Member Assets tab with kit-specific CRUD
+- ✅ Prompt engineering for exact kit reproduction
+
+**Next**: B37 Frontend Integration (Workflow UI)
 
 ## Project Hierarchy
 
@@ -154,5 +160,9 @@
 | generative | GenerationTemplate | - | ⚪ NOT MIGRATED |
 | generative | GenerationRequest | - | ⚪ NOT MIGRATED |
 | generative | GenerationOutput | - | ⚪ NOT MIGRATED |
+| **workflows** | **WorkflowTemplate** | **3** | **🟢 NEW** |
+| **workflows** | **WorkflowInstance** | **0** | **🔴 NEW** |
+| **workflows** | **TransitionHistory** | **0** | **🔴 NEW** |
+| **workflows** | **ProjectPermissionOverride** | **0** | **🔴 NEW** |
 
 **Legend**: 🟢 OK (3+) | 🟡 THIN (1-2) | 🔴 EMPTY (0) | ⚪ NOT MIGRATED

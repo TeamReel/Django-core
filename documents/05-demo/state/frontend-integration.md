@@ -1,20 +1,22 @@
 # Frontend Integration Status
 
-> Last updated: 2026-02-09 (AI Generation Integration Complete)
+> Last updated: 2026-02-10 (B37 Workflow Engine Backend Complete)
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.
 
-## 🎯 Current Focus: AI Generation Complete ✅
+## 🎯 Current Focus: B37 Workflow Engine Backend Complete ✅
 
-**Status**: Full AI asset generation pipeline working
-- ✅ AssetGenerationModal with 3-step wizard
-- ✅ 6 templates (logo, sponsor, tenue, keeper, fullbody, closeup)
-- ✅ Member page with tenue selector + AI generation
-- ✅ Member Assets tab with CRUD per kit type
-- ✅ Club Assets tab with kit generation
-- ✅ Exact kit reproduction from reference images
+**Backend Status (Merged 2026-02-10)**:
+- ✅ Complete workflow state machine (templates, instances, transitions)
+- ✅ 3 seeded templates (Content Approval, Support Ticket, Invoice Approval)
+- ✅ Full REST API (10 endpoints)
+- ✅ Permission override system
+- ✅ Audit trail (TransitionHistory)
+- ✅ 210 tests passing
 
-**Next**: B37 Workflow Engine & State Machine
+**Frontend Status**: ❌ Not integrated yet
+
+**Next**: B37 Frontend Integration (Workflow UI components)
 
 ## Legend
 
@@ -134,6 +136,32 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 - **TODO**:
   - [ ] BrandProfile create/edit form
   - [ ] Token inheritance display (org → project → season)
+
+---
+
+## Workflow Module
+
+### B37 Workflow Engine ❌
+- **Backend**: Complete state machine with 3 templates, 10 API endpoints
+  - WorkflowTemplate (Content Approval, Support Ticket, Invoice Approval)
+  - WorkflowInstance (attach to any model via GenericForeignKey)
+  - TransitionHistory (immutable audit trail)
+  - ProjectPermissionOverride (role-based access per project)
+- **API Endpoints**:
+  - `/api/v1/workflows/templates/` - List/CRUD templates
+  - `/api/v1/workflows/instances/` - Create/query instances
+  - `/api/v1/workflows/instances/{id}/execute/` - Execute transitions
+  - `/api/v1/workflows/history/` - Audit trail
+  - `/api/v1/workflows/permissions/` - Permission overrides
+- **Frontend**: ❌ Geen UI components
+- **Status**: ❌ Backend klaar, frontend nog niet gestart
+- **TODO**:
+  - [ ] WorkflowTemplateListPage (admin only)
+  - [ ] WorkflowInstanceCard (show current state, available actions)
+  - [ ] TransitionButton component (execute transition with validation)
+  - [ ] WorkflowHistoryTimeline (audit trail visualization)
+  - [ ] Attach workflows to Match, Video, Member entities
+  - [ ] Permission override UI in project settings
 
 ---
 
@@ -381,3 +409,8 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 | `/api/v1/files/` | ClubKitsTab (kit upload) | ✅ |
 | `/api/v1/generative/assets/generate/` | useAssetGeneration | ✅ |
 | `/api/v1/generative/assets/save/` | useAssetGeneration | ✅ |
+| `/api/v1/workflows/templates/` | - | ❌ Not in frontend |
+| `/api/v1/workflows/instances/` | - | ❌ Not in frontend |
+| `/api/v1/workflows/instances/{id}/execute/` | - | ❌ Not in frontend |
+| `/api/v1/workflows/history/` | - | ❌ Not in frontend |
+| `/api/v1/workflows/permissions/` | - | ❌ Not in frontend |
