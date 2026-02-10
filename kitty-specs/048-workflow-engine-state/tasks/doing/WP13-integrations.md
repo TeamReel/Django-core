@@ -2,8 +2,10 @@
 work_package_id: "WP13"
 title: "Integrations (B09 Audit, B15 Tasks, B16 Notifications)"
 phase: "Phase 2 - Enhancement"
-lane: "planned"
+lane: "doing"
 history: [{timestamp: "2026-02-09T18:18:50Z", lane: "planned", agent: "system", action: "Prompt generated"}]
+agent: "GitHub Copilot"
+shell_pid: "73412"
 ---
 
 # WP13 – Core-App Integrations (Priority P2)
@@ -50,3 +52,7 @@ def execute_workflow_hook(instance_id, hook_name):
 ```
 
 Activity Log: 2026-02-09T18:18:50Z – Created
+
+## Activity Log
+
+- 2026-02-10T08:38:25Z – GitHub Copilot – shell_pid=73412 – lane=doing – Started implementation
