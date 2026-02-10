@@ -390,9 +390,11 @@ def generate_video(
     aspect_ratio = video_config.get("aspect_ratio", "9:16")
     resolution = video_config.get("resolution", "720p")
 
-    # Prepare config
+    # Prepare config (per google-genai SDK codegen instructions)
     veo_config = types.GenerateVideosConfig(
+        person_generation="allow_adult",
         aspect_ratio=aspect_ratio,
+        number_of_videos=1,
         duration_seconds=duration,
     )
 
@@ -404,17 +406,15 @@ def generate_video(
             # Image-to-video: use person photo as starting frame / reference
             logger.info("Generating video with image input (image-to-video)")
 
-            # Create Image object for Veo API (requires bytesBase64Encoded and mimeType)
-            image_b64 = base64.b64encode(person_img).decode("utf-8")
-            image_obj = types.Image(
-                image_bytes=image_b64,
-                mime_type="image/png",
-            )
+            # Convert bytes to PIL Image for Veo API (per SDK codegen instructions)
+            from PIL import Image as PILImage
+
+            pil_image = PILImage.open(BytesIO(person_img))
 
             operation = client.models.generate_videos(
                 model="veo-3.1-generate-preview",
                 prompt=final_prompt,
-                image=image_obj,
+                image=pil_image,
                 config=veo_config,
             )
         else:
@@ -446,10 +446,19 @@ def generate_video(
         # Download the generated video
         generated_video = operation.response.generated_videos[0]
 
-        # Download video to BytesIO buffer
-        video_buffer = BytesIO()
-        client.files.download(file=generated_video.video, file_path=video_buffer)
-        video_bytes = video_buffer.getvalue()
+        # Download video using official SDK pattern (download → save → read)
+        import tempfile
+
+        client.files.download(file=generated_video.video)
+        _tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+        _tmp_path = _tmp.name
+        _tmp.close()
+        try:
+            generated_video.video.save(_tmp_path)
+            with open(_tmp_path, "rb") as _vf:
+                video_bytes = _vf.read()
+        finally:
+            os.unlink(_tmp_path)
 
         # Generate filename
         safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
