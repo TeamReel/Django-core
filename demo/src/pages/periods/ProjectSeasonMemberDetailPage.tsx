@@ -644,6 +644,7 @@ export default function ProjectSeasonMemberDetailPage() {
   const [aiPreselectedTemplate, setAiPreselectedTemplate] = useState<string | undefined>();
   const [aiSelectedKitUrl, setAiSelectedKitUrl] = useState<string | null>(null);
   const [aiSelectedKitType, setAiSelectedKitType] = useState<string>('home');
+  const [aiInputPersonUrl, setAiInputPersonUrl] = useState<string | null>(null); // For intro/celebration: player in tenue
 
   // Fetch parent brand assets (from club) for tenue inheritance
   const clubId = club?.id || project?.id;
@@ -670,13 +671,15 @@ export default function ProjectSeasonMemberDetailPage() {
   }, [clubBrand]);
 
   // Handler to open AI modal for a specific template
-  const openAiModal = (templateId: string, defaultKitType?: string) => {
+  const openAiModal = (templateId: string, defaultKitType?: string, playerInTenueUrl?: string | null) => {
     setAiPreselectedTemplate(templateId);
     const kitType = defaultKitType || 'home';
     setAiSelectedKitType(kitType);
     // Find the kit URL for the selected type
     const kit = effectiveKits.find(k => k.id === kitType);
     setAiSelectedKitUrl(kit?.url || null);
+    // For intro/celebration: use the player in tenue as input
+    setAiInputPersonUrl(playerInTenueUrl || null);
     setShowAiModal(true);
   };
 
@@ -1563,125 +1566,141 @@ export default function ProjectSeasonMemberDetailPage() {
                       </div>
 
                       <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                        Korte intro video's van de speler in verschillende poses. Per tenue beschikbaar.
+                        Korte intro video's van de speler in verschillende poses. Vereist eerst een "Player in Tenue" afbeelding.
                       </div>
 
                       {/* Per-Kit Variant Grid for Short Intro */}
-                      {effectiveKits.map((kit) => (
-                        <div key={`intro-kit-${kit.id}`} style={{ marginTop: '24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                            {kit.url ? (
-                              <img
-                                src={kit.url}
-                                alt={kit.label}
-                                style={{ width: '32px', height: '42px', objectFit: 'contain' }}
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                              />
-                            ) : (
-                              <span style={{ fontSize: '20px' }}>{kit.icon}</span>
-                            )}
-                            <div style={{ fontSize: '14px', fontWeight: 700 }}>{kit.label}</div>
+                      {effectiveKits.map((kit) => {
+                        // Get the player in tenue URL for this kit (currently only home is supported)
+                        const isHome = kit.id === 'home';
+                        const playerInTenueUrl = isHome ? form.kit?.url : null;
+                        const hasPlayerInTenue = Boolean(playerInTenueUrl);
+
+                        return (
+                          <div key={`intro-kit-${kit.id}`} style={{ marginTop: '24px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                              {kit.url ? (
+                                <img
+                                  src={kit.url}
+                                  alt={kit.label}
+                                  style={{ width: '32px', height: '42px', objectFit: 'contain' }}
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                />
+                              ) : (
+                                <span style={{ fontSize: '20px' }}>{kit.icon}</span>
+                              )}
+                              <div style={{ fontSize: '14px', fontWeight: 700 }}>{kit.label}</div>
+                              {hasPlayerInTenue && (
+                                <Badge variant="default" style={{ marginLeft: 'auto' }}>✓ Player in Tenue</Badge>
+                              )}
+                              {!hasPlayerInTenue && (
+                                <Badge variant="info" style={{ marginLeft: 'auto' }}>⚠️ Genereer eerst Player in Tenue</Badge>
+                              )}
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasPlayerInTenue ? 1 : 0.5 }}>
+                              {/* Variant: Arms Crossed */}
+                              <div style={{
+                                border: '1px solid var(--app-border)',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                background: 'var(--app-surface)',
+                              }}>
+                                <div style={{
+                                  aspectRatio: '9/16',
+                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  minHeight: '180px',
+                                  position: 'relative',
+                                }}>
+                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                    Niet gegenereerd
+                                  </div>
+                                </div>
+                                <div style={{ padding: '10px' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>🙅 Armen over elkaar</div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openAiModal('member_intro_arms_crossed', kit.id, playerInTenueUrl)}
+                                    disabled={!hasPlayerInTenue}
+                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                  >
+                                    ✨ Genereer
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Variant: Hand Up */}
+                              <div style={{
+                                border: '1px solid var(--app-border)',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                background: 'var(--app-surface)',
+                              }}>
+                                <div style={{
+                                  aspectRatio: '9/16',
+                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  minHeight: '180px',
+                                  position: 'relative',
+                                }}>
+                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                    Niet gegenereerd
+                                  </div>
+                                </div>
+                                <div style={{ padding: '10px' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>✋ Hand omhoog</div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openAiModal('member_intro_hand_up', kit.id, playerInTenueUrl)}
+                                    disabled={!hasPlayerInTenue}
+                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                  >
+                                    ✨ Genereer
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Variant: Thumbs Up */}
+                              <div style={{
+                                border: '1px solid var(--app-border)',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                background: 'var(--app-surface)',
+                              }}>
+                                <div style={{
+                                  aspectRatio: '9/16',
+                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  minHeight: '180px',
+                                  position: 'relative',
+                                }}>
+                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                    Niet gegenereerd
+                                  </div>
+                                </div>
+                                <div style={{ padding: '10px' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>👍 Duim omhoog</div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openAiModal('member_intro_thumbs_up', kit.id, playerInTenueUrl)}
+                                    disabled={!hasPlayerInTenue}
+                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                  >
+                                    ✨ Genereer
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
-                            {/* Variant: Arms Crossed */}
-                            <div style={{
-                              border: '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: 'var(--app-surface)',
-                            }}>
-                              <div style={{
-                                aspectRatio: '9/16',
-                                background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                minHeight: '180px',
-                                position: 'relative',
-                              }}>
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  Niet gegenereerd
-                                </div>
-                              </div>
-                              <div style={{ padding: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>🙅 Armen over elkaar</div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => openAiModal('member_intro_arms_crossed', kit.id)}
-                                  style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                >
-                                  ✨ Genereer
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* Variant: Hand Up */}
-                            <div style={{
-                              border: '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: 'var(--app-surface)',
-                            }}>
-                              <div style={{
-                                aspectRatio: '9/16',
-                                background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                minHeight: '180px',
-                                position: 'relative',
-                              }}>
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  Niet gegenereerd
-                                </div>
-                              </div>
-                              <div style={{ padding: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>✋ Hand omhoog</div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => openAiModal('member_intro_hand_up', kit.id)}
-                                  style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                >
-                                  ✨ Genereer
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* Variant: Thumbs Up */}
-                            <div style={{
-                              border: '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: 'var(--app-surface)',
-                            }}>
-                              <div style={{
-                                aspectRatio: '9/16',
-                                background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                minHeight: '180px',
-                                position: 'relative',
-                              }}>
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  Niet gegenereerd
-                                </div>
-                              </div>
-                              <div style={{ padding: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>👍 Duim omhoog</div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => openAiModal('member_intro_thumbs_up', kit.id)}
-                                  style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                >
-                                  ✨ Genereer
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
 
                       {!userCanEditProject && (
                         <div style={{ marginTop: '16px' }}>
@@ -1707,157 +1726,174 @@ export default function ProjectSeasonMemberDetailPage() {
                       </div>
 
                       <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                        Goal viering animaties van de speler. Per tenue beschikbaar.
+                        Goal viering animaties van de speler. Vereist eerst een "Player in Tenue" afbeelding.
                       </div>
 
                       {/* Per-Kit Variant Grid for Goal Celebration */}
-                      {effectiveKits.map((kit) => (
-                        <div key={`celebration-kit-${kit.id}`} style={{ marginTop: '24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                            {kit.url ? (
-                              <img
-                                src={kit.url}
-                                alt={kit.label}
-                                style={{ width: '32px', height: '42px', objectFit: 'contain' }}
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                              />
-                            ) : (
-                              <span style={{ fontSize: '20px' }}>{kit.icon}</span>
-                            )}
-                            <div style={{ fontSize: '14px', fontWeight: 700 }}>{kit.label}</div>
+                      {effectiveKits.map((kit) => {
+                        // Get the player in tenue URL for this kit (currently only home is supported)
+                        const isHome = kit.id === 'home';
+                        const playerInTenueUrl = isHome ? form.kit?.url : null;
+                        const hasPlayerInTenue = Boolean(playerInTenueUrl);
+
+                        return (
+                          <div key={`celebration-kit-${kit.id}`} style={{ marginTop: '24px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                              {kit.url ? (
+                                <img
+                                  src={kit.url}
+                                  alt={kit.label}
+                                  style={{ width: '32px', height: '42px', objectFit: 'contain' }}
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                />
+                              ) : (
+                                <span style={{ fontSize: '20px' }}>{kit.icon}</span>
+                              )}
+                              <div style={{ fontSize: '14px', fontWeight: 700 }}>{kit.label}</div>
+                              {hasPlayerInTenue && (
+                                <Badge variant="default" style={{ marginLeft: 'auto' }}>✓ Player in Tenue</Badge>
+                              )}
+                              {!hasPlayerInTenue && (
+                                <Badge variant="info" style={{ marginLeft: 'auto' }}>⚠️ Genereer eerst Player in Tenue</Badge>
+                              )}
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasPlayerInTenue ? 1 : 0.5 }}>
+                              {/* Variant: Arms Wide */}
+                              <div style={{
+                                border: '1px solid var(--app-border)',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                background: 'var(--app-surface)',
+                              }}>
+                                <div style={{
+                                  aspectRatio: '9/16',
+                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  minHeight: '180px',
+                                  position: 'relative',
+                                }}>
+                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                    Niet gegenereerd
+                                  </div>
+                                </div>
+                                <div style={{ padding: '10px' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>🙌 Armen wijd</div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openAiModal('member_goal_celebration_arms_wide', kit.id, playerInTenueUrl)}
+                                    disabled={!hasPlayerInTenue}
+                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                  >
+                                    ✨ Genereer
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Variant: Fist Pump */}
+                              <div style={{
+                                border: '1px solid var(--app-border)',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                background: 'var(--app-surface)',
+                              }}>
+                                <div style={{
+                                  aspectRatio: '9/16',
+                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  minHeight: '180px',
+                                  position: 'relative',
+                                }}>
+                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                    Niet gegenereerd
+                                  </div>
+                                </div>
+                                <div style={{ padding: '10px' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>✊ Vuist omhoog</div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openAiModal('member_goal_celebration_fist_pump', kit.id, playerInTenueUrl)}
+                                    disabled={!hasPlayerInTenue}
+                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                  >
+                                    ✨ Genereer
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Variant: Point to Sky */}
+                              <div style={{
+                                border: '1px solid var(--app-border)',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                background: 'var(--app-surface)',
+                              }}>
+                                <div style={{
+                                  aspectRatio: '9/16',
+                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  minHeight: '180px',
+                                  position: 'relative',
+                                }}>
+                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                    Niet gegenereerd
+                                  </div>
+                                </div>
+                                <div style={{ padding: '10px' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>☝️ Wijs naar hemel</div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openAiModal('member_goal_celebration_point_to_sky', kit.id, playerInTenueUrl)}
+                                    disabled={!hasPlayerInTenue}
+                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                  >
+                                    ✨ Genereer
+                                  </Button>
+                                </div>
+                              </div>
+
+                              {/* Variant: Slide */}
+                              <div style={{
+                                border: '1px solid var(--app-border)',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                background: 'var(--app-surface)',
+                              }}>
+                                <div style={{
+                                  aspectRatio: '9/16',
+                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  minHeight: '180px',
+                                  position: 'relative',
+                                }}>
+                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                    Niet gegenereerd
+                                  </div>
+                                </div>
+                                <div style={{ padding: '10px' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>🛝 Knieën slide</div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openAiModal('member_goal_celebration_slide', kit.id, playerInTenueUrl)}
+                                    disabled={!hasPlayerInTenue}
+                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                  >
+                                    ✨ Genereer
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
-                            {/* Variant: Arms Wide */}
-                            <div style={{
-                              border: '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: 'var(--app-surface)',
-                            }}>
-                              <div style={{
-                                aspectRatio: '9/16',
-                                background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                minHeight: '180px',
-                                position: 'relative',
-                              }}>
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  Niet gegenereerd
-                                </div>
-                              </div>
-                              <div style={{ padding: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>🙌 Armen wijd</div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => openAiModal('member_goal_celebration_arms_wide', kit.id)}
-                                  style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                >
-                                  ✨ Genereer
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* Variant: Fist Pump */}
-                            <div style={{
-                              border: '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: 'var(--app-surface)',
-                            }}>
-                              <div style={{
-                                aspectRatio: '9/16',
-                                background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                minHeight: '180px',
-                                position: 'relative',
-                              }}>
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  Niet gegenereerd
-                                </div>
-                              </div>
-                              <div style={{ padding: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>✊ Vuist omhoog</div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => openAiModal('member_goal_celebration_fist_pump', kit.id)}
-                                  style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                >
-                                  ✨ Genereer
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* Variant: Point to Sky */}
-                            <div style={{
-                              border: '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: 'var(--app-surface)',
-                            }}>
-                              <div style={{
-                                aspectRatio: '9/16',
-                                background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                minHeight: '180px',
-                                position: 'relative',
-                              }}>
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  Niet gegenereerd
-                                </div>
-                              </div>
-                              <div style={{ padding: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>☝️ Wijs naar hemel</div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => openAiModal('member_goal_celebration_point_to_sky', kit.id)}
-                                  style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                >
-                                  ✨ Genereer
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* Variant: Slide */}
-                            <div style={{
-                              border: '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: 'var(--app-surface)',
-                            }}>
-                              <div style={{
-                                aspectRatio: '9/16',
-                                background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                minHeight: '180px',
-                                position: 'relative',
-                              }}>
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  Niet gegenereerd
-                                </div>
-                              </div>
-                              <div style={{ padding: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>🛝 Knieën slide</div>
-                                <Button
-                                  size="sm"
-                                  onClick={() => openAiModal('member_goal_celebration_slide', kit.id)}
-                                  style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                >
-                                  ✨ Genereer
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
 
                       {!userCanEditProject && (
                         <div style={{ marginTop: '16px' }}>
@@ -2200,6 +2236,7 @@ export default function ProjectSeasonMemberDetailPage() {
         onClose={() => {
           setShowAiModal(false);
           setAiSelectedKitUrl(null);
+          setAiInputPersonUrl(null);
         }}
         context="member"
         preSelectedTemplate={aiPreselectedTemplate}
@@ -2213,7 +2250,10 @@ export default function ProjectSeasonMemberDetailPage() {
             ? getAssetUrl(clubBrand.getAsset('sponsor_logo_upload')!.url)
             : null,
           reference: aiSelectedKitUrl,
-          person: form.profile?.url || membership?.user?.avatar_url || null,
+          // For intro/celebration: use player in tenue as input, otherwise use profile photo
+          person: aiInputPersonUrl
+            ? getAssetUrl(aiInputPersonUrl)
+            : form.profile?.url || membership?.user?.avatar_url || null,
         }}
         initialParams={{
           kit_type: aiSelectedKitType,
