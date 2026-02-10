@@ -62,7 +62,7 @@ A content creator needs to export videos in platform-specific aspect ratios and 
 1. **Given** a 16:9 video, **When** user requests Instagram format (1:1), **Then** video is cropped/letterboxed to 1:1 with correct resolution
 2. **Given** a video, **When** user requests TikTok format (9:16), **Then** video is converted to vertical format with platform-compliant bitrate
 3. **Given** a video, **When** user requests YouTube format (16:9), **Then** video is optimized for YouTube upload with appropriate encoding settings
-4. **Given** a video, **When** user requests Stories format (9:16), **Then** video is formatted with max 60-second duration segments if needed
+4. **Given** a video, **When** user requests Stories format (9:16), **Then** video is formatted for 9:16 aspect ratio (Note: automatic segmentation for >60s videos is post-MVP - initial version will validate duration constraints)
 5. **Given** a platform preset, **When** export completes, **Then** output metadata includes platform_target field for downstream use
 
 ---
@@ -113,7 +113,7 @@ A content creator wants to check the status and progress of their submitted vide
 
 **Acceptance Scenarios**:
 
-1. **Given** a job ID, **When** user queries status, **Then** current status, progress_percent, and estimated_completion are returned
+1. **Given** a job ID, **When** user queries status, **Then** current status, progress_percent, and processing timestamps are returned
 2. **Given** multiple jobs, **When** user lists their jobs, **Then** jobs are returned with pagination, filterable by status and job_type
 3. **Given** a failed job, **When** status is queried, **Then** error_message and failure_reason are included
 4. **Given** a completed job, **When** status is queried, **Then** output_file reference and processing metadata are included
@@ -141,7 +141,7 @@ A content creator needs to generate HLS (HTTP Live Streaming) output for adaptiv
 - What happens when input file is corrupted or unreadable? → Job fails with status "failed" and descriptive error_message
 - What happens when disk space is insufficient? → Job fails with "storage_error" failure_reason, admin notified
 - What happens when FFmpeg process crashes? → Celery task retries up to 3 times, then marks as failed
-- What happens when user cancels a processing job? → If still queued, job is cancelled; if processing, termination is attempted
+- What happens when user cancels a processing job? → If in 'queued' state, job is immediately cancelled; if 'processing', Celery task termination is attempted
 - What happens when input format is unsupported? → Validation fails at submission time with clear error
 - What happens when workflow_instance is deleted while job is processing? → Job completes but workflow_instance becomes NULL (orphaned)
 - What happens when output file already exists? → Unique filename is generated (UUID suffix)
@@ -153,7 +153,7 @@ A content creator needs to generate HLS (HTTP Live Streaming) output for adaptiv
 - **FR-001**: System MUST accept video uploads in formats: MP4, MOV, AVI, WebM, MKV with maximum file size of 2 GB and maximum duration of 15 minutes (both configurable)
 - **FR-002**: System MUST transcode videos to output formats: MP4 (H.264), WebM (VP9), HLS
 - **FR-003**: System MUST support quality presets: 1080p (1920x1080), 720p (1280x720), 480p (854x480), thumbnail (320x180)
-- **FR-004**: System MUST track job status with states: queued, processing, completed, failed, cancelled
+- **FR-004**: System MUST track job status with states: queued, processing, completed, failed, cancelled (jobs start in 'queued' state immediately after creation)
 - **FR-005**: System MUST update progress_percent during processing (0-100)
 - **FR-006**: System MUST generate thumbnails at specified timestamps or as grid layouts
 - **FR-007**: System MUST support platform-specific exports: Instagram (1:1, 4:5, 9:16), TikTok (9:16), YouTube (16:9), Stories (9:16)
@@ -244,7 +244,7 @@ A content creator needs to generate HLS (HTTP Live Streaming) output for adaptiv
 
 ### Measurable Outcomes
 
-- **SC-001**: Video transcode jobs complete within 2x the video duration for standard quality presets
+- **SC-001**: Video transcode jobs complete within 2x the source video duration for 1080p standard preset on typical worker hardware (baseline: 4 CPU cores, excludes queue wait time)
 - **SC-002**: Thumbnail generation completes within 5 seconds per thumbnail for videos up to 1 hour
 - **SC-003**: System successfully processes 95% of submitted jobs (5% acceptable failure rate for edge cases)
 - **SC-004**: All supported input formats (MP4, MOV, AVI, WebM, MKV) are correctly detected and processed
