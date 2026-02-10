@@ -398,13 +398,17 @@ def generate_video(
             # Image-to-video: use person photo as starting frame / reference
             logger.info("Generating video with image input (image-to-video)")
 
-            # Upload the image first
-            image_part = types.Part.from_bytes(data=person_img, mime_type="image/png")
+            # Create Image object for Veo API (requires bytesBase64Encoded and mimeType)
+            image_b64 = base64.b64encode(person_img).decode("utf-8")
+            image_obj = types.Image(
+                image_bytes=image_b64,
+                mime_type="image/png",
+            )
 
             operation = client.models.generate_videos(
                 model="veo-3.1-generate-preview",
                 prompt=final_prompt,
-                image=image_part,
+                image=image_obj,
                 config=veo_config,
             )
         else:
