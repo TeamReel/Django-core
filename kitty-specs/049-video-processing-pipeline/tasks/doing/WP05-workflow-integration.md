@@ -6,6 +6,8 @@ status: planned
 subtasks: T041-T046
 dependencies: WP02, WP04
 estimated_effort: 3-4 hours
+lane: "doing"
+agent: "system"
 ---
 
 # WP05: B37 Workflow Integration
@@ -237,3 +239,7 @@ def create_job(self, ..., workflow_template=None):
 - [ ] Graceful fallback when B37 unavailable
 - [ ] No circular imports with B37 module
 - [ ] Type hints on all methods
+
+## Activity Log
+
+- 2026-02-10T16:27:08Z – system – shell_pid= – lane=doing – Started implementation
