@@ -27,6 +27,7 @@ export interface GenerationVariant {
   error?: string | null;
   metadata?: Record<string, unknown>;
   presigned_url?: string | null;
+  storage_path?: string | null;
   storage_info?: {
     storage_backend: string;
     storage_path: string;
@@ -191,6 +192,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             error: v.error,
             metadata: v.metadata,
             presigned_url: v.presigned_url,
+            storage_path: v.storage_path,
             storage_info: v.storage_info,
           })
         );
@@ -230,7 +232,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         assetType,
         hasImage: !!selectedVariant.image_base64,
         hasVideo: !!selectedVariant.video_url,
-        storagePath: selectedVariant.storage_info?.storage_path,
+        storagePath: selectedVariant.storage_path || selectedVariant.storage_info?.storage_path,
       });
 
       if (!orgId) {
@@ -247,7 +249,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             'X-CSRFToken': getCsrfToken(),
           },
           body: JSON.stringify({
-            storage_path: selectedVariant.storage_info?.storage_path,
+            storage_path: selectedVariant.storage_path || selectedVariant.storage_info?.storage_path,
             presigned_url: selectedVariant.presigned_url,
             video_url: selectedVariant.video_url,
             image_base64: selectedVariant.image_base64,
