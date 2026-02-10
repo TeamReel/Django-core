@@ -2,8 +2,9 @@
 work_package_id: "WP12"
 title: "Django Admin Registration"
 phase: "Phase 2 - Enhancement"
-lane: "planned"
+lane: "doing"
 history: [{timestamp: "2026-02-09T18:18:50Z", lane: "planned", agent: "system", action: "Prompt generated"}]
+agent: "system"
 ---
 
 # WP12 – Django Admin (Priority P2)
@@ -22,3 +23,7 @@ Register all models in Django Admin with filters, search, read-only fields.
 - Add custom admin action: "Deactivate selected templates"
 
 Activity Log: 2026-02-09T18:18:50Z – Created
+
+## Activity Log
+
+- 2026-02-10T08:06:40Z – system – shell_pid= – lane=doing – Moved to doing
