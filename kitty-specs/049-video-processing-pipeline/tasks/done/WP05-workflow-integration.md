@@ -6,7 +6,7 @@ status: planned
 subtasks: T041-T046
 dependencies: WP02, WP04
 estimated_effort: 3-4 hours
-lane: "for_review"
+lane: "done"
 agent: "system"
 review_status: "approved with notes"
 reviewed_by: "copilot-reviewer"
@@ -282,3 +282,4 @@ def create_job(self, ..., workflow_template=None):
 
 - 2026-02-10T16:27:08Z – system – shell_pid= – lane=doing – Started implementation
 - 2026-02-10T16:31:44Z – system – shell_pid= – lane=for_review – Workflow integration complete
+- 2026-02-10T16:36:24Z – system – shell_pid= – lane=done – Approved_with_notes
