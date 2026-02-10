@@ -57,11 +57,19 @@ VIDEO_TEMP_DIR=/tmp/video_jobs      # Temp processing directory
 python manage.py migrate video
 ```
 
-### 5. Seed System Presets
+### 5. Seed System Presets (Required)
+
+Seed baseline video presets and platform export configurations:
 
 ```bash
 python manage.py seed_video_presets
 ```
+
+This creates:
+- **6 System Presets**: 1080p_high, 1080p_standard, 720p_standard, 480p_web, thumbnail, webm_vp9
+- **7 Platform Exports**: Instagram (Feed Square/Portrait/Reels), Stories, TikTok, YouTube (Shorts/Standard)
+
+The command is idempotent - safe to run multiple times (updates existing records).
 
 ## Basic Usage
 
