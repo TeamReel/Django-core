@@ -9,6 +9,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Video Processing Pipeline (Feature 049 - B55)
+
+- **Video Processing Pipeline**: FFmpeg-based video processing for async transcoding, thumbnail generation, and composition
+  - **Core Features**:
+    - Async video transcoding with multiple output formats (MP4, WebM, GIF)
+    - Thumbnail generation (single frame extraction and grid layouts)
+    - Video composition with overlays (logo, text, intro/outro)
+    - Platform-specific exports (Instagram Reels, TikTok, YouTube Shorts, Twitter)
+    - Tiered Celery queue architecture (video_fast for thumbnails, video_slow for transcoding)
+    - Optional B37 workflow integration for approval flows
+  - **Models**:
+    - `VideoJob`: Tracks processing jobs with status, progress, and retry logic
+    - `VideoPreset`: Reusable encoding configurations (1080p_standard, 720p_mobile, etc.)
+    - `PlatformExport`: Social media platform specifications with aspect ratios and duration limits
+    - `VideoOverlay`: Logo, text, and asset overlays with positioning and timing
+  - **API Endpoints** (8 total):
+    - `POST /api/v1/video/jobs/` - Create processing job
+    - `GET /api/v1/video/jobs/` - List jobs with pagination and filtering
+    - `GET /api/v1/video/jobs/{id}/` - Job detail with workflow status
+    - `DELETE /api/v1/video/jobs/{id}/` - Cancel/delete job
+    - `POST /api/v1/video/jobs/{id}/retry/` - Retry failed job
+    - `GET /api/v1/video/presets/` - List encoding presets
+    - `GET /api/v1/video/platforms/` - List platform export configs
+    - `GET /api/v1/video/overlays/` - List overlays for job
+  - **Processors** (Strategy Pattern):
+    - `TranscodeProcessor`: FFmpeg video transcoding with configurable presets
+    - `ThumbnailProcessor`: Single frame extraction at timestamps
+    - `ComposeProcessor`: Multi-track composition with overlay rendering
+  - **Workflow Integration**:
+    - Automatic workflow creation on job submit (if template provided)
+    - Auto-transition to "ready_for_review" on completion
+    - `publishable` property prevents unapproved video exports
+    - Workflow status, assignees, and history in API responses
+  - **Configuration**:
+    - `VIDEO_MAX_FILE_SIZE`: Max upload size (2GB default)
+    - `VIDEO_MAX_DURATION`: Max video duration (15 min default)
+    - `VIDEO_TEMP_DIR`: Temporary processing directory
+  - **Testing**: 76 tests with 73-97% coverage per module
+  - **Documentation**:
+    - Module README: [src/video/README.md](src/video/README.md)
+    - Quickstart Guide: [kitty-specs/049-video-processing-pipeline/quickstart.md](kitty-specs/049-video-processing-pipeline/quickstart.md)
+    - Manual Test Checklist: [documents/08-testing/manual-tests/B55-video-processing.md](documents/08-testing/manual-tests/B55-video-processing.md)
+
 #### Hierarchical Search Navigation (Feature 045)
 
 - **Hierarchical Search Navigation**: Global search API now supports `?hierarchy=true` parameter to return entity-centric navigation trees alongside search results

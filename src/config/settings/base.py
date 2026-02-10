@@ -87,6 +87,8 @@ INSTALLED_APPS = [
     "src.workflows.apps.WorkflowsConfig",
     # B41: User Navigation State
     "navigation.apps.NavigationConfig",
+    # B55: Video Processing Pipeline
+    "src.video.apps.VideoConfig",
 ]
 
 MIDDLEWARE = [
@@ -179,6 +181,11 @@ ORGANISATION_RATE_LIMITS = {
     "create_org_per_user_per_day": 5,
     "invite_member_per_org_per_hour": 20,
 }
+
+# Video Processing Pipeline (B55)
+VIDEO_MAX_FILE_SIZE = int(os.getenv("VIDEO_MAX_FILE_SIZE_MB", 2048)) * 1024 * 1024
+VIDEO_MAX_DURATION = int(os.getenv("VIDEO_MAX_DURATION_SECONDS", 900))
+VIDEO_TEMP_DIR = os.getenv("VIDEO_TEMP_DIR", os.path.join(os.getenv("TEMP", "/tmp"), "video_jobs"))
 
 
 AUTH_PASSWORD_VALIDATORS = [
