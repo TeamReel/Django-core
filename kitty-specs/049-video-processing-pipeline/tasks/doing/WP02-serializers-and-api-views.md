@@ -6,6 +6,9 @@ status: planned
 subtasks: T010-T020
 dependencies: WP01
 estimated_effort: 4-6 hours
+lane: "doing"
+agent: "claude"
+shell_pid: "71676"
 ---
 
 # WP02: Serializers & API Views
@@ -175,3 +178,7 @@ See existing modules:
 - [ ] Nested overlays serialize correctly
 - [ ] Error responses follow standard format
 - [ ] Type hints on all methods
+
+## Activity Log
+
+- 2026-02-10T13:14:56Z – claude – shell_pid=71676 – lane=doing – Started implementation
