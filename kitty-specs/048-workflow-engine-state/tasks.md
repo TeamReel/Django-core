@@ -483,15 +483,15 @@ description: "Work package task list for B37 Workflow Engine & State Machine"
 **Prompt**: `kitty-specs/048-workflow-engine-state/tasks/planned/WP11-user-story-6.md`
 
 ### Included Subtasks
-- [ ] T113 Create example validator in `src/workflows/examples.py` (budget check, completeness check)
-- [ ] T114 Create example hooks in `src/workflows/examples.py` (notification, audit logging)
-- [ ] T115 Add validator registration examples to module README
-- [ ] T116 Add hook registration examples to module README
-- [ ] T117 Document validator function signature and error handling
-- [ ] T118 Document hook function signature (sync vs async)
-- [ ] T119 Update quickstart.md with validator/hook integration steps
-- [ ] T120 Write integration tests showing custom validator in use
-- [ ] T121 Write integration tests showing custom hooks firing
+- [X] T113 Create example validator in `src/workflows/examples.py` (budget check, completeness check)
+- [X] T114 Create example hooks in `src/workflows/examples.py` (notification, audit logging)
+- [X] T115 Add validator registration examples to module README
+- [X] T116 Add hook registration examples to module README
+- [X] T117 Document validator function signature and error handling
+- [X] T118 Document hook function signature (sync vs async)
+- [X] T119 Update quickstart.md with validator/hook integration steps
+- [X] T120 Write integration tests showing custom validator in use
+- [X] T121 Write integration tests showing custom hooks firing
 
 ### Constitutional Alignment
 - Principle II (Architecture): Extension points documented and stable
