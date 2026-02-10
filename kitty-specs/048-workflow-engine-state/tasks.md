@@ -568,16 +568,16 @@ description: "Work package task list for B37 Workflow Engine & State Machine"
 **Prompt**: `kitty-specs/048-workflow-engine-state/tasks/planned/WP13-integrations.md`
 
 ### Included Subtasks
-- [ ] T134 Integrate with B09 Audit: call AuditEvent.create() on every transition
-- [ ] T135 Include workflow context in audit events (instance_id, action, from/to states, actor)
-- [ ] T136 Integrate with B15 Tasks: create Celery tasks for async hooks
-- [ ] T137 Store task_id in TransitionHistory when async hook is triggered
+- [x] T134 Integrate with B09 Audit: call AuditEvent.create() on every transition
+- [x] T135 Include workflow context in audit events (instance_id, action, from/to states, actor)
+- [x] T136 Integrate with B15 Tasks: create Celery tasks for async hooks
+- [x] T137 Store task_id in TransitionHistory when async hook is triggered
 - [ ] T138 Create hook status query endpoint using B15's task status API
-- [ ] T139 Integrate with B16 Notifications: provide hook example for sending notifications
-- [ ] T140 Document integration patterns in module README
-- [ ] T141 Write integration tests for audit logging
-- [ ] T142 Write integration tests for async hook execution
-- [ ] T143 Write integration tests for notification sending
+- [x] T139 Integrate with B16 Notifications: provide hook example for sending notifications
+- [x] T140 Document integration patterns in module README
+- [x] T141 Write integration tests for audit logging
+- [x] T142 Write integration tests for async hook execution
+- [x] T143 Write integration tests for notification sending
 
 ### Constitutional Alignment
 - Principle II (Architecture): Integration via stable APIs, no tight coupling
