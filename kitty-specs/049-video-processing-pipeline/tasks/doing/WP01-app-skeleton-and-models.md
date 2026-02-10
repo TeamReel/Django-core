@@ -42,11 +42,11 @@ reviewed_by: "claude-reviewer"
 - ✅ Settings updated (INSTALLED_APPS)
 
 **Action Items** (must complete before re-review):
-- [ ] Rename `source_file` to `input_file` in `src/video/models/job.py`
-- [ ] Create migration for field rename (use `migrations.RenameField`)
-- [ ] Apply migration to database
-- [ ] Verify no broken references in admin.py or other files
-- [ ] Re-run `python manage.py check` to ensure no issues
+- [x] Rename `source_file` to `input_file` in `src/video/models/job.py`
+- [x] Create migration for field rename (use `migrations.RenameField`)
+- [x] Apply migration to database
+- [x] Verify no broken references in admin.py or other files
+- [x] Re-run `python manage.py check` to ensure no issues
 - [ ] (Optional) Remove unnecessary `pass` statement in `apps.py` line 16
 
 **Validation Steps After Fix**:
@@ -224,5 +224,7 @@ See existing modules for patterns:
 
 - 2026-02-10T12:33:19Z – claude – shell_pid=71676 – lane=doing – Started WP01 implementation
 - 2026-02-10T12:42:22Z – claude – shell_pid=71676 – lane=for_review – Moved to for_review
+- 2026-02-10T13:02:40Z – claude – shell_pid=71676 – lane=doing – Addressed feedback: renamed source_file to input_file with migration and admin updates
+- 2026-02-10T13:02:50Z – claude – shell_pid=71676 – lane=doing – Addressed feedback: applied migration and re-ran python manage.py check video
 - 2026-02-10T12:52:11Z – claude – shell_pid=71676 – lane=planned – Code review: field naming must match spec
 - 2026-02-10T12:53:23Z – claude – shell_pid=71676 – lane=doing – Started implementation to address review feedback

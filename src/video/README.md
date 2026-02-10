@@ -40,7 +40,7 @@ preset = VideoPreset.objects.get(name="1080p_standard")
 job = service.create_job(
     project=project,
     user=request.user,
-    source_file=file,
+    input_file=file,
     job_type="transcode",
     preset=preset,
 )
@@ -53,7 +53,7 @@ job = service.create_job(
 job = service.create_job(
     project=project,
     user=request.user,
-    source_file=file,
+    input_file=file,
     job_type="thumbnail",
     config={"timestamp": 5.0},  # 5 seconds into video
 )

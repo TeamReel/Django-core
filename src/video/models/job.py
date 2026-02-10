@@ -61,7 +61,7 @@ class VideoJob(models.Model):
         default=0,
         help_text=_("Processing progress (0-100)"),
     )
-    source_file = models.ForeignKey(
+    input_file = models.ForeignKey(
         "files.FileAsset",
         on_delete=models.PROTECT,
         related_name="video_jobs_as_source",

@@ -54,7 +54,7 @@ class VideoJobAdmin(admin.ModelAdmin):
             "Files",
             {
                 "fields": (
-                    "source_file",
+                    "input_file",
                     "output_file",
                     "preset",
                     "platform_export",
