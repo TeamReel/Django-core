@@ -24,18 +24,18 @@
 
 **Goal**: Create `src/video/` Django app with all 4 models and migrations per data-model.md
 **Independent Test**: `python manage.py migrate video` succeeds, models queryable in shell
-**Prompt**: `tasks/planned/WP01-app-skeleton-and-models.md`
+**Prompt**: `tasks/done/WP01-app-skeleton-and-models.md`
 
 ### Included Subtasks
-- [ ] T001 Create `src/video/` app structure (apps.py, __init__.py, urls.py)
-- [ ] T002 [P] Create VideoPreset model in `src/video/models/preset.py`
-- [ ] T003 [P] Create PlatformExport model in `src/video/models/platform.py`
-- [ ] T004 [P] Create VideoJob model in `src/video/models/job.py`
-- [ ] T005 [P] Create VideoOverlay model in `src/video/models/overlay.py`
-- [ ] T006 Create model __init__.py with exports
-- [ ] T007 Generate and validate migrations
-- [ ] T008 Register models in Django Admin (`src/video/admin.py`)
-- [ ] T009 Add app to INSTALLED_APPS in settings
+- [x] T001 Create `src/video/` app structure (apps.py, __init__.py, urls.py)
+- [x] T002 [P] Create VideoPreset model in `src/video/models/preset.py`
+- [x] T003 [P] Create PlatformExport model in `src/video/models/platform.py`
+- [x] T004 [P] Create VideoJob model in `src/video/models/job.py`
+- [x] T005 [P] Create VideoOverlay model in `src/video/models/overlay.py`
+- [x] T006 Create model __init__.py with exports
+- [x] T007 Generate and validate migrations
+- [x] T008 Register models in Django Admin (`src/video/admin.py`)
+- [x] T009 Add app to INSTALLED_APPS in settings
 
 ### Constitutional Alignment
 - Principle II (Architecture): Single-purpose app, clear model boundaries
