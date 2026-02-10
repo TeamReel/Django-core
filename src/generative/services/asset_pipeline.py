@@ -331,6 +331,7 @@ def generate_video(
     context: dict | None = None,
     poll_interval: int = 10,
     max_wait_seconds: int = 300,
+    variant_count: int = 1,
 ) -> dict[str, Any]:
     """Generate a short video using Veo 3.1.
 
@@ -343,9 +344,10 @@ def generate_video(
         context: Optional context for S3 path (club_slug, team_slug, membership_id, etc.)
         poll_interval: Seconds between status checks (default 10)
         max_wait_seconds: Maximum wait time before timeout (default 300 = 5 min)
+        variant_count: Number of variants to generate (default 1, max usually 4)
 
     Returns:
-        Dict with keys: {video_bytes, video_url, mime_type, filename, file_asset_id, metadata} or {error}
+        Dict with keys: {video_bytes, video_url, mime_type, filename, file_asset_id, metadata, variants} or {error}
     """
     # Import the prompts module (root-level)
     import importlib.util
@@ -390,29 +392,36 @@ def generate_video(
     duration = video_config.get("duration_seconds", 6)
     aspect_ratio = video_config.get("aspect_ratio", "9:16")
     resolution = video_config.get("resolution", "720p")
+    loop_video = video_config.get("loop", False)
+
+    # If we have an input image (person_photo), use image-to-video
+    person_img = input_images.get("person_photo")
+    image_obj = None
+
+    if person_img:
+        # Pass explicit dict with raw bytes - SDK handles base64 encoding and serialization
+        image_obj = {
+            "image_bytes": person_img,
+            "mime_type": "image/png",
+        }
 
     # Prepare config (per google-genai SDK codegen instructions)
     veo_config = types.GenerateVideosConfig(
         person_generation="allow_adult",
         aspect_ratio=aspect_ratio,
-        number_of_videos=1,
+        number_of_videos=variant_count,
         duration_seconds=duration,
+        last_frame=image_obj if (loop_video and image_obj) else None,
     )
-
-    # If we have an input image (person_photo), use image-to-video
-    person_img = input_images.get("person_photo")
 
     try:
         if person_img:
             # Image-to-video: use person photo as starting frame / reference
-            logger.info("Generating video with image input (image-to-video)")
-
-            # Pass explicit dict with raw bytes - SDK handles base64 encoding and serialization
-            # This avoids issues with types.Image constructor deprecation and from_file() bugs
-            image_obj = {
-                "image_bytes": person_img,
-                "mime_type": "image/png",
-            }
+            logger.info(
+                "Generating %d video(s) with image input (image-to-video, loop=%s)",
+                variant_count,
+                loop_video,
+            )
 
             operation = client.models.generate_videos(
                 model="veo-3.1-generate-preview",
@@ -422,7 +431,9 @@ def generate_video(
             )
         else:
             # Text-to-video only
-            logger.info("Generating video with text prompt only (text-to-video)")
+            logger.info(
+                "Generating %d video(s) with text prompt only (text-to-video)", variant_count
+            )
             operation = client.models.generate_videos(
                 model="veo-3.1-generate-preview",
                 prompt=final_prompt,
@@ -446,78 +457,98 @@ def generate_video(
             time.sleep(poll_interval)
             operation = client.operations.get(operation)
 
-        # Download the generated video
-        generated_video = operation.response.generated_videos[0]
+        # Collect all generated videos
+        generated_variants = []
 
-        # Download video using official SDK pattern (download → save → read)
-        client.files.download(file=generated_video.video)
-        _tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
-        _tmp_path = _tmp.name
-        _tmp.close()
-        try:
-            generated_video.video.save(_tmp_path)
-            with open(_tmp_path, "rb") as _vf:
-                video_bytes = _vf.read()
-        finally:
-            os.unlink(_tmp_path)
-
-        # Generate filename
-        safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
-        param_str = "_".join(f"{k}-{v}" for k, v in sorted(safe_params.items()))
-        if len(param_str) > 80:
-            param_str = param_str[:77] + "..."
-        filename = f"{template_id}_{param_str}_{int(time.time())}.mp4"
-
-        logger.info("Video generated successfully: %s (%d bytes)", filename, len(video_bytes))
-
-        # Upload to S3 if user_id and organisation_id provided
-        video_url = None
-        file_asset_id = None
-
-        if user_id and organisation_id:
+        # Helper to process one video
+        def process_video_result(vid_obj, idx):
+            # Download video using official SDK pattern (download → save → read)
+            client.files.download(file=vid_obj.video)
+            _tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+            _tmp_path = _tmp.name
+            _tmp.close()
             try:
-                from .file_storage import GenerationFileService
+                vid_obj.video.save(_tmp_path)
+                with open(_tmp_path, "rb") as _vf:
+                    v_bytes = _vf.read()
+            finally:
+                os.unlink(_tmp_path)
 
-                # Store video in S3
-                file_asset_uuid = GenerationFileService.store_output_file(
-                    content=video_bytes,
-                    filename=filename,
-                    mime_type="video/mp4",
-                    user_id=user_id,
-                    organisation_id=organisation_id,
-                    context=context or {},
-                )
-                file_asset_id = str(file_asset_uuid)
+            # Generate filename
+            safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
+            param_str = "_".join(f"{k}-{v}" for k, v in sorted(safe_params.items()))
+            if len(param_str) > 60:
+                param_str = param_str[:57] + "..."
+            fname = f"{template_id}_{param_str}_{int(time.time())}_{idx}.mp4"
 
-                # Get presigned URL (optional - for immediate playback)
-                from files.utils import get_storage_backend
-                from files.models import FileAsset
+            # Upload to S3 if user_id and organisation_id provided
+            v_url = None
+            f_asset_id = None
 
-                file_asset = FileAsset.objects.get(id=file_asset_uuid)
-                storage = get_storage_backend()
-                video_url = storage.get_url(file_asset.storage_path, signed=True, expires_in=3600)
+            if user_id and organisation_id:
+                try:
+                    from .file_storage import GenerationFileService
 
-                logger.info("Video uploaded to S3: %s (FileAsset: %s)", filename, file_asset_id)
+                    # Store video in S3
+                    file_asset_uuid = GenerationFileService.store_output_file(
+                        content=v_bytes,
+                        filename=fname,
+                        mime_type="video/mp4",
+                        user_id=user_id,
+                        organisation_id=organisation_id,
+                        context=context or {},
+                    )
+                    f_asset_id = str(file_asset_uuid)
 
-            except Exception as e:  # noqa: BLE001
-                logger.exception("Failed to upload video to S3: %s", e)
-                # Continue without S3 upload - return base64 as fallback
+                    # Get presigned URL
+                    from files.utils import get_storage_backend
+                    from files.models import FileAsset
+
+                    file_asset = FileAsset.objects.get(id=file_asset_uuid)
+                    storage = get_storage_backend()
+                    v_url = storage.get_url(file_asset.storage_path, signed=True, expires_in=3600)
+
+                    logger.info("Video variant %d uploaded to S3: %s", idx, fname)
+
+                except Exception as e:
+                    logger.exception("Failed to upload video variant %d to S3: %s", idx, e)
+
+            return {
+                "video_bytes": v_bytes,
+                "video_url": v_url,
+                "filename": fname,
+                "file_asset_id": f_asset_id,
+                "mime_type": "video/mp4",
+            }
+
+        # Process all variants
+        for i, vid in enumerate(operation.response.generated_videos):
+            generated_variants.append(process_video_result(vid, i))
+
+        if not generated_variants:
+            raise ValueError("No videos generated in response")
+
+        # Prepare main return (backward compatibility: return first variant as main)
+        main_variant = generated_variants[0]
 
         return {
-            "video_bytes": video_bytes if not video_url else None,  # Only send bytes if not in S3
-            "video_base64": base64.b64encode(video_bytes).decode("utf-8")
-            if not video_url
+            "video_bytes": main_variant["video_bytes"] if not main_variant["video_url"] else None,
+            "video_base64": base64.b64encode(main_variant["video_bytes"]).decode("utf-8")
+            if not main_variant["video_url"]
             else None,
-            "video_url": video_url,
+            "video_url": main_variant["video_url"],
             "mime_type": "video/mp4",
-            "filename": filename,
-            "file_asset_id": file_asset_id,
+            "filename": main_variant["filename"],
+            "file_asset_id": main_variant["file_asset_id"],
+            "variants": generated_variants,  # Include all variants including first
             "metadata": {
                 "template_id": template_id,
                 "params": params,
                 "duration_seconds": duration,
                 "aspect_ratio": aspect_ratio,
                 "resolution": resolution,
+                "loop": loop_video,
+                "variant_count": len(generated_variants),
             },
         }
 

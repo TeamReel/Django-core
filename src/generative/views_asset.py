@@ -263,6 +263,7 @@ def generate_asset_view(request: Request) -> Response:
                 user_id=request.user.id if request.user and request.user.is_authenticated else None,
                 organisation_id=organisation_id,
                 context=storage_context,
+                variant_count=variant_count,
             )
 
             if result.get("error"):
@@ -271,27 +272,45 @@ def generate_asset_view(request: Request) -> Response:
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 
-            # Build response for video
-            variant = {
-                "variant_index": 0,
-                "mime_type": result["mime_type"],
-                "filename": result["filename"],
-            }
+            # Build response for video variants
+            variants = []
 
-            # Include either video_url (preferred) or video_base64 (fallback)
-            if result.get("video_url"):
-                variant["video_url"] = result["video_url"]
-                variant["file_asset_id"] = result.get("file_asset_id")
-            elif result.get("video_base64"):
-                variant["video_base64"] = result["video_base64"]
+            # If "variants" list exists (new standard), use it
+            if result.get("variants"):
+                for i, v_result in enumerate(result["variants"]):
+                    variant = {
+                        "variant_index": i,
+                        "mime_type": v_result["mime_type"],
+                        "filename": v_result["filename"],
+                    }
+                    if v_result.get("video_url"):
+                        variant["video_url"] = v_result["video_url"]
+                        variant["file_asset_id"] = v_result.get("file_asset_id")
+                    elif v_result.get("video_bytes"):
+                        variant["video_base64"] = base64.b64encode(v_result["video_bytes"]).decode(
+                            "utf-8"
+                        )
+                    variants.append(variant)
+            else:
+                # Fallback: single result in root dict
+                variant = {
+                    "variant_index": 0,
+                    "mime_type": result["mime_type"],
+                    "filename": result["filename"],
+                }
+                if result.get("video_url"):
+                    variant["video_url"] = result["video_url"]
+                    variant["file_asset_id"] = result.get("file_asset_id")
+                elif result.get("video_base64"):
+                    variant["video_base64"] = result["video_base64"]
 
-            variants = [variant]
+                variants.append(variant)
 
             return Response(
                 AssetGenerateOutputSerializer(
                     {
                         "template_id": template_id,
-                        "variant_count": 1,
+                        "variant_count": len(variants),
                         "variants": variants,
                     }
                 ).data

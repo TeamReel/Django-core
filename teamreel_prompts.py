@@ -490,16 +490,17 @@ FINAL CHECK:
             "fps": 30,
             "resolution": "1080p",
             "aspect_ratio": "9:16",  # Vertical for social media
+            "loop": True,  # User request: Start shot == End shot
         },
-        "prompt_template": """Create a 5-6 SECOND PLAYER INTRO VIDEO for broadcast/social media use.
+        "prompt_template": """Create a 5-6 SECOND PLAYER INTRO VIDEO. "Living Portrait" style.
 
-PERSON: Use the provided player image. The player should be recognizable - preserve their face, hair, skin tone, and kit EXACTLY as shown.
+PERSON: Use the provided player image as the STARTING FRAME. The player must remain FULLY IN FRAME at all times (do not crop head or feet).
 
-ANIMATION & MOVEMENT:
-- Start: Player enters frame or fades in from darkness
+ANIMATION:
+- Start: EXACT match of the input reference image.
+- Action: Subtle, confident movement (breathing, slight shift of weight, adjusting kit or glancing at camera).
 - Pose: {style_variant_label}
-- Camera: Subtle dolly in or slow zoom toward player
-- End: Hold on final pose for 1-2 seconds
+- End: Return to the EXACT starting pose (seamless loop).
 
 ATMOSPHERE:
 - Dramatic stadium lighting with rim lights
@@ -509,11 +510,8 @@ ATMOSPHERE:
 
 STYLE:
 - High-end broadcast-quality player introduction video
-- Dynamic studio lighting with cinematic flair
-- Smooth, professional camera movement
 - 30fps, 1080p vertical (9:16 aspect ratio)
-
-This video will be used in player introduction sequences for match broadcasts and social media.
+- CINEMAGRAPH style: controlled, powerful, minimal movement.
 """,
     },
 
@@ -547,16 +545,17 @@ This video will be used in player introduction sequences for match broadcasts an
             "resolution": "1080p",
             "aspect_ratio": "9:16",  # Vertical for social media
         },
-        "prompt_template": """Create a 5-6 SECOND GOAL CELEBRATION VIDEO for broadcast/social media use.
+        "prompt_template": """Create a 5-6 SECOND GOAL CELEBRATION VIDEO.
 
 PERSON: Use the provided player image. The player should be recognizable - preserve their face, hair, skin tone, and kit EXACTLY as shown.
+IMPORTANT: FULL BODY SHOT. Do not crop the player's head or feet. Keep them distinct from background.
 
 CELEBRATION & MOVEMENT:
-- Start: Player runs into frame or camera follows player
+- Start: Player runs into frame or camera follows player (Match input image style).
 - Action: {style_variant_label}
 - Expression: Pure joy, triumphant, adrenaline-fueled celebration
-- Camera: Dynamic tracking shot or slow-motion effect
-- End: Hold celebration pose or fade out
+- Camera: Dynamic tracking shot but keep player CENTRED and FULLY VISIBLE.
+- End: Hold celebration pose (can be slightly different from start).
 
 ATMOSPHERE:
 - Stadium environment with crowd blur in background
