@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import base64
 import logging
-import tempfile
 import time
 from io import BytesIO
 from typing import Any
@@ -480,17 +479,20 @@ def generate_video(
 
         # Helper to process one video
         def process_video_result(vid_obj, idx):
-            # Download video using official SDK pattern (download → save → read)
-            client.files.download(file=vid_obj.video)
-            _tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
-            _tmp_path = _tmp.name
-            _tmp.close()
+            # Verify video object exists
+            if not vid_obj.video:
+                raise ValueError(f"Variant {idx}: No video file reference in response")
+
+            # Download video bytes directly using the SDK client
+            # The 'file' argument accepts the File object or its name
             try:
-                vid_obj.video.save(_tmp_path)
-                with open(_tmp_path, "rb") as _vf:
-                    v_bytes = _vf.read()
-            finally:
-                os.unlink(_tmp_path)
+                v_bytes = client.files.download(file=vid_obj.video.name)
+            except Exception as e:
+                # Fallback: try passing the object directly if name fails
+                try:
+                    v_bytes = client.files.download(file=vid_obj.video)
+                except Exception as e2:
+                    raise RuntimeError(f"Failed to download video content: {e} / {e2}") from e
 
             # Generate filename
             safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
