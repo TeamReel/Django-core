@@ -131,6 +131,7 @@ class AssetVariantSerializer(serializers.Serializer):
     error = serializers.CharField(required=False, allow_null=True)
     metadata = serializers.DictField(required=False)
     presigned_url = serializers.CharField(required=False, allow_null=True)
+    storage_path = serializers.CharField(required=False, allow_null=True)  # Added for easier saving
     storage_info = StorageInfoSerializer(required=False, allow_null=True)
 
 
@@ -292,9 +293,7 @@ def generate_asset_view(request: Request) -> Response:
                         )
                     # Include storage_path for save endpoint
                     if v_result.get("storage_path"):
-                        variant["storage_info"] = {
-                            "storage_path": v_result["storage_path"],
-                        }
+                        variant["storage_path"] = v_result["storage_path"]
                     variants.append(variant)
             else:
                 # Fallback: single result in root dict
