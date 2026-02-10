@@ -419,8 +419,6 @@ def generate_video(
     # Build config arguments dynamically
     config_args = {
         "number_of_videos": effective_variant_count,
-        "duration_seconds": duration,
-        "last_frame": image_obj if (loop_video and image_obj) else None,
     }
 
     # Only pass aspect_ratio for Text-to-Video.
@@ -430,6 +428,7 @@ def generate_video(
 
     # Note: 'person_generation' parameter removed as it triggers "Use case not supported"
     # if the Google Cloud project is not explicitly allowlisted for adult/person generation.
+    # Note: 'duration_seconds' and 'last_frame' removed as Veo 3.1 preview may not support them.
 
     veo_config = types.GenerateVideosConfig(**config_args)
 
