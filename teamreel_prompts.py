@@ -462,13 +462,14 @@ FINAL CHECK:
     },
 
     # =========================================================================
-    # 8. MEMBER SHORT INTRO (Video-style static image for intro animations)
+    # 8. MEMBER SHORT INTRO (5-6 second intro video)
     # =========================================================================
     "member_intro": {
         "id": "member_intro",
-        "name": "Speler Intro",
+        "name": "Speler Intro Video",
         "category": "intro",
-        "description": "Genereer een intro-beeld van speler in tenue met een karakteristieke pose.",
+        "output_type": "video",  # VIDEO output (5-6 seconds)
+        "description": "Genereer een korte intro video (5-6 sec) van speler in tenue met een karakteristieke pose.",
         "input_requirements": ["person_photo"],
         "parameters": {
             "kit_type": {
@@ -484,36 +485,47 @@ FINAL CHECK:
                 "default": "arms_crossed",
             },
         },
-        "prompt_template": """Create a PROFESSIONAL PLAYER INTRO IMAGE for broadcast/video use.
+        "video_config": {
+            "duration_seconds": 6,
+            "fps": 30,
+            "resolution": "1080p",
+            "aspect_ratio": "9:16",  # Vertical for social media
+        },
+        "prompt_template": """Create a 5-6 SECOND PLAYER INTRO VIDEO for broadcast/social media use.
 
-PERSON: Use the provided player image. Preserve their face, hair, skin tone, and kit EXACTLY as shown.
+PERSON: Use the provided player image. The player should be recognizable - preserve their face, hair, skin tone, and kit EXACTLY as shown.
 
-POSE: {style_variant_label}.
+ANIMATION & MOVEMENT:
+- Start: Player enters frame or fades in from darkness
+- Pose: {style_variant_label}
+- Camera: Subtle dolly in or slow zoom toward player
+- End: Hold on final pose for 1-2 seconds
 
-COMPOSITION:
-- FULL BODY visible from head to toe, standing upright.
-- The player should be looking at the camera with a confident expression.
-- Professional sports photography lighting with dramatic flair.
-- Background: PURE SOLID COLOR BACKGROUND (bright green #00FF00 or bright blue #0000FF chroma-key).
+ATMOSPHERE:
+- Dramatic stadium lighting with rim lights
+- Subtle smoke/haze in background
+- Professional sports broadcast quality
+- Background: Stadium or chroma-key green for compositing
 
 STYLE:
-- High-end broadcast-quality player introduction image.
-- Sharp focus, clean edges, no shadows on background.
-- Dynamic studio lighting with subtle rim light for depth.
-- The person must be FULLY SEPARATED from the background.
+- High-end broadcast-quality player introduction video
+- Dynamic studio lighting with cinematic flair
+- Smooth, professional camera movement
+- 30fps, 1080p vertical (9:16 aspect ratio)
 
-This image will be used in video intro sequences for match broadcasts.
+This video will be used in player introduction sequences for match broadcasts and social media.
 """,
     },
 
     # =========================================================================
-    # 9. MEMBER GOAL CELEBRATION
+    # 9. MEMBER GOAL CELEBRATION (5-6 second celebration video)
     # =========================================================================
     "member_goal_celebration": {
         "id": "member_goal_celebration",
-        "name": "Speler Doelpunt Viering",
+        "name": "Speler Doelpunt Viering Video",
         "category": "celebration",
-        "description": "Genereer een beeld van speler in tenue met een doelpunt-viering pose.",
+        "output_type": "video",  # VIDEO output (5-6 seconds)
+        "description": "Genereer een korte viering video (5-6 sec) van speler met een doelpunt-viering pose.",
         "input_requirements": ["person_photo"],
         "parameters": {
             "kit_type": {
@@ -529,27 +541,36 @@ This image will be used in video intro sequences for match broadcasts.
                 "default": "arms_wide",
             },
         },
-        "prompt_template": """Create a DYNAMIC GOAL CELEBRATION IMAGE for broadcast/video use.
+        "video_config": {
+            "duration_seconds": 6,
+            "fps": 30,
+            "resolution": "1080p",
+            "aspect_ratio": "9:16",  # Vertical for social media
+        },
+        "prompt_template": """Create a 5-6 SECOND GOAL CELEBRATION VIDEO for broadcast/social media use.
 
-PERSON: Use the provided player image. Preserve their face, hair, skin tone, and kit EXACTLY as shown.
+PERSON: Use the provided player image. The player should be recognizable - preserve their face, hair, skin tone, and kit EXACTLY as shown.
 
-CELEBRATION POSE: {style_variant_label}.
+CELEBRATION & MOVEMENT:
+- Start: Player runs into frame or camera follows player
+- Action: {style_variant_label}
+- Expression: Pure joy, triumphant, adrenaline-fueled celebration
+- Camera: Dynamic tracking shot or slow-motion effect
+- End: Hold celebration pose or fade out
 
-EXPRESSION: Joyful, triumphant, celebrating a goal.
-
-COMPOSITION:
-- FULL BODY visible, dynamic celebration pose.
-- High energy, emotional moment captured.
-- Professional sports photography with dramatic action lighting.
-- Background: PURE SOLID COLOR BACKGROUND (bright green #00FF00 or bright blue #0000FF chroma-key).
+ATMOSPHERE:
+- Stadium environment with crowd blur in background
+- Dramatic lighting with lens flares
+- High energy, emotional moment captured
+- Optional: Confetti, pyro effects, or crowd reaction cutaway
 
 STYLE:
-- High-end broadcast-quality celebration image.
-- Sharp focus, clean edges, dramatic lighting.
-- Motion blur or dynamic posing acceptable to convey energy.
-- The person must be FULLY SEPARATED from the background.
+- High-end broadcast-quality celebration footage
+- Cinematic slow-motion segments (optional)
+- Dynamic camera movement following the action
+- 30fps, 1080p vertical (9:16 aspect ratio)
 
-This image will be used in goal celebration overlays for match broadcasts.
+This video will be used in goal celebration overlays for match broadcasts and social media moments.
 """,
     },
 }

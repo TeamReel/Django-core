@@ -4,6 +4,7 @@ Integrates teamreel_prompts.py templates with Google Gemini for:
 1. Kit analysis (Gemini 2.0 Flash → text description)
 2. Prompt resolution (template + params + analysis → final prompt)
 3. Image generation (nano-banana-pro-preview → variants)
+4. Video generation (Veo 3.1 → 5-8 second videos)
 
 This is the backend counterpart of the frontend AssetGenerationModal.
 """
@@ -63,6 +64,43 @@ PREPROCESSORS = {
     "square_pad_512": _preprocess_logo,
     "pad_512_landscape": _preprocess_sponsor,
 }
+
+
+# =============================================================================
+# Template Helpers
+# =============================================================================
+
+
+def _get_template_output_type(template_id: str) -> str:
+    """Get the output type for a template (image or video).
+
+    Args:
+        template_id: Template key from teamreel_prompts.TEMPLATES
+
+    Returns:
+        'image' or 'video'
+
+    Raises:
+        ValueError: If template not found
+    """
+    import importlib.util
+    import os
+
+    prompts_path = os.path.join(settings.BASE_DIR, "..", "teamreel_prompts.py")
+    if not os.path.exists(prompts_path):
+        prompts_path = os.path.join(settings.BASE_DIR, "teamreel_prompts.py")
+
+    spec = importlib.util.spec_from_file_location("teamreel_prompts", prompts_path)
+    prompts_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(prompts_module)
+
+    TEMPLATES = prompts_module.TEMPLATES
+
+    if template_id not in TEMPLATES:
+        raise ValueError(f"Unknown template: {template_id}")
+
+    template = TEMPLATES[template_id]
+    return template.get("output_type", "image")
 
 
 # =============================================================================
@@ -276,3 +314,161 @@ def generate_asset(
             )
 
     return results
+
+
+# =============================================================================
+# Video Generation (Veo 3.1)
+# =============================================================================
+
+
+def generate_video(
+    template_id: str,
+    params: dict[str, str],
+    input_images: dict[str, bytes],
+    poll_interval: int = 10,
+    max_wait_seconds: int = 300,
+) -> dict[str, Any]:
+    """Generate a short video using Veo 3.1.
+
+    Args:
+        template_id: Template key from teamreel_prompts.TEMPLATES (must have output_type='video')
+        params: Parameter values (e.g. {"style_variant": "arms_crossed", "kit_type": "home"})
+        input_images: Dict of input images as bytes (keys: person_photo, etc.)
+        poll_interval: Seconds between status checks (default 10)
+        max_wait_seconds: Maximum wait time before timeout (default 300 = 5 min)
+
+    Returns:
+        Dict with keys: {video_bytes, video_base64, mime_type, filename, metadata} or {error}
+    """
+    # Import the prompts module (root-level)
+    import importlib.util
+    import os
+
+    prompts_path = os.path.join(settings.BASE_DIR, "..", "teamreel_prompts.py")
+    if not os.path.exists(prompts_path):
+        prompts_path = os.path.join(settings.BASE_DIR, "teamreel_prompts.py")
+
+    spec = importlib.util.spec_from_file_location("teamreel_prompts", prompts_path)
+    prompts_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(prompts_module)
+
+    TEMPLATES = prompts_module.TEMPLATES
+    resolve_prompt = prompts_module.resolve_prompt
+
+    if template_id not in TEMPLATES:
+        raise ValueError(f"Unknown template: {template_id}")
+
+    template = TEMPLATES[template_id]
+
+    # Verify this is a video template
+    if template.get("output_type") != "video":
+        raise ValueError(f"Template {template_id} is not a video template (output_type != 'video')")
+
+    # Step 1: Resolve prompt
+    final_prompt = resolve_prompt(template_id, params)
+    logger.info("Resolved video prompt for %s: %d chars", template_id, len(final_prompt))
+
+    # Step 2: Generate video with Veo 3.1
+    from google import genai
+    from google.genai import types
+
+    api_key = getattr(settings, "GOOGLE_API_KEY", None)
+    if not api_key:
+        raise ValueError("GOOGLE_API_KEY not configured in settings")
+
+    client = genai.Client(api_key=api_key)
+
+    # Get video config from template
+    video_config = template.get("video_config", {})
+    duration = video_config.get("duration_seconds", 6)
+    aspect_ratio = video_config.get("aspect_ratio", "9:16")
+    resolution = video_config.get("resolution", "720p")
+
+    # Prepare config
+    veo_config = types.GenerateVideosConfig(
+        aspect_ratio=aspect_ratio,
+        duration_seconds=duration,
+    )
+
+    # If we have an input image (person_photo), use image-to-video
+    person_img = input_images.get("person_photo")
+
+    try:
+        if person_img:
+            # Image-to-video: use person photo as starting frame / reference
+            logger.info("Generating video with image input (image-to-video)")
+
+            # Upload the image first
+            image_part = types.Part.from_bytes(data=person_img, mime_type="image/png")
+
+            operation = client.models.generate_videos(
+                model="veo-3.1-generate-preview",
+                prompt=final_prompt,
+                image=image_part,
+                config=veo_config,
+            )
+        else:
+            # Text-to-video only
+            logger.info("Generating video with text prompt only (text-to-video)")
+            operation = client.models.generate_videos(
+                model="veo-3.1-generate-preview",
+                prompt=final_prompt,
+                config=veo_config,
+            )
+
+        # Poll for completion
+        start_time = time.time()
+        while not operation.done:
+            elapsed = time.time() - start_time
+            if elapsed > max_wait_seconds:
+                return {
+                    "video_bytes": None,
+                    "video_base64": None,
+                    "mime_type": None,
+                    "filename": None,
+                    "error": f"Video generation timed out after {max_wait_seconds}s",
+                }
+
+            logger.info("Waiting for video generation... (%.0fs elapsed)", elapsed)
+            time.sleep(poll_interval)
+            operation = client.operations.get(operation)
+
+        # Download the generated video
+        generated_video = operation.response.generated_videos[0]
+        client.files.download(file=generated_video.video)
+
+        # Read video bytes
+        video_bytes = generated_video.video.read()
+
+        # Generate filename
+        safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
+        param_str = "_".join(f"{k}-{v}" for k, v in sorted(safe_params.items()))
+        if len(param_str) > 80:
+            param_str = param_str[:77] + "..."
+        filename = f"{template_id}_{param_str}_{int(time.time())}.mp4"
+
+        logger.info("Video generated successfully: %s (%d bytes)", filename, len(video_bytes))
+
+        return {
+            "video_bytes": video_bytes,
+            "video_base64": base64.b64encode(video_bytes).decode("utf-8"),
+            "mime_type": "video/mp4",
+            "filename": filename,
+            "metadata": {
+                "template_id": template_id,
+                "params": params,
+                "duration_seconds": duration,
+                "aspect_ratio": aspect_ratio,
+                "resolution": resolution,
+            },
+        }
+
+    except Exception as e:  # noqa: BLE001
+        logger.exception("Error generating video: %s", e)
+        return {
+            "video_bytes": None,
+            "video_base64": None,
+            "mime_type": None,
+            "filename": None,
+            "error": str(e),
+        }

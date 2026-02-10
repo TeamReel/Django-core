@@ -119,10 +119,11 @@ class StorageInfoSerializer(serializers.Serializer):
 
 
 class AssetVariantSerializer(serializers.Serializer):
-    """Output for a single generated variant."""
+    """Output for a single generated variant (image or video)."""
 
     variant_index = serializers.IntegerField()
-    image_base64 = serializers.CharField(allow_null=True)
+    image_base64 = serializers.CharField(allow_null=True, required=False)
+    video_base64 = serializers.CharField(allow_null=True, required=False)  # For video output
     mime_type = serializers.CharField(allow_null=True)
     filename = serializers.CharField(allow_null=True)
     error = serializers.CharField(required=False, allow_null=True)
@@ -226,7 +227,68 @@ def generate_asset_view(request: Request) -> Response:
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-    # Run the asset pipeline
+    # Check if this is a video template
+    try:
+        from .services.asset_pipeline import _get_template_output_type
+
+        output_type = _get_template_output_type(template_id)
+    except ValueError as e:
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Run the appropriate pipeline based on output type
+    if output_type == "video":
+        # Video generation (Veo 3.1)
+        try:
+            from .services.asset_pipeline import generate_video
+
+            result = generate_video(
+                template_id=template_id,
+                params=params,
+                input_images=input_images,
+            )
+
+            if result.get("error"):
+                return Response(
+                    {"error": result["error"]},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+            # Build response for video
+            variants = [
+                {
+                    "variant_index": 0,
+                    "video_base64": result["video_base64"],
+                    "mime_type": result["mime_type"],
+                    "filename": result["filename"],
+                }
+            ]
+
+            return Response(
+                AssetGenerateOutputSerializer(
+                    {
+                        "template_id": template_id,
+                        "variant_count": 1,
+                        "variants": variants,
+                    }
+                ).data
+            )
+
+        except ValueError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.exception("Video generation failed: %s", e)
+            return Response(
+                {"error": f"Video generation failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    # Image generation (default)
     try:
         from .services.asset_pipeline import generate_asset
 
