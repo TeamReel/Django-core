@@ -6,7 +6,7 @@ status: planned
 subtasks: T010-T020
 dependencies: WP01
 estimated_effort: 4-6 hours
-lane: "doing"
+lane: "for_review"
 agent: "claude"
 shell_pid: "71676"
 review_status: "acknowledged"
@@ -205,3 +205,4 @@ See existing modules:
 ## Activity Log
 
 - 2026-02-10T13:28:45Z – claude – shell_pid=71676 – lane=doing – Addressed feedback: enforce project membership for X-Project-ID and queryset filtering; ran python manage.py check video
+- 2026-02-10T13:29:01Z – claude – shell_pid=71676 – lane=for_review – Ready for review
