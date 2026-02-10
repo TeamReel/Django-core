@@ -6,6 +6,9 @@ status: planned
 subtasks: T001-T009
 dependencies: none
 estimated_effort: 4-6 hours
+lane: "doing"
+agent: "claude"
+shell_pid: "71676"
 ---
 
 # WP01: App Skeleton & Models
@@ -171,3 +174,7 @@ See existing modules for patterns:
 - [ ] No circular imports
 - [ ] Type hints on all methods
 - [ ] Docstrings on models
+
+## Activity Log
+
+- 2026-02-10T12:33:19Z – claude – shell_pid=71676 – lane=doing – Started WP01 implementation
