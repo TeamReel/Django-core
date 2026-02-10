@@ -6,6 +6,9 @@ status: planned
 subtasks: T031-T040
 dependencies: WP03
 estimated_effort: 4-6 hours
+lane: "doing"
+agent: "copilot-implementer"
+shell_pid: "71676"
 ---
 
 # WP04: Celery Tasks & Queue Config
@@ -293,3 +296,7 @@ video_worker_slow:
 - [ ] Worker commands documented
 - [ ] Docker compose updated
 - [ ] Type hints on task functions
+
+## Activity Log
+
+- 2026-02-10T14:20:52Z – copilot-implementer – shell_pid=71676 – lane=doing – Started implementation
