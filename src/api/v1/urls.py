@@ -35,6 +35,7 @@ urlpatterns = [
     path("activity/", include("audit.urls")),  # /api/v1/activity/
     path("activities/", include("activities.api.urls")),  # /api/v1/activities/ (B30)
     path("transactions/", include("transactions.api.urls")),  # /api/v1/transactions/
+    path("video/", include("src.video.urls")),  # /api/v1/video/
     path(
         "content-generation/", include("src.content_generation.urls")
     ),  # /api/v1/content-generation/ (B31)

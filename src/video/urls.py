@@ -1,12 +1,16 @@
 """URL configuration for video processing endpoints."""
 
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+
+from src.video.views import PlatformExportViewSet, VideoJobViewSet, VideoPresetViewSet
 
 app_name = "video"
 
-# Router will be populated in WP02 with ViewSets
 router = DefaultRouter()
+router.register("jobs", VideoJobViewSet, basename="videojob")
+router.register("presets", VideoPresetViewSet, basename="videopreset")
+router.register("platforms", PlatformExportViewSet, basename="platformexport")
 
 urlpatterns = [
     path("", include(router.urls)),
