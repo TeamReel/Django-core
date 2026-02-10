@@ -6,23 +6,23 @@ from django.db import models
 class ProjectPermissionOverride(models.Model):
     """Customize transition permissions per project."""
 
-    project = models.ForeignKey(
+    project: models.ForeignKey = models.ForeignKey(
         "projects.Project",
         on_delete=models.CASCADE,
         related_name="workflow_permissions",
     )
-    workflow = models.ForeignKey(
+    workflow: models.ForeignKey = models.ForeignKey(
         "workflows.WorkflowTemplate",
         on_delete=models.CASCADE,
         related_name="permission_overrides",
     )
-    action_name = models.CharField(max_length=100, db_index=True)
-    required_roles = models.JSONField(
+    action_name: models.CharField = models.CharField(max_length=100, db_index=True)
+    required_roles: models.JSONField = models.JSONField(
         default=list,
         help_text="Array of membership role names (e.g., ['admin', 'coach'])",
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at: models.DateTimeField = models.DateTimeField(auto_now_add=True)
+    updated_at: models.DateTimeField = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "project_permission_overrides"

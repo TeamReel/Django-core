@@ -17,7 +17,7 @@ from src.workflows.examples import (
 )
 from src.workflows.models import WorkflowTemplate
 from src.workflows.registry import ValidatorRegistry
-from src.workflows.services import WorkflowService
+from src.workflows.services.engine import WorkflowEngine
 
 User = get_user_model()
 
@@ -78,7 +78,6 @@ def workflow_template_with_validators(db):
     return WorkflowTemplate.objects.create(
         name="Validator Test Workflow",
         version="1.0.0",
-        is_published=True,
         definition={
             "states": [
                 {"name": "draft", "is_initial": True, "is_terminal": False},
@@ -127,20 +126,25 @@ class TestBudgetValidator:
         """Valid amount should allow transition"""
 
         # Create instance with valid amount
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
             user=member_user,
-            context={"amount": 5000},  # Under 10k limit
+            context={
+                "amount": 5000,
+                "title": "T",
+                "description": "D",
+                "assignee": "A",
+            },  # Under 10k limit
         )
 
         # Should succeed
-        result = WorkflowService.execute_transition(
+        result = WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
             instance=instance, action="submit", user=member_user
         )
 
-        assert result["instance"]["current_state"] == "pending_approval"
+        assert result.instance.current_state == "pending_approval"
 
     def test_budget_validator_blocks_over_limit(
         self, workflow_template_with_validators, project, member_user, content_object
@@ -148,17 +152,24 @@ class TestBudgetValidator:
         """Amount > 10,000 should block transition"""
 
         # Create instance with excessive amount
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
             user=member_user,
-            context={"amount": 15000},  # Exceeds 10k limit
+            context={
+                "amount": 15000,
+                "title": "T",
+                "description": "D",
+                "assignee": "A",
+            },  # Exceeds 10k limit
         )
 
         # Should fail validation
         with pytest.raises(ValidationError, match="exceeds budget limit"):
-            WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+            WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
+                instance=instance, action="submit", user=member_user
+            )
 
         # State should remain unchanged
         instance.refresh_from_db()
@@ -170,20 +181,20 @@ class TestBudgetValidator:
         """Missing amount field should default to 0 (pass)"""
 
         # Create instance without amount
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
             user=member_user,
-            context={},  # No amount field
+            context={"title": "T", "description": "D", "assignee": "A"},  # No amount field
         )
 
         # Should succeed (defaults to 0)
-        result = WorkflowService.execute_transition(
+        result = WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
             instance=instance, action="submit", user=member_user
         )
 
-        assert result["instance"]["current_state"] == "pending_approval"
+        assert result.instance.current_state == "pending_approval"
 
 
 @pytest.mark.django_db
@@ -196,7 +207,7 @@ class TestCompletenessValidator:
         """All required fields present should allow transition"""
 
         # Create instance with all required fields
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
@@ -210,11 +221,11 @@ class TestCompletenessValidator:
         )
 
         # Should succeed
-        result = WorkflowService.execute_transition(
+        result = WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
             instance=instance, action="submit", user=member_user
         )
 
-        assert result["instance"]["current_state"] == "pending_approval"
+        assert result.instance.current_state == "pending_approval"
 
     def test_completeness_validator_blocks_missing_fields(
         self, workflow_template_with_validators, project, member_user, content_object
@@ -222,7 +233,7 @@ class TestCompletenessValidator:
         """Missing required fields should block transition"""
 
         # Create instance with missing fields
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
@@ -235,7 +246,9 @@ class TestCompletenessValidator:
 
         # Should fail validation
         with pytest.raises(ValidationError, match="Required fields missing"):
-            WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+            WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
+                instance=instance, action="submit", user=member_user
+            )
 
         # State should remain unchanged
         instance.refresh_from_db()
@@ -247,7 +260,7 @@ class TestCompletenessValidator:
         """Error message should list specific missing fields"""
 
         # Create instance with partially missing fields
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
@@ -261,7 +274,9 @@ class TestCompletenessValidator:
 
         # Should fail validation with specific field name
         with pytest.raises(ValidationError, match="description"):
-            WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+            WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
+                instance=instance, action="submit", user=member_user
+            )
 
 
 @pytest.mark.django_db
@@ -274,7 +289,7 @@ class TestApprovalThresholdValidator:
         """Meeting approval threshold should allow transition"""
 
         # Create instance in pending_approval state with approvals
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
@@ -295,11 +310,11 @@ class TestApprovalThresholdValidator:
         instance.save()
 
         # Should succeed (2 approvals >= 2 required)
-        result = WorkflowService.execute_transition(
+        result = WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
             instance=instance, action="approve", user=coach_user
         )
 
-        assert result["instance"]["current_state"] == "approved"
+        assert result.instance.current_state == "approved"
 
     def test_approval_validator_blocks_insufficient_approvals(
         self, workflow_template_with_validators, project, coach_user, content_object
@@ -307,7 +322,7 @@ class TestApprovalThresholdValidator:
         """Below approval threshold should block transition"""
 
         # Create instance with only 1 approval (needs 2)
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
@@ -323,7 +338,9 @@ class TestApprovalThresholdValidator:
 
         # Should fail validation
         with pytest.raises(ValidationError, match="Minimum 2 approvals required"):
-            WorkflowService.execute_transition(instance=instance, action="approve", user=coach_user)
+            WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
+                instance=instance, action="approve", user=coach_user
+            )
 
         # State should remain unchanged
         instance.refresh_from_db()
@@ -335,12 +352,12 @@ class TestApprovalThresholdValidator:
         """Missing approvals field should default to empty list (fail)"""
 
         # Create instance without approvals field
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
             user=coach_user,
-            context={},  # No approvals field
+            context={"title": "T", "description": "D", "assignee": "A"},  # No approvals field
         )
 
         # Move to pending_approval state
@@ -349,7 +366,9 @@ class TestApprovalThresholdValidator:
 
         # Should fail validation (0 < 2)
         with pytest.raises(ValidationError, match="Minimum 2 approvals required"):
-            WorkflowService.execute_transition(instance=instance, action="approve", user=coach_user)
+            WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
+                instance=instance, action="approve", user=coach_user
+            )
 
 
 @pytest.mark.django_db
@@ -366,13 +385,13 @@ class TestValidatorRegistry:
     def test_validators_can_be_retrieved(self):
         """Registered validators should be retrievable by name"""
 
-        budget_validator = ValidatorRegistry.get_validator("budget_check")
+        budget_validator = ValidatorRegistry.get("budget_check")
         assert budget_validator is validate_budget
 
-        completeness_validator = ValidatorRegistry.get_validator("completeness_check")
+        completeness_validator = ValidatorRegistry.get("completeness_check")
         assert completeness_validator is validate_completeness
 
-        approval_validator = ValidatorRegistry.get_validator("approval_threshold")
+        approval_validator = ValidatorRegistry.get("approval_threshold")
         assert approval_validator is validate_approval_threshold
 
     def test_multiple_validators_execute_in_sequence(
@@ -381,7 +400,7 @@ class TestValidatorRegistry:
         """All validators should execute for a transition"""
 
         # Create instance that fails budget check but would pass completeness
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
@@ -396,7 +415,9 @@ class TestValidatorRegistry:
 
         # Should fail on first validator (budget_check)
         with pytest.raises(ValidationError, match="exceeds budget limit"):
-            WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+            WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
+                instance=instance, action="submit", user=member_user
+            )
 
     def test_validators_fail_fast(
         self, workflow_template_with_validators, project, member_user, content_object
@@ -404,7 +425,7 @@ class TestValidatorRegistry:
         """Validation should stop at first failure"""
 
         # Create instance that fails both validators
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
@@ -417,7 +438,9 @@ class TestValidatorRegistry:
 
         # Should fail on first validator only (fail-fast)
         with pytest.raises(ValidationError) as exc_info:
-            WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+            WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
+                instance=instance, action="submit", user=member_user
+            )
 
         # Should only see budget error, not completeness error
         assert "exceeds budget limit" in str(exc_info.value)
@@ -443,7 +466,7 @@ class TestValidatorErrorHandling:
         caplog.set_level(logging.WARNING)
 
         # Create instance that fails validation
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
@@ -453,7 +476,9 @@ class TestValidatorErrorHandling:
 
         # Trigger validation failure
         with pytest.raises(ValidationError):
-            WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+            WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
+                instance=instance, action="submit", user=member_user
+            )
 
         # Check logs
         assert "Budget validation failed" in caplog.text
@@ -465,7 +490,7 @@ class TestValidatorErrorHandling:
         """Failed validation should not persist any changes"""
 
         # Create instance that will fail validation
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
@@ -478,7 +503,9 @@ class TestValidatorErrorHandling:
 
         # Trigger validation failure
         with pytest.raises(ValidationError):
-            WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+            WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
+                instance=instance, action="submit", user=member_user
+            )
 
         # Verify no changes persisted
         instance.refresh_from_db()
@@ -491,7 +518,7 @@ class TestValidatorErrorHandling:
         """Failed validation should not create history records"""
 
         # Create instance that will fail validation
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(validator_registry=ValidatorRegistry).create_instance(
             workflow=workflow_template_with_validators,
             content_object=content_object,
             project=project,
@@ -499,11 +526,13 @@ class TestValidatorErrorHandling:
             context={"amount": 50000},
         )
 
-        original_history_count = instance.transition_history.count()
+        original_history_count = instance.history.count()
 
         # Trigger validation failure
         with pytest.raises(ValidationError):
-            WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+            WorkflowEngine(validator_registry=ValidatorRegistry).execute_transition(
+                instance=instance, action="submit", user=member_user
+            )
 
         # Verify no new history records
-        assert instance.transition_history.count() == original_history_count
+        assert instance.history.count() == original_history_count

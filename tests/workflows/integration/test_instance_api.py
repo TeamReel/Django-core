@@ -142,11 +142,13 @@ class TestWorkflowInstanceList:
         assert response.status_code == status.HTTP_200_OK
         result = response.json()
         assert "data" in result  # Success envelope
-        pagination = result["data"]  # Pagination object {data: [...], meta: {...}}
-        assert "data" in pagination  # Paginated list
-        assert len(pagination["data"]) == 1
-        assert pagination["data"][0]["workflow_name"] == "Content Approval"
-        assert pagination["data"][0]["current_state"] == "draft"
+
+        # With corrected Renderer, nested "data" key is flattened
+        instances = result["data"]
+        # assert "data" in pagination  # No longer needed due to flattening
+        assert len(instances) == 1
+        assert instances[0]["workflow_name"] == "Content Approval"
+        assert instances[0]["current_state"] == "draft"
 
     def test_list_instances_unauthenticated(self, api_client):
         """Unauthenticated request returns 401."""

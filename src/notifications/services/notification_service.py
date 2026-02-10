@@ -155,3 +155,24 @@ def notify_member_role_changed(*, membership, changed_by, old_role, new_role) ->
         logger.error(f"Failed to create role change notification: {e}", exc_info=True)
         # Don't re-raise - notification failure shouldn't break the role change
         pass
+
+
+def send_notification(
+    recipient_ids: list,
+    notification_type: str,
+    title: str,
+    message: str,
+    metadata: dict = None,
+    link: str = None,
+) -> None:
+    """
+    Send notification to multiple recipients (shim for workflow integration).
+    """
+    for user_id in recipient_ids:
+        create_notification(
+            recipient_user_id=str(user_id),
+            title=title,
+            message=message,
+            level="info",
+            link_url=link,
+        )

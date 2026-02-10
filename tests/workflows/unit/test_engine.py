@@ -171,16 +171,20 @@ class TestWorkflowEngineGetAvailableActions:
 
     def test_filters_actions_by_permission(self, db, engine, workflow_instance, user, project):
         """Should filter actions based on user permissions."""
-        # User has member role, cannot approve (requires admin)
+        # Create non-creator user
+        other_user = User.objects.create_user(username="other", email="other@example.com")
         from projects.models import ProjectMembership
 
-        ProjectMembership.objects.create(user=user, project=project, role="member", deleted_at=None)
+        # User has member role, cannot approve (requires admin)
+        ProjectMembership.objects.create(
+            user=other_user, project=project, role="member", deleted_at=None
+        )
 
         # Move to review state
         workflow_instance.current_state = "review"
         workflow_instance.save()
 
-        actions = engine.get_available_actions(workflow_instance, user)
+        actions = engine.get_available_actions(workflow_instance, other_user)
 
         # Should not include approve action (requires admin)
         assert len(actions) == 0
@@ -250,9 +254,10 @@ class TestWorkflowEngineExecuteTransition:
         self, db, engine, workflow_instance, user, project
     ):
         """Should raise PermissionDenied when user lacks permission."""
+        other_user = User.objects.create_user(username="unauth", email="unauth@example.com")
         # No membership = no permission
         with pytest.raises(PermissionDenied, match="User lacks permission"):
-            engine.execute_transition(instance=workflow_instance, action="submit", user=user)
+            engine.execute_transition(instance=workflow_instance, action="submit", user=other_user)
 
     def test_updates_context_during_transition(self, db, engine, workflow_instance, user, project):
         """Should merge context updates during transition."""
@@ -312,33 +317,49 @@ class TestWorkflowEngineExecuteTransition:
 class TestWorkflowEnginePermissionChecks:
     """Tests for permission checking logic."""
 
-    def test_checks_project_membership(self, db, engine, workflow_instance, user, project):
+    def test_checks_project_membership(
+        self, db, engine, workflow_instance, django_user_model, project
+    ):
         """Should require active project membership."""
+        # Create non-creator user
+        other_user = django_user_model.objects.create_user(
+            username="other", email="other@example.com", password="password"
+        )
+
         # No membership
-        has_permission = engine._check_permission(workflow_instance, "submit", user)
+        has_permission = engine._check_permission(workflow_instance, "submit", other_user)
         assert has_permission is False
 
         # Add membership
         from projects.models import ProjectMembership
 
-        ProjectMembership.objects.create(user=user, project=project, role="member", deleted_at=None)
+        ProjectMembership.objects.create(
+            user=other_user, project=project, role="member", deleted_at=None
+        )
 
-        has_permission = engine._check_permission(workflow_instance, "submit", user)
+        has_permission = engine._check_permission(workflow_instance, "submit", other_user)
         assert has_permission is True
 
     def test_checks_role_requirements(
-        self, db, engine, workflow_instance, user, project, admin_user
+        self, db, engine, workflow_instance, django_user_model, project, admin_user
     ):
         """Should check role requirements from transition definition."""
         from projects.models import ProjectMembership
 
+        # Create non-creator user
+        member_user = django_user_model.objects.create_user(
+            username="member", email="member@example.com", password="password"
+        )
+
         # Member cannot approve (requires admin)
-        ProjectMembership.objects.create(user=user, project=project, role="member", deleted_at=None)
+        ProjectMembership.objects.create(
+            user=member_user, project=project, role="member", deleted_at=None
+        )
 
         workflow_instance.current_state = "review"
         workflow_instance.save()
 
-        has_permission = engine._check_permission(workflow_instance, "approve", user)
+        has_permission = engine._check_permission(workflow_instance, "approve", member_user)
         assert has_permission is False
 
         # Admin can approve

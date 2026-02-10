@@ -11,4 +11,22 @@ class WorkflowsConfig(AppConfig):
 
     def ready(self):
         """Initialize workflows app (registries will be loaded here)."""
-        pass  # Registry initialization will be added in WP04
+        try:
+            # Use 'audit' directly as src is in PYTHONPATH
+            from audit.registry import register_event_type
+
+            # Register core workflow events
+            register_event_type(
+                "workflow.workflow_created", "workflow", "Workflow Instance Created"
+            )
+
+            # Register standard transition events (used in tests/defaults)
+            register_event_type("workflow.transition_submit", "workflow", "Transition: Submit")
+            register_event_type("workflow.transition_approve", "workflow", "Transition: Approve")
+            register_event_type("workflow.transition_reject", "workflow", "Transition: Reject")
+            register_event_type(
+                "workflow.transition_submit_for_review", "workflow", "Transition: Submit to Review"
+            )
+
+        except ImportError:
+            pass  # Audit service might not be available in all contexts

@@ -20,7 +20,6 @@ class TestAuditIntegration:
             name="Test Workflow",
             version="1.0.0",
             is_active=True,
-            is_published=True,
             definition={
                 "states": [
                     {"name": "draft", "is_initial": True, "is_terminal": False},
@@ -50,11 +49,12 @@ class TestAuditIntegration:
         from projects.models import Project
         from organisations.models import Organisation
 
-        org = Organisation.objects.create(name="Test Org")
+        creator = User.objects.create_user("creator@test.com")
+        org = Organisation.objects.create(name="Test Org", creator=creator)
         return Project.objects.create(
             name="Test Project",
             organisation=org,
-            creator=User.objects.create_user("creator@test.com"),
+            creator=creator,
         )
 
     @pytest.fixture

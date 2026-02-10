@@ -21,7 +21,6 @@ class TestCeleryIntegration:
             name="Async Hook Workflow",
             version="1.0.0",
             is_active=True,
-            is_published=True,
             definition={
                 "states": [
                     {"name": "draft", "is_initial": True, "is_terminal": False},
@@ -51,11 +50,12 @@ class TestCeleryIntegration:
         from projects.models import Project
         from organisations.models import Organisation
 
-        org = Organisation.objects.create(name="Test Org")
+        creator = User.objects.create_user("creator@test.com")
+        org = Organisation.objects.create(name="Test Org", creator=creator)
         return Project.objects.create(
             name="Test Project",
             organisation=org,
-            creator=User.objects.create_user("creator@test.com"),
+            creator=creator,
         )
 
     @pytest.fixture
@@ -85,7 +85,7 @@ class TestCeleryIntegration:
             # Mock Celery task
             mock_task = mocker.patch.object(execute_workflow_hooks, "delay")
             mock_result = MagicMock()
-            mock_result.id = "test-task-id-123"
+            mock_result.id = "550e8400-e29b-41d4-a716-446655440000"
             mock_task.return_value = mock_result
 
             engine = WorkflowEngine()
@@ -116,7 +116,7 @@ class TestCeleryIntegration:
             # Mock Celery task with specific task_id
             mock_task = mocker.patch.object(execute_workflow_hooks, "delay")
             mock_result = MagicMock()
-            task_id = "async-hook-task-456"
+            task_id = "550e8400-e29b-41d4-a716-446655440001"
             mock_result.id = task_id
             mock_task.return_value = mock_result
 
@@ -159,13 +159,14 @@ class TestCeleryIntegration:
         """Test task handles individual hook failures gracefully."""
         try:
             from src.workflows.tasks import execute_workflow_hooks
-            from src.workflows.registry import hook_registry
 
-            # Register failing hook
-            def failing_hook(instance, transition):
-                raise Exception("Hook intentionally failed")
+            # Define a failing hook
+            def failing_hook(*args, **kwargs):
+                raise ValueError("Hook failed")
 
-            hook_registry.register("on_transition", "test_action", failing_hook)
+            # Mock HookRegistry.get_hooks because the task uses it
+            mock_get_hooks = mocker.patch("src.workflows.registry.HookRegistry.get_hooks")
+            mock_get_hooks.return_value = [failing_hook]
 
             # Execute task
             result = execute_workflow_hooks(
@@ -187,9 +188,12 @@ class TestCeleryIntegration:
             from src.workflows.tasks import execute_workflow_hooks
             from celery.exceptions import Retry
 
-            # Mock WorkflowInstance.objects.get to raise exception
-            mock_get = mocker.patch("src.workflows.tasks.WorkflowInstance.objects.get")
-            mock_get.side_effect = Exception("Database connection timeout")
+            # Mock WorkflowInstance.objects.select_related().get() to raise exception
+            mock_select_related = mocker.patch(
+                "src.workflows.tasks.WorkflowInstance.objects.select_related"
+            )
+            mock_qs = mock_select_related.return_value
+            mock_qs.get.side_effect = Exception("Database connection timeout")
 
             # Mock self.retry to capture retry call
             task = execute_workflow_hooks
@@ -241,7 +245,7 @@ class TestCeleryIntegration:
             # Mock task
             mock_task = mocker.patch.object(execute_workflow_hooks, "delay")
             mock_result = MagicMock()
-            task_id = "status-query-task-789"
+            task_id = "550e8400-e29b-41d4-a716-446655440002"
             mock_result.id = task_id
             mock_task.return_value = mock_result
 

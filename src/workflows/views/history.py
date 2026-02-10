@@ -187,7 +187,7 @@ class TransitionHistoryViewSet(viewsets.ReadOnlyModelViewSet):
         },
     )
     @action(detail=True, methods=["get"], url_path="hook_status")
-    def hook_status(self, request: Request, pk: str = None) -> Response:
+    def hook_status(self, request: Request, pk: str | None = None) -> Response:
         """
         Get async hook task status.
 

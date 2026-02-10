@@ -14,8 +14,11 @@ import django
 
 # Setup Django environment
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "src.config.settings")
+src_dir = os.path.join(project_root, "src")
+sys.path.insert(0, src_dir)  # Allow imports like 'config.settings' and 'tasks.celery'
+sys.path.insert(0, project_root)  # Allow imports like 'src.workflows'
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
 django.setup()
 
 from src.workflows.models import WorkflowTemplate  # noqa: E402

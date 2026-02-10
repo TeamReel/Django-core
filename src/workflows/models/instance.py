@@ -11,35 +11,37 @@ from django.db import models
 class WorkflowInstance(models.Model):
     """Tracks object progress through workflow states."""
 
-    workflow = models.ForeignKey(
+    workflow: models.ForeignKey = models.ForeignKey(
         "workflows.WorkflowTemplate",
         on_delete=models.PROTECT,
         related_name="instances",
     )
-    workflow_snapshot = models.JSONField(
+    workflow_snapshot: models.JSONField = models.JSONField(
         help_text="Immutable copy of workflow definition at creation"
     )
-    project = models.ForeignKey(
+    project: models.ForeignKey = models.ForeignKey(
         "projects.Project", on_delete=models.CASCADE, related_name="workflow_instances"
     )
 
     # Generic foreign key to any content object
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    content_type: models.ForeignKey = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id: models.PositiveIntegerField = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
 
-    current_state = models.CharField(max_length=100, db_index=True)
-    context = models.JSONField(default=dict, help_text="Arbitrary workflow data (max 64KB)")
-    version = models.IntegerField(default=0, help_text="Optimistic locking")
+    current_state: models.CharField = models.CharField(max_length=100, db_index=True)
+    context: models.JSONField = models.JSONField(
+        default=dict, help_text="Arbitrary workflow data (max 64KB)"
+    )
+    version: models.IntegerField = models.IntegerField(default=0, help_text="Optimistic locking")
 
-    created_by = models.ForeignKey(
+    created_by: models.ForeignKey = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         related_name="created_workflows",
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at: models.DateTimeField = models.DateTimeField(auto_now_add=True)
+    updated_at: models.DateTimeField = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "workflow_instances"

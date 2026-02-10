@@ -101,43 +101,50 @@ def workflow_instance(db, project, workflow_template, admin_user):
 @pytest.fixture
 def history_entries(db, workflow_instance, admin_user, regular_user):
     """Create transition history entries."""
-    entries = []
+    from django.utils import timezone
+    from datetime import timedelta
 
-    # Entry 1: draft -> review (by admin)
-    entries.append(
-        TransitionHistory.objects.create(
-            instance=workflow_instance,
-            from_state="draft",
-            to_state="review",
-            action="submit_for_review",
-            actor=admin_user,
-            comment="Initial submission",
-        )
+    entries = []
+    base_time = timezone.now()
+
+    # Entry 1: draft -> review (by admin) - Oldest
+    e1 = TransitionHistory.objects.create(
+        instance=workflow_instance,
+        from_state="draft",
+        to_state="review",
+        action="submit_for_review",
+        actor=admin_user,
+        comment="Initial submission",
     )
+    TransitionHistory.objects.filter(pk=e1.pk).update(created_at=base_time - timedelta(minutes=10))
+    e1.refresh_from_db()
+    entries.append(e1)
 
     # Entry 2: review -> draft (by regular_user)
-    entries.append(
-        TransitionHistory.objects.create(
-            instance=workflow_instance,
-            from_state="review",
-            to_state="draft",
-            action="reject",
-            actor=regular_user,
-            comment="Needs more work",
-        )
+    e2 = TransitionHistory.objects.create(
+        instance=workflow_instance,
+        from_state="review",
+        to_state="draft",
+        action="reject",
+        actor=regular_user,
+        comment="Needs more work",
     )
+    TransitionHistory.objects.filter(pk=e2.pk).update(created_at=base_time - timedelta(minutes=5))
+    e2.refresh_from_db()
+    entries.append(e2)
 
-    # Entry 3: draft -> review (by admin again)
-    entries.append(
-        TransitionHistory.objects.create(
-            instance=workflow_instance,
-            from_state="draft",
-            to_state="review",
-            action="submit_for_review",
-            actor=admin_user,
-            comment="Resubmitted with changes",
-        )
+    # Entry 3: draft -> review (by admin again) - Newest
+    e3 = TransitionHistory.objects.create(
+        instance=workflow_instance,
+        from_state="draft",
+        to_state="review",
+        action="submit_for_review",
+        actor=admin_user,
+        comment="Resubmitted with changes",
     )
+    TransitionHistory.objects.filter(pk=e3.pk).update(created_at=base_time)
+    e3.refresh_from_db()
+    entries.append(e3)
 
     return entries
 

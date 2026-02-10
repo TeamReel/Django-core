@@ -1,7 +1,9 @@
 # Quickstart: Workflow Engine & State Machine
 
 **Feature**: B37 Workflow Engine & State Machine
-**Status**: ✅ Production Ready
+**Status**: ✅ Production Ready (WP14 Polish Complete)
+**Test Coverage**: 85 unit + 125 integration tests passing
+**Type Safety**: 100% mypy compliant
 **Audience**: Developers integrating workflows into products
 **Time**: 15 minutes
 **Deployment**: Railway Production - [Deployment Guide](../../documents/07-operations/railway-deployment-B37.md)

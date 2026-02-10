@@ -1,6 +1,6 @@
 """Workflow state machine engine."""
 import logging
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
 from django.contrib.auth import get_user_model
@@ -13,9 +13,14 @@ from src.workflows.models import (
     WorkflowInstance,
     WorkflowTemplate,
 )
+from src.workflows.registry import HookRegistry, ValidatorRegistry
+
+if TYPE_CHECKING:
+    from accounts.models import User
+else:
+    User = get_user_model()
 
 logger = logging.getLogger(__name__)
-User = get_user_model()
 
 
 class WorkflowEngine:
@@ -29,8 +34,8 @@ class WorkflowEngine:
             validator_registry: Registry for transition validators
             hook_registry: Registry for lifecycle hooks
         """
-        self.validator_registry = validator_registry
-        self.hook_registry = hook_registry
+        self.validator_registry = validator_registry or ValidatorRegistry
+        self.hook_registry = hook_registry or HookRegistry
 
     def create_instance(
         self,
@@ -438,6 +443,6 @@ class WorkflowEngine:
         except Exception as e:
             # Never fail workflow execution due to audit logging failure
             logger.error(
-                f"Failed to log audit event for workflow {event_type}",
+                f"Failed to log audit event for workflow {event_type}: {e}",
                 extra={"instance_id": str(instance.id), "error": str(e)},
             )

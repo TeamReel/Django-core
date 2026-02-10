@@ -41,7 +41,9 @@ class TestCustomActionRouting:
         User = get_user_model()
 
         # Create test user
-        user = User.objects.create_user(username="testuser", password="testpass")
+        user = User.objects.create_user(
+            username="testuser", email="test@example.com", password="testpass"
+        )
 
         # Create org and project
         from django.apps import apps

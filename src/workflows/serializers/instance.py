@@ -22,7 +22,9 @@ class WorkflowInstanceSerializer(serializers.ModelSerializer):
     """
 
     # Explicit FK field to include inactive workflows for validation
-    workflow = serializers.PrimaryKeyRelatedField(queryset=WorkflowTemplate.all_objects.all())
+    workflow: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
+        queryset=WorkflowTemplate.all_objects.all()
+    )
 
     workflow_name = serializers.CharField(source="workflow.name", read_only=True)
     workflow_version = serializers.CharField(source="workflow.version", read_only=True)
@@ -121,7 +123,7 @@ class WorkflowInstanceSerializer(serializers.ModelSerializer):
                     {
                         "current_state": (
                             f"State '{current_state}' not in workflow definition. "
-                            f"Available states: {sorted(state_names)}"
+                            f"Available states: {sorted([s for s in state_names if s is not None])}"
                         )
                     }
                 )
@@ -134,6 +136,18 @@ class WorkflowInstanceSerializer(serializers.ModelSerializer):
 
         # Capture workflow snapshot at creation
         validated_data["workflow_snapshot"] = workflow.definition
+
+        # Auto-set initial state if not provided (state is read-only)
+        if "current_state" not in validated_data:
+            initial_state = workflow.definition.get("initial_state")
+            if initial_state:
+                validated_data["current_state"] = initial_state
+            elif workflow.definition.get("states"):
+                # Fallback to first state if defined
+                # states might be list of dicts or dict (spec flexible)
+                states = workflow.definition.get("states")
+                if isinstance(states, list) and len(states) > 0:
+                    validated_data["current_state"] = states[0]["name"]
 
         instance = WorkflowInstance(**validated_data)
         try:
@@ -159,7 +173,7 @@ class WorkflowInstanceSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    def get_content_type_name(self, obj: WorkflowInstance) -> str:
+    def get_content_type_name(self, obj: WorkflowInstance) -> str | None:
         """Get the content type name (e.g., 'match', 'video')."""
         if obj.content_type:
             return obj.content_type.model

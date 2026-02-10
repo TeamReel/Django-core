@@ -35,6 +35,10 @@ class EnvelopeJSONRenderer(JSONRenderer):
         if isinstance(data, dict) and "meta" in data:
             meta = data.pop("meta")
 
+            # Unwrap 'data' key if it was nested by BaseAPIPagination
+            if isinstance(data, dict) and "data" in data and len(data) == 1:
+                data = data["data"]
+
         # Build success envelope
         envelope = {
             "status": "success",

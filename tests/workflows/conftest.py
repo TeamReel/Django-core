@@ -13,9 +13,11 @@ def user(db, django_user_model):
 @pytest.fixture
 def project(db, user):
     """Create test project."""
-    from src.projects.models import Project
+    from projects.models import Project
+    from organisations.models import Organisation
 
-    return Project.objects.create(name="Test Project", created_by=user)
+    org = Organisation.objects.create(name="Test Org", creator=user)
+    return Project.objects.create(name="Test Project", creator=user, organisation=org)
 
 
 # More fixtures will be added as models are created

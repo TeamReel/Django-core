@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     # Feature apps
     "settings.apps.SettingsConfig",
     "activities.apps.ActivitiesConfig",
+    "workflows.apps.WorkflowsConfig",
 ]
 
 MIDDLEWARE = [

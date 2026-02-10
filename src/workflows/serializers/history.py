@@ -45,7 +45,7 @@ class TransitionHistorySerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-    def get_actor_full_name(self, obj: TransitionHistory) -> str:
+    def get_actor_full_name(self, obj: TransitionHistory) -> str | None:
         """Get the actor's full name."""
         if obj.actor:
             full_name = obj.actor.get_full_name()

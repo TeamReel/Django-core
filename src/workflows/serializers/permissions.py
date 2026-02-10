@@ -70,7 +70,7 @@ class ProjectPermissionOverrideSerializer(serializers.ModelSerializer):
                     {
                         "action_name": (
                             f"Action '{action_name}' not found in workflow '{workflow.name}'. "
-                            f"Available actions: {sorted(action_names)}"
+                            f"Available actions: {sorted([a for a in action_names if a is not None])}"
                         )
                     }
                 )

@@ -8,13 +8,15 @@ from src.workflows.managers import ActiveWorkflowManager, AllWorkflowManager
 class WorkflowTemplate(models.Model):
     """Admin-defined workflow with states and transitions."""
 
-    name = models.CharField(max_length=200, unique=True, db_index=True)
-    description = models.TextField(blank=True)
-    version = models.CharField(max_length=50)
-    definition = models.JSONField(help_text="Workflow structure: states, transitions, hooks")
-    is_active = models.BooleanField(default=True, db_index=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    name: models.CharField = models.CharField(max_length=200, unique=True, db_index=True)
+    description: models.TextField = models.TextField(blank=True)
+    version: models.CharField = models.CharField(max_length=50)
+    definition: models.JSONField = models.JSONField(
+        help_text="Workflow structure: states, transitions, hooks"
+    )
+    is_active: models.BooleanField = models.BooleanField(default=True, db_index=True)
+    created_at: models.DateTimeField = models.DateTimeField(auto_now_add=True)
+    updated_at: models.DateTimeField = models.DateTimeField(auto_now=True)
 
     # Managers
     objects = ActiveWorkflowManager()  # Default: active only

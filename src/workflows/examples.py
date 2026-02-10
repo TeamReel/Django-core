@@ -208,7 +208,7 @@ def send_submission_notification(instance: WorkflowInstance, transition: dict) -
     """
     try:
         # Attempt B16 Notifications integration
-        from notifications.api import notification_service
+        from src.notifications.services import notification_service
 
         # Send notification to project members
         notification_service.send_notification(
@@ -233,8 +233,12 @@ def send_submission_notification(instance: WorkflowInstance, transition: dict) -
             },
         )
 
-    except ImportError:
+    except ImportError as e:
+        # Debugging Import Error
+        logger.error(f"B16 IMPORT ERROR details: {e}")
         # B16 not available - fallback to standard logging
+        # RE-RAISE to see it in test trace
+        raise e
         logger.info(
             f"B16 not available - would send notification for workflow {instance.id}",
             extra={

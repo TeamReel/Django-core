@@ -20,7 +20,6 @@ class TestNotificationIntegration:
             name="Notification Workflow",
             version="1.0.0",
             is_active=True,
-            is_published=True,
             definition={
                 "states": [
                     {"name": "draft", "is_initial": True, "is_terminal": False},
@@ -57,11 +56,12 @@ class TestNotificationIntegration:
         from projects.models import Project
         from organisations.models import Organisation
 
-        org = Organisation.objects.create(name="Test Org")
+        creator = User.objects.create_user("creator@test.com")
+        org = Organisation.objects.create(name="Test Org", creator=creator)
         return Project.objects.create(
             name="Test Project",
             organisation=org,
-            creator=User.objects.create_user("creator@test.com"),
+            creator=creator,
         )
 
     @pytest.fixture
@@ -93,7 +93,9 @@ class TestNotificationIntegration:
             from src.workflows.examples import send_submission_notification  # noqa: F401
 
             # Mock notification service
-            mock_send = mocker.patch("notifications.api.notification_service.send_notification")
+            mock_send = mocker.patch(
+                "src.notifications.services.notification_service.send_notification"
+            )
 
             engine = WorkflowEngine()
             engine.execute_transition(
@@ -123,7 +125,9 @@ class TestNotificationIntegration:
 
             from src.workflows.examples import send_submission_notification  # noqa: F401
 
-            mock_send = mocker.patch("notifications.api.notification_service.send_notification")
+            mock_send = mocker.patch(
+                "src.notifications.services.notification_service.send_notification"
+            )
 
             engine = WorkflowEngine()
             engine.execute_transition(
@@ -153,7 +157,7 @@ class TestNotificationIntegration:
         ProjectMembership.objects.create(user=user, project=project, role="member")
 
         # Mock ImportError when importing notifications
-        mocker.patch.dict("sys.modules", {"notifications.api": None})
+        mocker.patch.dict("sys.modules", {"src.notifications.services": None})
 
         engine = WorkflowEngine()
         # Should not raise exception
@@ -177,7 +181,9 @@ class TestNotificationIntegration:
             from src.workflows.examples import send_submission_notification  # noqa: F401
 
             # Mock notification service to raise exception
-            mock_send = mocker.patch("notifications.api.notification_service.send_notification")
+            mock_send = mocker.patch(
+                "src.notifications.services.notification_service.send_notification"
+            )
             mock_send.side_effect = Exception("Notification service unavailable")
 
             engine = WorkflowEngine()
@@ -203,7 +209,7 @@ class TestNotificationIntegration:
             # Register custom notification hook
             @HookRegistry.hook("on_enter", "approved")
             def notify_approval(instance, transition):
-                from notifications.api import notification_service
+                from src.notifications.services import notification_service
 
                 notification_service.send_notification(
                     recipient_ids=[instance.created_by_id],
@@ -224,7 +230,9 @@ class TestNotificationIntegration:
             )
 
             # Mock notification service
-            mock_send = mocker.patch("notifications.api.notification_service.send_notification")
+            mock_send = mocker.patch(
+                "src.notifications.services.notification_service.send_notification"
+            )
 
             # Now approve (should trigger custom hook)
             admin_user = User.objects.create_user("admin@test.com")
@@ -260,7 +268,9 @@ class TestNotificationIntegration:
 
             from src.workflows.examples import send_submission_notification  # noqa: F401
 
-            mock_send = mocker.patch("notifications.api.notification_service.send_notification")
+            mock_send = mocker.patch(
+                "src.notifications.services.notification_service.send_notification"
+            )
 
             engine = WorkflowEngine()
             engine.execute_transition(

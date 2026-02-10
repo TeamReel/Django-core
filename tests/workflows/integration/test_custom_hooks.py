@@ -18,7 +18,7 @@ from src.workflows.examples import (
 )
 from src.workflows.models import WorkflowTemplate
 from src.workflows.registry import HookRegistry
-from src.workflows.services import WorkflowService
+from src.workflows.services.engine import WorkflowEngine
 
 User = get_user_model()
 
@@ -82,7 +82,6 @@ def workflow_template_with_hooks(db):
     return WorkflowTemplate.objects.create(
         name="Hook Test Workflow",
         version="1.0.0",
-        is_published=True,
         definition={
             "states": [
                 {"name": "draft", "is_initial": True, "is_terminal": False},
@@ -150,7 +149,7 @@ class TestHookExecution:
         caplog.set_level(logging.INFO)
 
         # Create instance in draft state
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=workflow_template_with_hooks,
             content_object=content_object,
             project=project,
@@ -159,7 +158,9 @@ class TestHookExecution:
         )
 
         # Execute transition (should trigger on_draft_exit)
-        WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+        WorkflowEngine(hook_registry=HookRegistry).execute_transition(
+            instance=instance, action="submit", user=member_user
+        )
 
         # Check hook was called (via log)
         assert "submitted from draft" in caplog.text
@@ -173,7 +174,7 @@ class TestHookExecution:
         caplog.set_level(logging.INFO)
 
         # Create instance in draft state
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=workflow_template_with_hooks,
             content_object=content_object,
             project=project,
@@ -182,7 +183,9 @@ class TestHookExecution:
         )
 
         # Execute transition (should trigger on_submit_transition)
-        WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+        WorkflowEngine(hook_registry=HookRegistry).execute_transition(
+            instance=instance, action="submit", user=member_user
+        )
 
         # Check hook was called (via log)
         assert "Executing submit transition" in caplog.text
@@ -196,7 +199,7 @@ class TestHookExecution:
         caplog.set_level(logging.INFO)
 
         # Create instance and move to in_review
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=workflow_template_with_hooks,
             content_object=content_object,
             project=project,
@@ -207,7 +210,9 @@ class TestHookExecution:
         instance.save()
 
         # Execute transition to approved (should trigger on_approval_enter)
-        WorkflowService.execute_transition(instance=instance, action="approve", user=coach_user)
+        WorkflowEngine(hook_registry=HookRegistry).execute_transition(
+            instance=instance, action="approve", user=coach_user
+        )
 
         # Check hook was called (via log)
         assert "approved" in caplog.text
@@ -221,7 +226,7 @@ class TestHookExecution:
         caplog.set_level(logging.INFO)
 
         # Create instance in draft state
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=workflow_template_with_hooks,
             content_object=content_object,
             project=project,
@@ -230,7 +235,9 @@ class TestHookExecution:
         )
 
         # Execute transition (has all 3 hook types)
-        WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+        WorkflowEngine(hook_registry=HookRegistry).execute_transition(
+            instance=instance, action="submit", user=member_user
+        )
 
         # All 3 hooks should have fired
         log_text = caplog.text
@@ -299,10 +306,13 @@ class TestHookContext:
         """Hooks should have access to instance context"""
 
         # Spy on the hook function
-        spy = mocker.spy(HookRegistry._hooks["on_enter"]["rejected"][0], "__call__")
+        # spy = mocker.spy(HookRegistry._hooks["on_enter"]["rejected"][0], "__call__")
+        real_hook = HookRegistry._hooks["on_enter"]["rejected"][0]
+        spy = mocker.Mock(wraps=real_hook)
+        HookRegistry._hooks["on_enter"]["rejected"][0] = spy
 
         # Create instance with rejection reason in context
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=workflow_template_with_hooks,
             content_object=content_object,
             project=project,
@@ -313,7 +323,9 @@ class TestHookContext:
         instance.save()
 
         # Execute transition to rejected
-        WorkflowService.execute_transition(instance=instance, action="reject", user=coach_user)
+        WorkflowEngine(hook_registry=HookRegistry).execute_transition(
+            instance=instance, action="reject", user=coach_user
+        )
 
         # Verify hook was called with correct instance
         # Note: Hook receives the instance with updated state
@@ -344,7 +356,6 @@ class TestHookContext:
         template = WorkflowTemplate.objects.create(
             name="Test Hook Context",
             version="1.0.0",
-            is_published=True,
             definition={
                 "states": [
                     {"name": "state_a", "is_initial": True},
@@ -363,7 +374,7 @@ class TestHookContext:
         )
 
         # Create instance
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=template,
             content_object=content_object,
             project=project,
@@ -372,7 +383,7 @@ class TestHookContext:
         )
 
         # Execute transition
-        WorkflowService.execute_transition(
+        WorkflowEngine(hook_registry=HookRegistry).execute_transition(
             instance=instance, action="test_action", user=member_user
         )
 
@@ -400,7 +411,7 @@ class TestHookErrorHandling:
             raise ValueError("Intentional hook failure")
 
         # Create instance
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=workflow_template_with_hooks,
             content_object=content_object,
             project=project,
@@ -409,12 +420,12 @@ class TestHookErrorHandling:
         )
 
         # Execute transition (hook should fail but not block transition)
-        result = WorkflowService.execute_transition(
+        result = WorkflowEngine(hook_registry=HookRegistry).execute_transition(
             instance=instance, action="submit", user=member_user
         )
 
         # Transition should succeed despite hook failure
-        assert result["instance"]["current_state"] == "in_review"
+        assert result.instance.current_state == "in_review"
 
         # Error should be logged
         # Note: Actual error logging depends on WorkflowEngine implementation
@@ -430,7 +441,7 @@ class TestHookErrorHandling:
             raise RuntimeError("Hook failed")
 
         # Create instance
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=workflow_template_with_hooks,
             content_object=content_object,
             project=project,
@@ -439,12 +450,12 @@ class TestHookErrorHandling:
         )
 
         # Execute transition (hook will fail)
-        result = WorkflowService.execute_transition(
+        result = WorkflowEngine(hook_registry=HookRegistry).execute_transition(
             instance=instance, action="submit", user=member_user
         )
 
         # State change should persist
-        assert result["instance"]["current_state"] == "in_review"
+        assert result.instance.current_state == "in_review"
         instance.refresh_from_db()
         assert instance.current_state == "in_review"
 
@@ -459,7 +470,7 @@ class TestHookErrorHandling:
             raise RuntimeError("Hook failed")
 
         # Create instance
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=workflow_template_with_hooks,
             content_object=content_object,
             project=project,
@@ -467,16 +478,18 @@ class TestHookErrorHandling:
             context={},
         )
 
-        initial_history_count = instance.transition_history.count()
+        initial_history_count = instance.history.count()
 
         # Execute transition
-        WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+        WorkflowEngine(hook_registry=HookRegistry).execute_transition(
+            instance=instance, action="submit", user=member_user
+        )
 
         # History record should be created
-        assert instance.transition_history.count() == initial_history_count + 1
+        assert instance.history.count() == initial_history_count + 1
 
         # History should reflect successful transition
-        latest_history = instance.transition_history.latest("created_at")
+        latest_history = instance.history.latest("created_at")
         assert latest_history.action == "submit"
         assert latest_history.from_state == "draft"
         assert latest_history.to_state == "in_review"
@@ -494,7 +507,7 @@ class TestHookLogging:
         caplog.set_level(logging.INFO)
 
         # Create instance and move to in_review
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=workflow_template_with_hooks,
             content_object=content_object,
             project=project,
@@ -505,7 +518,9 @@ class TestHookLogging:
         instance.save()
 
         # Execute approval transition
-        WorkflowService.execute_transition(instance=instance, action="approve", user=coach_user)
+        WorkflowEngine(hook_registry=HookRegistry).execute_transition(
+            instance=instance, action="approve", user=coach_user
+        )
 
         # Check structured logging
         assert "approved" in caplog.text
@@ -520,7 +535,7 @@ class TestHookLogging:
         caplog.set_level(logging.WARNING)
 
         # Create instance with rejection reason
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=workflow_template_with_hooks,
             content_object=content_object,
             project=project,
@@ -531,7 +546,9 @@ class TestHookLogging:
         instance.save()
 
         # Execute rejection transition
-        WorkflowService.execute_transition(instance=instance, action="reject", user=coach_user)
+        WorkflowEngine(hook_registry=HookRegistry).execute_transition(
+            instance=instance, action="reject", user=coach_user
+        )
 
         # Check rejection logged at WARNING level
         assert "rejected" in caplog.text
@@ -550,7 +567,7 @@ class TestHookIntegration:
         caplog.set_level(logging.INFO)
 
         # Create instance (draft state)
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=workflow_template_with_hooks,
             content_object=content_object,
             project=project,
@@ -559,10 +576,14 @@ class TestHookIntegration:
         )
 
         # Submit for review (triggers: on_draft_exit, on_submit_transition)
-        WorkflowService.execute_transition(instance=instance, action="submit", user=member_user)
+        WorkflowEngine(hook_registry=HookRegistry).execute_transition(
+            instance=instance, action="submit", user=member_user
+        )
 
         # Approve (triggers: on_review_exit, on_approval_enter)
-        WorkflowService.execute_transition(instance=instance, action="approve", user=coach_user)
+        WorkflowEngine(hook_registry=HookRegistry).execute_transition(
+            instance=instance, action="approve", user=coach_user
+        )
 
         # Verify all hooks fired (via logs)
         log_text = caplog.text
@@ -579,7 +600,7 @@ class TestHookIntegration:
         caplog.set_level(logging.WARNING)
 
         # Create instance and move to in_review
-        instance = WorkflowService.create_instance(
+        instance = WorkflowEngine(hook_registry=HookRegistry).create_instance(
             workflow=workflow_template_with_hooks,
             content_object=content_object,
             project=project,
@@ -590,7 +611,9 @@ class TestHookIntegration:
         instance.save()
 
         # Reject (triggers: on_review_exit, on_rejection_enter)
-        WorkflowService.execute_transition(instance=instance, action="reject", user=coach_user)
+        WorkflowEngine(hook_registry=HookRegistry).execute_transition(
+            instance=instance, action="reject", user=coach_user
+        )
 
         # Verify rejection hooks fired
         log_text = caplog.text
