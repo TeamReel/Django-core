@@ -254,7 +254,11 @@ class WorkflowEngine:
             else:
                 required_roles = ["member"]
 
-        # Check membership
+        # Project creators have implicit permission (consistent with ViewSet access)
+        if user.id == instance.project.creator_id:
+            return True
+
+        # Check membership for non-creators
         try:
             membership = ProjectMembership.objects.get(
                 user=user, project=instance.project, deleted_at__isnull=True
