@@ -2,7 +2,7 @@
 work_package_id: "WP12"
 title: "Django Admin Registration"
 phase: "Phase 2 - Enhancement"
-lane: "doing"
+lane: "for_review"
 history: [{timestamp: "2026-02-09T18:18:50Z", lane: "planned", agent: "system", action: "Prompt generated"}]
 agent: "system"
 ---
@@ -27,3 +27,4 @@ Activity Log: 2026-02-09T18:18:50Z – Created
 ## Activity Log
 
 - 2026-02-10T08:06:40Z – system – shell_pid= – lane=doing – Moved to doing
+- 2026-02-10T08:07:49Z – system – shell_pid= – lane=for_review – Moved to for_review
