@@ -681,6 +681,11 @@ class SaveAssetInputSerializer(serializers.Serializer):
         allow_null=True,
         help_text="Presigned URL to fetch the image",
     )
+    video_url = serializers.URLField(
+        required=False,
+        allow_null=True,
+        help_text="Video URL (alternative to presigned_url for videos)",
+    )
     image_base64 = serializers.CharField(
         required=False,
         allow_null=True,
@@ -732,6 +737,7 @@ def save_asset_view(request: Request) -> Response:
 
     storage_path = serializer.validated_data.get("storage_path")
     presigned_url = serializer.validated_data.get("presigned_url")
+    video_url = serializer.validated_data.get("video_url")
     image_base64 = serializer.validated_data.get("image_base64")
     filename = serializer.validated_data.get("filename") or "saved_asset.png"
     mime_type = serializer.validated_data.get("mime_type") or "image/png"
@@ -810,17 +816,18 @@ def save_asset_view(request: Request) -> Response:
                 {"error": f"Invalid base64 data: {e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-    elif presigned_url:
+    elif presigned_url or video_url:
+        download_url = presigned_url or video_url
         try:
             import requests as http_requests
 
-            resp = http_requests.get(presigned_url, timeout=30)
+            resp = http_requests.get(download_url, timeout=60)  # Video downloads might take longer
             resp.raise_for_status()
             image_bytes = resp.content
             file_size_bytes = len(image_bytes)
         except Exception as e:
             return Response(
-                {"error": f"Failed to fetch image from URL: {e}"},
+                {"error": f"Failed to fetch asset from URL: {e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
     elif storage_path:
@@ -828,7 +835,7 @@ def save_asset_view(request: Request) -> Response:
         pass
     else:
         return Response(
-            {"error": "Provide image_base64, presigned_url, or storage_path"},
+            {"error": "Provide image_base64, presigned_url, video_url, or storage_path"},
             status=status.HTTP_400_BAD_REQUEST,
         )
 

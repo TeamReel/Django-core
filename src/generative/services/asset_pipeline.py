@@ -245,6 +245,10 @@ def generate_asset(
                         types.Part.from_bytes(data=img_data, mime_type="image/png")
                     )
 
+            # Check for generation config in template
+            # Note: nano-banana-pro-preview does not support aspect_ratio in GenerateContentConfig yet.
+            # We rely on the prompt instructions for image aspect ratio.
+
             response = client.models.generate_content(
                 model="models/nano-banana-pro-preview",
                 contents=content_parts,
@@ -406,10 +410,16 @@ def generate_video(
         }
 
     # Prepare config (per google-genai SDK codegen instructions)
+    # Note: Veo 3.1 Preview currently restricts number_of_videos to 1.
+    if variant_count > 1:
+        logger.warning("Veo 3.1 supports max 1 video. Requested %d. Clamping to 1.", variant_count)
+
+    effective_variant_count = 1
+
     veo_config = types.GenerateVideosConfig(
         person_generation="allow_adult",
         aspect_ratio=aspect_ratio,
-        number_of_videos=variant_count,
+        number_of_videos=effective_variant_count,
         duration_seconds=duration,
         last_frame=image_obj if (loop_video and image_obj) else None,
     )

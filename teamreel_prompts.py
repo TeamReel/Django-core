@@ -174,7 +174,7 @@ COMPOSITION & FRAMING (CRITICAL):
 - FULL BODY SHOT: You must show the ENTIRE shirt, ENTIRE shorts, and complete pair of socks.
 - DO NOT CROP: Do not cut off the bottom of the socks or the top of the collar.
 - MAXIMIZE SPACE: The kit should fill the frame but keep a small margin.
-- Orientation: Vertical Portrait.
+- Orientation: Vertical Portrait (9:16 Aspect Ratio). Image must be taller than it is wide.
 
 INTEGRATION:
 - LOGO: Use provided Club Logo on LEFT CHEST. Realistic embroidery.
