@@ -2,8 +2,9 @@
 work_package_id: "WP10"
 title: "User Story 5 – View Workflow History"
 phase: "Phase 2 - Enhancement"
-lane: "planned"
+lane: "doing"
 history: [{timestamp: "2026-02-09T18:18:50Z", lane: "planned", agent: "system", action: "Prompt generated"}]
+agent: "system"
 ---
 
 # WP10 – Workflow History API (Priority P2)
@@ -18,3 +19,7 @@ User can view full transition history for workflow instances.
 **Implementation**: ReadOnlyModelViewSet with filters (instance, actor, action, date range)
 
 Activity Log: 2026-02-09T18:18:50Z – Created
+
+## Activity Log
+
+- 2026-02-10T07:43:21Z – system – shell_pid= – lane=doing – Started implementation: View Workflow History API
