@@ -6,10 +6,55 @@ status: planned
 subtasks: T001-T009
 dependencies: none
 estimated_effort: 4-6 hours
-lane: "for_review"
+lane: "planned"
 agent: "claude"
 shell_pid: "71676"
+review_status: "has_feedback"
+reviewed_by: "claude-reviewer"
 ---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Reviewed**: 2026-02-10T12:51:00Z by claude-reviewer
+
+**Key Issues**:
+1. **CRITICAL - Field Name Mismatch**: VideoJob model uses `source_file` instead of `input_file` as specified in `data-model.md` line 114. This breaks consistency with the spec and will cause API contract mismatches in WP02.
+   - **Impact**: API serializers will need to map between `input_file` (spec) and `source_file` (model), creating technical debt.
+   - **Fix Required**: Rename `source_file` → `input_file` in:
+     - `src/video/models/job.py` (field definition)
+     - Generate new migration to rename column
+     - Update admin.py field references if any
+     - Update migration `0001_initial.py` or create `0002_rename_field.py`
+
+**What Was Done Well**:
+- ✅ Complete app structure with proper organization
+- ✅ All 4 models implemented (VideoJob, VideoPreset, PlatformExport, VideoOverlay)
+- ✅ Foreign keys correctly reference FileAsset (not File) and WorkflowInstance
+- ✅ Migrations generated and applied successfully
+- ✅ Admin interface comprehensive with color-coded status badges
+- ✅ Enums properly defined (JobType, JobStatus, OutputFormat, Platform, CropStrategy, OverlayType, OverlayPosition)
+- ✅ Indexes defined on VideoJob for query patterns (project+status, created_by+created_at, job_type+status)
+- ✅ Type hints and docstrings present
+- ✅ `publishable` property correctly implements workflow approval logic
+- ✅ `python manage.py check` passes with 0 issues
+- ✅ Settings updated (INSTALLED_APPS)
+
+**Action Items** (must complete before re-review):
+- [ ] Rename `source_file` to `input_file` in `src/video/models/job.py`
+- [ ] Create migration for field rename (use `migrations.RenameField`)
+- [ ] Apply migration to database
+- [ ] Verify no broken references in admin.py or other files
+- [ ] Re-run `python manage.py check` to ensure no issues
+- [ ] (Optional) Remove unnecessary `pass` statement in `apps.py` line 16
+
+**Validation Steps After Fix**:
+```bash
+python manage.py makemigrations video  # Should create 0002_rename_field
+python manage.py migrate video
+python manage.py check video           # Should pass
+```
 
 # WP01: App Skeleton & Models
 
