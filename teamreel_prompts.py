@@ -460,6 +460,98 @@ FINAL CHECK:
 - Are both shoulders fully visible?
 """,
     },
+
+    # =========================================================================
+    # 8. MEMBER SHORT INTRO (Video-style static image for intro animations)
+    # =========================================================================
+    "member_intro": {
+        "id": "member_intro",
+        "name": "Speler Intro",
+        "category": "intro",
+        "description": "Genereer een intro-beeld van speler in tenue met een karakteristieke pose.",
+        "input_requirements": ["person_photo"],
+        "parameters": {
+            "kit_type": {
+                "label": "Tenue Type",
+                "type": "select",
+                "options": ["home", "away", "third"],
+                "default": "home",
+            },
+            "style_variant": {
+                "label": "Pose Stijl",
+                "type": "select",
+                "options": ["arms_crossed", "hand_up", "thumbs_up"],
+                "default": "arms_crossed",
+            },
+        },
+        "prompt_template": """Create a PROFESSIONAL PLAYER INTRO IMAGE for broadcast/video use.
+
+PERSON: Use the provided player image. Preserve their face, hair, skin tone, and kit EXACTLY as shown.
+
+POSE: {style_variant_label}.
+
+COMPOSITION:
+- FULL BODY visible from head to toe, standing upright.
+- The player should be looking at the camera with a confident expression.
+- Professional sports photography lighting with dramatic flair.
+- Background: PURE SOLID COLOR BACKGROUND (bright green #00FF00 or bright blue #0000FF chroma-key).
+
+STYLE:
+- High-end broadcast-quality player introduction image.
+- Sharp focus, clean edges, no shadows on background.
+- Dynamic studio lighting with subtle rim light for depth.
+- The person must be FULLY SEPARATED from the background.
+
+This image will be used in video intro sequences for match broadcasts.
+""",
+    },
+
+    # =========================================================================
+    # 9. MEMBER GOAL CELEBRATION
+    # =========================================================================
+    "member_goal_celebration": {
+        "id": "member_goal_celebration",
+        "name": "Speler Doelpunt Viering",
+        "category": "celebration",
+        "description": "Genereer een beeld van speler in tenue met een doelpunt-viering pose.",
+        "input_requirements": ["person_photo"],
+        "parameters": {
+            "kit_type": {
+                "label": "Tenue Type",
+                "type": "select",
+                "options": ["home", "away", "third"],
+                "default": "home",
+            },
+            "style_variant": {
+                "label": "Viering Stijl",
+                "type": "select",
+                "options": ["arms_wide", "fist_pump", "point_to_sky", "slide"],
+                "default": "arms_wide",
+            },
+        },
+        "prompt_template": """Create a DYNAMIC GOAL CELEBRATION IMAGE for broadcast/video use.
+
+PERSON: Use the provided player image. Preserve their face, hair, skin tone, and kit EXACTLY as shown.
+
+CELEBRATION POSE: {style_variant_label}.
+
+EXPRESSION: Joyful, triumphant, celebrating a goal.
+
+COMPOSITION:
+- FULL BODY visible, dynamic celebration pose.
+- High energy, emotional moment captured.
+- Professional sports photography with dramatic action lighting.
+- Background: PURE SOLID COLOR BACKGROUND (bright green #00FF00 or bright blue #0000FF chroma-key).
+
+STYLE:
+- High-end broadcast-quality celebration image.
+- Sharp focus, clean edges, dramatic lighting.
+- Motion blur or dynamic posing acceptable to convey energy.
+- The person must be FULLY SEPARATED from the background.
+
+This image will be used in goal celebration overlays for match broadcasts.
+""",
+    },
 }
 
 
@@ -526,6 +618,17 @@ PARAM_RESOLVERS = {
         "team_colors": "Use the team's primary and secondary colors from the kit analysis.",
         "black_accent": "Black base with team color accents on zippers, stripes, and logo area.",
         "navy_accent": "Navy blue base with team color accents.",
+    },
+    "style_variant": {
+        # Intro poses
+        "arms_crossed": "Arms crossed confidently across chest, standing tall, powerful stance",
+        "hand_up": "One hand raised in greeting/wave, friendly and approachable",
+        "thumbs_up": "Both thumbs up, positive and confident pose",
+        # Goal celebration poses
+        "arms_wide": "Arms spread wide open, triumphant celebration pose",
+        "fist_pump": "Fist pump in the air, intense celebration",
+        "point_to_sky": "Pointing to the sky with one hand, emotional dedication gesture",
+        "slide": "Knee slide celebration pose, dynamic and iconic",
     },
 }
 
