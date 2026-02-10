@@ -224,3 +224,4 @@ See existing modules for patterns:
 
 - 2026-02-10T12:33:19Z – claude – shell_pid=71676 – lane=doing – Started WP01 implementation
 - 2026-02-10T12:42:22Z – claude – shell_pid=71676 – lane=for_review – Moved to for_review
+- 2026-02-10T12:52:11Z – claude – shell_pid=71676 – lane=planned – Code review: field naming must match spec
