@@ -525,14 +525,14 @@ description: "Work package task list for B37 Workflow Engine & State Machine"
 **Prompt**: `kitty-specs/048-workflow-engine-state/tasks/planned/WP12-django-admin.md`
 
 ### Included Subtasks
-- [ ] T122 Register WorkflowTemplate in `src/workflows/admin.py` with list display, filters
-- [ ] T123 Add WorkflowTemplate search (name), filters (is_active, created_at)
-- [ ] T124 Register WorkflowInstance with list display (workflow, project, current_state, content_object)
-- [ ] T125 Add WorkflowInstance filters (project, workflow, current_state, created_at)
-- [ ] T126 Add WorkflowInstance inline for TransitionHistory
-- [ ] T127 Register TransitionHistory (read-only) with list display (instance, action, from/to state, actor, created_at)
-- [ ] T128 Add TransitionHistory filters (instance, actor, action, from_state, to_state, created_at)
-- [ ] T129 Register ProjectPermissionOverride with list display (project, workflow, action, roles)
+- [x] T122 Register WorkflowTemplate in `src/workflows/admin.py` with list display, filters
+- [x] T123 Add WorkflowTemplate search (name), filters (is_active, created_at)
+- [x] T124 Register WorkflowInstance with list display (workflow, project, current_state, content_object)
+- [x] T125 Add WorkflowInstance filters (project, workflow, current_state, created_at)
+- [x] T126 Add WorkflowInstance inline for TransitionHistory
+- [x] T127 Register TransitionHistory (read-only) with list display (instance, action, from/to state, actor, created_at)
+- [x] T128 Add TransitionHistory filters (instance, actor, action, from_state, to_state, created_at)
+- [x] T129 Register ProjectPermissionOverride with list display (project, workflow, action, roles)
 - [ ] T130 Add ProjectPermissionOverride filters (project, workflow)
 - [ ] T131 Add custom admin actions (e.g., "Deactivate selected templates")
 - [ ] T132 Make workflow_snapshot read-only in WorkflowInstance admin
