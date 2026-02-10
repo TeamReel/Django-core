@@ -6,7 +6,7 @@ status: planned
 subtasks: T010-T020
 dependencies: WP01
 estimated_effort: 4-6 hours
-lane: "doing"
+lane: "for_review"
 agent: "claude"
 shell_pid: "71676"
 ---
@@ -183,3 +183,4 @@ See existing modules:
 
 - 2026-02-10T13:14:56Z – claude – shell_pid=71676 – lane=doing – Started implementation
 - 2026-02-10T13:22:45Z – claude – shell_pid=71676 – lane=doing – Implemented serializers, viewsets, permissions, pagination, and routes; ran python manage.py check
+- 2026-02-10T13:22:53Z – claude – shell_pid=71676 – lane=for_review – Ready for review
