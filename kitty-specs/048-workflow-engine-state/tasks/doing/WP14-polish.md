@@ -2,8 +2,10 @@
 work_package_id: "WP14"
 title: "Polish & Cross-Cutting"
 phase: "Phase 3 - Finalization"
-lane: "planned"
+lane: "doing"
 history: [{timestamp: "2026-02-09T18:18:50Z", lane: "planned", agent: "system", action: "Prompt generated"}]
+agent: "GitHub Copilot"
+shell_pid: "73412"
 ---
 
 # WP14 – Polish & Cross-Cutting (Priority P2)
@@ -40,3 +42,7 @@ Cross-story improvements, documentation, constitutional compliance validation.
 - Test suite: <30s total runtime
 
 Activity Log: 2026-02-09T18:18:50Z – Created
+
+## Activity Log
+
+- 2026-02-10T09:03:02Z – GitHub Copilot – shell_pid=73412 – lane=doing – Starting polish & cross-cutting improvements
