@@ -405,6 +405,13 @@ export default function AssetGenerationModal({
     }
   }, [selectedTemplate, initialParams]);
 
+  // Auto-select first variant when generation completes with exactly 1 variant
+  useEffect(() => {
+    if (generation.step === 'completed' && generation.variants.length === 1) {
+      setSelectedVariantIdx(generation.variants[0].variant_index);
+    }
+  }, [generation.step, generation.variants]);
+
   // Reset when modal opens
   useEffect(() => {
     if (isOpen) {
