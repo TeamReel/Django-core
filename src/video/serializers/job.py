@@ -102,6 +102,10 @@ class VideoJobDetailSerializer(VideoJobListSerializer):
     config = serializers.JSONField()
     metadata = serializers.JSONField()
     workflow_instance = serializers.SerializerMethodField()
+    workflow_status = serializers.SerializerMethodField()
+    workflow_assignees = serializers.SerializerMethodField()
+    workflow_history = serializers.SerializerMethodField()
+    publishable = serializers.BooleanField(read_only=True)
     overlays = VideoOverlaySerializer(many=True, read_only=True)
     created_by = UserReferenceSerializer(read_only=True)
 
@@ -110,6 +114,10 @@ class VideoJobDetailSerializer(VideoJobListSerializer):
             "config",
             "metadata",
             "workflow_instance",
+            "workflow_status",
+            "workflow_assignees",
+            "workflow_history",
+            "publishable",
             "overlays",
             "created_by",
         ]
@@ -120,9 +128,94 @@ class VideoJobDetailSerializer(VideoJobListSerializer):
         workflow = obj.workflow_instance
         return {
             "id": workflow.id,
-            "current_state": workflow.current_state,
+            "current_state": workflow.current_state.name
+            if hasattr(workflow.current_state, "name")
+            else str(workflow.current_state),
             "template_name": getattr(workflow.workflow, "name", None),
         }
+
+    def get_workflow_status(self, obj: VideoJob) -> dict | None:
+        """Return workflow state and available transitions."""
+        if not obj.workflow_instance:
+            return None
+
+        workflow = obj.workflow_instance
+        try:
+            # Get available transitions for current state
+            available_transitions = []
+            if hasattr(workflow, "get_available_transitions"):
+                available_transitions = [
+                    {
+                        "action": t.action,
+                        "to_state": t.to_state.name
+                        if hasattr(t.to_state, "name")
+                        else str(t.to_state),
+                    }
+                    for t in workflow.get_available_transitions()
+                ]
+
+            return {
+                "state": workflow.current_state.name
+                if hasattr(workflow.current_state, "name")
+                else str(workflow.current_state),
+                "can_transition": available_transitions,
+            }
+        except Exception:
+            return {
+                "state": str(workflow.current_state),
+                "can_transition": [],
+            }
+
+    def get_workflow_assignees(self, obj: VideoJob) -> list[dict]:
+        """Return list of workflow assignees."""
+        if not obj.workflow_instance:
+            return []
+
+        try:
+            workflow = obj.workflow_instance
+            if hasattr(workflow, "assignees") and workflow.assignees:
+                return [
+                    {
+                        "id": str(a.user.id),
+                        "name": a.user.get_full_name() or a.user.email,
+                        "email": a.user.email,
+                    }
+                    for a in workflow.assignees.all()
+                ]
+        except Exception:
+            pass
+
+        return []
+
+    def get_workflow_history(self, obj: VideoJob) -> list[dict]:
+        """Return workflow transition history."""
+        if not obj.workflow_instance:
+            return []
+
+        try:
+            workflow = obj.workflow_instance
+            if hasattr(workflow, "transitions"):
+                return [
+                    {
+                        "from_state": t.from_state.name
+                        if hasattr(t.from_state, "name")
+                        else str(t.from_state),
+                        "to_state": t.to_state.name
+                        if hasattr(t.to_state, "name")
+                        else str(t.to_state),
+                        "action": t.action if hasattr(t, "action") else None,
+                        "user": t.user.get_full_name()
+                        if (hasattr(t, "user") and t.user)
+                        else "System",
+                        "timestamp": t.created_at.isoformat() if hasattr(t, "created_at") else None,
+                        "comment": t.comment if hasattr(t, "comment") else None,
+                    }
+                    for t in workflow.transitions.order_by("created_at")
+                ]
+        except Exception:
+            pass
+
+        return []
 
 
 class VideoJobCreateSerializer(serializers.Serializer):
