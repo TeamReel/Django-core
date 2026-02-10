@@ -1,6 +1,7 @@
 """VideoOverlay model for video composition overlays."""
 
 import uuid
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 

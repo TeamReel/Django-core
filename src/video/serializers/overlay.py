@@ -1,9 +1,9 @@
 """Serializers for VideoOverlay."""
 
-from rest_framework import serializers
-
 from files.models import FileAsset
 from files.utils import get_storage_backend
+from rest_framework import serializers
+
 from src.video.models import VideoOverlay
 
 
@@ -66,7 +66,7 @@ class VideoOverlayCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating overlays nested under a job."""
 
     position = OverlayPositionField()
-    asset_file_id = serializers.PrimaryKeyRelatedField(
+    asset_file_id: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
         source="asset_file",
         queryset=FileAsset.objects.all(),
         required=False,

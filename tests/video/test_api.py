@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 import pytest
 from django.apps import apps
 from django.urls import reverse

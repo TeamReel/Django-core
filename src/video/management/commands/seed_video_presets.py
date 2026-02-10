@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from django.core.management.base import BaseCommand
 
 from src.video.models import PlatformExport, VideoPreset
@@ -19,7 +21,7 @@ class Command(BaseCommand):
     # - YouTube: https://support.google.com/youtube/answer/1722171
     # - Twitter/X: https://developer.twitter.com/en/docs/twitter-api/v1/media/upload-media
 
-    SYSTEM_PRESETS = [
+    SYSTEM_PRESETS: list[dict[str, Any]] = [
         {
             "name": "1080p_high",
             "description": "High quality 1080p for archival and professional use",

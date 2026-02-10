@@ -1,6 +1,7 @@
 import pytest
-from src.video.services.processors.transcode import TranscodeProcessor
+
 from src.video.models import OutputFormat
+from src.video.services.processors.transcode import TranscodeProcessor
 
 
 @pytest.mark.django_db

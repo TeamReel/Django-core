@@ -1,9 +1,11 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from src.video.models import JobStatus, JobType
-from src.video.tasks.transcode import transcode_video
-from src.video.tasks.thumbnail import generate_thumbnail
 from src.video.tasks.compose import compose_video
+from src.video.tasks.thumbnail import generate_thumbnail
+from src.video.tasks.transcode import transcode_video
 
 
 @pytest.mark.django_db

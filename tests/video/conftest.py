@@ -9,11 +9,12 @@ import pytest
 from pytest_factoryboy import register
 
 from tests.accounts.factories import UserFactory
+
 from .factories import (
-    OrganisationFactory,
-    ProjectFactory,
     FileFactory,
+    OrganisationFactory,
     PlatformExportFactory,
+    ProjectFactory,
     VideoJobFactory,
     VideoOverlayFactory,
     VideoPresetFactory,

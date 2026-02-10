@@ -2,7 +2,8 @@
 
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import VideoJob, VideoPreset, PlatformExport, VideoOverlay
+
+from .models import PlatformExport, VideoJob, VideoOverlay, VideoPreset
 
 
 @admin.register(VideoJob)

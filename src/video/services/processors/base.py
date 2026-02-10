@@ -12,9 +12,9 @@ from pathlib import Path
 from typing import Callable
 
 from django.utils import timezone
-
 from files.models import FileAsset
 from files.utils import get_storage_backend
+
 from src.video.models import VideoJob
 from src.video.models.job import JobStatus
 from src.video.services.constants import VIDEO_TEMP_DIR
@@ -143,8 +143,8 @@ class BaseVideoProcessor(ABC):
         else:
             command_with_progress += ["-progress", "pipe:1", "-nostats"]
 
-        process = subprocess.Popen(
-            command_with_progress,
+        process = subprocess.Popen(  # noqa: S603
+            command_with_progress,  # noqa: S603
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -167,5 +167,11 @@ class BaseVideoProcessor(ABC):
             self.job.status = JobStatus.FAILED
             self.job.error_message = stderr[:4000]
             self.job.save(update_fields=["status", "error_message", "updated_at"])
-            logger.error("video_processing_failed", job_id=str(self.job.id), error=stderr[:4000])
+            logger.error(
+                "video_processing_failed",
+                extra={
+                    "job_id": str(self.job.id),
+                    "error": stderr[:4000],
+                },
+            )
             raise RuntimeError("FFmpeg failed")

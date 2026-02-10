@@ -1,10 +1,11 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 from rest_framework.exceptions import ValidationError
 
 from src.video.models import JobStatus, JobType
-from src.video.services.video_service import VideoService
 from src.video.services.constants import VIDEO_MAX_FILE_SIZE
+from src.video.services.video_service import VideoService
 
 
 @pytest.fixture

@@ -16,10 +16,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from src.video.permissions import IsProjectMember
 from src.video.models import VideoJob
 from src.video.models.job import JobStatus
 from src.video.pagination import VideoJobPagination
+from src.video.permissions import IsProjectMember
 from src.video.serializers.job import (
     VideoJobCreateSerializer,
     VideoJobDetailSerializer,

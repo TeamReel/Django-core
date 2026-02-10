@@ -6,6 +6,7 @@ import logging
 
 from django.apps import apps
 from django.utils import timezone
+from files.utils import get_storage_backend
 from rest_framework.exceptions import ValidationError
 
 from src.video.models import VideoJob, VideoOverlay, VideoPreset
@@ -15,7 +16,6 @@ from src.video.services.processors.base import BaseVideoProcessor
 from src.video.services.processors.compose import ComposeProcessor
 from src.video.services.processors.thumbnail import ThumbnailProcessor
 from src.video.services.processors.transcode import TranscodeProcessor
-from files.utils import get_storage_backend
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +73,13 @@ class VideoService:
         # Dispatch to appropriate Celery queue based on job type
         self._dispatch_job(job)
 
-        logger.info("video_job_created", job_id=str(job.id), job_type=job.job_type)
+        logger.info(
+            "video_job_created",
+            extra={
+                "job_id": str(job.id),
+                "job_type": job.job_type,
+            },
+        )
         return job
 
     def _dispatch_job(self, job: VideoJob) -> None:

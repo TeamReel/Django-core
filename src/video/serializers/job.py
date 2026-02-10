@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import Any
 
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
-
 from files.models import FileAsset
 from files.utils import get_storage_backend
+from rest_framework import serializers
+
 from src.video.models import PlatformExport, VideoJob, VideoOverlay, VideoPreset
 from src.video.models.job import JobType
 from src.video.serializers.overlay import VideoOverlayCreateSerializer, VideoOverlaySerializer
@@ -182,7 +182,7 @@ class VideoJobDetailSerializer(VideoJobListSerializer):
                     }
                     for a in workflow.assignees.all()
                 ]
-        except Exception:
+        except Exception:  # noqa: S110
             pass
 
         return []
@@ -212,7 +212,7 @@ class VideoJobDetailSerializer(VideoJobListSerializer):
                     }
                     for t in workflow.transitions.order_by("created_at")
                 ]
-        except Exception:
+        except Exception:  # noqa: S110
             pass
 
         return []
@@ -221,18 +221,18 @@ class VideoJobDetailSerializer(VideoJobListSerializer):
 class VideoJobCreateSerializer(serializers.Serializer):
     """Serializer for creating video jobs."""
 
-    job_type = serializers.ChoiceField(choices=JobType.choices)
-    input_file_id = serializers.PrimaryKeyRelatedField(
+    job_type: serializers.ChoiceField = serializers.ChoiceField(choices=JobType.choices)
+    input_file_id: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
         source="input_file",
         queryset=FileAsset.objects.all(),
     )
-    preset_id = serializers.PrimaryKeyRelatedField(
+    preset_id: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
         source="preset",
         queryset=VideoPreset.objects.all(),
         required=False,
         allow_null=True,
     )
-    platform_export_id = serializers.PrimaryKeyRelatedField(
+    platform_export_id: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
         source="platform_export",
         queryset=PlatformExport.objects.all(),
         required=False,

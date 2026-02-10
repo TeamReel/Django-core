@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import factory
 from factory.django import DjangoModelFactory
-
 from files.models import FileAsset
-from projects.models import Project
 from organisations.models import Organisation
+from projects.models import Project
+
 from src.video.models import PlatformExport, VideoJob, VideoOverlay, VideoPreset
 
 

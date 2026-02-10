@@ -8,8 +8,8 @@ from pathlib import Path
 from django.utils import timezone
 
 from src.video.models import VideoOverlay
-from src.video.models.overlay import OverlayPosition, OverlayType
 from src.video.models.job import JobStatus
+from src.video.models.overlay import OverlayPosition, OverlayType
 from src.video.services.processors.base import BaseVideoProcessor
 
 logger = logging.getLogger(__name__)

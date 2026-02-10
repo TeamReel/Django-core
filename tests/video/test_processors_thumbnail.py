@@ -1,5 +1,7 @@
+from unittest.mock import PropertyMock, patch
+
 import pytest
-from unittest.mock import patch, PropertyMock
+
 from src.video.services.processors.thumbnail import ThumbnailProcessor
 
 

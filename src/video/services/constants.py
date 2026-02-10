@@ -21,6 +21,6 @@ VIDEO_TEMP_DIR = Path(
     getattr(
         settings,
         "VIDEO_TEMP_DIR",
-        os.getenv("VIDEO_TEMP_DIR", Path(os.getenv("TEMP", "/tmp")) / "video_jobs"),
+        os.getenv("VIDEO_TEMP_DIR", Path(os.getenv("TEMP", "/tmp")) / "video_jobs"),  # noqa: S108
     )
 )

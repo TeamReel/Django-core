@@ -1,6 +1,8 @@
-import pytest
 from unittest.mock import MagicMock
-from src.video.models.overlay import OverlayType, OverlayPosition
+
+import pytest
+
+from src.video.models.overlay import OverlayPosition, OverlayType
 from src.video.services.processors.compose import ComposeProcessor
 
 
