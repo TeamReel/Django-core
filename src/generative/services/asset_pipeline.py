@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import base64
 import logging
+import tempfile
 import time
 from io import BytesIO
 from typing import Any
@@ -406,17 +407,23 @@ def generate_video(
             # Image-to-video: use person photo as starting frame / reference
             logger.info("Generating video with image input (image-to-video)")
 
-            # Convert bytes to PIL Image for Veo API (per SDK codegen instructions)
-            from PIL import Image as PILImage
+            # Write bytes to temp file, then use types.Image.from_file()
+            # generate_videos requires types.Image (not PIL) with bytesBase64Encoded + mimeType
+            _img_tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+            _img_tmp_path = _img_tmp.name
+            try:
+                _img_tmp.write(person_img)
+                _img_tmp.close()
+                image_obj = types.Image.from_file(_img_tmp_path)
 
-            pil_image = PILImage.open(BytesIO(person_img))
-
-            operation = client.models.generate_videos(
-                model="veo-3.1-generate-preview",
-                prompt=final_prompt,
-                image=pil_image,
-                config=veo_config,
-            )
+                operation = client.models.generate_videos(
+                    model="veo-3.1-generate-preview",
+                    prompt=final_prompt,
+                    image=image_obj,
+                    config=veo_config,
+                )
+            finally:
+                os.unlink(_img_tmp_path)
         else:
             # Text-to-video only
             logger.info("Generating video with text prompt only (text-to-video)")
@@ -447,8 +454,6 @@ def generate_video(
         generated_video = operation.response.generated_videos[0]
 
         # Download video using official SDK pattern (download → save → read)
-        import tempfile
-
         client.files.download(file=generated_video.video)
         _tmp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
         _tmp_path = _tmp.name
