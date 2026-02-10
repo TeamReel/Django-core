@@ -6,6 +6,9 @@ status: planned
 subtasks: T021-T030
 dependencies: WP01, WP02
 estimated_effort: 6-8 hours
+lane: "doing"
+agent: "claude"
+shell_pid: "71676"
 ---
 
 # WP03: Video Service & Processors 🎯 MVP
@@ -281,3 +284,7 @@ VIDEO_TEMP_DIR = os.getenv("VIDEO_TEMP_DIR", "/tmp/video_jobs")
 - [ ] All operations logged with job_id
 - [ ] Type hints on all methods
 - [ ] No hardcoded paths or credentials
+
+## Activity Log
+
+- 2026-02-10T13:32:30Z – claude – shell_pid=71676 – lane=doing – Started implementation
