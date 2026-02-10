@@ -7,7 +7,7 @@ subtasks: T010-T020
 dependencies: WP01
 estimated_effort: 4-6 hours
 lane: "planned"
-agent: "claude"
+agent: "copilot-reviewer"
 shell_pid: "71676"
 review_status: "has_feedback"
 reviewed_by: "copilot-reviewer"
@@ -208,3 +208,4 @@ See existing modules:
 - 2026-02-10T13:22:45Z – claude – shell_pid=71676 – lane=doing – Implemented serializers, viewsets, permissions, pagination, and routes; ran python manage.py check
 - 2026-02-10T13:22:53Z – claude – shell_pid=71676 – lane=for_review – Ready for review
 - 2026-02-10T13:25:20Z – copilot-reviewer – shell_pid=71676 – lane=planned – Review complete: project membership not enforced for header-scoped access
+- 2026-02-10T13:25:21Z – copilot-reviewer – shell_pid=71676 – lane=planned – Code review complete: project membership not enforced for header scope
