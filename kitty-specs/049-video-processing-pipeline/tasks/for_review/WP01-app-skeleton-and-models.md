@@ -6,7 +6,7 @@ status: planned
 subtasks: T001-T009
 dependencies: none
 estimated_effort: 4-6 hours
-lane: "doing"
+lane: "for_review"
 agent: "claude"
 shell_pid: "71676"
 review_status: "acknowledged"
@@ -228,3 +228,4 @@ See existing modules for patterns:
 - 2026-02-10T13:02:50Z – claude – shell_pid=71676 – lane=doing – Addressed feedback: applied migration and re-ran python manage.py check video
 - 2026-02-10T12:52:11Z – claude – shell_pid=71676 – lane=planned – Code review: field naming must match spec
 - 2026-02-10T12:53:23Z – claude – shell_pid=71676 – lane=doing – Started implementation to address review feedback
+- 2026-02-10T13:03:03Z – claude – shell_pid=71676 – lane=for_review – Ready for review after field rename
