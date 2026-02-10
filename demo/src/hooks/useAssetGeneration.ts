@@ -228,7 +228,9 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         context,
         orgId,
         assetType,
-        hasImage: !!selectedVariant.image_base64
+        hasImage: !!selectedVariant.image_base64,
+        hasVideo: !!selectedVariant.video_url,
+        storagePath: selectedVariant.storage_info?.storage_path,
       });
 
       if (!orgId) {
@@ -247,6 +249,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           body: JSON.stringify({
             storage_path: selectedVariant.storage_info?.storage_path,
             presigned_url: selectedVariant.presigned_url,
+            video_url: selectedVariant.video_url,
             image_base64: selectedVariant.image_base64,
             filename: selectedVariant.filename,
             mime_type: selectedVariant.mime_type || 'image/png',
