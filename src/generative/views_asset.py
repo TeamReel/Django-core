@@ -879,25 +879,32 @@ def save_asset_view(request: Request) -> Response:
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    # Create FileAsset record
+    # Create FileAsset record (or reuse existing one if storage_path already exists)
     file_asset = None
     try:
         from files.models import FileAsset
 
-        file_asset = FileAsset.objects.create(
-            organization=organisation,
-            uploaded_by=current_user,
-            original_name=filename,
-            storage_path=final_storage_path,
-            file_size=file_size_bytes,
-            mime_type=mime_type,
-            is_public=False,
-            metadata={
-                "source": "ai_generation_saved",
-                "asset_type": asset_type,
-            },
-        )
-        logger.info(f"📄 FileAsset created: {file_asset.id}")
+        # Check if a FileAsset already exists with this storage_path (e.g., from generation step)
+        if final_storage_path:
+            file_asset = FileAsset.objects.filter(storage_path=final_storage_path).first()
+
+        if file_asset:
+            logger.info(f"📄 Reusing existing FileAsset: {file_asset.id}")
+        else:
+            file_asset = FileAsset.objects.create(
+                organization=organisation,
+                uploaded_by=current_user,
+                original_name=filename,
+                storage_path=final_storage_path,
+                file_size=file_size_bytes,
+                mime_type=mime_type,
+                is_public=False,
+                metadata={
+                    "source": "ai_generation_saved",
+                    "asset_type": asset_type,
+                },
+            )
+            logger.info(f"📄 FileAsset created: {file_asset.id}")
     except Exception as e:
         logger.exception(f"Failed to create FileAsset: {e}")
         return Response(
