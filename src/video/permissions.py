@@ -11,10 +11,14 @@ class IsProjectMember(BasePermission):
 
     def has_permission(self, request: Request, view: View) -> bool:
         project_id = (
-            request.data.get("project")
+            request.headers.get("X-Project-ID")
+            or request.data.get("project")
             or request.query_params.get("project")
             or getattr(request, "project_id", None)
         )
+
+        if project_id:
+            request.project_id = project_id
 
         if not project_id:
             return True

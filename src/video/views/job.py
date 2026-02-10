@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -63,9 +63,16 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             .prefetch_related("overlays")
         )
 
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+        membership_qs = ProjectMembership.objects.filter(user=self.request.user)
+
         project_id = self._get_project_id(required=self.action in ["list", "create"])
         if project_id:
+            if not membership_qs.filter(project_id=project_id).exists():
+                raise PermissionDenied("You must be a project member to access this project.")
             qs = qs.filter(project_id=project_id)
+        else:
+            qs = qs.filter(project_id__in=membership_qs.values_list("project_id", flat=True))
 
         return qs
 
