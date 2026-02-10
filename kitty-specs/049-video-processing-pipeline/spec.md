@@ -5,6 +5,13 @@
 **Status**: Draft
 **Input**: User description: "Video transcoding, thumbnail generation, and format conversion for sports content with optional B37 workflow integration for approval flows"
 
+## Clarifications
+
+### Session 2026-02-10
+
+- Q: What is the maximum allowed input video file size? → A: 2 GB (configurable via VIDEO_MAX_FILE_SIZE_MB env var)
+- Q: What is the maximum allowed video duration? → A: 15 minutes (focus on short reels/clips; configurable for future extension)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Submit Video for Transcoding (Priority: P1)
@@ -143,7 +150,7 @@ A content creator needs to generate HLS (HTTP Live Streaming) output for adaptiv
 
 ### Functional Requirements
 
-- **FR-001**: System MUST accept video uploads in formats: MP4, MOV, AVI, WebM, MKV
+- **FR-001**: System MUST accept video uploads in formats: MP4, MOV, AVI, WebM, MKV with maximum file size of 2 GB and maximum duration of 15 minutes (both configurable)
 - **FR-002**: System MUST transcode videos to output formats: MP4 (H.264), WebM (VP9), HLS
 - **FR-003**: System MUST support quality presets: 1080p (1920x1080), 720p (1280x720), 480p (854x480), thumbnail (320x180)
 - **FR-004**: System MUST track job status with states: queued, processing, completed, failed, cancelled
