@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "settings.apps.SettingsConfig",
     "activities.apps.ActivitiesConfig",
     "workflows.apps.WorkflowsConfig",
+    "src.video.apps.VideoConfig",
 ]
 
 MIDDLEWARE = [

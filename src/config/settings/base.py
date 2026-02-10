@@ -87,6 +87,8 @@ INSTALLED_APPS = [
     "src.workflows.apps.WorkflowsConfig",
     # B41: User Navigation State
     "navigation.apps.NavigationConfig",
+    # B55: Video Processing Pipeline
+    "src.video.apps.VideoConfig",
 ]
 
 MIDDLEWARE = [
