@@ -25,13 +25,20 @@ RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
 
 ### 2. Configure Celery Queues
 
+The queues are already configured in `config/settings/celery.py`:
+
 ```python
-# config/celery.py
+# Tiered queue configuration (already configured in B55)
+CELERY_TASK_QUEUES = (
+    Queue("default", routing_key="default"),
+    Queue("video_fast", routing_key="video.fast"),
+    Queue("video_slow", routing_key="video.slow"),
+)
+
 CELERY_TASK_ROUTES = {
-    'video.tasks.generate_thumbnail': {'queue': 'video_fast'},
-    'video.tasks.extract_metadata': {'queue': 'video_fast'},
-    'video.tasks.transcode_video': {'queue': 'video_slow'},
-    'video.tasks.compose_video': {'queue': 'video_slow'},
+    "src.video.tasks.thumbnail.generate_thumbnail": {"queue": "video_fast"},
+    "src.video.tasks.transcode.transcode_video": {"queue": "video_slow"},
+    "src.video.tasks.compose.compose_video": {"queue": "video_slow"},
 }
 ```
 
@@ -243,33 +250,63 @@ jobs = VideoJob.objects.filter(
 
 ## Worker Commands
 
-### Start Workers (Development)
+### Start All Workers (Development - Single Terminal)
 
 ```bash
-# Fast queue (thumbnails, metadata)
-celery -A config worker -Q video_fast --concurrency=2
+# Start all queues in one worker (development only)
+celery -A config worker -Q default,video_fast,video_slow --loglevel=info
+```
 
-# Slow queue (transcoding, composition)
-celery -A config worker -Q video_slow --concurrency=1
+### Start Workers (Development - Separate Terminals)
 
-# Default queue (other tasks)
-celery -A config worker -Q default --concurrency=4
+```bash
+# Terminal 1: Fast queue (thumbnails, quick operations) - concurrency=2
+celery -A config worker -Q video_fast --concurrency=2 --loglevel=info -n video_fast@%h
+
+# Terminal 2: Slow queue (transcoding, composition) - concurrency=1
+celery -A config worker -Q video_slow --concurrency=1 --loglevel=info -n video_slow@%h
+
+# Terminal 3: Default queue (other background tasks) - concurrency=4
+celery -A config worker -Q default --concurrency=4 --loglevel=info -n default@%h
+```
+
+### Start Workers (Docker Compose)
+
+```bash
+# Start all services including video workers
+docker-compose -f docker-compose.local.yml up
+
+# Or start video workers only
+docker-compose -f docker-compose.local.yml up video-worker-fast video-worker-slow
 ```
 
 ### Start Workers (Production - Railway)
 
-```yaml
-# railway.json
+```json
+// railway.json (already configured)
 {
   "services": {
     "worker-video-fast": {
-      "command": "celery -A config worker -Q video_fast --concurrency=2"
+      "command": "celery -A config worker -Q video_fast --concurrency=2 -n video_fast@%h"
     },
     "worker-video-slow": {
-      "command": "celery -A config worker -Q video_slow --concurrency=1"
+      "command": "celery -A config worker -Q video_slow --concurrency=1 -n video_slow@%h"
     }
   }
 }
+```
+
+### Verify Workers Are Running
+
+```bash
+# Check active queues
+celery -A config inspect active_queues
+
+# Check registered tasks
+celery -A config inspect registered
+
+# Check active workers
+celery -A config inspect active
 ```
 
 ## Extending

@@ -104,8 +104,53 @@ services:
       - db
       - redis
 
+  # B55: Video Worker - Fast Queue (thumbnails, metadata)
+  video-worker-fast:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    command: celery -A config worker -Q video_fast --concurrency=2 --loglevel=info -n video_fast@%h
+    volumes:
+      - .:/app
+      - video_temp:/tmp/video_jobs  # Shared temp directory for video processing
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/django_core_dev
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - LOGGING_LEVEL=DEBUG
+      - VIDEO_TEMP_DIR=/tmp/video_jobs
+    depends_on:
+      - db
+      - redis
+
+  # B55: Video Worker - Slow Queue (transcoding, composition)
+  video-worker-slow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    command: celery -A config worker -Q video_slow --concurrency=1 --loglevel=info -n video_slow@%h
+    volumes:
+      - .:/app
+      - video_temp:/tmp/video_jobs  # Shared temp directory for video processing
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/django_core_dev
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - LOGGING_LEVEL=DEBUG
+      - VIDEO_TEMP_DIR=/tmp/video_jobs
+    depends_on:
+      - db
+      - redis
+
 volumes:
   postgres_data_local:
+  video_temp:  # Shared volume for video processing temp files
 
 # Development Notes:
 # - All services run with DEBUG=True for easier debugging

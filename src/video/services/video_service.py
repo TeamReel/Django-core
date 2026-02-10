@@ -70,11 +70,30 @@ class VideoService:
             )
             job.save(update_fields=["workflow_instance", "updated_at"])
 
-        from src.video.tasks.processing import process_video_job
+        # Dispatch to appropriate Celery queue based on job type
+        self._dispatch_job(job)
 
-        process_video_job.delay(str(job.id))
         logger.info("video_job_created", job_id=str(job.id), job_type=job.job_type)
         return job
+
+    def _dispatch_job(self, job: VideoJob) -> None:
+        """Dispatch job to appropriate Celery task."""
+        from src.video.tasks import compose_video, generate_thumbnail, transcode_video
+
+        job_id = str(job.id)
+
+        if job.job_type == JobType.TRANSCODE:
+            transcode_video.delay(job_id)
+        elif job.job_type == JobType.THUMBNAIL:
+            generate_thumbnail.delay(job_id)
+        elif job.job_type == JobType.COMPOSE:
+            compose_video.delay(job_id)
+        else:
+            logger.error(
+                "Unknown job type for dispatch",
+                extra={"job_id": job_id, "job_type": job.job_type},
+            )
+            raise ValidationError({"job_type": f"Unknown job type: {job.job_type}"})
 
     def cancel_job(self, job: VideoJob) -> bool:
         """Cancel pending/queued job."""
@@ -108,6 +127,15 @@ class VideoService:
                 "updated_at",
             ]
         )
+
+        # Redispatch to appropriate queue
+        self._dispatch_job(job)
+
+        logger.info(
+            "video_job_retried",
+            extra={"job_id": str(job.id), "retry_count": job.retry_count},
+        )
+
         return job
 
     def get_processor(self, job: VideoJob) -> BaseVideoProcessor:

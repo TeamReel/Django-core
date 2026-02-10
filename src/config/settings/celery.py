@@ -10,6 +10,7 @@ import tempfile
 
 import environ
 from celery.schedules import crontab
+from kombu import Queue
 
 env = environ.Env()
 
@@ -48,6 +49,21 @@ CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000  # Restart worker after N tasks (preven
 
 # Logging
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False  # Use Django logging
+
+# B55: Video Processing Pipeline - Tiered Queue Configuration
+# video_fast: Quick operations (thumbnails, metadata extraction) - concurrency=2
+# video_slow: Heavy operations (transcoding, composition) - concurrency=1
+CELERY_TASK_QUEUES = (
+    Queue("default", routing_key="default"),
+    Queue("video_fast", routing_key="video.fast"),
+    Queue("video_slow", routing_key="video.slow"),
+)
+
+CELERY_TASK_ROUTES = {
+    "src.video.tasks.thumbnail.generate_thumbnail": {"queue": "video_fast"},
+    "src.video.tasks.transcode.transcode_video": {"queue": "video_slow"},
+    "src.video.tasks.compose.compose_video": {"queue": "video_slow"},
+}
 
 # Periodic Task Scheduling (celery-beat)
 CELERY_BEAT_SCHEDULE_FILENAME = env(
