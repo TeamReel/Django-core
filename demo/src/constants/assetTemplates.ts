@@ -38,6 +38,14 @@ export interface AssetTemplate {
   outputAssetType: string;
   /** Credits cost per variant */
   creditsCost: number;
+  /** Output type: 'image' (default) or 'video' */
+  outputType?: 'image' | 'video';
+  /** Video configuration (only for video templates) */
+  videoConfig?: {
+    durationSeconds: number;
+    aspectRatio: string;
+    resolution: string;
+  };
 }
 
 // ============================================================================
@@ -425,18 +433,24 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     },
   },
   // ============================================================================
-  // Short Intro Templates (requires player in tenue as input)
+  // Short Intro Templates (VIDEO - requires player in tenue as input)
   // ============================================================================
   {
     id: 'member_intro',
-    name: 'Short Intro',
+    name: 'Short Intro Video',
     icon: '🎬',
     category: 'intro',
-    description: 'Korte intro animatie van de speler in verschillende poses. Vereist een "Player in Tenue" als input.',
+    description: 'Korte intro video (5-6 sec) van de speler in verschillende poses. Vereist een "Player in Tenue" als input.',
     inputRequirements: ['person'], // person = player in tenue image
     requiredAssetTypes: [],
     outputAssetType: 'member_intro', // Will be suffixed with kit_type and style
-    creditsCost: 3,
+    creditsCost: 5,
+    outputType: 'video',
+    videoConfig: {
+      durationSeconds: 6,
+      aspectRatio: '9:16',
+      resolution: '720p',
+    },
     parameters: {
       kit_type: {
         label: 'Tenue Type',
@@ -462,18 +476,24 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     },
   },
   // ============================================================================
-  // Goal Celebration Templates (requires player in tenue as input)
+  // Goal Celebration Templates (VIDEO - requires player in tenue as input)
   // ============================================================================
   {
     id: 'member_goal_celebration',
-    name: 'Goal Celebration',
+    name: 'Goal Celebration Video',
     icon: '🎉',
     category: 'celebration',
-    description: 'Goal viering animatie van de speler. Vereist een "Player in Tenue" als input.',
+    description: 'Korte goal viering video (5-6 sec) van de speler. Vereist een "Player in Tenue" als input.',
     inputRequirements: ['person'], // person = player in tenue image
     requiredAssetTypes: [],
     outputAssetType: 'member_goal_celebration', // Will be suffixed with kit_type and style
-    creditsCost: 3,
+    creditsCost: 5,
+    outputType: 'video',
+    videoConfig: {
+      durationSeconds: 6,
+      aspectRatio: '9:16',
+      resolution: '720p',
+    },
     parameters: {
       kit_type: {
         label: 'Tenue Type',

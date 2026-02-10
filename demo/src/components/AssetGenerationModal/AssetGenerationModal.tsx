@@ -169,16 +169,28 @@ function VariantCard({
   variant,
   selected,
   onClick,
+  isVideo = false,
 }: {
-  variant: { variant_index: number; image_base64: string | null; mime_type: string | null; error?: string | null };
+  variant: {
+    variant_index: number;
+    image_base64?: string | null;
+    video_base64?: string | null;
+    mime_type: string | null;
+    error?: string | null;
+  };
   selected: boolean;
   onClick: () => void;
+  isVideo?: boolean;
 }) {
-  let imageSrc: string | undefined;
+  let mediaSrc: string | undefined;
+  const isVideoContent = isVideo || variant.video_base64 || variant.mime_type?.startsWith('video/');
 
-  if (variant.image_base64) {
+  if (isVideoContent && variant.video_base64) {
+    const mime = variant.mime_type || 'video/mp4';
+    mediaSrc = `data:${mime};base64,${variant.video_base64}`;
+  } else if (variant.image_base64) {
     const mime = getSecureMimeType(variant.image_base64, variant.mime_type);
-    imageSrc = `data:${mime};base64,${variant.image_base64}`;
+    mediaSrc = `data:${mime};base64,${variant.image_base64}`;
   }
 
   return (
@@ -196,22 +208,38 @@ function VariantCard({
         background: 'transparent',
       }}
     >
-      {imageSrc ? (
-        <img
-          src={imageSrc}
-          alt={`Variant ${variant.variant_index + 1}`}
-          style={{
-            width: '100%',
-            aspectRatio: '3 / 4',
-            objectFit: 'cover',
-            display: 'block',
-          }}
-        />
+      {mediaSrc ? (
+        isVideoContent ? (
+          <video
+            src={mediaSrc}
+            style={{
+              width: '100%',
+              aspectRatio: '9 / 16',
+              objectFit: 'cover',
+              display: 'block',
+            }}
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        ) : (
+          <img
+            src={mediaSrc}
+            alt={`Variant ${variant.variant_index + 1}`}
+            style={{
+              width: '100%',
+              aspectRatio: '3 / 4',
+              objectFit: 'cover',
+              display: 'block',
+            }}
+          />
+        )
       ) : (
         <div
           style={{
             width: '100%',
-            aspectRatio: '3 / 4',
+            aspectRatio: isVideoContent ? '9 / 16' : '3 / 4',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -222,7 +250,7 @@ function VariantCard({
             textAlign: 'center',
           }}
         >
-          {variant.error || 'Geen afbeelding'}
+          {variant.error || (isVideoContent ? 'Geen video' : 'Geen afbeelding')}
         </div>
       )}
       {selected && (
@@ -244,6 +272,23 @@ function VariantCard({
           }}
         >
           ✓
+        </div>
+      )}
+      {/* Video indicator */}
+      {isVideoContent && mediaSrc && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 6,
+            left: 6,
+            background: 'rgba(0,0,0,0.7)',
+            color: '#fff',
+            padding: '2px 6px',
+            borderRadius: 4,
+            fontSize: 10,
+          }}
+        >
+          🎬 Video
         </div>
       )}
       <div
@@ -899,11 +944,13 @@ export default function AssetGenerationModal({
                           variant={v}
                           selected={selectedVariantIdx === v.variant_index}
                           onClick={() => setSelectedVariantIdx(v.variant_index)}
+                          isVideo={selectedTemplate?.outputType === 'video'}
                         />
                       ))}
                     </div>
 
-                    {/* Feedback / Refine */}
+                    {/* Feedback / Refine - only for images, not videos */}
+                    {selectedTemplate?.outputType !== 'video' && (
                     <div style={{ marginTop: 20, borderTop: '1px solid var(--vscode-widget-border, #333)', paddingTop: 16 }}>
                         <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Combineer & Verbeter Varianten:</div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -953,6 +1000,7 @@ export default function AssetGenerationModal({
                            />
                         </div>
                     </div>
+                    )}
                   </div>
                 )}
             </div>
