@@ -54,20 +54,20 @@
 
 **Goal**: Implement DRF serializers and ViewSets for all 8 API endpoints per openapi.yaml
 **Independent Test**: Swagger UI shows all endpoints, CRUD operations work
-**Prompt**: `tasks/planned/WP02-serializers-and-api-views.md`
+**Prompt**: `tasks/done/WP02-serializers-and-api-views.md`
 
 ### Included Subtasks
-- [ ] T010 [P] Create VideoJobSerializer (list, detail, create variants)
-- [ ] T011 [P] Create VideoPresetSerializer
-- [ ] T012 [P] Create PlatformExportSerializer
-- [ ] T013 [P] Create VideoOverlaySerializer (nested in job)
-- [ ] T014 Create VideoJobViewSet with list, retrieve, create, destroy, retry actions
-- [ ] T015 [P] Create VideoPresetViewSet (read-only)
-- [ ] T016 [P] Create PlatformExportViewSet (read-only, filterable)
-- [ ] T017 Configure URL routing in `src/video/urls.py`
-- [ ] T018 Register URLs in main API router
-- [ ] T019 Add project membership permission checks
-- [ ] T020 Add pagination to job listing
+- [x] T010 [P] Create VideoJobSerializer (list, detail, create variants)
+- [x] T011 [P] Create VideoPresetSerializer
+- [x] T012 [P] Create PlatformExportSerializer
+- [x] T013 [P] Create VideoOverlaySerializer (nested in job)
+- [x] T014 Create VideoJobViewSet with list, retrieve, create, destroy, retry actions
+- [x] T015 [P] Create VideoPresetViewSet (read-only)
+- [x] T016 [P] Create PlatformExportViewSet (read-only, filterable)
+- [x] T017 Configure URL routing in `src/video/urls.py`
+- [x] T018 Register URLs in main API router
+- [x] T019 Add project membership permission checks
+- [x] T020 Add pagination to job listing
 
 ### Constitutional Alignment
 - Principle VII (API Design): DRF, pagination, consistent responses
