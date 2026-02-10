@@ -290,6 +290,11 @@ def generate_asset_view(request: Request) -> Response:
                         variant["video_base64"] = base64.b64encode(v_result["video_bytes"]).decode(
                             "utf-8"
                         )
+                    # Include storage_path for save endpoint
+                    if v_result.get("storage_path"):
+                        variant["storage_info"] = {
+                            "storage_path": v_result["storage_path"],
+                        }
                     variants.append(variant)
             else:
                 # Fallback: single result in root dict

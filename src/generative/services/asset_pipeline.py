@@ -502,6 +502,7 @@ def generate_video(
             # Upload to S3 if user_id and organisation_id provided
             v_url = None
             f_asset_id = None
+            storage_path = None
 
             if user_id and organisation_id:
                 try:
@@ -518,13 +519,14 @@ def generate_video(
                     )
                     f_asset_id = str(file_asset_uuid)
 
-                    # Get presigned URL
+                    # Get presigned URL and storage path
                     from files.utils import get_storage_backend
                     from files.models import FileAsset
 
                     file_asset = FileAsset.objects.get(id=file_asset_uuid)
                     storage = get_storage_backend()
                     v_url = storage.get_url(file_asset.storage_path, signed=True, expires_in=3600)
+                    storage_path = file_asset.storage_path
 
                     logger.info("Video variant %d uploaded to S3: %s", idx, fname)
 
@@ -534,6 +536,7 @@ def generate_video(
             return {
                 "video_bytes": v_bytes,
                 "video_url": v_url,
+                "storage_path": storage_path,
                 "filename": fname,
                 "file_asset_id": f_asset_id,
                 "mime_type": "video/mp4",
