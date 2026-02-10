@@ -503,14 +503,14 @@ ANIMATION:
 - End: Return to the EXACT starting pose (seamless loop).
 
 ATMOSPHERE:
-- Dramatic stadium lighting with rim lights
-- Subtle smoke/haze in background
-- Professional sports broadcast quality
-- Background: Stadium or chroma-key green for compositing
+- Realistic environment (pitch or stadium tunnel).
+- NO Visual Effects (no lightning, no fire, no glowing particles).
+- NO Text overlays.
+- Professional broadcast realism is the goal.
 
 STYLE:
-- High-end broadcast-quality player introduction video
-- 30fps, 1080p vertical (9:16 aspect ratio)
+- High-end broadcast-quality player introduction video.
+- 30fps, 1080p vertical (9:16 aspect ratio).
 - CINEMAGRAPH style: controlled, powerful, minimal movement.
 """,
     },
@@ -558,6 +558,9 @@ CELEBRATION & MOVEMENT:
 - End: Hold celebration pose (can be slightly different from start).
 
 ATMOSPHERE:
+- BACKGROUND: Clean, solid color background (Green screen style) or extremely blurry stadium bokeh.
+- Subject MUST be easily separable from background.
+
 - Stadium environment with crowd blur in background
 - Dramatic lighting with lens flares
 - High energy, emotional moment captured
