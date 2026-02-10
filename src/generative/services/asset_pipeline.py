@@ -416,13 +416,22 @@ def generate_video(
 
     effective_variant_count = 1
 
-    veo_config = types.GenerateVideosConfig(
-        person_generation="allow_adult",
-        aspect_ratio=aspect_ratio,
-        number_of_videos=effective_variant_count,
-        duration_seconds=duration,
-        last_frame=image_obj if (loop_video and image_obj) else None,
-    )
+    # Build config arguments dynamically
+    config_args = {
+        "number_of_videos": effective_variant_count,
+        "duration_seconds": duration,
+        "last_frame": image_obj if (loop_video and image_obj) else None,
+    }
+
+    # Only pass aspect_ratio for Text-to-Video.
+    # For Image-to-Video, the input image dictates the aspect ratio.
+    if not person_img:
+        config_args["aspect_ratio"] = aspect_ratio
+
+    # Note: 'person_generation' parameter removed as it triggers "Use case not supported"
+    # if the Google Cloud project is not explicitly allowlisted for adult/person generation.
+
+    veo_config = types.GenerateVideosConfig(**config_args)
 
     try:
         if person_img:
