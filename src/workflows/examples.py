@@ -195,6 +195,62 @@ def on_review_exit(instance: WorkflowInstance, transition: dict) -> None:
     # In real implementation: close review tasks, update review metrics, etc.
 
 
+@HookRegistry.hook("on_enter", "submitted")
+def send_submission_notification(instance: WorkflowInstance, transition: dict) -> None:
+    """
+    Example hook: Send notification via B16 when workflow submitted.
+
+    Demonstrates integration with B16 Notifications module.
+
+    Args:
+        instance: Workflow instance entering "submitted" state
+        transition: Transition that led to submission
+    """
+    try:
+        # Attempt B16 Notifications integration
+        from notifications.api import notification_service
+
+        # Send notification to project members
+        notification_service.send_notification(
+            recipient_ids=[m.user_id for m in instance.project.memberships.all()],
+            notification_type="workflow_submitted",
+            title=f"Workflow Submitted: {instance.workflow.name}",
+            message=f"A new workflow instance has been submitted for review in {instance.project.name}",
+            metadata={
+                "workflow_id": str(instance.workflow_id),
+                "instance_id": str(instance.id),
+                "project_id": str(instance.project_id),
+                "action": transition.get("action"),
+            },
+            link=f"/projects/{instance.project_id}/workflows/{instance.id}",
+        )
+
+        logger.info(
+            f"Sent submission notification for workflow {instance.id}",
+            extra={
+                "instance_id": str(instance.id),
+                "project_id": str(instance.project_id),
+            },
+        )
+
+    except ImportError:
+        # B16 not available - fallback to standard logging
+        logger.info(
+            f"B16 not available - would send notification for workflow {instance.id}",
+            extra={
+                "instance_id": str(instance.id),
+                "project_id": str(instance.project_id),
+                "notification_type": "workflow_submitted",
+            },
+        )
+    except Exception as e:
+        # Never fail workflow execution due to notification failure
+        logger.error(
+            f"Failed to send notification for workflow {instance.id}",
+            extra={"instance_id": str(instance.id), "error": str(e)},
+        )
+
+
 # =============================================================================
 # Documentation
 # =============================================================================

@@ -170,11 +170,10 @@ class WorkflowEngine:
         # Execute hooks: on_exit
         self._execute_hooks("on_exit", instance.current_state, instance, transition)
 
-        # Record history
-        task_id = None
-        if "on_transition" in transition.get("hooks", {}):
-            task_id = self._execute_async_hooks(instance, transition)
+        # Execute async hooks and get task_id (T137)
+        task_id = self._execute_async_hooks(instance, transition)
 
+        # Record history with task_id
         history = TransitionHistory.objects.create(
             instance=instance,
             from_state=instance.current_state,
@@ -182,7 +181,7 @@ class WorkflowEngine:
             action=action,
             actor=user,
             comment=comment,
-            task_id=task_id,
+            task_id=task_id,  # Store task_id when async hooks triggered
             context_snapshot=instance.context.copy(),
         )
 
@@ -337,9 +336,54 @@ class WorkflowEngine:
         Returns:
             Celery task ID if async hooks executed, None otherwise
         """
-        # B15 Tasks integration will be added in WP13
-        # For now, return None
-        return None
+        try:
+            from src.workflows.tasks import execute_workflow_hooks
+
+            # Collect hook keys from transition
+            hook_keys = []
+
+            # on_exit hooks from old state
+            if "from_state" in transition:
+                hook_keys.append(transition["from_state"])
+
+            # on_transition hooks from action
+            if "action" in transition:
+                hook_keys.append(transition["action"])
+
+            # on_enter hooks from new state
+            if "to_state" in transition:
+                hook_keys.append(transition["to_state"])
+
+            if not hook_keys:
+                return None
+
+            # Execute hooks asynchronously
+            result = execute_workflow_hooks.delay(
+                instance_id=instance.id,
+                hook_type="async",
+                hook_keys=hook_keys,
+            )
+
+            logger.info(
+                "Scheduled async workflow hooks",
+                extra={
+                    "instance_id": instance.id,
+                    "task_id": str(result.id),
+                    "hook_keys": hook_keys,
+                },
+            )
+
+            return result.id
+
+        except ImportError:
+            logger.warning("B15 Tasks not available - skipping async hooks")
+            return None
+        except Exception as e:
+            logger.error(
+                "Failed to schedule async hooks",
+                extra={"instance_id": instance.id, "error": str(e)},
+            )
+            return None
 
     def _log_audit_event(
         self,
@@ -357,5 +401,43 @@ class WorkflowEngine:
             user: User performing action
             extra_data: Additional event data
         """
-        # B09 Audit integration will be added in WP13
-        pass
+        try:
+            from audit.api import audit_log
+
+            metadata = {
+                "workflow_instance_id": str(instance.id),
+                "workflow_name": instance.workflow.name,
+                "workflow_version": instance.workflow.version,
+                "current_state": instance.current_state,
+                "content_type": str(instance.content_type) if instance.content_type else None,
+                "object_id": instance.object_id,
+            }
+
+            if extra_data:
+                metadata.update(extra_data)
+
+            audit_log.record(
+                event_type=f"workflow.{event_type}",
+                user=user,
+                organization=instance.project.organisation if instance.project else None,
+                project=instance.project,
+                metadata=metadata,
+            )
+
+        except ImportError:
+            # B09 not available - fallback to standard logging
+            logger.info(
+                f"Workflow {event_type}",
+                extra={
+                    "instance_id": str(instance.id),
+                    "workflow": instance.workflow.name,
+                    "user_id": user.id if user else None,
+                    "metadata": extra_data or {},
+                },
+            )
+        except Exception as e:
+            # Never fail workflow execution due to audit logging failure
+            logger.error(
+                f"Failed to log audit event for workflow {event_type}",
+                extra={"instance_id": str(instance.id), "error": str(e)},
+            )

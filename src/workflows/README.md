@@ -471,9 +471,158 @@ Full OpenAPI spec: `kitty-specs/048-workflow-engine-state/contracts/openapi.yaml
 - User context for permission checks
 - Actor tracking in history
 
+### B09 Audit Logging
+**Purpose**: Automatic audit trail for all workflow transitions
+
+**Integration**: The workflow engine automatically logs audit events via B09 for every state transition, instance creation, and permission change.
+
+**Event Types**:
+- `workflow.workflow_created` - New instance created
+- `workflow.transition_{action}` - State transition executed
+- `workflow.permission_override_created` - Permission override added
+
+**Metadata Captured**:
+- `workflow_instance_id` - Unique instance ID
+- `workflow_name` - Template name
+- `workflow_version` - Template version
+- `current_state` - Instance state
+- `from_state` / `to_state` - Transition endpoints (for transitions)
+- `content_type` / `object_id` - Attached content object
+
+**Usage Example**:
+```python
+from workflows.services.engine import WorkflowEngine
+
+engine = WorkflowEngine()
+history = engine.execute_transition(
+    instance=workflow_instance,
+    action="approve",
+    user=request.user,
+    comment="Approved for production"
+)
+
+# Audit event automatically created:
+# - event_type: "workflow.transition_approve"
+# - user: request.user
+# - organization: instance.project.organisation
+# - project: instance.project
+# - metadata: {workflow details, from/to states}
+```
+
+**Querying Audit Logs**:
+```python
+from audit.models import AuditEvent
+
+# Find all workflow transitions for a project
+events = AuditEvent.objects.filter(
+    project=project,
+    event_type__startswith="workflow."
+).order_by("-created_at")
+
+# Find all approvals by a specific user
+approvals = AuditEvent.objects.filter(
+    user=user,
+    event_type="workflow.transition_approve"
+)
+```
+
+**Graceful Degradation**: If B09 is not available, workflow transitions still execute successfully with fallback logging to standard Python logger.
+
 ### B15 Background Tasks (Celery)
-- Async hook execution
-- Task status tracking via `hook_status` API
+**Purpose**: Async execution of workflow hooks for expensive operations
+
+**Integration**: The workflow engine can execute hooks asynchronously via Celery tasks, ideal for operations that may take >500ms (email, API calls, file processing).
+
+**Task Definition**: See `src/workflows/tasks.py` for the `execute_workflow_hooks` task.
+
+**Hook Execution Flow**:
+1. Sync hooks (`on_exit`, `on_transition`, `on_enter`) execute immediately during transition
+2. If async hooks configured, task spawned and `task_id` stored in `TransitionHistory`
+3. Task retries on transient failures (3 attempts, exponential backoff)
+4. Hooks never block transition execution (fail gracefully)
+
+**Usage Example**:
+```python
+from workflows.registry import HookRegistry
+from celery import shared_task
+
+# Define async-capable hook
+@HookRegistry.hook("on_enter", "processing")
+def start_video_generation(instance, transition):
+    """Trigger expensive async operation"""
+    # This executes synchronously, so keep it fast
+    # For long-running work, call a Celery task:
+    from tasks import generate_video_task
+    generate_video_task.delay(
+        content_id=instance.object_id,
+        workflow_id=instance.id
+    )
+```
+
+**Query Task Status**:
+```python
+from workflows.models import TransitionHistory
+from celery.result import AsyncResult
+
+# Get transition history with task_id
+history = TransitionHistory.objects.get(id=history_id)
+
+if history.task_id:
+    result = AsyncResult(str(history.task_id))
+    print(f"Status: {result.state}")  # PENDING, SUCCESS, FAILURE
+    if result.ready():
+        print(f"Result: {result.get()}")
+```
+
+**Best Practices**:
+- Keep sync hooks fast (<100ms)
+- Use Celery tasks for: email, API calls, file processing, video generation
+- Store task_id in custom metadata for status tracking
+- Handle transient failures (network, rate limits) with retries
+- Handle permanent failures (invalid data) without retries
+
+### B16 Notifications (Optional)
+**Purpose**: Send notifications to users on workflow events
+
+**Integration**: Use hooks to integrate with B16 notification service when workflow states change.
+
+**Example Hook**: See `src/workflows/examples.py` for `send_submission_notification` which demonstrates B16 integration.
+
+**Usage Pattern**:
+```python
+from workflows.registry import HookRegistry
+
+@HookRegistry.hook("on_enter", "approved")
+def notify_approval(instance, transition):
+    """Send notification when workflow approved"""
+    try:
+        from notifications.api import notification_service
+
+        notification_service.send_notification(
+            recipient_ids=[instance.created_by_id],
+            notification_type="workflow_approved",
+            title=f"Workflow Approved: {instance.workflow.name}",
+            message=f"Your submission has been approved.",
+            metadata={
+                "workflow_id": str(instance.workflow_id),
+                "instance_id": str(instance.id),
+            },
+            link=f"/workflows/{instance.id}",
+        )
+    except ImportError:
+        logger.info("B16 not available - notification skipped")
+    except Exception as e:
+        logger.error(f"Notification failed: {e}")
+        # Never fail workflow due to notification failure
+```
+
+**Notification Types**:
+- `workflow_submitted` - New workflow submitted for review
+- `workflow_approved` - Workflow approved
+- `workflow_rejected` - Workflow rejected
+- `workflow_state_changed` - Generic state change notification
+
+**Graceful Degradation**: Always wrap B16 calls in try/except to prevent notification failures from blocking workflow execution.
 
 ### B22 File Storage
 - Store large context data as files
