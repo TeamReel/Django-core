@@ -424,6 +424,81 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
       },
     },
   },
+  // ============================================================================
+  // Short Intro Templates (requires player in tenue as input)
+  // ============================================================================
+  {
+    id: 'member_intro',
+    name: 'Short Intro',
+    icon: '🎬',
+    category: 'intro',
+    description: 'Korte intro animatie van de speler in verschillende poses. Vereist een "Player in Tenue" als input.',
+    inputRequirements: ['person'], // person = player in tenue image
+    requiredAssetTypes: [],
+    outputAssetType: 'member_intro', // Will be suffixed with kit_type and style
+    creditsCost: 3,
+    parameters: {
+      kit_type: {
+        label: 'Tenue Type',
+        type: 'select',
+        options: [
+          { value: 'home', label: 'Thuistenue' },
+          { value: 'away', label: 'Uittenue' },
+          { value: 'third', label: 'Derde tenue' },
+          { value: 'goalkeeper', label: 'Keeperstenue' },
+        ],
+        default: 'home',
+      },
+      style_variant: {
+        label: 'Pose Stijl',
+        type: 'select',
+        options: [
+          { value: 'arms_crossed', label: '🙅 Armen over elkaar' },
+          { value: 'hand_up', label: '✋ Hand omhoog' },
+          { value: 'thumbs_up', label: '👍 Duim omhoog' },
+        ],
+        default: 'arms_crossed',
+      },
+    },
+  },
+  // ============================================================================
+  // Goal Celebration Templates (requires player in tenue as input)
+  // ============================================================================
+  {
+    id: 'member_goal_celebration',
+    name: 'Goal Celebration',
+    icon: '🎉',
+    category: 'celebration',
+    description: 'Goal viering animatie van de speler. Vereist een "Player in Tenue" als input.',
+    inputRequirements: ['person'], // person = player in tenue image
+    requiredAssetTypes: [],
+    outputAssetType: 'member_goal_celebration', // Will be suffixed with kit_type and style
+    creditsCost: 3,
+    parameters: {
+      kit_type: {
+        label: 'Tenue Type',
+        type: 'select',
+        options: [
+          { value: 'home', label: 'Thuistenue' },
+          { value: 'away', label: 'Uittenue' },
+          { value: 'third', label: 'Derde tenue' },
+          { value: 'goalkeeper', label: 'Keeperstenue' },
+        ],
+        default: 'home',
+      },
+      style_variant: {
+        label: 'Viering Stijl',
+        type: 'select',
+        options: [
+          { value: 'arms_wide', label: '🙌 Armen wijd' },
+          { value: 'fist_pump', label: '✊ Vuist omhoog' },
+          { value: 'point_to_sky', label: '☝️ Wijs naar hemel' },
+          { value: 'slide', label: '🛝 Knieën slide' },
+        ],
+        default: 'arms_wide',
+      },
+    },
+  },
 ];
 
 /** Get template by ID */
@@ -434,7 +509,7 @@ export function getTemplate(id: string): AssetTemplate | undefined {
 /** Get templates suitable for a specific context */
 export function getTemplatesForContext(context: 'club' | 'member'): AssetTemplate[] {
   if (context === 'member') {
-    return ASSET_TEMPLATES.filter((t) => ['fullbody', 'closeup'].includes(t.category));
+    return ASSET_TEMPLATES.filter((t) => ['fullbody', 'closeup', 'intro', 'celebration'].includes(t.category));
   }
-  return ASSET_TEMPLATES.filter((t) => !['fullbody', 'closeup'].includes(t.category));
+  return ASSET_TEMPLATES.filter((t) => !['fullbody', 'closeup', 'intro', 'celebration'].includes(t.category));
 }

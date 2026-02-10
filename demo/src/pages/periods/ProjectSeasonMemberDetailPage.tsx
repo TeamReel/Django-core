@@ -645,6 +645,7 @@ export default function ProjectSeasonMemberDetailPage() {
   const [aiSelectedKitUrl, setAiSelectedKitUrl] = useState<string | null>(null);
   const [aiSelectedKitType, setAiSelectedKitType] = useState<string>('home');
   const [aiInputPersonUrl, setAiInputPersonUrl] = useState<string | null>(null); // For intro/celebration: player in tenue
+  const [aiSelectedStyleVariant, setAiSelectedStyleVariant] = useState<string | null>(null); // For intro/celebration: pose style
 
   // Fetch parent brand assets (from club) for tenue inheritance
   const clubId = club?.id || project?.id;
@@ -671,7 +672,7 @@ export default function ProjectSeasonMemberDetailPage() {
   }, [clubBrand]);
 
   // Handler to open AI modal for a specific template
-  const openAiModal = (templateId: string, defaultKitType?: string, playerInTenueUrl?: string | null) => {
+  const openAiModal = (templateId: string, defaultKitType?: string, playerInTenueUrl?: string | null, styleVariant?: string | null) => {
     setAiPreselectedTemplate(templateId);
     const kitType = defaultKitType || 'home';
     setAiSelectedKitType(kitType);
@@ -680,6 +681,8 @@ export default function ProjectSeasonMemberDetailPage() {
     setAiSelectedKitUrl(kit?.url || null);
     // For intro/celebration: use the player in tenue as input
     setAiInputPersonUrl(playerInTenueUrl || null);
+    // For intro/celebration: set the style variant
+    setAiSelectedStyleVariant(styleVariant || null);
     setShowAiModal(true);
   };
 
@@ -1623,7 +1626,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                   <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>🙅 Armen over elkaar</div>
                                   <Button
                                     size="sm"
-                                    onClick={() => openAiModal('member_intro_arms_crossed', kit.id, playerInTenueUrl)}
+                                    onClick={() => openAiModal('member_intro', kit.id, playerInTenueUrl, 'arms_crossed')}
                                     disabled={!hasPlayerInTenue}
                                     style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
                                   >
@@ -1656,7 +1659,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                   <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>✋ Hand omhoog</div>
                                   <Button
                                     size="sm"
-                                    onClick={() => openAiModal('member_intro_hand_up', kit.id, playerInTenueUrl)}
+                                    onClick={() => openAiModal('member_intro', kit.id, playerInTenueUrl, 'hand_up')}
                                     disabled={!hasPlayerInTenue}
                                     style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
                                   >
@@ -1689,7 +1692,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                   <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>👍 Duim omhoog</div>
                                   <Button
                                     size="sm"
-                                    onClick={() => openAiModal('member_intro_thumbs_up', kit.id, playerInTenueUrl)}
+                                    onClick={() => openAiModal('member_intro', kit.id, playerInTenueUrl, 'thumbs_up')}
                                     disabled={!hasPlayerInTenue}
                                     style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
                                   >
@@ -1783,7 +1786,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                   <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>🙌 Armen wijd</div>
                                   <Button
                                     size="sm"
-                                    onClick={() => openAiModal('member_goal_celebration_arms_wide', kit.id, playerInTenueUrl)}
+                                    onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, 'arms_wide')}
                                     disabled={!hasPlayerInTenue}
                                     style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
                                   >
@@ -1816,7 +1819,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                   <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>✊ Vuist omhoog</div>
                                   <Button
                                     size="sm"
-                                    onClick={() => openAiModal('member_goal_celebration_fist_pump', kit.id, playerInTenueUrl)}
+                                    onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, 'fist_pump')}
                                     disabled={!hasPlayerInTenue}
                                     style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
                                   >
@@ -1849,7 +1852,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                   <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>☝️ Wijs naar hemel</div>
                                   <Button
                                     size="sm"
-                                    onClick={() => openAiModal('member_goal_celebration_point_to_sky', kit.id, playerInTenueUrl)}
+                                    onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, 'point_to_sky')}
                                     disabled={!hasPlayerInTenue}
                                     style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
                                   >
@@ -1882,7 +1885,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                   <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>🛝 Knieën slide</div>
                                   <Button
                                     size="sm"
-                                    onClick={() => openAiModal('member_goal_celebration_slide', kit.id, playerInTenueUrl)}
+                                    onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, 'slide')}
                                     disabled={!hasPlayerInTenue}
                                     style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
                                   >
@@ -2237,6 +2240,7 @@ export default function ProjectSeasonMemberDetailPage() {
           setShowAiModal(false);
           setAiSelectedKitUrl(null);
           setAiInputPersonUrl(null);
+          setAiSelectedStyleVariant(null);
         }}
         context="member"
         preSelectedTemplate={aiPreselectedTemplate}
@@ -2257,6 +2261,7 @@ export default function ProjectSeasonMemberDetailPage() {
         }}
         initialParams={{
           kit_type: aiSelectedKitType,
+          ...(aiSelectedStyleVariant ? { style_variant: aiSelectedStyleVariant } : {}),
         }}
         previousResultUrl={
           aiPreselectedTemplate === 'fullbody_in_tenue'
