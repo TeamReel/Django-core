@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from src.video.models.overlay import OverlayType
+from src.video.models.overlay import OverlayType, OverlayPosition
 from src.video.services.processors.compose import ComposeProcessor
 
 
@@ -36,8 +36,9 @@ class TestComposeProcessor:
             job=video_job,
             overlay_type=OverlayType.TEXT,
             content={"text": "Hello", "font_size": 30, "font_color": "red"},
-            position_x="10",
-            position_y="10",
+            position=OverlayPosition.CUSTOM,
+            position_x=10,
+            position_y=10,
         )
 
         processor = ComposeProcessor(video_job)
@@ -59,8 +60,9 @@ class TestComposeProcessor:
             job=video_job,
             overlay_type=OverlayType.LOGO,
             asset_file=asset,
-            position_x="100",
-            position_y="100",
+            position=OverlayPosition.CUSTOM,
+            position_x=100,
+            position_y=100,
             opacity=0.5,
         )
 
