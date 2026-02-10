@@ -1,12 +1,21 @@
 # B37: Workflow Engine & State Machine
 
-**Status**: 🚧 In Development (Branch: `048-workflow-engine-state`)
+**Status**: ✅ Production Ready (Railway Deployed)
 **Module**: `src.workflows`
 **Purpose**: Generic workflow state machine for business processes
+**API Endpoints**: `/api/workflows/templates/`, `/api/workflows/instances/`
+**Admin Interface**: `/admin/workflows/`
 
 ## Overview
 
 The Workflow Engine provides a flexible, extensible state machine for managing business process workflows across products. Workflows are defined as templates with JSON-based state definitions, instantiated per project with permission overrides, and track state transitions with full audit trails.
+
+**Deployment Status**:
+- ✅ Migrations applied to Railway production
+- ✅ Seed data loaded (3 example workflows)
+- ✅ All endpoints in Swagger docs
+- ✅ Manual tests complete
+- 📖 See [Railway Deployment Guide](../07-operations/railway-deployment-B37.md) for deployment details
 
 ## Architecture
 

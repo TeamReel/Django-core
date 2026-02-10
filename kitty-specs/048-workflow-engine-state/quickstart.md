@@ -1,16 +1,60 @@
 # Quickstart: Workflow Engine & State Machine
 
 **Feature**: B37 Workflow Engine & State Machine
+**Status**: ✅ Production Ready
 **Audience**: Developers integrating workflows into products
 **Time**: 15 minutes
+**Deployment**: Railway Production - [Deployment Guide](../../documents/07-operations/railway-deployment-B37.md)
 
 ## Prerequisites
 
-- Django Core-App deployed
+- Django Core-App deployed to Railway
 - Admin access to create workflow templates
 - Project membership (any role) for testing
+- API authentication token
 
-## 1. Create a Workflow Template
+---
+
+## Production Quick Start (Railway)
+
+### Step 1: Verify Deployment
+
+1. **Check Migrations**:
+   ```bash
+   railway run python manage.py showmigrations workflows
+   ```
+   Expected: `[X] 0001_initial`
+
+2. **Check Seed Data**:
+   Navigate to `https://your-railway-domain/admin/workflows/workflowtemplate/`
+   Expected: 3 templates (Content Approval, Support Ticket, Invoice Approval)
+
+3. **Check API Docs**:
+   Navigate to `https://your-railway-domain/api/schema/swagger-ui/`
+   Expected: 10 workflow endpoints under "workflows" tag
+
+### Step 2: Use Existing Template
+
+Use one of the seeded templates (e.g., "Content Approval"):
+
+```bash
+# Get template ID
+curl -X GET https://your-railway-domain/api/workflows/templates/ \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Response:
+# {
+#   "results": [
+#     {"id": 1, "name": "Content Approval", "version": "1.0.0", ...}
+#   ]
+# }
+```
+
+---
+
+## 1. Create a Workflow Template (Optional)
+
+**If you need a custom workflow**, create via Django Admin or API:
 
 **Via Django Admin** (`/admin/workflows/workflowtemplate/`):
 
@@ -19,6 +63,7 @@
 3. Fill in:
    - **Name**: "Video Approval Workflow"
    - **Version**: "1.0.0"
+   - **Is Active**: ✓ (checked)
    - **Definition** (JSON):
 
 ```json
@@ -50,25 +95,25 @@
       "action": "submit",
       "from_state": "draft",
       "to_state": "pending_review",
-      "required_permission": "member"
+      "permissions": ["member"]
     },
     {
       "action": "approve",
       "from_state": "pending_review",
       "to_state": "approved",
-      "required_permission": "coach"
+      "permissions": ["coach"]
     },
     {
       "action": "publish",
       "from_state": "approved",
       "to_state": "published",
-      "required_permission": "admin"
+      "permissions": ["admin"]
     },
     {
       "action": "reject",
       "from_state": "pending_review",
       "to_state": "draft",
-      "required_permission": "coach"
+      "permissions": ["coach"]
     }
   ]
 }
@@ -79,12 +124,13 @@
 **Via API**:
 
 ```bash
-curl -X POST https://api.example.com/api/workflows/templates/ \
+curl -X POST https://your-railway-domain/api/workflows/templates/ \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Video Approval Workflow",
     "version": "1.0.0",
+    "is_active": true,
     "definition": { ... }
   }'
 ```
@@ -93,10 +139,10 @@ curl -X POST https://api.example.com/api/workflows/templates/ \
 
 ## 2. Start a Workflow Instance
 
-Attach a workflow to a content object (e.g., a Video):
+Attach a workflow to a content object (e.g., a Video, Article, or Project):
 
 ```bash
-curl -X POST https://api.example.com/api/workflows/instances/ \
+curl -X POST https://your-railway-domain/api/workflows/instances/ \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

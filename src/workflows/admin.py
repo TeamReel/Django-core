@@ -51,11 +51,10 @@ class WorkflowTemplateAdmin(admin.ModelAdmin):
         "name",
         "version",
         "is_active",
-        "is_published",
         "created_at",
         "updated_at",
     )
-    list_filter = ("is_active", "is_published", "created_at")
+    list_filter = ("is_active", "created_at")
     search_fields = ("name", "version", "description")
     readonly_fields = ("created_at", "updated_at", "formatted_definition")
     fieldsets = (
@@ -67,7 +66,6 @@ class WorkflowTemplateAdmin(admin.ModelAdmin):
                     "version",
                     "description",
                     "is_active",
-                    "is_published",
                 )
             },
         ),
