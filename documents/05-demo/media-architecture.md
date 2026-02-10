@@ -392,8 +392,10 @@ FileAsset.objects.filter(uploaded_by=user, is_deleted=False)
 |----------|-----|-----------|
 | Spelerfoto (headshot) | `MediaItemRelation(target=project_membership, relation_type="headshot")` | Portretfoto |
 | Actie foto's | `MediaItemRelation(target=project_membership, relation_type="action_shot")` | Spelerfoto's in actie |
-| Spelerskaart achtergrond | `MediaItemRelation(target=project_membership, relation_type="card_background")` | Custom achtergrond |
-
+| Spelerskaart achtergrond | `MediaItemRelation(target=project_membership, relation_type="card_background")` | Custom achtergrond || **Speler in tenue (fullbody)** | `MediaItemRelation(target=project_membership, relation_type="member_in_tenue")` | AI-gegenereerde fullbody foto |
+| **Speler close-up** | `MediaItemRelation(target=project_membership, relation_type="member_closeup")` | AI-gegenereerde close-up foto |
+| **Short Intro Video** | `MediaItemRelation(target=project_membership, relation_type="member_intro")` | 🎬 AI-gegenereerde intro video (5-6 sec) |
+| **Goal Celebration Video** | `MediaItemRelation(target=project_membership, relation_type="member_goal_celebration")` | 🎬 AI-gegenereerde viering video (5-6 sec) |
 **Drie membership-contexten:**
 
 ```
@@ -473,6 +475,15 @@ teamreel-assets-demo/
 ├── members/
 │   └── {membership_id}/
 │       ├── headshot.jpg
+│       ├── generated/
+│       │   ├── member_in_tenue/
+│       │   │   └── fullbody_in_tenue_kit-home_20260210_a1b2c3d4.png
+│       │   ├── member_closeup/
+│       │   │   └── closeup_in_tenue_kit-home_20260210_e5f6g7h8.png
+│       │   ├── member_intro/
+│       │   │   └── member_intro_kit-home_style-arms_crossed_20260210_i9j0k1l2.mp4
+│       │   └── member_goal_celebration/
+│       │       └── member_goal_celebration_kit-home_style-fist_pump_20260210_m3n4o5p6.mp4
 │       └── action-shots/
 │           ├── goal-vs-feyenoord.jpg
 │           └── celebration.jpg
@@ -834,6 +845,99 @@ MediaItemRelation.objects.update_or_create(
 
 ---
 
+#### AI-flow voor video's (Short Intro & Goal Celebration):
+
+Video's worden gegenereerd met **Google Veo 3.1** (image-to-video) en opgeslagen op dezelfde granulariteit als fullbody/closeup: onder de `ProjectMembership`.
+
+```
+Input:
+├── Speler in tenue (fullbody) ← AI-gegenereerde afbeelding als startframe
+├── Template (member_intro OF member_goal_celebration)
+├── Style variant (arms_crossed, fist_pump, etc.)
+└── Kit type (home, away, etc.)
+
+AI Processing (Google Veo 3.1):
+├── Image-to-video: fullbody foto als startframe
+├── 5-6 seconden animatie volgens prompt
+├── 9:16 vertical formaat (720p) voor social media
+└── Output: MP4 video
+
+Opslag:
+├── FileAsset(mime_type="video/mp4", storage_path="members/{membership_id}/generated/member_intro/...")
+├── MediaItem(project=team, mime_type="video/mp4", duration_seconds=6)
+└── MediaItemRelation(target=ProjectMembership, relation_type="member_intro" | "member_goal_celebration")
+```
+
+**S3 Pad:** `members/{membership_id}/generated/{asset_type}/{filename}.mp4`
+
+**Beschikbare video templates:**
+
+| Template | Stijl Varianten | Beschrijving |
+|----------|----------------|-------------|
+| `member_intro` | `arms_crossed`, `hand_up`, `thumbs_up` | Korte intro: speler draait, kijkt in camera |
+| `member_goal_celebration` | `arms_wide`, `fist_pump`, `point_to_sky`, `slide` | Doelviering: dynamische juichbeweging |
+
+**Query video's ophalen per member:**
+```python
+# Alle video's van een speler
+pm = ProjectMembership.objects.get(project=team, user=tadic, period=season)
+pm_ct = ContentType.objects.get_for_model(ProjectMembership)
+
+# Intro video
+MediaItemRelation.objects.filter(
+    content_type=pm_ct,
+    object_id=pm.id,
+    relation_type="member_intro"
+).select_related("media_item__file").first()
+
+# Goal celebration video
+MediaItemRelation.objects.filter(
+    content_type=pm_ct,
+    object_id=pm.id,
+    relation_type="member_goal_celebration"
+).select_related("media_item__file").first()
+
+# Alle video's van een speler (intro + celebration)
+MediaItemRelation.objects.filter(
+    content_type=pm_ct,
+    object_id=pm.id,
+    relation_type__in=["member_intro", "member_goal_celebration"]
+).select_related("media_item__file")
+```
+
+**Video's ophalen voor match- en seizoenspagina's:**
+
+Omdat memberships onder een season hangen, en seasons onder een team, zijn video's automatisch beschikbaar op hogere niveaus:
+
+```python
+# Alle spelersvideo's van een seizoen (voor seizoenspagina)
+season_memberships = ProjectMembership.objects.filter(
+    project=team, period=season
+)
+pm_ct = ContentType.objects.get_for_model(ProjectMembership)
+season_videos = MediaItemRelation.objects.filter(
+    content_type=pm_ct,
+    object_id__in=season_memberships.values_list("id", flat=True),
+    relation_type__in=["member_intro", "member_goal_celebration"],
+).select_related("media_item__file", "media_item")
+
+# Alle spelersvideo's voor een match (via deelnemende spelers)
+# Match → Participation → ProjectMembership
+match_participations = Participation.objects.filter(
+    activity=match
+).select_related("member__user")
+match_membership_ids = match_participations.values_list(
+    "member__project_memberships__id", flat=True
+)
+match_videos = MediaItemRelation.objects.filter(
+    content_type=pm_ct,
+    object_id__in=match_membership_ids,
+    relation_type__in=["member_intro", "member_goal_celebration"],
+).select_related("media_item__file")
+```
+
+---
+
 ### Volledige Inheritance Chain (Samenvatting)
 
 ```
@@ -859,12 +963,17 @@ Organisation (KNVB)
 │   │   │   │   ├── Profielfoto ← User    ← Snapshot van user profiel
 │   │   │   │   ├── Tenue ← Team ← Club  ← Inheritance chain
 │   │   │   │   ├── #10, CAM             ← membership.metadata
+│   │   │   │   ├── AI → Fullbody in tenue  (afbeelding)
+│   │   │   │   ├── AI → Close-up in tenue  (afbeelding)
+│   │   │   │   ├── AI → 🎬 Short Intro     (video, 5-6 sec)
+│   │   │   │   ├── AI → 🎬 Goal Celebration (video, 5-6 sec)
 │   │   │   │   └── AI → Spelerskaart    ← Gecombineerd eindproduct
 │   │   │   │
 │   │   │   └── Member: Remko Pasveer
 │   │   │       ├── Profielfoto ← User
 │   │   │       ├── Keeperstenue ← Club  ← Ander tenue-type!
 │   │   │       ├── #22, GK
+│   │   │       ├── AI → 🎬 Short Intro     (video, 5-6 sec)
 │   │   │       └── AI → Spelerskaart
 │   │   │
 │   │   └── Season 2025/2026          ← Nieuw seizoen
@@ -891,8 +1000,10 @@ Elke AI-verwerking is een `GenerationRequest` via het B34 Generative Pipeline sy
 | `logo_standardize` | Raw logo upload | Transparant, vast formaat logo | Na logo upload |
 | `kit_standardize` | Raw tenue foto | Achtergrond verwijderd, vaste hoek | Na tenue upload |
 | `sponsor_standardize` | Raw sponsor logo | Transparant, vast formaat | Na sponsor upload |
-| `kit_combine` | Logo + tenue + sponsor (bewerkt) | Gecombineerd tenue-plaatje | Na alle 3 bewerkt |
-| `player_card_generate` | Profielfoto + combined tenue + naam/nummer | Spelerskaart | Op member kit-pagina |
+| `kit_combine` | Logo + tenue + sponsor (bewerkt) | Gecombineerd tenue-plaatje | Na alle 3 bewerkt || `fullbody_in_tenue` | Profielfoto + tenue combined | Speler in tenue (fullbody, transparant) | Op member kit-pagina |
+| `closeup_in_tenue` | Profielfoto + tenue combined | Speler close-up (borstbeeld, transparant) | Op member kit-pagina |
+| `member_intro` | Speler in tenue (fullbody) | 🎬 Short intro video (5-6 sec, Veo 3.1) | Op member kit-pagina |
+| `member_goal_celebration` | Speler in tenue (fullbody) | 🎬 Goal viering video (5-6 sec, Veo 3.1) | Op member kit-pagina || `player_card_generate` | Profielfoto + combined tenue + naam/nummer | Spelerskaart | Op member kit-pagina |
 
 **Flow in B34 termen:**
 ```

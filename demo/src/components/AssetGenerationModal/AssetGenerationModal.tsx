@@ -53,6 +53,8 @@ interface AssetGenerationModalProps {
   projectId: string | number;
   /** Organisation ID */
   organisationId: string;
+  /** Membership ID — for member-scoped S3 storage (videos, fullbody, closeup) */
+  membershipId?: string;
   /** Available input assets (logo, sponsor, etc) as URLs */
   inputAssets?: Record<string, string | null>;
   /** Previous AI Result URL (for improvements) */
@@ -175,6 +177,7 @@ function VariantCard({
     variant_index: number;
     image_base64?: string | null;
     video_base64?: string | null;
+    video_url?: string | null;
     mime_type: string | null;
     error?: string | null;
   };
@@ -183,9 +186,12 @@ function VariantCard({
   isVideo?: boolean;
 }) {
   let mediaSrc: string | undefined;
-  const isVideoContent = isVideo || variant.video_base64 || variant.mime_type?.startsWith('video/');
+  const isVideoContent = isVideo || variant.video_base64 || variant.video_url || variant.mime_type?.startsWith('video/');
 
-  if (isVideoContent && variant.video_base64) {
+  // Video from URL (preferred) or base64
+  if (isVideoContent && variant.video_url) {
+    mediaSrc = variant.video_url;
+  } else if (isVideoContent && variant.video_base64) {
     const mime = variant.mime_type || 'video/mp4';
     mediaSrc = `data:${mime};base64,${variant.video_base64}`;
   } else if (variant.image_base64) {
@@ -345,6 +351,7 @@ export default function AssetGenerationModal({
   preSelectedTemplate,
   projectId,
   organisationId,
+  membershipId,
   inputAssets = {},
   previousResultUrl,
   initialParams = {},
@@ -460,6 +467,7 @@ export default function AssetGenerationModal({
       variantCount,
       projectId,
       organisationId,
+      membershipId,
       outputAssetType: getEffectiveOutputAssetType(),
       inputImageUrls: mappedInputs,
       userPrompt: extraInstructions,
@@ -555,6 +563,7 @@ export default function AssetGenerationModal({
       variantCount,
       projectId,
       organisationId,
+      membershipId,
       outputAssetType: getEffectiveOutputAssetType(),
       inputImageUrls: mappedInputs,
       userPrompt: prompt,

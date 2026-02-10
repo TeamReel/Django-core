@@ -325,6 +325,9 @@ def generate_video(
     template_id: str,
     params: dict[str, str],
     input_images: dict[str, bytes],
+    user_id: int | None = None,
+    organisation_id: int | None = None,
+    context: dict | None = None,
     poll_interval: int = 10,
     max_wait_seconds: int = 300,
 ) -> dict[str, Any]:
@@ -334,11 +337,14 @@ def generate_video(
         template_id: Template key from teamreel_prompts.TEMPLATES (must have output_type='video')
         params: Parameter values (e.g. {"style_variant": "arms_crossed", "kit_type": "home"})
         input_images: Dict of input images as bytes (keys: person_photo, etc.)
+        user_id: User ID for file ownership (required for S3 upload)
+        organisation_id: Organisation ID for S3 path (required for S3 upload)
+        context: Optional context for S3 path (club_slug, team_slug, membership_id, etc.)
         poll_interval: Seconds between status checks (default 10)
         max_wait_seconds: Maximum wait time before timeout (default 300 = 5 min)
 
     Returns:
-        Dict with keys: {video_bytes, video_base64, mime_type, filename, metadata} or {error}
+        Dict with keys: {video_bytes, video_url, mime_type, filename, file_asset_id, metadata} or {error}
     """
     # Import the prompts module (root-level)
     import importlib.util
@@ -441,8 +447,6 @@ def generate_video(
         generated_video = operation.response.generated_videos[0]
 
         # Download video to BytesIO buffer
-        from io import BytesIO
-
         video_buffer = BytesIO()
         client.files.download(file=generated_video.video, file_path=video_buffer)
         video_bytes = video_buffer.getvalue()
@@ -456,11 +460,48 @@ def generate_video(
 
         logger.info("Video generated successfully: %s (%d bytes)", filename, len(video_bytes))
 
+        # Upload to S3 if user_id and organisation_id provided
+        video_url = None
+        file_asset_id = None
+
+        if user_id and organisation_id:
+            try:
+                from .file_storage import GenerationFileService
+
+                # Store video in S3
+                file_asset_uuid = GenerationFileService.store_output_file(
+                    content=video_bytes,
+                    filename=filename,
+                    mime_type="video/mp4",
+                    user_id=user_id,
+                    organisation_id=organisation_id,
+                    context=context or {},
+                )
+                file_asset_id = str(file_asset_uuid)
+
+                # Get presigned URL (optional - for immediate playback)
+                from files.utils import get_storage_backend
+                from files.models import FileAsset
+
+                file_asset = FileAsset.objects.get(id=file_asset_uuid)
+                storage = get_storage_backend()
+                video_url = storage.get_url(file_asset.storage_path, signed=True, expires_in=3600)
+
+                logger.info("Video uploaded to S3: %s (FileAsset: %s)", filename, file_asset_id)
+
+            except Exception as e:  # noqa: BLE001
+                logger.exception("Failed to upload video to S3: %s", e)
+                # Continue without S3 upload - return base64 as fallback
+
         return {
-            "video_bytes": video_bytes,
-            "video_base64": base64.b64encode(video_bytes).decode("utf-8"),
+            "video_bytes": video_bytes if not video_url else None,  # Only send bytes if not in S3
+            "video_base64": base64.b64encode(video_bytes).decode("utf-8")
+            if not video_url
+            else None,
+            "video_url": video_url,
             "mime_type": "video/mp4",
             "filename": filename,
+            "file_asset_id": file_asset_id,
             "metadata": {
                 "template_id": template_id,
                 "params": params,

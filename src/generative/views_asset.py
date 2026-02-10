@@ -124,6 +124,8 @@ class AssetVariantSerializer(serializers.Serializer):
     variant_index = serializers.IntegerField()
     image_base64 = serializers.CharField(allow_null=True, required=False)
     video_base64 = serializers.CharField(allow_null=True, required=False)  # For video output
+    video_url = serializers.URLField(allow_null=True, required=False)  # Presigned S3 URL for video
+    file_asset_id = serializers.UUIDField(allow_null=True, required=False)  # FileAsset reference
     mime_type = serializers.CharField(allow_null=True)
     filename = serializers.CharField(allow_null=True)
     error = serializers.CharField(required=False, allow_null=True)
@@ -191,7 +193,7 @@ def generate_asset_view(request: Request) -> Response:
     # === Context for storage and record creation ===
     project_id = serializer.validated_data.get("project_id")
     organisation_id = serializer.validated_data.get("organisation_id")
-    # membership_id is available for future member-scoped storage
+    membership_id = serializer.validated_data.get("membership_id")
     activity_id = serializer.validated_data.get("activity_id")
     asset_type = serializer.validated_data.get("asset_type")
     save_to_brand = serializer.validated_data.get("save_to_brand", True)
@@ -244,10 +246,23 @@ def generate_asset_view(request: Request) -> Response:
         try:
             from .services.asset_pipeline import generate_video
 
+            # Build context for S3 storage
+            storage_context = {
+                "project_id": project_id,
+                "membership_id": str(membership_id) if membership_id else None,
+                "activity_id": activity_id,
+                "asset_type": asset_type,
+                "save_to_brand": save_to_brand,
+                "save_to_media_library": save_to_media_library,
+            }
+
             result = generate_video(
                 template_id=template_id,
                 params=params,
                 input_images=input_images,
+                user_id=request.user.id if request.user and request.user.is_authenticated else None,
+                organisation_id=organisation_id,
+                context=storage_context,
             )
 
             if result.get("error"):
@@ -257,14 +272,20 @@ def generate_asset_view(request: Request) -> Response:
                 )
 
             # Build response for video
-            variants = [
-                {
-                    "variant_index": 0,
-                    "video_base64": result["video_base64"],
-                    "mime_type": result["mime_type"],
-                    "filename": result["filename"],
-                }
-            ]
+            variant = {
+                "variant_index": 0,
+                "mime_type": result["mime_type"],
+                "filename": result["filename"],
+            }
+
+            # Include either video_url (preferred) or video_base64 (fallback)
+            if result.get("video_url"):
+                variant["video_url"] = result["video_url"]
+                variant["file_asset_id"] = result.get("file_asset_id")
+            elif result.get("video_base64"):
+                variant["video_base64"] = result["video_base64"]
+
+            variants = [variant]
 
             return Response(
                 AssetGenerateOutputSerializer(
@@ -393,8 +414,12 @@ def generate_asset_view(request: Request) -> Response:
                     unique_filename = f"{filename}_{timestamp}_{unique_suffix}"
 
                 # Build hierarchical path based on context (media-architecture.md)
-                # Priority: activity > project > organisation > generic
-                if activity:
+                # Priority: membership > activity > project > organisation > generic
+                if membership_id:
+                    storage_path_prefix = (
+                        f"members/{membership_id}/generated/{asset_folder}/{unique_filename}"
+                    )
+                elif activity:
                     storage_path_prefix = (
                         f"activities/{activity.id}/generated/{asset_folder}/{unique_filename}"
                     )

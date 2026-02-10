@@ -19,6 +19,9 @@ import { getApiBaseUrl } from '../utils/apiBase';
 export interface GenerationVariant {
   variant_index: number;
   image_base64: string | null;
+  video_base64?: string | null;
+  video_url?: string | null;
+  file_asset_id?: string | null;
   mime_type: string | null;
   filename: string | null;
   error?: string | null;
@@ -62,6 +65,8 @@ export interface SubmitParams {
   organisationId: string;
   /** Brand asset type to save the result as */
   outputAssetType?: string;
+  /** Membership ID for member-scoped S3 storage */
+  membershipId?: string;
   /** Input images as URLs (fetched from brand profile S3) */
   inputImageUrls?: Record<string, string>;
   /** Input images as base64 strings (if already loaded) */
@@ -155,6 +160,8 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             variant_count: params.variantCount,
             input_images: params.inputImages || {},
             input_image_urls: params.inputImageUrls || {},
+            ...(params.organisationId ? { organisation_id: params.organisationId } : {}),
+            ...(params.membershipId ? { membership_id: params.membershipId } : {}),
           }),
         });
 
@@ -176,6 +183,9 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           (v: GenerationVariant) => ({
             variant_index: v.variant_index,
             image_base64: v.image_base64,
+            video_base64: v.video_base64,
+            video_url: v.video_url,
+            file_asset_id: v.file_asset_id,
             mime_type: v.mime_type,
             filename: v.filename,
             error: v.error,
