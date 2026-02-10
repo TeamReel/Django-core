@@ -6,10 +6,33 @@ status: planned
 subtasks: T010-T020
 dependencies: WP01
 estimated_effort: 4-6 hours
-lane: "for_review"
+lane: "planned"
 agent: "claude"
 shell_pid: "71676"
+review_status: "has_feedback"
+reviewed_by: "copilot-reviewer"
 ---
+
+## Review Feedback
+
+**Status**: ❌ **Needs Changes**
+
+**Key Issues**:
+1. **CRITICAL - Project membership not enforced for list/create**: `IsProjectMember` ignores the `X-Project-ID` header and only checks `request.data`, query params, or `request.project_id`. Permission checks run **before** `get_queryset()`, so for `list`/`create` the header-based project scope is not validated. This allows non-members to list/create jobs for projects they do not belong to by supplying a project header. See [src/video/permissions.py](src/video/permissions.py) and [src/video/views/job.py](src/video/views/job.py).
+    - **Impact**: Unauthorized access to project-scoped jobs (violates Principle V).
+    - **Fix Required**: Read `X-Project-ID` in `IsProjectMember.has_permission()` and enforce membership. Also ensure `get_queryset()` filters to projects the user is a member of (or validate membership before returning any records).
+
+**What Was Done Well**:
+- ✅ Serializers align with OpenAPI schemas (input_file_id, overlays, workflow fields)
+- ✅ Router wiring and pagination are correct
+- ✅ Action endpoints (retry, cancel) implemented with clear status handling
+- ✅ Overlay position normalization handled (hyphen ↔ underscore)
+
+**Action Items** (must complete before re-review):
+- [ ] Update `IsProjectMember` to check `X-Project-ID` header (and/or set `request.project_id` before permission checks)
+- [ ] Ensure `VideoJobViewSet.get_queryset()` enforces project membership (filter by ProjectMembership)
+- [ ] Re-test: `python manage.py check video`
+- [ ] Add a quick permission test or note in Activity Log verifying non-members receive 403
 
 # WP02: Serializers & API Views
 
@@ -184,3 +207,4 @@ See existing modules:
 - 2026-02-10T13:14:56Z – claude – shell_pid=71676 – lane=doing – Started implementation
 - 2026-02-10T13:22:45Z – claude – shell_pid=71676 – lane=doing – Implemented serializers, viewsets, permissions, pagination, and routes; ran python manage.py check
 - 2026-02-10T13:22:53Z – claude – shell_pid=71676 – lane=for_review – Ready for review
+- 2026-02-10T13:25:20Z – copilot-reviewer – shell_pid=71676 – lane=planned – Review complete: project membership not enforced for header-scoped access
