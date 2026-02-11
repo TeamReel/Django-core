@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 
+from django.db import transaction
 from django.apps import apps
 from django.utils import timezone
 from files.utils import get_storage_backend
@@ -75,8 +76,8 @@ class VideoService:
             )
             job.save(update_fields=["workflow_instance", "updated_at"])
 
-        # Dispatch to appropriate Celery queue based on job type
-        self._dispatch_job(job)
+        # Dispatch after transaction commit so workers can always see the job row.
+        transaction.on_commit(lambda: self._dispatch_job(job))
 
         logger.info(
             "video_job_created",
