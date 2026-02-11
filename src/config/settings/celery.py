@@ -63,6 +63,7 @@ CELERY_TASK_ROUTES = {
     "src.video.tasks.thumbnail.generate_thumbnail": {"queue": "video_fast"},
     "src.video.tasks.transcode.transcode_video": {"queue": "video_slow"},
     "src.video.tasks.compose.compose_video": {"queue": "video_slow"},
+    "src.video.tasks.lineup.process_lineup_video": {"queue": "default"},
 }
 
 # Periodic Task Scheduling (celery-beat)

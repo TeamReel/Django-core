@@ -17,5 +17,5 @@ beat: celery -A config beat --loglevel=info
 
 # Celery Worker (for async tasks including B31 content generation)
 # SETUP REQUIRED: Create a separate Railway service for async task processing
-# Command: celery -A config worker --loglevel=info --concurrency=2
-worker: celery -A config worker --loglevel=info --concurrency=2
+# Command: celery -A config worker --loglevel=info --concurrency=2 -Q default,video_fast,video_slow
+worker: celery -A config worker --loglevel=info --concurrency=2 -Q default,video_fast,video_slow

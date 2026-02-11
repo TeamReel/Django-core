@@ -88,12 +88,11 @@ class VideoService:
         return job
 
     def _dispatch_job(self, job: VideoJob) -> None:
-        """Dispatch job to appropriate Celery task or background thread."""
-        import threading
-
+        """Dispatch job to appropriate Celery task."""
         from src.video.tasks import (
             compose_video,
             generate_thumbnail,
+            process_lineup_video,
             transcode_video,
         )
 
@@ -106,17 +105,8 @@ class VideoService:
         elif job.job_type == JobType.COMPOSE:
             compose_video.delay(job_id)
         elif job.job_type == JobType.LINEUP:
-            # Always process in background thread (no Celery worker available on Railway)
-            logger.info(
-                "Lineup job dispatched to background thread",
-                extra={"job_id": job_id},
-            )
-            thread = threading.Thread(
-                target=self._process_lineup_sync,
-                args=(job_id,),
-                daemon=True,
-            )
-            thread.start()
+            process_lineup_video.delay(job_id)
+            logger.info("Lineup job dispatched to Celery", extra={"job_id": job_id})
         else:
             logger.error(
                 "Unknown job type for dispatch",
