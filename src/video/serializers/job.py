@@ -9,7 +9,7 @@ from files.models import FileAsset
 from files.utils import get_storage_backend
 from rest_framework import serializers
 
-from src.video.models import PlatformExport, VideoJob, VideoOverlay, VideoPreset
+from src.video.models import PlatformExport, VideoJob, VideoPreset
 from src.video.models.job import JobType
 from src.video.serializers.overlay import VideoOverlayCreateSerializer, VideoOverlaySerializer
 from src.video.serializers.preset import PresetReferenceSerializer
@@ -281,14 +281,18 @@ class VideoJobCreateSerializer(serializers.Serializer):
         project = self.context.get("project")
         created_by = self.context.get("created_by")
 
-        job = VideoJob.objects.create(
-            project=project,
-            created_by=created_by,
-            **validated_data,
-        )
+        from src.video.services.video_service import VideoService
 
-        if overlays_data:
-            overlays = [VideoOverlay(job=job, **overlay) for overlay in overlays_data]
-            VideoOverlay.objects.bulk_create(overlays)
+        service = VideoService()
+        job = service.create_job(
+            project=project,
+            user=created_by,
+            input_file=validated_data.get("input_file"),
+            job_type=validated_data.get("job_type", ""),
+            preset=validated_data.get("preset"),
+            platform_export=validated_data.get("platform_export"),
+            overlays=overlays_data if overlays_data else None,
+            config=validated_data.get("config"),
+        )
 
         return job
