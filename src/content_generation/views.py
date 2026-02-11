@@ -238,7 +238,7 @@ class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
     project, status, template, activity, created_by, and date range.
 
     Permissions:
-    - list/retrieve/get_status: content.view_library
+    - list/retrieve/get_status: IsAuthenticated (project filtered)
     - create/retry: content.generate_content
     - approve/reject/request_revision: content.approve_content
     - download: content.download_content
@@ -593,7 +593,7 @@ class ContentApprovalViewSet(ContentApprovalPermissionMixin, viewsets.ModelViewS
     Create, retrieve, and list approval records.
 
     Permissions:
-    - list/retrieve: content.view_library
+    - list/retrieve: IsAuthenticated
     - create/update/delete: content.approve_content
     """
 

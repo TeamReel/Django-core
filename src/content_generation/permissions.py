@@ -60,7 +60,7 @@ class ContentItemPermissionMixin:
     Permission mixin for ContentItemViewSet.
 
     Different actions require different permissions:
-    - list/retrieve: view_library
+    - list/retrieve: IsAuthenticated (view library is implicit for members)
     - create: generate_content
     - approve/reject/request_revision: approve_content
     - download: download_content
@@ -68,8 +68,10 @@ class ContentItemPermissionMixin:
 
     def get_permissions(self):
         """Return appropriate permissions based on action."""
+        # List/retrieve: any authenticated user can view content items
+        # (project filtering happens in get_queryset)
         if self.action in ["list", "retrieve", "get_status"]:
-            return [IsAuthenticated(), HasPermission(VIEW_LIBRARY)]
+            return [IsAuthenticated()]
         elif self.action == "download":
             return [IsAuthenticated(), HasPermission(DOWNLOAD_CONTENT)]
         elif self.action in ["approve", "reject", "request_revision"]:
@@ -84,11 +86,12 @@ class ContentApprovalPermissionMixin:
     """
     Permission mixin for ContentApprovalViewSet.
 
-    View requires view_library, create requires approve_content.
+    View requires IsAuthenticated, create requires approve_content.
     """
 
     def get_permissions(self):
         """Return appropriate permissions for approval operations."""
+        # List/retrieve: any authenticated user can view approvals
         if self.action in ["list", "retrieve"]:
-            return [IsAuthenticated(), HasPermission(VIEW_LIBRARY)]
+            return [IsAuthenticated()]
         return [IsAuthenticated(), HasPermission(APPROVE_CONTENT)]

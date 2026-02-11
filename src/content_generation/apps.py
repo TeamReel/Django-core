@@ -7,9 +7,10 @@ class ContentGenerationConfig(AppConfig):
     verbose_name = "Content Generation"
 
     def ready(self):
-        """Register audit event types, health check, and connect signals."""
+        """Register audit event types, health check, permissions, and connect signals."""
         self._register_audit_event_types()
         self._register_health_check()
+        self._register_permissions()
         self._connect_signals()
 
     def _register_audit_event_types(self):
@@ -60,6 +61,50 @@ class ContentGenerationConfig(AppConfig):
 
         except ImportError:
             # B09 Audit module not installed, skip registration
+            pass
+
+    def _register_permissions(self):
+        """Register content generation permissions with B08 permission registry."""
+        try:
+            from permissions.registry import permission_registry
+
+            # View library - allows browsing content items and approvals
+            permission_registry.register(
+                "content.view_library",
+                "project",
+                is_sensitive=False,
+                description="View content library (items, approvals)",
+            )
+            # Generate content - allows creating new content items
+            permission_registry.register(
+                "content.generate_content",
+                "project",
+                is_sensitive=False,
+                description="Generate new content items",
+            )
+            # Approve content - allows approving/rejecting content
+            permission_registry.register(
+                "content.approve_content",
+                "project",
+                is_sensitive=False,
+                description="Approve or reject content items",
+            )
+            # Download content - allows downloading generated content
+            permission_registry.register(
+                "content.download_content",
+                "project",
+                is_sensitive=False,
+                description="Download generated content files",
+            )
+            # Manage templates - allows creating/editing templates
+            permission_registry.register(
+                "content.manage_templates",
+                "organisation",
+                is_sensitive=False,
+                description="Create and manage content templates",
+            )
+        except ImportError:
+            # B08 Permissions module not available
             pass
 
     def _register_health_check(self):
