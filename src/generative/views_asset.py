@@ -310,6 +310,20 @@ def generate_asset_view(request: Request) -> Response:
                     variant["video_url"] = v_url
                     variant["file_asset_id"] = v_faid
                     variant["storage_path"] = v_spath
+                elif v_spath and v_faid:
+                    # Pipeline stored to S3 but didn't return a presigned URL
+                    # Generate one from the storage_path
+                    variant["file_asset_id"] = v_faid
+                    variant["storage_path"] = v_spath
+                    try:
+                        purl = v_storage.get_url(v_spath, signed=True)
+                        variant["video_url"] = purl
+                        variant["presigned_url"] = purl
+                        logger.info("Generated presigned URL for video variant %d: %s", i, v_spath)
+                    except Exception as url_err:
+                        logger.warning(
+                            "Failed to generate presigned URL for %s: %s", v_spath, url_err
+                        )
                 elif v_bytes and v_org:
                     # Pipeline didn't store to S3 — do it here (same as image path)
                     try:
@@ -358,7 +372,7 @@ def generate_asset_view(request: Request) -> Response:
                         )
 
                         try:
-                            purl = v_storage.get_url(final_sp, signed=True, expires_in=3600)
+                            purl = v_storage.get_url(final_sp, signed=True)
                         except Exception:
                             purl = None
 

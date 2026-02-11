@@ -178,6 +178,8 @@ function VariantCard({
     image_base64?: string | null;
     video_base64?: string | null;
     video_url?: string | null;
+    presigned_url?: string | null;
+    storage_path?: string | null;
     mime_type: string | null;
     error?: string | null;
   };
@@ -186,11 +188,12 @@ function VariantCard({
   isVideo?: boolean;
 }) {
   let mediaSrc: string | undefined;
-  const isVideoContent = isVideo || variant.video_base64 || variant.video_url || variant.mime_type?.startsWith('video/');
+  const isVideoContent = isVideo || variant.video_base64 || variant.video_url || variant.presigned_url || variant.mime_type?.startsWith('video/');
 
-  // Video from URL (preferred) or base64
-  if (isVideoContent && variant.video_url) {
-    mediaSrc = variant.video_url;
+  // Video from URL (preferred), presigned URL, or base64
+  const videoUrl = variant.video_url || variant.presigned_url;
+  if (isVideoContent && videoUrl) {
+    mediaSrc = videoUrl;
   } else if (isVideoContent && variant.video_base64) {
     const mime = variant.mime_type || 'video/mp4';
     mediaSrc = `data:${mime};base64,${variant.video_base64}`;

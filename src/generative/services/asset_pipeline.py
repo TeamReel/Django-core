@@ -554,7 +554,7 @@ def _generate_video_minimax(
 
                     file_asset = FileAsset.objects.get(id=file_asset_uuid)
                     storage = get_storage_backend()
-                    v_url = storage.get_url(file_asset.storage_path, signed=True, expires_in=3600)
+                    v_url = storage.get_url(file_asset.storage_path, signed=True)
                     storage_path = file_asset.storage_path
 
                     logger.info("MiniMax video variant %d uploaded to S3: %s", i, fname)
@@ -753,7 +753,7 @@ def _generate_video_veo(
 
                     file_asset = FileAsset.objects.get(id=file_asset_uuid)
                     storage = get_storage_backend()
-                    v_url = storage.get_url(file_asset.storage_path, signed=True, expires_in=3600)
+                    v_url = storage.get_url(file_asset.storage_path, signed=True)
                     storage_path = file_asset.storage_path
                 except Exception as e:
                     logger.exception("Veo: S3 upload failed for variant %d: %s", idx, e)
