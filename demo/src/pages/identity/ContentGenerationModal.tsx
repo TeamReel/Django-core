@@ -663,64 +663,70 @@ export default function ContentGenerationModal({
       // Order: goalkeeper first, then players (sorted by selection order)
       const segments: Array<{type: string; url: string; duration?: number; label?: string}> = [];
 
-      // Get required asset types from template
-      const reqs = selectedTemplate?.input_requirements?.members;
-      const goalkeeperAssets = reqs?.goalkeeper?.asset_types || [];
-      const playerAssets = reqs?.player?.asset_types || [];
+      // For lineup videos, enforce specific asset sequence: In Tenue -> Intro -> Closeup
+      // Also strictly limit to 1 GK + 10 Players
+      let targetGKs = selectedMembers.goalkeeper;
+      let targetPlayers = selectedMembers.player;
+      let targetCoach = selectedMembers.coach;
+      let targetAssistant = selectedMembers.assistant;
 
-      // Add goalkeeper segments
-      for (const memberId of selectedMembers.goalkeeper) {
-        const memberName = getMemberName(memberId);
+      let gkAssets = ['in_tenue', 'short_intro', 'close_up'];
+      let playerAssets = ['in_tenue', 'short_intro', 'close_up'];
+      let coachAssets = ['in_tenue', 'short_intro', 'close_up'];
+      let assistantAssets = ['in_tenue', 'short_intro', 'close_up'];
 
-        // Add each required asset as a segment
-        // Order: In Tenue (image, 3s) → Short Intro (video) → Close-up (video)
-        for (const assetType of goalkeeperAssets) {
-          const url = getMemberAssetUrl(memberId, assetType);
-          if (!url) {
-            console.warn(`Missing asset ${assetType} for goalkeeper ${memberName}`);
-            continue;
-          }
+      // If requirements exist, use them, but fallback to our defaults for structure
+      if (selectedTemplate?.input_requirements?.members) {
+        const reqs = selectedTemplate.input_requirements.members;
+        if (reqs.goalkeeper?.asset_types?.length) gkAssets = reqs.goalkeeper.asset_types;
+        if (reqs.player?.asset_types?.length) playerAssets = reqs.player.asset_types;
+        if (reqs.coach?.asset_types?.length) coachAssets = reqs.coach.asset_types;
+        if (reqs.assistant?.asset_types?.length) assistantAssets = reqs.assistant.asset_types;
 
-          // Determine if image or video based on asset type
-          const isImage = ['profile_photo', 'in_tenue', 'legacy_photo', 'legacy', 'full_body'].includes(assetType);
-          segments.push({
-            type: isImage ? 'image' : 'video',
-            url: url,
-            duration: isImage ? 3.0 : undefined,
-            label: memberName,
-          });
+        // Force defaults if user specifically requested this standard lineup flow
+        if (selectedType.subtype === 'lineup') {
+            gkAssets = ['in_tenue', 'short_intro', 'close_up'];
+            playerAssets = ['in_tenue', 'short_intro', 'close_up'];
+            // Limit counts
+            targetGKs = targetGKs.slice(0, 1);
+            targetPlayers = targetPlayers.slice(0, 10);
+            // Optionally clear coach/assistant if not wanted in the "11 players" flow
+            // But user said "start with keeper, then 10 players", didn't explicitly forbid coach.
+            // Leaving coach/assistant as is, just using standard assets if selected.
         }
       }
 
-      // Add player segments
-      for (const memberId of selectedMembers.player) {
-        const memberName = getMemberName(memberId);
+      // Helper to add segments for a list of members
+      const addMemberSegments = (members: string[], assets: string[]) => {
+        for (const memberId of members) {
+          const memberName = getMemberName(memberId);
 
-        for (const assetType of playerAssets) {
-          const url = getMemberAssetUrl(memberId, assetType);
-          if (!url) {
-            console.warn(`Missing asset ${assetType} for player ${memberName}`);
-            continue;
-          }
+          for (const assetType of assets) {
+            const url = getMemberAssetUrl(memberId, assetType);
+            if (!url) {
+              // Try fallback for close_up -> profile_photo if missing
+              if (assetType === 'close_up') {
+                 const altUrl = getMemberAssetUrl(memberId, 'profile_photo');
+                 if (altUrl) {
+                    segments.push({
+                        type: 'image',
+                        url: altUrl,
+                        duration: 3.0,
+                        label: memberName
+                    });
+                    continue;
+                 }
+              }
+              console.warn(`Missing asset ${assetType} for member ${memberName}`);
+              continue;
+            }
 
-          const isImage = ['profile_photo', 'in_tenue', 'legacy_photo', 'legacy', 'full_body'].includes(assetType);
-          segments.push({
-            type: isImage ? 'image' : 'video',
-            url: url,
-            duration: isImage ? 3.0 : undefined,
-            label: memberName,
-          });
-        }
-      }
-
-      // Add coach segments (if any)
-      const coachAssets = reqs?.coach?.asset_types || [];
-      for (const memberId of selectedMembers.coach) {
-        const memberName = getMemberName(memberId);
-        for (const assetType of coachAssets) {
-          const url = getMemberAssetUrl(memberId, assetType);
-          if (url) {
             const isImage = ['profile_photo', 'in_tenue', 'legacy_photo', 'legacy', 'full_body'].includes(assetType);
+            // close_up can be video (video_closeup) or image. Based on ASSET_TYPE_KEY, it maps to 'closeup'.
+            // If getMemberAssetUrl returns a video URL, we treat it as video.
+            // Simple heuristic based on extension if confused, but here we trust the type definition mostly.
+            // However, 'close_up' is not in the isImage list above. So it defaults to video.
+
             segments.push({
               type: isImage ? 'image' : 'video',
               url: url,
@@ -729,25 +735,12 @@ export default function ContentGenerationModal({
             });
           }
         }
-      }
+      };
 
-      // Add assistant segments (if any)
-      const assistantAssets = reqs?.assistant?.asset_types || [];
-      for (const memberId of selectedMembers.assistant) {
-        const memberName = getMemberName(memberId);
-        for (const assetType of assistantAssets) {
-          const url = getMemberAssetUrl(memberId, assetType);
-          if (url) {
-            const isImage = ['profile_photo', 'in_tenue', 'legacy_photo', 'legacy', 'full_body'].includes(assetType);
-            segments.push({
-              type: isImage ? 'image' : 'video',
-              url: url,
-              duration: isImage ? 3.0 : undefined,
-              label: memberName,
-            });
-          }
-        }
-      }
+      addMemberSegments(targetGKs, gkAssets);
+      addMemberSegments(targetPlayers, playerAssets);
+      addMemberSegments(targetCoach, coachAssets);
+      addMemberSegments(targetAssistant, assistantAssets);
 
       console.log('📹 Lineup video segments:', segments);
 
