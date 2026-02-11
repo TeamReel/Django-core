@@ -741,6 +741,12 @@ export default function ContentGenerationModal({
 
       setProgress(20);
 
+      // Get project ID from available sources
+      const projectId = matchData?.project?.id || season?.project_id;
+      if (!projectId) {
+        throw new Error('No project ID available - cannot create video job');
+      }
+
       // Create video job
       const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/`, {
         method: 'POST',
@@ -748,9 +754,9 @@ export default function ContentGenerationModal({
         headers: {
           'Content-Type': 'application/json',
           'X-CSRFToken': getCsrfToken(),
+          'X-Project-ID': String(projectId),
         },
         body: JSON.stringify({
-          project_id: matchData?.project?.id,
           job_type: 'lineup',
           config: {
             segments: segments,
