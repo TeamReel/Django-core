@@ -431,74 +431,6 @@ def generate_video(
 
     veo_config = types.GenerateVideosConfig(**config_args)
 
-    # --- MOCK VIDEO GENERATION (BYPASS API) ---
-    # Used to verify "Save Asset" flow without hitting rate limits or 404s
-    if True:  # Set to False to re-enable real generation
-        logger.warning("[MOCK] Bypassing Google GenAI API - Using Mock Video Result")
-        time.sleep(1)  # Simulate API latency
-
-        # Minimal MP4 Header (ftyp + moov atoms) to pose as valid video
-        v_bytes = b"\x00\x00\x00\x20ftypmp42\x00\x00\x00\x00mp42isom\x00\x00\x00\x00"
-
-        generated_variants = []
-        fname = f"{template_id}_MOCK_{int(time.time())}_0.mp4"
-        v_url = None
-        f_asset_id = None
-        storage_path = None
-
-        if user_id and organisation_id:
-            try:
-                from .file_storage import GenerationFileService
-                from files.utils import get_storage_backend
-                from files.models import FileAsset
-
-                file_asset_uuid = GenerationFileService.store_output_file(
-                    content=v_bytes,
-                    filename=fname,
-                    mime_type="video/mp4",
-                    user_id=user_id,
-                    organisation_id=organisation_id,
-                    context=context or {},
-                )
-                f_asset_id = str(file_asset_uuid)
-                file_asset = FileAsset.objects.get(id=file_asset_uuid)
-                storage_path = file_asset.storage_path
-                storage = get_storage_backend()
-                v_url = storage.get_url(storage_path, signed=True, expires_in=3600)
-            except Exception as e:
-                logger.exception("[MOCK] Failed to upload mock video: %s", e)
-
-        generated_variants.append(
-            {
-                "video_bytes": v_bytes,
-                "video_url": v_url,
-                "storage_path": storage_path,
-                "filename": fname,
-                "file_asset_id": f_asset_id,
-                "mime_type": "video/mp4",
-            }
-        )
-
-        main_variant = generated_variants[0]
-        return {
-            "video_bytes": main_variant["video_bytes"] if not main_variant["video_url"] else None,
-            "video_base64": base64.b64encode(main_variant["video_bytes"]).decode("utf-8")
-            if not main_variant["video_url"]
-            else None,
-            "video_url": main_variant["video_url"],
-            "mime_type": "video/mp4",
-            "filename": main_variant["filename"],
-            "file_asset_id": main_variant["file_asset_id"],
-            "variants": generated_variants,
-            "metadata": {
-                "template_id": template_id,
-                "params": params,
-                "mock": True,
-                "variant_count": 1,
-            },
-        }
-    # --- END MOCK ---
-
     try:
         if person_img:
             # Image-to-video: use person photo as starting frame / reference
@@ -509,7 +441,7 @@ def generate_video(
             )
 
             operation = client.models.generate_videos(
-                model="veo-3.1-generate-preview",
+                model="veo-3.1-fast-generate-preview",
                 prompt=final_prompt,
                 image=image_obj,
                 config=veo_config,
@@ -520,7 +452,7 @@ def generate_video(
                 "Generating %d video(s) with text prompt only (text-to-video)", variant_count
             )
             operation = client.models.generate_videos(
-                model="veo-3.1-generate-preview",
+                model="veo-3.1-fast-generate-preview",
                 prompt=final_prompt,
                 config=veo_config,
             )
