@@ -798,7 +798,7 @@ export default function ContentGenerationModal({
 
       // Poll for job completion
       let pollCount = 0;
-      const maxPolls = 120; // 10 minutes max (5s intervals)
+      const maxPolls = 360; // 30 minutes max (5s intervals)
 
       const pollJob = async (): Promise<void> => {
         if (pollCount >= maxPolls) {
