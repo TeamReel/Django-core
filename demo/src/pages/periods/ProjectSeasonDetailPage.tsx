@@ -770,9 +770,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   // Fetch full team roster (all memberships on the team, any period) so we can show
   // "team members not in squad" for quick assignment.
+  // Also fetch organisation members as they can be assigned to the season too.
   useEffect(() => {
     if (activeTab !== 'squad' && activeTab !== 'team') return;
     const projectIdForMembers = String((project as any)?.id || '').trim();
+    const orgId = String((org as any)?.id || '').trim();
     if (!projectIdForMembers) return;
 
     let cancelled = false;
@@ -780,13 +782,39 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       setTeamRosterLoading(true);
       setTeamRosterError(null);
       try {
+        // Fetch team-level memberships (project memberships without period filter)
         const rosterUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/?page_size=500`;
-        const roster = await fetchAllPages<any>(
+        const rosterPromise = fetchAllPages<any>(
           rosterUrl,
           { credentials: 'include' },
           { bypass: true, maxItems: 5000 }
         );
-        if (!cancelled) setTeamRoster(Array.isArray(roster) ? roster : []);
+
+        // Also fetch organisation members to include them as potential squad members
+        let orgMembersPromise: Promise<any[]> = Promise.resolve([]);
+        if (orgId) {
+          const orgMembersUrl = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgId)}/members/?page_size=500`;
+          orgMembersPromise = fetchAllPages<any>(
+            orgMembersUrl,
+            { credentials: 'include' },
+            { bypass: true, maxItems: 5000 }
+          ).catch(() => []); // Silently fail if no access
+        }
+
+        const [roster, orgMembers] = await Promise.all([rosterPromise, orgMembersPromise]);
+
+        // Merge: team roster takes priority, then add org members not already in roster
+        const byUserId = new Map<string, any>();
+        for (const m of Array.isArray(roster) ? roster : []) {
+          const uid = String(m?.user?.id || m?.user_id || '').trim();
+          if (uid && !byUserId.has(uid)) byUserId.set(uid, m);
+        }
+        for (const m of Array.isArray(orgMembers) ? orgMembers : []) {
+          const uid = String(m?.user?.id || m?.user_id || '').trim();
+          if (uid && !byUserId.has(uid)) byUserId.set(uid, m);
+        }
+
+        if (!cancelled) setTeamRoster(Array.from(byUserId.values()));
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'Failed to load team roster';
         if (!cancelled) setTeamRosterError(msg);
@@ -799,7 +827,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [activeTab, apiBaseUrl, project, teamRosterReloadToken]);
+  }, [activeTab, apiBaseUrl, org, project, teamRosterReloadToken]);
 
   const getUserId = (m: any): string => {
     const u = m?.user || m;
@@ -2514,7 +2542,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           <Badge variant="default">{eligibleTeamMembers.length} Available</Badge>
                         </div>
                         <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
-                          Team members not yet assigned to this season. Select members to add them to the squad.
+                          Team and organisation members not yet assigned to this season. Select members to add them to the squad.
                         </div>
                       </div>
 
