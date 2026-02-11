@@ -506,7 +506,7 @@ def generate_video(
             f_asset_id = None
             storage_path = None
 
-            if user_id and organisation_id:
+            if organisation_id:
                 try:
                     from .file_storage import GenerationFileService
 
