@@ -545,7 +545,25 @@ def generate_video(
             }
 
         # Process all variants
-        for i, vid in enumerate(operation.response.generated_videos):
+        generated_videos = (
+            operation.response.generated_videos
+            if operation.response and operation.response.generated_videos
+            else []
+        )
+
+        if not generated_videos:
+            # Check if response has a block reason or other info
+            block_reason = None
+            if operation.response:
+                block_reason = getattr(operation.response, "block_reason", None)
+            if block_reason:
+                raise ValueError(f"Video generation blocked: {block_reason}")
+            raise ValueError(
+                "No videos generated in response (generated_videos is empty/None). "
+                "This may indicate content policy filtering or a temporary API issue."
+            )
+
+        for i, vid in enumerate(generated_videos):
             generated_variants.append(process_video_result(vid, i))
 
         if not generated_variants:
