@@ -88,7 +88,9 @@ class VideoService:
         return job
 
     def _dispatch_job(self, job: VideoJob) -> None:
-        """Dispatch job to appropriate Celery task."""
+        """Dispatch job to appropriate Celery task or background thread."""
+        import threading
+
         from src.video.tasks import (
             compose_video,
             generate_thumbnail,
@@ -105,13 +107,66 @@ class VideoService:
         elif job.job_type == JobType.COMPOSE:
             compose_video.delay(job_id)
         elif job.job_type == JobType.LINEUP:
-            process_lineup_video.delay(job_id)
+            # Try Celery first, fall back to background thread if broker unavailable
+            try:
+                # Check if Celery broker is actually available
+                from celery import current_app
+
+                conn = current_app.connection()
+                conn.ensure_connection(max_retries=1, timeout=2)
+                conn.release()
+                # Broker available, use Celery
+                process_lineup_video.delay(job_id)
+                logger.info("Lineup job dispatched to Celery", extra={"job_id": job_id})
+            except Exception as celery_err:
+                # Celery/broker not available, process in background thread
+                logger.warning(
+                    "Celery broker unavailable, processing lineup in background thread",
+                    extra={"job_id": job_id, "error": str(celery_err)},
+                )
+                thread = threading.Thread(
+                    target=self._process_lineup_sync,
+                    args=(job_id,),
+                    daemon=True,
+                )
+                thread.start()
         else:
             logger.error(
                 "Unknown job type for dispatch",
                 extra={"job_id": job_id, "job_type": job.job_type},
             )
             raise ValidationError({"job_type": f"Unknown job type: {job.job_type}"})
+
+    def _process_lineup_sync(self, job_id: str) -> None:
+        """Process lineup job synchronously (for when Celery is unavailable)."""
+        from django.db import close_old_connections
+
+        from src.video.services.processors.lineup import LineupProcessor
+
+        try:
+            close_old_connections()
+            job = VideoJob.objects.select_related("project", "preset", "created_by").get(id=job_id)
+
+            if job.status in (JobStatus.COMPLETED, JobStatus.CANCELLED):
+                return
+
+            processor = LineupProcessor(job)
+            processor.execute()
+
+            logger.info("Lineup job processed in background thread", extra={"job_id": job_id})
+
+        except Exception as exc:
+            logger.exception("Lineup job failed in background thread", extra={"job_id": job_id})
+            try:
+                job = VideoJob.objects.get(id=job_id)
+                job.status = JobStatus.FAILED
+                job.error_message = str(exc)[:4000]
+                job.completed_at = timezone.now()
+                job.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
+            except Exception:
+                pass
+        finally:
+            close_old_connections()
 
     def cancel_job(self, job: VideoJob) -> bool:
         """Cancel pending/queued job."""
