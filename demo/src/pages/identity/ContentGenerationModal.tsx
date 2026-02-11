@@ -412,9 +412,10 @@ export default function ContentGenerationModal({
     const fetchSeasonSquad = async () => {
       try {
         // Fetch season-specific project members (filtered by period_id)
-        let url = `${getApiBaseUrl()}/api/v1/projects/${projectId}/members/`;
+        // Request up to 100 members to ensure we get the full squad
+        let url = `${getApiBaseUrl()}/api/v1/projects/${projectId}/members/?page_size=100`;
         if (seasonId) {
-          url += `?period_id=${seasonId}`;
+          url += `&period_id=${seasonId}`;
         }
 
         console.log('📡 Fetching from URL:', url);
