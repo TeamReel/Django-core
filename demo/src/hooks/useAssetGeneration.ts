@@ -135,10 +135,10 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
       setContext(saveContext);
 
-      // Simulate progress while waiting (generation takes 30-90s)
+      // Simulate progress while waiting (video generation can take 3-5 min via MiniMax)
       const progressTimer = setInterval(() => {
-        setProgress((prev) => Math.min(prev + 3, 90));
-      }, 2000);
+        setProgress((prev) => Math.min(prev + 1, 90));
+      }, 3000);
 
       try {
         // Inject user instruction into params if present
