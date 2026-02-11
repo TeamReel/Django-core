@@ -409,9 +409,9 @@ def generate_video(
         }
 
     # Prepare config (per google-genai SDK codegen instructions)
-    # Note: Veo 3.1 Preview currently restricts number_of_videos to 1.
+    # Note: Veo Preview currently restricts number_of_videos to 1.
     if variant_count > 1:
-        logger.warning("Veo 3.1 supports max 1 video. Requested %d. Clamping to 1.", variant_count)
+        logger.warning("Veo supports max 1 video. Requested %d. Clamping to 1.", variant_count)
 
     effective_variant_count = 1
 
@@ -441,7 +441,7 @@ def generate_video(
             )
 
             operation = client.models.generate_videos(
-                model="veo-3.1-generate-preview",
+                model="veo-2.0-generate-preview",
                 prompt=final_prompt,
                 image=image_obj,
                 config=veo_config,
@@ -452,7 +452,7 @@ def generate_video(
                 "Generating %d video(s) with text prompt only (text-to-video)", variant_count
             )
             operation = client.models.generate_videos(
-                model="veo-3.1-generate-preview",
+                model="veo-2.0-generate-preview",
                 prompt=final_prompt,
                 config=veo_config,
             )
