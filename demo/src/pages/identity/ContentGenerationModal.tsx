@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button, Badge, Alert } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 
@@ -457,43 +457,59 @@ export default function ContentGenerationModal({
     fetchSeasonSquad();
   }, [isOpen, matchData?.project?.id, season?.project_id, season?.id]);
 
-  // Reset state when opening
+  // Track if we've already initialized (to preserve selections on retry)
+  const hasInitializedRef = useRef(false);
+  const lastOpenStateRef = useRef(false);
+
+  // Reset state when opening - but preserve selections if returning from error
   useEffect(() => {
+    // Detect fresh open vs staying open
+    const freshOpen = isOpen && !lastOpenStateRef.current;
+    lastOpenStateRef.current = isOpen;
+
     if (isOpen) {
+      // Always reset these on any open
       setProgress(0);
-      setSelectedMembers({ goalkeeper: [], player: [], coach: [], assistant: [] });
-      setTemplates([]);
       setError(null);
       setGenerationError(null);
       setGeneratedOutput(null);
-      // Reset variant selection
       setGeneratedVariants([]);
       setSelectedVariantIndex(0);
       setSavingAsset(false);
       setSaveSuccess(false);
 
-      // If template is provided, skip to members step
-      if (initialTemplate) {
-        setSelectedTemplate(initialTemplate);
-        setSelectedType({ type: initialTemplate.template_type, subtype: initialTemplate.template_subtype || '', label: contentTypeLabel || initialTemplate.name });
+      // Only reset selections on FRESH open (not when staying open or after error)
+      if (freshOpen && !hasInitializedRef.current) {
+        hasInitializedRef.current = true;
+        setSelectedMembers({ goalkeeper: [], player: [], coach: [], assistant: [] });
+        setTemplates([]);
 
-        // Check if template requires member selection
-        const needsMembers = initialTemplate.input_requirements?.members &&
-          Object.entries(initialTemplate.input_requirements.members).some(([key, val]) =>
-            key !== 'use_formation' && val && typeof val !== 'boolean' && val.count > 0
-          );
+        // If template is provided, skip to members step
+        if (initialTemplate) {
+          setSelectedTemplate(initialTemplate);
+          setSelectedType({ type: initialTemplate.template_type, subtype: initialTemplate.template_subtype || '', label: contentTypeLabel || initialTemplate.name });
 
-        if (needsMembers) {
-          setStep('members');
+          // Check if template requires member selection
+          const needsMembers = initialTemplate.input_requirements?.members &&
+            Object.entries(initialTemplate.input_requirements.members).some(([key, val]) =>
+              key !== 'use_formation' && val && typeof val !== 'boolean' && val.count > 0
+            );
+
+          if (needsMembers) {
+            setStep('members');
+          } else {
+            // No members needed, go to confirm step
+            setStep('confirm');
+          }
         } else {
-          // No members needed, go to confirm step
-          setStep('confirm');
+          setStep('type');
+          setSelectedType(null);
+          setSelectedTemplate(null);
         }
-      } else {
-        setStep('type');
-        setSelectedType(null);
-        setSelectedTemplate(null);
       }
+    } else {
+      // Reset initialization flag when modal closes
+      hasInitializedRef.current = false;
     }
   }, [isOpen, initialTemplate, contentTypeLabel]);
 
@@ -1124,7 +1140,8 @@ export default function ContentGenerationModal({
     } else if (step === 'members') {
       setStep('template');
       setSelectedTemplate(null);
-      setSelectedMembers({ goalkeeper: [], player: [], coach: [], assistant: [] });
+      // Keep selected members when going back - user can re-select template
+      // and their previous selections will be preserved if roles match
     } else if (step === 'confirm') {
       // Check if we need to go back to members or template
       const needsMembers = selectedTemplate?.input_requirements?.members &&

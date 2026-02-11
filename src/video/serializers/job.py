@@ -225,6 +225,8 @@ class VideoJobCreateSerializer(serializers.Serializer):
     input_file_id: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
         source="input_file",
         queryset=FileAsset.objects.all(),
+        required=False,  # Optional for lineup jobs that use segments instead
+        allow_null=True,
     )
     preset_id: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
         source="preset",
@@ -245,10 +247,26 @@ class VideoJobCreateSerializer(serializers.Serializer):
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         job_type = attrs.get("job_type")
         overlays = attrs.get("overlays")
+        input_file = attrs.get("input_file")
+        config = attrs.get("config") or {}
+
         if job_type != JobType.COMPOSE and overlays:
             raise serializers.ValidationError(
                 {"overlays": "Overlays are only allowed for compose jobs."}
             )
+
+        # Lineup jobs require segments in config instead of input_file
+        if job_type == JobType.LINEUP:
+            if not config.get("segments"):
+                raise serializers.ValidationError(
+                    {"config": "Lineup jobs require 'segments' in config."}
+                )
+        elif not input_file:
+            # Other job types require input_file
+            raise serializers.ValidationError(
+                {"input_file_id": "This field is required for non-lineup jobs."}
+            )
+
         return attrs
 
     def create(self, validated_data: dict[str, Any]) -> VideoJob:
