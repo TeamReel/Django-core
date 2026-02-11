@@ -31,6 +31,8 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import MobileTabBar from '../../components/MobileTabBar';
+import { BatchGenerationModal, type BatchMember } from '../../components/BatchGenerationModal';
+import { useBrandProfile, getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
 import {
   actionButtonStyle,
   ctaButtonStyle,
@@ -213,6 +215,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   // Brand profile ID for Kits tab
   const [brandProfileId, setBrandProfileId] = useState<string | null>(null);
+
+  // Batch generation state
+  const [batchSelectedMemberIds, setBatchSelectedMemberIds] = useState<Set<string>>(new Set());
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
 
   // Content generation state
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
@@ -663,6 +669,67 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     void loadBrandProfile();
     return () => { cancelled = true; };
   }, [apiBaseUrl, project?.id]);
+
+  // ── Brand profile for batch generation (club-level assets) ──
+  const clubProjectId = isTeamRoute ? (club as any)?.id : project?.id;
+  const clubBrand = useBrandProfile({
+    projectId: clubProjectId ? String(clubProjectId) : undefined,
+    organisationId: String(org?.id || ''),
+    autoFetch: !!clubProjectId,
+  });
+
+  // Build brand assets object for batch modal
+  const batchBrandAssets = useMemo(() => {
+    const kits: Record<string, string | null> = {};
+    for (const role of KIT_ROLES) {
+      const asset = clubBrand.getAsset?.(`kit_${role.id}_combined`) || clubBrand.getAsset?.(`kit_${role.id}`);
+      kits[role.id] = asset ? getAssetUrl(asset.url) : null;
+    }
+    return {
+      logo: clubBrand.getAsset?.('logo_upload') ? getAssetUrl(clubBrand.getAsset('logo_upload')!.url) : null,
+      sponsor: clubBrand.getAsset?.('sponsor_logo_upload') ? getAssetUrl(clubBrand.getAsset('sponsor_logo_upload')!.url) : null,
+      kits,
+    };
+  }, [clubBrand]);
+
+  // Build BatchMember objects from squad members
+  const batchMembers = useMemo((): BatchMember[] => {
+    return Array.from(batchSelectedMemberIds)
+      .map((mid) => {
+        const m = members.find((mem: any) => String(mem.id) === mid);
+        if (!m) return null;
+        const memberUser = m.user || m;
+        const name =
+          memberUser.name ||
+          `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
+          memberUser.email || '';
+        const tr = m.metadata?.teamreel_assets || {};
+        const profileUrl = tr?.media?.profile?.url || memberUser.avatar_url || null;
+        const fullbodyUrls: Record<string, string> = {};
+        const closeupUrls: Record<string, string> = {};
+        const imgFb = tr?.images?.fullbody || {};
+        const imgCu = tr?.images?.closeup || {};
+        for (const [k, v] of Object.entries(imgFb)) {
+          if (v) fullbodyUrls[k] = v as string;
+        }
+        for (const [k, v] of Object.entries(imgCu)) {
+          if (v) closeupUrls[k] = v as string;
+        }
+        // Fallback: check media.kit for home fullbody (legacy compat)
+        if (!fullbodyUrls['home'] && tr?.media?.kit?.url) {
+          fullbodyUrls['home'] = tr.media.kit.url;
+        }
+        return {
+          id: mid,
+          name,
+          profilePhotoUrl: profileUrl,
+          fullbodyUrls,
+          closeupUrls,
+          metadata: m.metadata,
+        } as BatchMember;
+      })
+      .filter(Boolean) as BatchMember[];
+  }, [batchSelectedMemberIds, members]);
 
   // Fetch season squad memberships (season-scoped roster)
   useEffect(() => {
@@ -2629,9 +2696,18 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         <Badge variant="default">
                           {members.filter((m) => countFilledMediaSlots(m) === MEDIA_SLOTS.length).length} / {members.length} Complete
                         </Badge>
+                        {batchSelectedMemberIds.size > 0 && (
+                          <Button
+                            variant="primary"
+                            onClick={() => setIsBatchModalOpen(true)}
+                            style={{ marginLeft: 'auto', fontSize: '13px', padding: '6px 14px' }}
+                          >
+                            🚀 Batch Genereer ({batchSelectedMemberIds.size})
+                          </Button>
+                        )}
                       </div>
                       <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
-                        Overview of media assets uploaded per squad member. Click a member to edit their media.
+                        Selecteer members en klik &quot;Batch Genereer&quot; om AI assets in bulk te genereren.
                       </div>
                     </div>
 
@@ -2645,6 +2721,22 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           <Table style={compactTableStyle}>
                             <thead>
                               <tr>
+                                <th style={{ ...compactThStyle, width: '36px', textAlign: 'center' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={batchSelectedMemberIds.size === members.length && members.length > 0}
+                                    ref={(el) => { if (el) el.indeterminate = batchSelectedMemberIds.size > 0 && batchSelectedMemberIds.size < members.length; }}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setBatchSelectedMemberIds(new Set(members.map((m: any) => String(m.id))));
+                                      } else {
+                                        setBatchSelectedMemberIds(new Set());
+                                      }
+                                    }}
+                                    style={{ cursor: 'pointer' }}
+                                    title="Selecteer alles"
+                                  />
+                                </th>
                                 <th style={{ ...compactThStyle, position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>Member</th>
                                 {MEDIA_SLOTS.map((slot) => (
                                   <th key={slot.id} style={{ ...compactThStyle, textAlign: 'center', minWidth: '60px' }} title={slot.label}>
@@ -2666,10 +2758,26 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 const href = memberDetailHref(membershipId);
                                 const filledCount = countFilledMediaSlots(m);
                                 const isComplete = filledCount === MEDIA_SLOTS.length;
+                                const isBatchSelected = batchSelectedMemberIds.has(membershipId);
 
                                 return (
-                                  <tr key={String(m.id)}>
-                                    <td style={{ ...compactTextTdStyle, position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>
+                                  <tr key={String(m.id)} style={{ background: isBatchSelected ? 'rgba(59,130,246,0.06)' : undefined }}>
+                                    <td style={{ ...compactTdStyle, textAlign: 'center' }}>
+                                      <input
+                                        type="checkbox"
+                                        checked={isBatchSelected}
+                                        onChange={(e) => {
+                                          setBatchSelectedMemberIds((prev) => {
+                                            const next = new Set(prev);
+                                            if (e.target.checked) next.add(membershipId);
+                                            else next.delete(membershipId);
+                                            return next;
+                                          });
+                                        }}
+                                        style={{ cursor: 'pointer' }}
+                                      />
+                                    </td>
+                                    <td style={{ ...compactTextTdStyle, position: 'sticky', left: 0, background: isBatchSelected ? 'rgba(59,130,246,0.06)' : 'var(--app-surface)', zIndex: 1 }}>
                                       {href ? (
                                         <Link
                                           to={href}
@@ -3648,6 +3756,22 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           organisationId={org?.id || null}
           template={selectedTemplate}
           contentTypeLabel={selectedContentTypeLabel}
+        />
+
+        {/* Batch AI Generation Modal */}
+        <BatchGenerationModal
+          isOpen={isBatchModalOpen}
+          onClose={() => {
+            setIsBatchModalOpen(false);
+          }}
+          members={batchMembers}
+          projectId={String((isTeamRoute ? club : project)?.id || '')}
+          organisationId={String(org?.id || '')}
+          brandAssets={batchBrandAssets}
+          onBatchComplete={() => {
+            setMembersReloadToken((t) => t + 1);
+            setBatchSelectedMemberIds(new Set());
+          }}
         />
       </div>
     </>

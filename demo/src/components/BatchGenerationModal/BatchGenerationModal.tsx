@@ -1,0 +1,877 @@
+/**
+ * BatchGenerationModal — Batch AI Asset Generation for multiple members
+ *
+ * Allows selecting a template, configuring per-member parameters,
+ * and running generation sequentially for all selected members.
+ *
+ * Flow:
+ * 1. Choose template (fullbody, closeup, intro, celebration)
+ * 2. Set default params (sleeves, pose, kit_type, etc.)
+ * 3. Optionally override params per member
+ * 4. Start batch → processes one-by-one with progress tracking
+ */
+
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { Badge, Button } from '@django-core/design-system';
+import {
+  getTemplatesForContext,
+  type AssetTemplate,
+  type TemplateParameter,
+} from '../../constants/assetTemplates';
+import { getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
+import { getApiBaseUrl } from '../../utils/apiBase';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface BatchMember {
+  id: string; // membership ID
+  name: string;
+  profilePhotoUrl: string | null;
+  /** Per-kit-type fullbody URLs (e.g. { home: "s3://...", away: "..." }) */
+  fullbodyUrls: Record<string, string>;
+  /** Per-kit-type closeup URLs */
+  closeupUrls: Record<string, string>;
+  metadata?: any;
+}
+
+interface MemberParams {
+  [paramKey: string]: string;
+}
+
+type BatchStatus = 'idle' | 'running' | 'done';
+
+interface MemberJobStatus {
+  status: 'pending' | 'running' | 'success' | 'error' | 'skipped';
+  error?: string;
+  resultUrl?: string;
+}
+
+interface BatchGenerationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  members: BatchMember[];
+  projectId: string;
+  organisationId: string;
+  /** Brand profile assets (logo, sponsor URLs) */
+  brandAssets: {
+    logo?: string | null;
+    sponsor?: string | null;
+    kits: Record<string, string | null>; // { home: kitUrl, away: kitUrl, ... }
+  };
+  /** Callback when batch completes (to refresh data) */
+  onBatchComplete?: () => void;
+}
+
+function getCsrfToken(): string {
+  return (
+    document.cookie
+      .split('; ')
+      .find((r) => r.startsWith('csrftoken='))
+      ?.split('=')[1] || ''
+  );
+}
+
+// ============================================================================
+// Styles
+// ============================================================================
+
+const overlayStyle: React.CSSProperties = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: 9000,
+  background: 'rgba(0, 0, 0, 0.6)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '20px',
+};
+
+const modalStyle: React.CSSProperties = {
+  background: 'var(--app-surface, #1a1a2e)',
+  borderRadius: '12px',
+  width: '100%',
+  maxWidth: '900px',
+  maxHeight: '90vh',
+  display: 'flex',
+  flexDirection: 'column',
+  boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+  border: '1px solid var(--app-border, #333)',
+};
+
+const headerStyle: React.CSSProperties = {
+  padding: '20px 24px',
+  borderBottom: '1px solid var(--app-border, #333)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+};
+
+const bodyStyle: React.CSSProperties = {
+  padding: '24px',
+  overflowY: 'auto',
+  flex: 1,
+};
+
+const footerStyle: React.CSSProperties = {
+  padding: '16px 24px',
+  borderTop: '1px solid var(--app-border, #333)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '12px',
+};
+
+const selectStyle: React.CSSProperties = {
+  padding: '6px 10px',
+  borderRadius: '6px',
+  border: '1px solid var(--app-border, #555)',
+  background: 'var(--app-surface-2, #252540)',
+  color: 'var(--app-text, #e0e0e0)',
+  fontSize: '13px',
+  minWidth: '100px',
+};
+
+const memberRowStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  padding: '10px 12px',
+  borderRadius: '8px',
+  border: '1px solid var(--app-border, #333)',
+  marginBottom: '8px',
+};
+
+const avatarStyle: React.CSSProperties = {
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  objectFit: 'cover',
+  background: 'var(--app-muted, #333)',
+  flexShrink: 0,
+};
+
+// ============================================================================
+// Component
+// ============================================================================
+
+export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
+  isOpen,
+  onClose,
+  members,
+  projectId,
+  organisationId,
+  brandAssets,
+  onBatchComplete,
+}) => {
+  const apiBase = getApiBaseUrl();
+
+  // Step: 'configure' → 'running' → 'done'
+  const [step, setStep] = useState<'configure' | 'running' | 'done'>('configure');
+
+  // Template selection
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('fullbody_in_tenue');
+
+  // Default params (applied to all members unless overridden)
+  const [defaultParams, setDefaultParams] = useState<MemberParams>({});
+
+  // Per-member param overrides: { membershipId: { pose: 'arms_crossed', ... } }
+  const [memberOverrides, setMemberOverrides] = useState<Record<string, MemberParams>>({});
+
+  // Expanded member rows (to show per-member settings)
+  const [expandedMembers, setExpandedMembers] = useState<Set<string>>(new Set());
+
+  // Batch progress
+  const [jobStatuses, setJobStatuses] = useState<Record<string, MemberJobStatus>>({});
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const abortRef = useRef(false);
+
+  // Available templates for member context
+  const memberTemplates = useMemo(() => getTemplatesForContext('member'), []);
+
+  const selectedTemplate = useMemo(
+    () => memberTemplates.find((t) => t.id === selectedTemplateId) || memberTemplates[0],
+    [memberTemplates, selectedTemplateId]
+  );
+
+  // Initialize default params when template changes
+  useEffect(() => {
+    if (!selectedTemplate) return;
+    const defaults: MemberParams = {};
+    for (const [key, param] of Object.entries(selectedTemplate.parameters)) {
+      defaults[key] = param.default;
+    }
+    setDefaultParams(defaults);
+    setMemberOverrides({});
+    setExpandedMembers(new Set());
+  }, [selectedTemplate]);
+
+  // Reset state when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setStep('configure');
+      setJobStatuses({});
+      setCurrentIndex(0);
+      abortRef.current = false;
+    }
+  }, [isOpen]);
+
+  // Get effective params for a member
+  const getEffectiveParams = useCallback(
+    (memberId: string): MemberParams => {
+      const overrides = memberOverrides[memberId] || {};
+      return { ...defaultParams, ...overrides };
+    },
+    [defaultParams, memberOverrides]
+  );
+
+  // Toggle member row expansion
+  const toggleMemberExpanded = (memberId: string) => {
+    setExpandedMembers((prev) => {
+      const next = new Set(prev);
+      if (next.has(memberId)) next.delete(memberId);
+      else next.add(memberId);
+      return next;
+    });
+  };
+
+  // Update a member's override param
+  const setMemberParam = (memberId: string, key: string, value: string) => {
+    setMemberOverrides((prev) => ({
+      ...prev,
+      [memberId]: {
+        ...(prev[memberId] || {}),
+        [key]: value,
+      },
+    }));
+  };
+
+  // Should a parameter be visible? (visibleIf logic)
+  const isParamVisible = (param: TemplateParameter, currentParams: MemberParams): boolean => {
+    if (!param.visibleIf) return true;
+    const depValue = currentParams[param.visibleIf.param];
+    if (param.visibleIf.includes && !param.visibleIf.includes.includes(depValue)) return false;
+    if (param.visibleIf.excludes && param.visibleIf.excludes.includes(depValue)) return false;
+    return true;
+  };
+
+  // Determine input assets for a member based on template and kit_type
+  const getInputAssetsForMember = useCallback(
+    (member: BatchMember, params: MemberParams): Record<string, string | null> => {
+      const kitType = params.kit_type || 'home';
+      const kitUrl = brandAssets.kits[kitType] || brandAssets.kits['home'] || null;
+
+      // For intro/celebration templates, use the fullbody in tenue as person input
+      const isVideoTemplate = selectedTemplate?.outputType === 'video';
+      const personUrl = isVideoTemplate
+        ? member.fullbodyUrls[kitType] || member.fullbodyUrls['home'] || member.profilePhotoUrl
+        : member.profilePhotoUrl;
+
+      return {
+        logo: brandAssets.logo || null,
+        sponsor: brandAssets.sponsor || null,
+        reference: kitUrl,
+        person: personUrl ? getAssetUrl(personUrl) : null,
+      };
+    },
+    [brandAssets, selectedTemplate]
+  );
+
+  // ---- Batch execution ----
+  const startBatch = useCallback(async () => {
+    setStep('running');
+    abortRef.current = false;
+
+    // Initialize all as pending
+    const initial: Record<string, MemberJobStatus> = {};
+    members.forEach((m) => {
+      initial[m.id] = { status: 'pending' };
+    });
+    setJobStatuses(initial);
+
+    for (let i = 0; i < members.length; i++) {
+      if (abortRef.current) break;
+
+      const member = members[i];
+      setCurrentIndex(i);
+      setJobStatuses((prev) => ({
+        ...prev,
+        [member.id]: { status: 'running' },
+      }));
+
+      const params = getEffectiveParams(member.id);
+      const inputAssets = getInputAssetsForMember(member, params);
+
+      // Check if required inputs are available
+      if (!inputAssets.person) {
+        setJobStatuses((prev) => ({
+          ...prev,
+          [member.id]: { status: 'skipped', error: 'Geen profielfoto' },
+        }));
+        continue;
+      }
+
+      try {
+        // Build input URLs (filter nulls)
+        const inputImageUrls: Record<string, string> = {};
+        for (const [key, val] of Object.entries(inputAssets)) {
+          if (val) inputImageUrls[key] = val;
+        }
+
+        const res = await fetch(`${apiBase}/api/v1/generative/assets/generate/`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+          },
+          body: JSON.stringify({
+            template_id: selectedTemplate.id,
+            params,
+            variant_count: 1, // Batch always generates 1 variant per member
+            input_images: {},
+            input_image_urls: inputImageUrls,
+            organisation_id: organisationId,
+            membership_id: member.id,
+          }),
+        });
+
+        if (!res.ok) {
+          const errJson = await res.json().catch(() => ({}));
+          throw new Error(errJson?.error || errJson?.detail || `HTTP ${res.status}`);
+        }
+
+        const json = await res.json();
+        const responseData = json.data || json;
+        const variants = responseData.variants || [];
+        const variant = variants[0];
+
+        if (!variant || variant.error) {
+          throw new Error(variant?.error || 'No variant returned');
+        }
+
+        // Auto-save the variant
+        const storagePath = variant.storage_path || variant.storage_info?.storage_path;
+        const resultUrl = variant.presigned_url || variant.video_url || storagePath;
+
+        if (storagePath || variant.image_base64 || variant.video_url) {
+          // Save to brand profile
+          const isVideo = selectedTemplate?.outputType === 'video' ||
+            variant.mime_type?.startsWith('video/') ||
+            !!variant.video_url;
+
+          const saveRes = await fetch(`${apiBase}/api/v1/generative/assets/save/`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({
+              storage_path: storagePath,
+              presigned_url: variant.presigned_url,
+              video_url: variant.video_url,
+              image_base64: variant.image_base64,
+              filename: variant.filename,
+              mime_type: variant.mime_type || (isVideo ? 'video/mp4' : 'image/png'),
+              file_size_bytes: variant.storage_info?.file_size_bytes || 0,
+              organisation_id: organisationId,
+              project_id: projectId,
+              asset_type: selectedTemplate.outputAssetType,
+            }),
+          });
+
+          const saveJson = saveRes.ok ? await saveRes.json() : null;
+          const saveData = saveJson?.data?.data || saveJson?.data || saveJson;
+          const savedPath = saveData?.storage_path || storagePath;
+
+          // Update membership metadata with the generated asset
+          await updateMembershipMetadata(member, params, savedPath || resultUrl || '');
+        }
+
+        setJobStatuses((prev) => ({
+          ...prev,
+          [member.id]: { status: 'success', resultUrl: resultUrl || '' },
+        }));
+      } catch (err) {
+        console.error(`Batch generation failed for ${member.name}:`, err);
+        setJobStatuses((prev) => ({
+          ...prev,
+          [member.id]: {
+            status: 'error',
+            error: err instanceof Error ? err.message : 'Onbekende fout',
+          },
+        }));
+      }
+    }
+
+    setStep('done');
+  }, [members, getEffectiveParams, getInputAssetsForMember, selectedTemplate, organisationId, projectId, apiBase]);
+
+  // Update membership metadata after successful generation
+  const updateMembershipMetadata = useCallback(
+    async (member: BatchMember, params: MemberParams, savedUrl: string) => {
+      if (!savedUrl) return;
+
+      const kitType = params.kit_type || 'home';
+      const styleVariant = params.style_variant;
+      const templateId = selectedTemplate.id;
+      const category = selectedTemplate.category; // fullbody, closeup, intro, celebration
+
+      // Determine storage key path in metadata
+      let metaPath: string;
+      let metaKey: string;
+      let mediaSlotId: string;
+
+      if (category === 'fullbody') {
+        metaPath = 'images.fullbody';
+        metaKey = kitType;
+        mediaSlotId = 'kit';
+      } else if (category === 'closeup') {
+        metaPath = 'images.closeup';
+        metaKey = kitType;
+        mediaSlotId = 'closeup';
+      } else if (category === 'intro') {
+        metaPath = 'videos.intro';
+        metaKey = styleVariant ? `${kitType}_${styleVariant}` : kitType;
+        mediaSlotId = 'intro';
+      } else if (category === 'celebration') {
+        metaPath = 'videos.celebration';
+        metaKey = styleVariant ? `${kitType}_${styleVariant}` : kitType;
+        mediaSlotId = 'celebration';
+      } else {
+        return; // Unknown category
+      }
+
+      try {
+        // Read current metadata
+        const existingMeta = member.metadata || {};
+        const tr = existingMeta.teamreel_assets || {};
+        const media = tr.media || {};
+
+        // Build updated metadata
+        const updatedTr = { ...tr };
+
+        // Update media slot URL
+        updatedTr.media = {
+          ...media,
+          [mediaSlotId]: { ...(media[mediaSlotId] || {}), url: savedUrl },
+        };
+
+        // Update per-variant storage (images or videos)
+        if (category === 'fullbody' || category === 'closeup') {
+          const images = updatedTr.images || {};
+          const subcat = images[category] || {};
+          updatedTr.images = {
+            ...images,
+            [category]: { ...subcat, [metaKey]: savedUrl },
+          };
+        } else {
+          const videos = updatedTr.videos || {};
+          const subcat = videos[category] || {};
+          updatedTr.videos = {
+            ...videos,
+            [category]: { ...subcat, [metaKey]: savedUrl },
+          };
+        }
+
+        const updatedMeta = {
+          ...existingMeta,
+          teamreel_assets: updatedTr,
+        };
+
+        // PATCH membership metadata
+        const projectIdForApi = projectId;
+        const res = await fetch(
+          `${apiBase}/api/v1/projects/${encodeURIComponent(projectIdForApi)}/members/${encodeURIComponent(member.id)}/`,
+          {
+            method: 'PATCH',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({ metadata: updatedMeta }),
+          }
+        );
+
+        if (!res.ok) {
+          console.error(`Failed to update metadata for ${member.name}:`, await res.text());
+        }
+      } catch (err) {
+        console.error(`Error updating metadata for ${member.name}:`, err);
+      }
+    },
+    [selectedTemplate, projectId, apiBase]
+  );
+
+  const cancelBatch = () => {
+    abortRef.current = true;
+  };
+
+  // Stats
+  const completedCount = Object.values(jobStatuses).filter(
+    (s) => s.status === 'success' || s.status === 'error' || s.status === 'skipped'
+  ).length;
+  const successCount = Object.values(jobStatuses).filter((s) => s.status === 'success').length;
+  const errorCount = Object.values(jobStatuses).filter((s) => s.status === 'error').length;
+  const skippedCount = Object.values(jobStatuses).filter((s) => s.status === 'skipped').length;
+
+  if (!isOpen) return null;
+
+  return (
+    <div style={overlayStyle} onClick={onClose}>
+      <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div style={headerStyle}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '24px' }}>🚀</span>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
+                Batch AI Generatie
+              </h2>
+              <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                {members.length} {members.length === 1 ? 'member' : 'members'} geselecteerd
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            disabled={step === 'running'}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--app-text)',
+              fontSize: '20px',
+              cursor: step === 'running' ? 'not-allowed' : 'pointer',
+              opacity: step === 'running' ? 0.4 : 1,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Body */}
+        <div style={bodyStyle}>
+          {step === 'configure' && (
+            <>
+              {/* Template selector */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
+                  Template
+                </label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {memberTemplates.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setSelectedTemplateId(t.id)}
+                      style={{
+                        padding: '8px 14px',
+                        borderRadius: '8px',
+                        border: `2px solid ${selectedTemplateId === t.id ? '#3b82f6' : 'var(--app-border, #444)'}`,
+                        background: selectedTemplateId === t.id ? 'rgba(59,130,246,0.15)' : 'var(--app-surface-2, #252540)',
+                        color: 'var(--app-text)',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                      }}
+                    >
+                      <span>{t.icon}</span>
+                      <span>{t.name}</span>
+                      {t.outputType === 'video' && (
+                        <Badge variant="info" style={{ fontSize: '10px' }}>Video</Badge>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Default params */}
+              {selectedTemplate && (
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
+                    Standaard Instellingen (voor alle members)
+                  </label>
+                  <div style={{
+                    display: 'flex',
+                    gap: '12px',
+                    flexWrap: 'wrap',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    background: 'var(--app-surface-2, #252540)',
+                    border: '1px solid var(--app-border, #333)',
+                  }}>
+                    {Object.entries(selectedTemplate.parameters).map(([key, param]) => {
+                      if (!isParamVisible(param, defaultParams)) return null;
+                      return (
+                        <div key={key} style={{ minWidth: '120px' }}>
+                          <label style={{ display: 'block', fontSize: '11px', color: 'var(--app-muted-text)', marginBottom: '3px' }}>
+                            {param.label}
+                          </label>
+                          <select
+                            value={defaultParams[key] || param.default}
+                            onChange={(e) => setDefaultParams((prev) => ({ ...prev, [key]: e.target.value }))}
+                            style={selectStyle}
+                          >
+                            {param.options.map((opt) => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Member list with optional per-member overrides */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '13px', fontWeight: 600 }}>
+                    Members ({members.length})
+                  </label>
+                  <span style={{ fontSize: '11px', color: 'var(--app-muted-text)' }}>
+                    Klik op een member om instellingen aan te passen
+                  </span>
+                </div>
+                {members.map((member) => {
+                  const isExpanded = expandedMembers.has(member.id);
+                  const effectiveParams = getEffectiveParams(member.id);
+                  const hasOverrides = Object.keys(memberOverrides[member.id] || {}).length > 0;
+                  const inputAssets = getInputAssetsForMember(member, effectiveParams);
+                  const missingPerson = !inputAssets.person;
+
+                  return (
+                    <div key={member.id} style={{ marginBottom: '4px' }}>
+                      <div
+                        onClick={() => toggleMemberExpanded(member.id)}
+                        style={{
+                          ...memberRowStyle,
+                          cursor: 'pointer',
+                          opacity: missingPerson ? 0.5 : 1,
+                          borderColor: hasOverrides ? '#3b82f6' : 'var(--app-border, #333)',
+                        }}
+                      >
+                        {member.profilePhotoUrl ? (
+                          <img src={getAssetUrl(member.profilePhotoUrl) || ''} alt="" style={avatarStyle} />
+                        ) : (
+                          <div style={{ ...avatarStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
+                            👤
+                          </div>
+                        )}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '14px', fontWeight: 500 }}>{member.name}</div>
+                          {missingPerson && (
+                            <div style={{ fontSize: '11px', color: '#ef4444' }}>⚠️ Geen input foto beschikbaar</div>
+                          )}
+                          {hasOverrides && (
+                            <div style={{ fontSize: '11px', color: '#3b82f6' }}>Aangepaste instellingen</div>
+                          )}
+                        </div>
+                        <span style={{ fontSize: '12px', color: 'var(--app-muted-text)', transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
+                          ▶
+                        </span>
+                      </div>
+
+                      {isExpanded && selectedTemplate && (
+                        <div style={{
+                          marginLeft: '52px',
+                          marginBottom: '8px',
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          background: 'var(--app-surface-2, #252540)',
+                          border: '1px solid var(--app-border, #333)',
+                        }}>
+                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                            {Object.entries(selectedTemplate.parameters).map(([key, param]) => {
+                              if (!isParamVisible(param, effectiveParams)) return null;
+                              const hasOverride = memberOverrides[member.id]?.[key] !== undefined;
+                              return (
+                                <div key={key} style={{ minWidth: '110px' }}>
+                                  <label style={{
+                                    display: 'block',
+                                    fontSize: '11px',
+                                    color: hasOverride ? '#3b82f6' : 'var(--app-muted-text)',
+                                    marginBottom: '3px',
+                                    fontWeight: hasOverride ? 600 : 400,
+                                  }}>
+                                    {param.label}
+                                  </label>
+                                  <select
+                                    value={effectiveParams[key] || param.default}
+                                    onChange={(e) => setMemberParam(member.id, key, e.target.value)}
+                                    style={{
+                                      ...selectStyle,
+                                      borderColor: hasOverride ? '#3b82f6' : 'var(--app-border, #555)',
+                                    }}
+                                  >
+                                    {param.options.map((opt) => (
+                                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              );
+                            })}
+                            {hasOverrides && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setMemberOverrides((prev) => {
+                                    const next = { ...prev };
+                                    delete next[member.id];
+                                    return next;
+                                  });
+                                }}
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid var(--app-border)',
+                                  background: 'transparent',
+                                  color: 'var(--app-muted-text)',
+                                  fontSize: '11px',
+                                  cursor: 'pointer',
+                                  alignSelf: 'flex-end',
+                                  marginBottom: '2px',
+                                }}
+                              >
+                                Reset
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {(step === 'running' || step === 'done') && (
+            <>
+              {/* Progress overview */}
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
+                  <Badge variant="info">{completedCount}/{members.length} verwerkt</Badge>
+                  {successCount > 0 && <Badge variant="success">{successCount} gelukt</Badge>}
+                  {errorCount > 0 && <Badge variant="error">{errorCount} mislukt</Badge>}
+                  {skippedCount > 0 && <Badge variant="warning">{skippedCount} overgeslagen</Badge>}
+                </div>
+
+                {/* Progress bar */}
+                <div style={{
+                  height: '4px',
+                  borderRadius: '2px',
+                  background: 'var(--app-border, #333)',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${members.length > 0 ? (completedCount / members.length) * 100 : 0}%`,
+                    background: errorCount > 0 ? '#f59e0b' : '#22c55e',
+                    transition: 'width 0.3s ease',
+                  }} />
+                </div>
+              </div>
+
+              {/* Member status list */}
+              {members.map((member) => {
+                const job = jobStatuses[member.id];
+                const statusIcon =
+                  job?.status === 'running' ? '⏳' :
+                  job?.status === 'success' ? '✅' :
+                  job?.status === 'error' ? '❌' :
+                  job?.status === 'skipped' ? '⏭️' :
+                  '⬜';
+                const statusColor =
+                  job?.status === 'success' ? '#22c55e' :
+                  job?.status === 'error' ? '#ef4444' :
+                  job?.status === 'skipped' ? '#f59e0b' :
+                  'var(--app-muted-text)';
+
+                return (
+                  <div key={member.id} style={memberRowStyle}>
+                    {member.profilePhotoUrl ? (
+                      <img src={getAssetUrl(member.profilePhotoUrl) || ''} alt="" style={avatarStyle} />
+                    ) : (
+                      <div style={{ ...avatarStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
+                        👤
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '14px', fontWeight: 500 }}>{member.name}</div>
+                      {job?.error && (
+                        <div style={{ fontSize: '11px', color: '#ef4444' }}>{job.error}</div>
+                      )}
+                      {job?.status === 'running' && (
+                        <div style={{ fontSize: '11px', color: '#60a5fa' }}>Bezig met genereren...</div>
+                      )}
+                    </div>
+                    <span style={{ fontSize: '16px' }}>{statusIcon}</span>
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={footerStyle}>
+          {step === 'configure' && (
+            <>
+              <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                💎 {selectedTemplate ? selectedTemplate.creditsCost * members.length : 0} credits totaal
+                ({selectedTemplate?.creditsCost || 0} per member)
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Button variant="secondary" onClick={onClose}>
+                  Annuleren
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={startBatch}
+                  disabled={members.length === 0}
+                >
+                  🚀 Start Batch ({members.length})
+                </Button>
+              </div>
+            </>
+          )}
+
+          {step === 'running' && (
+            <>
+              <div style={{ fontSize: '13px', color: 'var(--app-muted-text)' }}>
+                ⏳ {completedCount}/{members.length} verwerkt...
+              </div>
+              <Button variant="secondary" onClick={cancelBatch}>
+                ⏹ Stop
+              </Button>
+            </>
+          )}
+
+          {step === 'done' && (
+            <>
+              <div style={{ fontSize: '13px' }}>
+                {errorCount === 0 ? '✅ Batch voltooid!' : `⚠️ ${errorCount} van ${members.length} mislukt`}
+              </div>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  onBatchComplete?.();
+                  onClose();
+                }}
+              >
+                Sluiten
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default BatchGenerationModal;
