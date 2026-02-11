@@ -232,6 +232,15 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     outputAssetType: 'kit_goalkeeper',
     creditsCost: 1,
     parameters: {
+      sleeves: {
+        label: 'Mouwen',
+        type: 'select',
+        options: [
+          { value: 'long', label: 'Lang' },
+          { value: 'short', label: 'Kort' },
+        ],
+        default: 'long',
+      },
       keeper_color: {
         label: 'Kleur',
         type: 'select',

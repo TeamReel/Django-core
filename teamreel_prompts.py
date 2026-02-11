@@ -353,25 +353,24 @@ STYLE:
             "logo": "square_pad_512",
             "sponsor": "pad_512_landscape",
         },
-        "prompt_template": """DRESS this person in the EXACT football kit shown in the reference image.
+        "prompt_template": """DRESS this person in the football kit shown in the reference image.
 
-CRITICAL INSTRUCTION - KIT REPRODUCTION:
-The reference image shows a complete football kit (shirt, shorts, socks). You MUST reproduce this kit EXACTLY:
-- SAME colors, patterns, stripes, and design details
+═══════════════════════════════════════════════════════════
+MANDATORY OVERRIDES — These settings OVERRIDE the reference image:
+═══════════════════════════════════════════════════════════
+- SLEEVES: {sleeves_label}. If the reference shows different sleeves, IGNORE the reference and use {sleeves_label}.
+- POSE: {pose_label}. The player MUST be in this exact pose regardless of the input photo pose.
+- ROLE: {role_label}.
+═══════════════════════════════════════════════════════════
+
+KIT FROM REFERENCE (use for colors, patterns, logos, sponsor ONLY):
+- Match the EXACT colors, patterns, stripes, and design details from the reference kit
 - SAME logo placement and appearance
 - SAME sponsor placement and appearance
-- SAME collar/neckline style
-- DO NOT modify, reinterpret, or "improve" the kit design in any way
-- The person should look like they are WEARING the exact kit from the reference photo
+- DO NOT modify, reinterpret, or "improve" the color scheme or pattern design
+- The person should look like they are WEARING this team's kit
 
 PERSON: Use the provided person photo. Preserve their face, hair, skin tone, and body proportions EXACTLY.
-
-KIT FROM REFERENCE:
-- Reproduce the EXACT kit design from the reference image
-- SLEEVES: {sleeves_label}.
-- Role: {role_label}.
-
-POSE: {pose_label}.
 
 EQUIPMENT:
 - Football boots (modern style, matching the kit colors from reference).
@@ -390,9 +389,11 @@ STYLE:
 - The person must be FULLY SEPARATED from the background (no blending).
 
 FINAL CHECK:
-- Does the kit match the reference EXACTLY? Same colors, same patterns, same logos?
-- Is the full body visible from head to toe?
-- Is the background a solid chroma-key color?
+- Does the kit match the reference colors/patterns/logos? ✓
+- Are the sleeves {sleeves_label}? ✓ (THIS IS MANDATORY)
+- Is the player in this pose: {pose_label}? ✓ (THIS IS MANDATORY)
+- Is the full body visible from head to toe? ✓
+- Is the background a solid chroma-key color? ✓
 """,
     },
 
@@ -423,15 +424,20 @@ FINAL CHECK:
             "logo": "square_pad_512",
             "sponsor": "pad_512_landscape",
         },
-        "prompt_template": """DRESS this person in the EXACT football kit shown in the reference image.
+        "prompt_template": """DRESS this person in the football kit shown in the reference image.
 
-CRITICAL INSTRUCTION - KIT REPRODUCTION:
-The reference image shows a complete football kit. You MUST reproduce this kit EXACTLY on the person:
-- SAME colors, patterns, stripes, and design details
+═══════════════════════════════════════════════════════════
+MANDATORY OVERRIDES — These settings OVERRIDE the reference image:
+═══════════════════════════════════════════════════════════
+- NECKLINE: {neck_label}. Use this neckline style regardless of what the reference shows.
+- EXPRESSION: {expression_label}. The person MUST have this facial expression.
+═══════════════════════════════════════════════════════════
+
+KIT FROM REFERENCE (use for colors, patterns, logos, sponsor ONLY):
+- Match the EXACT colors, patterns, stripes, and design details from the reference kit
 - SAME logo placement and appearance
 - SAME sponsor placement and appearance
-- SAME neckline/collar style
-- DO NOT modify, reinterpret, or "improve" the kit design in any way
+- DO NOT modify, reinterpret, or "improve" the color scheme or pattern design
 
 PERSON: Use the provided person photo. Preserve their face, hair, skin tone EXACTLY.
 
@@ -441,8 +447,6 @@ FRAMING:
 - Face, neck, both shoulders, and upper chest clearly visible.
 - Club logo on left chest must be visible (as shown in reference kit).
 - Sponsor on center chest should be partially visible (as shown in reference kit).
-
-EXPRESSION: {expression_label}.
 
 COMPOSITION:
 - Professional sports portrait photography.
@@ -455,9 +459,11 @@ STYLE:
 - Person must be FULLY SEPARATED from the background (clean edges, no shadow bleed).
 
 FINAL CHECK:
-- Does the visible kit portion match the reference EXACTLY? Same colors, same patterns, same logos?
-- Is the background a solid chroma-key color?
-- Are both shoulders fully visible?
+- Does the visible kit portion match the reference colors/patterns/logos? ✓
+- Is the neckline {neck_label}? ✓ (THIS IS MANDATORY)
+- Is the expression: {expression_label}? ✓ (THIS IS MANDATORY)
+- Is the background a solid chroma-key color? ✓
+- Are both shoulders fully visible? ✓
 """,
     },
 
@@ -496,6 +502,7 @@ FINAL CHECK:
         "prompt_template": """6-second realistic player intro video. Living portrait style.
 
 The provided image is the FIRST FRAME. Keep the player EXACTLY as shown — same face, hair, skin tone, body, clothing, and kit.
+Kit type: {kit_type_label}.
 
 MOVEMENT:
 - The player starts in the EXACT pose from the input image.
@@ -553,6 +560,7 @@ RULES:
         "prompt_template": """6-second realistic goal celebration video.
 
 The provided image is the FIRST FRAME. Keep the player EXACTLY as shown — same face, hair, skin tone, body, clothing, and kit.
+Kit type: {kit_type_label}.
 
 MOVEMENT:
 - The player starts in the EXACT pose from the input image.
@@ -596,6 +604,7 @@ PARAM_RESOLVERS = {
         "modern_slim": "Modern slim-fit athletic cut.",
         "classic": "Classic relaxed-fit style.",
         "windbreaker": "Lightweight windbreaker style.",
+        "hoodie": "Hooded tracksuit style with drawstring hood.",
     },
     "orientation": {
         "landscape": "Landscape rectangle (2:1 aspect ratio, 512x256px).",
@@ -616,12 +625,75 @@ PARAM_RESOLVERS = {
         "away": "AWAY KIT (secondary/inverted colors)",
         "third": "THIRD KIT (alternative design)",
     },
+    "shirt_base": {
+        "auto_home": "Use the team's PRIMARY HOME colors from the reference photo analysis.",
+        "auto_away_contrast": "Use CONTRASTING colors to the home kit (inverted/opposite scheme).",
+        "white": "WHITE base shirt color.",
+        "black": "BLACK base shirt color.",
+        "red": "RED base shirt color.",
+        "blue": "BLUE base shirt color.",
+        "green": "GREEN base shirt color.",
+        "yellow": "YELLOW base shirt color.",
+        "orange": "ORANGE base shirt color.",
+        "purple": "PURPLE base shirt color.",
+        "navy": "NAVY BLUE base shirt color.",
+        "maroon": "MAROON / DARK RED base shirt color.",
+        "sky_blue": "SKY BLUE / LIGHT BLUE base shirt color.",
+    },
+    "pattern_style": {
+        "solid": "SOLID single color — no pattern, clean monochrome shirt.",
+        "vertical_stripes": "VERTICAL STRIPES — alternating colored vertical stripes down the shirt.",
+        "horizontal_hoops": "HORIZONTAL HOOPS — horizontal bands/stripes across the shirt.",
+        "diagonal_sash": "DIAGONAL SASH — a bold diagonal stripe across the chest.",
+        "half_half": "HALF & HALF — shirt split vertically into two distinct colors.",
+        "pinstripes": "PINSTRIPES — thin, subtle vertical pinstripes.",
+        "subtle_graphic": "SUBTLE GRAPHIC — a modern tonal graphic/texture pattern (e.g. geometric, camo-like).",
+        "graphic_print": "GRAPHIC PRINT — bold all-over graphic/artistic print pattern.",
+        "camo": "CAMOUFLAGE — military-inspired camo pattern.",
+        "geometric": "GEOMETRIC — angular geometric shapes and patterns.",
+        "gradient": "GRADIENT — smooth color gradient transition (top to bottom or left to right).",
+    },
+    "shorts_style": {
+        "match_shirt": "MATCH SHIRT color — shorts use the same primary color as the shirt.",
+        "white": "WHITE shorts.",
+        "black": "BLACK shorts.",
+        "navy": "NAVY BLUE shorts.",
+        "contrast": "CONTRASTING color — shorts use a contrasting/accent color from the kit.",
+    },
+    "socks_style": {
+        "match_shirt": "MATCH SHIRT color — socks use the same primary color as the shirt.",
+        "match_shorts": "MATCH SHORTS color — socks use the same color as the shorts.",
+        "white": "WHITE socks.",
+        "black": "BLACK socks.",
+        "contrast": "CONTRASTING color — socks use an accent color from the kit.",
+    },
     "keeper_color": {
         "neon_green": "NEON GREEN / Fluorescent Green",
         "neon_orange": "NEON ORANGE / Fluorescent Orange",
         "purple": "DEEP PURPLE / Violet",
         "neon_yellow": "NEON YELLOW / Fluorescent Yellow",
         "pink": "BRIGHT PINK / Magenta",
+        "black": "BLACK — classic dark goalkeeper kit",
+        "red": "RED — bold red goalkeeper kit",
+        "blue": "BLUE — royal blue goalkeeper kit",
+        "grey": "GREY — neutral grey goalkeeper kit",
+    },
+    "tracksuit_color": {
+        "team_primary": "Use the team's PRIMARY color from the kit/brand identity.",
+        "black": "BLACK base tracksuit.",
+        "navy": "NAVY BLUE base tracksuit.",
+        "grey": "GREY base tracksuit.",
+        "team_secondary": "Use the team's SECONDARY/accent color from the kit/brand identity.",
+        "red": "RED base tracksuit.",
+        "blue": "BLUE base tracksuit.",
+    },
+    "accent_color": {
+        "team_secondary": "Use the team's SECONDARY color as accent/trim.",
+        "white": "WHITE accent trim, zippers, and stripes.",
+        "black": "BLACK accent trim, zippers, and stripes.",
+        "neon": "NEON / Fluorescent accent highlights for a modern look.",
+        "gold": "GOLD / Metallic gold accent details.",
+        "silver": "SILVER / Metallic silver accent details.",
     },
     "pose": {
         "standing_front": "Standing facing camera, arms at sides, confident stance",
