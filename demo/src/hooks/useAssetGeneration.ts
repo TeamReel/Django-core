@@ -241,6 +241,9 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
       }
 
       try {
+        const isVideo = selectedVariant.mime_type?.startsWith('video/') ||
+            !!selectedVariant.video_url || !!selectedVariant.video_base64;
+
         const response = await fetch(`${apiBase}/api/v1/generative/assets/save/`, {
           method: 'POST',
           credentials: 'include',
@@ -253,8 +256,9 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             presigned_url: selectedVariant.presigned_url,
             video_url: selectedVariant.video_url,
             image_base64: selectedVariant.image_base64,
+            video_base64: selectedVariant.video_base64,
             filename: selectedVariant.filename,
-            mime_type: selectedVariant.mime_type || 'image/png',
+            mime_type: selectedVariant.mime_type || (isVideo ? 'video/mp4' : 'image/png'),
             file_size_bytes: selectedVariant.storage_info?.file_size_bytes || 0,
             organisation_id: orgId,
             project_id: projId,

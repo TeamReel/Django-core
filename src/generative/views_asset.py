@@ -274,39 +274,109 @@ def generate_asset_view(request: Request) -> Response:
                 )
 
             # Build response for video variants
-            variants = []
+            # Use the same S3-storage-in-view pattern as images
+            from files.utils import get_storage_backend as _get_sb
 
-            # If "variants" list exists (new standard), use it
-            if result.get("variants"):
-                for i, v_result in enumerate(result["variants"]):
-                    variant = {
-                        "variant_index": i,
-                        "mime_type": v_result["mime_type"],
-                        "filename": v_result["filename"],
-                    }
-                    if v_result.get("video_url"):
-                        variant["video_url"] = v_result["video_url"]
-                        variant["file_asset_id"] = v_result.get("file_asset_id")
-                    elif v_result.get("video_bytes"):
-                        variant["video_base64"] = base64.b64encode(v_result["video_bytes"]).decode(
-                            "utf-8"
-                        )
-                    # Include storage_path for save endpoint
-                    if v_result.get("storage_path"):
-                        variant["storage_path"] = v_result["storage_path"]
-                    variants.append(variant)
-            else:
+            v_storage = _get_sb()
+            v_org = None
+            if organisation_id:
+                try:
+                    from organisations.models import Organisation as Org
+
+                    v_org = Org.objects.get(id=organisation_id)
+                except Exception:
+                    pass
+
+            variants = []
+            all_variants = result.get("variants") or []
+            if not all_variants:
                 # Fallback: single result in root dict
+                all_variants = [result]
+
+            for i, v_result in enumerate(all_variants):
                 variant = {
-                    "variant_index": 0,
-                    "mime_type": result["mime_type"],
-                    "filename": result["filename"],
+                    "variant_index": i,
+                    "mime_type": v_result.get("mime_type") or "video/mp4",
+                    "filename": v_result.get("filename"),
                 }
-                if result.get("video_url"):
-                    variant["video_url"] = result["video_url"]
-                    variant["file_asset_id"] = result.get("file_asset_id")
-                elif result.get("video_base64"):
-                    variant["video_base64"] = result["video_base64"]
+
+                v_bytes = v_result.get("video_bytes")
+                v_url = v_result.get("video_url")
+                v_spath = v_result.get("storage_path")
+                v_faid = v_result.get("file_asset_id")
+
+                # If pipeline already stored to S3, use that
+                if v_url:
+                    variant["video_url"] = v_url
+                    variant["file_asset_id"] = v_faid
+                    variant["storage_path"] = v_spath
+                elif v_bytes and v_org:
+                    # Pipeline didn't store to S3 — do it here (same as image path)
+                    try:
+                        from django.core.files.base import ContentFile
+                        from django.utils import timezone
+
+                        import uuid as _uuid
+
+                        fname = v_result.get("filename") or f"video_{i}.mp4"
+                        ts = timezone.now().strftime("%Y%m%d")
+                        sfx = str(_uuid.uuid4())[:8]
+
+                        ctx_type = params.get("template_type", "output")
+                        ctx_sub = params.get("template_subtype", "")
+                        folder = f"{ctx_type}/{ctx_sub}" if ctx_sub else ctx_type
+
+                        name_parts = fname.rsplit(".", 1)
+                        uf = (
+                            f"{name_parts[0]}_{ts}_{sfx}.{name_parts[1]}"
+                            if len(name_parts) == 2
+                            else f"{fname}_{ts}_{sfx}"
+                        )
+
+                        if membership_id:
+                            sp = f"members/{membership_id}/generated/{folder}/{uf}"
+                        elif v_org:
+                            sp = f"orgs/{v_org.id}/generated/{folder}/{uf}"
+                        else:
+                            sp = f"generated/{folder}/{uf}"
+
+                        fo = ContentFile(v_bytes, name=fname)
+                        final_sp = v_storage.save(sp, fo)
+
+                        # Create FileAsset
+                        from files.models import FileAsset
+
+                        fa = FileAsset.objects.create(
+                            organization=v_org,
+                            uploaded_by=request.user if request.user.is_authenticated else None,
+                            original_name=fname,
+                            storage_path=final_sp,
+                            file_size=len(v_bytes),
+                            mime_type="video/mp4",
+                            is_public=False,
+                            metadata={"source": "ai_generation", "template_id": template_id},
+                        )
+
+                        try:
+                            purl = v_storage.get_url(final_sp, signed=True, expires_in=3600)
+                        except Exception:
+                            purl = None
+
+                        variant["video_url"] = purl
+                        variant["storage_path"] = final_sp
+                        variant["file_asset_id"] = str(fa.id)
+                        logger.info("Video variant %d stored in view: %s", i, final_sp)
+                    except Exception as store_err:
+                        logger.exception(
+                            "Failed to store video variant %d in view: %s", i, store_err
+                        )
+                        # Fall back to base64
+                        variant["video_base64"] = base64.b64encode(v_bytes).decode("utf-8")
+                elif v_bytes:
+                    # No org context — return base64 as last resort
+                    variant["video_base64"] = base64.b64encode(v_bytes).decode("utf-8")
+                elif v_result.get("video_base64"):
+                    variant["video_base64"] = v_result["video_base64"]
 
                 variants.append(variant)
 
@@ -695,6 +765,11 @@ class SaveAssetInputSerializer(serializers.Serializer):
         allow_null=True,
         help_text="Base64 encoded image data",
     )
+    video_base64 = serializers.CharField(
+        required=False,
+        allow_null=True,
+        help_text="Base64 encoded video data (fallback if no video_url/storage_path)",
+    )
     filename = serializers.CharField(
         required=False,
         allow_null=True,
@@ -702,7 +777,7 @@ class SaveAssetInputSerializer(serializers.Serializer):
     )
     mime_type = serializers.CharField(
         default="image/png",
-        help_text="MIME type of the image",
+        help_text="MIME type of the asset",
     )
     file_size_bytes = serializers.IntegerField(
         default=0,
@@ -720,9 +795,14 @@ class SaveAssetInputSerializer(serializers.Serializer):
         allow_null=True,
         help_text="Project ID (UUID) or Slug for brand lookup",
     )
+    membership_id = serializers.UUIDField(
+        required=False,
+        allow_null=True,
+        help_text="Membership ID for member-scoped S3 path",
+    )
     asset_type = serializers.CharField(
         required=True,
-        help_text="BrandAsset type (e.g. logo_light, sponsor_logo, kit_home)",
+        help_text="BrandAsset type (e.g. logo_light, sponsor_logo, kit_home, member_intro)",
     )
 
 
@@ -743,11 +823,13 @@ def save_asset_view(request: Request) -> Response:
     presigned_url = serializer.validated_data.get("presigned_url")
     video_url = serializer.validated_data.get("video_url")
     image_base64 = serializer.validated_data.get("image_base64")
+    video_base64 = serializer.validated_data.get("video_base64")
     filename = serializer.validated_data.get("filename") or "saved_asset.png"
     mime_type = serializer.validated_data.get("mime_type") or "image/png"
     file_size_bytes = serializer.validated_data.get("file_size_bytes") or 0
     organisation_id = serializer.validated_data.get("organisation_id")
     project_id = serializer.validated_data.get("project_id")
+    membership_id = serializer.validated_data.get("membership_id")
     asset_type = serializer.validated_data.get("asset_type")
 
     logger.info(
@@ -820,6 +902,20 @@ def save_asset_view(request: Request) -> Response:
                 {"error": f"Invalid base64 data: {e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+    elif video_base64:
+        try:
+            if "," in video_base64:
+                video_base64 = video_base64.split(",", 1)[1]
+            image_bytes = base64.b64decode(video_base64)
+            file_size_bytes = len(image_bytes)
+            # Ensure mime_type is video
+            if not mime_type.startswith("video/"):
+                mime_type = "video/mp4"
+        except Exception as e:
+            return Response(
+                {"error": f"Invalid video base64 data: {e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
     elif presigned_url or video_url:
         download_url = presigned_url or video_url
         try:
@@ -835,17 +931,19 @@ def save_asset_view(request: Request) -> Response:
                 status=status.HTTP_400_BAD_REQUEST,
             )
     elif storage_path:
-        # Image already in S3, just create records pointing to it
+        # Asset already in S3, just create records pointing to it
         pass
     else:
         return Response(
-            {"error": "Provide image_base64, presigned_url, video_url, or storage_path"},
+            {
+                "error": "Provide image_base64, video_base64, presigned_url, video_url, or storage_path"
+            },
             status=status.HTTP_400_BAD_REQUEST,
         )
 
     current_user = request.user if request.user.is_authenticated else None
 
-    # If we have image bytes, save to proper storage location
+    # If we have bytes (image or video), save to proper storage location
     final_storage_path = storage_path
     if image_bytes and not storage_path:
         try:
@@ -869,8 +967,17 @@ def save_asset_view(request: Request) -> Response:
             else:
                 unique_filename = f"{filename}_{timestamp}_{unique_suffix}"
 
-            # Store in organisation's brand folder
-            storage_path_prefix = f"orgs/{organisation.id}/brand/{asset_type}/{unique_filename}"
+            # Build hierarchical path: membership > project > org (media-architecture.md)
+            if membership_id:
+                storage_path_prefix = (
+                    f"members/{membership_id}/generated/{asset_type}/{unique_filename}"
+                )
+            elif project:
+                storage_path_prefix = (
+                    f"projects/{project.id}/generated/{asset_type}/{unique_filename}"
+                )
+            else:
+                storage_path_prefix = f"orgs/{organisation.id}/brand/{asset_type}/{unique_filename}"
 
             file_obj = ContentFile(image_bytes, name=filename)
             final_storage_path = storage.save(storage_path_prefix, file_obj)
