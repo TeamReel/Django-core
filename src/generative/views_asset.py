@@ -30,36 +30,34 @@ from rest_framework.response import Response
 logger = logging.getLogger("generative.views.asset")
 
 # =============================================================================
-# In-memory task store for async video generation
+# Cache-backed task store for async video generation
 # =============================================================================
-# Uses a simple dict + lock.  Daphne runs as a single process so this is safe.
-# Tasks are auto-cleaned after 30 min to prevent memory leaks.
+# Uses Django's cache framework (Redis in production, in-memory locally).
+# This ensures tasks survive worker restarts and work across multiple workers.
+# Tasks auto-expire after 30 minutes via cache TTL.
 
-_VIDEO_TASKS: dict[str, dict[str, Any]] = {}
-_VIDEO_TASKS_LOCK = threading.Lock()
+_TASK_CACHE_PREFIX = "video_task:"
 _TASK_MAX_AGE = 1800  # 30 minutes
 
 
 def _set_task(task_id: str, data: dict[str, Any]) -> None:
+    """Store task data in cache with automatic expiration."""
+    from django.core.cache import cache
+
     data.setdefault("_created", time.time())
-    with _VIDEO_TASKS_LOCK:
-        _VIDEO_TASKS[task_id] = data
+    cache.set(f"{_TASK_CACHE_PREFIX}{task_id}", data, timeout=_TASK_MAX_AGE)
 
 
 def _get_task(task_id: str) -> dict[str, Any] | None:
-    with _VIDEO_TASKS_LOCK:
-        return _VIDEO_TASKS.get(task_id)
+    """Retrieve task data from cache."""
+    from django.core.cache import cache
+
+    return cache.get(f"{_TASK_CACHE_PREFIX}{task_id}")
 
 
 def _cleanup_old_tasks() -> None:
-    """Remove tasks older than _TASK_MAX_AGE seconds."""
-    now = time.time()
-    with _VIDEO_TASKS_LOCK:
-        expired = [
-            tid for tid, d in _VIDEO_TASKS.items() if now - d.get("_created", 0) > _TASK_MAX_AGE
-        ]
-        for tid in expired:
-            del _VIDEO_TASKS[tid]
+    """No-op: cache handles expiration automatically via TTL."""
+    pass
 
 
 # =============================================================================
