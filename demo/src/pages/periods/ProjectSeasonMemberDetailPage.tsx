@@ -152,11 +152,30 @@ function readVideoVariantsFromMembership(membership: any): AssetVariantsMap {
 
   const safeObj = (obj: any) => (obj && typeof obj === 'object' ? { ...obj } : {});
 
+  // Migrate old intro/celebration keys (flat style variant → composite home_variant)
+  const migrateVideoKeys = (raw: Record<string, string>): Record<string, string> => {
+    const migrated: Record<string, string> = {};
+    const styleVariants = ['arms_crossed', 'hand_up', 'thumbs_up', 'arms_wide', 'fist_pump', 'point_to_sky', 'slide'];
+    for (const [key, val] of Object.entries(raw)) {
+      if (!val) continue;
+      // Already composite key (e.g. home_arms_crossed)? Keep as-is
+      if (key.includes('_') && !styleVariants.includes(key)) {
+        migrated[key] = val;
+      } else if (styleVariants.includes(key)) {
+        // Old format: bare style variant → migrate to home_ prefix
+        migrated[`home_${key}`] = val;
+      } else {
+        migrated[key] = val;
+      }
+    }
+    return migrated;
+  };
+
   const result: AssetVariantsMap = {
     fullbody: safeObj(images?.fullbody),
     closeup: safeObj(images?.closeup),
-    intro: safeObj(videos?.intro),
-    celebration: safeObj(videos?.celebration),
+    intro: migrateVideoKeys(safeObj(videos?.intro)),
+    celebration: migrateVideoKeys(safeObj(videos?.celebration)),
   };
 
   // Migrate: if form.kit has a URL but fullbody.home is empty, seed it
@@ -707,6 +726,9 @@ export default function ProjectSeasonMemberDetailPage() {
   const [aiSelectedKitType, setAiSelectedKitType] = useState<string>('home');
   const [aiInputPersonUrl, setAiInputPersonUrl] = useState<string | null>(null); // For intro/celebration: player in tenue
   const [aiSelectedStyleVariant, setAiSelectedStyleVariant] = useState<string | null>(null); // For intro/celebration: pose style
+
+  // Video Preview Modal State (click-to-enlarge)
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
 
   // Fetch parent brand assets (from club) for tenue inheritance
   const clubId = club?.id || project?.id;
@@ -1672,7 +1694,8 @@ export default function ProjectSeasonMemberDetailPage() {
 
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasPlayerInTenue ? 1 : 0.5 }}>
                               {introVariantDefs.map((variant) => {
-                                const variantUrl = videoVariants.intro[variant.id] || '';
+                                const compositeKey = `${kit.id}_${variant.id}`;
+                                const variantUrl = videoVariants.intro[compositeKey] || '';
                                 const hasVideo = Boolean(variantUrl);
                                 const resolvedUrl = hasVideo ? getAssetUrl(variantUrl) : null;
 
@@ -1683,15 +1706,18 @@ export default function ProjectSeasonMemberDetailPage() {
                                     overflow: 'hidden',
                                     background: 'var(--app-surface)',
                                   }}>
-                                    <div style={{
-                                      aspectRatio: '9/16',
-                                      background: hasVideo ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      minHeight: '180px',
-                                      position: 'relative',
-                                    }}>
+                                    <div
+                                      onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
+                                      style={{
+                                        aspectRatio: '9/16',
+                                        background: hasVideo ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        minHeight: '180px',
+                                        position: 'relative',
+                                        cursor: hasVideo ? 'pointer' : 'default',
+                                      }}>
                                       {hasVideo && resolvedUrl ? (
                                         <>
                                           <video
@@ -1749,7 +1775,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                   ...videoVariants,
                                                   intro: { ...videoVariants.intro },
                                                 };
-                                                delete newVV.intro[variant.id];
+                                                delete newVV.intro[compositeKey];
                                                 setVideoVariants(newVV);
                                                 const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
                                                 await handleMetadataUpdate(updatedMeta);
@@ -1844,7 +1870,8 @@ export default function ProjectSeasonMemberDetailPage() {
 
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasPlayerInTenue ? 1 : 0.5 }}>
                               {celebrationVariantDefs.map((variant) => {
-                                const variantUrl = videoVariants.celebration[variant.id] || '';
+                                const compositeKey = `${kit.id}_${variant.id}`;
+                                const variantUrl = videoVariants.celebration[compositeKey] || '';
                                 const hasVideo = Boolean(variantUrl);
                                 const resolvedUrl = hasVideo ? getAssetUrl(variantUrl) : null;
 
@@ -1855,15 +1882,18 @@ export default function ProjectSeasonMemberDetailPage() {
                                     overflow: 'hidden',
                                     background: 'var(--app-surface)',
                                   }}>
-                                    <div style={{
-                                      aspectRatio: '9/16',
-                                      background: hasVideo ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      minHeight: '180px',
-                                      position: 'relative',
-                                    }}>
+                                    <div
+                                      onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
+                                      style={{
+                                        aspectRatio: '9/16',
+                                        background: hasVideo ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        minHeight: '180px',
+                                        position: 'relative',
+                                        cursor: hasVideo ? 'pointer' : 'default',
+                                      }}>
                                       {hasVideo && resolvedUrl ? (
                                         <>
                                           <video
@@ -1921,7 +1951,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                   ...videoVariants,
                                                   celebration: { ...videoVariants.celebration },
                                                 };
-                                                delete newVV.celebration[variant.id];
+                                                delete newVV.celebration[compositeKey];
                                                 setVideoVariants(newVV);
                                                 const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
                                                 await handleMetadataUpdate(updatedMeta);
@@ -2338,6 +2368,10 @@ export default function ProjectSeasonMemberDetailPage() {
         }}
         initialParams={{
           kit_type: aiSelectedKitType,
+          // Auto-map role from kit type context
+          ...(aiSelectedKitType === 'goalkeeper' ? { role: 'goalkeeper' } : {}),
+          ...(aiSelectedKitType === 'coach' ? { role: 'coach' } : {}),
+          ...(aiSelectedKitType === 'assistant' ? { role: 'assistant' } : {}),
           ...(aiSelectedStyleVariant ? { style_variant: aiSelectedStyleVariant } : {}),
         }}
         previousResultUrl={
@@ -2346,9 +2380,9 @@ export default function ProjectSeasonMemberDetailPage() {
             : aiPreselectedTemplate === 'closeup_in_tenue'
               ? videoVariants.closeup[aiSelectedKitType] || form.closeup?.url || null
               : aiPreselectedTemplate === 'member_intro' && aiSelectedStyleVariant
-                ? videoVariants.intro[aiSelectedStyleVariant] || null
+                ? videoVariants.intro[`${aiSelectedKitType}_${aiSelectedStyleVariant}`] || null
                 : aiPreselectedTemplate === 'member_goal_celebration' && aiSelectedStyleVariant
-                  ? videoVariants.celebration[aiSelectedStyleVariant] || null
+                  ? videoVariants.celebration[`${aiSelectedKitType}_${aiSelectedStyleVariant}`] || null
                   : null
         }
         onAssetSaved={async (savedInfo) => {
@@ -2401,15 +2435,16 @@ export default function ProjectSeasonMemberDetailPage() {
               await handleMetadataUpdate(updatedMeta);
 
             } else if ((isIntroVideo || isCelebrationVideo) && aiSelectedStyleVariant) {
-              // Per-variant video storage
+              // Per-kit + per-variant video storage (composite key: kitType_styleVariant)
               const category = isIntroVideo ? 'intro' : 'celebration';
-              console.log(`🎯 Saving video variant: ${category}.${aiSelectedStyleVariant} = ${savedUrl}`);
+              const compositeKey = `${effectiveKitType}_${aiSelectedStyleVariant}`;
+              console.log(`🎯 Saving video variant: ${category}.${compositeKey} = ${savedUrl}`);
 
               const newVariants: AssetVariantsMap = {
                 ...videoVariants,
                 [category]: {
                   ...videoVariants[category],
-                  [aiSelectedStyleVariant]: savedUrl,
+                  [compositeKey]: savedUrl,
                 },
               };
               setVideoVariants(newVariants);
@@ -2424,6 +2459,65 @@ export default function ProjectSeasonMemberDetailPage() {
           }
         }}
       />
+
+      {/* Video Preview Modal (click-to-enlarge) */}
+      {videoPreviewUrl && (
+        <div
+          onClick={() => setVideoPreviewUrl(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(0, 0, 0, 0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              maxWidth: '400px',
+              maxHeight: '90vh',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+            }}
+          >
+            <video
+              src={videoPreviewUrl}
+              style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '12px' }}
+              controls
+              autoPlay
+              loop
+              playsInline
+            />
+            <button
+              onClick={() => setVideoPreviewUrl(null)}
+              style={{
+                position: 'absolute',
+                top: '8px',
+                right: '8px',
+                background: 'rgba(0,0,0,0.7)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                fontSize: '16px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }

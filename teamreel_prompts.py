@@ -345,7 +345,7 @@ STYLE:
             "role": {
                 "label": "Rol",
                 "type": "select",
-                "options": ["player", "goalkeeper"],
+                "options": ["player", "goalkeeper", "coach", "assistant"],
                 "default": "player",
             },
         },
@@ -624,6 +624,10 @@ PARAM_RESOLVERS = {
         "home": "HOME KIT (primary team colors)",
         "away": "AWAY KIT (secondary/inverted colors)",
         "third": "THIRD KIT (alternative design)",
+        "goalkeeper": "GOALKEEPER KIT (distinctive keeper colors)",
+        "coach": "COACH / TRAINER outfit (tracksuit or training wear)",
+        "assistant": "ASSISTANT COACH outfit (same as coach/trainer)",
+        "training": "TRAINING KIT (casual training wear)",
     },
     "shirt_base": {
         "auto_home": "Use the team's PRIMARY HOME colors from the reference photo analysis.",
@@ -709,6 +713,8 @@ PARAM_RESOLVERS = {
     "role": {
         "player": "Field player",
         "goalkeeper": "Goalkeeper",
+        "coach": "Head coach / Trainer",
+        "assistant": "Assistant coach / Staff member",
     },
     "color_scheme": {
         "team_colors": "Use the team's primary and secondary colors from the kit analysis.",
@@ -731,6 +737,8 @@ PARAM_RESOLVERS = {
 ROLE_EQUIPMENT = {
     "player": "- Football boots (modern style).",
     "goalkeeper": "- Football boots (modern style).\n- Goalkeeper gloves (matching team colors).",
+    "coach": "- Training shoes / sneakers (no football boots).\n- Optional: whistle on lanyard, stopwatch.",
+    "assistant": "- Training shoes / sneakers (no football boots).",
 }
 
 
