@@ -441,7 +441,7 @@ def generate_video(
             )
 
             operation = client.models.generate_videos(
-                model="veo-2.0-generate-preview",
+                model="veo-generate-preview",
                 prompt=final_prompt,
                 image=image_obj,
                 config=veo_config,
@@ -452,7 +452,7 @@ def generate_video(
                 "Generating %d video(s) with text prompt only (text-to-video)", variant_count
             )
             operation = client.models.generate_videos(
-                model="veo-2.0-generate-preview",
+                model="veo-generate-preview",
                 prompt=final_prompt,
                 config=veo_config,
             )
