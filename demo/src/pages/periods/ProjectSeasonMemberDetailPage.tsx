@@ -2275,8 +2275,9 @@ export default function ProjectSeasonMemberDetailPage() {
           setShowAiModal(false);
 
           // If we have storage info, save it to membership metadata
-          if (savedInfo?.storagePath) {
+          if (savedInfo?.storagePath || savedInfo?.presignedUrl) {
             const assetType = savedInfo.assetType;
+            const savedUrl = savedInfo.storagePath || savedInfo.presignedUrl || '';
 
             // Determine which slot to update based on asset type
             let slotId: keyof MemberMediaForm | null = null;
@@ -2284,12 +2285,16 @@ export default function ProjectSeasonMemberDetailPage() {
               slotId = 'kit'; // For now, all fullbody goes to 'kit' slot
             } else if (assetType.startsWith('member_closeup')) {
               slotId = 'closeup'; // For now, all closeup goes to 'closeup' slot
+            } else if (assetType.startsWith('member_intro')) {
+              slotId = 'intro'; // Short intro video
+            } else if (assetType.startsWith('member_goal_celebration')) {
+              slotId = 'celebration'; // Goal celebration video
             }
 
             if (slotId) {
               const newForm = {
                 ...form,
-                [slotId]: { url: savedInfo.storagePath, caption: '' },
+                [slotId]: { url: savedUrl, caption: '' },
               };
               setForm(newForm);
 

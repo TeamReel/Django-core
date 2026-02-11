@@ -4,7 +4,7 @@ Integrates teamreel_prompts.py templates with Google Gemini for:
 1. Kit analysis (Gemini 2.0 Flash → text description)
 2. Prompt resolution (template + params + analysis → final prompt)
 3. Image generation (nano-banana-pro-preview → variants)
-4. Video generation (MiniMax/Hailuo → 5-6 second videos, Veo 3.1 fallback)
+4. Video generation (MiniMax/Hailuo video-01 → 6 second videos)
 
 This is the backend counterpart of the frontend AssetGenerationModal.
 """
@@ -351,12 +351,15 @@ def generate_video(
     max_wait_seconds: int = 300,
     variant_count: int = 1,
 ) -> dict[str, Any]:
-    """Generate a short video using MiniMax/Hailuo (primary) or Google Veo (fallback).
+    """Generate a short video using MiniMax/Hailuo (primary) or Google Veo (legacy fallback).
 
     Provider selection:
     - If MINIMAX_API_KEY is set → use MiniMax (Hailuo) video-01
     - Else if GOOGLE_API_KEY is set → use Google Veo 3.1 (legacy, often content-blocked)
     - Else → error
+
+    Videos are 6 seconds, 9:16 vertical, with chroma-key background for compositing.
+    Input: player in tenue image as first_frame_image for image-to-video generation.
 
     Args:
         template_id: Template key from teamreel_prompts.TEMPLATES (must have output_type='video')

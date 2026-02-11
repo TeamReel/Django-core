@@ -468,8 +468,8 @@ FINAL CHECK:
         "id": "member_intro",
         "name": "Speler Intro Video",
         "category": "intro",
-        "output_type": "video",  # VIDEO output (5-6 seconds)
-        "description": "Genereer een korte intro video (5-6 sec) van speler in tenue met een karakteristieke pose.",
+        "output_type": "video",  # VIDEO output (6 seconds)
+        "description": "Genereer een korte intro video (6 sec) van speler in tenue met een karakteristieke pose.",
         "input_requirements": ["person_photo"],
         "parameters": {
             "kit_type": {
@@ -490,28 +490,32 @@ FINAL CHECK:
             "fps": 30,
             "resolution": "1080p",
             "aspect_ratio": "9:16",  # Vertical for social media
-            "loop": True,  # User request: Start shot == End shot
+            "loop": True,  # Start shot == End shot
+            "minimax_model": "video-01",
         },
-        "prompt_template": """Create a 5-6 SECOND PLAYER INTRO VIDEO. "Living Portrait" style.
+        "prompt_template": """6-second realistic player intro video. Living portrait style.
 
-PERSON: Use the provided player image as the STARTING FRAME. The player must remain FULLY IN FRAME at all times (do not crop head or feet).
+The provided image is the FIRST FRAME. Keep the player EXACTLY as shown — same face, hair, skin tone, body, clothing, and kit.
 
-ANIMATION:
-- Start: EXACT match of the input reference image.
-- Action: Subtle, confident movement (breathing, slight shift of weight, adjusting kit or glancing at camera).
-- Pose: {style_variant_label}
-- End: Return to the EXACT starting pose (seamless loop).
+MOVEMENT:
+- The player starts in the EXACT pose from the input image.
+- Subtle, natural motion only: breathing, slight weight shift, small head turn toward camera.
+- Pose action: {style_variant_label}
+- The player returns to the EXACT starting pose by the end of the video (seamless loop).
+- Movement must be slow, controlled, and realistic. No sudden jerks.
 
-ATMOSPHERE:
-- Realistic environment (pitch or stadium tunnel).
-- NO Visual Effects (no lightning, no fire, no glowing particles).
-- NO Text overlays.
-- Professional broadcast realism is the goal.
+BACKGROUND:
+- Plain solid color background (bright green #00FF00 or bright blue #0000FF chroma-key).
+- NO stadium, NO pitch, NO scenery, NO environment of any kind.
+- The player must be completely isolated against the flat color.
 
-STYLE:
-- High-end broadcast-quality player introduction video.
-- 30fps, 1080p vertical (9:16 aspect ratio).
-- CINEMAGRAPH style: controlled, powerful, minimal movement.
+RULES:
+- NO visual effects, NO particles, NO lens flares, NO fire, NO lightning, NO glow.
+- NO text overlays, NO graphics, NO logos added.
+- NO camera movement. Static locked-off camera. The player moves, not the camera.
+- Photorealistic quality. Natural lighting. Professional studio setup.
+- Full body must remain visible at all times (head to toe, no cropping).
+- 9:16 vertical aspect ratio.
 """,
     },
 
@@ -522,8 +526,8 @@ STYLE:
         "id": "member_goal_celebration",
         "name": "Speler Doelpunt Viering Video",
         "category": "celebration",
-        "output_type": "video",  # VIDEO output (5-6 seconds)
-        "description": "Genereer een korte viering video (5-6 sec) van speler met een doelpunt-viering pose.",
+        "output_type": "video",  # VIDEO output (6 seconds)
+        "description": "Genereer een korte viering video (6 sec) van speler met een doelpunt-viering pose.",
         "input_requirements": ["person_photo"],
         "parameters": {
             "kit_type": {
@@ -544,35 +548,32 @@ STYLE:
             "fps": 30,
             "resolution": "1080p",
             "aspect_ratio": "9:16",  # Vertical for social media
+            "minimax_model": "video-01",
         },
-        "prompt_template": """Create a 5-6 SECOND GOAL CELEBRATION VIDEO.
+        "prompt_template": """6-second realistic goal celebration video.
 
-PERSON: Use the provided player image. The player should be recognizable - preserve their face, hair, skin tone, and kit EXACTLY as shown.
-IMPORTANT: FULL BODY SHOT. Do not crop the player's head or feet. Keep them distinct from background.
+The provided image is the FIRST FRAME. Keep the player EXACTLY as shown — same face, hair, skin tone, body, clothing, and kit.
 
-CELEBRATION & MOVEMENT:
-- Start: Player runs into frame or camera follows player (Match input image style).
-- Action: {style_variant_label}
-- Expression: Pure joy, triumphant, adrenaline-fueled celebration
-- Camera: Dynamic tracking shot but keep player CENTRED and FULLY VISIBLE.
-- End: Hold celebration pose (can be slightly different from start).
+MOVEMENT:
+- The player starts in the EXACT pose from the input image.
+- The player transitions into a celebration: {style_variant_label}
+- Expression: joyful, triumphant, natural emotion.
+- The movement should be energetic but controlled and realistic.
+- The player returns to the STARTING POSE by the final frame (seamless loop back to first frame).
+- Full body must remain visible at all times (head to toe, no cropping).
 
-ATMOSPHERE:
-- BACKGROUND: Clean, solid color background (Green screen style) or extremely blurry stadium bokeh.
-- Subject MUST be easily separable from background.
+BACKGROUND:
+- Plain solid color background (bright green #00FF00 or bright blue #0000FF chroma-key).
+- NO stadium, NO pitch, NO scenery, NO crowd, NO environment of any kind.
+- The player must be completely isolated against the flat color.
 
-- Stadium environment with crowd blur in background
-- Dramatic lighting with lens flares
-- High energy, emotional moment captured
-- Optional: Confetti, pyro effects, or crowd reaction cutaway
-
-STYLE:
-- High-end broadcast-quality celebration footage
-- Cinematic slow-motion segments (optional)
-- Dynamic camera movement following the action
-- 30fps, 1080p vertical (9:16 aspect ratio)
-
-This video will be used in goal celebration overlays for match broadcasts and social media moments.
+RULES:
+- NO visual effects, NO particles, NO confetti, NO lens flares, NO fire, NO glow.
+- NO text overlays, NO graphics, NO logos added.
+- NO camera movement. Static locked-off camera. The player moves, not the camera.
+- NO slow motion. Normal speed, real-time movement.
+- Photorealistic quality. Natural lighting. Professional studio setup.
+- 9:16 vertical aspect ratio.
 """,
     },
 }
@@ -643,15 +644,15 @@ PARAM_RESOLVERS = {
         "navy_accent": "Navy blue base with team color accents.",
     },
     "style_variant": {
-        # Intro poses
-        "arms_crossed": "Arms crossed confidently across chest, standing tall, powerful stance",
-        "hand_up": "One hand raised in greeting/wave, friendly and approachable",
-        "thumbs_up": "Both thumbs up, positive and confident pose",
-        # Goal celebration poses
-        "arms_wide": "Arms spread wide open, triumphant celebration pose",
-        "fist_pump": "Fist pump in the air, intense celebration",
-        "point_to_sky": "Pointing to the sky with one hand, emotional dedication gesture",
-        "slide": "Knee slide celebration pose, dynamic and iconic",
+        # Intro poses — subtle, controlled movements
+        "arms_crossed": "The player slowly crosses both arms over their chest, standing tall with a confident powerful stance. Chin slightly raised.",
+        "hand_up": "The player slowly raises one hand in a greeting wave toward the camera, friendly and approachable. Small natural smile.",
+        "thumbs_up": "The player gives a thumbs up with one hand toward the camera, positive and confident. Slight nod.",
+        # Goal celebration poses — more energetic but still controlled
+        "arms_wide": "The player spreads both arms wide open to the sides, triumphant celebration. Looks up briefly then back to camera.",
+        "fist_pump": "The player pumps one fist into the air with intensity, powerful celebration. Other arm bent at side.",
+        "point_to_sky": "The player points to the sky with one index finger, emotional dedication gesture. Other hand on chest.",
+        "slide": "The player drops to both knees in a knee slide, arms spread wide. Then stands back up to starting position.",
     },
 }
 
