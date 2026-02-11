@@ -86,6 +86,17 @@ function createEmptyMediaForm(): MemberMediaForm {
  * Read assets from membership with legacy format migration.
  * This is specific to member detail page as it handles backwards compatibility.
  */
+/** Per-variant video URLs stored in metadata */
+type VideoVariants = Record<string, string>; // e.g. { arms_crossed: "s3://...", hand_up: "s3://..." }
+type VideoVariantsMap = {
+  intro: VideoVariants;
+  celebration: VideoVariants;
+};
+
+function createEmptyVideoVariants(): VideoVariantsMap {
+  return { intro: {}, celebration: {} };
+}
+
 function readAssetsFromMembership(membership: any): MemberMediaForm {
   const meta = (membership as any)?.metadata || {};
   const tr = (meta as any)?.teamreel_assets || (meta as any)?.teamreelAssets || {};
@@ -126,7 +137,17 @@ function readAssetsFromMembership(membership: any): MemberMediaForm {
   return form;
 }
 
-function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm): any {
+function readVideoVariantsFromMembership(membership: any): VideoVariantsMap {
+  const meta = (membership as any)?.metadata || {};
+  const tr = meta?.teamreel_assets || meta?.teamreelAssets || {};
+  const videos = tr?.videos || {};
+  return {
+    intro: videos?.intro && typeof videos.intro === 'object' ? { ...videos.intro } : {},
+    celebration: videos?.celebration && typeof videos.celebration === 'object' ? { ...videos.celebration } : {},
+  };
+}
+
+function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm, videoVariants?: VideoVariantsMap): any {
   const meta = existingMetadata && typeof existingMetadata === 'object' ? { ...existingMetadata } : {};
   const existingTeamReel =
     meta.teamreel_assets && typeof meta.teamreel_assets === 'object'
@@ -145,7 +166,7 @@ function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm): 
   }
 
   // Keep legacy format for backwards compatibility
-  const next = {
+  const next: Record<string, any> = {
     ...existingTeamReel,
     media,
     // Legacy format (will be phased out)
@@ -160,6 +181,16 @@ function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm): 
       full_body_url: '',
     },
   };
+
+  // Persist per-variant video URLs
+  if (videoVariants) {
+    next.videos = {
+      intro: videoVariants.intro || {},
+      celebration: videoVariants.celebration || {},
+    };
+  } else if (existingTeamReel.videos) {
+    next.videos = existingTeamReel.videos;
+  }
 
   meta.teamreel_assets = next;
   return meta;
@@ -638,6 +669,7 @@ export default function ProjectSeasonMemberDetailPage() {
   const userCanEditProject = canEditProject(permissionContext);
 
   const [form, setForm] = useState<MemberMediaForm>(() => createEmptyMediaForm());
+  const [videoVariants, setVideoVariants] = useState<VideoVariantsMap>(() => createEmptyVideoVariants());
 
   // AI Generation Modal State
   const [showAiModal, setShowAiModal] = useState(false);
@@ -730,6 +762,7 @@ export default function ProjectSeasonMemberDetailPage() {
   useEffect(() => {
     if (!membership) return;
     setForm(readAssetsFromMembership(membership));
+    setVideoVariants(readVideoVariantsFromMembership(membership));
   }, [membership]);
 
   useEffect(() => {
@@ -920,7 +953,7 @@ export default function ProjectSeasonMemberDetailPage() {
     setSaveError(null);
 
     try {
-      const nextMetadata = mergeAssetsIntoMetadata((membership as any)?.metadata, form);
+      const nextMetadata = mergeAssetsIntoMetadata((membership as any)?.metadata, form, videoVariants);
 
       const res = await fetch(
         `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project.id)}/members/${encodeURIComponent(membership.id)}/`,
@@ -1574,10 +1607,15 @@ export default function ProjectSeasonMemberDetailPage() {
 
                       {/* Per-Kit Variant Grid for Short Intro */}
                       {effectiveKits.map((kit) => {
-                        // Get the player in tenue URL for this kit (currently only home is supported)
                         const isHome = kit.id === 'home';
                         const playerInTenueUrl = isHome ? form.kit?.url : null;
                         const hasPlayerInTenue = Boolean(playerInTenueUrl);
+
+                        const introVariantDefs = [
+                          { id: 'arms_crossed', icon: '🙅', label: 'Armen over elkaar' },
+                          { id: 'hand_up', icon: '✋', label: 'Hand omhoog' },
+                          { id: 'thumbs_up', icon: '👍', label: 'Duim omhoog' },
+                        ];
 
                         return (
                           <div key={`intro-kit-${kit.id}`} style={{ marginTop: '24px' }}>
@@ -1602,104 +1640,109 @@ export default function ProjectSeasonMemberDetailPage() {
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasPlayerInTenue ? 1 : 0.5 }}>
-                              {/* Variant: Arms Crossed */}
-                              <div style={{
-                                border: '1px solid var(--app-border)',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                background: 'var(--app-surface)',
-                              }}>
-                                <div style={{
-                                  aspectRatio: '9/16',
-                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  minHeight: '180px',
-                                  position: 'relative',
-                                }}>
-                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                    Niet gegenereerd
-                                  </div>
-                                </div>
-                                <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>🙅 Armen over elkaar</div>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => openAiModal('member_intro', kit.id, playerInTenueUrl, 'arms_crossed')}
-                                    disabled={!hasPlayerInTenue}
-                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                  >
-                                    ✨ Genereer
-                                  </Button>
-                                </div>
-                              </div>
+                              {introVariantDefs.map((variant) => {
+                                const variantUrl = videoVariants.intro[variant.id] || '';
+                                const hasVideo = Boolean(variantUrl);
+                                const resolvedUrl = hasVideo ? getAssetUrl(variantUrl) : null;
 
-                              {/* Variant: Hand Up */}
-                              <div style={{
-                                border: '1px solid var(--app-border)',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                background: 'var(--app-surface)',
-                              }}>
-                                <div style={{
-                                  aspectRatio: '9/16',
-                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  minHeight: '180px',
-                                  position: 'relative',
-                                }}>
-                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                    Niet gegenereerd
+                                return (
+                                  <div key={variant.id} style={{
+                                    border: hasVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+                                    borderRadius: '8px',
+                                    overflow: 'hidden',
+                                    background: 'var(--app-surface)',
+                                  }}>
+                                    <div style={{
+                                      aspectRatio: '9/16',
+                                      background: hasVideo ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      minHeight: '180px',
+                                      position: 'relative',
+                                    }}>
+                                      {hasVideo && resolvedUrl ? (
+                                        <>
+                                          <video
+                                            src={resolvedUrl}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            muted
+                                            loop
+                                            playsInline
+                                            autoPlay
+                                            onError={(e) => {
+                                              (e.target as HTMLVideoElement).style.display = 'none';
+                                            }}
+                                          />
+                                          <div style={{
+                                            position: 'absolute',
+                                            top: '6px',
+                                            right: '6px',
+                                            background: 'rgba(99, 102, 241, 0.85)',
+                                            color: '#fff',
+                                            fontSize: '9px',
+                                            fontWeight: 700,
+                                            padding: '2px 5px',
+                                            borderRadius: '4px',
+                                          }}>
+                                            AI
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                          Niet gegenereerd
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div style={{ padding: '10px' }}>
+                                      <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                        {variant.icon} {variant.label}
+                                      </div>
+                                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                        {hasVideo ? (
+                                          <>
+                                            <Button
+                                              size="sm"
+                                              onClick={() => openAiModal('member_intro', kit.id, playerInTenueUrl, variant.id)}
+                                              disabled={!hasPlayerInTenue}
+                                              style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
+                                            >
+                                              Opnieuw
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              onClick={async () => {
+                                                if (!confirm('Weet je zeker dat je deze video wilt verwijderen?')) return;
+                                                const newVV: VideoVariantsMap = {
+                                                  ...videoVariants,
+                                                  intro: { ...videoVariants.intro },
+                                                };
+                                                delete newVV.intro[variant.id];
+                                                setVideoVariants(newVV);
+                                                const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
+                                                await handleMetadataUpdate(updatedMeta);
+                                              }}
+                                              style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}
+                                            >
+                                              🗑️
+                                            </Button>
+                                          </>
+                                        ) : (
+                                          <Button
+                                            size="sm"
+                                            onClick={() => openAiModal('member_intro', kit.id, playerInTenueUrl, variant.id)}
+                                            disabled={!hasPlayerInTenue}
+                                            style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                          >
+                                            ✨ Genereer
+                                          </Button>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-                                <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>✋ Hand omhoog</div>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => openAiModal('member_intro', kit.id, playerInTenueUrl, 'hand_up')}
-                                    disabled={!hasPlayerInTenue}
-                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                  >
-                                    ✨ Genereer
-                                  </Button>
-                                </div>
-                              </div>
-
-                              {/* Variant: Thumbs Up */}
-                              <div style={{
-                                border: '1px solid var(--app-border)',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                background: 'var(--app-surface)',
-                              }}>
-                                <div style={{
-                                  aspectRatio: '9/16',
-                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  minHeight: '180px',
-                                  position: 'relative',
-                                }}>
-                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                    Niet gegenereerd
-                                  </div>
-                                </div>
-                                <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>👍 Duim omhoog</div>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => openAiModal('member_intro', kit.id, playerInTenueUrl, 'thumbs_up')}
-                                    disabled={!hasPlayerInTenue}
-                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                  >
-                                    ✨ Genereer
-                                  </Button>
-                                </div>
-                              </div>
+                                );
+                              })}
                             </div>
                           </div>
                         );
@@ -1734,10 +1777,16 @@ export default function ProjectSeasonMemberDetailPage() {
 
                       {/* Per-Kit Variant Grid for Goal Celebration */}
                       {effectiveKits.map((kit) => {
-                        // Get the player in tenue URL for this kit (currently only home is supported)
                         const isHome = kit.id === 'home';
                         const playerInTenueUrl = isHome ? form.kit?.url : null;
                         const hasPlayerInTenue = Boolean(playerInTenueUrl);
+
+                        const celebrationVariantDefs = [
+                          { id: 'arms_wide', icon: '🙌', label: 'Armen wijd' },
+                          { id: 'fist_pump', icon: '✊', label: 'Vuist omhoog' },
+                          { id: 'point_to_sky', icon: '☝️', label: 'Wijs naar hemel' },
+                          { id: 'slide', icon: '🛝', label: 'Knieën slide' },
+                        ];
 
                         return (
                           <div key={`celebration-kit-${kit.id}`} style={{ marginTop: '24px' }}>
@@ -1762,137 +1811,109 @@ export default function ProjectSeasonMemberDetailPage() {
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasPlayerInTenue ? 1 : 0.5 }}>
-                              {/* Variant: Arms Wide */}
-                              <div style={{
-                                border: '1px solid var(--app-border)',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                background: 'var(--app-surface)',
-                              }}>
-                                <div style={{
-                                  aspectRatio: '9/16',
-                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  minHeight: '180px',
-                                  position: 'relative',
-                                }}>
-                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                    Niet gegenereerd
-                                  </div>
-                                </div>
-                                <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>🙌 Armen wijd</div>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, 'arms_wide')}
-                                    disabled={!hasPlayerInTenue}
-                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                  >
-                                    ✨ Genereer
-                                  </Button>
-                                </div>
-                              </div>
+                              {celebrationVariantDefs.map((variant) => {
+                                const variantUrl = videoVariants.celebration[variant.id] || '';
+                                const hasVideo = Boolean(variantUrl);
+                                const resolvedUrl = hasVideo ? getAssetUrl(variantUrl) : null;
 
-                              {/* Variant: Fist Pump */}
-                              <div style={{
-                                border: '1px solid var(--app-border)',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                background: 'var(--app-surface)',
-                              }}>
-                                <div style={{
-                                  aspectRatio: '9/16',
-                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  minHeight: '180px',
-                                  position: 'relative',
-                                }}>
-                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                    Niet gegenereerd
+                                return (
+                                  <div key={variant.id} style={{
+                                    border: hasVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+                                    borderRadius: '8px',
+                                    overflow: 'hidden',
+                                    background: 'var(--app-surface)',
+                                  }}>
+                                    <div style={{
+                                      aspectRatio: '9/16',
+                                      background: hasVideo ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      minHeight: '180px',
+                                      position: 'relative',
+                                    }}>
+                                      {hasVideo && resolvedUrl ? (
+                                        <>
+                                          <video
+                                            src={resolvedUrl}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            muted
+                                            loop
+                                            playsInline
+                                            autoPlay
+                                            onError={(e) => {
+                                              (e.target as HTMLVideoElement).style.display = 'none';
+                                            }}
+                                          />
+                                          <div style={{
+                                            position: 'absolute',
+                                            top: '6px',
+                                            right: '6px',
+                                            background: 'rgba(99, 102, 241, 0.85)',
+                                            color: '#fff',
+                                            fontSize: '9px',
+                                            fontWeight: 700,
+                                            padding: '2px 5px',
+                                            borderRadius: '4px',
+                                          }}>
+                                            AI
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                          Niet gegenereerd
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div style={{ padding: '10px' }}>
+                                      <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                        {variant.icon} {variant.label}
+                                      </div>
+                                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                        {hasVideo ? (
+                                          <>
+                                            <Button
+                                              size="sm"
+                                              onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, variant.id)}
+                                              disabled={!hasPlayerInTenue}
+                                              style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
+                                            >
+                                              Opnieuw
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              onClick={async () => {
+                                                if (!confirm('Weet je zeker dat je deze video wilt verwijderen?')) return;
+                                                const newVV: VideoVariantsMap = {
+                                                  ...videoVariants,
+                                                  celebration: { ...videoVariants.celebration },
+                                                };
+                                                delete newVV.celebration[variant.id];
+                                                setVideoVariants(newVV);
+                                                const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
+                                                await handleMetadataUpdate(updatedMeta);
+                                              }}
+                                              style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}
+                                            >
+                                              🗑️
+                                            </Button>
+                                          </>
+                                        ) : (
+                                          <Button
+                                            size="sm"
+                                            onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, variant.id)}
+                                            disabled={!hasPlayerInTenue}
+                                            style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                          >
+                                            ✨ Genereer
+                                          </Button>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-                                <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>✊ Vuist omhoog</div>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, 'fist_pump')}
-                                    disabled={!hasPlayerInTenue}
-                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                  >
-                                    ✨ Genereer
-                                  </Button>
-                                </div>
-                              </div>
-
-                              {/* Variant: Point to Sky */}
-                              <div style={{
-                                border: '1px solid var(--app-border)',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                background: 'var(--app-surface)',
-                              }}>
-                                <div style={{
-                                  aspectRatio: '9/16',
-                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  minHeight: '180px',
-                                  position: 'relative',
-                                }}>
-                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                    Niet gegenereerd
-                                  </div>
-                                </div>
-                                <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>☝️ Wijs naar hemel</div>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, 'point_to_sky')}
-                                    disabled={!hasPlayerInTenue}
-                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                  >
-                                    ✨ Genereer
-                                  </Button>
-                                </div>
-                              </div>
-
-                              {/* Variant: Slide */}
-                              <div style={{
-                                border: '1px solid var(--app-border)',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                background: 'var(--app-surface)',
-                              }}>
-                                <div style={{
-                                  aspectRatio: '9/16',
-                                  background: 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  minHeight: '180px',
-                                  position: 'relative',
-                                }}>
-                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                    Niet gegenereerd
-                                  </div>
-                                </div>
-                                <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>🛝 Knieën slide</div>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, 'slide')}
-                                    disabled={!hasPlayerInTenue}
-                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                  >
-                                    ✨ Genereer
-                                  </Button>
-                                </div>
-                              </div>
+                                );
+                              })}
                             </div>
                           </div>
                         );
@@ -2009,7 +2030,8 @@ export default function ProjectSeasonMemberDetailPage() {
                                             // Also save to backend
                                             const updated = mergeAssetsIntoMetadata(
                                               membership?.metadata,
-                                              { ...form, kit: { url: '', caption: '' } }
+                                              { ...form, kit: { url: '', caption: '' } },
+                                              videoVariants
                                             );
                                             await handleMetadataUpdate(updated);
                                           }}
@@ -2117,7 +2139,8 @@ export default function ProjectSeasonMemberDetailPage() {
                                             setForm((prev) => ({ ...prev, closeup: { url: '', caption: '' } }));
                                             const updated = mergeAssetsIntoMetadata(
                                               membership?.metadata,
-                                              { ...form, closeup: { url: '', caption: '' } }
+                                              { ...form, closeup: { url: '', caption: '' } },
+                                              videoVariants
                                             );
                                             await handleMetadataUpdate(updated);
                                           }}
@@ -2269,7 +2292,11 @@ export default function ProjectSeasonMemberDetailPage() {
             ? form.kit?.url || null
             : aiPreselectedTemplate === 'closeup_in_tenue'
               ? form.closeup?.url || null
-              : null
+              : aiPreselectedTemplate === 'member_intro' && aiSelectedStyleVariant
+                ? videoVariants.intro[aiSelectedStyleVariant] || null
+                : aiPreselectedTemplate === 'member_goal_celebration' && aiSelectedStyleVariant
+                  ? videoVariants.celebration[aiSelectedStyleVariant] || null
+                  : null
         }
         onAssetSaved={async (savedInfo) => {
           setShowAiModal(false);
@@ -2279,28 +2306,55 @@ export default function ProjectSeasonMemberDetailPage() {
             const assetType = savedInfo.assetType;
             const savedUrl = savedInfo.storagePath || savedInfo.presignedUrl || '';
 
-            // Determine which slot to update based on asset type
-            let slotId: keyof MemberMediaForm | null = null;
-            if (assetType.startsWith('member_in_tenue')) {
-              slotId = 'kit'; // For now, all fullbody goes to 'kit' slot
-            } else if (assetType.startsWith('member_closeup')) {
-              slotId = 'closeup'; // For now, all closeup goes to 'closeup' slot
-            } else if (assetType.startsWith('member_intro')) {
-              slotId = 'intro'; // Short intro video
-            } else if (assetType.startsWith('member_goal_celebration')) {
-              slotId = 'celebration'; // Goal celebration video
-            }
+            // Check if this is a per-variant video (intro/celebration)
+            const isIntroVideo = assetType.startsWith('member_intro');
+            const isCelebrationVideo = assetType.startsWith('member_goal_celebration');
 
-            if (slotId) {
+            if ((isIntroVideo || isCelebrationVideo) && aiSelectedStyleVariant) {
+              // Per-variant video storage
+              const category = isIntroVideo ? 'intro' : 'celebration';
+              const newVideoVariants: VideoVariantsMap = {
+                ...videoVariants,
+                [category]: {
+                  ...videoVariants[category],
+                  [aiSelectedStyleVariant]: savedUrl,
+                },
+              };
+              setVideoVariants(newVideoVariants);
+
+              // Also update the primary slot URL (latest generated goes here)
+              const slotId = isIntroVideo ? 'intro' : 'celebration';
               const newForm = {
                 ...form,
                 [slotId]: { url: savedUrl, caption: '' },
               };
               setForm(newForm);
 
-              // Save to membership metadata
-              const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm);
+              // Persist both to metadata
+              const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVideoVariants);
               await handleMetadataUpdate(updatedMeta);
+            } else {
+              // Standard single-slot assets (fullbody, closeup, etc.)
+              let slotId: keyof MemberMediaForm | null = null;
+              if (assetType.startsWith('member_in_tenue')) {
+                slotId = 'kit';
+              } else if (assetType.startsWith('member_closeup')) {
+                slotId = 'closeup';
+              } else if (isIntroVideo) {
+                slotId = 'intro';
+              } else if (isCelebrationVideo) {
+                slotId = 'celebration';
+              }
+
+              if (slotId) {
+                const newForm = {
+                  ...form,
+                  [slotId]: { url: savedUrl, caption: '' },
+                };
+                setForm(newForm);
+                const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm, videoVariants);
+                await handleMetadataUpdate(updatedMeta);
+              }
             }
           }
         }}
