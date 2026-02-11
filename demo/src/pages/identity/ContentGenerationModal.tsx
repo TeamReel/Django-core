@@ -687,19 +687,11 @@ export default function ContentGenerationModal({
         if (selectedType?.subtype === 'lineup') {
             gkAssets = ['in_tenue', 'short_intro', 'close_up'];
             playerAssets = ['in_tenue', 'short_intro', 'close_up'];
-            // Limit counts
-            // DEBUG: User requested single player to speed up generation (1 GK + 0 players = 1 total)
-            // If we have a GK, use that. If not, use 1 player.
-            if (targetGKs.length > 0) {
-               targetGKs = targetGKs.slice(0, 1);
-               targetPlayers = [];
-            } else {
-               targetPlayers = targetPlayers.slice(0, 1);
-            }
-            // Also plain text 1 person
-            // Optionally clear coach/assistant if not wanted in the "11 players" flow
-            // But user said "start with keeper, then 10 players", didn't explicitly forbid coach.
-            // Leaving coach/assistant as is, just using standard assets if selected.
+            // Lineup = 1 goalkeeper + 10 players (no coaches/assistants)
+            targetGKs = targetGKs.slice(0, 1);
+            targetPlayers = targetPlayers.slice(0, 10);
+            targetCoach = [];
+            targetAssistant = [];
         }
       }
 
@@ -1732,16 +1724,26 @@ export default function ContentGenerationModal({
                 <>
                   {/* Check if it's a video (lineup) */}
                   {generatedVariants[0]?.mime_type?.startsWith('video/') ? (
-                    <div className="mb-4">
-                      <video
-                        src={generatedVariants[0].presigned_url || ''}
-                        controls
-                        className="max-w-lg max-h-80 rounded-lg border shadow-lg"
-                      >
-                        Your browser does not support the video tag.
-                      </video>
-                      <div className="mt-2 text-sm text-gray-500">
-                        🎬 Lineup video ready! Click play to preview.
+                    <div className="w-full max-w-2xl mb-4">
+                      <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 shadow-lg bg-black">
+                        <video
+                          src={generatedVariants[0].presigned_url || ''}
+                          controls
+                          autoPlay
+                          className="w-full max-h-[50vh] object-contain"
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <div className="text-sm text-gray-500">
+                          🎬 Lineup video ready!
+                        </div>
+                        {generatedVariants[0].storage_info && (
+                          <div className="text-xs text-gray-400">
+                            {((generatedVariants[0].storage_info.file_size_bytes || 0) / (1024 * 1024)).toFixed(1)} MB
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : generatedOutput?.image_base64 ? (
