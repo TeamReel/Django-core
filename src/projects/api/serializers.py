@@ -33,7 +33,7 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
     organisation_membership_id = serializers.UUIDField(read_only=True)
     period = serializers.UUIDField(source="period_id", read_only=True)
     period_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
-    metadata = serializers.JSONField(required=False)
+    metadata = serializers.SerializerMethodField(read_only=True)
     functional_roles = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -52,6 +52,35 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at", "assignment_reason"]
+
+    def get_metadata(self, obj):
+        """Return metadata, enriched with teamreel_assets from other memberships if needed.
+
+        TeamReel assets are stored per-membership but should be accessible when viewing
+        a user in any season/period context. This merges assets from the user's other
+        memberships in the same project.
+        """
+        meta = dict(obj.metadata or {})
+
+        # If this membership already has teamreel_assets, return as-is
+        if meta.get("teamreel_assets"):
+            return meta
+
+        # Otherwise, look for assets on other memberships of the same user in same project
+        other_memberships = ProjectMembership.objects.filter(
+            project_id=obj.project_id,
+            user_id=obj.user_id,
+            deleted_at__isnull=True,
+            metadata__has_key="teamreel_assets",
+        ).exclude(id=obj.id)
+
+        for other in other_memberships:
+            other_meta = other.metadata or {}
+            if other_meta.get("teamreel_assets"):
+                meta["teamreel_assets"] = other_meta["teamreel_assets"]
+                break  # Use the first one found (most recent would be better but this is simpler)
+
+        return meta
 
     def get_functional_roles(self, obj):
         """Return functional roles for this user on this project.

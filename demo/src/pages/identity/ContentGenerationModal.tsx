@@ -242,28 +242,54 @@ const ASSET_TYPE_TO_MEDIA_KEY: Record<string, string> = {
   'closeup': 'closeup',
 };
 
-// Check if a member has a specific asset
-function memberHasAsset(member: Participation, assetType: string): boolean {
+// Check if a member has a specific asset, optionally verifying role-specific variant
+function memberHasAsset(member: Participation, assetType: string, role?: string): boolean {
   const mediaKey = ASSET_TYPE_TO_MEDIA_KEY[assetType] || assetType;
   const meta = member.metadata || {};
   const tr = (meta as any)?.teamreel_assets || {};
+
   const media = tr?.media || {};
   const videos = tr?.videos || {};
+  const images = tr?.images || {}; // New structure: images.{type}.{variant}
   const legacyKit = tr?.kit || {};
 
-  // Check new format: media.{slot}.url
-  if (media[mediaKey]?.url) return true;
+  // Map media keys to images structure keys (they differ!)
+  // images uses: fullbody, closeup
+  // media uses: kit, closeup
+  const imageStructureKey = mediaKey === 'kit' ? 'fullbody' : mediaKey;
 
-  // Check videos format for intro/closeup/celebration (have multiple variants)
-  if (['intro', 'closeup', 'celebration'].includes(mediaKey) && videos[mediaKey]) {
-    // Check if any video variant exists
-    const variants = videos[mediaKey] || {};
-    if (Object.values(variants).some((v: any) => v && typeof v === 'string' && v.trim())) {
-      return true;
-    }
+  // Determine the role variant key
+  let roleKey = 'home'; // Default for player
+  if (role === 'goalkeeper') roleKey = 'goalkeeper';
+  else if (role === 'coach' || role === 'assistant') roleKey = 'coach';
+
+  // 1. Check the new 'images' structure (images.{type}.{variant})
+  // e.g. images.fullbody.goalkeeper or images.closeup.home
+  if (images[imageStructureKey] && images[imageStructureKey][roleKey]) {
+    return true;
   }
 
-  // Check legacy format
+  // 2. Check videos structure for role-specific variants
+  // e.g. videos.intro.goalkeeper_thumbs_up or videos.intro.home_hand_up
+  if (videos[mediaKey]) {
+    const variants = videos[mediaKey];
+    // Check if any variant key contains/starts with the role key
+    const hasRoleVariant = Object.keys(variants).some(k => {
+      const normalizedKey = k.toLowerCase();
+      return (normalizedKey.includes(roleKey) || normalizedKey.startsWith(roleKey)) && variants[k];
+    });
+    if (hasRoleVariant) return true;
+
+    // Also accept any video variant if no role-specific one found (fallback)
+    const hasAnyVariant = Object.values(variants).some((v: any) => v && typeof v === 'string' && v.trim());
+    if (hasAnyVariant) return true;
+  }
+
+  // 3. Check the 'media' structure (generic, not role-specific)
+  // This is the older format: media.{slot}.url
+  if (media[mediaKey]?.url) return true;
+
+  // 4. Check legacy format
   if (mediaKey === 'profile' && legacyKit?.profile_photo_url) return true;
   if (mediaKey === 'kit' && legacyKit?.full_body_url) return true;
   if (mediaKey === 'celebration' && legacyKit?.goal_celebration_url) return true;
@@ -273,15 +299,15 @@ function memberHasAsset(member: Participation, assetType: string): boolean {
 }
 
 // Check if member has ALL required asset types
-function memberHasRequiredAssets(member: Participation, assetTypes: string[]): boolean {
+function memberHasRequiredAssets(member: Participation, assetTypes: string[], role?: string): boolean {
   if (!assetTypes || assetTypes.length === 0) return true;
-  return assetTypes.every(assetType => memberHasAsset(member, assetType));
+  return assetTypes.every(assetType => memberHasAsset(member, assetType, role));
 }
 
 // Get list of missing assets for a member
-function getMissingAssets(member: Participation, assetTypes: string[]): string[] {
+function getMissingAssets(member: Participation, assetTypes: string[], role?: string): string[] {
   if (!assetTypes || assetTypes.length === 0) return [];
-  return assetTypes.filter(assetType => !memberHasAsset(member, assetType));
+  return assetTypes.filter(assetType => !memberHasAsset(member, assetType, role));
 }
 
 // Group participations by functional role
@@ -1365,8 +1391,8 @@ export default function ContentGenerationModal({
                         }
 
                         // Split available members into eligible (have all required assets) and ineligible
-                        const eligibleMembers = available.filter(p => memberHasRequiredAssets(p, assetTypes));
-                        const ineligibleMembers = available.filter(p => !memberHasRequiredAssets(p, assetTypes));
+                        const eligibleMembers = available.filter(p => memberHasRequiredAssets(p, assetTypes, role));
+                        const ineligibleMembers = available.filter(p => !memberHasRequiredAssets(p, assetTypes, role));
 
                         return (
                           <div key={idx} className="grid grid-cols-[120px_1fr] gap-3 items-center">
@@ -1481,7 +1507,7 @@ export default function ContentGenerationModal({
                                       }
                                     }
                                     const jerseyNumber = p.metadata?.shirt_number || p.data?.jersey_number;
-                                    const missingAssets = getMissingAssets(p, assetTypes);
+                                    const missingAssets = getMissingAssets(p, assetTypes, role);
                                     const missingLabels = missingAssets.map(a => ASSET_TYPE_LABELS[a] || a).join(', ');
 
                                     return (
@@ -1505,7 +1531,7 @@ export default function ContentGenerationModal({
                       {assetTypes.length > 0 && (
                         <div className="mt-3 pt-3 border-t text-xs text-gray-500">
                           {(() => {
-                            const eligible = available.filter(p => memberHasRequiredAssets(p, assetTypes)).length;
+                            const eligible = available.filter(p => memberHasRequiredAssets(p, assetTypes, role)).length;
                             const total = available.length;
                             if (eligible === 0 && total > 0) {
                               return (
