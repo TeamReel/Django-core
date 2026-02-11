@@ -3,8 +3,12 @@
 POST /api/v1/generative/assets/generate/
   — Accepts template_id, params, and input images (base64 or URLs)
   — Returns generated variants (base64 images)
+  — Video templates return 202 Accepted with task_id for async polling
 
-This is a simplified synchronous endpoint for the demo frontend.
+GET /api/v1/generative/assets/generate/<task_id>/status/
+  — Poll for async video generation status
+
+This is a simplified endpoint for the demo frontend.
 For production, use the full GenerationRequest async flow.
 """
 
@@ -12,6 +16,10 @@ from __future__ import annotations
 
 import base64
 import logging
+import threading
+import time
+import uuid as uuid_mod
+from typing import Any
 
 from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
@@ -20,6 +28,38 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 logger = logging.getLogger("generative.views.asset")
+
+# =============================================================================
+# In-memory task store for async video generation
+# =============================================================================
+# Uses a simple dict + lock.  Daphne runs as a single process so this is safe.
+# Tasks are auto-cleaned after 30 min to prevent memory leaks.
+
+_VIDEO_TASKS: dict[str, dict[str, Any]] = {}
+_VIDEO_TASKS_LOCK = threading.Lock()
+_TASK_MAX_AGE = 1800  # 30 minutes
+
+
+def _set_task(task_id: str, data: dict[str, Any]) -> None:
+    data.setdefault("_created", time.time())
+    with _VIDEO_TASKS_LOCK:
+        _VIDEO_TASKS[task_id] = data
+
+
+def _get_task(task_id: str) -> dict[str, Any] | None:
+    with _VIDEO_TASKS_LOCK:
+        return _VIDEO_TASKS.get(task_id)
+
+
+def _cleanup_old_tasks() -> None:
+    """Remove tasks older than _TASK_MAX_AGE seconds."""
+    now = time.time()
+    with _VIDEO_TASKS_LOCK:
+        expired = [
+            tid for tid, d in _VIDEO_TASKS.items() if now - d.get("_created", 0) > _TASK_MAX_AGE
+        ]
+        for tid in expired:
+            del _VIDEO_TASKS[tid]
 
 
 # =============================================================================
@@ -243,165 +283,62 @@ def generate_asset_view(request: Request) -> Response:
 
     # Run the appropriate pipeline based on output type
     if output_type == "video":
-        # Video generation (MiniMax primary, Veo fallback)
+        # Video generation is async: start in background thread, return task_id.
+        # Frontend polls GET .../generate/<task_id>/status/ for result.
         try:
-            from .services.asset_pipeline import generate_video
+            task_id = str(uuid_mod.uuid4())
+
+            # Determine user_id safely
+            user_id = request.user.id if request.user and request.user.is_authenticated else None
 
             # Build context for S3 storage
             storage_context = {
-                "project_id": project_id,
+                "project_id": str(project_id) if project_id else None,
                 "membership_id": str(membership_id) if membership_id else None,
-                "activity_id": activity_id,
+                "activity_id": str(activity_id) if activity_id else None,
                 "asset_type": asset_type,
                 "save_to_brand": save_to_brand,
                 "save_to_media_library": save_to_media_library,
             }
 
-            result = generate_video(
-                template_id=template_id,
-                params=params,
-                input_images=input_images,
-                user_id=request.user.id if request.user and request.user.is_authenticated else None,
-                organisation_id=organisation_id,
-                context=storage_context,
-                variant_count=variant_count,
+            # Store initial task status
+            _cleanup_old_tasks()
+            _set_task(
+                task_id,
+                {
+                    "status": "processing",
+                    "progress": 5,
+                    "message": "Video generation started…",
+                },
             )
 
-            if result.get("error"):
-                return Response(
-                    {"error": result["error"]},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
+            # Launch generation in a background thread so the HTTP response
+            # returns immediately (Railway proxy has a ~300 s timeout).
+            thread = threading.Thread(
+                target=_run_video_generation,
+                kwargs={
+                    "task_id": task_id,
+                    "template_id": template_id,
+                    "params": params,
+                    "input_images": input_images,
+                    "user_id": user_id,
+                    "organisation_id": str(organisation_id) if organisation_id else None,
+                    "storage_context": storage_context,
+                    "variant_count": variant_count,
+                },
+                daemon=True,
+            )
+            thread.start()
 
-            # Build response for video variants
-            # Use the same S3-storage-in-view pattern as images
-            from files.utils import get_storage_backend as _get_sb
-
-            v_storage = _get_sb()
-            v_org = None
-            if organisation_id:
-                try:
-                    from organisations.models import Organisation as Org
-
-                    v_org = Org.objects.get(id=organisation_id)
-                except Exception:
-                    pass
-
-            variants = []
-            all_variants = result.get("variants") or []
-            if not all_variants:
-                # Fallback: single result in root dict
-                all_variants = [result]
-
-            for i, v_result in enumerate(all_variants):
-                variant = {
-                    "variant_index": i,
-                    "mime_type": v_result.get("mime_type") or "video/mp4",
-                    "filename": v_result.get("filename"),
-                }
-
-                v_bytes = v_result.get("video_bytes")
-                v_url = v_result.get("video_url")
-                v_spath = v_result.get("storage_path")
-                v_faid = v_result.get("file_asset_id")
-
-                # If pipeline already stored to S3, use that
-                if v_url:
-                    variant["video_url"] = v_url
-                    variant["file_asset_id"] = v_faid
-                    variant["storage_path"] = v_spath
-                elif v_spath and v_faid:
-                    # Pipeline stored to S3 but didn't return a presigned URL
-                    # Generate one from the storage_path
-                    variant["file_asset_id"] = v_faid
-                    variant["storage_path"] = v_spath
-                    try:
-                        purl = v_storage.get_url(v_spath, signed=True)
-                        variant["video_url"] = purl
-                        variant["presigned_url"] = purl
-                        logger.info("Generated presigned URL for video variant %d: %s", i, v_spath)
-                    except Exception as url_err:
-                        logger.warning(
-                            "Failed to generate presigned URL for %s: %s", v_spath, url_err
-                        )
-                elif v_bytes and v_org:
-                    # Pipeline didn't store to S3 — do it here (same as image path)
-                    try:
-                        from django.core.files.base import ContentFile
-                        from django.utils import timezone
-
-                        import uuid as _uuid
-
-                        fname = v_result.get("filename") or f"video_{i}.mp4"
-                        ts = timezone.now().strftime("%Y%m%d")
-                        sfx = str(_uuid.uuid4())[:8]
-
-                        ctx_type = params.get("template_type", "output")
-                        ctx_sub = params.get("template_subtype", "")
-                        folder = f"{ctx_type}/{ctx_sub}" if ctx_sub else ctx_type
-
-                        name_parts = fname.rsplit(".", 1)
-                        uf = (
-                            f"{name_parts[0]}_{ts}_{sfx}.{name_parts[1]}"
-                            if len(name_parts) == 2
-                            else f"{fname}_{ts}_{sfx}"
-                        )
-
-                        if membership_id:
-                            sp = f"members/{membership_id}/generated/{folder}/{uf}"
-                        elif v_org:
-                            sp = f"orgs/{v_org.id}/generated/{folder}/{uf}"
-                        else:
-                            sp = f"generated/{folder}/{uf}"
-
-                        fo = ContentFile(v_bytes, name=fname)
-                        final_sp = v_storage.save(sp, fo)
-
-                        # Create FileAsset
-                        from files.models import FileAsset
-
-                        fa = FileAsset.objects.create(
-                            organization=v_org,
-                            uploaded_by=request.user if request.user.is_authenticated else None,
-                            original_name=fname,
-                            storage_path=final_sp,
-                            file_size=len(v_bytes),
-                            mime_type="video/mp4",
-                            is_public=False,
-                            metadata={"source": "ai_generation", "template_id": template_id},
-                        )
-
-                        try:
-                            purl = v_storage.get_url(final_sp, signed=True)
-                        except Exception:
-                            purl = None
-
-                        variant["video_url"] = purl
-                        variant["storage_path"] = final_sp
-                        variant["file_asset_id"] = str(fa.id)
-                        logger.info("Video variant %d stored in view: %s", i, final_sp)
-                    except Exception as store_err:
-                        logger.exception(
-                            "Failed to store video variant %d in view: %s", i, store_err
-                        )
-                        # Fall back to base64
-                        variant["video_base64"] = base64.b64encode(v_bytes).decode("utf-8")
-                elif v_bytes:
-                    # No org context — return base64 as last resort
-                    variant["video_base64"] = base64.b64encode(v_bytes).decode("utf-8")
-                elif v_result.get("video_base64"):
-                    variant["video_base64"] = v_result["video_base64"]
-
-                variants.append(variant)
+            logger.info("Video generation task %s started in background thread", task_id)
 
             return Response(
-                AssetGenerateOutputSerializer(
-                    {
-                        "template_id": template_id,
-                        "variant_count": len(variants),
-                        "variants": variants,
-                    }
-                ).data
+                {
+                    "status": "processing",
+                    "task_id": task_id,
+                    "message": "Video generation started. Poll /status/ for result.",
+                },
+                status=status.HTTP_202_ACCEPTED,
             )
 
         except ValueError as e:
@@ -410,7 +347,7 @@ def generate_asset_view(request: Request) -> Response:
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:  # noqa: BLE001
-            logger.exception("Video generation failed: %s", e)
+            logger.exception("Video generation dispatch failed: %s", e)
             return Response(
                 {"error": f"Video generation failed: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -1239,3 +1176,243 @@ def restore_asset_version_view(request: Request) -> Response:
     )
 
     return Response({"status": "restored", "url": str(file_asset.id)})
+
+
+# =============================================================================
+# Async video generation – background thread + status endpoint
+# =============================================================================
+
+
+def _run_video_generation(
+    *,
+    task_id: str,
+    template_id: str,
+    params: dict[str, str],
+    input_images: dict[str, bytes],
+    user_id: int | None,
+    organisation_id: str | None,
+    storage_context: dict[str, Any],
+    variant_count: int,
+) -> None:
+    """Background thread: run MiniMax video generation and store result in _VIDEO_TASKS.
+
+    This runs outside the HTTP request lifecycle so Railway's proxy timeout does not apply.
+    """
+    from django.db import close_old_connections
+
+    try:
+        close_old_connections()
+
+        _set_task(
+            task_id,
+            {
+                "status": "processing",
+                "progress": 10,
+                "message": "Calling video provider (MiniMax)…",
+                "_created": _get_task(task_id).get("_created", time.time()),  # type: ignore[union-attr]
+            },
+        )
+
+        from .services.asset_pipeline import generate_video
+
+        result = generate_video(
+            template_id=template_id,
+            params=params,
+            input_images=input_images,
+            user_id=user_id,
+            organisation_id=organisation_id,
+            context=storage_context,
+            variant_count=variant_count,
+        )
+
+        if result.get("error"):
+            _set_task(
+                task_id,
+                {
+                    "status": "failed",
+                    "error": result["error"],
+                    "_created": _get_task(task_id).get("_created", time.time()),  # type: ignore[union-attr]
+                },
+            )
+            logger.error("Video task %s failed: %s", task_id, result["error"])
+            return
+
+        # ── Process variants (S3 storage + presigned URLs) ──────────────
+        _set_task(
+            task_id,
+            {
+                "status": "processing",
+                "progress": 75,
+                "message": "Uploading video to storage…",
+                "_created": _get_task(task_id).get("_created", time.time()),  # type: ignore[union-attr]
+            },
+        )
+
+        from files.utils import get_storage_backend as _get_sb
+
+        v_storage = _get_sb()
+        v_org = None
+        if organisation_id:
+            try:
+                from organisations.models import Organisation as Org
+
+                v_org = Org.objects.get(id=organisation_id)
+            except Exception:
+                pass
+
+        variants: list[dict[str, Any]] = []
+        all_variants = result.get("variants") or []
+        if not all_variants:
+            all_variants = [result]
+
+        membership_id = storage_context.get("membership_id")
+
+        for i, v_result in enumerate(all_variants):
+            variant: dict[str, Any] = {
+                "variant_index": i,
+                "mime_type": v_result.get("mime_type") or "video/mp4",
+                "filename": v_result.get("filename"),
+            }
+
+            v_bytes = v_result.get("video_bytes")
+            v_url = v_result.get("video_url")
+            v_spath = v_result.get("storage_path")
+            v_faid = v_result.get("file_asset_id")
+
+            if v_url:
+                variant["video_url"] = v_url
+                variant["file_asset_id"] = v_faid
+                variant["storage_path"] = v_spath
+            elif v_spath and v_faid:
+                variant["file_asset_id"] = v_faid
+                variant["storage_path"] = v_spath
+                try:
+                    purl = v_storage.get_url(v_spath, signed=True)
+                    variant["video_url"] = purl
+                    variant["presigned_url"] = purl
+                except Exception as url_err:
+                    logger.warning("Presigned URL failed for %s: %s", v_spath, url_err)
+            elif v_bytes and v_org:
+                try:
+                    from django.core.files.base import ContentFile
+                    from django.utils import timezone
+
+                    fname = v_result.get("filename") or f"video_{i}.mp4"
+                    ts = timezone.now().strftime("%Y%m%d")
+                    sfx = str(uuid_mod.uuid4())[:8]
+
+                    ctx_type = params.get("template_type", "output")
+                    ctx_sub = params.get("template_subtype", "")
+                    folder = f"{ctx_type}/{ctx_sub}" if ctx_sub else ctx_type
+
+                    name_parts = fname.rsplit(".", 1)
+                    uf = (
+                        f"{name_parts[0]}_{ts}_{sfx}.{name_parts[1]}"
+                        if len(name_parts) == 2
+                        else f"{fname}_{ts}_{sfx}"
+                    )
+
+                    if membership_id:
+                        sp = f"members/{membership_id}/generated/{folder}/{uf}"
+                    elif v_org:
+                        sp = f"orgs/{v_org.id}/generated/{folder}/{uf}"
+                    else:
+                        sp = f"generated/{folder}/{uf}"
+
+                    fo = ContentFile(v_bytes, name=fname)
+                    final_sp = v_storage.save(sp, fo)
+
+                    from files.models import FileAsset
+
+                    fa = FileAsset.objects.create(
+                        organization=v_org,
+                        original_name=fname,
+                        storage_path=final_sp,
+                        file_size=len(v_bytes),
+                        mime_type="video/mp4",
+                        is_public=False,
+                        metadata={"source": "ai_generation", "template_id": template_id},
+                    )
+
+                    try:
+                        purl = v_storage.get_url(final_sp, signed=True)
+                    except Exception:
+                        purl = None
+
+                    variant["video_url"] = purl
+                    variant["storage_path"] = final_sp
+                    variant["file_asset_id"] = str(fa.id)
+                    logger.info("Video task %s variant %d stored: %s", task_id, i, final_sp)
+                except Exception as store_err:
+                    logger.exception(
+                        "Video task %s variant %d S3 failed: %s", task_id, i, store_err
+                    )
+                    variant["video_base64"] = base64.b64encode(v_bytes).decode("utf-8")
+            elif v_bytes:
+                variant["video_base64"] = base64.b64encode(v_bytes).decode("utf-8")
+            elif v_result.get("video_base64"):
+                variant["video_base64"] = v_result["video_base64"]
+
+            variants.append(variant)
+
+        # ── Store completed result ──────────────────────────────────────
+        _set_task(
+            task_id,
+            {
+                "status": "completed",
+                "progress": 100,
+                "data": {
+                    "template_id": template_id,
+                    "variant_count": len(variants),
+                    "variants": variants,
+                },
+                "_created": _get_task(task_id).get("_created", time.time()),  # type: ignore[union-attr]
+            },
+        )
+        logger.info("Video task %s completed with %d variant(s)", task_id, len(variants))
+
+    except Exception as exc:
+        logger.exception("Video task %s crashed: %s", task_id, exc)
+        _set_task(
+            task_id,
+            {
+                "status": "failed",
+                "error": str(exc),
+                "_created": _get_task(task_id).get("_created", time.time()),  # type: ignore[union-attr]
+            },
+        )
+    finally:
+        close_old_connections()
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def generation_task_status_view(request: Request, task_id: str) -> Response:
+    """Poll for async video generation status.
+
+    Returns:
+        - 200 with status "processing" / "completed" / "failed"
+        - 404 if task_id is unknown (expired or never existed)
+    """
+    task = _get_task(task_id)
+    if task is None:
+        return Response(
+            {"error": "Task not found or expired", "task_id": task_id},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Don't leak internal keys
+    clean = {
+        "task_id": task_id,
+        "status": task.get("status", "unknown"),
+        "progress": task.get("progress", 0),
+    }
+
+    if task.get("status") == "completed":
+        clean["data"] = task.get("data", {})
+    elif task.get("status") == "failed":
+        clean["error"] = task.get("error", "Unknown error")
+    elif task.get("message"):
+        clean["message"] = task["message"]
+
+    return Response(clean)

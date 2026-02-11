@@ -19,6 +19,7 @@ from .views import (
 )
 from .views_asset import (
     generate_asset_view,
+    generation_task_status_view,
     list_asset_history_view,
     list_asset_templates_view,
     restore_asset_version_view,
@@ -36,6 +37,11 @@ urlpatterns = [
     path("health/", health_check, name="generative-health-check"),
     # Asset generation (TeamReel demo)
     path("assets/generate/", generate_asset_view, name="asset-generate"),
+    path(
+        "assets/generate/<str:task_id>/status/",
+        generation_task_status_view,
+        name="asset-generate-status",
+    ),
     path("assets/save/", save_asset_view, name="asset-save"),
     path("assets/templates/", list_asset_templates_view, name="asset-templates-list"),
     path("assets/history/", list_asset_history_view, name="asset-history"),

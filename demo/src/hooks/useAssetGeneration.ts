@@ -3,7 +3,8 @@
  *
  * Manages the AI asset generation flow:
  * 1. Submit generation request (template + params + input image URLs)
- * 2. Wait for synchronous response (30-90s per variant)
+ * 2. For images: wait for synchronous response (30-90s per variant)
+ *    For videos: receive task_id (202) then poll /status/ until complete
  * 3. Display variants for selection
  *
  * Integrates with backend: POST /api/v1/generative/assets/generate/
@@ -39,7 +40,7 @@ export interface GenerationVariant {
   } | null;
 }
 
-type GenerationStep = 'idle' | 'submitting' | 'completed' | 'error';
+type GenerationStep = 'idle' | 'submitting' | 'polling' | 'completed' | 'error';
 
 /** Data returned from the /save/ endpoint after accepting a variant */
 export interface SaveResult {
@@ -85,6 +86,13 @@ export interface SubmitParams {
 }
 
 // ============================================================================
+// Constants
+// ============================================================================
+
+const VIDEO_POLL_INTERVAL_MS = 5_000; // 5 seconds between polls
+const VIDEO_MAX_POLLS = 150; // ~12.5 min max wait
+
+// ============================================================================
 // Hook
 // ============================================================================
 
@@ -121,6 +129,64 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
     setContext(null);
   }, []);
 
+  // ── Poll for async video generation result ─────────────────────────
+  const pollForResult = useCallback(
+    async (taskId: string, signal: AbortSignal): Promise<GenerationVariant[]> => {
+      for (let i = 0; i < VIDEO_MAX_POLLS; i++) {
+        if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+
+        await new Promise((r) => setTimeout(r, VIDEO_POLL_INTERVAL_MS));
+
+        if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+
+        const res = await fetch(
+          `${apiBase}/api/v1/generative/assets/generate/${taskId}/status/`,
+          { signal, credentials: 'include' }
+        );
+
+        if (res.status === 404) {
+          throw new Error('Generatie taak verlopen of niet gevonden');
+        }
+        if (!res.ok) {
+          throw new Error(`Status check mislukt: HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (data.status === 'completed') {
+          const responseData = data.data || {};
+          return (responseData.variants || []).map((v: GenerationVariant) => ({
+            variant_index: v.variant_index,
+            image_base64: v.image_base64 ?? null,
+            video_base64: v.video_base64 ?? null,
+            video_url: v.video_url ?? null,
+            file_asset_id: v.file_asset_id ?? null,
+            mime_type: v.mime_type ?? null,
+            filename: v.filename ?? null,
+            error: v.error ?? null,
+            metadata: v.metadata,
+            presigned_url: v.presigned_url ?? null,
+            storage_path: v.storage_path ?? null,
+            storage_info: v.storage_info ?? null,
+          }));
+        }
+
+        if (data.status === 'failed') {
+          throw new Error(data.error || 'Video generatie mislukt');
+        }
+
+        // Still processing — update progress from server
+        if (typeof data.progress === 'number') {
+          setProgress(Math.min(data.progress, 95));
+        }
+      }
+
+      throw new Error('Video generatie timeout (te lang gewacht)');
+    },
+    [apiBase]
+  );
+
+  // ── Submit generation request ──────────────────────────────────────
   const submit = useCallback(
     async (params: SubmitParams) => {
       // Abort any previous request
@@ -143,7 +209,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
       setContext(saveContext);
 
-      // Simulate progress while waiting (video generation can take 3-5 min via MiniMax)
+      // Simulate progress while waiting (images take 30-90s)
       const progressTimer = setInterval(() => {
         setProgress((prev) => Math.min(prev + 1, 90));
       }, 3000);
@@ -176,6 +242,25 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
         clearInterval(progressTimer);
 
+        // ── Async path: video generation returns 202 + task_id ───────
+        if (res.status === 202) {
+          const asyncData = await res.json();
+          const taskId = asyncData.task_id;
+          if (!taskId) throw new Error('Backend returned 202 but no task_id');
+
+          console.log(`🎬 Video generation started async. task_id=${taskId}`);
+          setStep('polling');
+          setProgress(15);
+
+          const polledVariants = await pollForResult(taskId, controller.signal);
+          console.log(`🎬 Video generation complete: ${polledVariants.length} variant(s)`);
+          setVariants(polledVariants);
+          setStep('completed');
+          setProgress(100);
+          return;
+        }
+
+        // ── Sync path: image generation returns 200 ─────────────────
         if (!res.ok) {
           const errJson = await res.json().catch(() => ({}));
           throw new Error(errJson?.error || errJson?.detail || `Fout: ${res.status}`);
@@ -217,7 +302,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         setStep('error');
       }
     },
-    [apiBase]
+    [apiBase, pollForResult]
   );
 
   const acceptVariant = useCallback(

@@ -907,9 +907,9 @@ export default function AssetGenerationModal({
           {modalStep === 'results' && (
             <div>
               {/* Processing state */}
-              {generation.step === 'submitting' && (
+              {(generation.step === 'submitting' || generation.step === 'polling') && (
                 <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                  <div style={{ fontSize: 48, marginBottom: 16 }}>🍌</div>
+                  <div style={{ fontSize: 48, marginBottom: 16 }}>{generation.step === 'polling' ? '🎬' : '🍌'}</div>
                   <div
                     style={{
                       fontSize: 14,
@@ -917,9 +917,9 @@ export default function AssetGenerationModal({
                       marginBottom: 8,
                     }}
                   >
-                    {generation.step === 'submitting'
-                      ? 'Verzoek indienen...'
-                      : 'AI is aan het genereren...'}
+                    {generation.step === 'polling'
+                      ? 'Video wordt gegenereerd…'
+                      : 'Verzoek indienen...'}
                   </div>
                   <ProgressBar progress={generation.progress} />
                   <div
@@ -929,7 +929,9 @@ export default function AssetGenerationModal({
                       marginTop: 8,
                     }}
                   >
-                    Dit kan 15-30 seconden duren per variant
+                    {generation.step === 'polling'
+                      ? 'Video generatie duurt 2-5 minuten. Je kunt wachten of later terugkomen.'
+                      : 'Dit kan 15-30 seconden duren per variant'}
                   </div>
                 </div>
               )}
@@ -1054,7 +1056,7 @@ export default function AssetGenerationModal({
           }}
         >
           <div>
-            {modalStep !== 'template' && generation.step !== 'submitting' && (
+            {modalStep !== 'template' && generation.step !== 'submitting' && generation.step !== 'polling' && (
               <button
                 onClick={() => {
                   if (modalStep === 'configure') setModalStep('template');

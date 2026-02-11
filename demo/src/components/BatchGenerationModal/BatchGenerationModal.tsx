@@ -313,10 +313,19 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
       }
 
       try {
-        // Build input URLs (filter nulls)
+        // Build input URLs (filter nulls) and map keys to backend format
+        // Frontend uses: person, reference
+        // Backend expects: person_photo, reference_photo
         const inputImageUrls: Record<string, string> = {};
         for (const [key, val] of Object.entries(inputAssets)) {
-          if (val) inputImageUrls[key] = val;
+          if (!val) continue;
+          if (key === 'person') {
+            inputImageUrls['person_photo'] = val;
+          } else if (key === 'reference') {
+            inputImageUrls['reference_photo'] = val;
+          } else {
+            inputImageUrls[key] = val;
+          }
         }
 
         const res = await fetch(`${apiBase}/api/v1/generative/assets/generate/`, {
@@ -337,15 +346,65 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
           }),
         });
 
-        if (!res.ok) {
+        // ── Async path: video generation returns 202 + task_id ───────
+        let responseData: Record<string, unknown>;
+
+        if (res.status === 202) {
+          const asyncData = await res.json();
+          const taskId = asyncData.task_id;
+          if (!taskId) throw new Error('Backend returned 202 but no task_id');
+
+          console.log(`🎬 Batch: async video task ${taskId} for ${member.name}`);
+          setJobStatuses((prev) => ({
+            ...prev,
+            [member.id]: { status: 'running', error: 'Video wordt gegenereerd…' },
+          }));
+
+          // Poll for completion
+          const POLL_INTERVAL = 5_000;
+          const MAX_POLLS = 150; // ~12.5 min
+          let pollResult: Record<string, unknown> | null = null;
+
+          for (let p = 0; p < MAX_POLLS; p++) {
+            if (abortRef.current) break;
+            await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+            if (abortRef.current) break;
+
+            const statusRes = await fetch(
+              `${apiBase}/api/v1/generative/assets/generate/${taskId}/status/`,
+              { credentials: 'include' }
+            );
+
+            if (!statusRes.ok) {
+              if (statusRes.status === 404) throw new Error('Taak verlopen');
+              throw new Error(`Status check failed: HTTP ${statusRes.status}`);
+            }
+
+            const statusData = await statusRes.json();
+
+            if (statusData.status === 'completed') {
+              pollResult = statusData.data || {};
+              break;
+            }
+            if (statusData.status === 'failed') {
+              throw new Error(statusData.error || 'Video generatie mislukt');
+            }
+          }
+
+          if (!pollResult) throw new Error('Video generatie timeout');
+          responseData = pollResult;
+        } else if (res.ok) {
+          // ── Sync path: image generation ────────────────────────────
+          const json = await res.json();
+          responseData = json.data || json;
+        } else {
           const errJson = await res.json().catch(() => ({}));
-          throw new Error(errJson?.error || errJson?.detail || `HTTP ${res.status}`);
+          throw new Error((errJson as Record<string, string>)?.error || (errJson as Record<string, string>)?.detail || `HTTP ${res.status}`);
         }
 
-        const json = await res.json();
-        const responseData = json.data || json;
-        const variants = responseData.variants || [];
-        const variant = variants[0];
+        const variants = (responseData.variants || []) as Record<string, unknown>[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const variant = variants[0] as any;
 
         if (!variant || variant.error) {
           throw new Error(variant?.error || 'No variant returned');
