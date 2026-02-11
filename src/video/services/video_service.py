@@ -94,7 +94,6 @@ class VideoService:
         from src.video.tasks import (
             compose_video,
             generate_thumbnail,
-            process_lineup_video,
             transcode_video,
         )
 
@@ -107,29 +106,17 @@ class VideoService:
         elif job.job_type == JobType.COMPOSE:
             compose_video.delay(job_id)
         elif job.job_type == JobType.LINEUP:
-            # Try Celery first, fall back to background thread if broker unavailable
-            try:
-                # Check if Celery broker is actually available
-                from celery import current_app
-
-                conn = current_app.connection()
-                conn.ensure_connection(max_retries=1, timeout=2)
-                conn.release()
-                # Broker available, use Celery
-                process_lineup_video.delay(job_id)
-                logger.info("Lineup job dispatched to Celery", extra={"job_id": job_id})
-            except Exception as celery_err:
-                # Celery/broker not available, process in background thread
-                logger.warning(
-                    "Celery broker unavailable, processing lineup in background thread",
-                    extra={"job_id": job_id, "error": str(celery_err)},
-                )
-                thread = threading.Thread(
-                    target=self._process_lineup_sync,
-                    args=(job_id,),
-                    daemon=True,
-                )
-                thread.start()
+            # Always process in background thread (no Celery worker available on Railway)
+            logger.info(
+                "Lineup job dispatched to background thread",
+                extra={"job_id": job_id},
+            )
+            thread = threading.Thread(
+                target=self._process_lineup_sync,
+                args=(job_id,),
+                daemon=True,
+            )
+            thread.start()
         else:
             logger.error(
                 "Unknown job type for dispatch",
