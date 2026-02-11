@@ -3765,7 +3765,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             setIsBatchModalOpen(false);
           }}
           members={batchMembers}
-          projectId={String((isTeamRoute ? club : project)?.id || '')}
+          projectId={String(project?.id || '')}
           organisationId={String(org?.id || '')}
           brandAssets={batchBrandAssets}
           onBatchComplete={() => {
