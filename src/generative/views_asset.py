@@ -243,7 +243,7 @@ def generate_asset_view(request: Request) -> Response:
 
     # Run the appropriate pipeline based on output type
     if output_type == "video":
-        # Video generation (Veo 3.1)
+        # Video generation (MiniMax primary, Veo fallback)
         try:
             from .services.asset_pipeline import generate_video
 

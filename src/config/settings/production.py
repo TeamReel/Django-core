@@ -255,3 +255,7 @@ if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
 # ==============================================================================
 # Google Gemini / Imagen API key for asset generation pipeline
 GOOGLE_API_KEY = env("GOOGLE_API_KEY", default=None)
+
+# MiniMax / Hailuo Video Generation
+MINIMAX_API_KEY = env("MINIMAX_API_KEY", default=None)
+MINIMAX_GROUP_ID = env("MINIMAX_GROUP_ID", default=None)

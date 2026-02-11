@@ -4,7 +4,7 @@ Integrates teamreel_prompts.py templates with Google Gemini for:
 1. Kit analysis (Gemini 2.0 Flash → text description)
 2. Prompt resolution (template + params + analysis → final prompt)
 3. Image generation (nano-banana-pro-preview → variants)
-4. Video generation (Veo 3.1 → 5-8 second videos)
+4. Video generation (MiniMax/Hailuo → 5-6 second videos, Veo 3.1 fallback)
 
 This is the backend counterpart of the frontend AssetGenerationModal.
 """
@@ -321,8 +321,23 @@ def generate_asset(
 
 
 # =============================================================================
-# Video Generation (Veo 3.1)
+# Video Generation (MiniMax / Hailuo — primary, Google Veo — fallback)
 # =============================================================================
+
+
+def _load_prompts_module():
+    """Helper to load teamreel_prompts.py module dynamically."""
+    import importlib.util
+    import os
+
+    prompts_path = os.path.join(settings.BASE_DIR, "..", "teamreel_prompts.py")
+    if not os.path.exists(prompts_path):
+        prompts_path = os.path.join(settings.BASE_DIR, "teamreel_prompts.py")
+
+    spec = importlib.util.spec_from_file_location("teamreel_prompts", prompts_path)
+    prompts_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(prompts_module)
+    return prompts_module
 
 
 def generate_video(
@@ -336,34 +351,28 @@ def generate_video(
     max_wait_seconds: int = 300,
     variant_count: int = 1,
 ) -> dict[str, Any]:
-    """Generate a short video using Veo 3.1.
+    """Generate a short video using MiniMax/Hailuo (primary) or Google Veo (fallback).
+
+    Provider selection:
+    - If MINIMAX_API_KEY is set → use MiniMax (Hailuo) video-01
+    - Else if GOOGLE_API_KEY is set → use Google Veo 3.1 (legacy, often content-blocked)
+    - Else → error
 
     Args:
         template_id: Template key from teamreel_prompts.TEMPLATES (must have output_type='video')
         params: Parameter values (e.g. {"style_variant": "arms_crossed", "kit_type": "home"})
         input_images: Dict of input images as bytes (keys: person_photo, etc.)
-        user_id: User ID for file ownership (required for S3 upload)
-        organisation_id: Organisation ID for S3 path (required for S3 upload)
+        user_id: User ID for file ownership
+        organisation_id: Organisation ID for S3 path
         context: Optional context for S3 path (club_slug, team_slug, membership_id, etc.)
         poll_interval: Seconds between status checks (default 10)
         max_wait_seconds: Maximum wait time before timeout (default 300 = 5 min)
-        variant_count: Number of variants to generate (default 1, max usually 4)
+        variant_count: Number of variants to generate (default 1)
 
     Returns:
         Dict with keys: {video_bytes, video_url, mime_type, filename, file_asset_id, metadata, variants} or {error}
     """
-    # Import the prompts module (root-level)
-    import importlib.util
-    import os
-
-    prompts_path = os.path.join(settings.BASE_DIR, "..", "teamreel_prompts.py")
-    if not os.path.exists(prompts_path):
-        prompts_path = os.path.join(settings.BASE_DIR, "teamreel_prompts.py")
-
-    spec = importlib.util.spec_from_file_location("teamreel_prompts", prompts_path)
-    prompts_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(prompts_module)
-
+    prompts_module = _load_prompts_module()
     TEMPLATES = prompts_module.TEMPLATES
     resolve_prompt = prompts_module.resolve_prompt
 
@@ -372,136 +381,153 @@ def generate_video(
 
     template = TEMPLATES[template_id]
 
-    # Verify this is a video template
     if template.get("output_type") != "video":
         raise ValueError(f"Template {template_id} is not a video template (output_type != 'video')")
 
-    # Step 1: Resolve prompt
+    # Resolve prompt
     final_prompt = resolve_prompt(template_id, params)
     logger.info("Resolved video prompt for %s: %d chars", template_id, len(final_prompt))
 
-    # Step 2: Generate video with Veo 3.1
-    from google import genai
-    from google.genai import types
+    # Provider selection
+    minimax_key = getattr(settings, "MINIMAX_API_KEY", None)
+    minimax_group = getattr(settings, "MINIMAX_GROUP_ID", None)
+    google_key = getattr(settings, "GOOGLE_API_KEY", None)
 
-    api_key = getattr(settings, "GOOGLE_API_KEY", None)
-    if not api_key:
-        raise ValueError("GOOGLE_API_KEY not configured in settings")
+    if minimax_key:
+        logger.info("Using MiniMax/Hailuo provider for video generation")
+        return _generate_video_minimax(
+            template_id=template_id,
+            template=template,
+            final_prompt=final_prompt,
+            params=params,
+            input_images=input_images,
+            user_id=user_id,
+            organisation_id=organisation_id,
+            context=context,
+            api_key=minimax_key,
+            group_id=minimax_group,
+            variant_count=variant_count,
+        )
+    elif google_key:
+        logger.warning(
+            "MiniMax not configured. Falling back to Google Veo (may be content-blocked)."
+        )
+        return _generate_video_veo(
+            template_id=template_id,
+            template=template,
+            final_prompt=final_prompt,
+            params=params,
+            input_images=input_images,
+            user_id=user_id,
+            organisation_id=organisation_id,
+            context=context,
+            api_key=google_key,
+            poll_interval=poll_interval,
+            max_wait_seconds=max_wait_seconds,
+            variant_count=variant_count,
+        )
+    else:
+        raise ValueError(
+            "No video generation provider configured. "
+            "Set MINIMAX_API_KEY (preferred) or GOOGLE_API_KEY in environment."
+        )
 
-    client = genai.Client(api_key=api_key)
 
-    # Get video config from template
+# -----------------------------------------------------------------------------
+# MiniMax / Hailuo Provider
+# -----------------------------------------------------------------------------
+
+
+def _generate_video_minimax(
+    *,
+    template_id: str,
+    template: dict,
+    final_prompt: str,
+    params: dict[str, str],
+    input_images: dict[str, bytes],
+    user_id: int | None,
+    organisation_id: int | None,
+    context: dict | None,
+    api_key: str,
+    group_id: str | None,
+    variant_count: int = 1,
+) -> dict[str, Any]:
+    """Generate video using MiniMax (Hailuo) video-01 model.
+
+    Supports:
+    - Text-to-video (prompt only)
+    - Image-to-video (person_photo as first frame + prompt)
+
+    MiniMax currently generates 1 video per request (720p, 25fps, ~6s).
+    For multiple variants, we make sequential requests.
+    """
+    from .minimax_client import MiniMaxClient
+
     video_config = template.get("video_config", {})
-    duration = video_config.get("duration_seconds", 6)
-    aspect_ratio = video_config.get("aspect_ratio", "9:16")
-    resolution = video_config.get("resolution", "720p")
-    loop_video = video_config.get("loop", False)
+    model = video_config.get("minimax_model", "video-01")
 
-    # If we have an input image (person_photo), use image-to-video
+    # MiniMax supports max 2000 chars prompt
+    if len(final_prompt) > 2000:
+        logger.warning(
+            "Prompt too long for MiniMax (%d chars). Truncating to 2000.", len(final_prompt)
+        )
+        final_prompt = final_prompt[:1997] + "..."
+
+    # Check for input image (person_photo for image-to-video)
     person_img = input_images.get("person_photo")
-    image_obj = None
 
-    if person_img:
-        # Pass explicit dict with raw bytes - SDK handles base64 encoding and serialization
-        image_obj = {
-            "image_bytes": person_img,
-            "mime_type": "image/png",
-        }
+    results = []
+    effective_count = min(variant_count, 4)  # Reasonable limit
 
-    # Prepare config (per google-genai SDK codegen instructions)
-    # Note: Veo Preview currently restricts number_of_videos to 1.
-    if variant_count > 1:
-        logger.warning("Veo supports max 1 video. Requested %d. Clamping to 1.", variant_count)
+    for i in range(effective_count):
+        try:
+            client = MiniMaxClient(
+                api_key=api_key,
+                group_id=group_id or "",
+                timeout=120.0,
+                poll_interval=5.0,
+                max_wait=600.0,
+            )
 
-    effective_variant_count = 1
-
-    # Build config arguments dynamically
-    config_args = {
-        "number_of_videos": effective_variant_count,
-    }
-
-    # Only pass aspect_ratio for Text-to-Video.
-    # For Image-to-Video, the input image dictates the aspect ratio.
-    if not person_img:
-        config_args["aspect_ratio"] = aspect_ratio
-
-    # Note: 'person_generation' parameter removed as it triggers "Use case not supported"
-    # if the Google Cloud project is not explicitly allowlisted for adult/person generation.
-    # Note: 'duration_seconds' and 'last_frame' removed as Veo 3.1 preview may not support them.
-
-    veo_config = types.GenerateVideosConfig(**config_args)
-
-    try:
-        if person_img:
-            # Image-to-video: use person photo as starting frame / reference
             logger.info(
-                "Generating %d video(s) with image input (image-to-video, loop=%s)",
-                variant_count,
-                loop_video,
+                "MiniMax: generating variant %d/%d (%s, model=%s, has_image=%s)",
+                i + 1,
+                effective_count,
+                "I2V" if person_img else "T2V",
+                model,
+                bool(person_img),
             )
 
-            operation = client.models.generate_videos(
-                model="veo-3.1-fast-generate-preview",
+            # Generate video (handles create → poll → download internally)
+            gen_result = client.generate_video(
                 prompt=final_prompt,
-                image=image_obj,
-                config=veo_config,
+                image=person_img if person_img else None,
+                model=model,
             )
-        else:
-            # Text-to-video only
+
+            v_bytes = gen_result["video_bytes"]
+
             logger.info(
-                "Generating %d video(s) with text prompt only (text-to-video)", variant_count
+                "MiniMax: variant %d task completed. task_id=%s, file_id=%s, %d bytes",
+                i + 1,
+                gen_result["task_id"],
+                gen_result["file_id"],
+                len(v_bytes),
             )
-            operation = client.models.generate_videos(
-                model="veo-3.1-fast-generate-preview",
-                prompt=final_prompt,
-                config=veo_config,
-            )
 
-        # Poll for completion
-        start_time = time.time()
-        while not operation.done:
-            elapsed = time.time() - start_time
-            if elapsed > max_wait_seconds:
-                return {
-                    "video_bytes": None,
-                    "video_base64": None,
-                    "mime_type": None,
-                    "filename": None,
-                    "error": f"Video generation timed out after {max_wait_seconds}s",
-                }
-
-            logger.info("Waiting for video generation... (%.0fs elapsed)", elapsed)
-            time.sleep(poll_interval)
-            operation = client.operations.get(operation)
-
-        # Collect all generated videos
-        generated_variants = []
-
-        # Helper to process one video
-        def process_video_result(vid_obj, idx):
-            # Verify video object exists
-            if not vid_obj.video:
-                raise ValueError(f"Variant {idx}: No video file reference in response")
-
-            # Download video bytes directly using the SDK client
-            # The 'file' argument accepts the File object or its name
-            try:
-                v_bytes = client.files.download(file=vid_obj.video.name)
-            except Exception as e:
-                # Fallback: try passing the object directly if name fails
-                try:
-                    v_bytes = client.files.download(file=vid_obj.video)
-                except Exception as e2:
-                    raise RuntimeError(f"Failed to download video content: {e} / {e2}") from e
+            if not v_bytes or len(v_bytes) < 1000:
+                raise ValueError(
+                    f"Downloaded video is too small ({len(v_bytes) if v_bytes else 0} bytes)"
+                )
 
             # Generate filename
             safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
             param_str = "_".join(f"{k}-{v}" for k, v in sorted(safe_params.items()))
             if len(param_str) > 60:
                 param_str = param_str[:57] + "..."
-            fname = f"{template_id}_{param_str}_{int(time.time())}_{idx}.mp4"
+            fname = f"{template_id}_{param_str}_{int(time.time())}_{i}.mp4"
 
-            # Upload to S3 if user_id and organisation_id provided
+            # Upload to S3 if organisation_id provided
             v_url = None
             f_asset_id = None
             storage_path = None
@@ -510,7 +536,6 @@ def generate_video(
                 try:
                     from .file_storage import GenerationFileService
 
-                    # Store video in S3
                     file_asset_uuid = GenerationFileService.store_output_file(
                         content=v_bytes,
                         filename=fname,
@@ -521,19 +546,214 @@ def generate_video(
                     )
                     f_asset_id = str(file_asset_uuid)
 
-                    # Get presigned URL and storage path
-                    from files.utils import get_storage_backend
                     from files.models import FileAsset
+                    from files.utils import get_storage_backend
 
                     file_asset = FileAsset.objects.get(id=file_asset_uuid)
                     storage = get_storage_backend()
                     v_url = storage.get_url(file_asset.storage_path, signed=True, expires_in=3600)
                     storage_path = file_asset.storage_path
 
-                    logger.info("Video variant %d uploaded to S3: %s", idx, fname)
-
+                    logger.info("MiniMax video variant %d uploaded to S3: %s", i, fname)
                 except Exception as e:
-                    logger.exception("Failed to upload video variant %d to S3: %s", idx, e)
+                    logger.exception("Failed to upload MiniMax video variant %d to S3: %s", i, e)
+
+            results.append(
+                {
+                    "video_bytes": v_bytes,
+                    "video_url": v_url,
+                    "storage_path": storage_path,
+                    "filename": fname,
+                    "file_asset_id": f_asset_id,
+                    "mime_type": "video/mp4",
+                }
+            )
+
+            logger.info(
+                "MiniMax: variant %d/%d complete (%d bytes)", i + 1, effective_count, len(v_bytes)
+            )
+
+            client.close()
+
+        except Exception as e:
+            logger.exception("MiniMax: error generating variant %d: %s", i + 1, e)
+            if not results:
+                # If first variant fails, bail out
+                return {
+                    "video_bytes": None,
+                    "video_base64": None,
+                    "mime_type": None,
+                    "filename": None,
+                    "error": f"MiniMax video generation failed: {e}",
+                }
+            # For subsequent variants, just log and continue
+            break
+
+    if not results:
+        return {
+            "video_bytes": None,
+            "video_base64": None,
+            "mime_type": None,
+            "filename": None,
+            "error": "No video variants generated",
+        }
+
+    # Build response (backward compatible: first variant as main)
+    main = results[0]
+    video_config_out = template.get("video_config", {})
+
+    return {
+        "video_bytes": main["video_bytes"] if not main["video_url"] else None,
+        "video_base64": (
+            base64.b64encode(main["video_bytes"]).decode("utf-8")
+            if main["video_bytes"] and not main["video_url"]
+            else None
+        ),
+        "video_url": main["video_url"],
+        "mime_type": "video/mp4",
+        "filename": main["filename"],
+        "file_asset_id": main["file_asset_id"],
+        "variants": results,
+        "metadata": {
+            "template_id": template_id,
+            "params": params,
+            "provider": "minimax",
+            "model": model,
+            "duration_seconds": video_config_out.get("duration_seconds", 6),
+            "aspect_ratio": video_config_out.get("aspect_ratio", "9:16"),
+            "resolution": "720p",
+            "variant_count": len(results),
+        },
+    }
+
+
+# -----------------------------------------------------------------------------
+# Google Veo Provider (legacy fallback)
+# -----------------------------------------------------------------------------
+
+
+def _generate_video_veo(
+    *,
+    template_id: str,
+    template: dict,
+    final_prompt: str,
+    params: dict[str, str],
+    input_images: dict[str, bytes],
+    user_id: int | None,
+    organisation_id: int | None,
+    context: dict | None,
+    api_key: str,
+    poll_interval: int = 10,
+    max_wait_seconds: int = 300,
+    variant_count: int = 1,
+) -> dict[str, Any]:
+    """Generate video using Google Veo 3.1 (legacy fallback).
+
+    WARNING: Google Veo frequently blocks person/sports content due to content policy.
+    Use MiniMax as the primary provider.
+    """
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=api_key)
+
+    video_config = template.get("video_config", {})
+    duration = video_config.get("duration_seconds", 6)
+    aspect_ratio = video_config.get("aspect_ratio", "9:16")
+    resolution = video_config.get("resolution", "720p")
+    loop_video = video_config.get("loop", False)
+
+    person_img = input_images.get("person_photo")
+    image_obj = None
+    if person_img:
+        image_obj = {"image_bytes": person_img, "mime_type": "image/png"}
+
+    if variant_count > 1:
+        logger.warning("Veo supports max 1 video. Clamping to 1.")
+
+    config_args = {"number_of_videos": 1}
+    if not person_img:
+        config_args["aspect_ratio"] = aspect_ratio
+
+    veo_config = types.GenerateVideosConfig(**config_args)
+
+    try:
+        if person_img:
+            operation = client.models.generate_videos(
+                model="veo-3.1-fast-generate-preview",
+                prompt=final_prompt,
+                image=image_obj,
+                config=veo_config,
+            )
+        else:
+            operation = client.models.generate_videos(
+                model="veo-3.1-fast-generate-preview",
+                prompt=final_prompt,
+                config=veo_config,
+            )
+
+        start_time = time.time()
+        while not operation.done:
+            elapsed = time.time() - start_time
+            if elapsed > max_wait_seconds:
+                return {
+                    "video_bytes": None,
+                    "video_base64": None,
+                    "mime_type": None,
+                    "filename": None,
+                    "error": f"Veo: timed out after {max_wait_seconds}s",
+                }
+            logger.info("Veo: waiting... (%.0fs elapsed)", elapsed)
+            time.sleep(poll_interval)
+            operation = client.operations.get(operation)
+
+        generated_variants = []
+
+        def process_veo_result(vid_obj, idx):
+            if not vid_obj.video:
+                raise ValueError(f"Veo variant {idx}: no video reference")
+
+            try:
+                v_bytes = client.files.download(file=vid_obj.video.name)
+            except Exception as e:
+                try:
+                    v_bytes = client.files.download(file=vid_obj.video)
+                except Exception as e2:
+                    raise RuntimeError(f"Veo download failed: {e} / {e2}") from e
+
+            safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
+            param_str = "_".join(f"{k}-{v}" for k, v in sorted(safe_params.items()))
+            if len(param_str) > 60:
+                param_str = param_str[:57] + "..."
+            fname = f"{template_id}_{param_str}_{int(time.time())}_{idx}.mp4"
+
+            v_url = None
+            f_asset_id = None
+            storage_path = None
+
+            if organisation_id:
+                try:
+                    from .file_storage import GenerationFileService
+
+                    file_asset_uuid = GenerationFileService.store_output_file(
+                        content=v_bytes,
+                        filename=fname,
+                        mime_type="video/mp4",
+                        user_id=user_id,
+                        organisation_id=organisation_id,
+                        context=context or {},
+                    )
+                    f_asset_id = str(file_asset_uuid)
+
+                    from files.models import FileAsset
+                    from files.utils import get_storage_backend
+
+                    file_asset = FileAsset.objects.get(id=file_asset_uuid)
+                    storage = get_storage_backend()
+                    v_url = storage.get_url(file_asset.storage_path, signed=True, expires_in=3600)
+                    storage_path = file_asset.storage_path
+                except Exception as e:
+                    logger.exception("Veo: S3 upload failed for variant %d: %s", idx, e)
 
             return {
                 "video_bytes": v_bytes,
@@ -544,7 +764,6 @@ def generate_video(
                 "mime_type": "video/mp4",
             }
 
-        # Process all variants
         generated_videos = (
             operation.response.generated_videos
             if operation.response and operation.response.generated_videos
@@ -552,39 +771,40 @@ def generate_video(
         )
 
         if not generated_videos:
-            # Check if response has a block reason or other info
             block_reason = None
             if operation.response:
                 block_reason = getattr(operation.response, "block_reason", None)
             if block_reason:
-                raise ValueError(f"Video generation blocked: {block_reason}")
+                raise ValueError(f"Veo: blocked: {block_reason}")
             raise ValueError(
-                "No videos generated in response (generated_videos is empty/None). "
-                "This may indicate content policy filtering or a temporary API issue."
+                "Veo: No videos generated (generated_videos is empty/None). "
+                "Content policy filtering or API issue. Consider using MiniMax instead."
             )
 
         for i, vid in enumerate(generated_videos):
-            generated_variants.append(process_video_result(vid, i))
+            generated_variants.append(process_veo_result(vid, i))
 
         if not generated_variants:
-            raise ValueError("No videos generated in response")
+            raise ValueError("Veo: No videos generated")
 
-        # Prepare main return (backward compatibility: return first variant as main)
-        main_variant = generated_variants[0]
+        main = generated_variants[0]
 
         return {
-            "video_bytes": main_variant["video_bytes"] if not main_variant["video_url"] else None,
-            "video_base64": base64.b64encode(main_variant["video_bytes"]).decode("utf-8")
-            if not main_variant["video_url"]
-            else None,
-            "video_url": main_variant["video_url"],
+            "video_bytes": main["video_bytes"] if not main["video_url"] else None,
+            "video_base64": (
+                base64.b64encode(main["video_bytes"]).decode("utf-8")
+                if main["video_bytes"] and not main["video_url"]
+                else None
+            ),
+            "video_url": main["video_url"],
             "mime_type": "video/mp4",
-            "filename": main_variant["filename"],
-            "file_asset_id": main_variant["file_asset_id"],
-            "variants": generated_variants,  # Include all variants including first
+            "filename": main["filename"],
+            "file_asset_id": main["file_asset_id"],
+            "variants": generated_variants,
             "metadata": {
                 "template_id": template_id,
                 "params": params,
+                "provider": "google_veo",
                 "duration_seconds": duration,
                 "aspect_ratio": aspect_ratio,
                 "resolution": resolution,
@@ -593,8 +813,8 @@ def generate_video(
             },
         }
 
-    except Exception as e:  # noqa: BLE001
-        logger.exception("Error generating video: %s", e)
+    except Exception as e:
+        logger.exception("Veo: error: %s", e)
         return {
             "video_bytes": None,
             "video_base64": None,
