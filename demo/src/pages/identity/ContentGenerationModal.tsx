@@ -684,7 +684,7 @@ export default function ContentGenerationModal({
         if (reqs.assistant?.asset_types?.length) assistantAssets = reqs.assistant.asset_types;
 
         // Force defaults if user specifically requested this standard lineup flow
-        if (selectedType.subtype === 'lineup') {
+        if (selectedType?.subtype === 'lineup') {
             gkAssets = ['in_tenue', 'short_intro', 'close_up'];
             playerAssets = ['in_tenue', 'short_intro', 'close_up'];
             // Limit counts
