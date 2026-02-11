@@ -350,7 +350,9 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         let responseData: Record<string, unknown>;
 
         if (res.status === 202) {
-          const asyncData = await res.json();
+          const asyncJson = await res.json();
+          // API envelope: { status: 'success', data: { task_id, ... } }
+          const asyncData = asyncJson.data || asyncJson;
           const taskId = asyncData.task_id;
           if (!taskId) throw new Error('Backend returned 202 but no task_id');
 
@@ -380,7 +382,9 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
               throw new Error(`Status check failed: HTTP ${statusRes.status}`);
             }
 
-            const statusData = await statusRes.json();
+            const statusJson = await statusRes.json();
+            // API envelope: { status: 'success', data: { status, data, ... } }
+            const statusData = statusJson.data || statusJson;
 
             if (statusData.status === 'completed') {
               pollResult = statusData.data || {};

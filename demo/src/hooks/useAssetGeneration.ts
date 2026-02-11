@@ -151,7 +151,9 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           throw new Error(`Status check mislukt: HTTP ${res.status}`);
         }
 
-        const data = await res.json();
+        const rawJson = await res.json();
+        // API envelope: { status: 'success', data: { task_id, status, ... } }
+        const data = rawJson.data || rawJson;
 
         if (data.status === 'completed') {
           const responseData = data.data || {};
@@ -244,7 +246,9 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
         // ── Async path: video generation returns 202 + task_id ───────
         if (res.status === 202) {
-          const asyncData = await res.json();
+          const asyncJson = await res.json();
+          // API envelope: { status: 'success', data: { task_id, ... } }
+          const asyncData = asyncJson.data || asyncJson;
           const taskId = asyncData.task_id;
           if (!taskId) throw new Error('Backend returned 202 but no task_id');
 
