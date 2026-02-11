@@ -7,7 +7,9 @@
 # =============================================================================
 # Stage 1: Builder
 # =============================================================================
-FROM python:3.12 AS builder
+# Use AWS Public ECR mirror of official Docker Library images to reduce
+# susceptibility to Docker Hub auth/token outages and anonymous rate limits.
+FROM public.ecr.aws/docker/library/python:3.12 AS builder
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -33,7 +35,7 @@ RUN pip install --upgrade pip setuptools wheel && \
 # =============================================================================
 # Stage 2: Production Runtime
 # =============================================================================
-FROM python:3.12-slim
+FROM public.ecr.aws/docker/library/python:3.12-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
