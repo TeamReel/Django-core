@@ -728,11 +728,16 @@ export default function ContentGenerationModal({
               continue;
             }
 
-            const isImage = ['profile_photo', 'in_tenue', 'legacy_photo', 'legacy', 'full_body'].includes(assetType);
-            // close_up can be video (video_closeup) or image. Based on ASSET_TYPE_KEY, it maps to 'closeup'.
-            // If getMemberAssetUrl returns a video URL, we treat it as video.
-            // Simple heuristic based on extension if confused, but here we trust the type definition mostly.
-            // However, 'close_up' is not in the isImage list above. So it defaults to video.
+            let isImage = ['profile_photo', 'in_tenue', 'legacy_photo', 'legacy', 'full_body'].includes(assetType);
+
+            // Auto-detect image from URL extension if not explicitly typed as image already
+            // This fixes cases where 'close_up' is technically a PNG but was defaulted to video type
+            if (!isImage && url) {
+               const lowerUrl = url.toLowerCase();
+               if (lowerUrl.endsWith('.png') || lowerUrl.endsWith('.jpg') || lowerUrl.endsWith('.jpeg') || lowerUrl.endsWith('.webp')) {
+                  isImage = true;
+               }
+            }
 
             segments.push({
               type: isImage ? 'image' : 'video',
