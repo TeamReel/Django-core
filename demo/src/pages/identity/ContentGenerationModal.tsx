@@ -1344,7 +1344,14 @@ export default function ContentGenerationModal({
                 const req = selectedTemplate.input_requirements?.members?.[role];
                 if (!req || typeof req === 'boolean' || !req.count) return null;
 
-                const available = seasonSquad[role] || [];
+                // For lineup videos, allow selecting from ALL squad members, not just those with matching roles
+                // This handles cases like coaches who can also play, or players mislabeled as other roles
+                const isLineupTemplate = selectedTemplate?.template_subtype?.toLowerCase()?.includes('lineup');
+                const available = isLineupTemplate && (role === 'player' || role === 'goalkeeper')
+                  ? [...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || []), ...(seasonSquad.coach || []), ...(seasonSquad.assistant || [])]
+                    // Remove duplicates (same member ID)
+                    .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx)
+                  : (seasonSquad[role] || []);
                 const selected = selectedMembers[role];
                 const assetTypes = req.asset_types || [];
                 const assetLabels = assetTypes.map(t => ASSET_TYPE_LABELS[t] || t);
