@@ -348,8 +348,8 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     icon: '👔',
     category: 'coach',
     description: 'Genereer een coach/trainer outfit: net pak, sweater, coltrui, polo of windbreaker.',
-    inputRequirements: ['logo', 'reference'],
-    requiredAssetTypes: ['logo_upload'],
+    inputRequirements: ['logo', 'sponsor', 'reference'],
+    requiredAssetTypes: ['logo_upload', 'sponsor_logo_upload'],
     outputAssetType: 'kit_coach',
     creditsCost: 1,
     parameters: {

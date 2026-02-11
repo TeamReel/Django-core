@@ -328,7 +328,7 @@ STYLE:
         "name": "Coach Outfit Genereren",
         "category": "coach",
         "description": "Genereer een coach/trainer outfit (net pak, sweater, coltrui, etc.).",
-        "input_requirements": ["logo", "reference_photo"],
+        "input_requirements": ["logo", "sponsor", "reference_photo"],
         "parameters": {
             "outfit_style": {
                 "label": "Stijl",
@@ -351,6 +351,7 @@ STYLE:
         },
         "preprocessing": {
             "logo": "square_pad_512",
+            "sponsor": "pad_512_landscape",
         },
         "prompt_template": """Create a REALISTIC football COACH / TRAINER OUTFIT layout (Flat Lay Photography).
 
@@ -366,14 +367,16 @@ TEAM CONTEXT (Use for color reference if 'team_primary' selected):
 OUTFIT DETAILS (based on style):
 {outfit_style_details}
 
-COMPOSITION:
+COMPOSITION & FRAMING (CRITICAL):
 - FULL SHOT: Show ENTIRE top garment and ENTIRE trousers / pants.
-- Organized layout (top above trousers).
-- No cropping of any garment edges.
+- DO NOT CROP: Do not cut off the bottom of the trousers or the top of the collar.
+- MAXIMIZE SPACE: The outfit should fill the frame but keep a small margin.
+- Orientation: Vertical Portrait (9:16 Aspect Ratio). Image must be taller than it is wide.
 - If the outfit includes multiple layers (e.g. shirt + jacket), show them layered naturally.
 
 INTEGRATION:
 - CLUB LOGO: Left chest, highly visible realistic embroidery or badge.
+- SPONSOR: Use provided Sponsor image CENTERED on chest/jacket or on the back (depending on style), realistic heat-press.
 - The logo must be clearly recognizable and professionally placed.
 
 STYLE:
