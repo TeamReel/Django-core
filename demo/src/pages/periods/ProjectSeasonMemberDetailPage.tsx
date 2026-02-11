@@ -727,6 +727,16 @@ export default function ProjectSeasonMemberDetailPage() {
   const [aiInputPersonUrl, setAiInputPersonUrl] = useState<string | null>(null); // For intro/celebration: player in tenue
   const [aiSelectedStyleVariant, setAiSelectedStyleVariant] = useState<string | null>(null); // For intro/celebration: pose style
 
+  // Set default kit type based on member role
+  useEffect(() => {
+    if (membership?.role) {
+      if (membership.role === 'goalkeeper') setAiSelectedKitType('goalkeeper');
+      else if (membership.role === 'coach') setAiSelectedKitType('coach');
+      else if (membership.role === 'assistant') setAiSelectedKitType('assistant');
+      else setAiSelectedKitType('home');
+    }
+  }, [membership?.role]);
+
   // Video Preview Modal State (click-to-enlarge)
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
 
@@ -1517,15 +1527,6 @@ export default function ProjectSeasonMemberDetailPage() {
                           <Badge variant={userCanEditProject ? 'default' : 'info'}>
                             {userCanEditProject ? 'Editable' : 'Read-only'}
                           </Badge>
-                          {userCanEditProject && (
-                            <Button
-                              size="sm"
-                              onClick={() => openAiModal('closeup_in_tenue', 'home', videoVariants.fullbody['home'])}
-                              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', border: 'none' }}
-                            >
-                              ✨ AI Genereren
-                            </Button>
-                          )}
                         </div>
                       </div>
 
@@ -1604,9 +1605,15 @@ export default function ProjectSeasonMemberDetailPage() {
                             <div style={{ fontSize: '32px', marginBottom: '8px' }}>✨</div>
                             <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>Genereer met AI</div>
                             <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '16px' }}>
-                              Gebruik de profielfoto en het geselecteerde tenue om een close-up portret te genereren.
+                              {!videoVariants.fullbody[aiSelectedKitType]
+                                ? '⚠️ Je moet eerst een "Player in Tenue (Fullbody)" genereren voor dit tenue om een close-up te maken.'
+                                : 'Gebruik de fullbody generatie om een consistente close-up te maken.'
+                              }
                             </div>
-                            <Button onClick={() => openAiModal('closeup_in_tenue', aiSelectedKitType, videoVariants.fullbody[aiSelectedKitType])}>
+                            <Button
+                              onClick={() => openAiModal('closeup_in_tenue', aiSelectedKitType, videoVariants.fullbody[aiSelectedKitType])}
+                              disabled={!videoVariants.fullbody[aiSelectedKitType]}
+                            >
                               🎨 Start AI Generatie
                             </Button>
                           </div>
