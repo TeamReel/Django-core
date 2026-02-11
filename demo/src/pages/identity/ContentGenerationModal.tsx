@@ -228,6 +228,62 @@ interface ContentGenerationModalProps {
   assetType?: string | null;
 }
 
+// Map template asset_types to teamreel_assets media slot keys
+const ASSET_TYPE_TO_MEDIA_KEY: Record<string, string> = {
+  'profile_photo': 'profile',
+  'in_tenue': 'kit',
+  'close_up': 'closeup',
+  'short_intro': 'intro',
+  'celebration': 'celebration',
+  'legacy_photo': 'legacy_photo',
+  'legacy': 'legacy',
+  // Alternative spellings
+  'full_body': 'kit',
+  'closeup': 'closeup',
+};
+
+// Check if a member has a specific asset
+function memberHasAsset(member: Participation, assetType: string): boolean {
+  const mediaKey = ASSET_TYPE_TO_MEDIA_KEY[assetType] || assetType;
+  const meta = member.metadata || {};
+  const tr = (meta as any)?.teamreel_assets || {};
+  const media = tr?.media || {};
+  const videos = tr?.videos || {};
+  const legacyKit = tr?.kit || {};
+
+  // Check new format: media.{slot}.url
+  if (media[mediaKey]?.url) return true;
+
+  // Check videos format for intro/closeup/celebration (have multiple variants)
+  if (['intro', 'closeup', 'celebration'].includes(mediaKey) && videos[mediaKey]) {
+    // Check if any video variant exists
+    const variants = videos[mediaKey] || {};
+    if (Object.values(variants).some((v: any) => v && typeof v === 'string' && v.trim())) {
+      return true;
+    }
+  }
+
+  // Check legacy format
+  if (mediaKey === 'profile' && legacyKit?.profile_photo_url) return true;
+  if (mediaKey === 'kit' && legacyKit?.full_body_url) return true;
+  if (mediaKey === 'celebration' && legacyKit?.goal_celebration_url) return true;
+  if (mediaKey === 'legacy_photo' && tr?.old?.profile_photo_url) return true;
+
+  return false;
+}
+
+// Check if member has ALL required asset types
+function memberHasRequiredAssets(member: Participation, assetTypes: string[]): boolean {
+  if (!assetTypes || assetTypes.length === 0) return true;
+  return assetTypes.every(assetType => memberHasAsset(member, assetType));
+}
+
+// Get list of missing assets for a member
+function getMissingAssets(member: Participation, assetTypes: string[]): string[] {
+  if (!assetTypes || assetTypes.length === 0) return [];
+  return assetTypes.filter(assetType => !memberHasAsset(member, assetType));
+}
+
 // Group participations by functional role
 function groupParticipationsByRole(participations: Participation[]): Record<string, Participation[]> {
   const groups: Record<string, Participation[]> = {
@@ -498,6 +554,270 @@ export default function ContentGenerationModal({
     return total;
   }, [selectedTemplate]);
 
+  // State for video job polling
+  const [videoJobId, setVideoJobId] = useState<string | null>(null);
+  const [videoJobStatus, setVideoJobStatus] = useState<string | null>(null);
+
+  // Helper to get member's asset URL
+  const getMemberAssetUrl = (memberId: string, assetType: string): string | null => {
+    // Find the member in seasonSquad
+    for (const role of ['goalkeeper', 'player', 'coach', 'assistant']) {
+      const member = seasonSquad[role]?.find(p => p.id === memberId);
+      if (member) {
+        const mediaKey = ASSET_TYPE_TO_MEDIA_KEY[assetType] || assetType;
+        const meta = member.metadata || {};
+        const tr = (meta as any)?.teamreel_assets || {};
+        const media = tr?.media || {};
+        const videos = tr?.videos || {};
+        const legacyKit = tr?.kit || {};
+
+        // Check new format
+        if (media[mediaKey]?.url) return media[mediaKey].url;
+
+        // Check videos format (intro, closeup, celebration have variants)
+        if (['intro', 'closeup', 'celebration'].includes(mediaKey) && videos[mediaKey]) {
+          // Return first available variant
+          const variants = videos[mediaKey] || {};
+          for (const [key, val] of Object.entries(variants)) {
+            if (val && typeof val === 'string' && val.trim()) {
+              return val;
+            }
+          }
+        }
+
+        // Check legacy format
+        if (mediaKey === 'profile' && legacyKit?.profile_photo_url) return legacyKit.profile_photo_url;
+        if (mediaKey === 'kit' && legacyKit?.full_body_url) return legacyKit.full_body_url;
+        if (mediaKey === 'celebration' && legacyKit?.goal_celebration_url) return legacyKit.goal_celebration_url;
+      }
+    }
+    return null;
+  };
+
+  // Helper to get member name
+  const getMemberName = (memberId: string): string => {
+    for (const role of ['goalkeeper', 'player', 'coach', 'assistant']) {
+      const member = seasonSquad[role]?.find(p => p.id === memberId);
+      if (member) {
+        const user = member.user || member.member;
+        if (user) {
+          if ('name' in user && user.name) return user.name;
+          if ('user_name' in user && user.user_name) return user.user_name;
+          const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+          if (fullName) return fullName;
+        }
+      }
+    }
+    return 'Unknown';
+  };
+
+  // Generate lineup video using video module
+  const handleGenerateLineupVideo = async () => {
+    setProgress(10);
+
+    try {
+      // Build segments array for each selected member
+      // Order: goalkeeper first, then players (sorted by selection order)
+      const segments: Array<{type: string; url: string; duration?: number; label?: string}> = [];
+
+      // Get required asset types from template
+      const reqs = selectedTemplate?.input_requirements?.members;
+      const goalkeeperAssets = reqs?.goalkeeper?.asset_types || [];
+      const playerAssets = reqs?.player?.asset_types || [];
+
+      // Add goalkeeper segments
+      for (const memberId of selectedMembers.goalkeeper) {
+        const memberName = getMemberName(memberId);
+
+        // Add each required asset as a segment
+        // Order: In Tenue (image, 3s) → Short Intro (video) → Close-up (video)
+        for (const assetType of goalkeeperAssets) {
+          const url = getMemberAssetUrl(memberId, assetType);
+          if (!url) {
+            console.warn(`Missing asset ${assetType} for goalkeeper ${memberName}`);
+            continue;
+          }
+
+          // Determine if image or video based on asset type
+          const isImage = ['profile_photo', 'in_tenue', 'legacy_photo', 'legacy', 'full_body'].includes(assetType);
+          segments.push({
+            type: isImage ? 'image' : 'video',
+            url: url,
+            duration: isImage ? 3.0 : undefined,
+            label: memberName,
+          });
+        }
+      }
+
+      // Add player segments
+      for (const memberId of selectedMembers.player) {
+        const memberName = getMemberName(memberId);
+
+        for (const assetType of playerAssets) {
+          const url = getMemberAssetUrl(memberId, assetType);
+          if (!url) {
+            console.warn(`Missing asset ${assetType} for player ${memberName}`);
+            continue;
+          }
+
+          const isImage = ['profile_photo', 'in_tenue', 'legacy_photo', 'legacy', 'full_body'].includes(assetType);
+          segments.push({
+            type: isImage ? 'image' : 'video',
+            url: url,
+            duration: isImage ? 3.0 : undefined,
+            label: memberName,
+          });
+        }
+      }
+
+      // Add coach segments (if any)
+      const coachAssets = reqs?.coach?.asset_types || [];
+      for (const memberId of selectedMembers.coach) {
+        const memberName = getMemberName(memberId);
+        for (const assetType of coachAssets) {
+          const url = getMemberAssetUrl(memberId, assetType);
+          if (url) {
+            const isImage = ['profile_photo', 'in_tenue', 'legacy_photo', 'legacy', 'full_body'].includes(assetType);
+            segments.push({
+              type: isImage ? 'image' : 'video',
+              url: url,
+              duration: isImage ? 3.0 : undefined,
+              label: memberName,
+            });
+          }
+        }
+      }
+
+      // Add assistant segments (if any)
+      const assistantAssets = reqs?.assistant?.asset_types || [];
+      for (const memberId of selectedMembers.assistant) {
+        const memberName = getMemberName(memberId);
+        for (const assetType of assistantAssets) {
+          const url = getMemberAssetUrl(memberId, assetType);
+          if (url) {
+            const isImage = ['profile_photo', 'in_tenue', 'legacy_photo', 'legacy', 'full_body'].includes(assetType);
+            segments.push({
+              type: isImage ? 'image' : 'video',
+              url: url,
+              duration: isImage ? 3.0 : undefined,
+              label: memberName,
+            });
+          }
+        }
+      }
+
+      console.log('📹 Lineup video segments:', segments);
+
+      if (segments.length === 0) {
+        throw new Error('No valid segments found. Make sure selected members have the required assets.');
+      }
+
+      setProgress(20);
+
+      // Create video job
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({
+          project_id: matchData?.project?.id,
+          job_type: 'lineup',
+          config: {
+            segments: segments,
+            output_resolution: '1080p',
+            output_fps: 30,
+            fade_duration: 0.5,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData?.error || errData?.detail || `Failed to create video job: ${response.status}`);
+      }
+
+      const jobData = await response.json();
+      const jobId = jobData.data?.id || jobData.id;
+      console.log('🎬 Video job created:', jobId);
+
+      setVideoJobId(jobId);
+      setVideoJobStatus('queued');
+      setProgress(30);
+
+      // Poll for job completion
+      let pollCount = 0;
+      const maxPolls = 120; // 10 minutes max (5s intervals)
+
+      const pollJob = async (): Promise<void> => {
+        if (pollCount >= maxPolls) {
+          throw new Error('Video processing timed out. Please try again.');
+        }
+
+        const statusRes = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/${jobId}/`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!statusRes.ok) {
+          throw new Error('Failed to check job status');
+        }
+
+        const statusData = await statusRes.json();
+        const job = statusData.data || statusData;
+        const status = job.status;
+        const progressPercent = job.progress_percent || 0;
+
+        setVideoJobStatus(status);
+        setProgress(30 + (progressPercent * 0.6)); // Map 0-100% to 30-90%
+
+        if (status === 'completed') {
+          // Job finished - get output
+          const outputUrl = job.output_file?.presigned_url || job.output_file?.url;
+          if (outputUrl) {
+            setGeneratedVariants([{
+              variant_index: 0,
+              image_base64: null,
+              presigned_url: outputUrl,
+              mime_type: 'video/mp4',
+              filename: `lineup_${jobId}.mp4`,
+              error: null,
+              storage_info: job.output_file?.storage_info || null,
+              metadata: { job_id: jobId, type: 'lineup_video' },
+            }]);
+            setProgress(100);
+            setTimeout(() => setStep('success'), 300);
+          } else {
+            throw new Error('Video completed but no output file found');
+          }
+          return;
+        }
+
+        if (status === 'failed') {
+          throw new Error(job.error_message || 'Video processing failed');
+        }
+
+        if (status === 'cancelled') {
+          throw new Error('Video processing was cancelled');
+        }
+
+        // Still processing, poll again
+        pollCount++;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        return pollJob();
+      };
+
+      await pollJob();
+
+    } catch (err) {
+      console.error('❌ Lineup video generation failed:', err);
+      setGenerationError(err instanceof Error ? err.message : 'Video generation failed');
+      setStep('error');
+    }
+  };
+
   if (!isOpen) return null;
 
   const handleSelectType = (type: string, subtype: string, label: string) => {
@@ -555,9 +875,17 @@ export default function ContentGenerationModal({
     }, 500);
 
     try {
+      const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
+
+      // Check if this is a lineup video generation
+      if (templateSubtype === 'lineup') {
+        clearInterval(progressInterval);
+        await handleGenerateLineupVideo();
+        return;
+      }
+
       // Determine variant count based on template type
       // Logo/sponsor standardize should show multiple options
-      const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
       const isStandardize = templateSubtype.includes('standardize') || templateSubtype.includes('logo') || templateSubtype.includes('sponsor');
       const variantCount = isStandardize ? 3 : 1;
 
@@ -1036,6 +1364,10 @@ export default function ContentGenerationModal({
                           positionLabel = `${renderRoleLabel(role)} ${idx + 1}`;
                         }
 
+                        // Split available members into eligible (have all required assets) and ineligible
+                        const eligibleMembers = available.filter(p => memberHasRequiredAssets(p, assetTypes));
+                        const ineligibleMembers = available.filter(p => !memberHasRequiredAssets(p, assetTypes));
+
                         return (
                           <div key={idx} className="grid grid-cols-[120px_1fr] gap-3 items-center">
                             <label className="text-sm text-gray-600 font-medium">
@@ -1057,10 +1389,48 @@ export default function ContentGenerationModal({
                               <option value="">
                                 {available.length === 0
                                   ? `No ${role}s in season squad - add members first`
-                                  : `Select ${role}...`
+                                  : eligibleMembers.length === 0
+                                    ? `No ${role}s have required assets`
+                                    : `Select ${role}...`
                                 }
                               </option>
-                              {available.map(p => {
+                              {/* Eligible members - can be selected */}
+                              {eligibleMembers.length > 0 && assetTypes.length > 0 && (
+                                <optgroup label="✅ Ready (have required assets)">
+                                  {eligibleMembers.map(p => {
+                                    const user = p.user || p.member;
+                                    let memberName = 'Unknown';
+                                    if (user) {
+                                      if ('name' in user && user.name) {
+                                        memberName = user.name;
+                                      } else if ('user_name' in user && user.user_name) {
+                                        memberName = user.user_name;
+                                      } else {
+                                        const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+                                        if (fullName) {
+                                          memberName = fullName;
+                                        } else if ('email' in user && user.email) {
+                                          memberName = user.email;
+                                        }
+                                      }
+                                    }
+                                    const isAlreadySelected = selected.includes(p.id) && p.id !== currentSelection;
+                                    const jerseyNumber = p.metadata?.shirt_number || p.data?.jersey_number;
+
+                                    return (
+                                      <option
+                                        key={p.id}
+                                        value={p.id}
+                                        disabled={isAlreadySelected}
+                                      >
+                                        {jerseyNumber ? `#${jerseyNumber} - ` : ''}{memberName}{isAlreadySelected ? ' (already selected)' : ''}
+                                      </option>
+                                    );
+                                  })}
+                                </optgroup>
+                              )}
+                              {/* No asset requirements - show all */}
+                              {assetTypes.length === 0 && available.map(p => {
                                 const user = p.user || p.member;
                                 let memberName = 'Unknown';
                                 if (user) {
@@ -1090,10 +1460,64 @@ export default function ContentGenerationModal({
                                   </option>
                                 );
                               })}
+                              {/* Ineligible members - shown but disabled with reason */}
+                              {ineligibleMembers.length > 0 && assetTypes.length > 0 && (
+                                <optgroup label="⚠️ Missing assets">
+                                  {ineligibleMembers.map(p => {
+                                    const user = p.user || p.member;
+                                    let memberName = 'Unknown';
+                                    if (user) {
+                                      if ('name' in user && user.name) {
+                                        memberName = user.name;
+                                      } else if ('user_name' in user && user.user_name) {
+                                        memberName = user.user_name;
+                                      } else {
+                                        const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+                                        if (fullName) {
+                                          memberName = fullName;
+                                        } else if ('email' in user && user.email) {
+                                          memberName = user.email;
+                                        }
+                                      }
+                                    }
+                                    const jerseyNumber = p.metadata?.shirt_number || p.data?.jersey_number;
+                                    const missingAssets = getMissingAssets(p, assetTypes);
+                                    const missingLabels = missingAssets.map(a => ASSET_TYPE_LABELS[a] || a).join(', ');
+
+                                    return (
+                                      <option
+                                        key={p.id}
+                                        value={p.id}
+                                        disabled={true}
+                                      >
+                                        {jerseyNumber ? `#${jerseyNumber} - ` : ''}{memberName} (missing: {missingLabels})
+                                      </option>
+                                    );
+                                  })}
+                                </optgroup>
+                              )}
                             </select>
                           </div>
                         );
                       })}
+
+                      {/* Show summary of eligible vs total */}
+                      {assetTypes.length > 0 && (
+                        <div className="mt-3 pt-3 border-t text-xs text-gray-500">
+                          {(() => {
+                            const eligible = available.filter(p => memberHasRequiredAssets(p, assetTypes)).length;
+                            const total = available.length;
+                            if (eligible === 0 && total > 0) {
+                              return (
+                                <span className="text-red-600">
+                                  ⚠️ No {role}s have the required assets. Generate assets for members first.
+                                </span>
+                              );
+                            }
+                            return `${eligible} of ${total} ${role}s have required assets`;
+                          })()}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -1206,7 +1630,13 @@ export default function ContentGenerationModal({
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
-                          {imageSrc ? (
+                          {mimeType?.startsWith('video/') ? (
+                            <video
+                              src={variant.presigned_url || ''}
+                              className="w-full h-32 object-contain bg-gray-50"
+                              muted
+                            />
+                          ) : imageSrc ? (
                             <img
                               src={imageSrc}
                               alt={`Variant ${index + 1}`}
@@ -1238,7 +1668,21 @@ export default function ContentGenerationModal({
               ) : (
                 // Single variant display
                 <>
-                  {generatedOutput?.image_base64 ? (
+                  {/* Check if it's a video (lineup) */}
+                  {generatedVariants[0]?.mime_type?.startsWith('video/') ? (
+                    <div className="mb-4">
+                      <video
+                        src={generatedVariants[0].presigned_url || ''}
+                        controls
+                        className="max-w-lg max-h-80 rounded-lg border shadow-lg"
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                      <div className="mt-2 text-sm text-gray-500">
+                        🎬 Lineup video ready! Click play to preview.
+                      </div>
+                    </div>
+                  ) : generatedOutput?.image_base64 ? (
                     <div className="mb-4">
                       <img
                         src={`data:${getSecureMimeType(generatedOutput.image_base64, generatedOutput.storage_info?.mime_type || 'image/png')};base64,${generatedOutput.image_base64}`}

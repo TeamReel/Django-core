@@ -27,8 +27,8 @@ class VideoService:
         self,
         project,
         user,
-        input_file,
-        job_type: str,
+        input_file=None,
+        job_type: str = "",
         preset: VideoPreset | None = None,
         platform_export=None,
         overlays: list[dict] | None = None,
@@ -36,8 +36,13 @@ class VideoService:
         config: dict | None = None,
     ) -> VideoJob:
         """Create job and dispatch to Celery (placeholder)."""
-        self._validate_input_file(input_file)
-        self._validate_job_config(job_type, preset)
+        # Lineup jobs don't require input_file (segments are in config)
+        if job_type != JobType.LINEUP:
+            if not input_file:
+                raise ValidationError({"input_file": "Input file is required"})
+            self._validate_input_file(input_file)
+
+        self._validate_job_config(job_type, preset, config)
 
         job = VideoJob.objects.create(
             project=project,
@@ -84,7 +89,12 @@ class VideoService:
 
     def _dispatch_job(self, job: VideoJob) -> None:
         """Dispatch job to appropriate Celery task."""
-        from src.video.tasks import compose_video, generate_thumbnail, transcode_video
+        from src.video.tasks import (
+            compose_video,
+            generate_thumbnail,
+            process_lineup_video,
+            transcode_video,
+        )
 
         job_id = str(job.id)
 
@@ -94,6 +104,8 @@ class VideoService:
             generate_thumbnail.delay(job_id)
         elif job.job_type == JobType.COMPOSE:
             compose_video.delay(job_id)
+        elif job.job_type == JobType.LINEUP:
+            process_lineup_video.delay(job_id)
         else:
             logger.error(
                 "Unknown job type for dispatch",
@@ -146,12 +158,16 @@ class VideoService:
 
     def get_processor(self, job: VideoJob) -> BaseVideoProcessor:
         """Factory for processors."""
+        from src.video.services.processors.lineup import LineupProcessor
+
         if job.job_type == JobType.TRANSCODE:
             return TranscodeProcessor(job)
         if job.job_type == JobType.THUMBNAIL:
             return ThumbnailProcessor(job)
         if job.job_type == JobType.COMPOSE:
             return ComposeProcessor(job)
+        if job.job_type == JobType.LINEUP:
+            return LineupProcessor(job)
         raise ValidationError({"job_type": "Unsupported job type"})
 
     def _validate_input_file(self, input_file) -> None:
@@ -166,6 +182,18 @@ class VideoService:
         if duration and duration > VIDEO_MAX_DURATION:
             raise ValidationError({"input_file": "File exceeds max duration limit"})
 
-    def _validate_job_config(self, job_type: str, preset: VideoPreset | None) -> None:
+    def _validate_job_config(
+        self, job_type: str, preset: VideoPreset | None, config: dict | None = None
+    ) -> None:
         if job_type == JobType.TRANSCODE and preset is None:
             raise ValidationError({"preset": "Preset is required for transcode jobs"})
+
+        if job_type == JobType.LINEUP:
+            if not config or not config.get("segments"):
+                raise ValidationError({"config": "Lineup jobs require segments in config"})
+            segments = config.get("segments", [])
+            if len(segments) == 0:
+                raise ValidationError({"config": "At least one segment is required"})
+            for idx, seg in enumerate(segments):
+                if not seg.get("url"):
+                    raise ValidationError({"config": f"Segment {idx} missing required 'url' field"})

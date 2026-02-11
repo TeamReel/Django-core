@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     "activities.apps.ActivitiesConfig",
     "workflows.apps.WorkflowsConfig",
     "src.video.apps.VideoConfig",
+    "src.generative.apps.GenerativeConfig",
+    "src.content_generation.apps.ContentGenerationConfig",
 ]
 
 MIDDLEWARE = [

@@ -13,6 +13,7 @@ class JobType(models.TextChoices):
     TRANSCODE = "transcode", _("Transcode")
     THUMBNAIL = "thumbnail", _("Thumbnail")
     COMPOSE = "compose", _("Compose")
+    LINEUP = "lineup", _("Lineup")
 
 
 class JobStatus(models.TextChoices):
@@ -65,8 +66,10 @@ class VideoJob(models.Model):
     input_file = models.ForeignKey(
         "files.FileAsset",
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         related_name="video_jobs_as_source",
-        help_text=_("Input video file"),
+        help_text=_("Input video file (optional for lineup jobs)"),
     )
     output_file = models.ForeignKey(
         "files.FileAsset",
