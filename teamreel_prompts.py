@@ -6,7 +6,7 @@ Reusable, parameterized prompt templates for the TeamReel AI generation pipeline
 Each template defines:
   - id: unique slug
   - name: human label
-  - category: logo | sponsor | tenue | keeper | tracksuit | fullbody | closeup
+  - category: logo | sponsor | tenue | keeper | tracksuit | coach | fullbody | closeup
   - input_requirements: what files are needed
   - parameters: user-configurable options (with defaults)
   - prompt_template: the actual prompt string with {placeholders}
@@ -317,6 +317,70 @@ INTEGRATION:
 STYLE:
 - Professional presentation.
 - Neutral background.
+""",
+    },
+
+    # =========================================================================
+    # 5b. COACH OUTFIT GENERATION
+    # =========================================================================
+    "coach_outfit": {
+        "id": "coach_outfit",
+        "name": "Coach Outfit Genereren",
+        "category": "coach",
+        "description": "Genereer een coach/trainer outfit (net pak, sweater, coltrui, etc.).",
+        "input_requirements": ["logo", "reference_photo"],
+        "parameters": {
+            "outfit_style": {
+                "label": "Stijl",
+                "type": "select",
+                "options": ["net_pak", "trainings_sweater", "coltrui", "polo", "windbreaker"],
+                "default": "net_pak",
+            },
+            "outfit_color": {
+                "label": "Hoofdkleur",
+                "type": "select",
+                "options": ["team_primary", "black", "navy", "charcoal", "grey", "team_secondary"],
+                "default": "black",
+            },
+            "accent_color": {
+                "label": "Accentkleur",
+                "type": "select",
+                "options": ["team_secondary", "white", "black", "gold", "silver"],
+                "default": "team_secondary",
+            },
+        },
+        "preprocessing": {
+            "logo": "square_pad_512",
+        },
+        "prompt_template": """Create a REALISTIC football COACH / TRAINER OUTFIT layout (Flat Lay Photography).
+
+OUTFIT CONFIGURATION:
+- Outfit Type: {outfit_style_description}.
+- Base Color: {outfit_color_description}.
+- Accent/Trim Color: {accent_color_description}.
+- This is a COACHING STAFF outfit — professional, authoritative appearance for the technical area / touchline.
+
+TEAM CONTEXT (Use for color reference if 'team_primary' selected):
+{kit_analysis}
+
+OUTFIT DETAILS (based on style):
+{outfit_style_details}
+
+COMPOSITION:
+- FULL SHOT: Show ENTIRE top garment and ENTIRE trousers / pants.
+- Organized layout (top above trousers).
+- No cropping of any garment edges.
+- If the outfit includes multiple layers (e.g. shirt + jacket), show them layered naturally.
+
+INTEGRATION:
+- CLUB LOGO: Left chest, highly visible realistic embroidery or badge.
+- The logo must be clearly recognizable and professionally placed.
+
+STYLE:
+- Professional product photography presentation.
+- Neutral background (white or light grey).
+- Fabric texture must be realistic (wool for suit, knit for sweater, cotton for polo).
+- Clean, sharp details — stitching, buttons, zippers clearly visible.
 """,
     },
 
@@ -699,6 +763,21 @@ PARAM_RESOLVERS = {
         "gold": "GOLD / Metallic gold accent details.",
         "silver": "SILVER / Metallic silver accent details.",
     },
+    "outfit_style": {
+        "net_pak": "FORMAL SUIT (Net Pak) — tailored blazer/sport coat + dress trousers, professional touchline look",
+        "trainings_sweater": "TRAINING SWEATER — half-zip or quarter-zip training top + training trousers, athletic coaching look",
+        "coltrui": "TURTLENECK (Coltrui) — elegant turtleneck/rollneck sweater + trousers, sophisticated touchline style",
+        "polo": "POLO SHIRT — professional polo shirt + chinos/dress trousers, smart-casual coaching look",
+        "windbreaker": "WINDBREAKER — lightweight rain/wind jacket + training trousers, all-weather coaching gear",
+    },
+    "outfit_color": {
+        "team_primary": "Use the team's PRIMARY color from the kit/brand identity.",
+        "black": "BLACK — classic, authoritative black.",
+        "navy": "NAVY BLUE — professional dark navy.",
+        "charcoal": "CHARCOAL GREY — dark sophisticated grey.",
+        "grey": "GREY — neutral medium grey.",
+        "team_secondary": "Use the team's SECONDARY/accent color from the kit/brand identity.",
+    },
     "pose": {
         "standing_front": "Standing facing camera, arms at sides, confident stance",
         "standing_arms_crossed": "Standing with arms crossed, confident power pose",
@@ -739,6 +818,43 @@ ROLE_EQUIPMENT = {
     "goalkeeper": "- Football boots (modern style).\n- Goalkeeper gloves (matching team colors).",
     "coach": "- Training shoes / sneakers (no football boots).\n- Optional: whistle on lanyard, stopwatch.",
     "assistant": "- Training shoes / sneakers (no football boots).",
+}
+
+# Coach outfit style-specific prompt details
+OUTFIT_STYLE_DETAILS = {
+    "net_pak": """- TOP: Tailored single-breasted blazer / sport coat, modern slim fit.
+  - Two or three buttons, narrow lapels.
+  - Pocket square optional (team accent color).
+  - Club badge/logo embroidered on breast pocket.
+- SHIRT: Dress shirt underneath (white or light color), open collar (no tie).
+- TROUSERS: Matching tailored dress trousers, slim modern cut.
+- SHOES: Smart dress shoes or clean leather sneakers.""",
+    "trainings_sweater": """- TOP: Half-zip or quarter-zip training pullover, athletic fit.
+  - Technical moisture-wicking fabric look.
+  - Raglan sleeves with accent color piping/stripes on shoulders.
+  - Club logo embroidered on left chest.
+- UNDERSHIRT: Team-color base layer visible at collar.
+- TROUSERS: Matching tapered training trousers with side stripe.
+- SHOES: Modern training/running shoes.""",
+    "coltrui": """- TOP: Elegant fine-knit turtleneck / rollneck sweater, slim fit.
+  - Clean lines, no visible zippers or buttons.
+  - Club logo small embroidery on left chest.
+  - Premium wool or cashmere look.
+- TROUSERS: Tailored chinos or dress trousers, modern slim cut.
+- SHOES: Clean smart-casual shoes or leather sneakers.""",
+    "polo": """- TOP: Professional polo shirt, modern athletic fit.
+  - Flat knit collar, 2-3 button placket.
+  - Club logo embroidered on left chest.
+  - Optional: accent color on collar trim and sleeve bands.
+- TROUSERS: Smart chinos or tailored trousers.
+- SHOES: Clean smart-casual shoes or leather sneakers.""",
+    "windbreaker": """- TOP: Lightweight windbreaker / rain jacket, sport fit.
+  - Full-zip front, high collar with hood (stowable).
+  - Club logo on left chest, accent color on side panels.
+  - Water-resistant technical fabric look.
+- UNDERSHIRT: Team training shirt visible at collar.
+- TROUSERS: Matching waterproof training trousers.
+- SHOES: Modern training shoes.""",
 }
 
 
@@ -789,6 +905,10 @@ def resolve_prompt(template_id: str, params: dict, kit_analysis: str = "", extra
     # Role equipment (for fullbody)
     role = params.get("role", "player")
     replacements["role_equipment"] = ROLE_EQUIPMENT.get(role, "")
+
+    # Outfit style details (for coach_outfit)
+    outfit_style = params.get("outfit_style", "net_pak")
+    replacements["outfit_style_details"] = OUTFIT_STYLE_DETAILS.get(outfit_style, "")
 
     # Extra context
     if extra_context:

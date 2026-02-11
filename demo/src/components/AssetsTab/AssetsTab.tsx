@@ -484,6 +484,12 @@ export function AssetsTab({
     } else if (assetType.includes('kit_training')) {
         templateId = 'tracksuit_generate';
         referenceAssetType = 'kit_training_upload';
+    } else if (assetType.includes('kit_coach')) {
+        templateId = 'coach_outfit';
+        referenceAssetType = 'kit_coach_upload';
+    } else if (assetType.includes('kit_assistant')) {
+        templateId = 'coach_outfit';
+        referenceAssetType = 'kit_assistant_upload';
     }
 
     if (templateId) {
