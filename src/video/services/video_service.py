@@ -89,6 +89,10 @@ class VideoService:
 
     def _dispatch_job(self, job: VideoJob) -> None:
         """Dispatch job to appropriate Celery task."""
+        import threading
+
+        from django.conf import settings
+
         from src.video.tasks import (
             compose_video,
             generate_thumbnail,
@@ -105,14 +109,49 @@ class VideoService:
         elif job.job_type == JobType.COMPOSE:
             compose_video.delay(job_id)
         elif job.job_type == JobType.LINEUP:
-            process_lineup_video.delay(job_id)
-            logger.info("Lineup job dispatched to Celery", extra={"job_id": job_id})
+            broker_url = getattr(settings, "CELERY_BROKER_URL", "")
+            logger.info(
+                "Lineup job dispatch requested",
+                extra={"job_id": job_id, "celery_broker_url": str(broker_url)[:200]},
+            )
+
+            # If the backend service is missing REDIS_URL in production, settings can fall back to
+            # CELERY_BROKER_URL='memory://', which will accept tasks but never deliver them to the
+            # separate Railway Celery worker. In that case, run locally as a safe fallback.
+            if isinstance(broker_url, str) and broker_url.startswith("memory://"):
+                logger.warning(
+                    "Celery broker is memory://; falling back to background thread. "
+                    "Fix Railway env: ensure backend has REDIS_URL / CELERY_BROKER_URL set.",
+                    extra={"job_id": job_id},
+                )
+                self._start_lineup_thread(threading, job_id)
+                return
+
+            try:
+                # Explicitly route to default queue (matches our Railway worker default)
+                process_lineup_video.apply_async(args=[job_id], queue="default")
+                logger.info("Lineup job dispatched to Celery", extra={"job_id": job_id})
+            except Exception as exc:
+                logger.warning(
+                    "Celery dispatch failed; falling back to background thread",
+                    extra={"job_id": job_id, "error": str(exc)},
+                    exc_info=True,
+                )
+                self._start_lineup_thread(threading, job_id)
         else:
             logger.error(
                 "Unknown job type for dispatch",
                 extra={"job_id": job_id, "job_type": job.job_type},
             )
             raise ValidationError({"job_type": f"Unknown job type: {job.job_type}"})
+
+    def _start_lineup_thread(self, threading_module, job_id: str) -> None:
+        thread = threading_module.Thread(
+            target=self._process_lineup_sync,
+            args=(job_id,),
+            daemon=True,
+        )
+        thread.start()
 
     def _process_lineup_sync(self, job_id: str) -> None:
         """Process lineup job synchronously (for when Celery is unavailable)."""
