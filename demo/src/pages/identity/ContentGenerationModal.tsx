@@ -688,8 +688,15 @@ export default function ContentGenerationModal({
             gkAssets = ['in_tenue', 'short_intro', 'close_up'];
             playerAssets = ['in_tenue', 'short_intro', 'close_up'];
             // Limit counts
-            targetGKs = targetGKs.slice(0, 1);
-            targetPlayers = targetPlayers.slice(0, 10);
+            // DEBUG: User requested single player to speed up generation (1 GK + 0 players = 1 total)
+            // If we have a GK, use that. If not, use 1 player.
+            if (targetGKs.length > 0) {
+               targetGKs = targetGKs.slice(0, 1);
+               targetPlayers = [];
+            } else {
+               targetPlayers = targetPlayers.slice(0, 1);
+            }
+            // Also plain text 1 person
             // Optionally clear coach/assistant if not wanted in the "11 players" flow
             // But user said "start with keeper, then 10 players", didn't explicitly forbid coach.
             // Leaving coach/assistant as is, just using standard assets if selected.
