@@ -1520,7 +1520,7 @@ export default function ProjectSeasonMemberDetailPage() {
                           {userCanEditProject && (
                             <Button
                               size="sm"
-                              onClick={() => openAiModal('closeup_in_tenue')}
+                              onClick={() => openAiModal('closeup_in_tenue', 'home', videoVariants.fullbody['home'])}
                               style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', border: 'none' }}
                             >
                               ✨ AI Genereren
@@ -1606,7 +1606,7 @@ export default function ProjectSeasonMemberDetailPage() {
                             <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '16px' }}>
                               Gebruik de profielfoto en het geselecteerde tenue om een close-up portret te genereren.
                             </div>
-                            <Button onClick={() => openAiModal('closeup_in_tenue', aiSelectedKitType)}>
+                            <Button onClick={() => openAiModal('closeup_in_tenue', aiSelectedKitType, videoVariants.fullbody[aiSelectedKitType])}>
                               🎨 Start AI Generatie
                             </Button>
                           </div>
@@ -2190,7 +2190,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                     <Button
                                       size="sm"
-                                      onClick={() => openAiModal('closeup_in_tenue', kit.id)}
+                                      onClick={() => openAiModal('closeup_in_tenue', kit.id, videoVariants.fullbody[kit.id])}
                                       style={{ fontSize: '11px', padding: '4px 8px' }}
                                     >
                                       {assetUrl ? '🔄 Opnieuw' : '✨ Genereer'}
@@ -2200,7 +2200,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                         <Button
                                           size="sm"
                                           variant="secondary"
-                                          onClick={() => openAiModal('closeup_in_tenue', kit.id)}
+                                          onClick={() => openAiModal('closeup_in_tenue', kit.id, videoVariants.fullbody[kit.id])}
                                           style={{ fontSize: '11px', padding: '4px 8px' }}
                                         >
                                           Verbeter
