@@ -488,16 +488,22 @@ export default function AssetGenerationModal({
   const handleAccept = async () => {
     if (selectedVariantIdx === null) return;
     setSaving(true);
-    const success = await generation.acceptVariant(selectedVariantIdx);
+    const saveResult = await generation.acceptVariant(selectedVariantIdx);
     setSaving(false);
-    if (success) {
-      // Get the selected variant to pass storage info to callback
+    if (saveResult) {
+      // Build savedInfo: prefer save response storage_path (authoritative from backend),
+      // then variant top-level storage_path, then storage_info, then presigned_url as last resort
       const selectedVariant = generation.variants.find(v => v.variant_index === selectedVariantIdx);
+      const storagePath = saveResult.storage_path
+        || selectedVariant?.storage_path
+        || selectedVariant?.storage_info?.storage_path
+        || null;
       const savedInfo: SavedAssetInfo = {
-        storagePath: selectedVariant?.storage_info?.storage_path || null,
-        assetType: getEffectiveOutputAssetType(),
+        storagePath,
+        assetType: saveResult.asset_type || getEffectiveOutputAssetType(),
         presignedUrl: selectedVariant?.presigned_url || null,
       };
+      console.log('💾 Saved asset info:', savedInfo);
       onAssetSaved?.(savedInfo);
       onClose();
     }

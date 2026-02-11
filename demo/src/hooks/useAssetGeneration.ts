@@ -41,6 +41,14 @@ export interface GenerationVariant {
 
 type GenerationStep = 'idle' | 'submitting' | 'completed' | 'error';
 
+/** Data returned from the /save/ endpoint after accepting a variant */
+export interface SaveResult {
+  file_asset_id?: string;
+  brand_asset_id?: string;
+  storage_path?: string;
+  asset_type?: string;
+}
+
 interface UseAssetGenerationReturn {
   /** Current step in the generation flow */
   step: GenerationStep;
@@ -50,8 +58,8 @@ interface UseAssetGenerationReturn {
   error: string | null;
   /** Submit a generation request */
   submit: (params: SubmitParams) => Promise<void>;
-  /** Accept a variant (save image to brand profile) */
-  acceptVariant: (variantIndex: number) => Promise<boolean>;
+  /** Accept a variant (save image to brand profile). Returns save response data or null on failure. */
+  acceptVariant: (variantIndex: number) => Promise<SaveResult | null>;
   /** Reset to idle state */
   reset: () => void;
   /** Progress percentage (0-100) for display */
@@ -213,11 +221,11 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
   );
 
   const acceptVariant = useCallback(
-    async (variantIndex: number): Promise<boolean> => {
+    async (variantIndex: number): Promise<SaveResult | null> => {
       const selectedVariant = variants.find(v => v.variant_index === variantIndex);
       if (!selectedVariant) {
         console.error('Selected variant not found');
-        return false;
+        return null;
       }
 
       // Use stored context or fall back defaults if missing (should not happen if flow followed)
@@ -237,7 +245,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
       if (!orgId) {
          console.error('Missing organisation context for saving asset');
-         return false;
+         return null;
       }
 
       try {
@@ -280,11 +288,20 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
            throw new Error(errData?.error || 'Failed to save asset');
         }
 
-        return true;
+        // Parse save response to get authoritative storage_path
+        const saveJson = await response.json();
+        const saveData = saveJson?.data?.data || saveJson?.data || saveJson;
+        console.log('💾 Save response:', saveData);
+        return {
+          file_asset_id: saveData?.file_asset_id,
+          brand_asset_id: saveData?.brand_asset_id,
+          storage_path: saveData?.storage_path,
+          asset_type: saveData?.asset_type,
+        };
       } catch (e) {
         console.error('Error saving asset:', e);
         setError(e instanceof Error ? e.message : 'Opslaan mislukt');
-        return false;
+        return null;
       }
     },
     [apiBase, variants, context]

@@ -2299,11 +2299,17 @@ export default function ProjectSeasonMemberDetailPage() {
                   : null
         }
         onAssetSaved={async (savedInfo) => {
+          console.log('🎯 onAssetSaved called:', {
+            savedInfo,
+            aiSelectedStyleVariant,
+            currentVideoVariants: videoVariants,
+          });
           setShowAiModal(false);
 
           // If we have storage info, save it to membership metadata
           if (savedInfo?.storagePath || savedInfo?.presignedUrl) {
             const assetType = savedInfo.assetType;
+            // Prefer storagePath (permanent S3 key) over presignedUrl (expires after 1h)
             const savedUrl = savedInfo.storagePath || savedInfo.presignedUrl || '';
 
             // Check if this is a per-variant video (intro/celebration)
@@ -2313,6 +2319,7 @@ export default function ProjectSeasonMemberDetailPage() {
             if ((isIntroVideo || isCelebrationVideo) && aiSelectedStyleVariant) {
               // Per-variant video storage
               const category = isIntroVideo ? 'intro' : 'celebration';
+              console.log(`🎯 Saving video variant: ${category}.${aiSelectedStyleVariant} = ${savedUrl}`);
               const newVideoVariants: VideoVariantsMap = {
                 ...videoVariants,
                 [category]: {
