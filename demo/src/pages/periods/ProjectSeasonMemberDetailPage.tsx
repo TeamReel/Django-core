@@ -86,15 +86,22 @@ function createEmptyMediaForm(): MemberMediaForm {
  * Read assets from membership with legacy format migration.
  * This is specific to member detail page as it handles backwards compatibility.
  */
-/** Per-variant video URLs stored in metadata */
-type VideoVariants = Record<string, string>; // e.g. { arms_crossed: "s3://...", hand_up: "s3://..." }
-type VideoVariantsMap = {
-  intro: VideoVariants;
-  celebration: VideoVariants;
+/** Per-variant asset URLs stored in metadata */
+type AssetVariants = Record<string, string>; // e.g. { arms_crossed: "s3://...", home: "s3://..." }
+type AssetVariantsMap = {
+  // Per-kit-type images
+  fullbody: AssetVariants;  // { home: "s3://...", away: "...", third: "...", keeper: "..." }
+  closeup: AssetVariants;   // same pattern
+  // Per-style-variant videos
+  intro: AssetVariants;
+  celebration: AssetVariants;
 };
 
-function createEmptyVideoVariants(): VideoVariantsMap {
-  return { intro: {}, celebration: {} };
+// Keep old name as alias for backwards compatibility within file
+type VideoVariantsMap = AssetVariantsMap;
+
+function createEmptyVideoVariants(): AssetVariantsMap {
+  return { fullbody: {}, closeup: {}, intro: {}, celebration: {} };
 }
 
 function readAssetsFromMembership(membership: any): MemberMediaForm {
@@ -137,14 +144,31 @@ function readAssetsFromMembership(membership: any): MemberMediaForm {
   return form;
 }
 
-function readVideoVariantsFromMembership(membership: any): VideoVariantsMap {
+function readVideoVariantsFromMembership(membership: any): AssetVariantsMap {
   const meta = (membership as any)?.metadata || {};
   const tr = meta?.teamreel_assets || meta?.teamreelAssets || {};
   const videos = tr?.videos || {};
-  return {
-    intro: videos?.intro && typeof videos.intro === 'object' ? { ...videos.intro } : {},
-    celebration: videos?.celebration && typeof videos.celebration === 'object' ? { ...videos.celebration } : {},
+  const images = tr?.images || {};
+
+  const safeObj = (obj: any) => (obj && typeof obj === 'object' ? { ...obj } : {});
+
+  const result: AssetVariantsMap = {
+    fullbody: safeObj(images?.fullbody),
+    closeup: safeObj(images?.closeup),
+    intro: safeObj(videos?.intro),
+    celebration: safeObj(videos?.celebration),
   };
+
+  // Migrate: if form.kit has a URL but fullbody.home is empty, seed it
+  const media = tr?.media || {};
+  if (!result.fullbody.home && media?.kit?.url) {
+    result.fullbody.home = String(media.kit.url).trim();
+  }
+  if (!result.closeup.home && media?.closeup?.url) {
+    result.closeup.home = String(media.closeup.url).trim();
+  }
+
+  return result;
 }
 
 function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm, videoVariants?: VideoVariantsMap): any {
@@ -182,14 +206,19 @@ function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm, v
     },
   };
 
-  // Persist per-variant video URLs
+  // Persist per-kit-type image URLs
   if (videoVariants) {
+    next.images = {
+      fullbody: videoVariants.fullbody || {},
+      closeup: videoVariants.closeup || {},
+    };
     next.videos = {
       intro: videoVariants.intro || {},
       celebration: videoVariants.celebration || {},
     };
-  } else if (existingTeamReel.videos) {
-    next.videos = existingTeamReel.videos;
+  } else {
+    if (existingTeamReel.images) next.images = existingTeamReel.images;
+    if (existingTeamReel.videos) next.videos = existingTeamReel.videos;
   }
 
   meta.teamreel_assets = next;
@@ -1607,8 +1636,10 @@ export default function ProjectSeasonMemberDetailPage() {
 
                       {/* Per-Kit Variant Grid for Short Intro */}
                       {effectiveKits.map((kit) => {
-                        const isHome = kit.id === 'home';
-                        const playerInTenueUrl = isHome ? form.kit?.url : null;
+                        // Use per-kit fullbody URL, fallback to form.kit for home
+                        const playerInTenueUrl = videoVariants.fullbody[kit.id]
+                          || (kit.id === 'home' ? form.kit?.url : null)
+                          || null;
                         const hasPlayerInTenue = Boolean(playerInTenueUrl);
 
                         const introVariantDefs = [
@@ -1777,8 +1808,9 @@ export default function ProjectSeasonMemberDetailPage() {
 
                       {/* Per-Kit Variant Grid for Goal Celebration */}
                       {effectiveKits.map((kit) => {
-                        const isHome = kit.id === 'home';
-                        const playerInTenueUrl = isHome ? form.kit?.url : null;
+                        const playerInTenueUrl = videoVariants.fullbody[kit.id]
+                          || (kit.id === 'home' ? form.kit?.url : null)
+                          || null;
                         const hasPlayerInTenue = Boolean(playerInTenueUrl);
 
                         const celebrationVariantDefs = [
@@ -1942,10 +1974,10 @@ export default function ProjectSeasonMemberDetailPage() {
                         <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>👕 Fullbody in Tenue</h4>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
                           {effectiveKits.map((kit) => {
-                            // Check if we have a generated fullbody for this kit type
-                            // For now, we only have form.kit which is the "home" fullbody
-                            const isHome = kit.id === 'home';
-                            const assetUrl = isHome ? form.kit?.url : null;
+                            // Per-kit-type: read from videoVariants.fullbody, fallback to form.kit for home
+                            const assetUrl = videoVariants.fullbody[kit.id]
+                              || (kit.id === 'home' ? form.kit?.url : null)
+                              || null;
 
                             return (
                               <div
@@ -2026,12 +2058,22 @@ export default function ProjectSeasonMemberDetailPage() {
                                           variant="ghost"
                                           onClick={async () => {
                                             if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
-                                            setForm((prev) => ({ ...prev, kit: { url: '', caption: '' } }));
-                                            // Also save to backend
+                                            // Clear per-kit-type fullbody
+                                            const newVV = {
+                                              ...videoVariants,
+                                              fullbody: { ...videoVariants.fullbody },
+                                            };
+                                            delete newVV.fullbody[kit.id];
+                                            setVideoVariants(newVV);
+                                            // Also clear form.kit if home
+                                            const newForm = kit.id === 'home'
+                                              ? { ...form, kit: { url: '', caption: '' } }
+                                              : form;
+                                            if (kit.id === 'home') setForm(newForm);
                                             const updated = mergeAssetsIntoMetadata(
                                               membership?.metadata,
-                                              { ...form, kit: { url: '', caption: '' } },
-                                              videoVariants
+                                              newForm,
+                                              newVV
                                             );
                                             await handleMetadataUpdate(updated);
                                           }}
@@ -2054,8 +2096,10 @@ export default function ProjectSeasonMemberDetailPage() {
                         <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>📸 Close-up in Tenue</h4>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
                           {effectiveKits.map((kit) => {
-                            const isHome = kit.id === 'home';
-                            const assetUrl = isHome ? form.closeup?.url : null;
+                            // Per-kit-type: read from videoVariants.closeup, fallback to form.closeup for home
+                            const assetUrl = videoVariants.closeup[kit.id]
+                              || (kit.id === 'home' ? form.closeup?.url : null)
+                              || null;
 
                             return (
                               <div
@@ -2136,11 +2180,20 @@ export default function ProjectSeasonMemberDetailPage() {
                                           variant="ghost"
                                           onClick={async () => {
                                             if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
-                                            setForm((prev) => ({ ...prev, closeup: { url: '', caption: '' } }));
+                                            const newVV = {
+                                              ...videoVariants,
+                                              closeup: { ...videoVariants.closeup },
+                                            };
+                                            delete newVV.closeup[kit.id];
+                                            setVideoVariants(newVV);
+                                            const newForm = kit.id === 'home'
+                                              ? { ...form, closeup: { url: '', caption: '' } }
+                                              : form;
+                                            if (kit.id === 'home') setForm(newForm);
                                             const updated = mergeAssetsIntoMetadata(
                                               membership?.metadata,
-                                              { ...form, closeup: { url: '', caption: '' } },
-                                              videoVariants
+                                              newForm,
+                                              newVV
                                             );
                                             await handleMetadataUpdate(updated);
                                           }}
@@ -2289,9 +2342,9 @@ export default function ProjectSeasonMemberDetailPage() {
         }}
         previousResultUrl={
           aiPreselectedTemplate === 'fullbody_in_tenue'
-            ? form.kit?.url || null
+            ? videoVariants.fullbody[aiSelectedKitType] || form.kit?.url || null
             : aiPreselectedTemplate === 'closeup_in_tenue'
-              ? form.closeup?.url || null
+              ? videoVariants.closeup[aiSelectedKitType] || form.closeup?.url || null
               : aiPreselectedTemplate === 'member_intro' && aiSelectedStyleVariant
                 ? videoVariants.intro[aiSelectedStyleVariant] || null
                 : aiPreselectedTemplate === 'member_goal_celebration' && aiSelectedStyleVariant
@@ -2301,67 +2354,72 @@ export default function ProjectSeasonMemberDetailPage() {
         onAssetSaved={async (savedInfo) => {
           console.log('🎯 onAssetSaved called:', {
             savedInfo,
+            aiSelectedKitType,
             aiSelectedStyleVariant,
-            currentVideoVariants: videoVariants,
           });
           setShowAiModal(false);
 
-          // If we have storage info, save it to membership metadata
           if (savedInfo?.storagePath || savedInfo?.presignedUrl) {
             const assetType = savedInfo.assetType;
             // Prefer storagePath (permanent S3 key) over presignedUrl (expires after 1h)
             const savedUrl = savedInfo.storagePath || savedInfo.presignedUrl || '';
 
-            // Check if this is a per-variant video (intro/celebration)
+            const isFullbody = assetType.startsWith('member_in_tenue');
+            const isCloseup = assetType.startsWith('member_closeup');
             const isIntroVideo = assetType.startsWith('member_intro');
             const isCelebrationVideo = assetType.startsWith('member_goal_celebration');
 
-            if ((isIntroVideo || isCelebrationVideo) && aiSelectedStyleVariant) {
+            // Extract kit type from assetType suffix (e.g. member_in_tenue_away → away)
+            const kitTypeFromAsset =
+              isFullbody ? assetType.replace('member_in_tenue_', '').replace('member_in_tenue', '') || aiSelectedKitType :
+              isCloseup ? assetType.replace('member_closeup_', '').replace('member_closeup', '') || aiSelectedKitType :
+              aiSelectedKitType;
+            const effectiveKitType = kitTypeFromAsset || 'home';
+
+            if (isFullbody || isCloseup) {
+              // Per-kit-type image storage
+              const category = isFullbody ? 'fullbody' : 'closeup';
+              console.log(`🎯 Saving image: ${category}.${effectiveKitType} = ${savedUrl}`);
+
+              const newVariants: AssetVariantsMap = {
+                ...videoVariants,
+                [category]: {
+                  ...videoVariants[category],
+                  [effectiveKitType]: savedUrl,
+                },
+              };
+              setVideoVariants(newVariants);
+
+              // Also update the primary form slot (home → kit/closeup for backwards compat)
+              const slotId: keyof MemberMediaForm = isFullbody ? 'kit' : 'closeup';
+              const newForm = effectiveKitType === 'home'
+                ? { ...form, [slotId]: { url: savedUrl, caption: '' } }
+                : form; // Only update form.kit for home kit (legacy compat)
+              if (effectiveKitType === 'home') setForm(newForm);
+
+              const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVariants);
+              await handleMetadataUpdate(updatedMeta);
+
+            } else if ((isIntroVideo || isCelebrationVideo) && aiSelectedStyleVariant) {
               // Per-variant video storage
               const category = isIntroVideo ? 'intro' : 'celebration';
               console.log(`🎯 Saving video variant: ${category}.${aiSelectedStyleVariant} = ${savedUrl}`);
-              const newVideoVariants: VideoVariantsMap = {
+
+              const newVariants: AssetVariantsMap = {
                 ...videoVariants,
                 [category]: {
                   ...videoVariants[category],
                   [aiSelectedStyleVariant]: savedUrl,
                 },
               };
-              setVideoVariants(newVideoVariants);
+              setVideoVariants(newVariants);
 
-              // Also update the primary slot URL (latest generated goes here)
               const slotId = isIntroVideo ? 'intro' : 'celebration';
-              const newForm = {
-                ...form,
-                [slotId]: { url: savedUrl, caption: '' },
-              };
+              const newForm = { ...form, [slotId]: { url: savedUrl, caption: '' } };
               setForm(newForm);
 
-              // Persist both to metadata
-              const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVideoVariants);
+              const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVariants);
               await handleMetadataUpdate(updatedMeta);
-            } else {
-              // Standard single-slot assets (fullbody, closeup, etc.)
-              let slotId: keyof MemberMediaForm | null = null;
-              if (assetType.startsWith('member_in_tenue')) {
-                slotId = 'kit';
-              } else if (assetType.startsWith('member_closeup')) {
-                slotId = 'closeup';
-              } else if (isIntroVideo) {
-                slotId = 'intro';
-              } else if (isCelebrationVideo) {
-                slotId = 'celebration';
-              }
-
-              if (slotId) {
-                const newForm = {
-                  ...form,
-                  [slotId]: { url: savedUrl, caption: '' },
-                };
-                setForm(newForm);
-                const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm, videoVariants);
-                await handleMetadataUpdate(updatedMeta);
-              }
             }
           }
         }}

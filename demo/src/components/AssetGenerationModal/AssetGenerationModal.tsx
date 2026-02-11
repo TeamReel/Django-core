@@ -188,18 +188,29 @@ function VariantCard({
   isVideo?: boolean;
 }) {
   let mediaSrc: string | undefined;
-  const isVideoContent = isVideo || variant.video_base64 || variant.video_url || variant.presigned_url || variant.mime_type?.startsWith('video/');
+  // Determine if this is actually video content:
+  // - explicit isVideo prop (from template outputType)
+  // - video_base64 or video_url present (clear video signals)
+  // - mime_type starts with 'video/'
+  // NOTE: presigned_url is NOT a video signal — it's just a signed S3 URL for any file type
+  const isVideoContent = isVideo || !!variant.video_base64 || !!variant.video_url || (variant.mime_type?.startsWith('video/') ?? false);
 
-  // Video from URL (preferred), presigned URL, or base64
-  const videoUrl = variant.video_url || variant.presigned_url;
-  if (isVideoContent && videoUrl) {
-    mediaSrc = videoUrl;
-  } else if (isVideoContent && variant.video_base64) {
-    const mime = variant.mime_type || 'video/mp4';
-    mediaSrc = `data:${mime};base64,${variant.video_base64}`;
+  if (isVideoContent) {
+    // Video: prefer video_url, then presigned_url (as fallback for video), then base64
+    const videoUrl = variant.video_url || variant.presigned_url;
+    if (videoUrl) {
+      mediaSrc = videoUrl;
+    } else if (variant.video_base64) {
+      const mime = variant.mime_type || 'video/mp4';
+      mediaSrc = `data:${mime};base64,${variant.video_base64}`;
+    }
   } else if (variant.image_base64) {
+    // Image from base64
     const mime = getSecureMimeType(variant.image_base64, variant.mime_type);
     mediaSrc = `data:${mime};base64,${variant.image_base64}`;
+  } else if (variant.presigned_url) {
+    // Image from presigned URL (no base64 available but S3 URL exists)
+    mediaSrc = variant.presigned_url;
   }
 
   return (
