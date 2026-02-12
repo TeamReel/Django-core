@@ -31,6 +31,7 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import MobileTabBar from '../../components/MobileTabBar';
+import { WorkflowPanel } from '../../components/Workflows';
 import { BatchGenerationModal, type BatchMember } from '../../components/BatchGenerationModal';
 import { useBrandProfile, getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
 import {
@@ -410,7 +411,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'assets', 'identity', 'kits']);
+    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'assets', 'identity', 'kits', 'workflow']);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
 
@@ -1443,6 +1444,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             { id: 'transactions', label: 'Transactions' },
             { id: 'assets', label: 'Assets' },
             { id: 'kits', label: 'Kits' },
+            { id: 'workflow', label: 'Workflow' },
             { id: 'identity', label: 'Identity' },
           ]}
           activeTab={activeTab}
@@ -3264,6 +3266,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               projectName={project.name}
               seasonId={String(season.id)}
               seasonName={season.name}
+            />
+          )}
+
+          {activeTab === 'workflow' && season && project && (
+            <WorkflowPanel
+              projectId={String(project.id)}
+              contentTypeName="period"
+              objectId={String(season.id)}
             />
           )}
         </PageContent>

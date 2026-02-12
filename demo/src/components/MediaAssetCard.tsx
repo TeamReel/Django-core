@@ -14,6 +14,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { getAssetUrl } from '../hooks/useBrandProfile';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { getStateDisplay } from '../hooks/useWorkflows';
 
 // ============================================================================
 // Types
@@ -54,6 +55,8 @@ interface MediaAssetCardProps {
   isFailed?: boolean;
   /** Error message from failed generation */
   errorMessage?: string;
+  /** Workflow status name (e.g. 'draft', 'in_review', 'approved', 'rejected') */
+  workflowStatus?: string | null;
   /** Aspect ratio for the preview area */
   aspectRatio?: string;
   /** Icon for empty state */
@@ -76,6 +79,7 @@ export function MediaAssetCard({
   isGenerating = false,
   isFailed = false,
   errorMessage,
+  workflowStatus,
   aspectRatio = '16 / 9',
   icon,
 }: MediaAssetCardProps) {
@@ -223,6 +227,28 @@ export function MediaAssetCard({
               {badgeText}
             </span>
           )}
+
+          {/* Workflow status badge */}
+          {workflowStatus && (() => {
+            const ws = getStateDisplay(workflowStatus);
+            return (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: badgeText ? 28 : 6,
+                  right: 6,
+                  background: ws.bgColor,
+                  color: ws.color,
+                  fontSize: 10,
+                  padding: '2px 6px',
+                  borderRadius: 4,
+                  fontWeight: 600,
+                }}
+              >
+                {ws.icon} {ws.label}
+              </span>
+            );
+          })()}
 
           {/* History button */}
           {mediaItem && historyItems.length > 0 && (

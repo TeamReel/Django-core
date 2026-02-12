@@ -1,13 +1,26 @@
 # Media & File Architectuur
 
 > Hoe TeamReel media (afbeeldingen, video's, documenten) beheert op elk niveau van de hiërarchie.
+>
+> Last updated: 2026-02-12 (B55 Video Integration + Video Processing Pipeline)
 
 ## Architectuur Overview
 
-TeamReel gebruikt een **3-laags media architectuur** die opslag scheidt van business logica:
+TeamReel gebruikt een **4-laags media architectuur** die opslag scheidt van business logica en video processing:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
+│  Laag 4: Video Processing                                   │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │ VideoJob     │  │ VideoPreset   │  │ VideoOverlay  │      │
+│  │ (transcode,  │  │ (1080p, 720p, │  │ (logo, text,  │     │
+│  │  thumbnail,  │  │  480p, thumb) │  │  watermark)   │      │
+│  │  compose)    │  │               │  │               │      │
+│  └──────┬──────┘  └──────────────┘  └───────────────┘       │
+│         │         ┌──────────────┐                           │
+│         │         │PlatformExport │ (IG, TikTok, YT, X)     │
+│         │         └──────────────┘                           │
+├─────────┼───────────────────────────────────────────────────┤
 │  Laag 3: Linking & Context                                  │
 │  ┌─────────────┐  ┌──────────────────┐                      │
 │  │ BrandAsset   │  │ MediaItemRelation │  (GenericFK)        │
@@ -38,15 +51,16 @@ TeamReel gebruikt een **3-laags media architectuur** die opslag scheidt van busi
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Waarom 3 lagen?
+### Waarom 4 lagen?
 
 | Laag | Model | Verantwoordelijkheid | Weet van business? |
 |------|-------|---------------------|--------------------|
 | **Storage** | `FileAsset` | S3 pad, bestandsgrootte, mime type, soft-delete | ❌ Nee |
 | **Rich Media** | `MediaItem` | Processing state, search, tags, dimensies | 🔶 Project-scoped |
 | **Linking** | `BrandAsset` / `MediaItemRelation` | Semantische koppeling aan elk business-object | ✅ Ja |
+| **Video Processing** | `VideoJob` / `VideoPreset` / `VideoOverlay` / `PlatformExport` | FFmpeg transcoding, thumbnails, composition, platform-specifieke exports | ✅ Ja |
 
-**Principe:** FileAsset is een "domme" opslagrecord. Het weet niets van clubs, teams, of seizoenen. Alle business-context wordt via **linking models** toegevoegd. Dit voorkomt dat de files-tabel een "god object" wordt.
+**Principe:** FileAsset is een "domme" opslagrecord. Het weet niets van clubs, teams, of seizoenen. Alle business-context wordt via **linking models** toegevoegd. Video processing is een optionele laag bovenop de media stack voor transcode/compose/export workflows.
 
 ---
 
@@ -512,6 +526,111 @@ teamreel-assets-demo/
 | **Media koppelen aan user** | `MediaItemRelation(target=user)` | GenericFK (flexibel) |
 | **Thumbnail genereren** | Celery → `MediaItem.state` | Async processing |
 | **Full-text zoeken** | `MediaItem.search_vector` | PostgreSQL GIN index |
+| **Video transcoden** | `VideoJob(job_type="transcode")` | FFmpeg async processing |
+| **Video thumbnail** | `VideoJob(job_type="thumbnail")` | Frame extraction |
+| **Video samenstellen** | `VideoJob(job_type="compose")` | Multi-clip composition |
+| **Platform export** | `PlatformExport` | IG/TikTok/YT/X formaten |
+| **Video overlay** | `VideoOverlay` | Logo/text/watermark op video |
+
+---
+
+## Video Processing Pipeline (B55)
+
+### Model: VideoJob
+
+**App:** `src/video/`
+**Doel:** Async video processing via FFmpeg met Celery.
+
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| `id` | UUID | Primary key |
+| `project` | FK → Project | Project-scoped |
+| `source_file` | FK → FileAsset | Input video |
+| `output_file` | FK → FileAsset | Output video (na processing) |
+| `job_type` | CharField | `transcode`, `thumbnail`, `compose` |
+| `status` | CharField | `pending` → `processing` → `completed` / `failed` |
+| `preset` | FK → VideoPreset | Encoding configuratie |
+| `progress` | IntegerField | 0-100% voortgang |
+| `error_message` | TextField | Foutmelding bij failure |
+| `metadata` | JSONField | Extra job parameters |
+
+**Status flow:**
+```
+pending → processing → completed
+                     → failed → (retry) → pending
+```
+
+### Model: VideoPreset
+
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| `name` | CharField | bijv. `1080p_standard`, `720p_mobile` |
+| `codec` | CharField | Video codec (h264, h265) |
+| `resolution` | CharField | bijv. `1920x1080` |
+| `bitrate` | CharField | bijv. `5000k` |
+| `audio_codec` | CharField | Audio codec (aac) |
+
+### Model: PlatformExport
+
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| `platform` | CharField | `instagram`, `tiktok`, `youtube`, `twitter` |
+| `aspect_ratio` | CharField | `1:1`, `4:5`, `9:16`, `16:9` |
+| `max_duration` | IntegerField | Max duur in seconden |
+| `max_file_size` | BigIntegerField | Max bestandsgrootte |
+
+### Model: VideoOverlay
+
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| `job` | FK → VideoJob | Gekoppelde video job |
+| `overlay_type` | CharField | `logo`, `text`, `watermark` |
+| `position` | CharField | bijv. `top-right`, `bottom-left` |
+| `file` | FK → FileAsset | Overlay bestand (optioneel) |
+| `text_content` | CharField | Tekst voor text overlays |
+| `opacity` | FloatField | Transparantie (0.0 - 1.0) |
+
+### Celery Queues
+
+| Queue | Prioriteit | Gebruik |
+|-------|-----------|---------|
+| `video_fast` | Hoog | Thumbnails, korte bewerkingen (<30s) |
+| `video_slow` | Normaal | Transcoding, composition (minuten) |
+
+### Video in Frontend (Member Assets)
+
+De video-integratie in de frontend werkt via het **AI-generatie pad**, niet via de VideoJob API:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Member Detail Page                                          │
+│  ┌───────────┐  ┌───────────────┐  ┌───────────────────┐   │
+│  │ Intro Tab  │  │ Celebration   │  │ Assets Tab        │   │
+│  │ (🎬 video) │  │ Tab (🎉 video)│  │ (📷 images)       │   │
+│  └─────┬─────┘  └──────┬────────┘  └───────────────────┘   │
+│        │               │                                     │
+│        ▼               ▼                                     │
+│  AssetGenerationModal (async polling)                        │
+│  ┌─────────────────────────────────────────────┐            │
+│  │ 1. Select template (member_intro /           │            │
+│  │    member_goal_celebration)                   │            │
+│  │ 2. Configure (kit_type × pose/style)         │            │
+│  │ 3. Generate → HTTP 202 + task_id             │            │
+│  │ 4. Poll status every 5s (max 12.5 min)       │            │
+│  │ 5. Preview + Accept                           │            │
+│  └─────────────────────────────────────────────┘            │
+│        │                                                     │
+│        ▼                                                     │
+│  metadata.teamreel_assets.videos.intro[kit][pose]            │
+│  metadata.teamreel_assets.videos.celebration[kit][style]     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Video Constants:**
+| Template | Duur | Ratio | Resolutie | Beschrijving |
+|----------|------|-------|-----------|-------------|
+| `member_intro` | 6s | 9:16 | 720p | Korte intro video van speler |
+| `member_goal_celebration` | 6s | 9:16 | 720p | Doelpunt viering animatie |
 
 ---
 

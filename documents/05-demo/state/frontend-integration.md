@@ -1,12 +1,24 @@
 # Frontend Integration Status
 
-> Last updated: 2026-02-10 (B37 Workflow Engine Backend Complete)
+> Last updated: 2026-02-12 (B37 Workflow UI Integration Complete)
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.
 
-## 🎯 Current Focus: B55 Video Processing Pipeline Backend Complete ✅
+## 🎯 Current Focus: B37 Workflow UI Integration Complete ✅
 
-**Backend Status (Merged 2026-02-10)**:
+**Video in Frontend (2026-02-12)**:
+- ✅ Video generation via AssetGenerationModal (async 202 + polling)
+- ✅ Member detail page: Short Intro tab (kit × pose video grid)
+- ✅ Member detail page: Celebration tab (kit × style video grid)
+- ✅ Video preview modal with `<video>` playback + click-to-enlarge
+- ✅ BatchGenerationModal supports video templates (detects `outputType === 'video'`)
+- ✅ MemberMediaMatrix tracks 🎬 intro + 🎉 celebration video slots
+- ✅ VideoVariantsMap state management in member detail
+- ✅ 2 video constants: `member_intro` (6s, 9:16, 720p) + `member_goal_celebration` (6s, 9:16, 720p)
+- ✅ Metadata storage: `membership.metadata.teamreel_assets.videos.intro` / `videos.celebration`
+- ✅ useAssetGeneration hook: 202 → task_id → poll every 5s (max 150 polls = ~12.5 min)
+
+**Backend Status (from B55 merge 2026-02-10)**:
 - ✅ FFmpeg-based video processing (transcode, thumbnails, composition)
 - ✅ 4 models: VideoJob, VideoPreset, PlatformExport, VideoOverlay
 - ✅ 8 REST API endpoints
@@ -15,11 +27,14 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 - ✅ B37 Workflow integration (optional)
 - ✅ 76 tests passing (73-97% coverage)
 
-**Frontend Status**: ❌ Not integrated yet
+**Still TODO (B55 advanced features)**:
+- [ ] VideoJobListPage (standalone video processing queue UI)
+- [ ] `/studio/videos` route (currently dead link from ContentPage)
+- [ ] PresetSelector component (quality/platform preset picker)
+- [ ] PlatformExportOptions (Instagram/TikTok/YouTube format selectors)
+- [ ] ThumbnailGeneratorModal (timestamp picker for frame extraction)
 
-**Next**: B55 Frontend Integration (Video Upload & Processing UI)
-
-**Previous**: B37 Workflow Engine (210 tests, not yet in frontend)
+**Previous**: B55 Video Frontend Integration (async video polling), B37 Workflow Engine (now integrated)
 
 ## Legend
 
@@ -144,8 +159,8 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 
 ## Workflow Module
 
-### B37 Workflow Engine ❌
-- **Backend**: Complete state machine with 3 templates, 10 API endpoints
+### B37 Workflow Engine ✅
+- **Backend**: Complete state machine with 3 templates, 10 API endpoints, 210 tests
   - WorkflowTemplate (Content Approval, Support Ticket, Invoice Approval)
   - WorkflowInstance (attach to any model via GenericForeignKey)
   - TransitionHistory (immutable audit trail)
@@ -156,21 +171,30 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - `/api/v1/workflows/instances/{id}/execute/` - Execute transitions
   - `/api/v1/workflows/history/` - Audit trail
   - `/api/v1/workflows/permissions/` - Permission overrides
-- **Frontend**: ❌ Geen UI components
-- **Status**: ❌ Backend klaar, frontend nog niet gestart
-- **TODO**:
-  - [ ] WorkflowTemplateListPage (admin only)
-  - [ ] WorkflowInstanceCard (show current state, available actions)
-  - [ ] TransitionButton component (execute transition with validation)
-  - [ ] WorkflowHistoryTimeline (audit trail visualization)
-  - [ ] Attach workflows to Match, Video, Member entities
-  - [ ] Permission override UI in project settings
+- **Frontend**: ✅ Full UI integration (2026-02-12)
+  - ✅ `useWorkflows.ts` hook — types, 4 list/detail hooks, mutations, state/action display helpers
+  - ✅ `WorkflowStatusBadge` — color-coded pill badge by state category
+  - ✅ `WorkflowActionButtons` — transition buttons with confirm dialog for destructive actions
+  - ✅ `WorkflowTimeline` — vertical timeline of transition history
+  - ✅ `WorkflowPanel` — composite component (status + actions + timeline)
+  - ✅ `ApprovalsPage` — global approval inbox at `/approvals` with filter bar + counts
+  - ✅ `WorkflowTemplatesPage` — admin template browser at `/workflow-templates`
+  - ✅ Workflow tab on MatchDetailPage (contentType: activity)
+  - ✅ Workflow tab on ProjectSeasonDetailPage (contentType: period)
+  - ✅ Workflow tab on ProjectSeasonMemberDetailPage (contentType: projectmembership)
+  - ✅ WorkflowStatusBadge on MediaAssetCard (approved/rejected workflow status)
+  - ✅ Sidebar: Approvals in CONTENT section, Workflows in SETTINGS section
+- **Status**: ✅ Volledig
+- **TODO (Phase 2)**:
+  - [ ] Async generation queue (Queue Generation button replacing blocking modal)
+  - [ ] Notification triggers for state transitions (B16 integration)
+  - [ ] Batch approval actions from ApprovalsPage
 
 ---
 
 ## Video Processing Module
 
-### B55 Video Processing Pipeline ❌
+### B55 Video Processing Pipeline ✅ (Partially Integrated)
 - **Backend**: FFmpeg-based async video processing (merged 2026-02-10)
   - VideoJob (transcode, thumbnail, compose jobs with status tracking)
   - VideoPreset (1080p_standard, 720p_mobile, 480p_web, thumbnail)
@@ -187,18 +211,27 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - `GET /api/v1/video/presets/` - List encoding presets
   - `GET /api/v1/video/platforms/` - List platform export configs
   - `GET /api/v1/video/overlays/` - List overlays for job
-- **Frontend**: ❌ Geen UI components
-- **Status**: ❌ Backend klaar (76 tests, 73-97% coverage), frontend nog niet gestart
-- **TODO**:
-  - [ ] VideoUploadModal component (with drag-and-drop)
-  - [ ] VideoJobListPage (jobs table with status, progress bar)
-  - [ ] VideoJobDetailPage (job details, preview, retry button)
-  - [ ] PresetSelector component (quality/platform preset picker)
-  - [ ] PlatformExportOptions (Instagram/TikTok/YouTube format selectors)
+- **Frontend**: ✅ Partially integrated (video generation for member assets)
+  - ✅ AssetGenerationModal: async video generation with polling (202 → task_id → status)
+  - ✅ BatchGenerationModal: video template detection + batch processing
+  - ✅ Member detail page: Short Intro tab (kit × pose video grid)
+  - ✅ Member detail page: Celebration tab (kit × style video grid)
+  - ✅ Video preview modal with `<video>` playback
+  - ✅ MemberMediaMatrix: video slot tracking (🎬 intro, 🎉 celebration)
+  - ✅ MediaAssetCard: video rendering with play overlay
+  - ✅ 2 video templates: `member_intro` (6s, 9:16) + `member_goal_celebration` (6s, 9:16)
+  - ✅ useAssetGeneration: 150-poll async handler (~12.5 min max)
+  - ❌ No standalone video processing queue UI
+  - ❌ No platform export UI (Instagram/TikTok/YouTube selectors)
+  - ❌ `/studio/videos` route not implemented (dead link)
+- **Status**: ✅ Core video generation integrated, ❌ Advanced processing UI pending
+- **TODO** (lower priority):
+  - [ ] VideoJobListPage (processing queue dashboard)
+  - [ ] `/studio/videos` route implementation
+  - [ ] PresetSelector component (quality/platform picker)
+  - [ ] PlatformExportOptions (format selectors)
+  - [ ] ThumbnailGeneratorModal (frame extraction)
   - [ ] VideoPlayerWithOverlay (preview with logo/watermark)
-  - [ ] ThumbnailGeneratorModal (timestamp picker for frame extraction)
-  - [ ] Integrate with Member Assets (generate intro videos from photos)
-  - [ ] Integrate with Match Highlights (generate multi-clip compilations)
 
 ---
 
@@ -311,18 +344,21 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 
 ### B34 Generative Pipelines ✅ (NEW)
 - **Backend**: Asset generation pipeline with Google Gemini
-  - `/api/v1/generative/assets/generate/` - Generate variants
+  - `/api/v1/generative/assets/generate/` - Generate variants (images + videos)
+  - `/api/v1/generative/assets/generate/{task_id}/status/` - Async video polling
   - `/api/v1/generative/assets/save/` - Save accepted variant
-  - 6 prompt templates in `teamreel_prompts.py`
+  - 8 prompt templates (6 image + 2 video)
 - **Frontend**:
   - ✅ AssetGenerationModal (3-step wizard: template → config → results)
-  - ✅ useAssetGeneration hook (submit, variants, acceptVariant)
+  - ✅ useAssetGeneration hook (submit, variants, acceptVariant, async polling)
   - ✅ Template cards with icons and descriptions
   - ✅ Parameter configuration (sleeves, neck, pose, expression, kit_type)
   - ✅ Variant grid with selection
   - ✅ Feedback/refinement form for iterations
   - ✅ Previous result as reference option
   - ✅ Input key mapping (person→person_photo, reference→reference_photo)
+  - ✅ **Video support**: async 202 → task_id polling for video generation
+  - ✅ **Video preview**: `<video>` element with playback controls
 - **Templates**:
   - `logo_standardize` - Logo naar vierkant formaat
   - `sponsor_standardize` - Sponsor logo standaardiseren
@@ -330,31 +366,56 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - `keeper_tenue` - Keeperstenue genereren
   - `fullbody_in_tenue` - Speler fullbody in tenue
   - `closeup_in_tenue` - Speler close-up in tenue
+  - `member_intro` - 🎬 Short intro video (6s, 9:16, 720p)
+  - `member_goal_celebration` - 🎉 Goal celebration video (6s, 9:16, 720p)
 - **Integration Points**:
   - ✅ Club Assets tab (AssetsTab level="club")
   - ✅ Member detail page (tenue selector + generation)
   - ✅ Member Assets tab (generated fullbody/closeup per kit type)
-- **Status**: ✅ Volledig (iteratie mogelijk voor betere resultaten)
+  - ✅ **Member Intro tab** (kit × pose video grid)
+  - ✅ **Member Celebration tab** (kit × style video grid)
+  - ✅ **Batch generation** with video template support
+- **Status**: ✅ Volledig (images + videos)
 
 ---
 
 ## Priority TODO List (Frontend)
 
 ### High Priority
-1. **BrandProfile viewer** - Read-only weergave van project branding met tokens
-2. **File upload flow** - Direct upload naar S3 via presigned URL
+1. **B55 Video queue UI** - VideoJobListPage, `/studio/videos` route
+2. **B34 Generative Pipeline connect** - Connect generation requests to workflow instances
 
 ### Medium Priority
-3. **DesignToken display** - Token values met inheritance (org → project → season)
+3. **BrandProfile editor** - Create/update brand profiles
 4. **MediaItem upload** - File upload integratie met MediaLibrary
+5. **Hierarchical Search UI** - HierarchyTreeView in SearchPage
 
 ### Low Priority
-5. **Task status widget** - Celery queue monitoring
-6. **Generation UI** - B34 pipeline triggers (wacht op backend)
+6. **Platform Export UI** - Instagram/TikTok/YouTube format selectors
+7. **Task status widget** - Celery queue monitoring
 
 ---
 
 ## Recent Completions
+
+### 2026-02-12: B37 Workflow UI Integration
+- ✅ 7 new files: useWorkflows hook, 4 Workflow components, ApprovalsPage, WorkflowTemplatesPage
+- ✅ Workflow tab added to 3 detail pages (Match, Season, Member)
+- ✅ WorkflowStatusBadge integrated into MediaAssetCard (approved/rejected)
+- ✅ Routes + Sidebar navigation (Approvals, Workflow Templates)
+- ✅ Zero TypeScript errors
+
+### 2026-02-12: B55 Video Frontend Integration + Root Cleanup
+- ✅ Video generation integrated in member detail page (intro + celebration)
+- ✅ AssetGenerationModal extended with async video polling (202 → task_id → status)
+- ✅ BatchGenerationModal supports video templates with "Video" badge
+- ✅ Member detail: Short Intro tab (kit × pose grid with video preview)
+- ✅ Member detail: Celebration tab (kit × style grid with video preview)
+- ✅ MemberMediaMatrix tracks video slots (🎬 intro, 🎉 celebration)
+- ✅ 2 video constants: member_intro (6s, 9:16, 720p), member_goal_celebration (6s, 9:16, 720p)
+- ✅ Metadata storage in membership.metadata.teamreel_assets.videos
+- ✅ Root cleanup: 54 files archived (30 scripts, 10 SQL, 5 images, 3 data, 6 docs)
+- ✅ State documents updated
 
 ### 2026-02-09: AI Generation Integration Complete
 - ✅ AssetGenerationModal with 3-step wizard (template selection → configuration → results)
@@ -445,7 +506,12 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 | `/api/v1/sport-configuration/formations/` | useSports | ✅ |
 | `/api/v1/files/` | ClubKitsTab (kit upload) | ✅ |
 | `/api/v1/generative/assets/generate/` | useAssetGeneration | ✅ |
+| `/api/v1/generative/assets/generate/{id}/status/` | useAssetGeneration (video polling) | ✅ |
 | `/api/v1/generative/assets/save/` | useAssetGeneration | ✅ |
+| `/api/v1/video/jobs/` | - | ❌ Not in frontend |
+| `/api/v1/video/presets/` | - | ❌ Not in frontend |
+| `/api/v1/video/platforms/` | - | ❌ Not in frontend |
+| `/api/v1/video/overlays/` | - | ❌ Not in frontend |
 | `/api/v1/workflows/templates/` | - | ❌ Not in frontend |
 | `/api/v1/workflows/instances/` | - | ❌ Not in frontend |
 | `/api/v1/workflows/instances/{id}/execute/` | - | ❌ Not in frontend |

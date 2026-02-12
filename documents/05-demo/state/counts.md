@@ -1,6 +1,6 @@
 # Database Model Counts
 
-> Last updated: 2026-02-10 (B37 Workflow Engine Integration)
+> Last updated: 2026-02-12 (B55 Video Frontend Integration + Root Cleanup)
 
 **Database**: postgresql (switchback.proxy.rlwy.net)
 
@@ -25,30 +25,31 @@
 | WorkflowTemplates | 3 | - |
 | WorkflowInstances | 0 | - |
 | TransitionHistory | 0 | - |
-| VideoJobs | 0 | + NEW |
-| VideoPresets | 0 | + NEW |
-| PlatformExports | 0 | + NEW |
-| VideoOverlays | 0 | + NEW |
+| VideoJobs | 0 | - |
+| VideoPresets | 0 | - |
+| PlatformExports | 0 | - |
+| VideoOverlays | 0 | - |
 
-## 🎯 Current Status: B55 Video Processing Pipeline Merged ✅
+## 🎯 Current Status: B55 Video Frontend Integration Complete ✅
 
-**Latest Merge (2026-02-10)**:
-- ✅ B55 Video Processing Pipeline merged to main (60+ commits)
-- ✅ FFmpeg-based async video transcoding, thumbnails, composition
-- ✅ 76 tests passing (73-97% coverage per module)
-- ✅ 4 new models: VideoJob, VideoPreset, PlatformExport, VideoOverlay
-- ✅ 8 REST API endpoints (jobs, presets, platforms, overlays)
-- ✅ Tiered Celery queues (video_fast, video_slow)
-- ✅ Platform-specific exports (Instagram, TikTok, YouTube, Twitter)
-- ✅ B37 Workflow integration (optional approval flows)
-- ✅ Complete documentation (README, quickstart, manual tests)
+**Latest Update (2026-02-12)**:
+- ✅ Video model integrated in webapp (member intro + celebration videos)
+- ✅ Video generation via AssetGenerationModal (async polling flow)
+- ✅ Member detail page: Short Intro tab (kit×pose grid) + Celebration tab
+- ✅ Video preview modal with `<video>` playback
+- ✅ BatchGenerationModal supports video templates
+- ✅ MemberMediaMatrix tracks video slots (🎬 intro, 🎉 celebration)
+- ✅ Video variant storage in membership metadata (`teamreel_assets.videos`)
+- ✅ Async polling: 202 → task_id → poll status every 5s (max ~12.5 min)
+- ✅ Root directory cleaned: 54 dev/test files moved to `archive/legacy-root-cleanup/`
 
 **Previous Merges**:
+- ✅ B55 Video Processing Pipeline backend (76 tests, 73-97% coverage)
 - ✅ B37 Workflow Engine & State Machine (87 commits, 210 tests)
 - ✅ AI Asset Generation Modal with 3-step wizard
 - ✅ 6 generation templates (logo, sponsor, tenue, keeper, fullbody, closeup)
 
-**Next**: B55 Frontend Integration (Video Upload & Processing UI)
+**Next**: Strategic choice — Workflow UI (B37 frontend) or new module
 
 ## Project Hierarchy
 

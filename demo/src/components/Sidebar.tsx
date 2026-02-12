@@ -4,7 +4,8 @@ import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
   LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder,
-      Bell, CreditCard, UserCircle, Star, PanelLeftClose, PanelLeft, Calendar, Film, Fingerprint, Scissors
+      Bell, CreditCard, UserCircle, Star, PanelLeftClose, PanelLeft, Calendar, Film, Fingerprint, Scissors,
+  ClipboardCheck, GitBranch
 } from 'lucide-react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -60,6 +61,7 @@ const NAV_CONFIG: NavSection[] = [
     items: [
       { path: '/medialib', label: 'Media Library', icon: Library, visibility: 'everyone' },
       { path: '/studio', label: 'AI Studio', icon: Sparkles, visibility: 'everyone' },
+      { path: '/approvals', label: 'Approvals', icon: ClipboardCheck, visibility: 'everyone' },
     ]
   },
   {
@@ -69,6 +71,7 @@ const NAV_CONFIG: NavSection[] = [
         items: [
             { path: '/preferences?tab=profile', label: 'Preferences', icon: Settings, visibility: 'everyone' },
             { path: '/content-templates', label: 'Templates', icon: Palette, visibility: 'staff' },
+            { path: '/workflow-templates', label: 'Workflows', icon: GitBranch, visibility: 'staff' },
             { path: '/permissions', label: 'Organisation', icon: Users, visibility: 'org_admin' },
             { path: '/health', label: 'Platform', icon: Activity, visibility: 'staff' },
         ]
@@ -337,7 +340,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             path === '/studio' ||
             path.startsWith('/studio/') ||
             path === '/content-templates' ||
-            path.startsWith('/content-templates/')
+            path.startsWith('/content-templates/') ||
+            path === '/approvals' ||
+            path === '/workflow-templates'
         ) {
             return null;
         }
@@ -425,8 +430,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
     // 1. Determine Active Section
     let activeSection: 'work' | 'people' | 'content' | 'templates' | 'organisation' | 'platform' | 'help' | 'preferences' = 'work';
-    if (path.startsWith('/content-templates')) activeSection = 'templates';
-    else if (path.startsWith('/content') || path.startsWith('/studio')) activeSection = 'content';
+    if (path.startsWith('/content-templates') || path.startsWith('/workflow-templates')) activeSection = 'templates';
+    else if (path.startsWith('/content') || path.startsWith('/studio') || path.startsWith('/approvals') || path.startsWith('/medialib')) activeSection = 'content';
     else if (path.startsWith('/credits')) activeSection = isPersonalWallet ? 'preferences' : 'organisation';
     else if (path.startsWith('/permissions') || path === '/users') activeSection = 'organisation';
     else if (path.startsWith('/organisation/')) activeSection = 'organisation';

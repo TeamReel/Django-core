@@ -16,6 +16,7 @@ import { AssetsTab } from '../../components/AssetsTab';
 import { AssetGenerationModal, type SavedAssetInfo } from '../../components/AssetGenerationModal';
 import { useBrandProfile, getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
 import MobileTabBar from '../../components/MobileTabBar';
+import { WorkflowPanel } from '../../components/Workflows';
 
 type Project = {
   id: string;
@@ -1132,6 +1133,7 @@ export default function ProjectSeasonMemberDetailPage() {
           { id: 'celebration', label: 'Celebration' },
           { id: 'legacy', label: 'Legacy in Tenue' },
           { id: 'assets', label: 'Assets' },
+          { id: 'workflow', label: 'Workflow' },
           { id: 'identity', label: 'Identity' },
         ]}
         activeTab={activeTab}
@@ -2277,6 +2279,14 @@ export default function ProjectSeasonMemberDetailPage() {
                       onMembershipUpdate={(updated) => setMembership(updated)}
                     />
                   </div>
+                )}
+
+                {activeTab === 'workflow' && membership && project && (
+                  <WorkflowPanel
+                    projectId={String(project.id)}
+                    contentTypeName="projectmembership"
+                    objectId={String(membership.id)}
+                  />
                 )}
               </div>
 

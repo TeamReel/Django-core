@@ -58,6 +58,8 @@ import {
 } from './pages/config';
 import UsageEventsPage from './pages/config/UsageEventsPage';
 import ContentTemplatesPage from './pages/config/ContentTemplatesPage';
+import WorkflowTemplatesPage from './pages/config/WorkflowTemplatesPage';
+import ApprovalsPage from './pages/ApprovalsPage';
 
 // Section Landing Pages
 import AppsPage from './pages/AppsPage';
@@ -1297,6 +1299,24 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ContentTemplatesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/workflow-templates"
+        element={
+          <ProtectedRoute>
+            <WorkflowTemplatesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/approvals"
+        element={
+          <ProtectedRoute>
+            <ApprovalsPage />
           </ProtectedRoute>
         }
       />

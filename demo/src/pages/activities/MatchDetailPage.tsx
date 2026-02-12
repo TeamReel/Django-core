@@ -20,6 +20,7 @@ import { actionButtonStyle } from '../identity/detail/detailStyles';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { AssetsTab } from '../../components/AssetsTab';
 import MobileTabBar from '../../components/MobileTabBar';
+import { WorkflowPanel } from '../../components/Workflows';
 
 type Organisation = {
   id: string;
@@ -725,7 +726,7 @@ export default function HierarchyMatchDetailPage() {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'content', 'lineup', 'transactions', 'details', 'assets', 'identity']);
+    const allowed = new Set(['overview', 'content', 'lineup', 'transactions', 'details', 'assets', 'identity', 'workflow']);
     if (allowed.has(raw)) return raw;
     const legacyMap: Record<string, string> = {
       hierarchy: 'details',
@@ -2351,6 +2352,7 @@ export default function HierarchyMatchDetailPage() {
             { id: 'transactions', label: 'Transactions' },
             { id: 'details', label: 'Details' },
             { id: 'assets', label: 'Assets' },
+            { id: 'workflow', label: 'Workflow' },
             { id: 'identity', label: 'Identity' },
           ]}
           activeTab={activeTab}
@@ -2516,6 +2518,9 @@ export default function HierarchyMatchDetailPage() {
                           const existingItem = getContentItemForSubtype(item.subtype);
                           const isGenerating = existingItem != null && ['queued', 'generating'].includes(existingItem.status);
                           const isFailed = existingItem?.status === 'failed';
+                          const workflowStatus = existingItem?.status === 'approved' ? 'approved'
+                            : existingItem?.status === 'rejected' ? 'rejected'
+                            : null;
 
                           // Get latest saved media + history for this subtype
                           const latestMedia = getLatestMediaForSubtype(item.subtype);
@@ -2531,6 +2536,7 @@ export default function HierarchyMatchDetailPage() {
                               isGenerating={isGenerating}
                               isFailed={isFailed}
                               errorMessage={existingItem?.error_message ?? undefined}
+                              workflowStatus={workflowStatus}
                               historyItems={historyItems}
                               onPreview={(mi) => {
                                 const previewUrl = mi.file_url || getAssetUrl(mi.storage_path);
@@ -2740,6 +2746,14 @@ export default function HierarchyMatchDetailPage() {
             <div style={{ padding: 16, color: 'var(--vscode-descriptionForeground, #888)', fontSize: 13 }}>
               <p>Design tokens worden geërfd van het seizoen/team. Ga naar de club- of teampagina om kleuren, fonts en spacing aan te passen.</p>
             </div>
+          )}
+
+          {activeTab === 'workflow' && match && (
+            <WorkflowPanel
+              projectId={String(match?.project?.id || project?.id || '')}
+              contentTypeName="activity"
+              objectId={String(match?.id || '')}
+            />
           )}
 
           {activeTab === 'lineup' && (
