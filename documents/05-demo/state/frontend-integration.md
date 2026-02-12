@@ -1,10 +1,10 @@
 # Frontend Integration Status
 
-> Last updated: 2026-02-12 (B34↔B37 Pipeline + B55 Video Queue + B16 Notifications Hook)
+> Last updated: 2026-02-13 (UX Rebuild: Media Library + AI Studio + Content Library removal)
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.
 
-## 🎯 Current Focus: B37 Workflow UI Integration Complete ✅
+## 🎯 Current Focus: Media & AI Studio UX Rebuild ✅
 
 **Video in Frontend (2026-02-12)**:
 - ✅ Video generation via AssetGenerationModal (async 202 + polling)
@@ -122,18 +122,40 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - ✅ Template grouping by subtype
 - **Status**: ✅ Volledig
 
-### B22 MediaLib ✅
-- **Backend**: 78 MediaTags seeded, 0 MediaItems
-- **Frontend**:
-  - ✅ MediaLibraryPage (Smart Asset Library UI)
-  - ✅ useMediaLibrary hook
-  - ✅ Tag filter with category dropdown (useMasterData)
-  - ✅ Tag selection with toggle buttons
-  - ✅ Status filter (raw, edited, approved, published)
-  - ✅ Search with pagination
+### B22 MediaLib ✅ (Rebuilt 2026-02-13)
+- **Backend**: 78 MediaTags seeded, 0 MediaItems, 71 BrandAssets, 66 FileAssets
+- **Frontend** (rebuilt to show real content):
+  - ✅ MediaLibraryPage — dual-tab view (Brand Assets / Files)
+  - ✅ `useBrandAssets` hook — fetches brand profiles → assets per profile, category filtering
+  - ✅ `useFileAssets` hook — fetches files with org header, download URL support
+  - ✅ `useMediaLibrary` hook (preserved for future MediaItem integration)
+  - ✅ Brand Assets tab: thumbnail grid, category filters (Logos, Kits, Sponsors, Other), search
+  - ✅ Files tab: file list with type icons, size display, download buttons
+  - ✅ Asset type labels (40+ types: club_logo, home_kit, main_sponsor, etc.)
+  - ✅ Category grouping via `getAssetCategory()` helper
+- **Architecture Change**: Old page queried `/api/v1/media/items/` (0 records). New page queries:
+  - `/api/v1/branding/profiles/?organisation={orgId}` → per-profile `/assets/` (71 BrandAssets)
+  - `/api/v1/files/` with `X-Organization-ID` header (66 FileAssets)
 - **TODO**:
-  - [ ] Upload nieuwe MediaItems (presigned URL flow)
+  - [ ] Upload nieuwe FileAssets vanuit MediaLibrary
+  - [ ] MediaItem integration wanneer MediaItems beschikbaar zijn
   - [ ] Tag management UI (CRUD voor project-specifieke tags)
+
+### AI Studio ✅ (Rebuilt 2026-02-13)
+- **Purpose**: Central hub for AI content generation (template browsing, history, quick actions)
+- **Frontend**:
+  - ✅ AIStudioPage — 3-tab view at `/studio`
+  - ✅ `useGenerationHistory` hook — parallel fetch of asset + content templates + generation history
+  - ✅ Templates tab: browse all templates with category filtering (Member, Pre-Match, During Match, etc.)
+  - ✅ History tab: generation history with status badges (completed/failed/pending)
+  - ✅ Quick Actions tab: navigation cards to Match Content, Member Assets, Video Queue, Content Templates
+  - ✅ Template category labels mapping (TEMPLATE_CATEGORY_LABELS)
+- **APIs consumed**:
+  - `GET /api/v1/generative/assets/templates/` — asset generation templates (8 templates)
+  - `GET /api/v1/content-generation/templates/` — content templates (320 templates)
+  - `GET /api/v1/generative/assets/history/` — generation history
+- **Architecture**: AI Studio does NOT duplicate generation modals (those live on entity detail pages). It serves as a _browser_ and _launchpad_ for templates and history.
+- **Status**: ✅ Volledig (replaced empty placeholder)
 
 ### B33 Branding ✅
 - **Backend**: 102 BrandProfiles, 645 DesignTokens, 71 BrandAssets, 66 FileAssets
@@ -399,7 +421,7 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 3. **B16 Notification triggers for workflow** — Toast notifications when workflow transitions happen (approve/reject); backend signal → create_notification call
 4. **Batch approval actions** — Select multiple items on ApprovalsPage, approve/reject in bulk
 5. **BrandProfile editor** — Create/update brand profiles (currently read-only)
-6. **MediaItem upload** — File upload integratie met MediaLibrary
+6. **FileAsset upload in MediaLibrary** — Upload component in Files tab
 
 ### Low Priority
 7. **Hierarchical Search UI** — HierarchyTreeView in SearchPage
@@ -417,6 +439,20 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 ---
 
 ## Recent Completions
+
+### 2026-02-13: Media & AI Studio UX Rebuild
+- ✅ **Media Library rebuilt**: Dual-tab view (Brand Assets / Files) replacing empty MediaItems page
+  - New hooks: `useBrandAssets`, `useFileAssets`
+  - Brand Assets tab: thumbnail grid, category chips (Logos/Kits/Sponsors/Other), search
+  - Files tab: file list with type icons, download buttons, size display
+- ✅ **Content Library removed**: Route removed from App.tsx, Sidebar updated (was `/content` Library link → now `/medialib` Media Library)
+- ✅ **AI Studio rebuilt**: 3-tab functional page replacing placeholder cards
+  - New hook: `useGenerationHistory`
+  - Templates tab: browse asset + content templates with category filtering
+  - History tab: generation history with status badges
+  - Quick Actions tab: cards linking to match/member/video/template pages
+- ✅ Content section navigation: Library → Media Library, `/studio/create` → `/studio`
+- ✅ Zero new backend changes (frontend-only refactor)
 
 ### 2026-02-12: B37 Workflow UI Integration
 - ✅ 7 new files: useWorkflows hook, 4 Workflow components, ApprovalsPage, WorkflowTemplatesPage
@@ -518,8 +554,11 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 | `/api/v1/settings/feature-flags/` | FeatureFlagsPage | ✅ |
 | `/api/v1/settings/feature-flags/resolve-all/` | ContentAvailabilityCard, MatchDetailPage | ✅ |
 | `/api/v1/content-generation/templates/` | ContentTemplatesPage | ✅ |
-| `/api/v1/media/items/` | useMediaLibrary | ✅ |
+| `/api/v1/media/items/` | useMediaLibrary (preserved) | ✅ |
 | `/api/v1/media/tags/` | useMasterData (mediaTagsByCategory) | ✅ |
+| `/api/v1/branding/profiles/{id}/assets/` | useBrandAssets (MediaLibrary) | ✅ |
+| `/api/v1/generative/assets/templates/` | useGenerationHistory (AI Studio) | ✅ |
+| `/api/v1/generative/assets/history/` | useGenerationHistory (AI Studio) | ✅ |
 | `/api/v1/branding/profiles/` | BrandProfileCard | ✅ |
 | `/api/v1/branding/tokens/` | - | ❌ Niet aangeroepen |
 | `/api/v1/sport-configuration/sports/` | useSports | ✅ |

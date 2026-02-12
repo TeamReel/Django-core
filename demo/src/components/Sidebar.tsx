@@ -821,7 +821,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         case 'content':
             title = 'Content';
             items = [
-                { label: 'Library', path: '/content', icon: Library },
+                { label: 'Media Library', path: '/medialib', icon: Library },
                 { label: 'AI Studio', path: '/studio', icon: Sparkles },
                 { label: 'Video Queue', path: '/studio/videos', icon: Video },
                 { label: 'Approvals', path: '/approvals', icon: ClipboardCheck },

@@ -1,285 +1,357 @@
-import React, { useEffect, useState } from 'react';
-import AppShell from '../../components/AppShell';
+/**
+ * Media Library Page — Unified Asset Browser
+ *
+ * Shows all real content for the active organisation:
+ * - Brand Assets (logos, kits, sponsors) via /api/v1/branding/
+ * - File Assets (raw uploads) via /api/v1/files/
+ *
+ * Replaces the old MediaItem-based page which showed 0 results because
+ * the MediaItem table was empty. BrandAssets and FileAssets contain the
+ * actual content (71+ brand assets, 66+ file assets on production).
+ */
+
+import React, { useEffect, useState, useMemo } from 'react';
 import { Card, Button, Stack, Text, Alert, Badge } from '@django-core/design-system';
-import { useMediaLibrary, MediaLibraryFilters, MediaItem } from '../../hooks/useMediaLibrary';
-import { useMasterData, MediaTag, getTagCategoryLabel, TAG_CATEGORY_LABELS } from '../../utils/masterData';
+import { useContextSwitcher } from '@django-core/context-switcher';
+import { useBrandAssets, getAssetCategory, getAssetTypeLabel, type AssetCategory, type BrandAsset } from '../../hooks/useBrandAssets';
+import { useFileAssets, getFileIcon, formatFileSize, getFileTypeFilter, type FileAsset, type FileTypeFilter } from '../../hooks/useFileAssets';
+
+type ViewTab = 'brand' | 'files';
 
 const MediaLibraryPage: React.FC = () => {
-    const { items, loading, error, pagination, fetchItems } = useMediaLibrary();
-    const { data: tagsByCategory, loading: tagsLoading } = useMasterData<Map<string, MediaTag[]>>('mediaTagsByCategory');
+  const { context } = useContextSwitcher();
+  const orgId = (context as any)?.organisation?.id as string | undefined;
 
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<string>('all');
-    const [selectedState, setSelectedState] = useState<string>('all');
+  // Brand assets
+  const { assets: brandAssets, loading: brandLoading, error: brandError, fetchAssets } = useBrandAssets();
+  // File assets
+  const { files, loading: filesLoading, error: filesError, fetchFiles, getDownloadUrl } = useFileAssets();
 
-    useEffect(() => {
-        // Initial fetch
-        fetchItems();
-    }, [fetchItems]);
+  const [activeTab, setActiveTab] = useState<ViewTab>('brand');
+  const [categoryFilter, setCategoryFilter] = useState<AssetCategory>('all');
+  const [fileTypeFilter, setFileTypeFilter] = useState<FileTypeFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        const filters: MediaLibraryFilters = { q: searchQuery };
-        if (selectedTags.length > 0) filters.tags = selectedTags;
-        if (selectedState !== 'all') filters.state = selectedState;
-        fetchItems(filters);
-    };
+  // Fetch on mount when org is available
+  useEffect(() => {
+    if (orgId) {
+      fetchAssets(orgId);
+      fetchFiles(orgId);
+    }
+  }, [orgId, fetchAssets, fetchFiles]);
 
-    const handleTagToggle = (tagSlug: string) => {
-        setSelectedTags((prev) =>
-            prev.includes(tagSlug)
-                ? prev.filter((t) => t !== tagSlug)
-                : [...prev, tagSlug]
-        );
-    };
+  // Filtered brand assets
+  const filteredBrandAssets = useMemo(() => {
+    let result = brandAssets;
+    if (categoryFilter !== 'all') {
+      result = result.filter(a => getAssetCategory(a.asset_type) === categoryFilter);
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(a =>
+        a.asset_type_label?.toLowerCase().includes(q) ||
+        a.alt_text?.toLowerCase().includes(q) ||
+        a.profile_name?.toLowerCase().includes(q) ||
+        a.file_details?.name?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [brandAssets, categoryFilter, searchQuery]);
 
-    const handleApplyFilters = () => {
-        const filters: MediaLibraryFilters = {};
-        if (searchQuery) filters.q = searchQuery;
-        if (selectedTags.length > 0) filters.tags = selectedTags;
-        if (selectedState !== 'all') filters.state = selectedState;
-        fetchItems(filters);
-    };
+  // Filtered file assets
+  const filteredFiles = useMemo(() => {
+    let result = files;
+    if (fileTypeFilter !== 'all') {
+      result = result.filter(f => getFileTypeFilter(f.mime_type) === fileTypeFilter);
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(f =>
+        f.original_name?.toLowerCase().includes(q) ||
+        f.mime_type?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [files, fileTypeFilter, searchQuery]);
 
-    const handleClearFilters = () => {
-        setSearchQuery('');
-        setSelectedTags([]);
-        setSelectedCategory('all');
-        setSelectedState('all');
-        fetchItems();
-    };
+  const loading = activeTab === 'brand' ? brandLoading : filesLoading;
+  const error = activeTab === 'brand' ? brandError : filesError;
 
-    const handleLoadMore = () => {
-        if (pagination.next) {
-            // Cursor is inside the next URL, extracting it is tricky if we don't have a parser,
-            // but the hook expects just the cursor value?
-            // Actually my hook logic takes `cursor` strings but the `next` url is full.
-            // I should probably parse it or just pass filters and let the hook handle URL construction.
-            // For now, let's assume `next` contains the cursor param.
+  // Category counts for brand assets
+  const categoryCounts = useMemo(() => ({
+    all: brandAssets.length,
+    logo: brandAssets.filter(a => getAssetCategory(a.asset_type) === 'logo').length,
+    kit: brandAssets.filter(a => getAssetCategory(a.asset_type) === 'kit').length,
+    sponsor: brandAssets.filter(a => getAssetCategory(a.asset_type) === 'sponsor').length,
+    other: brandAssets.filter(a => getAssetCategory(a.asset_type) === 'other').length,
+  }), [brandAssets]);
 
-            const url = new URL(pagination.next);
-            const cursor = url.searchParams.get('cursor');
-            if (cursor) {
-                fetchItems({ q: searchQuery }, cursor);
-            }
-        }
-    };
+  // File type counts
+  const fileTypeCounts = useMemo(() => ({
+    all: files.length,
+    image: files.filter(f => getFileTypeFilter(f.mime_type) === 'image').length,
+    video: files.filter(f => getFileTypeFilter(f.mime_type) === 'video').length,
+    document: files.filter(f => getFileTypeFilter(f.mime_type) === 'document').length,
+    font: files.filter(f => getFileTypeFilter(f.mime_type) === 'font').length,
+  }), [files]);
 
+  const handleDownload = async (fileId: string) => {
+    const url = await getDownloadUrl(fileId);
+    if (url) window.open(url, '_blank');
+  };
+
+  if (!orgId) {
     return (
-        <AppShell>
-           <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)' }}>
-                {/* Header */}
-                <div style={{ padding: '24px', borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
-                    <Stack direction="column" gap="2">
-                        <Text size="xl" weight="bold">Smart Asset Library</Text>
-                        <Text size="md" color="secondary">
-                            Search and manage your media assets with AI-powered search.
-                        </Text>
-                    </Stack>
-                </div>
-
-                {/* Content */}
-                <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '24px' }}>
-
-                        {/* Sidebar Filters */}
-                        <div>
-                            <Card style={{ padding: '16px', position: 'sticky', top: '24px' }}>
-                                <Stack direction="column" gap="4">
-                                    <Text weight="bold" size="md">Filters</Text>
-
-                                    {/* State Filter */}
-                                    <div>
-                                        <Text size="sm" color="secondary" style={{ marginBottom: '8px' }}>Status</Text>
-                                        <select
-                                            value={selectedState}
-                                            onChange={(e) => setSelectedState(e.target.value)}
-                                            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}
-                                        >
-                                            <option value="all">All Statuses</option>
-                                            <option value="raw">Raw</option>
-                                            <option value="edited">Edited</option>
-                                            <option value="approved">Approved</option>
-                                            <option value="published">Published</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Category Filter */}
-                                    <div>
-                                        <Text size="sm" color="secondary" style={{ marginBottom: '8px' }}>Tag Category</Text>
-                                        <select
-                                            value={selectedCategory}
-                                            onChange={(e) => setSelectedCategory(e.target.value)}
-                                            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}
-                                        >
-                                            <option value="all">All Categories</option>
-                                            {tagsByCategory && Array.from(tagsByCategory.keys()).sort().map((category) => (
-                                                <option key={category} value={category}>
-                                                    {getTagCategoryLabel(category)} ({tagsByCategory.get(category)?.length || 0})
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    {/* Tags */}
-                                    <div>
-                                        <Text size="sm" color="secondary" style={{ marginBottom: '8px' }}>
-                                            Tags {selectedTags.length > 0 && `(${selectedTags.length} selected)`}
-                                        </Text>
-                                        {tagsLoading ? (
-                                            <Text size="sm" color="secondary">Loading tags...</Text>
-                                        ) : tagsByCategory ? (
-                                            <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid var(--app-border)', borderRadius: '4px', padding: '8px' }}>
-                                                {Array.from(tagsByCategory.entries())
-                                                    .filter(([category]) => selectedCategory === 'all' || category === selectedCategory)
-                                                    .sort(([a], [b]) => a.localeCompare(b))
-                                                    .map(([category, tags]) => (
-                                                        <div key={category} style={{ marginBottom: '12px' }}>
-                                                            <Text size="xs" weight="bold" color="secondary" style={{ textTransform: 'uppercase', marginBottom: '4px' }}>
-                                                                {getTagCategoryLabel(category)}
-                                                            </Text>
-                                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                                                {tags.map((tag) => (
-                                                                    <button
-                                                                        key={tag.id}
-                                                                        onClick={() => handleTagToggle(tag.slug)}
-                                                                        style={{
-                                                                            padding: '4px 8px',
-                                                                            fontSize: '12px',
-                                                                            borderRadius: '4px',
-                                                                            border: selectedTags.includes(tag.slug) ? '2px solid var(--color-primary)' : '1px solid var(--app-border)',
-                                                                            backgroundColor: selectedTags.includes(tag.slug) ? 'var(--color-primary-light, rgba(59, 130, 246, 0.1))' : 'transparent',
-                                                                            color: selectedTags.includes(tag.slug) ? 'var(--color-primary)' : 'inherit',
-                                                                            cursor: 'pointer',
-                                                                        }}
-                                                                    >
-                                                                        {tag.name}
-                                                                    </button>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                            </div>
-                                        ) : (
-                                            <Text size="sm" color="secondary">No tags available</Text>
-                                        )}
-                                    </div>
-
-                                    {/* Filter Actions */}
-                                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                                        <Button onClick={handleApplyFilters} variant="primary" style={{ flex: 1 }}>
-                                            Apply Filters
-                                        </Button>
-                                        <Button onClick={handleClearFilters} variant="secondary">
-                                            Clear
-                                        </Button>
-                                    </div>
-                                </Stack>
-                            </Card>
-                        </div>
-
-                        {/* Main Content */}
-                        <div>
-                            <Stack direction="column" gap="4">
-
-                                {/* Search Bar */}
-                                <Card style={{ padding: '16px' }}>
-                                    <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px' }}>
-                                        <input
-                                            type="text"
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            placeholder="Search specific items (e.g., 'training video')..."
-                                            style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}
-                                        />
-                                        <Button type="submit" variant="primary" disabled={loading}>
-                                            {loading ? 'Searching...' : 'Search'}
-                                        </Button>
-                                    </form>
-                                </Card>
-
-                                {error && <Alert variant="error">{error}</Alert>}
-
-                                {/* Results Summary */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Text size="sm" color="secondary">
-                                        {(items || []).length} item{(items || []).length !== 1 ? 's' : ''} found
-                                        {selectedTags.length > 0 && ` • Filtered by ${selectedTags.length} tag${selectedTags.length !== 1 ? 's' : ''}`}
-                                    </Text>
-                                </div>
-
-                                {/* Results Grid */}
-                                {items && items.length > 0 ? (
-                                    <div style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                                        gap: '16px'
-                                    }}>
-                                        {items.map((item: MediaItem) => (
-                                            <Card key={item.id} style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                                                {/* Thumbnail placeholder */}
-                                                <div style={{
-                                                    height: '140px',
-                                                    backgroundColor: '#f1f1f1',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    borderBottom: '1px solid #eee'
-                                                }}>
-                                                    {item.mime_type.startsWith('image/') ? (
-                                                        <span style={{ fontSize: '32px' }}>🖼️</span>
-                                                    ) : (
-                                                        <span style={{ fontSize: '32px' }}>📄</span>
-                                                    )}
-                                                </div>
-                                                <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-                                                    <Text weight="bold" size="sm" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                        {item.title}
-                                                    </Text>
-                                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                                                        {item.tags.slice(0, 3).map(tag => (
-                                                            <Badge key={tag.id} size="sm" variant="primary">{tag.name}</Badge>
-                                                        ))}
-                                                        {item.tags.length > 3 && (
-                                                            <Badge size="sm" variant="default">+{item.tags.length - 3}</Badge>
-                                                        )}
-                                                        <Badge size="sm" variant="default">{item.state}</Badge>
-                                                    </div>
-                                                    <Text size="xs" color="secondary">
-                                                        {(item.file_size_bytes / 1024).toFixed(1)} KB
-                                                    </Text>
-                                                </div>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    !loading && (
-                                        <Card style={{ textAlign: 'center', padding: '48px' }}>
-                                            <Text size="lg" style={{ marginBottom: '8px' }}>📁</Text>
-                                            <Text color="secondary">No media items found.</Text>
-                                            <Text size="sm" color="secondary" style={{ marginTop: '4px' }}>
-                                                Upload some media or adjust your filters.
-                                            </Text>
-                                        </Card>
-                                    )
-                                )}
-
-                                {/* Pagination */}
-                                {pagination.next && (
-                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                        <Button onClick={handleLoadMore} disabled={loading} variant="secondary">
-                                            Load More
-                                        </Button>
-                                    </div>
-                                )}
-                            </Stack>
-                        </div>
-                    </div>
-                </div>
-           </div>
-        </AppShell>
+      <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)', padding: '24px' }}>
+        <Alert variant="info">Select an organisation to view the media library.</Alert>
+      </div>
     );
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)' }}>
+      {/* Header */}
+      <div style={{ padding: '24px', borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
+        <Stack direction="column" gap="1">
+          <Text size="xl" weight="bold">Media Library</Text>
+          <Text size="md" color="secondary">
+            Brand assets, uploads and files for your organisation.
+          </Text>
+        </Stack>
+      </div>
+
+      {/* Content */}
+      <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
+        <Stack direction="column" gap="4">
+
+          {/* Tab bar + search */}
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+            {/* Tabs */}
+            <div style={{ display: 'flex', gap: '4px', background: 'var(--app-surface)', border: '1px solid var(--app-border)', borderRadius: '8px', padding: '3px' }}>
+              <button
+                onClick={() => { setActiveTab('brand'); setSearchQuery(''); }}
+                style={{
+                  padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer',
+                  fontWeight: 600, fontSize: '13px',
+                  backgroundColor: activeTab === 'brand' ? 'var(--color-primary, #3b82f6)' : 'transparent',
+                  color: activeTab === 'brand' ? '#fff' : 'inherit',
+                }}
+              >
+                Brand Assets ({brandAssets.length})
+              </button>
+              <button
+                onClick={() => { setActiveTab('files'); setSearchQuery(''); }}
+                style={{
+                  padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer',
+                  fontWeight: 600, fontSize: '13px',
+                  backgroundColor: activeTab === 'files' ? 'var(--color-primary, #3b82f6)' : 'transparent',
+                  color: activeTab === 'files' ? '#fff' : 'inherit',
+                }}
+              >
+                Files ({files.length})
+              </button>
+            </div>
+
+            {/* Search */}
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={activeTab === 'brand' ? 'Search assets...' : 'Search files...'}
+              style={{
+                flex: 1, minWidth: '200px', padding: '8px 12px', borderRadius: '6px',
+                border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)',
+                fontSize: '13px',
+              }}
+            />
+          </div>
+
+          {/* Category filter chips */}
+          {activeTab === 'brand' ? (
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {([
+                { key: 'all' as AssetCategory, label: 'All', count: categoryCounts.all },
+                { key: 'logo' as AssetCategory, label: 'Logos', count: categoryCounts.logo },
+                { key: 'kit' as AssetCategory, label: 'Kits', count: categoryCounts.kit },
+                { key: 'sponsor' as AssetCategory, label: 'Sponsors', count: categoryCounts.sponsor },
+                { key: 'other' as AssetCategory, label: 'Other', count: categoryCounts.other },
+              ]).filter(c => c.count > 0 || c.key === 'all').map(cat => (
+                <button
+                  key={cat.key}
+                  onClick={() => setCategoryFilter(cat.key)}
+                  style={{
+                    padding: '6px 12px', borderRadius: '16px', border: '1px solid var(--app-border)',
+                    fontSize: '12px', cursor: 'pointer', fontWeight: 500,
+                    backgroundColor: categoryFilter === cat.key ? 'var(--color-primary, #3b82f6)' : 'var(--app-surface)',
+                    color: categoryFilter === cat.key ? '#fff' : 'inherit',
+                  }}
+                >
+                  {cat.label} ({cat.count})
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {([
+                { key: 'all' as FileTypeFilter, label: 'All', count: fileTypeCounts.all },
+                { key: 'image' as FileTypeFilter, label: 'Images', count: fileTypeCounts.image },
+                { key: 'video' as FileTypeFilter, label: 'Videos', count: fileTypeCounts.video },
+                { key: 'document' as FileTypeFilter, label: 'Documents', count: fileTypeCounts.document },
+                { key: 'font' as FileTypeFilter, label: 'Fonts', count: fileTypeCounts.font },
+              ]).filter(c => c.count > 0 || c.key === 'all').map(cat => (
+                <button
+                  key={cat.key}
+                  onClick={() => setFileTypeFilter(cat.key)}
+                  style={{
+                    padding: '6px 12px', borderRadius: '16px', border: '1px solid var(--app-border)',
+                    fontSize: '12px', cursor: 'pointer', fontWeight: 500,
+                    backgroundColor: fileTypeFilter === cat.key ? 'var(--color-primary, #3b82f6)' : 'var(--app-surface)',
+                    color: fileTypeFilter === cat.key ? '#fff' : 'inherit',
+                  }}
+                >
+                  {cat.label} ({cat.count})
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Error */}
+          {error && <Alert variant="error">{error}</Alert>}
+
+          {/* Loading */}
+          {loading && (
+            <div style={{ textAlign: 'center', padding: '48px' }}>
+              <Text color="secondary">Loading assets...</Text>
+            </div>
+          )}
+
+          {/* Brand Assets Grid */}
+          {activeTab === 'brand' && !loading && (
+            filteredBrandAssets.length > 0 ? (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                gap: '16px',
+              }}>
+                {filteredBrandAssets.map((asset: BrandAsset) => (
+                  <Card key={asset.id} style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                    {/* Thumbnail area */}
+                    <div style={{
+                      height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
+                      overflow: 'hidden',
+                    }}>
+                      {asset.url ? (
+                        <img
+                          src={asset.url}
+                          alt={asset.alt_text || asset.asset_type_label || asset.asset_type}
+                          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', padding: '8px' }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        <span style={{ fontSize: '32px', opacity: 0.4 }}>
+                          {asset.asset_type.includes('kit') ? '👕' : asset.asset_type.includes('logo') ? '🏷️' : '📁'}
+                        </span>
+                      )}
+                    </div>
+                    {/* Info */}
+                    <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
+                      <Text weight="bold" size="sm" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {asset.asset_type_label || getAssetTypeLabel(asset.asset_type)}
+                      </Text>
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        <Badge size="sm" variant="primary">{getAssetCategory(asset.asset_type)}</Badge>
+                        {asset.profile_name && (
+                          <Badge size="sm" variant="default">{asset.profile_name}</Badge>
+                        )}
+                      </div>
+                      {asset.file_details && (
+                        <Text size="xs" color="secondary">
+                          {asset.file_details.name} &middot; {formatFileSize(asset.file_details.size)}
+                        </Text>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card style={{ textAlign: 'center', padding: '48px' }}>
+                <div style={{ fontSize: '32px', marginBottom: '8px', opacity: 0.4 }}>🏷️</div>
+                <Text color="secondary">No brand assets found.</Text>
+                <Text size="sm" color="secondary" style={{ marginTop: '4px' }}>
+                  {brandAssets.length > 0 ? 'Try adjusting your search or filters.' : 'Upload logos and kits via the Brand Identity settings.'}
+                </Text>
+              </Card>
+            )
+          )}
+
+          {/* File Assets Grid */}
+          {activeTab === 'files' && !loading && (
+            filteredFiles.length > 0 ? (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                gap: '16px',
+              }}>
+                {filteredFiles.map((file: FileAsset) => (
+                  <Card key={file.id} style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                    {/* Thumbnail / icon */}
+                    <div style={{
+                      height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
+                    }}>
+                      <span style={{ fontSize: '40px' }}>{getFileIcon(file.mime_type)}</span>
+                    </div>
+                    {/* Info */}
+                    <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
+                      <Text weight="bold" size="sm" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {file.original_name || 'Unnamed file'}
+                      </Text>
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        <Badge size="sm" variant="default">{file.mime_type.split('/')[1] || file.mime_type}</Badge>
+                        {file.is_public && <Badge size="sm" variant="primary">Public</Badge>}
+                      </div>
+                      <Text size="xs" color="secondary">
+                        {formatFileSize(file.file_size)}
+                        {file.uploaded_by_name && <> &middot; {file.uploaded_by_name}</>}
+                      </Text>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleDownload(file.id)}
+                        style={{ marginTop: '4px', alignSelf: 'flex-start' }}
+                      >
+                        Download
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card style={{ textAlign: 'center', padding: '48px' }}>
+                <div style={{ fontSize: '32px', marginBottom: '8px', opacity: 0.4 }}>📁</div>
+                <Text color="secondary">No files found.</Text>
+                <Text size="sm" color="secondary" style={{ marginTop: '4px' }}>
+                  {files.length > 0 ? 'Try adjusting your search or filter.' : 'Upload files to see them here.'}
+                </Text>
+              </Card>
+            )
+          )}
+
+          {/* Summary */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0' }}>
+            <Text size="xs" color="secondary">
+              {activeTab === 'brand'
+                ? `${filteredBrandAssets.length} of ${brandAssets.length} brand assets`
+                : `${filteredFiles.length} of ${files.length} files`
+              }
+            </Text>
+          </div>
+
+        </Stack>
+      </div>
+    </div>
+  );
 };
 
 export default MediaLibraryPage;

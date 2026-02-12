@@ -108,7 +108,6 @@ import ProjectHierarchyCompetitionRedirectPage from './pages/activities/ProjectH
 import LegacyMatchRedirectPage from './pages/activities/LegacyMatchRedirectPage';
 import AIStudioPage from './pages/aistudio/AIStudioPage';
 import VideoQueuePage from './pages/studio/VideoQueuePage';
-import ContentLibraryPage from './pages/content/ContentLibraryPage';
 
 // Period (Season/Competition) pages
 import ProjectSeasonsPage from './pages/periods/ProjectSeasonsPage';
@@ -932,7 +931,7 @@ export default function App() {
 
       {/* AI Studio & Content */}
       <Route
-        path="/studio/create"
+        path="/studio"
         element={
           <ProtectedRoute>
             <AIStudioPage />
@@ -947,17 +946,6 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/content"
-        element={
-          <ProtectedRoute>
-            <ContentLibraryPage />
-          </ProtectedRoute>
-        }
-      />
-
-
-
       {/* Search route */}
       <Route
         path="/search"
