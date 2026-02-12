@@ -212,21 +212,35 @@ export default function HierarchyMatchDetailPage() {
   const [isContentPreviewOpen, setIsContentPreviewOpen] = useState(false);
 
   // Saved content (BrandAssets) – lineup announcement is saved via /api/v1/generative/assets/save/
+  // get_effective_brand() cascades: project-level → org-level. The asset might live on either.
+  // We check both so the lineup always shows regardless of where it was saved.
   const brandOrganisationId = String(org?.id || orgId || '').trim() || undefined;
   const brandProjectId = match?.project?.id ?? project?.id ?? null;
-  const matchBrand = useBrandProfile({
+  const projectBrand = useBrandProfile({
     organisationId: brandOrganisationId,
     projectId: brandProjectId,
     autoFetch: true,
   });
+  const orgBrand = useBrandProfile({
+    organisationId: brandOrganisationId,
+    // no projectId → queries org-level profile only
+    autoFetch: true,
+  });
 
   const lineupAssetType = match?.id ? `lineup_${String(match.id).slice(0, 8)}` : null;
-  const lineupBrandAsset = lineupAssetType ? matchBrand.getAsset(lineupAssetType) : undefined;
+  // Try project-level first, then org-level (mirrors get_effective_brand cascade)
+  const lineupBrandAsset = lineupAssetType
+    ? (projectBrand.getAsset(lineupAssetType) || orgBrand.getAsset(lineupAssetType))
+    : undefined;
   const lineupBrandAssetUrl = lineupBrandAsset ? getAssetUrl(lineupBrandAsset.url) : null;
   const lineupBrandAssetIsVideo = Boolean(
     lineupBrandAsset?.file_details?.content_type?.startsWith('video/') ||
     (lineupBrandAssetUrl ? /\.(mp4|webm|mov)$/i.test(lineupBrandAssetUrl) : false)
   );
+  // Expose a refresh that covers both profiles
+  const refreshBrandProfiles = useCallback(async () => {
+    await Promise.all([projectBrand.refresh(), orgBrand.refresh()]);
+  }, [projectBrand.refresh, orgBrand.refresh]);
 
   const [savedAssetPreview, setSavedAssetPreview] = useState<{
     title: string;
@@ -323,7 +337,7 @@ export default function HierarchyMatchDetailPage() {
     setSelectedContentTypeLabel('');
     // Refresh content items to show newly generated content
     fetchContentItems();
-    void matchBrand.refresh();
+    void refreshBrandProfiles();
   };
 
   // Open content preview modal
