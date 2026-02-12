@@ -102,8 +102,10 @@ export function useFileAssets(): UseFileAssetsReturn {
       });
 
       if (!res.ok) throw new Error(`Failed to load files: ${res.statusText}`);
-      const data = await res.json();
-      setFiles(Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : []);
+      const json = await res.json();
+      // Envelope: { status, data: [...], meta: { pagination } }
+      const arr = Array.isArray(json.data) ? json.data : Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.results) ? json.results : Array.isArray(json) ? json : [];
+      setFiles(arr);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         setError(err.message || 'Failed to load files');

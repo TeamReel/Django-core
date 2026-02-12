@@ -811,13 +811,30 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             break;
 
         case 'content':
-            title = 'Content';
-            items = [
-                { label: 'Media Library', path: '/medialib', icon: Library },
-                { label: 'AI Studio', path: '/studio', icon: Sparkles },
-                { label: 'Video Queue', path: '/studio/videos', icon: Video },
-                { label: 'Approvals', path: '/approvals', icon: ClipboardCheck },
-            ];
+            // Page-specific Panel B tabs (like entity detail pages)
+            if (path === '/medialib' || path.startsWith('/medialib')) {
+                title = 'Media Library';
+                items = [
+                    { label: 'Brand Assets', path: '/medialib?tab=brand', icon: Palette },
+                    { label: 'Files', path: '/medialib?tab=files', icon: Folder },
+                ];
+            } else if (path === '/studio' && !path.startsWith('/studio/')) {
+                title = 'AI Studio';
+                items = [
+                    { label: 'Templates', path: '/studio?tab=templates', icon: Library },
+                    { label: 'History', path: '/studio?tab=history', icon: Timer },
+                    { label: 'Quick Actions', path: '/studio?tab=actions', icon: Sparkles },
+                ];
+            } else {
+                // Fallback for other content pages (video queue, approvals)
+                title = 'Content';
+                items = [
+                    { label: 'Media Library', path: '/medialib', icon: Library },
+                    { label: 'AI Studio', path: '/studio', icon: Sparkles },
+                    { label: 'Video Queue', path: '/studio/videos', icon: Video },
+                    { label: 'Approvals', path: '/approvals', icon: ClipboardCheck },
+                ];
+            }
             break;
 
         case 'templates':
@@ -1354,7 +1371,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 const itemSearch = itemQuery ? `?${itemQuery}` : '';
                                 const locationTab = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
                                 const itemTab = String(new URLSearchParams(itemSearch).get('tab') || '').trim().toLowerCase();
-                                const effectiveLocationTab = locationTab || (location.pathname === '/directory' ? 'federations' : 'overview');
+                                const effectiveLocationTab = locationTab || (
+                                    location.pathname === '/directory' ? 'federations' :
+                                    location.pathname === '/medialib' ? 'brand' :
+                                    location.pathname === '/studio' ? 'templates' :
+                                    'overview'
+                                );
                                 const effectiveItemTab = itemTab || 'overview';
                                 const isActive = location.pathname === itemPathname && effectiveLocationTab === effectiveItemTab;
 

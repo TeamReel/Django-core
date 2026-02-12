@@ -11,6 +11,7 @@
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, Button, Stack, Text, Alert, Badge } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useBrandAssets, getAssetCategory, getAssetTypeLabel, type AssetCategory, type BrandAsset } from '../../hooks/useBrandAssets';
@@ -19,18 +20,27 @@ import { useFileAssets, getFileIcon, formatFileSize, getFileTypeFilter, type Fil
 type ViewTab = 'brand' | 'files';
 
 const MediaLibraryPage: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { context } = useContextSwitcher();
   const orgId = (context as any)?.organisation?.id as string | undefined;
+
+  // Read tab from URL
+  const activeTab: ViewTab = (new URLSearchParams(location.search).get('tab') as ViewTab) || 'brand';
 
   // Brand assets
   const { assets: brandAssets, loading: brandLoading, error: brandError, fetchAssets } = useBrandAssets();
   // File assets
   const { files, loading: filesLoading, error: filesError, fetchFiles, getDownloadUrl } = useFileAssets();
 
-  const [activeTab, setActiveTab] = useState<ViewTab>('brand');
   const [categoryFilter, setCategoryFilter] = useState<AssetCategory>('all');
   const [fileTypeFilter, setFileTypeFilter] = useState<FileTypeFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const setActiveTab = (tab: ViewTab) => {
+    navigate(`/medialib?tab=${tab}`, { replace: true });
+    setSearchQuery('');
+  };
 
   // Fetch on mount when org is available
   useEffect(() => {
@@ -124,35 +134,8 @@ const MediaLibraryPage: React.FC = () => {
       <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
         <Stack direction="column" gap="4">
 
-          {/* Tab bar + search */}
+          {/* Search */}
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {/* Tabs */}
-            <div style={{ display: 'flex', gap: '4px', background: 'var(--app-surface)', border: '1px solid var(--app-border)', borderRadius: '8px', padding: '3px' }}>
-              <button
-                onClick={() => { setActiveTab('brand'); setSearchQuery(''); }}
-                style={{
-                  padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-                  fontWeight: 600, fontSize: '13px',
-                  backgroundColor: activeTab === 'brand' ? 'var(--color-primary, #3b82f6)' : 'transparent',
-                  color: activeTab === 'brand' ? '#fff' : 'inherit',
-                }}
-              >
-                Brand Assets ({brandAssets.length})
-              </button>
-              <button
-                onClick={() => { setActiveTab('files'); setSearchQuery(''); }}
-                style={{
-                  padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-                  fontWeight: 600, fontSize: '13px',
-                  backgroundColor: activeTab === 'files' ? 'var(--color-primary, #3b82f6)' : 'transparent',
-                  color: activeTab === 'files' ? '#fff' : 'inherit',
-                }}
-              >
-                Files ({files.length})
-              </button>
-            </div>
-
-            {/* Search */}
             <input
               type="text"
               value={searchQuery}

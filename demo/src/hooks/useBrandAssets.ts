@@ -143,8 +143,9 @@ export function useBrandAssets(): UseBrandAssetsReturn {
       });
 
       if (!profilesRes.ok) throw new Error(`Failed to load profiles: ${profilesRes.statusText}`);
-      const profilesData = await profilesRes.json();
-      const profiles: BrandProfile[] = Array.isArray(profilesData.results) ? profilesData.results : Array.isArray(profilesData) ? profilesData : [];
+      const profilesJson = await profilesRes.json();
+      // Envelope: { status, data: { results: [...] }, meta }
+      const profiles: BrandProfile[] = Array.isArray(profilesJson.data?.results) ? profilesJson.data.results : Array.isArray(profilesJson.data) ? profilesJson.data : Array.isArray(profilesJson.results) ? profilesJson.results : Array.isArray(profilesJson) ? profilesJson : [];
 
       if (profiles.length === 0) {
         setAssets([]);

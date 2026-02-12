@@ -128,13 +128,17 @@ export function useGenerationHistory(): UseGenerationHistoryReturn {
       ]);
 
       if (assetRes.ok) {
-        const data = await assetRes.json();
-        setAssetTemplates(Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : []);
+        const json = await assetRes.json();
+        // Envelope: { status, data: { templates: [...] }, meta }
+        const arr = Array.isArray(json.data?.templates) ? json.data.templates : Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.data) ? json.data : Array.isArray(json.templates) ? json.templates : [];
+        setAssetTemplates(arr);
       }
 
       if (contentRes.ok) {
-        const data = await contentRes.json();
-        setContentTemplates(Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : []);
+        const json = await contentRes.json();
+        // Envelope: { status, data: { results: [...] }, meta }
+        const arr = Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.data) ? json.data : Array.isArray(json.results) ? json.results : [];
+        setContentTemplates(arr);
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
@@ -157,8 +161,10 @@ export function useGenerationHistory(): UseGenerationHistoryReturn {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        setHistory(Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : []);
+        const json = await res.json();
+        // Envelope: { status, data: { history: [...] }, meta }
+        const arr = Array.isArray(json.data?.history) ? json.data.history : Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.data) ? json.data : Array.isArray(json.history) ? json.history : [];
+        setHistory(arr);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load history');

@@ -13,7 +13,7 @@
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button, Card, Badge, Alert, Stack, Text } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
@@ -29,14 +29,21 @@ type Tab = 'templates' | 'history' | 'actions';
 
 export default function AIStudioPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { context } = useContextSwitcher();
   const orgId = (context as any)?.organisation?.id as string | undefined;
 
   const { assetTemplates, contentTemplates, history, loading, error, fetchTemplates, fetchHistory } = useGenerationHistory();
 
-  const [activeTab, setActiveTab] = useState<Tab>('templates');
+  // Read tab from URL
+  const activeTab: Tab = (new URLSearchParams(location.search).get('tab') as Tab) || 'templates';
   const [templateFilter, setTemplateFilter] = useState<TemplateCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const setActiveTab = (tab: Tab) => {
+    navigate(`/studio?tab=${tab}`, { replace: true });
+    setSearchQuery('');
+  };
 
   useEffect(() => {
     fetchTemplates(orgId);
@@ -129,28 +136,6 @@ export default function AIStudioPage() {
       {/* Content */}
       <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
         <Stack direction="column" gap="4">
-
-          {/* Tab bar */}
-          <div style={{ display: 'flex', gap: '4px', background: 'var(--app-surface)', border: '1px solid var(--app-border)', borderRadius: '8px', padding: '3px', alignSelf: 'flex-start' }}>
-            {([
-              { key: 'templates' as Tab, label: `Templates (${allTemplates.length})` },
-              { key: 'history' as Tab, label: `History (${history.length})` },
-              { key: 'actions' as Tab, label: 'Quick Actions' },
-            ]).map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => { setActiveTab(tab.key); setSearchQuery(''); }}
-                style={{
-                  padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-                  fontWeight: 600, fontSize: '13px',
-                  backgroundColor: activeTab === tab.key ? 'var(--color-primary, #3b82f6)' : 'transparent',
-                  color: activeTab === tab.key ? '#fff' : 'inherit',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
 
           {error && <Alert variant="error">{error}</Alert>}
 
