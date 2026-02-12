@@ -592,9 +592,64 @@ const MediaLibraryPage: React.FC = () => {
 
       // Step 2: Fetch ALL assets in one bulk call (instead of 99+ separate calls)
       // New organisation_scope filter on assets endpoint returns all assets with profile metadata
-      const allAssets = await fetchPaginated<BrandAsset>(
-        `${apiBaseUrl}/api/v1/branding/assets/?organisation_scope=${orgId}&page_size=500`,
-      );
+      let allAssets: BrandAsset[] = [];
+      try {
+        const bulkUrl = `${apiBaseUrl}/api/v1/branding/assets/?organisation_scope=${orgId}&page_size=500`;
+        console.log('[MediaLib] Fetching bulk assets from:', bulkUrl);
+        const bulkRes = await fetch(bulkUrl, { credentials: 'include' });
+        console.log('[MediaLib] Bulk assets response status:', bulkRes.status);
+
+        if (bulkRes.ok) {
+          const bulkJson = await bulkRes.json();
+          console.log('[MediaLib] Bulk assets raw response keys:', Object.keys(bulkJson));
+          allAssets = Array.isArray(bulkJson.data?.results) ? bulkJson.data.results
+            : Array.isArray(bulkJson.data) ? bulkJson.data
+            : Array.isArray(bulkJson.results) ? bulkJson.results
+            : Array.isArray(bulkJson) ? bulkJson : [];
+          console.log('[MediaLib] Bulk assets parsed count:', allAssets.length);
+        }
+      } catch (bulkErr) {
+        console.warn('[MediaLib] Bulk assets fetch failed, using fallback:', bulkErr);
+      }
+
+      // Fallback: if bulk endpoint returned 0 assets, fetch per-profile (old method)
+      if (allAssets.length === 0 && allProfiles.length > 0) {
+        console.log('[MediaLib] Using fallback: fetching assets per profile');
+        // Rate-limited: process in batches of 10
+        const BATCH_SIZE = 10;
+        for (let i = 0; i < allProfiles.length; i += BATCH_SIZE) {
+          const batch = allProfiles.slice(i, i + BATCH_SIZE);
+          const batchResults = await Promise.all(
+            batch.map(async (profile: any) => {
+              try {
+                const res = await fetch(
+                  `${apiBaseUrl}/api/v1/branding/profiles/${profile.id}/assets/?page_size=100`,
+                  { credentials: 'include' }
+                );
+                if (!res.ok) return [];
+                const json = await res.json();
+                const assets: BrandAsset[] = Array.isArray(json.data?.results) ? json.data.results
+                  : Array.isArray(json.data) ? json.data
+                  : Array.isArray(json.results) ? json.results
+                  : Array.isArray(json) ? json : [];
+                return assets.map((a: BrandAsset) => ({
+                  ...a,
+                  profile_name: profile.name,
+                  project_id: profile.project ? String(profile.project) : null,
+                  project_name: profile.project_name ?? null,
+                  project_type: profile.project_type ?? null,
+                  parent_project_id: profile.parent_project_id ? String(profile.parent_project_id) : null,
+                  organisation_name: profile.organisation_name ?? null,
+                }));
+              } catch {
+                return [];
+              }
+            })
+          );
+          allAssets.push(...batchResults.flat());
+        }
+        console.log('[MediaLib] Fallback fetched:', allAssets.length, 'assets');
+      }
 
       // Log asset breakdown by hierarchy level
       const orgAssets = allAssets.filter((a: any) => a.project_type === null || a.project_type === undefined);
