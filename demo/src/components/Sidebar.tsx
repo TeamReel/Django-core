@@ -815,8 +815,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             if (path === '/medialib' || path.startsWith('/medialib')) {
                 title = 'Media Library';
                 items = [
-                    { label: 'Brand Assets', path: '/medialib?tab=brand', icon: Palette },
-                    { label: 'Files', path: '/medialib?tab=files', icon: Folder },
+                    { label: 'All Brand Assets', path: '/medialib?tab=brand', icon: Palette },
+                    { label: 'Logos', path: '/medialib?tab=brand_logos', icon: Shield },
+                    { label: 'Kits', path: '/medialib?tab=brand_kits', icon: Shirt },
+                    { label: 'Member Assets', path: '/medialib?tab=brand_members', icon: UserCircle },
+                    { label: 'All Files', path: '/medialib?tab=files', icon: Folder },
+                    { label: 'Videos', path: '/medialib?tab=files_video', icon: Video },
+                    { label: 'Images', path: '/medialib?tab=files_image', icon: Palette },
                 ];
             } else if (path === '/studio' && !path.startsWith('/studio/')) {
                 title = 'AI Studio';
@@ -825,8 +830,25 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'History', path: '/studio?tab=history', icon: Timer },
                     { label: 'Quick Actions', path: '/studio?tab=actions', icon: Sparkles },
                 ];
+            } else if (path === '/studio/videos' || path.startsWith('/studio/videos')) {
+                title = 'Video Queue';
+                items = [
+                    { label: 'All Jobs', path: '/studio/videos?tab=all', icon: Video },
+                    { label: 'Processing', path: '/studio/videos?tab=processing', icon: Activity },
+                    { label: 'Completed', path: '/studio/videos?tab=completed', icon: ClipboardCheck },
+                    { label: 'Failed', path: '/studio/videos?tab=failed', icon: Flag },
+                ];
+            } else if (path === '/approvals' || path.startsWith('/approvals')) {
+                title = 'Approvals';
+                items = [
+                    { label: 'All', path: '/approvals?tab=all', icon: ClipboardCheck },
+                    { label: 'Needs Review', path: '/approvals?tab=review', icon: Flag },
+                    { label: 'In Progress', path: '/approvals?tab=active', icon: Activity },
+                    { label: 'Approved', path: '/approvals?tab=completed', icon: ClipboardCheck },
+                    { label: 'Rejected', path: '/approvals?tab=rejected', icon: Shield },
+                ];
             } else {
-                // Fallback for other content pages (video queue, approvals)
+                // Fallback for other content pages
                 title = 'Content';
                 items = [
                     { label: 'Media Library', path: '/medialib', icon: Library },
@@ -1375,6 +1397,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     location.pathname === '/directory' ? 'federations' :
                                     location.pathname === '/medialib' ? 'brand' :
                                     location.pathname === '/studio' ? 'templates' :
+                                    location.pathname === '/studio/videos' ? 'all' :
+                                    location.pathname === '/approvals' ? 'all' :
                                     'overview'
                                 );
                                 const effectiveItemTab = itemTab || 'overview';

@@ -6,7 +6,7 @@
  * Sidebar: CONTENT section
  */
 import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import {
   useWorkflowInstances,
@@ -72,7 +72,13 @@ function sortPriority(a: WorkflowInstance, b: WorkflowInstance): number {
 
 export default function ApprovalsPage() {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<FilterState>('all');
+  const location = useLocation();
+  // Read filter from URL ?tab= (set by sidebar Panel B)
+  const rawTab = new URLSearchParams(location.search).get('tab') || 'all';
+  const filter: FilterState = (['all', 'review', 'active', 'completed', 'rejected'] as const).includes(rawTab as FilterState)
+    ? (rawTab as FilterState)
+    : 'all';
+  const setFilter = (f: FilterState) => navigate(`/approvals?tab=${f}`, { replace: true });
   const [actionError, setActionError] = useState<string | null>(null);
 
   const { instances, loading, error, refresh } = useWorkflowInstances({ page_size: 100 });

@@ -134,18 +134,31 @@ export function useBrandAssets(): UseBrandAssetsReturn {
     try {
       const base = getApiBaseUrl();
 
-      // Step 1: Get brand profiles for this organisation
-      const profilesUrl = `${base}/api/v1/branding/profiles/?organisation=${orgId}`;
-      const profilesRes = await fetch(profilesUrl, {
-        headers: getHeaders(),
-        credentials: 'include',
-        signal: controller.signal,
-      });
+      /** Fetch all pages from a paginated envelope endpoint */
+      const fetchAllPages = async <T,>(url: string, signal: AbortSignal): Promise<T[]> => {
+        const all: T[] = [];
+        let nextUrl: string | null = url;
+        while (nextUrl) {
+          const res = await fetch(nextUrl, { headers: getHeaders(), credentials: 'include', signal });
+          if (!res.ok) break;
+          const json = await res.json();
+          // Handle envelope formats
+          const items: T[] = Array.isArray(json.data?.results) ? json.data.results
+            : Array.isArray(json.data) ? json.data
+            : Array.isArray(json.results) ? json.results
+            : Array.isArray(json) ? json : [];
+          all.push(...items);
+          // Next page URL
+          nextUrl = json.data?.next || json.meta?.pagination?.next || json.next || null;
+        }
+        return all;
+      };
 
-      if (!profilesRes.ok) throw new Error(`Failed to load profiles: ${profilesRes.statusText}`);
-      const profilesJson = await profilesRes.json();
-      // Envelope: { status, data: { results: [...] }, meta }
-      const profiles: BrandProfile[] = Array.isArray(profilesJson.data?.results) ? profilesJson.data.results : Array.isArray(profilesJson.data) ? profilesJson.data : Array.isArray(profilesJson.results) ? profilesJson.results : Array.isArray(profilesJson) ? profilesJson : [];
+      // Step 1: Get ALL brand profiles for this organisation (paginated)
+      const profiles = await fetchAllPages<BrandProfile>(
+        `${base}/api/v1/branding/profiles/?organisation=${orgId}&page_size=100`,
+        controller.signal,
+      );
 
       if (profiles.length === 0) {
         setAssets([]);
@@ -154,18 +167,10 @@ export function useBrandAssets(): UseBrandAssetsReturn {
 
       // Step 2: Get assets for each profile in parallel
       const assetPromises = profiles.map(async (profile) => {
-        let url = `${base}/api/v1/branding/profiles/${profile.id}/assets/`;
-        if (category && category !== 'all') {
-          // Filter by asset_type prefix on client-side (API only supports exact asset_type match)
-        }
-        const res = await fetch(url, {
-          headers: getHeaders(),
-          credentials: 'include',
-          signal: controller.signal,
-        });
-        if (!res.ok) return [];
-        const data = await res.json();
-        const items: BrandAsset[] = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
+        const items = await fetchAllPages<BrandAsset>(
+          `${base}/api/v1/branding/profiles/${profile.id}/assets/?page_size=100`,
+          controller.signal,
+        );
         // Enrich with profile name
         return items.map((a) => ({
           ...a,

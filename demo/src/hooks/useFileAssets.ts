@@ -93,19 +93,23 @@ export function useFileAssets(): UseFileAssetsReturn {
 
     try {
       const base = getApiBaseUrl();
-      const url = `${base}/api/v1/files/`;
 
-      const res = await fetch(url, {
-        headers: getHeaders(orgId),
-        credentials: 'include',
-        signal: controller.signal,
-      });
-
-      if (!res.ok) throw new Error(`Failed to load files: ${res.statusText}`);
-      const json = await res.json();
-      // Envelope: { status, data: [...], meta: { pagination } }
-      const arr = Array.isArray(json.data) ? json.data : Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.results) ? json.results : Array.isArray(json) ? json : [];
-      setFiles(arr);
+      // Fetch all pages (files API uses BaseAPIPagination: { data: [...], meta: { pagination: { next } } })
+      const all: FileAsset[] = [];
+      let nextUrl: string | null = `${base}/api/v1/files/?page_size=100`;
+      while (nextUrl) {
+        const res = await fetch(nextUrl, {
+          headers: getHeaders(orgId),
+          credentials: 'include',
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`Failed to load files: ${res.statusText}`);
+        const json = await res.json();
+        const arr = Array.isArray(json.data) ? json.data : Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.results) ? json.results : [];
+        all.push(...arr);
+        nextUrl = json.meta?.pagination?.next || json.data?.next || json.next || null;
+      }
+      setFiles(all);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         setError(err.message || 'Failed to load files');

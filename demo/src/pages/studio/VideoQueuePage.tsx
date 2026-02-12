@@ -8,6 +8,7 @@
  * Sidebar: CONTENT section
  */
 import { useState, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
@@ -223,9 +224,16 @@ function JobCard({
 
 export default function VideoQueuePage() {
   const { context } = useContextSwitcher();
+  const location = useLocation();
+  const navigate = useNavigate();
   const projectId = context.project?.id;
 
-  const [filter, setFilter] = useState<FilterStatus>('all');
+  // Read filter from URL ?tab= (set by sidebar Panel B)
+  const rawTab = new URLSearchParams(location.search).get('tab') || 'all';
+  const filter: FilterStatus = (['all', 'queued', 'processing', 'completed', 'failed', 'cancelled'] as const).includes(rawTab as FilterStatus)
+    ? (rawTab as FilterStatus)
+    : 'all';
+  const setFilter = (f: FilterStatus) => navigate(`/studio/videos?tab=${f}`, { replace: true });
 
   const { jobs, loading, error, refresh, cancelJob, retryJob } = useVideoJobs({
     projectId: projectId || 0,

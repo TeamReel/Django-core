@@ -19,27 +19,47 @@ import { useFileAssets, getFileIcon, formatFileSize, getFileTypeFilter, type Fil
 
 type ViewTab = 'brand' | 'files';
 
+/** Parse compound tab values from Panel B sidebar (e.g. brand_logos → brand + logo) */
+function parseTab(raw: string): { base: ViewTab; category: AssetCategory; fileType: FileTypeFilter } {
+  switch (raw) {
+    case 'brand_logos':   return { base: 'brand', category: 'logo', fileType: 'all' };
+    case 'brand_kits':    return { base: 'brand', category: 'kit', fileType: 'all' };
+    case 'brand_members': return { base: 'brand', category: 'other', fileType: 'all' };
+    case 'files_video':   return { base: 'files', category: 'all', fileType: 'video' };
+    case 'files_image':   return { base: 'files', category: 'all', fileType: 'image' };
+    case 'files':         return { base: 'files', category: 'all', fileType: 'all' };
+    default:              return { base: 'brand', category: 'all', fileType: 'all' };
+  }
+}
+
 const MediaLibraryPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { context } = useContextSwitcher();
   const orgId = (context as any)?.organisation?.id as string | undefined;
 
-  // Read tab from URL
-  const activeTab: ViewTab = (new URLSearchParams(location.search).get('tab') as ViewTab) || 'brand';
+  // Read tab from URL — supports both simple (brand, files) and compound (brand_logos, files_video)
+  const rawTab = new URLSearchParams(location.search).get('tab') || 'brand';
+  const parsed = parseTab(rawTab);
+  const activeTab: ViewTab = parsed.base;
 
   // Brand assets
   const { assets: brandAssets, loading: brandLoading, error: brandError, fetchAssets } = useBrandAssets();
   // File assets
   const { files, loading: filesLoading, error: filesError, fetchFiles, getDownloadUrl } = useFileAssets();
 
-  const [categoryFilter, setCategoryFilter] = useState<AssetCategory>('all');
-  const [fileTypeFilter, setFileTypeFilter] = useState<FileTypeFilter>('all');
+  const [categoryFilter, setCategoryFilter] = useState<AssetCategory>(parsed.category);
+  const [fileTypeFilter, setFileTypeFilter] = useState<FileTypeFilter>(parsed.fileType);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const setActiveTab = (tab: ViewTab) => {
-    navigate(`/medialib?tab=${tab}`, { replace: true });
-    setSearchQuery('');
+  // Sync filters when URL tab changes (e.g. clicking Panel B sidebar item)
+  useEffect(() => {
+    setCategoryFilter(parsed.category);
+    setFileTypeFilter(parsed.fileType);
+  }, [rawTab]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const setActiveTab = (_tab: ViewTab) => {
+    // Not used anymore — tab switching happens via sidebar Panel B
   };
 
   // Fetch on mount when org is available
