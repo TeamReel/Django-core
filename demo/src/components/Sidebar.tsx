@@ -503,6 +503,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Competitions', path: makeOrgSectionUrl(orgId, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeOrgSectionUrl(orgId, 'matches'), icon: Timer },
                     { label: 'Members', path: makeOrgSectionUrl(orgId, 'users'), icon: Users },
+                    { label: 'Workflow', path: makeOrgSectionUrl(orgId, 'workflow'), icon: ClipboardCheck },
                     { label: 'Identity', path: makeOrgSectionUrl(orgId, 'identity'), icon: Palette },
                     { label: 'Settings', path: makeOrgSectionUrl(orgId, 'settings'), icon: Settings },
                 ];
@@ -526,6 +527,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                         { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
                         { label: 'Members', path: makeTabUrl(baseUrl, 'users'), icon: Users },
+                        { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
                         { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                         { label: 'Audit', path: makeTabUrl(baseUrl, 'audit'), icon: Scroll },
                         { label: 'Governance', path: makeTabUrl(baseUrl, 'governance'), icon: BookOpen },
@@ -543,6 +545,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 title = 'User';
                 items = [
                     { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Fingerprint },
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
                     { label: 'Federations', path: makeTabUrl(baseUrl, 'federations'), icon: Globe },
@@ -578,6 +581,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
+                    { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                     { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
                 ];
@@ -603,6 +607,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                     { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                    { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                     { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
                     { label: 'Settings', path: makeTabUrl(baseUrl, 'settings'), icon: Settings },
@@ -629,6 +634,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                     { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
+                    { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
@@ -661,6 +667,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                         { label: 'Celebration', path: makeTabUrl(baseUrl, 'celebration'), icon: Trophy },
                                         { label: 'Legacy in Tenue', path: makeTabUrl(baseUrl, 'legacy'), icon: Trophy },
                                         { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
+                                        { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
                                         { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Fingerprint },
                                     ];
                                     break;
@@ -696,6 +703,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                     { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
+                    { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
@@ -722,6 +730,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                                     { label: 'Details', path: makeTabUrl(baseUrl, 'details'), icon: Globe },
                                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
+                                    { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
                                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                                 ];
                                 break;
@@ -746,6 +755,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                     { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
+                    { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
                     { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
@@ -812,6 +822,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             items = [
                 { label: 'Library', path: '/content', icon: Library },
                 { label: 'AI Studio', path: '/studio', icon: Sparkles },
+                { label: 'Approvals', path: '/approvals', icon: ClipboardCheck },
             ];
             break;
 
@@ -824,6 +835,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 { label: 'During Match', path: '/content-templates?tab=during_match', icon: Sparkles },
                 { label: 'Post-Match', path: '/content-templates?tab=post_match', icon: Trophy },
                 { label: 'Member', path: '/content-templates?tab=member', icon: UserCircle },
+                { label: 'Workflows', path: '/workflow-templates', icon: GitBranch },
             ];
             break;
 
