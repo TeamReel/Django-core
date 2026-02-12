@@ -540,7 +540,7 @@ const MediaLibraryPage: React.FC = () => {
     setSearchQuery('');
   }, [activeLevel]);
 
-  // Comprehensive asset fetching: ALL brand profiles in organisation scope (org + project profiles)
+  // Comprehensive asset fetching: ALL brand assets in organisation scope (single API call)
   const fetchAllBrandAssets = useCallback(async () => {
     if (!orgId || !orgSlug) return;
 
@@ -571,7 +571,7 @@ const MediaLibraryPage: React.FC = () => {
         return all;
       };
 
-      // Step 1: Fetch ALL brand profiles in organisation scope (org + all project profiles)
+      // Step 1: Fetch ALL brand profiles (still needed for profile count breakdown)
       // Uses new organisation_scope filter that returns both org-level AND project-level profiles
       const allProfiles = await fetchPaginated<any>(
         `${apiBaseUrl}/api/v1/branding/profiles/?organisation_scope=${orgId}&page_size=500`,
@@ -590,29 +590,11 @@ const MediaLibraryPage: React.FC = () => {
         team: teamProfiles.length,
       });
 
-      // Step 2: Fetch assets for each profile (still needs multiple calls but much fewer)
-      const assetPromises = allProfiles.map(async (profile: any) => {
-        try {
-          const assets = await fetchPaginated<BrandAsset>(
-            `${apiBaseUrl}/api/v1/branding/profiles/${profile.id}/assets/?page_size=100`,
-          );
-          return assets.map((a: BrandAsset) => ({
-            ...a,
-            profile_name: profile.name,
-            // Profile already includes these from serializer
-            project_id: profile.project ? String(profile.project) : null,
-            project_name: profile.project_name ?? null,
-            project_type: profile.project_type ?? null,  // null=org, 'club', 'team'
-            parent_project_id: profile.parent_project_id ? String(profile.parent_project_id) : null,
-            organisation_name: profile.organisation_name ?? null,
-          }));
-        } catch (err) {
-          console.warn('[MediaLib] Failed to fetch assets for profile:', profile.id, err);
-          return [];
-        }
-      });
-
-      const allAssets = (await Promise.all(assetPromises)).flat();
+      // Step 2: Fetch ALL assets in one bulk call (instead of 99+ separate calls)
+      // New organisation_scope filter on assets endpoint returns all assets with profile metadata
+      const allAssets = await fetchPaginated<BrandAsset>(
+        `${apiBaseUrl}/api/v1/branding/assets/?organisation_scope=${orgId}&page_size=500`,
+      );
 
       // Log asset breakdown by hierarchy level
       const orgAssets = allAssets.filter((a: any) => a.project_type === null || a.project_type === undefined);
@@ -671,24 +653,40 @@ const MediaLibraryPage: React.FC = () => {
       // Fetch memberships for each team (with metadata containing assets)
       const memberAssets: MemberMediaItem[] = [];
 
-      // Batch fetch memberships for all teams (limit concurrency to avoid overwhelming)
+      // Rate-limited batch fetch to avoid overwhelming the backend
+      // Process in batches of 5 concurrent requests
+      const BATCH_SIZE = 5;
       let failedTeamCount = 0;
-      const membershipPromises = teamProjects.map(async (team: any) => {
-        try {
-          const memberships = await fetchPaginated<any>(
-            `${apiBaseUrl}/api/v1/projects/${team.id}/members/?page_size=200`,
-          );
-          return memberships.map((m: any) => ({
-            membership: m,
-            team,
-          }));
-        } catch {
-          failedTeamCount++;
-          return [];
-        }
-      });
+      const allMembershipData: { membership: any; team: any }[] = [];
 
-      const allMembershipData = (await Promise.all(membershipPromises)).flat();
+      for (let i = 0; i < teamProjects.length; i += BATCH_SIZE) {
+        const batch = teamProjects.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.all(
+          batch.map(async (team: any) => {
+            try {
+              const res = await fetch(
+                `${apiBaseUrl}/api/v1/projects/${team.id}/members/?page_size=200`,
+                { credentials: 'include' }
+              );
+              if (!res.ok) {
+                failedTeamCount++;
+                return [];
+              }
+              const json = await res.json();
+              const memberships: any[] = Array.isArray(json.data?.results) ? json.data.results
+                : Array.isArray(json.data) ? json.data
+                : Array.isArray(json.results) ? json.results
+                : Array.isArray(json) ? json : [];
+              return memberships.map((m: any) => ({ membership: m, team }));
+            } catch {
+              failedTeamCount++;
+              return [];
+            }
+          })
+        );
+        allMembershipData.push(...batchResults.flat());
+      }
+
       console.log('[MediaLib] Total memberships fetched:', allMembershipData.length,
         failedTeamCount > 0 ? `(${failedTeamCount} teams failed)` : '');
 

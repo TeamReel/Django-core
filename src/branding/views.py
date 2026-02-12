@@ -28,7 +28,7 @@ class BrandPagination(PageNumberPagination):
 
     page_size = 20
     page_size_query_param = "page_size"
-    max_page_size = 100
+    max_page_size = 500  # Increased for bulk fetching with organisation_scope
 
 
 class BrandProfileViewSet(viewsets.ModelViewSet):
@@ -170,7 +170,8 @@ class DesignTokenViewSet(viewsets.ModelViewSet):
 class BrandAssetViewSet(viewsets.ModelViewSet):
     """CRUD operations for BrandAsset.
 
-    Nested under BrandProfile. All operations are scoped to a specific profile.
+    Can be nested under BrandProfile (via profile_pk kwarg) or accessed
+    at top level with organisation_scope filter for bulk fetching.
     """
 
     serializer_class = BrandAssetSerializer
@@ -178,14 +179,45 @@ class BrandAssetViewSet(viewsets.ModelViewSet):
     permission_classes = [BrandAssetPermission]
 
     def get_queryset(self):
-        """Get assets for specific profile with optional filters.
+        """Get assets with flexible filtering.
 
         Supported filters:
+        - profile_pk (from URL): Scope to specific profile (nested route)
+        - organisation_scope: UUID or slug - returns ALL assets for all profiles
+          in the organisation (org profiles + project profiles)
         - asset_type: Type of asset (logo, watermark, favicon, etc.)
         - is_active: Boolean string ('true'/'false')
         """
+        from django.db.models import Q
+
         profile_id = self.kwargs.get("profile_pk")
-        qs = BrandAsset.objects.filter(profile_id=profile_id)
+
+        if profile_id:
+            # Nested route - scope to specific profile
+            qs = BrandAsset.objects.filter(profile_id=profile_id)
+        else:
+            # Top-level route - require organisation_scope for bulk fetch
+            org_scope_param = self.request.query_params.get("organisation_scope")
+            if org_scope_param:
+                # Filter assets where profile belongs to org OR project in org
+                try:
+                    import uuid
+
+                    uuid.UUID(org_scope_param)
+                    # UUID - filter by ID
+                    qs = BrandAsset.objects.filter(
+                        Q(profile__organisation_id=org_scope_param)
+                        | Q(profile__project__organisation_id=org_scope_param)
+                    )
+                except (ValueError, AttributeError):
+                    # Slug - filter by slug
+                    qs = BrandAsset.objects.filter(
+                        Q(profile__organisation__slug=org_scope_param)
+                        | Q(profile__project__organisation__slug=org_scope_param)
+                    )
+            else:
+                # No scope provided - return empty to prevent full table scan
+                qs = BrandAsset.objects.none()
 
         # Filter by asset_type
         asset_type = self.request.query_params.get("asset_type")
@@ -197,7 +229,14 @@ class BrandAssetViewSet(viewsets.ModelViewSet):
         if is_active is not None:
             qs = qs.filter(is_active=is_active.lower() == "true")
 
-        return qs.select_related("profile", "file")
+        return qs.select_related(
+            "profile",
+            "profile__organisation",
+            "profile__project",
+            "profile__project__organisation",
+            "profile__project__parent_project",
+            "file",
+        )
 
 
 class TokenResolutionView(APIView):

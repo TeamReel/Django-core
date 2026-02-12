@@ -301,11 +301,19 @@ class BrandAssetSerializer(serializers.ModelSerializer):
     """Serializer for BrandAsset with File relationship.
 
     Provides brand asset information with computed file details from B22
-    FileAsset integration.
+    FileAsset integration. When fetched via organisation_scope, includes
+    profile metadata for hierarchy grouping.
     """
 
     file_details = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField()
+    # Profile metadata for bulk fetching (organisation_scope)
+    profile_name = serializers.SerializerMethodField()
+    project_id = serializers.SerializerMethodField()
+    project_name = serializers.SerializerMethodField()
+    project_type = serializers.SerializerMethodField()
+    parent_project_id = serializers.SerializerMethodField()
+    organisation_name = serializers.SerializerMethodField()
 
     class Meta:
         model = BrandAsset
@@ -318,10 +326,66 @@ class BrandAssetSerializer(serializers.ModelSerializer):
             "is_active",
             "file_details",
             "url",
+            # Profile metadata fields
+            "profile_name",
+            "project_id",
+            "project_name",
+            "project_type",
+            "parent_project_id",
+            "organisation_name",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "file_details", "url"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "file_details",
+            "url",
+            "profile_name",
+            "project_id",
+            "project_name",
+            "project_type",
+            "parent_project_id",
+            "organisation_name",
+        ]
+
+    def get_profile_name(self, obj: BrandAsset) -> str | None:
+        """Return profile name."""
+        return obj.profile.name if obj.profile else None
+
+    def get_project_id(self, obj: BrandAsset) -> str | None:
+        """Return project ID if profile is linked to a project."""
+        if obj.profile and obj.profile.project:
+            return str(obj.profile.project.id)
+        return None
+
+    def get_project_name(self, obj: BrandAsset) -> str | None:
+        """Return project name if profile is linked to a project."""
+        if obj.profile and obj.profile.project:
+            return obj.profile.project.name
+        return None
+
+    def get_project_type(self, obj: BrandAsset) -> str | None:
+        """Return project type (club/team) if profile is linked to a project."""
+        if obj.profile and obj.profile.project:
+            return obj.profile.project.project_type
+        return None
+
+    def get_parent_project_id(self, obj: BrandAsset) -> str | None:
+        """Return parent project ID if available."""
+        if obj.profile and obj.profile.project and obj.profile.project.parent_project:
+            return str(obj.profile.project.parent_project.id)
+        return None
+
+    def get_organisation_name(self, obj: BrandAsset) -> str | None:
+        """Return organisation name."""
+        if obj.profile:
+            if obj.profile.organisation:
+                return obj.profile.organisation.name
+            if obj.profile.project and obj.profile.project.organisation:
+                return obj.profile.project.organisation.name
+        return None
 
     def get_file_details(self, obj: BrandAsset) -> dict | None:
         """Return file metadata from B22 FileAsset.
