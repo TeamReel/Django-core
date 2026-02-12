@@ -59,13 +59,36 @@ class BrandProfileViewSet(viewsets.ModelViewSet):
         """Filter queryset by query parameters.
 
         Supported filters:
-        - organisation: UUID or slug of organisation
+        - organisation: UUID or slug of organisation (direct org profiles only)
+        - organisation_scope: UUID or slug - returns BOTH org profiles AND project profiles
+          for all projects belonging to that organisation
         - project: ID (integer), UUID, or slug of project
         - is_active: Boolean string ('true'/'false')
         """
+        from django.db.models import Q
+
         qs = super().get_queryset()
 
-        # Filter by organisation (supports UUID and slug)
+        # Filter by organisation_scope (includes org profiles AND project profiles)
+        org_scope_param = self.request.query_params.get("organisation_scope")
+        if org_scope_param:
+            # Build Q filter for: organisation=X OR project__organisation=X
+            try:
+                import uuid
+
+                uuid.UUID(org_scope_param)
+                # UUID - filter by ID
+                qs = qs.filter(
+                    Q(organisation_id=org_scope_param) | Q(project__organisation_id=org_scope_param)
+                )
+            except (ValueError, AttributeError):
+                # Slug - filter by slug
+                qs = qs.filter(
+                    Q(organisation__slug=org_scope_param)
+                    | Q(project__organisation__slug=org_scope_param)
+                )
+
+        # Filter by organisation (direct org profiles only - supports UUID and slug)
         org_param = self.request.query_params.get("organisation")
         if org_param:
             # Try UUID first, fallback to slug lookup

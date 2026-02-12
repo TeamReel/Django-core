@@ -22,6 +22,7 @@ class BrandProfileSerializer(serializers.ModelSerializer):
     can_edit = serializers.SerializerMethodField()
     project_name = serializers.SerializerMethodField()
     project_type = serializers.SerializerMethodField()
+    parent_project_id = serializers.SerializerMethodField()
     organisation_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -33,6 +34,7 @@ class BrandProfileSerializer(serializers.ModelSerializer):
             "project",
             "project_name",
             "project_type",
+            "parent_project_id",
             "name",
             "is_active",
             "token_count",
@@ -52,6 +54,7 @@ class BrandProfileSerializer(serializers.ModelSerializer):
             "can_edit",
             "project_name",
             "project_type",
+            "parent_project_id",
             "organisation_name",
         ]
 
@@ -65,20 +68,46 @@ class BrandProfileSerializer(serializers.ModelSerializer):
 
     def get_project_name(self, obj: BrandProfile) -> str | None:
         """Return the project name if profile is project-scoped."""
-        return obj.project.name if obj.project_id else None
+        if not obj.project_id:
+            return None
+        # Safely access project (may be None if FK is broken)
+        try:
+            return obj.project.name if obj.project else None
+        except Exception:
+            return None
 
     def get_project_type(self, obj: BrandProfile) -> str | None:
         """Return the hierarchy level: 'club' (root project) or 'team' (child)."""
         if not obj.project_id:
             return None
-        return "team" if obj.project.parent_project_id else "club"
+        # Safely access project (may be None if FK is broken)
+        try:
+            if not obj.project:
+                return None
+            return "team" if obj.project.parent_project_id else "club"
+        except Exception:
+            return None
+
+    def get_parent_project_id(self, obj: BrandProfile) -> int | None:
+        """Return the parent project ID for team-level profiles (for club filtering)."""
+        if not obj.project_id:
+            return None
+        try:
+            if not obj.project:
+                return None
+            return obj.project.parent_project_id
+        except Exception:
+            return None
 
     def get_organisation_name(self, obj: BrandProfile) -> str | None:
         """Return the organisation name if available."""
-        if obj.organisation_id:
-            return obj.organisation.name if obj.organisation else None
-        if obj.project_id and obj.project.organisation_id:
-            return obj.project.organisation.name if obj.project.organisation else None
+        try:
+            if obj.organisation_id:
+                return obj.organisation.name if obj.organisation else None
+            if obj.project_id and obj.project and obj.project.organisation_id:
+                return obj.project.organisation.name if obj.project.organisation else None
+        except Exception:
+            pass
         return None
 
     def get_can_edit(self, obj: BrandProfile) -> bool:

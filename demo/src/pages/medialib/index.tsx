@@ -515,7 +515,7 @@ const MediaLibraryPage: React.FC = () => {
     setSearchQuery('');
   }, [activeLevel]);
 
-  // Comprehensive asset fetching: org-level + ALL project-level brand profiles
+  // Comprehensive asset fetching: ALL brand profiles in organisation scope (org + project profiles)
   const fetchAllBrandAssets = useCallback(async () => {
     if (!orgId || !orgSlug) return;
 
@@ -531,7 +531,10 @@ const MediaLibraryPage: React.FC = () => {
         let nextUrl: string | null = url;
         while (nextUrl) {
           const res = await fetch(nextUrl, { credentials: 'include' });
-          if (!res.ok) break;
+          if (!res.ok) {
+            console.warn('[MediaLib] Fetch failed:', url, res.status);
+            break;
+          }
           const json = await res.json();
           const items: T[] = Array.isArray(json.data?.results) ? json.data.results
             : Array.isArray(json.data) ? json.data
@@ -543,64 +546,26 @@ const MediaLibraryPage: React.FC = () => {
         return all;
       };
 
-      // Step 1: Fetch org-level brand profiles (no project attached)
-      const rawOrgProfiles = await fetchPaginated<any>(
-        `${apiBaseUrl}/api/v1/branding/profiles/?organisation=${orgId}&page_size=100`,
+      // Step 1: Fetch ALL brand profiles in organisation scope (org + all project profiles)
+      // Uses new organisation_scope filter that returns both org-level AND project-level profiles
+      const allProfiles = await fetchPaginated<any>(
+        `${apiBaseUrl}/api/v1/branding/profiles/?organisation_scope=${orgId}&page_size=500`,
       );
 
-      // Enrich org profiles - filter to only those without a project (true org-level)
-      const orgProfiles = rawOrgProfiles
-        .filter((p: any) => !p.project)  // Only keep profiles where project is null/undefined
-        .map((p: any) => ({
-          ...p,
-          project_id: null,
-          project_name: null,
-          project_type: null,  // Explicitly null for org-level
-          parent_project_id: null,
-        }));
+      console.log('[MediaLib] All brand profiles (organisation_scope):', allProfiles.length);
 
-      console.log('[MediaLib] Org-level brand profiles:', orgProfiles.length);
+      // Count by type (profile already has project_type from serializer)
+      const orgProfiles = allProfiles.filter((p: any) => !p.project);
+      const clubProfiles = allProfiles.filter((p: any) => p.project_type === 'club');
+      const teamProfiles = allProfiles.filter((p: any) => p.project_type === 'team');
 
-      // Step 2: Fetch ALL projects for this organisation (clubs + teams)
-      const allProjects = await fetchPaginated<any>(
-        `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000`,
-      );
-
-      // Separate clubs and teams - parent_id is returned by API (not parent_project)
-      const clubProjects = allProjects.filter((p: any) => !p.parent_id);
-      const teamProjects = allProjects.filter((p: any) => !!p.parent_id);
-      console.log('[MediaLib] Projects loaded:', { clubs: clubProjects.length, teams: teamProjects.length });
-
-      // Step 3: Fetch brand profiles for each project
-      const projectProfilePromises = allProjects.map(async (project: any) => {
-        try {
-          const profiles = await fetchPaginated<any>(
-            `${apiBaseUrl}/api/v1/branding/profiles/?project=${project.id}&page_size=100`,
-          );
-          // Check parent_id (API returns parent_id, not parent_project)
-          const isTeam = !!project.parent_id;
-          return profiles.map((p: any) => ({
-            ...p,
-            project_id: String(project.id),
-            project_name: project.name,
-            project_type: isTeam ? 'team' : 'club',
-            parent_project_id: project.parent_id ? String(project.parent_id) : null,
-          }));
-        } catch {
-          return [];
-        }
-      });
-
-      const projectProfiles = (await Promise.all(projectProfilePromises)).flat();
-      const allProfiles = [...orgProfiles, ...projectProfiles];
-
-      console.log('[MediaLib] Total brand profiles:', {
+      console.log('[MediaLib] Profiles by type:', {
         org: orgProfiles.length,
-        project: projectProfiles.length,
-        total: allProfiles.length,
+        club: clubProfiles.length,
+        team: teamProfiles.length,
       });
 
-      // Step 4: Fetch assets for each profile
+      // Step 2: Fetch assets for each profile (still needs multiple calls but much fewer)
       const assetPromises = allProfiles.map(async (profile: any) => {
         try {
           const assets = await fetchPaginated<BrandAsset>(
@@ -609,13 +574,15 @@ const MediaLibraryPage: React.FC = () => {
           return assets.map((a: BrandAsset) => ({
             ...a,
             profile_name: profile.name,
-            project_id: profile.project_id ?? null,
+            // Profile already includes these from serializer
+            project_id: profile.project ? String(profile.project) : null,
             project_name: profile.project_name ?? null,
-            project_type: profile.project_type ?? null,  // Explicit null for org-level
-            parent_project_id: profile.parent_project_id ?? null,
+            project_type: profile.project_type ?? null,  // null=org, 'club', 'team'
+            parent_project_id: profile.parent_project_id ? String(profile.parent_project_id) : null,
             organisation_name: profile.organisation_name ?? null,
           }));
-        } catch {
+        } catch (err) {
+          console.warn('[MediaLib] Failed to fetch assets for profile:', profile.id, err);
           return [];
         }
       });
@@ -623,7 +590,7 @@ const MediaLibraryPage: React.FC = () => {
       const allAssets = (await Promise.all(assetPromises)).flat();
 
       // Log asset breakdown by hierarchy level
-      const orgAssets = allAssets.filter((a: any) => a.project_type === null);
+      const orgAssets = allAssets.filter((a: any) => a.project_type === null || a.project_type === undefined);
       const clubAssets = allAssets.filter((a: any) => a.project_type === 'club');
       const teamAssets = allAssets.filter((a: any) => a.project_type === 'team');
       console.log('[MediaLib] Brand assets by level:', {
@@ -641,74 +608,18 @@ const MediaLibraryPage: React.FC = () => {
     }
   }, [orgId, orgSlug]);
 
-  // Fetch member media items (closeups, in_tenue, intro videos, celebration videos)
+  // Member media items - note: these are stored in membership.metadata, not MediaItems
+  // For now, we use BrandAssets with member_* prefix as a proxy
+  // Full member assets are available on individual member detail pages
   const fetchMemberMediaItems = useCallback(async () => {
-    if (!orgSlug) return;
-
-    setMemberMediaLoading(true);
-
-    try {
-      const apiBaseUrl = getApiBaseUrl();
-
-      // Helper to fetch all pages
-      const fetchPaginated = async <T,>(url: string): Promise<T[]> => {
-        const all: T[] = [];
-        let nextUrl: string | null = url;
-        while (nextUrl) {
-          const res = await fetch(nextUrl, { credentials: 'include' });
-          if (!res.ok) break;
-          const json = await res.json();
-          const items: T[] = Array.isArray(json.data?.results) ? json.data.results
-            : Array.isArray(json.data) ? json.data
-            : Array.isArray(json.results) ? json.results
-            : Array.isArray(json) ? json : [];
-          all.push(...items);
-          nextUrl = json.data?.next || json.meta?.pagination?.next || json.next || null;
-        }
-        return all;
-      };
-
-      // Fetch all projects first
-      const allProjects = await fetchPaginated<any>(
-        `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000`,
-      );
-
-      // Fetch media items for each project (teams have member assets)
-      const teamProjects = allProjects.filter((p: any) => !!p.parent_id);
-      const mediaPromises = teamProjects.map(async (team: any) => {
-        try {
-          const items = await fetchPaginated<any>(
-            `${apiBaseUrl}/api/v1/media/items/?project=${team.id}&page_size=500`,
-          );
-          // Filter to member-related asset types
-          return items.filter((item: any) => {
-            const assetType = item.extraction_metadata?.asset_type || '';
-            return assetType.startsWith('member_') ||
-                   assetType.includes('closeup') ||
-                   assetType.includes('in_tenue') ||
-                   assetType.includes('intro') ||
-                   assetType.includes('celebration') ||
-                   assetType.includes('profile') ||
-                   assetType === 'headshot';
-          }).map((item: any) => ({
-            ...item,
-            project_id: String(team.id),
-            project_name: team.name,
-          }));
-        } catch {
-          return [];
-        }
-      });
-
-      const memberItems = (await Promise.all(mediaPromises)).flat();
-      console.log('[MediaLib] Member media items loaded:', memberItems.length);
-      setMemberMedia(memberItems);
-    } catch (err) {
-      console.error('[MediaLib] Failed to fetch member media:', err);
-    } finally {
-      setMemberMediaLoading(false);
-    }
-  }, [orgSlug]);
+    // Member assets are not available via MediaItems API
+    // They are stored in membership.metadata.teamreel_assets
+    // For Media Library, we rely on BrandAssets with member_* types as fallback
+    // Set empty array - the actual display will use filteredMemberMedia which falls back to brandAssets
+    console.log('[MediaLib] Member media: using BrandAssets fallback (member_* types)');
+    setMemberMedia([]);
+    setMemberMediaLoading(false);
+  }, []);
 
   // Fetch assets on mount
   useEffect(() => {
