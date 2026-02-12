@@ -127,46 +127,6 @@ export default function ApprovalsPage() {
       />
 
       <PageContent>
-        {/* Filter bar */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-          {FILTER_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setFilter(opt.value)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                fontSize: 12,
-                fontWeight: filter === opt.value ? 600 : 400,
-                padding: '6px 12px',
-                borderRadius: 8,
-                border: `1px solid ${filter === opt.value ? 'var(--app-primary, #2563eb)' : 'var(--app-border, #e5e7eb)'}`,
-                backgroundColor: filter === opt.value ? 'var(--app-primary-light, #dbeafe)' : 'transparent',
-                color: filter === opt.value ? 'var(--app-primary, #2563eb)' : 'var(--app-text, #111)',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-              }}
-            >
-              <span>{opt.icon}</span>
-              <span>{opt.label}</span>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  backgroundColor: filter === opt.value ? 'var(--app-primary, #2563eb)' : 'var(--app-surface-2, #f3f4f6)',
-                  color: filter === opt.value ? '#fff' : 'var(--app-text-secondary, #6b7280)',
-                  borderRadius: 10,
-                  padding: '1px 6px',
-                  minWidth: 18,
-                  textAlign: 'center',
-                }}
-              >
-                {counts[opt.value]}
-              </span>
-            </button>
-          ))}
-        </div>
 
         {/* Error */}
         {(error || actionError) && (

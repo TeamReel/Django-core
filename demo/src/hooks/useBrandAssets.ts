@@ -26,6 +26,9 @@ export interface BrandAsset {
   id: string;
   profile: string;
   profile_name?: string;
+  project_name?: string;
+  project_type?: string | null;  // 'club' | 'team' | null (org-level)
+  organisation_name?: string;
   file: string;
   asset_type: string;
   asset_type_label?: string;
@@ -41,7 +44,10 @@ interface BrandProfile {
   id: string;
   name: string;
   organisation: string | null;
+  organisation_name: string | null;
   project: number | null;
+  project_name: string | null;
+  project_type: string | null;  // 'club' | 'team' | null
   is_active: boolean;
 }
 
@@ -92,6 +98,44 @@ const ASSET_TYPE_LABELS: Record<string, string> = {
 
 export function getAssetTypeLabel(assetType: string): string {
   return ASSET_TYPE_LABELS[assetType] || assetType;
+}
+
+/** Content type classification for sub-filtering */
+export type ContentType = 'logo' | 'kit' | 'sponsor' | 'closeup' | 'in_tenue' | 'lineup' | 'location' | 'font' | 'other';
+
+export function getContentType(assetType: string): ContentType {
+  if (assetType.startsWith('logo') || assetType === 'watermark' || assetType === 'favicon') return 'logo';
+  if (assetType.startsWith('kit_')) return 'kit';
+  if (assetType.startsWith('sponsor_')) return 'sponsor';
+  if (assetType.startsWith('member_closeup') || assetType === 'member_closeup') return 'closeup';
+  if (assetType.startsWith('member_in_tenue') || assetType.includes('in_tenue')) return 'in_tenue';
+  if (assetType.startsWith('lineup') || assetType.includes('lineup')) return 'lineup';
+  if (assetType === 'location_photo') return 'location';
+  if (assetType === 'font_file') return 'font';
+  return 'other';
+}
+
+export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
+  logo: 'Logos',
+  kit: 'Tenues',
+  sponsor: 'Sponsors',
+  closeup: 'Close-ups',
+  in_tenue: 'In Tenue',
+  lineup: 'Lineups',
+  location: 'Locaties',
+  font: 'Fonts',
+  other: 'Overig',
+};
+
+/** Map hierarchy level for grouping */
+export type HierarchyLevel = 'organisation' | 'club' | 'team' | 'member';
+
+export function getHierarchyLevel(asset: BrandAsset): HierarchyLevel {
+  // Member-level: member_ prefixed assets or closeup/in_tenue content
+  if (asset.asset_type.startsWith('member_') || asset.asset_type.includes('closeup') || asset.asset_type.includes('lineup')) return 'member';
+  if (asset.project_type === 'team') return 'team';
+  if (asset.project_type === 'club') return 'club';
+  return 'organisation';
 }
 
 export interface UseBrandAssetsReturn {
@@ -171,10 +215,13 @@ export function useBrandAssets(): UseBrandAssetsReturn {
           `${base}/api/v1/branding/profiles/${profile.id}/assets/?page_size=100`,
           controller.signal,
         );
-        // Enrich with profile name
+        // Enrich with profile context
         return items.map((a) => ({
           ...a,
           profile_name: profile.name,
+          project_name: profile.project_name || undefined,
+          project_type: profile.project_type,
+          organisation_name: profile.organisation_name || undefined,
           asset_type_label: getAssetTypeLabel(a.asset_type),
         }));
       });

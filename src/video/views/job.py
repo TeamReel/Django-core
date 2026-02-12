@@ -65,7 +65,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         ProjectMembership = apps.get_model("projects", "ProjectMembership")
         membership_qs = ProjectMembership.objects.filter(user=self.request.user)
 
-        project_id = self._get_project_id(required=self.action in ["list", "create"])
+        project_id = self._get_project_id(required=self.action in ["create"])
         if project_id:
             if not membership_qs.filter(project_id=project_id).exists():
                 raise PermissionDenied("You must be a project member to access this project.")

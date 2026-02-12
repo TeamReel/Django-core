@@ -80,20 +80,22 @@ function getCsrfToken(): string {
 
 async function videoApiFetch<T>(
   path: string,
-  projectId: string | number,
+  projectId?: string | number | null,
   options?: RequestInit
 ): Promise<T> {
   const apiBase = getApiBaseUrl();
   const url = `${apiBase}${path}`;
 
+  const headers: Record<string, string> = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'X-CSRFToken': getCsrfToken(),
+  };
+  if (projectId) headers['X-Project-ID'] = String(projectId);
+
   const response = await fetch(url, {
     credentials: 'include',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'X-Project-ID': String(projectId),
-      'X-CSRFToken': getCsrfToken(),
-    },
+    headers,
     ...options,
   });
 
@@ -160,7 +162,7 @@ export function getJobTypeDisplay(type: VideoJobType): {
 // ============================================================================
 
 interface UseVideoJobsOptions {
-  projectId: string | number;
+  projectId?: string | number | null;
   status?: VideoJobStatus;
   jobType?: VideoJobType;
   autoRefresh?: boolean;
@@ -179,8 +181,6 @@ export function useVideoJobs(options: UseVideoJobsOptions) {
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
   useEffect(() => {
-    if (!projectId) return;
-
     let cancelled = false;
 
     async function fetchJobs() {
@@ -188,7 +188,7 @@ export function useVideoJobs(options: UseVideoJobsOptions) {
         if (refreshKey === 0) setLoading(true);
 
         const params = new URLSearchParams();
-        params.append('project', String(projectId));
+        if (projectId) params.append('project', String(projectId));
         if (status) params.append('status', status);
         if (jobType) params.append('job_type', jobType);
         params.append('ordering', '-created_at');

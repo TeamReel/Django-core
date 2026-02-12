@@ -815,13 +815,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             if (path === '/medialib' || path.startsWith('/medialib')) {
                 title = 'Media Library';
                 items = [
-                    { label: 'All Brand Assets', path: '/medialib?tab=brand', icon: Palette },
-                    { label: 'Logos', path: '/medialib?tab=brand_logos', icon: Shield },
-                    { label: 'Kits', path: '/medialib?tab=brand_kits', icon: Shirt },
-                    { label: 'Member Assets', path: '/medialib?tab=brand_members', icon: UserCircle },
-                    { label: 'All Files', path: '/medialib?tab=files', icon: Folder },
-                    { label: 'Videos', path: '/medialib?tab=files_video', icon: Video },
-                    { label: 'Images', path: '/medialib?tab=files_image', icon: Palette },
+                    { label: 'Alles', path: '/medialib?tab=all', icon: Library },
+                    { label: 'Club', path: '/medialib?tab=club', icon: Shield },
+                    { label: 'Team', path: '/medialib?tab=team', icon: Users },
+                    { label: 'Speler', path: '/medialib?tab=member', icon: UserCircle },
+                    { label: 'Bestanden', path: '/medialib?tab=files', icon: Folder },
                 ];
             } else if (path === '/studio' && !path.startsWith('/studio/')) {
                 title = 'AI Studio';
@@ -1395,7 +1393,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 const itemTab = String(new URLSearchParams(itemSearch).get('tab') || '').trim().toLowerCase();
                                 const effectiveLocationTab = locationTab || (
                                     location.pathname === '/directory' ? 'federations' :
-                                    location.pathname === '/medialib' ? 'brand' :
+                                    location.pathname === '/medialib' ? 'all' :
                                     location.pathname === '/studio' ? 'templates' :
                                     location.pathname === '/studio/videos' ? 'all' :
                                     location.pathname === '/approvals' ? 'all' :

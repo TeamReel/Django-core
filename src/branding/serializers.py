@@ -20,13 +20,19 @@ class BrandProfileSerializer(serializers.ModelSerializer):
     token_count = serializers.SerializerMethodField()
     asset_count = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
+    project_name = serializers.SerializerMethodField()
+    project_type = serializers.SerializerMethodField()
+    organisation_name = serializers.SerializerMethodField()
 
     class Meta:
         model = BrandProfile
         fields = [
             "id",
             "organisation",
+            "organisation_name",
             "project",
+            "project_name",
+            "project_type",
             "name",
             "is_active",
             "token_count",
@@ -44,6 +50,9 @@ class BrandProfileSerializer(serializers.ModelSerializer):
             "token_count",
             "asset_count",
             "can_edit",
+            "project_name",
+            "project_type",
+            "organisation_name",
         ]
 
     def get_token_count(self, obj: BrandProfile) -> int:
@@ -53,6 +62,24 @@ class BrandProfileSerializer(serializers.ModelSerializer):
     def get_asset_count(self, obj: BrandProfile) -> int:
         """Return count of active brand assets for this profile."""
         return obj.brand_assets.filter(is_active=True).count()
+
+    def get_project_name(self, obj: BrandProfile) -> str | None:
+        """Return the project name if profile is project-scoped."""
+        return obj.project.name if obj.project_id else None
+
+    def get_project_type(self, obj: BrandProfile) -> str | None:
+        """Return the hierarchy level: 'club' (root project) or 'team' (child)."""
+        if not obj.project_id:
+            return None
+        return "team" if obj.project.parent_project_id else "club"
+
+    def get_organisation_name(self, obj: BrandProfile) -> str | None:
+        """Return the organisation name if available."""
+        if obj.organisation_id:
+            return obj.organisation.name if obj.organisation else None
+        if obj.project_id and obj.project.organisation_id:
+            return obj.project.organisation.name if obj.project.organisation else None
+        return None
 
     def get_can_edit(self, obj: BrandProfile) -> bool:
         """Check if current user can edit this brand profile.

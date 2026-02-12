@@ -39,7 +39,12 @@ class BrandProfileViewSet(viewsets.ModelViewSet):
     """
 
     queryset = BrandProfile.objects.select_related(
-        "organisation", "project", "created_by", "updated_by"
+        "organisation",
+        "project",
+        "project__parent_project",
+        "project__organisation",
+        "created_by",
+        "updated_by",
     ).prefetch_related("design_tokens", "brand_assets")
     pagination_class = BrandPagination
     permission_classes = [BrandProfilePermission]

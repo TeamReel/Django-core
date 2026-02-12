@@ -236,7 +236,7 @@ export default function VideoQueuePage() {
   const setFilter = (f: FilterStatus) => navigate(`/studio/videos?tab=${f}`, { replace: true });
 
   const { jobs, loading, error, refresh, cancelJob, retryJob } = useVideoJobs({
-    projectId: projectId || 0,
+    projectId: projectId || null,
   });
 
   // Filter + sort
@@ -258,32 +258,11 @@ export default function VideoQueuePage() {
     cancelled: jobs.filter(j => j.status === 'cancelled').length,
   }), [jobs]);
 
-  if (!projectId) {
-    return (
-      <>
-        <PageHeader
-          title="Video Queue"
-          subtitle="Select a project to view video processing jobs."
-          actions={null}
-        />
-        <PageContent>
-          <div style={{
-            textAlign: 'center',
-            padding: 60,
-            color: 'var(--app-text-secondary, #6b7280)',
-          }}>
-            Select a project from the context switcher to view video jobs.
-          </div>
-        </PageContent>
-      </>
-    );
-  }
-
   return (
     <>
       <PageHeader
         title="Video Queue"
-        subtitle={`${counts.processing} processing, ${counts.queued} queued — real-time progress tracking`}
+        subtitle={`${counts.processing} processing, ${counts.queued} queued${!projectId ? ' — showing all projects' : ''}`}
         actions={
           <button
             onClick={refresh}
