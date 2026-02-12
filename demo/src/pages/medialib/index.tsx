@@ -17,7 +17,7 @@
  * - File Assets via /api/v1/files/
  */
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Card, Stack, Text, Alert, Badge, Button } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -25,7 +25,6 @@ import { useAuth } from '@django-core/auth-ui';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import {
-  useBrandAssets,
   getContentType,
   getHierarchyLevel,
   CONTENT_TYPE_LABELS,
@@ -310,6 +309,7 @@ const MediaLibraryPage: React.FC = () => {
   const { context, organisations: myOrganisations } = useContextSwitcher();
   const { user } = useAuth();
   const orgId = (context as any)?.organisation?.id as string | undefined;
+  const orgSlug = (context as any)?.organisation?.slug as string | undefined;
 
   const userRole = String((user as any)?.role || '').toLowerCase();
   const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
@@ -318,8 +318,12 @@ const MediaLibraryPage: React.FC = () => {
   const rawTab = new URLSearchParams(location.search).get('tab') || 'organisation';
   const activeLevel = (['organisation', 'club', 'team', 'member', 'files'].includes(rawTab) ? rawTab : 'organisation') as HierarchyTab;
 
-  // Data hooks
-  const { assets: brandAssets, loading: brandLoading, error: brandError, fetchAssets } = useBrandAssets();
+  // Brand assets state (replacing useBrandAssets hook - need to fetch from org AND all projects)
+  const [brandAssets, setBrandAssets] = useState<BrandAsset[]>([]);
+  const [brandLoading, setBrandLoading] = useState(false);
+  const [brandError, setBrandError] = useState<string | null>(null);
+
+  // File assets hook
   const { files, loading: filesLoading, error: filesError, fetchFiles, getDownloadUrl } = useFileAssets();
 
   // Filter state - directory-style dropdowns
@@ -403,13 +407,103 @@ const MediaLibraryPage: React.FC = () => {
     setSearchQuery('');
   }, [activeLevel]);
 
+  // Comprehensive asset fetching: org-level + ALL project-level brand profiles
+  const fetchAllBrandAssets = useCallback(async () => {
+    if (!orgId || !orgSlug) return;
+
+    setBrandLoading(true);
+    setBrandError(null);
+
+    try {
+      const apiBaseUrl = getApiBaseUrl();
+
+      // Helper to fetch all pages with pagination
+      const fetchPaginated = async <T,>(url: string): Promise<T[]> => {
+        const all: T[] = [];
+        let nextUrl: string | null = url;
+        while (nextUrl) {
+          const res = await fetch(nextUrl, { credentials: 'include' });
+          if (!res.ok) break;
+          const json = await res.json();
+          const items: T[] = Array.isArray(json.data?.results) ? json.data.results
+            : Array.isArray(json.data) ? json.data
+            : Array.isArray(json.results) ? json.results
+            : Array.isArray(json) ? json : [];
+          all.push(...items);
+          nextUrl = json.data?.next || json.meta?.pagination?.next || json.next || null;
+        }
+        return all;
+      };
+
+      // Step 1: Fetch org-level brand profiles
+      const orgProfiles = await fetchPaginated<any>(
+        `${apiBaseUrl}/api/v1/branding/profiles/?organisation=${orgId}&page_size=100`,
+      );
+
+      // Step 2: Fetch ALL projects for this organisation (clubs + teams)
+      const allProjects = await fetchPaginated<any>(
+        `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000`,
+      );
+
+      // Step 3: Fetch brand profiles for each project
+      const projectProfilePromises = allProjects.map(async (project: any) => {
+        try {
+          const profiles = await fetchPaginated<any>(
+            `${apiBaseUrl}/api/v1/branding/profiles/?project=${project.id}&page_size=100`,
+          );
+          return profiles.map((p: any) => ({
+            ...p,
+            project_id: String(project.id),
+            project_name: project.name,
+            project_type: project.parent_project ? 'team' : 'club',
+            parent_project_id: project.parent_project ? String(
+              typeof project.parent_project === 'object' ? project.parent_project.id : project.parent_project
+            ) : null,
+          }));
+        } catch {
+          return [];
+        }
+      });
+
+      const projectProfiles = (await Promise.all(projectProfilePromises)).flat();
+      const allProfiles = [...orgProfiles, ...projectProfiles];
+
+      // Step 4: Fetch assets for each profile
+      const assetPromises = allProfiles.map(async (profile: any) => {
+        try {
+          const assets = await fetchPaginated<BrandAsset>(
+            `${apiBaseUrl}/api/v1/branding/profiles/${profile.id}/assets/?page_size=100`,
+          );
+          return assets.map((a: BrandAsset) => ({
+            ...a,
+            profile_name: profile.name,
+            project_id: profile.project_id || undefined,
+            project_name: profile.project_name || undefined,
+            project_type: profile.project_type,
+            parent_project_id: profile.parent_project_id || undefined,
+            organisation_name: profile.organisation_name || undefined,
+          }));
+        } catch {
+          return [];
+        }
+      });
+
+      const allAssets = (await Promise.all(assetPromises)).flat();
+      setBrandAssets(allAssets);
+    } catch (err: any) {
+      setBrandError(err.message || 'Failed to load brand assets');
+    } finally {
+      setBrandLoading(false);
+    }
+  }, [orgId, orgSlug]);
+
   // Fetch assets on mount
   useEffect(() => {
     if (orgId) {
-      fetchAssets(orgId);
+      fetchAllBrandAssets();
       fetchFiles(orgId);
     }
-  }, [orgId, fetchAssets, fetchFiles]);
+  }, [orgId, fetchAllBrandAssets, fetchFiles]);
 
   // Filter teams by selected club
   const filteredTeams = useMemo(() => {
@@ -440,18 +534,22 @@ const MediaLibraryPage: React.FC = () => {
       }
     }
 
-    // Club filter
+    // Club filter - match by project_id or parent_project_id
     if (selectedClubId) {
       result = result.filter(a => {
-        // Match by project name or detect if asset belongs to club
-        return a.project_name && clubs.some(c => String(c.id) === String(selectedClubId) && c.name === a.project_name);
+        const assetProjectId = (a as any).project_id;
+        const assetParentProjectId = (a as any).parent_project_id;
+        // Match if asset's project is the selected club, OR if asset's parent is the club (for team assets)
+        return String(assetProjectId) === String(selectedClubId) ||
+               String(assetParentProjectId) === String(selectedClubId);
       });
     }
 
-    // Team filter
+    // Team filter - match by exact project_id
     if (selectedTeamId) {
       result = result.filter(a => {
-        return a.project_name && teams.some(t => String(t.id) === String(selectedTeamId) && t.name === a.project_name);
+        const assetProjectId = (a as any).project_id;
+        return String(assetProjectId) === String(selectedTeamId);
       });
     }
 
@@ -699,8 +797,7 @@ const MediaLibraryPage: React.FC = () => {
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {SUB_TABS[activeLevel].map(({ key, label }) => {
                 const count = subTabCounts[key] || 0;
-                // Only show tabs that have content or are 'all'
-                if (key !== 'all' && count === 0) return null;
+                // Always show all sub-tabs so users see the available filters
                 return (
                   <FilterChip
                     key={key}
@@ -719,7 +816,7 @@ const MediaLibraryPage: React.FC = () => {
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {SUB_TABS.files.map(({ key, label }) => {
                 const count = fileTypeCounts[key as keyof typeof fileTypeCounts] || 0;
-                if (key !== 'all' && count === 0) return null;
+                // Always show all sub-tabs
                 return (
                   <FilterChip
                     key={key}
