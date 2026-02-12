@@ -60,27 +60,31 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
         a user in any season/period context. This merges assets from the user's other
         memberships in the same project.
         """
-        meta = dict(obj.metadata or {})
+        try:
+            meta = dict(obj.metadata or {})
 
-        # If this membership already has teamreel_assets, return as-is
-        if meta.get("teamreel_assets"):
+            # If this membership already has teamreel_assets, return as-is
+            if meta.get("teamreel_assets"):
+                return meta
+
+            # Otherwise, look for assets on other memberships of the same user in same project
+            other_memberships = ProjectMembership.objects.filter(
+                project_id=obj.project_id,
+                user_id=obj.user_id,
+                deleted_at__isnull=True,
+                metadata__has_key="teamreel_assets",
+            ).exclude(id=obj.id)
+
+            for other in other_memberships:
+                other_meta = other.metadata or {}
+                if other_meta.get("teamreel_assets"):
+                    meta["teamreel_assets"] = other_meta["teamreel_assets"]
+                    break  # Use the first one found (most recent would be better but this is simpler)
+
             return meta
-
-        # Otherwise, look for assets on other memberships of the same user in same project
-        other_memberships = ProjectMembership.objects.filter(
-            project_id=obj.project_id,
-            user_id=obj.user_id,
-            deleted_at__isnull=True,
-            metadata__has_key="teamreel_assets",
-        ).exclude(id=obj.id)
-
-        for other in other_memberships:
-            other_meta = other.metadata or {}
-            if other_meta.get("teamreel_assets"):
-                meta["teamreel_assets"] = other_meta["teamreel_assets"]
-                break  # Use the first one found (most recent would be better but this is simpler)
-
-        return meta
+        except Exception:
+            # If anything fails, return empty metadata rather than crashing the endpoint
+            return dict(obj.metadata or {})
 
     def get_functional_roles(self, obj):
         """Return functional roles for this user on this project.

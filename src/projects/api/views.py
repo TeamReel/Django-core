@@ -862,7 +862,16 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Return memberships for the specific project."""
-        project = self._get_project()
+        try:
+            project = self._get_project()
+        except ValidationError:
+            raise
+        except Exception as exc:
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.exception("Failed to get project in ProjectMembershipViewSet")
+            raise ValidationError({"detail": "Project not found."}) from exc
 
         # Enforce read access (avoid leaking rosters by UUID guessing)
         self._check_can_view_members(project)
