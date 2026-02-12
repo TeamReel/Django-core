@@ -1126,14 +1126,23 @@ export default function ContentGenerationModal({
         const returnedBrandAssetId = result.data?.brand_asset_id || result.brand_asset_id;
         const returnedStoragePath = result.data?.storage_path || result.storage_path;
 
+        const nextStorageInfo: NonNullable<GeneratedVariant['storage_info']> = selectedVariant.storage_info
+          ? { ...selectedVariant.storage_info }
+          : {
+              // Backend isn't returned by the save endpoint; default to s3 for UI typing.
+              storage_backend: 's3',
+              storage_path: returnedStoragePath || selectedVariant.presigned_url || '',
+              file_size_bytes: 0,
+              mime_type: selectedVariant.mime_type || (isVideo ? 'video/mp4' : 'image/png'),
+            };
+
+        if (returnedStoragePath) nextStorageInfo.storage_path = returnedStoragePath;
+        if (returnedFileAssetId) nextStorageInfo.file_asset_id = returnedFileAssetId;
+        if (returnedBrandAssetId) nextStorageInfo.brand_asset_id = returnedBrandAssetId;
+
         updatedVariants[selectedVariantIndex] = {
           ...selectedVariant,
-          storage_info: {
-            ...(selectedVariant.storage_info || {}),
-            ...(returnedStoragePath ? { storage_path: returnedStoragePath } : {}),
-            ...(returnedFileAssetId ? { file_asset_id: returnedFileAssetId } : {}),
-            ...(returnedBrandAssetId ? { brand_asset_id: returnedBrandAssetId } : {}),
-          },
+          storage_info: nextStorageInfo,
         };
         setGeneratedVariants(updatedVariants);
       }
