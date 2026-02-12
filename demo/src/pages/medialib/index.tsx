@@ -2,8 +2,15 @@
  * Media Library Page — Unified Asset Browser
  *
  * Shows all brand assets and file uploads for the active organisation,
- * organized by hierarchy level (Club, Team, Member) with content-type
- * sub-filters (Logo, Tenue, Sponsor, Close-up, In Tenue, Lineup).
+ * organized by hierarchy level (Organisation, Club, Team, Member) with
+ * content-type sub-filters per level.
+ *
+ * Panel B tabs: Organisation, Club, Team, Member, Files
+ * Each level has specific sub-tabs:
+ * - Organisation: Logo, Watermark, Favicon, Font
+ * - Club: Logo, Tenue, Sponsor
+ * - Team: Logo, Tenue, Sponsor
+ * - Member: Profile, Close-up, In Tenue, Intro, Celebration
  *
  * Data sources:
  * - Brand Assets via /api/v1/branding/profiles → assets
@@ -12,8 +19,11 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Card, Stack, Text, Alert, Badge } from '@django-core/design-system';
+import { Card, Stack, Text, Alert, Badge, Button } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { useAuth } from '@django-core/auth-ui';
+import { getApiBaseUrl } from '../../utils/apiBase';
+import { fetchAllPages } from '../../utils/fetchAllPages';
 import {
   useBrandAssets,
   getContentType,
@@ -33,6 +43,66 @@ import {
 } from '../../hooks/useFileAssets';
 
 // ============================================================================
+// Types
+// ============================================================================
+
+type HierarchyTab = 'organisation' | 'club' | 'team' | 'member' | 'files';
+
+interface OrganisationOption {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface ProjectOption {
+  id: string;
+  name: string;
+  slug: string;
+  organisation?: string | { id: string };
+  parent_project?: string | { id: string } | null;
+}
+
+// Sub-tab definitions per hierarchy level
+const SUB_TABS: Record<HierarchyTab, { key: string; label: string }[]> = {
+  organisation: [
+    { key: 'all', label: 'Alles' },
+    { key: 'logo', label: 'Logo' },
+    { key: 'watermark', label: 'Watermark' },
+    { key: 'favicon', label: 'Favicon' },
+    { key: 'font', label: 'Font' },
+    { key: 'location', label: 'Locatie' },
+  ],
+  club: [
+    { key: 'all', label: 'Alles' },
+    { key: 'logo', label: 'Logo' },
+    { key: 'kit', label: 'Tenue' },
+    { key: 'sponsor', label: 'Sponsor' },
+    { key: 'location', label: 'Locatie' },
+  ],
+  team: [
+    { key: 'all', label: 'Alles' },
+    { key: 'logo', label: 'Logo' },
+    { key: 'kit', label: 'Tenue' },
+    { key: 'sponsor', label: 'Sponsor' },
+  ],
+  member: [
+    { key: 'all', label: 'Alles' },
+    { key: 'profile', label: 'Foto' },
+    { key: 'closeup', label: 'Close-up' },
+    { key: 'in_tenue', label: 'In Tenue' },
+    { key: 'intro', label: 'Short Intro' },
+    { key: 'celebration', label: 'Celebration' },
+  ],
+  files: [
+    { key: 'all', label: 'Alles' },
+    { key: 'image', label: 'Afbeeldingen' },
+    { key: 'video', label: "Video's" },
+    { key: 'document', label: 'Documenten' },
+    { key: 'font', label: 'Fonts' },
+  ],
+};
+
+// ============================================================================
 // Helpers
 // ============================================================================
 
@@ -43,6 +113,9 @@ function friendlyAssetLabel(asset: BrandAsset): string {
   if (t.startsWith('member_closeup')) return 'Close-up';
   if (t.includes('in_tenue')) return 'In Tenue';
   if (t.includes('lineup')) return 'Lineup';
+  if (t.includes('member_intro')) return 'Short Intro';
+  if (t.includes('member_goal_celebration') || t.includes('celebration')) return 'Celebration';
+  if (t.includes('profile') || t === 'headshot') return 'Profiel Foto';
   // Kit assets
   if (t.includes('kit_home')) return t.includes('combined') ? 'Thuistenue (Compleet)' : t.includes('upload') ? 'Thuistenue (Upload)' : 'Thuistenue';
   if (t.includes('kit_away')) return t.includes('combined') ? 'Uittenue (Compleet)' : t.includes('upload') ? 'Uittenue (Upload)' : 'Uittenue';
@@ -64,6 +137,16 @@ function friendlyAssetLabel(asset: BrandAsset): string {
   if (t === 'location_photo') return 'Locatie Foto';
   if (t === 'font_file') return 'Font';
   return asset.asset_type_label || t;
+}
+
+/** Get member sub-content type for filtering */
+function getMemberContentType(assetType: string): string {
+  if (assetType.includes('closeup')) return 'closeup';
+  if (assetType.includes('in_tenue') && !assetType.includes('intro') && !assetType.includes('celebration')) return 'in_tenue';
+  if (assetType.includes('intro')) return 'intro';
+  if (assetType.includes('celebration') || assetType.includes('goal_celebration')) return 'celebration';
+  if (assetType.includes('profile') || assetType === 'headshot') return 'profile';
+  return 'other';
 }
 
 /** Badge color per hierarchy level */
@@ -224,34 +307,103 @@ function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (id: stri
 
 const MediaLibraryPage: React.FC = () => {
   const location = useLocation();
-  const { context } = useContextSwitcher();
+  const { context, organisations: myOrganisations } = useContextSwitcher();
+  const { user } = useAuth();
   const orgId = (context as any)?.organisation?.id as string | undefined;
 
+  const userRole = String((user as any)?.role || '').toLowerCase();
+  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
+
   // Read level from URL (set by Panel B sidebar)
-  const rawTab = new URLSearchParams(location.search).get('tab') || 'all';
-  const activeLevel = (['all', 'club', 'team', 'member', 'files'].includes(rawTab) ? rawTab : 'all') as
-    'all' | 'club' | 'team' | 'member' | 'files';
+  const rawTab = new URLSearchParams(location.search).get('tab') || 'organisation';
+  const activeLevel = (['organisation', 'club', 'team', 'member', 'files'].includes(rawTab) ? rawTab : 'organisation') as HierarchyTab;
 
   // Data hooks
   const { assets: brandAssets, loading: brandLoading, error: brandError, fetchAssets } = useBrandAssets();
   const { files, loading: filesLoading, error: filesError, fetchFiles, getDownloadUrl } = useFileAssets();
 
-  // Sub-filter state
-  const [contentFilter, setContentFilter] = useState<ContentType | 'all'>('all');
+  // Filter state - directory-style dropdowns
+  const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
+  const [clubs, setClubs] = useState<ProjectOption[]>([]);
+  const [teams, setTeams] = useState<ProjectOption[]>([]);
+  const [selectedOrgId, setSelectedOrgId] = useState<string>('');
+  const [selectedClubId, setSelectedClubId] = useState<string>('');
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+
+  // Sub-filter state (content type within level)
+  const [subFilter, setSubFilter] = useState<string>('all');
   const [fileTypeFilter, setFileTypeFilter] = useState<FileTypeFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Top-level entity filter (optional: filter by specific club/team)
-  const [entityFilter, setEntityFilter] = useState<string>('all');
+  // Load organisations
+  useEffect(() => {
+    if (!isSuperAdmin) {
+      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug })));
+      return;
+    }
+
+    const load = async () => {
+      const apiBaseUrl = getApiBaseUrl();
+      try {
+        const orgs = await fetchAllPages<any>(
+          `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
+          { credentials: 'include' },
+          { ttlMs: 120_000 },
+        );
+        setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
+      } catch {
+        // ignore
+      }
+    };
+    load();
+  }, [isSuperAdmin, myOrganisations]);
+
+  // Load clubs and teams when org changes
+  useEffect(() => {
+    const load = async () => {
+      const apiBaseUrl = getApiBaseUrl();
+      const selectedOrg = selectedOrgId
+        ? organisations.find((o) => String(o.id) === String(selectedOrgId))
+        : null;
+
+      const orgSlugForApi = selectedOrg?.slug || context.organisation?.slug || '';
+
+      if (!orgSlugForApi) {
+        setClubs([]);
+        setTeams([]);
+        return;
+      }
+
+      try {
+        const [allClubs, allTeams] = await Promise.all([
+          fetchAllPages<ProjectOption>(
+            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=500&parent_project__isnull=true`,
+            { credentials: 'include' },
+            { ttlMs: 120_000 },
+          ),
+          fetchAllPages<ProjectOption>(
+            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=2000&parent_project__isnull=false`,
+            { credentials: 'include' },
+            { ttlMs: 120_000 },
+          ),
+        ]);
+        setClubs(allClubs);
+        setTeams(allTeams);
+      } catch {
+        // ignore
+      }
+    };
+    load();
+  }, [selectedOrgId, organisations, context.organisation?.slug]);
 
   // Reset sub-filters when level changes (via Panel B)
   useEffect(() => {
-    setContentFilter('all');
+    setSubFilter('all');
     setFileTypeFilter('all');
     setSearchQuery('');
   }, [activeLevel]);
 
-  // Fetch on mount
+  // Fetch assets on mount
   useEffect(() => {
     if (orgId) {
       fetchAssets(orgId);
@@ -259,37 +411,76 @@ const MediaLibraryPage: React.FC = () => {
     }
   }, [orgId, fetchAssets, fetchFiles]);
 
+  // Filter teams by selected club
+  const filteredTeams = useMemo(() => {
+    if (!selectedClubId) return teams;
+    return teams.filter((t) => {
+      const parentId = typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project;
+      return String(parentId) === String(selectedClubId);
+    });
+  }, [teams, selectedClubId]);
+
   // ── Derived data ──────────────────────────────────────────────────────
 
-  // Unique entities (for top filter dropdown)
-  const entities = useMemo(() => {
-    const map = new Map<string, { name: string; type: string }>();
-    brandAssets.forEach(a => {
-      const key = a.project_name || a.profile_name || '';
-      if (key && !map.has(key)) {
-        map.set(key, { name: key, type: a.project_type || 'org' });
-      }
-    });
-    return Array.from(map.entries()).map(([key, val]) => ({ key, ...val })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [brandAssets]);
-
-  // Filter brand assets by level + content type + search + entity
+  // Filter brand assets by level + sub-filter + hierarchy filters + search
   const filteredBrandAssets = useMemo(() => {
     let result = brandAssets;
 
-    // Level filter
-    if (activeLevel !== 'all' && activeLevel !== 'files') {
-      result = result.filter(a => getHierarchyLevel(a) === activeLevel);
+    // Level filter (map to HierarchyLevel)
+    if (activeLevel !== 'files') {
+      const levelMap: Record<string, HierarchyLevel> = {
+        organisation: 'organisation',
+        club: 'club',
+        team: 'team',
+        member: 'member',
+      };
+      const targetLevel = levelMap[activeLevel];
+      if (targetLevel) {
+        result = result.filter(a => getHierarchyLevel(a) === targetLevel);
+      }
     }
 
-    // Content type sub-filter
-    if (contentFilter !== 'all') {
-      result = result.filter(a => getContentType(a.asset_type) === contentFilter);
+    // Club filter
+    if (selectedClubId) {
+      result = result.filter(a => {
+        // Match by project name or detect if asset belongs to club
+        return a.project_name && clubs.some(c => String(c.id) === String(selectedClubId) && c.name === a.project_name);
+      });
     }
 
-    // Entity filter
-    if (entityFilter !== 'all') {
-      result = result.filter(a => (a.project_name || a.profile_name) === entityFilter);
+    // Team filter
+    if (selectedTeamId) {
+      result = result.filter(a => {
+        return a.project_name && teams.some(t => String(t.id) === String(selectedTeamId) && t.name === a.project_name);
+      });
+    }
+
+    // Sub-filter (content type)
+    if (subFilter !== 'all') {
+      if (activeLevel === 'member') {
+        // Member-specific filtering
+        result = result.filter(a => getMemberContentType(a.asset_type) === subFilter);
+      } else if (activeLevel === 'organisation') {
+        // Organisation: logo, watermark, favicon, font, location
+        if (subFilter === 'logo') {
+          result = result.filter(a => a.asset_type.startsWith('logo'));
+        } else if (subFilter === 'watermark') {
+          result = result.filter(a => a.asset_type === 'watermark');
+        } else if (subFilter === 'favicon') {
+          result = result.filter(a => a.asset_type === 'favicon');
+        } else if (subFilter === 'font') {
+          result = result.filter(a => a.asset_type === 'font_file');
+        } else if (subFilter === 'location') {
+          result = result.filter(a => a.asset_type === 'location_photo');
+        }
+      } else {
+        // Club/Team: logo, kit, sponsor, location
+        const contentType = getContentType(result[0]?.asset_type || '');
+        result = result.filter(a => {
+          const ct = getContentType(a.asset_type);
+          return ct === subFilter;
+        });
+      }
     }
 
     // Search
@@ -304,7 +495,7 @@ const MediaLibraryPage: React.FC = () => {
       );
     }
     return result;
-  }, [brandAssets, activeLevel, contentFilter, entityFilter, searchQuery]);
+  }, [brandAssets, activeLevel, subFilter, selectedClubId, selectedTeamId, clubs, teams, searchQuery]);
 
   // Filtered files
   const filteredFiles = useMemo(() => {
@@ -322,16 +513,42 @@ const MediaLibraryPage: React.FC = () => {
     return result;
   }, [files, fileTypeFilter, searchQuery]);
 
-  // Content type counts (for chips) — based on current level
-  const contentTypeCounts = useMemo(() => {
-    const levelAssets = activeLevel === 'all' || activeLevel === 'files'
-      ? brandAssets
-      : brandAssets.filter(a => getHierarchyLevel(a) === activeLevel);
+  // Sub-tab counts for current level
+  const subTabCounts = useMemo(() => {
+    const levelAssets = activeLevel === 'files'
+      ? []
+      : brandAssets.filter(a => {
+          const levelMap: Record<string, HierarchyLevel> = {
+            organisation: 'organisation',
+            club: 'club',
+            team: 'team',
+            member: 'member',
+          };
+          return getHierarchyLevel(a) === levelMap[activeLevel];
+        });
+
     const counts: Record<string, number> = { all: levelAssets.length };
-    levelAssets.forEach(a => {
-      const ct = getContentType(a.asset_type);
-      counts[ct] = (counts[ct] || 0) + 1;
-    });
+
+    if (activeLevel === 'member') {
+      levelAssets.forEach(a => {
+        const ct = getMemberContentType(a.asset_type);
+        counts[ct] = (counts[ct] || 0) + 1;
+      });
+    } else if (activeLevel === 'organisation') {
+      levelAssets.forEach(a => {
+        if (a.asset_type.startsWith('logo')) counts.logo = (counts.logo || 0) + 1;
+        else if (a.asset_type === 'watermark') counts.watermark = (counts.watermark || 0) + 1;
+        else if (a.asset_type === 'favicon') counts.favicon = (counts.favicon || 0) + 1;
+        else if (a.asset_type === 'font_file') counts.font = (counts.font || 0) + 1;
+        else if (a.asset_type === 'location_photo') counts.location = (counts.location || 0) + 1;
+      });
+    } else {
+      levelAssets.forEach(a => {
+        const ct = getContentType(a.asset_type);
+        counts[ct] = (counts[ct] || 0) + 1;
+      });
+    }
+
     return counts;
   }, [brandAssets, activeLevel]);
 
@@ -352,6 +569,23 @@ const MediaLibraryPage: React.FC = () => {
     if (url) window.open(url, '_blank');
   };
 
+  const clearFilters = () => {
+    setSelectedOrgId('');
+    setSelectedClubId('');
+    setSelectedTeamId('');
+    setSubFilter('all');
+    setSearchQuery('');
+  };
+
+  // Level labels for header
+  const levelLabels: Record<HierarchyTab, string> = {
+    organisation: 'Organisatie',
+    club: 'Club',
+    team: 'Team',
+    member: 'Speler',
+    files: 'Bestanden',
+  };
+
   if (!orgId) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)', padding: 24 }}>
@@ -367,18 +601,14 @@ const MediaLibraryPage: React.FC = () => {
         <Stack direction="column" gap="1">
           <Text size="xl" weight="bold">Media Library</Text>
           <Text size="md" color="secondary">
-            {activeLevel === 'files'
-              ? 'Alle bestanden van je organisatie.'
-              : activeLevel === 'all'
-                ? 'Alle brand assets en bestanden van je organisatie.'
-                : `${activeLevel === 'club' ? 'Club' : activeLevel === 'team' ? 'Team' : 'Speler'} assets`
-            }
+            {levelLabels[activeLevel]} assets
           </Text>
         </Stack>
       </div>
 
-      {/* Toolbar: search + entity filter */}
+      {/* Toolbar: directory-style filters */}
       <div style={{ padding: '16px 24px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', borderBottom: '1px solid var(--app-border)' }}>
+        {/* Search */}
         <input
           type="text"
           value={searchQuery}
@@ -390,66 +620,116 @@ const MediaLibraryPage: React.FC = () => {
             fontSize: 13,
           }}
         />
-        {activeLevel !== 'files' && entities.length > 1 && (
+
+        {/* Organisation filter (only for superadmin) */}
+        {isSuperAdmin && organisations.length > 1 && activeLevel !== 'files' && (
           <select
-            value={entityFilter}
-            onChange={(e) => setEntityFilter(e.target.value)}
+            value={selectedOrgId}
+            onChange={(e) => {
+              setSelectedOrgId(e.target.value);
+              setSelectedClubId('');
+              setSelectedTeamId('');
+            }}
             style={{
               padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
               backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160,
             }}
           >
-            <option value="all">Alle entiteiten</option>
-            {entities.map(e => (
-              <option key={e.key} value={e.key}>
-                {e.type === 'club' ? '🏟️' : e.type === 'team' ? '👥' : '🏢'} {e.name}
-              </option>
+            <option value="">Federation: All</option>
+            {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
+              <option key={org.id} value={org.id}>{org.name}</option>
             ))}
           </select>
         )}
+
+        {/* Club filter (for club, team, member levels) */}
+        {['club', 'team', 'member'].includes(activeLevel) && clubs.length > 0 && (
+          <select
+            value={selectedClubId}
+            onChange={(e) => {
+              setSelectedClubId(e.target.value);
+              setSelectedTeamId('');
+            }}
+            style={{
+              padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
+              backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160,
+            }}
+          >
+            <option value="">Club: All</option>
+            {[...clubs].sort((a, b) => a.name.localeCompare(b.name)).map((club) => (
+              <option key={club.id} value={club.id}>{club.name}</option>
+            ))}
+          </select>
+        )}
+
+        {/* Team filter (for team, member levels) */}
+        {['team', 'member'].includes(activeLevel) && filteredTeams.length > 0 && (
+          <select
+            value={selectedTeamId}
+            onChange={(e) => setSelectedTeamId(e.target.value)}
+            style={{
+              padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
+              backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160,
+            }}
+          >
+            <option value="">Team: All</option>
+            {[...filteredTeams].sort((a, b) => a.name.localeCompare(b.name)).map((team) => (
+              <option key={team.id} value={team.id}>{team.name}</option>
+            ))}
+          </select>
+        )}
+
+        {/* Clear button */}
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={clearFilters}
+          style={{ marginLeft: 'auto' }}
+        >
+          Clear
+        </Button>
       </div>
 
       {/* Content area */}
       <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
         <Stack direction="column" gap="4">
 
-          {/* Content type sub-filter chips (for brand tabs) */}
+          {/* Sub-tabs (content type chips) */}
           {activeLevel !== 'files' && (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <FilterChip active={contentFilter === 'all'} onClick={() => setContentFilter('all')} label="Alles" count={contentTypeCounts.all || 0} />
-              {(['logo', 'kit', 'sponsor', 'closeup', 'in_tenue', 'lineup', 'location', 'font', 'other'] as ContentType[])
-                .filter(ct => (contentTypeCounts[ct] || 0) > 0)
-                .map(ct => (
+              {SUB_TABS[activeLevel].map(({ key, label }) => {
+                const count = subTabCounts[key] || 0;
+                // Only show tabs that have content or are 'all'
+                if (key !== 'all' && count === 0) return null;
+                return (
                   <FilterChip
-                    key={ct}
-                    active={contentFilter === ct}
-                    onClick={() => setContentFilter(ct)}
-                    label={CONTENT_TYPE_LABELS[ct]}
-                    count={contentTypeCounts[ct] || 0}
+                    key={key}
+                    active={subFilter === key}
+                    onClick={() => setSubFilter(key)}
+                    label={label}
+                    count={count}
                   />
-                ))
-              }
+                );
+              })}
             </div>
           )}
 
           {/* File type sub-filter chips (for files tab) */}
           {activeLevel === 'files' && (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {([
-                { key: 'all' as FileTypeFilter, label: 'Alles', count: fileTypeCounts.all },
-                { key: 'image' as FileTypeFilter, label: 'Afbeeldingen', count: fileTypeCounts.image },
-                { key: 'video' as FileTypeFilter, label: "Video's", count: fileTypeCounts.video },
-                { key: 'document' as FileTypeFilter, label: 'Documenten', count: fileTypeCounts.document },
-                { key: 'font' as FileTypeFilter, label: 'Fonts', count: fileTypeCounts.font },
-              ]).filter(c => c.count > 0 || c.key === 'all').map(cat => (
-                <FilterChip
-                  key={cat.key}
-                  active={fileTypeFilter === cat.key}
-                  onClick={() => setFileTypeFilter(cat.key)}
-                  label={cat.label}
-                  count={cat.count}
-                />
-              ))}
+              {SUB_TABS.files.map(({ key, label }) => {
+                const count = fileTypeCounts[key as keyof typeof fileTypeCounts] || 0;
+                if (key !== 'all' && count === 0) return null;
+                return (
+                  <FilterChip
+                    key={key}
+                    active={fileTypeFilter === key as FileTypeFilter}
+                    onClick={() => setFileTypeFilter(key as FileTypeFilter)}
+                    label={label}
+                    count={count}
+                  />
+                );
+              })}
             </div>
           )}
 
@@ -476,8 +756,8 @@ const MediaLibraryPage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <EmptyState icon="🏷️" message="Geen brand assets gevonden." sub={
-                brandAssets.length > 0 ? 'Pas je filters of zoekopdracht aan.' : "Upload logo's en tenues via Brand Identity."
+              <EmptyState icon="🏷️" message="Geen assets gevonden." sub={
+                brandAssets.length > 0 ? 'Pas je filters of zoekopdracht aan.' : "Upload assets via Brand Identity."
               } />
             )
           )}
@@ -506,7 +786,7 @@ const MediaLibraryPage: React.FC = () => {
             <Text size="xs" color="secondary">
               {activeLevel === 'files'
                 ? `${filteredFiles.length} van ${files.length} bestanden`
-                : `${filteredBrandAssets.length} van ${brandAssets.length} brand assets`
+                : `${filteredBrandAssets.length} van ${brandAssets.length} assets`
               }
             </Text>
           </div>
