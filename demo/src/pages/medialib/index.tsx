@@ -734,29 +734,49 @@ const MediaLibraryPage: React.FC = () => {
   const filteredBrandAssets = useMemo(() => {
     let result = brandAssets;
 
+    // Debug: log all unique project_type values
+    const uniqueTypes = [...new Set(brandAssets.map(a => (a as any).project_type))];
+    console.log('[MediaLib] Filtering - unique project_types:', uniqueTypes, 'activeLevel:', activeLevel);
+
     // Level filter - use project_type directly for accurate filtering
+    // Use explicit null/undefined checks for robustness
     if (activeLevel === 'organisation') {
-      // Org-level: project_type is null
-      result = result.filter(a => (a as any).project_type === null);
+      // Org-level: project_type must be null or undefined (not 'club' or 'team')
+      result = result.filter(a => {
+        const pt = (a as any).project_type;
+        return pt === null || pt === undefined;
+      });
+      console.log('[MediaLib] Org filter result:', result.length, 'assets');
     } else if (activeLevel === 'club') {
       // Club-level: project_type is 'club'
       result = result.filter(a => (a as any).project_type === 'club');
+      console.log('[MediaLib] Club filter result:', result.length, 'assets');
     } else if (activeLevel === 'team') {
       // Team-level: project_type is 'team'
       result = result.filter(a => (a as any).project_type === 'team');
+      console.log('[MediaLib] Team filter result:', result.length, 'assets');
     } else if (activeLevel === 'member') {
       // Member tab uses memberMedia, not brandAssets - return empty
       result = [];
     }
 
-    // Club filter - match by project_id or parent_project_id
+    // Club filter - ONLY match by project_id for current level
+    // For club level: match assets belonging to that club
+    // For team level: match teams whose parent is that club
     if (selectedClubId) {
       result = result.filter(a => {
         const assetProjectId = (a as any).project_id;
         const assetParentProjectId = (a as any).parent_project_id;
-        // Match if asset's project is the selected club, OR if asset's parent is the club (for team assets)
-        return String(assetProjectId) === String(selectedClubId) ||
-               String(assetParentProjectId) === String(selectedClubId);
+
+        if (activeLevel === 'club') {
+          // On club tab: only show assets from the selected club itself
+          return String(assetProjectId) === String(selectedClubId);
+        } else if (activeLevel === 'team') {
+          // On team tab: show teams whose parent is the selected club
+          return String(assetParentProjectId) === String(selectedClubId);
+        }
+        // Organisation level: club filter doesn't apply
+        return true;
       });
     }
 
@@ -830,7 +850,33 @@ const MediaLibraryPage: React.FC = () => {
   const filteredMemberMedia = useMemo(() => {
     if (activeLevel !== 'member') return [];
 
+    // Start with MediaItems from memberMedia state
     let result = memberMedia;
+
+    // FALLBACK: If no MediaItems, also check for BrandAssets with member_* asset types
+    // These are stored on team-level brand profiles
+    if (result.length === 0) {
+      const memberBrandAssets = brandAssets
+        .filter(a => a.asset_type.startsWith('member_'))
+        .map(a => ({
+          // Convert BrandAsset to MemberMediaItem-like format
+          id: a.id,
+          title: friendlyAssetLabel(a),
+          file_url: a.url || null,
+          storage_path: a.file_details?.name || null,
+          mime_type: a.file_details?.content_type || 'image/jpeg',
+          file_size_bytes: a.file_details?.size || 0,
+          state: 'processed',
+          created_at: a.created_at,
+          extraction_metadata: { asset_type: a.asset_type },
+          project: { id: (a as any).project_id || '', name: (a as any).project_name || '' },
+          project_id: (a as any).project_id,
+          project_name: (a as any).project_name,
+          _source: 'brand_asset' as const,
+        }));
+      result = memberBrandAssets;
+      console.log('[MediaLib] Member fallback: using', memberBrandAssets.length, 'BrandAssets with member_* types');
+    }
 
     // Team filter
     if (selectedTeamId) {
@@ -865,13 +911,22 @@ const MediaLibraryPage: React.FC = () => {
     }
 
     return result;
-  }, [memberMedia, activeLevel, subFilter, selectedClubId, selectedTeamId, teams, searchQuery]);
+  }, [memberMedia, brandAssets, activeLevel, subFilter, selectedClubId, selectedTeamId, teams, searchQuery]);
 
   // Sub-tab counts for current level
   const subTabCounts = useMemo(() => {
-    // For member tab, use memberMedia
+    // For member tab, use memberMedia (or fallback to BrandAssets with member_* types)
     if (activeLevel === 'member') {
-      let relevantItems = memberMedia;
+      // Use same fallback logic as filteredMemberMedia
+      let relevantItems: any[] = memberMedia;
+      if (relevantItems.length === 0) {
+        relevantItems = brandAssets
+          .filter(a => a.asset_type.startsWith('member_'))
+          .map(a => ({
+            extraction_metadata: { asset_type: a.asset_type },
+            project_id: (a as any).project_id,
+          }));
+      }
 
       // Apply club/team filters to count
       if (selectedTeamId) {
