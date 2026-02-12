@@ -301,6 +301,97 @@ function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (id: stri
 }
 
 // ============================================================================
+// Member Media Card
+// ============================================================================
+
+function MemberMediaCard({ item }: { item: { id: string; title: string; file_url: string | null; mime_type: string; file_size_bytes?: number; extraction_metadata?: Record<string, unknown>; project?: { id: string; name: string } | string } }) {
+  const isVideo = item.mime_type?.startsWith('video/');
+  const assetType = (item.extraction_metadata?.asset_type as string) || 'member_foto';
+
+  // Map asset types to friendly labels
+  const assetTypeLabels: Record<string, string> = {
+    member_closeup: 'Close-up',
+    member_in_tenue: 'In Tenue',
+    member_foto: 'Foto',
+    member_intro: 'Intro Video',
+    member_celebration: 'Celebration',
+  };
+  const friendlyType = assetTypeLabels[assetType] || assetType.replace('member_', '').replace(/_/g, ' ');
+
+  return (
+    <Card style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      {/* Thumbnail */}
+      <div style={{
+        height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
+        overflow: 'hidden', position: 'relative',
+      }}>
+        {item.file_url ? (
+          isVideo ? (
+            <video
+              src={item.file_url}
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              muted
+              playsInline
+              preload="metadata"
+            />
+          ) : (
+            <img
+              src={item.file_url}
+              alt={item.title}
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', padding: 8 }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          )
+        ) : (
+          <span style={{ fontSize: 40, opacity: 0.3 }}>👤</span>
+        )}
+        {/* Member badge */}
+        <span style={{
+          position: 'absolute', top: 8, left: 8,
+          fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+          backgroundColor: '#059669', color: '#fff',
+        }}>
+          Member
+        </span>
+        {isVideo && (
+          <span style={{
+            position: 'absolute', top: 8, right: 8,
+            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+            backgroundColor: '#dc2626', color: '#fff',
+          }}>
+            🎬 Video
+          </span>
+        )}
+      </div>
+
+      {/* Info */}
+      <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+        <Text weight="bold" size="sm" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {item.title || 'Member Media'}
+        </Text>
+        <Text size="xs" color="secondary" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {typeof item.project === 'object' ? item.project?.name : '—'}
+        </Text>
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          <Badge size="sm" variant="default">{friendlyType}</Badge>
+          {item.mime_type && (
+            <Badge size="sm" variant="default" style={{ opacity: 0.7 }}>
+              {item.mime_type.split('/')[1]?.toUpperCase() || item.mime_type}
+            </Badge>
+          )}
+        </div>
+        {item.file_size_bytes && item.file_size_bytes > 0 && (
+          <Text size="xs" color="secondary" style={{ marginTop: 2 }}>
+            {formatFileSize(item.file_size_bytes)}
+          </Text>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+// ============================================================================
 // Main Page
 // ============================================================================
 
@@ -322,6 +413,22 @@ const MediaLibraryPage: React.FC = () => {
   const [brandAssets, setBrandAssets] = useState<BrandAsset[]>([]);
   const [brandLoading, setBrandLoading] = useState(false);
   const [brandError, setBrandError] = useState<string | null>(null);
+
+  // Member media items state (closeups, in_tenue, intro videos, etc.)
+  interface MemberMediaItem {
+    id: string;
+    title: string;
+    file_url: string | null;
+    storage_path: string | null;
+    mime_type: string;
+    file_size_bytes?: number;
+    state: string;
+    created_at: string;
+    extraction_metadata?: Record<string, unknown>;
+    project?: { id: string; name: string } | string;
+  }
+  const [memberMedia, setMemberMedia] = useState<MemberMediaItem[]>([]);
+  const [memberMediaLoading, setMemberMediaLoading] = useState(false);
 
   // File assets hook
   const { files, loading: filesLoading, error: filesError, fetchFiles, getDownloadUrl } = useFileAssets();
@@ -435,15 +542,33 @@ const MediaLibraryPage: React.FC = () => {
         return all;
       };
 
-      // Step 1: Fetch org-level brand profiles
-      const orgProfiles = await fetchPaginated<any>(
+      // Step 1: Fetch org-level brand profiles (no project attached)
+      const rawOrgProfiles = await fetchPaginated<any>(
         `${apiBaseUrl}/api/v1/branding/profiles/?organisation=${orgId}&page_size=100`,
       );
+
+      // Enrich org profiles - filter to only those without a project (true org-level)
+      const orgProfiles = rawOrgProfiles
+        .filter((p: any) => !p.project)  // Only keep profiles where project is null/undefined
+        .map((p: any) => ({
+          ...p,
+          project_id: null,
+          project_name: null,
+          project_type: null,  // Explicitly null for org-level
+          parent_project_id: null,
+        }));
+
+      console.log('[MediaLib] Org-level brand profiles:', orgProfiles.length);
 
       // Step 2: Fetch ALL projects for this organisation (clubs + teams)
       const allProjects = await fetchPaginated<any>(
         `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000`,
       );
+
+      // Separate clubs and teams
+      const clubProjects = allProjects.filter((p: any) => !p.parent_project);
+      const teamProjects = allProjects.filter((p: any) => !!p.parent_project);
+      console.log('[MediaLib] Projects loaded:', { clubs: clubProjects.length, teams: teamProjects.length });
 
       // Step 3: Fetch brand profiles for each project
       const projectProfilePromises = allProjects.map(async (project: any) => {
@@ -451,11 +576,12 @@ const MediaLibraryPage: React.FC = () => {
           const profiles = await fetchPaginated<any>(
             `${apiBaseUrl}/api/v1/branding/profiles/?project=${project.id}&page_size=100`,
           );
+          const isTeam = !!project.parent_project;
           return profiles.map((p: any) => ({
             ...p,
             project_id: String(project.id),
             project_name: project.name,
-            project_type: project.parent_project ? 'team' : 'club',
+            project_type: isTeam ? 'team' : 'club',
             parent_project_id: project.parent_project ? String(
               typeof project.parent_project === 'object' ? project.parent_project.id : project.parent_project
             ) : null,
@@ -468,6 +594,12 @@ const MediaLibraryPage: React.FC = () => {
       const projectProfiles = (await Promise.all(projectProfilePromises)).flat();
       const allProfiles = [...orgProfiles, ...projectProfiles];
 
+      console.log('[MediaLib] Total brand profiles:', {
+        org: orgProfiles.length,
+        project: projectProfiles.length,
+        total: allProfiles.length,
+      });
+
       // Step 4: Fetch assets for each profile
       const assetPromises = allProfiles.map(async (profile: any) => {
         try {
@@ -477,11 +609,11 @@ const MediaLibraryPage: React.FC = () => {
           return assets.map((a: BrandAsset) => ({
             ...a,
             profile_name: profile.name,
-            project_id: profile.project_id || undefined,
-            project_name: profile.project_name || undefined,
-            project_type: profile.project_type,
-            parent_project_id: profile.parent_project_id || undefined,
-            organisation_name: profile.organisation_name || undefined,
+            project_id: profile.project_id ?? null,
+            project_name: profile.project_name ?? null,
+            project_type: profile.project_type ?? null,  // Explicit null for org-level
+            parent_project_id: profile.parent_project_id ?? null,
+            organisation_name: profile.organisation_name ?? null,
           }));
         } catch {
           return [];
@@ -489,6 +621,18 @@ const MediaLibraryPage: React.FC = () => {
       });
 
       const allAssets = (await Promise.all(assetPromises)).flat();
+
+      // Log asset breakdown by hierarchy level
+      const orgAssets = allAssets.filter((a: any) => a.project_type === null);
+      const clubAssets = allAssets.filter((a: any) => a.project_type === 'club');
+      const teamAssets = allAssets.filter((a: any) => a.project_type === 'team');
+      console.log('[MediaLib] Brand assets by level:', {
+        organisation: orgAssets.length,
+        club: clubAssets.length,
+        team: teamAssets.length,
+        total: allAssets.length,
+      });
+
       setBrandAssets(allAssets);
     } catch (err: any) {
       setBrandError(err.message || 'Failed to load brand assets');
@@ -497,13 +641,83 @@ const MediaLibraryPage: React.FC = () => {
     }
   }, [orgId, orgSlug]);
 
+  // Fetch member media items (closeups, in_tenue, intro videos, celebration videos)
+  const fetchMemberMediaItems = useCallback(async () => {
+    if (!orgSlug) return;
+
+    setMemberMediaLoading(true);
+
+    try {
+      const apiBaseUrl = getApiBaseUrl();
+
+      // Helper to fetch all pages
+      const fetchPaginated = async <T,>(url: string): Promise<T[]> => {
+        const all: T[] = [];
+        let nextUrl: string | null = url;
+        while (nextUrl) {
+          const res = await fetch(nextUrl, { credentials: 'include' });
+          if (!res.ok) break;
+          const json = await res.json();
+          const items: T[] = Array.isArray(json.data?.results) ? json.data.results
+            : Array.isArray(json.data) ? json.data
+            : Array.isArray(json.results) ? json.results
+            : Array.isArray(json) ? json : [];
+          all.push(...items);
+          nextUrl = json.data?.next || json.meta?.pagination?.next || json.next || null;
+        }
+        return all;
+      };
+
+      // Fetch all projects first
+      const allProjects = await fetchPaginated<any>(
+        `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000`,
+      );
+
+      // Fetch media items for each project (teams have member assets)
+      const teamProjects = allProjects.filter((p: any) => !!p.parent_project);
+      const mediaPromises = teamProjects.map(async (team: any) => {
+        try {
+          const items = await fetchPaginated<any>(
+            `${apiBaseUrl}/api/v1/media/items/?project=${team.id}&page_size=500`,
+          );
+          // Filter to member-related asset types
+          return items.filter((item: any) => {
+            const assetType = item.extraction_metadata?.asset_type || '';
+            return assetType.startsWith('member_') ||
+                   assetType.includes('closeup') ||
+                   assetType.includes('in_tenue') ||
+                   assetType.includes('intro') ||
+                   assetType.includes('celebration') ||
+                   assetType.includes('profile') ||
+                   assetType === 'headshot';
+          }).map((item: any) => ({
+            ...item,
+            project_id: String(team.id),
+            project_name: team.name,
+          }));
+        } catch {
+          return [];
+        }
+      });
+
+      const memberItems = (await Promise.all(mediaPromises)).flat();
+      console.log('[MediaLib] Member media items loaded:', memberItems.length);
+      setMemberMedia(memberItems);
+    } catch (err) {
+      console.error('[MediaLib] Failed to fetch member media:', err);
+    } finally {
+      setMemberMediaLoading(false);
+    }
+  }, [orgSlug]);
+
   // Fetch assets on mount
   useEffect(() => {
     if (orgId) {
       fetchAllBrandAssets();
+      fetchMemberMediaItems();
       fetchFiles(orgId);
     }
-  }, [orgId, fetchAllBrandAssets, fetchFiles]);
+  }, [orgId, fetchAllBrandAssets, fetchMemberMediaItems, fetchFiles]);
 
   // Filter teams by selected club
   const filteredTeams = useMemo(() => {
@@ -520,18 +734,19 @@ const MediaLibraryPage: React.FC = () => {
   const filteredBrandAssets = useMemo(() => {
     let result = brandAssets;
 
-    // Level filter (map to HierarchyLevel)
-    if (activeLevel !== 'files') {
-      const levelMap: Record<string, HierarchyLevel> = {
-        organisation: 'organisation',
-        club: 'club',
-        team: 'team',
-        member: 'member',
-      };
-      const targetLevel = levelMap[activeLevel];
-      if (targetLevel) {
-        result = result.filter(a => getHierarchyLevel(a) === targetLevel);
-      }
+    // Level filter - use project_type directly for accurate filtering
+    if (activeLevel === 'organisation') {
+      // Org-level: project_type is null
+      result = result.filter(a => (a as any).project_type === null);
+    } else if (activeLevel === 'club') {
+      // Club-level: project_type is 'club'
+      result = result.filter(a => (a as any).project_type === 'club');
+    } else if (activeLevel === 'team') {
+      // Team-level: project_type is 'team'
+      result = result.filter(a => (a as any).project_type === 'team');
+    } else if (activeLevel === 'member') {
+      // Member tab uses memberMedia, not brandAssets - return empty
+      result = [];
     }
 
     // Club filter - match by project_id or parent_project_id
@@ -611,28 +826,91 @@ const MediaLibraryPage: React.FC = () => {
     return result;
   }, [files, fileTypeFilter, searchQuery]);
 
+  // Filtered member media
+  const filteredMemberMedia = useMemo(() => {
+    if (activeLevel !== 'member') return [];
+
+    let result = memberMedia;
+
+    // Team filter
+    if (selectedTeamId) {
+      result = result.filter(item => String((item as any).project_id) === String(selectedTeamId));
+    }
+
+    // Club filter - match team's parent
+    if (selectedClubId && !selectedTeamId) {
+      const teamIds = teams
+        .filter(t => {
+          const parentId = typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project;
+          return String(parentId) === String(selectedClubId);
+        })
+        .map(t => String(t.id));
+      result = result.filter(item => teamIds.includes(String((item as any).project_id)));
+    }
+
+    // Sub-filter (member content type)
+    if (subFilter !== 'all') {
+      result = result.filter(item => {
+        const assetType = (item.extraction_metadata?.asset_type as string) || '';
+        const memberType = getMemberContentType(assetType);
+        return memberType === subFilter;
+      });
+    }
+
+    // Search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(item =>
+        item.title?.toLowerCase().includes(q) ||
+        ((item.extraction_metadata?.asset_type as string) || '').toLowerCase().includes(q) ||
+        (item as any).project_name?.toLowerCase().includes(q)
+      );
+    }
+
+    return result;
+  }, [memberMedia, activeLevel, subFilter, selectedClubId, selectedTeamId, teams, searchQuery]);
+
   // Sub-tab counts for current level
   const subTabCounts = useMemo(() => {
+    // For member tab, use memberMedia
+    if (activeLevel === 'member') {
+      let relevantItems = memberMedia;
+
+      // Apply club/team filters to count
+      if (selectedTeamId) {
+        relevantItems = relevantItems.filter(item => String((item as any).project_id) === String(selectedTeamId));
+      } else if (selectedClubId) {
+        const teamIds = teams
+          .filter(t => {
+            const parentId = typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project;
+            return String(parentId) === String(selectedClubId);
+          })
+          .map(t => String(t.id));
+        relevantItems = relevantItems.filter(item => teamIds.includes(String((item as any).project_id)));
+      }
+
+      const counts: Record<string, number> = { all: relevantItems.length };
+      relevantItems.forEach(item => {
+        const assetType = (item.extraction_metadata?.asset_type as string) || '';
+        const ct = getMemberContentType(assetType);
+        counts[ct] = (counts[ct] || 0) + 1;
+      });
+      return counts;
+    }
+
+    // For other tabs, use brandAssets filtered by level
     const levelAssets = activeLevel === 'files'
       ? []
       : brandAssets.filter(a => {
-          const levelMap: Record<string, HierarchyLevel> = {
-            organisation: 'organisation',
-            club: 'club',
-            team: 'team',
-            member: 'member',
-          };
-          return getHierarchyLevel(a) === levelMap[activeLevel];
+          if (activeLevel === 'organisation') return (a as any).project_type === null;
+          if (activeLevel === 'club') return (a as any).project_type === 'club';
+          if (activeLevel === 'team') return (a as any).project_type === 'team';
+          return false;
         });
 
     const counts: Record<string, number> = { all: levelAssets.length };
 
-    if (activeLevel === 'member') {
-      levelAssets.forEach(a => {
-        const ct = getMemberContentType(a.asset_type);
-        counts[ct] = (counts[ct] || 0) + 1;
-      });
-    } else if (activeLevel === 'organisation') {
+    if (activeLevel === 'organisation') {
       levelAssets.forEach(a => {
         if (a.asset_type.startsWith('logo')) counts.logo = (counts.logo || 0) + 1;
         else if (a.asset_type === 'watermark') counts.watermark = (counts.watermark || 0) + 1;
@@ -641,6 +919,7 @@ const MediaLibraryPage: React.FC = () => {
         else if (a.asset_type === 'location_photo') counts.location = (counts.location || 0) + 1;
       });
     } else {
+      // Club and Team levels
       levelAssets.forEach(a => {
         const ct = getContentType(a.asset_type);
         counts[ct] = (counts[ct] || 0) + 1;
@@ -648,7 +927,7 @@ const MediaLibraryPage: React.FC = () => {
     }
 
     return counts;
-  }, [brandAssets, activeLevel]);
+  }, [brandAssets, memberMedia, activeLevel, selectedClubId, selectedTeamId, teams]);
 
   // File type counts
   const fileTypeCounts = useMemo(() => ({
@@ -659,7 +938,7 @@ const MediaLibraryPage: React.FC = () => {
     font: files.filter(f => getFileTypeFilter(f.mime_type) === 'font').length,
   }), [files]);
 
-  const loading = brandLoading || (activeLevel === 'files' && filesLoading);
+  const loading = brandLoading || (activeLevel === 'files' && filesLoading) || (activeLevel === 'member' && memberMediaLoading);
   const error = activeLevel === 'files' ? filesError : brandError;
 
   const handleDownload = async (fileId: string) => {
@@ -840,8 +1119,8 @@ const MediaLibraryPage: React.FC = () => {
             </div>
           )}
 
-          {/* Brand Assets Grid */}
-          {activeLevel !== 'files' && !loading && (
+          {/* Brand Assets Grid (org, club, team - not member or files) */}
+          {activeLevel !== 'files' && activeLevel !== 'member' && !loading && (
             filteredBrandAssets.length > 0 ? (
               <div style={{
                 display: 'grid',
@@ -855,6 +1134,25 @@ const MediaLibraryPage: React.FC = () => {
             ) : (
               <EmptyState icon="🏷️" message="Geen assets gevonden." sub={
                 brandAssets.length > 0 ? 'Pas je filters of zoekopdracht aan.' : "Upload assets via Brand Identity."
+              } />
+            )
+          )}
+
+          {/* Member Media Grid */}
+          {activeLevel === 'member' && !loading && (
+            filteredMemberMedia.length > 0 ? (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                gap: 16,
+              }}>
+                {filteredMemberMedia.map((item) => (
+                  <MemberMediaCard key={item.id} item={item} />
+                ))}
+              </div>
+            ) : (
+              <EmptyState icon="👤" message="Geen speler media gevonden." sub={
+                memberMedia.length > 0 ? 'Pas je filters of zoekopdracht aan.' : "Genereer speler assets via de team/seizoen pagina."
               } />
             )
           )}
@@ -883,6 +1181,8 @@ const MediaLibraryPage: React.FC = () => {
             <Text size="xs" color="secondary">
               {activeLevel === 'files'
                 ? `${filteredFiles.length} van ${files.length} bestanden`
+                : activeLevel === 'member'
+                ? `${filteredMemberMedia.length} van ${memberMedia.length} speler media`
                 : `${filteredBrandAssets.length} van ${brandAssets.length} assets`
               }
             </Text>
