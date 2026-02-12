@@ -382,17 +382,26 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 ## Priority TODO List (Frontend)
 
 ### High Priority
-1. **B55 Video queue UI** - VideoJobListPage, `/studio/videos` route
-2. **B34 Generative Pipeline connect** - Connect generation requests to workflow instances
+1. **B55 Video queue UI** — VideoJobListPage, `/studio/videos` route, PresetSelector
+2. **B34 Generative Pipeline ↔ B37 Workflow connect** — Auto-create WorkflowInstance when GenerationRequest completes; show workflow status on content cards
 
 ### Medium Priority
-3. **BrandProfile editor** - Create/update brand profiles
-4. **MediaItem upload** - File upload integratie met MediaLibrary
-5. **Hierarchical Search UI** - HierarchyTreeView in SearchPage
+3. **B16 Notification triggers** — Toast/bell notifications when workflow transitions happen (approve/reject/revision needed)
+4. **BrandProfile editor** — Create/update brand profiles (currently read-only)
+5. **MediaItem upload** — File upload integratie met MediaLibrary
+6. **Batch approval actions** — Select multiple items on ApprovalsPage, approve/reject in bulk
 
 ### Low Priority
-6. **Platform Export UI** - Instagram/TikTok/YouTube format selectors
-7. **Task status widget** - Celery queue monitoring
+7. **Hierarchical Search UI** — HierarchyTreeView in SearchPage
+8. **Platform Export UI** — Instagram/TikTok/YouTube format selectors
+9. **Task status widget** — Celery queue monitoring dashboard
+
+### Recommended Next Step
+**Option A: B55 Video Queue UI** — Build `/studio/videos` page listing VideoJobs with status tracking, filtering, retry. Uses existing backend (8 endpoints, 76 tests). Quick win, fills the dead link on ContentPage.
+
+**Option B: B34 ↔ B37 Pipeline Connection** — Wire GenerationRequest completion to auto-create WorkflowInstance. Makes the Approvals page actually useful with real data flowing through. Deeper integration but higher value.
+
+**Option C: B16 Notifications** — Add toast notifications for workflow transitions. Small scope, visible UX improvement: users get notified when their content is approved/rejected.
 
 ---
 
