@@ -62,6 +62,17 @@ interface ProjectOption {
   parent_name?: string | null;
 }
 
+// Kit type filters (for tenue assets at club/team level and member level)
+const KIT_TYPES = [
+  { key: 'all', label: 'Alle Tenues' },
+  { key: 'home', label: 'Thuis' },
+  { key: 'away', label: 'Uit' },
+  { key: 'third', label: 'Derde' },
+  { key: 'goalkeeper', label: 'Keeper' },
+  { key: 'coach', label: 'Coach' },
+  { key: 'training', label: 'Training' },
+];
+
 // Sub-tab definitions per hierarchy level
 const SUB_TABS: Record<HierarchyTab, { key: string; label: string }[]> = {
   organisation: [
@@ -87,11 +98,11 @@ const SUB_TABS: Record<HierarchyTab, { key: string; label: string }[]> = {
   ],
   member: [
     { key: 'all', label: 'Alles' },
-    { key: 'profile', label: 'Foto' },
-    { key: 'closeup', label: 'Close-up' },
-    { key: 'in_tenue', label: 'In Tenue' },
-    { key: 'intro', label: 'Short Intro' },
-    { key: 'celebration', label: 'Celebration' },
+    { key: 'member_profile', label: 'Foto' },
+    { key: 'member_fullbody', label: 'Full Body' },
+    { key: 'member_closeup', label: 'Close-up' },
+    { key: 'member_intro', label: 'Intro' },
+    { key: 'member_celebration', label: 'Celebration' },
   ],
   files: [
     { key: 'all', label: 'Alles' },
@@ -452,8 +463,14 @@ const MediaLibraryPage: React.FC = () => {
 
   // Sub-filter state (content type within level)
   const [subFilter, setSubFilter] = useState<string>('all');
+  const [kitFilter, setKitFilter] = useState<string>('all');  // Kit type filter (home, away, etc.)
   const [fileTypeFilter, setFileTypeFilter] = useState<FileTypeFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Reset kit filter when sub-filter changes
+  useEffect(() => {
+    setKitFilter('all');
+  }, [subFilter]);
 
   // Load organisations
   useEffect(() => {
@@ -778,18 +795,21 @@ const MediaLibraryPage: React.FC = () => {
     // Use explicit null/undefined checks for robustness
     if (activeLevel === 'organisation') {
       // Org-level: project_type must be null or undefined (not 'club' or 'team')
+      // Also exclude member_* assets (those belong on member tab)
       result = result.filter(a => {
         const pt = (a as any).project_type;
-        return pt === null || pt === undefined;
+        const isOrgLevel = pt === null || pt === undefined;
+        const isMemberAsset = a.asset_type.startsWith('member_');
+        return isOrgLevel && !isMemberAsset;
       });
       console.log('[MediaLib] Org filter result:', result.length, 'assets');
     } else if (activeLevel === 'club') {
-      // Club-level: project_type is 'club'
-      result = result.filter(a => (a as any).project_type === 'club');
+      // Club-level: project_type is 'club', exclude member_* assets
+      result = result.filter(a => (a as any).project_type === 'club' && !a.asset_type.startsWith('member_'));
       console.log('[MediaLib] Club filter result:', result.length, 'assets');
     } else if (activeLevel === 'team') {
-      // Team-level: project_type is 'team'
-      result = result.filter(a => (a as any).project_type === 'team');
+      // Team-level: project_type is 'team', exclude member_* assets
+      result = result.filter(a => (a as any).project_type === 'team' && !a.asset_type.startsWith('member_'));
       console.log('[MediaLib] Team filter result:', result.length, 'assets');
     } else if (activeLevel === 'member') {
       // Member tab uses memberMedia, not brandAssets - return empty
@@ -844,12 +864,19 @@ const MediaLibraryPage: React.FC = () => {
         }
       } else {
         // Club/Team: logo, kit, sponsor, location
-        const contentType = getContentType(result[0]?.asset_type || '');
         result = result.filter(a => {
           const ct = getContentType(a.asset_type);
           return ct === subFilter;
         });
       }
+    }
+
+    // Kit type filter (for tenue assets)
+    if (kitFilter !== 'all' && subFilter === 'kit') {
+      result = result.filter(a => {
+        // Match kit_home, kit_away, kit_third, kit_goalkeeper, etc.
+        return a.asset_type.includes(`kit_${kitFilter}`);
+      });
     }
 
     // Search
@@ -864,7 +891,7 @@ const MediaLibraryPage: React.FC = () => {
       );
     }
     return result;
-  }, [brandAssets, activeLevel, subFilter, selectedClubId, selectedTeamId, clubs, teams, searchQuery]);
+  }, [brandAssets, activeLevel, subFilter, kitFilter, selectedClubId, selectedTeamId, clubs, teams, searchQuery]);
 
   // Filtered files
   const filteredFiles = useMemo(() => {
@@ -939,6 +966,11 @@ const MediaLibraryPage: React.FC = () => {
       });
     }
 
+    // Kit type filter (for fullbody/closeup with kit variants)
+    if (kitFilter !== 'all' && (subFilter === 'member_fullbody' || subFilter === 'member_closeup')) {
+      result = result.filter(item => item.kit_type === kitFilter);
+    }
+
     // Search
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -951,7 +983,7 @@ const MediaLibraryPage: React.FC = () => {
     }
 
     return result;
-  }, [memberMedia, brandAssets, activeLevel, subFilter, selectedClubId, selectedTeamId, teams, searchQuery]);
+  }, [memberMedia, brandAssets, activeLevel, subFilter, kitFilter, selectedClubId, selectedTeamId, teams, searchQuery]);
 
   // Sub-tab counts for current level
   const subTabCounts = useMemo(() => {
@@ -1047,6 +1079,7 @@ const MediaLibraryPage: React.FC = () => {
     setSelectedClubId('');
     setSelectedTeamId('');
     setSubFilter('all');
+    setKitFilter('all');
     setSearchQuery('');
   };
 
@@ -1186,6 +1219,21 @@ const MediaLibraryPage: React.FC = () => {
             </div>
           )}
 
+          {/* Kit type filter (shown when viewing tenue at club/team level or fullbody/closeup at member level) */}
+          {((subFilter === 'kit' && (activeLevel === 'club' || activeLevel === 'team')) ||
+            ((subFilter === 'member_fullbody' || subFilter === 'member_closeup') && activeLevel === 'member')) && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+              {KIT_TYPES.map(({ key, label }) => (
+                <FilterChip
+                  key={key}
+                  active={kitFilter === key}
+                  onClick={() => setKitFilter(key)}
+                  label={label}
+                />
+              ))}
+            </div>
+          )}
+
           {/* File type sub-filter chips (for files tab) */}
           {activeLevel === 'files' && (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -1294,7 +1342,7 @@ const MediaLibraryPage: React.FC = () => {
 // ============================================================================
 
 function FilterChip({ active, onClick, label, count }: {
-  active: boolean; onClick: () => void; label: string; count: number;
+  active: boolean; onClick: () => void; label: string; count?: number;
 }) {
   return (
     <button
@@ -1309,13 +1357,15 @@ function FilterChip({ active, onClick, label, count }: {
       }}
     >
       {label}
-      <span style={{
-        fontSize: 10, fontWeight: 700, padding: '0 5px', borderRadius: 8,
-        backgroundColor: active ? 'var(--color-primary, #2563eb)' : 'var(--app-surface-2, #f3f4f6)',
-        color: active ? '#fff' : 'var(--app-text-secondary)',
-      }}>
-        {count}
-      </span>
+      {count !== undefined && (
+        <span style={{
+          fontSize: 10, fontWeight: 700, padding: '0 5px', borderRadius: 8,
+          backgroundColor: active ? 'var(--color-primary, #2563eb)' : 'var(--app-surface-2, #f3f4f6)',
+          color: active ? '#fff' : 'var(--app-text-secondary)',
+        }}>
+          {count}
+        </span>
+      )}
     </button>
   );
 }
