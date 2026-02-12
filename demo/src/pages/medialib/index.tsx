@@ -825,33 +825,70 @@ const MediaLibraryPage: React.FC = () => {
 
       // Convert storage paths to presigned URLs
       // Collect all paths that need conversion (not starting with http)
-      const pathsToConvert = memberAssets
-        .map(a => a.url)
-        .filter(url => url && !url.startsWith('http://') && !url.startsWith('https://'));
+      const getCsrfToken = (): string => {
+        if (typeof document === 'undefined') return '';
+        return (
+          document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('csrftoken='))
+            ?.split('=')[1] || ''
+        );
+      };
+
+      const pathsToConvert = Array.from(
+        new Set(
+          memberAssets
+            .map((a) => a.url)
+            .filter(
+              (url): url is string =>
+                Boolean(url) &&
+                !url.startsWith('http://') &&
+                !url.startsWith('https://')
+            )
+        )
+      );
 
       if (pathsToConvert.length > 0) {
         console.log('[MediaLib] Converting', pathsToConvert.length, 'storage paths to presigned URLs');
         try {
-          const presignedRes = await fetch(`${apiBaseUrl}/api/v1/files/presigned-urls/`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paths: pathsToConvert }),
-          });
-          if (presignedRes.ok) {
-            const presignedJson = await presignedRes.json();
-            const urlMap = presignedJson.data?.urls || presignedJson.urls || {};
+          const csrfToken = getCsrfToken();
 
-            // Replace paths with presigned URLs
-            for (const asset of memberAssets) {
-              if (urlMap[asset.url]) {
-                asset.url = urlMap[asset.url];
-              }
-            }
-            console.log('[MediaLib] Converted paths to presigned URLs');
-          } else {
-            console.warn('[MediaLib] Presigned URL fetch failed:', presignedRes.status);
+          // Backend guardrail: max 100 per request
+          const chunks: string[][] = [];
+          for (let i = 0; i < pathsToConvert.length; i += 100) {
+            chunks.push(pathsToConvert.slice(i, i + 100));
           }
+
+          const urlMap: Record<string, string | null> = {};
+          for (const chunk of chunks) {
+            const presignedRes = await fetch(`${apiBaseUrl}/api/v1/files/presigned-urls/`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
+              },
+              body: JSON.stringify({ paths: chunk }),
+            });
+
+            if (!presignedRes.ok) {
+              console.warn('[MediaLib] Presigned URL fetch failed:', presignedRes.status);
+              continue;
+            }
+
+            const presignedJson = await presignedRes.json();
+            const chunkMap = presignedJson.data?.urls || presignedJson.urls || {};
+            Object.assign(urlMap, chunkMap);
+          }
+
+          // Replace paths with presigned URLs
+          for (const asset of memberAssets) {
+            if (!asset.url) continue;
+            const maybeUrl = urlMap[asset.url];
+            if (maybeUrl) asset.url = maybeUrl;
+          }
+
+          console.log('[MediaLib] Converted paths to presigned URLs');
         } catch (presignErr) {
           console.warn('[MediaLib] Presigned URL conversion error:', presignErr);
         }

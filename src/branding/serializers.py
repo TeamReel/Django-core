@@ -367,10 +367,18 @@ class BrandAssetSerializer(serializers.ModelSerializer):
         return None
 
     def get_project_type(self, obj: BrandAsset) -> str | None:
-        """Return project type (club/team) if profile is linked to a project."""
-        if obj.profile and obj.profile.project:
-            return obj.profile.project.project_type
-        return None
+        """Return hierarchy level for project-scoped assets.
+
+        The Project model does not expose a stable `project_type` field. For the
+        80/20 hierarchy we derive:
+        - club: root project (no parent_project)
+        - team: child project (has parent_project)
+        """
+        project = getattr(getattr(obj, "profile", None), "project", None)
+        if not project:
+            return None
+
+        return "team" if getattr(project, "parent_project_id", None) else "club"
 
     def get_parent_project_id(self, obj: BrandAsset) -> str | None:
         """Return parent project ID if available."""
