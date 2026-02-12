@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Card, Stack, Text, Alert, Badge } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
@@ -31,20 +31,6 @@ import {
   type FileAsset,
   type FileTypeFilter,
 } from '../../hooks/useFileAssets';
-
-// ============================================================================
-// Tab types
-// ============================================================================
-
-type LevelTab = 'all' | 'club' | 'team' | 'member' | 'files';
-
-const LEVEL_TABS: { key: LevelTab; label: string; icon: string }[] = [
-  { key: 'all', label: 'Alles', icon: '📚' },
-  { key: 'club', label: 'Club', icon: '🏟️' },
-  { key: 'team', label: 'Team', icon: '👥' },
-  { key: 'member', label: 'Speler', icon: '🧑' },
-  { key: 'files', label: 'Bestanden', icon: '📁' },
-];
 
 // ============================================================================
 // Helpers
@@ -238,13 +224,13 @@ function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (id: stri
 
 const MediaLibraryPage: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { context } = useContextSwitcher();
   const orgId = (context as any)?.organisation?.id as string | undefined;
 
-  // Read tab from URL
+  // Read level from URL (set by Panel B sidebar)
   const rawTab = new URLSearchParams(location.search).get('tab') || 'all';
-  const activeLevel: LevelTab = (['all', 'club', 'team', 'member', 'files'].includes(rawTab) ? rawTab : 'all') as LevelTab;
+  const activeLevel = (['all', 'club', 'team', 'member', 'files'].includes(rawTab) ? rawTab : 'all') as
+    'all' | 'club' | 'team' | 'member' | 'files';
 
   // Data hooks
   const { assets: brandAssets, loading: brandLoading, error: brandError, fetchAssets } = useBrandAssets();
@@ -258,12 +244,12 @@ const MediaLibraryPage: React.FC = () => {
   // Top-level entity filter (optional: filter by specific club/team)
   const [entityFilter, setEntityFilter] = useState<string>('all');
 
-  const setActiveLevel = (tab: LevelTab) => {
-    navigate(`/medialib?tab=${tab}`, { replace: true });
+  // Reset sub-filters when level changes (via Panel B)
+  useEffect(() => {
     setContentFilter('all');
     setFileTypeFilter('all');
     setSearchQuery('');
-  };
+  }, [activeLevel]);
 
   // Fetch on mount
   useEffect(() => {
@@ -358,15 +344,6 @@ const MediaLibraryPage: React.FC = () => {
     font: files.filter(f => getFileTypeFilter(f.mime_type) === 'font').length,
   }), [files]);
 
-  // Level counts (for tabs)
-  const levelCounts = useMemo(() => ({
-    all: brandAssets.length,
-    club: brandAssets.filter(a => getHierarchyLevel(a) === 'club').length,
-    team: brandAssets.filter(a => getHierarchyLevel(a) === 'team').length,
-    member: brandAssets.filter(a => getHierarchyLevel(a) === 'member').length,
-    files: files.length,
-  }), [brandAssets, files]);
-
   const loading = brandLoading || (activeLevel === 'files' && filesLoading);
   const error = activeLevel === 'files' ? filesError : brandError;
 
@@ -386,40 +363,18 @@ const MediaLibraryPage: React.FC = () => {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)' }}>
       {/* Header */}
-      <div style={{ padding: '24px 24px 0', borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
+      <div style={{ padding: 24, borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
         <Stack direction="column" gap="1">
           <Text size="xl" weight="bold">Media Library</Text>
           <Text size="md" color="secondary">
-            Alle brand assets en bestanden van je organisatie.
+            {activeLevel === 'files'
+              ? 'Alle bestanden van je organisatie.'
+              : activeLevel === 'all'
+                ? 'Alle brand assets en bestanden van je organisatie.'
+                : `${activeLevel === 'club' ? 'Club' : activeLevel === 'team' ? 'Team' : 'Speler'} assets`
+            }
           </Text>
         </Stack>
-
-        {/* Level tabs */}
-        <div style={{ display: 'flex', gap: 0, marginTop: 16, overflow: 'auto' }}>
-          {LEVEL_TABS.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveLevel(tab.key)}
-              style={{
-                padding: '10px 16px', fontSize: 13, fontWeight: activeLevel === tab.key ? 700 : 500,
-                borderBottom: activeLevel === tab.key ? '2px solid var(--color-primary, #2563eb)' : '2px solid transparent',
-                background: 'none', border: 'none', borderBottomStyle: 'solid',
-                color: activeLevel === tab.key ? 'var(--color-primary, #2563eb)' : 'var(--app-text-secondary)',
-                cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6,
-              }}
-            >
-              <span>{tab.icon}</span>
-              {tab.label}
-              <span style={{
-                fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 10,
-                backgroundColor: activeLevel === tab.key ? 'var(--color-primary, #2563eb)' : 'var(--app-surface-2, #f3f4f6)',
-                color: activeLevel === tab.key ? '#fff' : 'var(--app-text-secondary)',
-              }}>
-                {levelCounts[tab.key]}
-              </span>
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Toolbar: search + entity filter */}
