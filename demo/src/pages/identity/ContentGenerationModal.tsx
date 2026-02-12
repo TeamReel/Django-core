@@ -1060,6 +1060,8 @@ export default function ContentGenerationModal({
       const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
       let brandAssetType = assetType;
 
+      const isVideo = (selectedVariant.mime_type || '').startsWith('video/');
+
       // Map template subtype to BrandAsset type
       if (templateSubtype.includes('logo')) {
         brandAssetType = 'logo_light'; // AI-processed logo
@@ -1068,7 +1070,19 @@ export default function ContentGenerationModal({
       } else if (templateSubtype.includes('kit') || templateSubtype.includes('tenue')) {
         const kitType = (selectedTemplate as ContentTemplate & { params?: { kit_type?: string } })?.params?.kit_type || 'home';
         brandAssetType = `kit_${kitType}`; // e.g. kit_home, kit_away
+      } else if (templateSubtype === 'lineup' || isVideo) {
+        // Lineup videos need a non-empty asset_type. Use a per-match unique value to avoid
+        // overwriting due to unique(profile, asset_type).
+        const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
+        brandAssetType = `lineup_${matchSuffix}`;
       }
+
+      // Final fallback: API requires asset_type
+      if (!brandAssetType) {
+        brandAssetType = 'other';
+      }
+
+      const filename = selectedVariant.filename || (isVideo ? 'lineup.mp4' : 'saved_asset.png');
 
       // Call API to save as BrandAsset
       const response = await fetch(`${getApiBaseUrl()}/api/v1/generative/assets/save/`, {
@@ -1082,9 +1096,10 @@ export default function ContentGenerationModal({
           // Pass the storage path of the selected variant
           storage_path: selectedVariant.storage_info?.storage_path,
           presigned_url: selectedVariant.presigned_url,
+          video_url: isVideo ? selectedVariant.presigned_url : null,
           image_base64: selectedVariant.image_base64,
-          filename: selectedVariant.filename,
-          mime_type: selectedVariant.mime_type || 'image/png',
+          filename,
+          mime_type: selectedVariant.mime_type || (isVideo ? 'video/mp4' : 'image/png'),
           file_size_bytes: selectedVariant.storage_info?.file_size_bytes || 0,
           // Context
           organisation_id: organisationId,
@@ -1107,12 +1122,17 @@ export default function ContentGenerationModal({
       // Update the variant's storage_info with the new IDs
       const updatedVariants = [...generatedVariants];
       if (result.data?.brand_asset_id || result.brand_asset_id) {
+        const returnedFileAssetId = result.data?.file_asset_id || result.file_asset_id;
+        const returnedBrandAssetId = result.data?.brand_asset_id || result.brand_asset_id;
+        const returnedStoragePath = result.data?.storage_path || result.storage_path;
+
         updatedVariants[selectedVariantIndex] = {
           ...selectedVariant,
           storage_info: {
-            ...selectedVariant.storage_info!,
-            brand_asset_id: result.data?.brand_asset_id || result.brand_asset_id,
-            file_asset_id: result.data?.file_asset_id || result.file_asset_id,
+            ...(selectedVariant.storage_info || {}),
+            ...(returnedStoragePath ? { storage_path: returnedStoragePath } : {}),
+            ...(returnedFileAssetId ? { file_asset_id: returnedFileAssetId } : {}),
+            ...(returnedBrandAssetId ? { brand_asset_id: returnedBrandAssetId } : {}),
           },
         };
         setGeneratedVariants(updatedVariants);
