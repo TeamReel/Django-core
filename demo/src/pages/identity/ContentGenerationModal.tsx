@@ -661,19 +661,20 @@ export default function ContentGenerationModal({
     try {
       // Build segments array for each selected member
       // Order: goalkeeper first, then players (sorted by selection order)
-      const segments: Array<{type: string; url: string; duration?: number; label?: string}> = [];
+      const segments: Array<{type: string; url: string; duration?: number; label?: string; scale?: number}> = [];
 
-      // For lineup videos, enforce specific asset sequence: In Tenue -> Intro -> Closeup
+      // For lineup videos, enforce specific asset sequence: In Tenue -> Intro -> In Tenue -> Closeup (kleiner)
+      // TV-style lineup announcement: full body reveal → intro clip → full body again → close-up zoom
       // Also strictly limit to 1 GK + 10 Players
       let targetGKs = selectedMembers.goalkeeper;
       let targetPlayers = selectedMembers.player;
       let targetCoach = selectedMembers.coach;
       let targetAssistant = selectedMembers.assistant;
 
-      let gkAssets = ['in_tenue', 'short_intro', 'close_up'];
-      let playerAssets = ['in_tenue', 'short_intro', 'close_up'];
-      let coachAssets = ['in_tenue', 'short_intro', 'close_up'];
-      let assistantAssets = ['in_tenue', 'short_intro', 'close_up'];
+      let gkAssets = ['in_tenue', 'short_intro', 'in_tenue', 'close_up'];
+      let playerAssets = ['in_tenue', 'short_intro', 'in_tenue', 'close_up'];
+      let coachAssets = ['in_tenue', 'short_intro', 'in_tenue', 'close_up'];
+      let assistantAssets = ['in_tenue', 'short_intro', 'in_tenue', 'close_up'];
 
       // If requirements exist, use them, but fallback to our defaults for structure
       if (selectedTemplate?.input_requirements?.members) {
@@ -685,8 +686,8 @@ export default function ContentGenerationModal({
 
         // Force defaults if user specifically requested this standard lineup flow
         if (selectedType?.subtype === 'lineup') {
-            gkAssets = ['in_tenue', 'short_intro', 'close_up'];
-            playerAssets = ['in_tenue', 'short_intro', 'close_up'];
+            gkAssets = ['in_tenue', 'short_intro', 'in_tenue', 'close_up'];
+            playerAssets = ['in_tenue', 'short_intro', 'in_tenue', 'close_up'];
             // Lineup = 1 goalkeeper + 10 players (no coaches/assistants)
             targetGKs = targetGKs.slice(0, 1);
             targetPlayers = targetPlayers.slice(0, 10);
@@ -710,8 +711,9 @@ export default function ContentGenerationModal({
                     segments.push({
                         type: 'image',
                         url: altUrl,
-                        duration: 3.0,
-                        label: memberName
+                        duration: 2.0,
+                        label: memberName,
+                        scale: 0.6,
                     });
                     continue;
                  }
@@ -731,11 +733,15 @@ export default function ContentGenerationModal({
                }
             }
 
+            // Closeup segments are smaller (TV-style zoom effect)
+            const isCloseup = assetType === 'close_up';
+
             segments.push({
               type: isImage ? 'image' : 'video',
               url: url,
-              duration: isImage ? 3.0 : undefined,
+              duration: isImage ? (isCloseup ? 2.0 : 3.0) : undefined,
               label: memberName,
+              ...(isCloseup ? { scale: 0.6 } : {}),
             });
           }
         }
@@ -773,9 +779,11 @@ export default function ContentGenerationModal({
           job_type: 'lineup',
           config: {
             segments: segments,
-            output_resolution: '1080p',
+            output_resolution: 'auto',
             output_fps: 30,
             fade_duration: 0.5,
+            match_id: matchData?.id || null,
+            activity_id: matchData?.id || null,
           },
         }),
       });
@@ -1720,30 +1728,206 @@ export default function ContentGenerationModal({
                   </div>
                 </div>
               ) : (
-                // Single variant display
+                // Single variant display — tile-based card (like member asset tiles)
                 <>
-                  {/* Check if it's a video (lineup) */}
                   {generatedVariants[0]?.mime_type?.startsWith('video/') ? (
-                    <div className="w-full max-w-2xl mb-4">
-                      <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 shadow-lg bg-black">
-                        <video
-                          src={generatedVariants[0].presigned_url || ''}
-                          controls
-                          autoPlay
-                          className="w-full max-h-[50vh] object-contain"
-                        >
-                          Your browser does not support the video tag.
-                        </video>
-                      </div>
-                      <div className="mt-3 flex items-center justify-between">
-                        <div className="text-sm text-gray-500">
-                          🎬 Lineup video ready!
-                        </div>
-                        {generatedVariants[0].storage_info && (
-                          <div className="text-xs text-gray-400">
-                            {((generatedVariants[0].storage_info.file_size_bytes || 0) / (1024 * 1024)).toFixed(1)} MB
+                    <div
+                      style={{
+                        width: '420px',
+                        maxWidth: '92vw',
+                        marginBottom: '16px',
+                        alignSelf: 'center',
+                      }}
+                    >
+                      {/* Tile card */}
+                      <div
+                        style={{
+                          border: saveSuccess ? '2px solid #22c55e' : '2px solid #e5e7eb',
+                          borderRadius: '12px',
+                          overflow: 'hidden',
+                          background: '#000',
+                          cursor: !saveSuccess ? 'pointer' : 'default',
+                          transition: 'all 0.2s ease',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        }}
+                        onClick={() => {
+                          if (!saveSuccess && !savingAsset) {
+                            handleSaveAsAsset();
+                          }
+                        }}
+                        title={!saveSuccess ? 'Klik om op te slaan' : ''}
+                      >
+                        {/* Video preview */}
+                        <div style={{ position: 'relative' }}>
+                          <video
+                            src={generatedVariants[0].presigned_url || ''}
+                            controls
+                            autoPlay
+                            playsInline
+                            style={{
+                              width: '100%',
+                              height: '236px',
+                              maxHeight: '236px',
+                              objectFit: 'contain',
+                              display: 'block',
+                              background: '#000',
+                            }}
+                          >
+                            Your browser does not support the video tag.
+                          </video>
+                          {/* Badge: saved or click to save */}
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: 8,
+                              right: 8,
+                              padding: '4px 10px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              background: saveSuccess ? '#22c55e' : '#3b82f6',
+                              color: 'white',
+                            }}
+                          >
+                            {savingAsset ? '⏳ Opslaan...' : saveSuccess ? '✅ Opgeslagen' : '💾 Klik om op te slaan'}
                           </div>
-                        )}
+                          {/* File size badge */}
+                          {generatedVariants[0].storage_info && (
+                            <div
+                              style={{
+                                position: 'absolute',
+                                bottom: 8,
+                                left: 8,
+                                padding: '2px 8px',
+                                borderRadius: '8px',
+                                fontSize: '11px',
+                                background: 'rgba(0,0,0,0.6)',
+                                color: 'white',
+                              }}
+                            >
+                              {((generatedVariants[0].storage_info.file_size_bytes || 0) / (1024 * 1024)).toFixed(1)} MB
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Tile footer */}
+                        <div style={{ padding: '12px 16px', background: 'var(--app-surface, #111)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                          <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--app-text, white)', marginBottom: '6px' }}>
+                            🎬 Lineup Video
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '8px' }}>
+                            {matchData?.title || 'Match'} — {new Date().toLocaleDateString('nl-NL')}
+                          </div>
+
+                          {/* Action buttons (shown after save) */}
+                          {saveSuccess ? (
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleGenerateInternal(); }}
+                                style={{
+                                  flex: 1,
+                                  padding: '6px 12px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #3b82f6',
+                                  background: 'transparent',
+                                  color: '#3b82f6',
+                                  fontSize: '12px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                🔄 Opnieuw
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const url = generatedVariants[0]?.presigned_url;
+                                  if (url) window.open(url, '_blank');
+                                }}
+                                style={{
+                                  flex: 1,
+                                  padding: '6px 12px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #6b7280',
+                                  background: 'transparent',
+                                  color: '#6b7280',
+                                  fontSize: '12px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                ⬇️ Download
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm('Weet je zeker dat je deze lineup video wilt verwijderen?')) {
+                                    // Reset state — effectively deletes from modal context
+                                    setGeneratedVariants([]);
+                                    setSaveSuccess(false);
+                                    setStep('confirm');
+                                  }
+                                }}
+                                style={{
+                                  padding: '6px 12px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #ef4444',
+                                  background: 'transparent',
+                                  color: '#ef4444',
+                                  fontSize: '12px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!savingAsset && !saveSuccess) handleSaveAsAsset();
+                                }}
+                                disabled={savingAsset || saveSuccess}
+                                style={{
+                                  flex: 1,
+                                  padding: '6px 12px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #22c55e',
+                                  background: 'transparent',
+                                  color: '#22c55e',
+                                  fontSize: '12px',
+                                  fontWeight: 700,
+                                  cursor: savingAsset || saveSuccess ? 'not-allowed' : 'pointer',
+                                  opacity: savingAsset || saveSuccess ? 0.6 : 1,
+                                }}
+                              >
+                                {savingAsset ? '⏳ Opslaan...' : '✅ Accepteren & Opslaan'}
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const url = generatedVariants[0]?.presigned_url;
+                                  if (url) window.open(url, '_blank');
+                                }}
+                                style={{
+                                  flex: 1,
+                                  padding: '6px 12px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #6b7280',
+                                  background: 'transparent',
+                                  color: '#6b7280',
+                                  fontSize: '12px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                🔍 Groot bekijken
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ) : generatedOutput?.image_base64 ? (
@@ -1838,50 +2022,65 @@ export default function ContentGenerationModal({
             )}
             {step === 'success' && (
               <>
-                <Button variant="ghost" onClick={onClose}>Cancel</Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    // Regenerate with same settings
-                    handleGenerateInternal();
-                  }}
-                >
-                  🔄 Regenerate
-                </Button>
-                {/* Download selected variant */}
-                {generatedVariants[selectedVariantIndex] && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      const variant = generatedVariants[selectedVariantIndex];
-                      if (variant.image_base64) {
-                        const link = document.createElement('a');
-                        const mimeType = getSecureMimeType(variant.image_base64, variant.mime_type);
-                        link.href = `data:${mimeType};base64,${variant.image_base64}`;
+                {generatedVariants.length === 1 && generatedVariants[0]?.mime_type?.startsWith('video/') ? (
+                  <>
+                    <Button variant="ghost" onClick={onClose}>Sluiten</Button>
+                    <Button
+                      variant="secondary"
+                      onClick={handleSaveAsAsset}
+                      disabled={savingAsset || saveSuccess}
+                    >
+                      {savingAsset ? '⏳ Opslaan...' : saveSuccess ? '✅ Opgeslagen' : '✅ Accepteren & Opslaan'}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" onClick={onClose}>Cancel</Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        // Regenerate with same settings
+                        handleGenerateInternal();
+                      }}
+                    >
+                      🔄 Regenerate
+                    </Button>
+                    {/* Download selected variant */}
+                    {generatedVariants[selectedVariantIndex] && (
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          const variant = generatedVariants[selectedVariantIndex];
+                          if (variant.image_base64) {
+                            const link = document.createElement('a');
+                            const mimeType = getSecureMimeType(variant.image_base64, variant.mime_type);
+                            link.href = `data:${mimeType};base64,${variant.image_base64}`;
 
-                        // Ensure filename extension matches actual mime type
-                        let filename = variant.filename || `generated-variant-${selectedVariantIndex + 1}`;
-                        if (mimeType === 'image/jpeg' && (filename.endsWith('.png') || !filename.includes('.'))) {
-                            filename = filename.replace(/\.png$/i, '') + '.jpg';
-                        }
+                            // Ensure filename extension matches actual mime type
+                            let filename = variant.filename || `generated-variant-${selectedVariantIndex + 1}`;
+                            if (mimeType === 'image/jpeg' && (filename.endsWith('.png') || !filename.includes('.'))) {
+                                filename = filename.replace(/\.png$/i, '') + '.jpg';
+                            }
 
-                        link.download = filename;
-                        link.click();
-                      } else if (variant.presigned_url) {
-                        window.open(variant.presigned_url, '_blank');
-                      }
-                    }}
-                  >
-                    ⬇️ Download
-                  </Button>
+                            link.download = filename;
+                            link.click();
+                          } else if (variant.presigned_url) {
+                            window.open(variant.presigned_url, '_blank');
+                          }
+                        }}
+                      >
+                        ⬇️ Download
+                      </Button>
+                    )}
+                    {/* Save as BrandAsset button */}
+                    <Button
+                      onClick={handleSaveAsAsset}
+                      disabled={savingAsset || saveSuccess}
+                    >
+                      {savingAsset ? '⏳ Saving...' : saveSuccess ? '✅ Saved' : '💾 Save as Asset'}
+                    </Button>
+                  </>
                 )}
-                {/* Save as BrandAsset button */}
-                <Button
-                  onClick={handleSaveAsAsset}
-                  disabled={savingAsset || saveSuccess}
-                >
-                  {savingAsset ? '⏳ Saving...' : saveSuccess ? '✅ Saved' : '💾 Save as Asset'}
-                </Button>
               </>
             )}
           </div>

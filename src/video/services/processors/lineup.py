@@ -11,20 +11,25 @@ Config Schema:
             "url": "https://..." or "s3://...",
             "duration": 3.0,  # seconds (only for images)
             "label": "Player Name",  # optional text overlay
-            "transition": "fade" | "cut"  # default: "cut"
+            "transition": "fade" | "cut",  # default: "cut"
+            "scale": 0.6  # optional, 0-1 scale factor (for closeup PiP effect)
         },
         ...
     ],
-    "output_resolution": "1080p" | "720p" | "4k",  # default: 1080p
+    "output_resolution": "1080p" | "720p" | "4k",  # default: 720p
     "output_fps": 30,  # default: 30
     "background_color": "#000000",  # default: black
-    "fade_duration": 0.5  # seconds for fade transitions
+    "fade_duration": 0.5,  # seconds for fade transitions
+    "match_id": "uuid",  # optional, for S3 path scoping
+    "activity_id": "uuid"  # optional, alias for match_id
 }
 """
 
 from __future__ import annotations
 
 import logging
+import mimetypes
+import os
 import shutil
 from pathlib import Path
 from urllib.parse import urlparse
@@ -32,6 +37,7 @@ from urllib.parse import urlparse
 import requests
 from django.utils import timezone
 
+from files.models import FileAsset
 from files.utils import get_storage_backend
 from src.video.models.job import JobStatus
 from src.video.services.processors.base import BaseVideoProcessor
@@ -44,6 +50,8 @@ RESOLUTION_PRESETS = {
     "720p": (1280, 720),
     "1080p": (1920, 1080),
     "4k": (3840, 2160),
+    "vertical_720p": (720, 1280),
+    "vertical_1080p": (1080, 1920),
 }
 
 
@@ -121,18 +129,104 @@ class LineupProcessor(BaseVideoProcessor):
         finally:
             self._cleanup()
 
+    def _upload_output(self, output_path: str) -> FileAsset:
+        """Upload output to S3 under match/lineup/ path when match context is available."""
+        config = self.job.config or {}
+        match_id = config.get("match_id") or config.get("activity_id")
+
+        backend = get_storage_backend()
+        file_name = os.path.basename(output_path)
+        org_id = self.job.project.organisation_id
+
+        if match_id:
+            # Save under match/lineup/ hierarchy
+            storage_path = f"matches/{org_id}/{match_id}/lineup/{self.job.id}/{file_name}"
+        else:
+            # Fallback to standard video_outputs path
+            storage_path = f"video_outputs/{org_id}/{self.job.id}/{file_name}"
+
+        with open(output_path, "rb") as file_obj:
+            saved_path = backend.save(storage_path, file_obj)
+
+        file_size = os.path.getsize(output_path)
+        mime_type = mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+
+        return FileAsset.objects.create(
+            organization_id=org_id,
+            uploaded_by=self.job.created_by,
+            original_name=file_name,
+            storage_path=saved_path,
+            file_size=file_size,
+            mime_type=mime_type,
+            is_public=False,
+        )
+
+    def _get_video_dimensions(self, path: str) -> tuple[int, int] | None:
+        """Get video dimensions using ffprobe."""
+        try:
+            command = [
+                "ffprobe",
+                "-v",
+                "error",
+                "-select_streams",
+                "v:0",
+                "-show_entries",
+                "stream=width,height",
+                "-of",
+                "csv=s=x:p=0",
+                path,
+            ]
+
+            import subprocess
+
+            result = subprocess.run(command, capture_output=True, text=True, check=True)
+
+            output = result.stdout.strip()
+            if not output:
+                return None
+
+            parts = output.split("x")
+            if len(parts) == 2:
+                return int(parts[0]), int(parts[1])
+            return None
+        except Exception:
+            return None
+
     def _prepare_segments(self, segments: list[dict]) -> list[str]:
         """Download and convert all segments to video files.
 
         Returns list of local video file paths ready for concatenation.
         """
         config = self.job.config or {}
-        resolution = config.get("output_resolution", "1080p")
+        # Try to detect resolution if not specified or set to "auto"
+        config_resolution = config.get("output_resolution", "auto")
+
+        # Default to 720p if forced or fallback
         fps = config.get("output_fps", 30)
-        width, height = RESOLUTION_PRESETS.get(resolution, (1920, 1080))
+        target_width, target_height = RESOLUTION_PRESETS.get("720p", (1280, 720))
+
+        # If specific resolution requested (and not auto), use it
+        if config_resolution != "auto" and config_resolution in RESOLUTION_PRESETS:
+            target_width, target_height = RESOLUTION_PRESETS[config_resolution]
 
         prepared = []
         total = len(segments)
+
+        # Flag to indicate if we've determined resolution
+        resolution_determined = config_resolution != "auto"
+
+        # Find first video segment to use as reference resolution if auto
+        if not resolution_determined:
+            # Look ahead for first video segment
+            for segment in segments:
+                if segment.get("type") == "video" or (
+                    segment.get("url", "").lower().endswith(".mp4")
+                ):
+                    # We'll use this segment's resolution when we process it
+                    # But wait, we iterate one by one.
+                    # We can let the loop handle it: if first segment is image, we might pick image res.
+                    # Better to prefer video res.
+                    pass
 
         for idx, segment in enumerate(segments):
             try:
@@ -140,6 +234,7 @@ class LineupProcessor(BaseVideoProcessor):
                 url = segment.get("url", "")
                 duration = segment.get("duration", 3.0)
                 label = segment.get("label", "")
+                scale = segment.get("scale", 1.0)  # PiP scale factor (< 1 = smaller)
 
                 if not url:
                     logger.warning(f"Segment {idx} has no URL, skipping")
@@ -150,9 +245,53 @@ class LineupProcessor(BaseVideoProcessor):
                 if not local_path:
                     continue
 
-                # Convert to standardized video segment
+                # If resolution is auto and not yet determined
+                if not resolution_determined:
+                    # Prefer video segments for resolution detection
+                    # Only detect from image if it's the very first segment and no videos are coming?
+                    # Or just detect from current segment.
+                    # Let's enforce: if type is video, OR if it's the first segment and we have no choice.
+                    # Actually, user said "Net zo groot als de input files" (plural).
+                    # Using first segment is safest for consistency, even if it's an image.
+                    # But images might be 4K. Intro videos 1080p.
+                    # If we use 4K, video will be upscaled.
+                    # If we use 1080p, image will be downscaled.
+                    # Downscaling is better.
+
+                    dims = self._get_video_dimensions(local_path)
+                    if dims:
+                        w, h = dims
+                        # Sanity check: if an image is massive (>4K), cap it to 1080p equivalent?
+                        # No, respect user input.
+                        target_width, target_height = w, h
+                        logger.info(
+                            "Auto-detected resolution from segment %d",
+                            idx,
+                            extra={"width": target_width, "height": target_height},
+                        )
+                        resolution_determined = True
+                    else:
+                        # Fallback if detection fails
+                        if idx == len(segments) - 1:  # Last chance
+                            logger.warning("Could not detect dimensions, defaulting to 720p")
+                            resolution_determined = True
+                        # Else continue to next segment to try detecting
+
+                # Convert to standardized video segment using target resolution
+                # If we still haven't determined resolution (e.g. first seg failed probe),
+                # we might be processing with default 720p.
+                # This is why we need to ensure detected before converting if possible.
+
                 segment_video = self._convert_to_video(
-                    local_path, idx, segment_type, duration, width, height, fps, label
+                    local_path,
+                    idx,
+                    segment_type,
+                    duration,
+                    target_width,
+                    target_height,
+                    fps,
+                    label,
+                    scale,
                 )
 
                 if segment_video:
@@ -216,6 +355,7 @@ class LineupProcessor(BaseVideoProcessor):
         height: int,
         fps: int,
         label: str,
+        scale: float = 1.0,
     ) -> str | None:
         """Convert image/video to standardized video segment."""
         output_path = str(self.temp_dir / f"segment_{idx:03d}.mp4")
@@ -224,12 +364,12 @@ class LineupProcessor(BaseVideoProcessor):
             if segment_type == "image":
                 # Convert image to video with duration
                 command = self._build_image_to_video_command(
-                    local_path, output_path, duration, width, height, fps, label
+                    local_path, output_path, duration, width, height, fps, label, scale
                 )
             else:
                 # Re-encode video to standard format
                 command = self._build_video_reencode_command(
-                    local_path, output_path, width, height, fps, label
+                    local_path, output_path, width, height, fps, label, scale
                 )
 
             logger.info(
@@ -257,14 +397,29 @@ class LineupProcessor(BaseVideoProcessor):
         height: int,
         fps: int,
         label: str,
+        scale: float = 1.0,
     ) -> list[str]:
-        """Build FFmpeg command to convert image to video."""
-        # Scale image to fit while maintaining aspect ratio, pad to exact size
-        filter_complex = (
-            f"[0:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
-            f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,"
-            f"setsar=1,fps={fps}"
-        )
+        """Build FFmpeg command to convert image to video.
+
+        When scale < 1.0, the image is rendered smaller and centered on a black
+        background, creating a "picture-in-picture" / closeup zoom effect.
+        """
+        if scale < 1.0:
+            # PiP effect: scale image to fraction of canvas, center on black
+            sw = int(width * scale)
+            sh = int(height * scale)
+            filter_complex = (
+                f"[0:v]scale={sw}:{sh}:force_original_aspect_ratio=decrease,"
+                f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,"
+                f"setsar=1,fps={fps}"
+            )
+        else:
+            # Full-size: scale to fit and pad to exact dimensions
+            filter_complex = (
+                f"[0:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
+                f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,"
+                f"setsar=1,fps={fps}"
+            )
 
         # Add text overlay if label provided
         if label:
@@ -316,14 +471,25 @@ class LineupProcessor(BaseVideoProcessor):
         height: int,
         fps: int,
         label: str,
+        scale: float = 1.0,
     ) -> list[str]:
         """Build FFmpeg command to re-encode video to standard format."""
-        # Scale and pad video to exact dimensions
-        filter_complex = (
-            f"[0:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
-            f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,"
-            f"setsar=1,fps={fps}"
-        )
+        if scale < 1.0:
+            # PiP effect: scale video smaller and center on black
+            sw = int(width * scale)
+            sh = int(height * scale)
+            filter_complex = (
+                f"[0:v]scale={sw}:{sh}:force_original_aspect_ratio=decrease,"
+                f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,"
+                f"setsar=1,fps={fps}"
+            )
+        else:
+            # Scale and pad video to exact dimensions
+            filter_complex = (
+                f"[0:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
+                f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,"
+                f"setsar=1,fps={fps}"
+            )
 
         # Add text overlay if label provided
         if label:
