@@ -671,7 +671,8 @@ const MediaLibraryPage: React.FC = () => {
       // Fetch memberships for each team (with metadata containing assets)
       const memberAssets: MemberMediaItem[] = [];
 
-      // Batch fetch memberships for all teams
+      // Batch fetch memberships for all teams (limit concurrency to avoid overwhelming)
+      let failedTeamCount = 0;
       const membershipPromises = teamProjects.map(async (team: any) => {
         try {
           const memberships = await fetchPaginated<any>(
@@ -682,12 +683,26 @@ const MediaLibraryPage: React.FC = () => {
             team,
           }));
         } catch {
+          failedTeamCount++;
           return [];
         }
       });
 
       const allMembershipData = (await Promise.all(membershipPromises)).flat();
-      console.log('[MediaLib] Total memberships fetched:', allMembershipData.length);
+      console.log('[MediaLib] Total memberships fetched:', allMembershipData.length,
+        failedTeamCount > 0 ? `(${failedTeamCount} teams failed)` : '');
+
+      // Debug: log sample membership to see data structure
+      if (allMembershipData.length > 0) {
+        const sample = allMembershipData[0].membership;
+        console.log('[MediaLib] Sample membership:', {
+          id: sample.id,
+          hasMetadata: !!sample.metadata,
+          metadataKeys: sample.metadata ? Object.keys(sample.metadata) : [],
+          hasTeamreelAssets: !!sample.metadata?.teamreel_assets,
+          teamreelAssetsKeys: sample.metadata?.teamreel_assets ? Object.keys(sample.metadata.teamreel_assets) : [],
+        });
+      }
 
       // Extract assets from membership metadata
       for (const { membership, team } of allMembershipData) {
