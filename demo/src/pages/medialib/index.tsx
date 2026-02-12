@@ -58,7 +58,8 @@ interface ProjectOption {
   name: string;
   slug: string;
   organisation?: string | { id: string };
-  parent_project?: string | { id: string } | null;
+  parent_id?: number | null;  // API returns parent_id (integer), not parent_project
+  parent_name?: string | null;
 }
 
 // Sub-tab definitions per hierarchy level
@@ -565,9 +566,9 @@ const MediaLibraryPage: React.FC = () => {
         `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000`,
       );
 
-      // Separate clubs and teams
-      const clubProjects = allProjects.filter((p: any) => !p.parent_project);
-      const teamProjects = allProjects.filter((p: any) => !!p.parent_project);
+      // Separate clubs and teams - parent_id is returned by API (not parent_project)
+      const clubProjects = allProjects.filter((p: any) => !p.parent_id);
+      const teamProjects = allProjects.filter((p: any) => !!p.parent_id);
       console.log('[MediaLib] Projects loaded:', { clubs: clubProjects.length, teams: teamProjects.length });
 
       // Step 3: Fetch brand profiles for each project
@@ -576,15 +577,14 @@ const MediaLibraryPage: React.FC = () => {
           const profiles = await fetchPaginated<any>(
             `${apiBaseUrl}/api/v1/branding/profiles/?project=${project.id}&page_size=100`,
           );
-          const isTeam = !!project.parent_project;
+          // Check parent_id (API returns parent_id, not parent_project)
+          const isTeam = !!project.parent_id;
           return profiles.map((p: any) => ({
             ...p,
             project_id: String(project.id),
             project_name: project.name,
             project_type: isTeam ? 'team' : 'club',
-            parent_project_id: project.parent_project ? String(
-              typeof project.parent_project === 'object' ? project.parent_project.id : project.parent_project
-            ) : null,
+            parent_project_id: project.parent_id ? String(project.parent_id) : null,
           }));
         } catch {
           return [];
@@ -674,7 +674,7 @@ const MediaLibraryPage: React.FC = () => {
       );
 
       // Fetch media items for each project (teams have member assets)
-      const teamProjects = allProjects.filter((p: any) => !!p.parent_project);
+      const teamProjects = allProjects.filter((p: any) => !!p.parent_id);
       const mediaPromises = teamProjects.map(async (team: any) => {
         try {
           const items = await fetchPaginated<any>(
@@ -723,8 +723,8 @@ const MediaLibraryPage: React.FC = () => {
   const filteredTeams = useMemo(() => {
     if (!selectedClubId) return teams;
     return teams.filter((t) => {
-      const parentId = typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project;
-      return String(parentId) === String(selectedClubId);
+      // API returns parent_id as integer
+      return String(t.parent_id) === String(selectedClubId);
     });
   }, [teams, selectedClubId]);
 
@@ -840,10 +840,7 @@ const MediaLibraryPage: React.FC = () => {
     // Club filter - match team's parent
     if (selectedClubId && !selectedTeamId) {
       const teamIds = teams
-        .filter(t => {
-          const parentId = typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project;
-          return String(parentId) === String(selectedClubId);
-        })
+        .filter(t => String(t.parent_id) === String(selectedClubId))
         .map(t => String(t.id));
       result = result.filter(item => teamIds.includes(String((item as any).project_id)));
     }
@@ -881,10 +878,7 @@ const MediaLibraryPage: React.FC = () => {
         relevantItems = relevantItems.filter(item => String((item as any).project_id) === String(selectedTeamId));
       } else if (selectedClubId) {
         const teamIds = teams
-          .filter(t => {
-            const parentId = typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project;
-            return String(parentId) === String(selectedClubId);
-          })
+          .filter(t => String(t.parent_id) === String(selectedClubId))
           .map(t => String(t.id));
         relevantItems = relevantItems.filter(item => teamIds.includes(String((item as any).project_id)));
       }
