@@ -156,6 +156,13 @@ export function useWorkflowInstances(options: UseWorkflowInstancesOptions = {}) 
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
+  // Auto-refresh when workflow changes are dispatched by other components
+  useEffect(() => {
+    const handler = () => refresh();
+    window.addEventListener('workflowChanged', handler);
+    return () => window.removeEventListener('workflowChanged', handler);
+  }, [refresh]);
+
   useEffect(() => {
     async function fetchInstances() {
       try {

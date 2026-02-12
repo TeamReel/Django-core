@@ -12,6 +12,8 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { createWorkflowInstance } from './useWorkflows';
+import { resolveContentTypeId, type ContentTypeName } from './useContentTypes';
 
 // ============================================================================
 // Types
@@ -83,6 +85,12 @@ export interface SubmitParams {
   inputImages?: Record<string, string>;
   /** Optional user instruction text */
   userPrompt?: string;
+  /** Workflow: content type model name for auto-creating workflow instance */
+  workflowContentType?: ContentTypeName;
+  /** Workflow: the object ID that the workflow attaches to (e.g. match ID) */
+  workflowObjectId?: number;
+  /** Workflow: template ID to use when auto-creating workflow instance */
+  workflowTemplateId?: number;
 }
 
 // ============================================================================
@@ -112,6 +120,9 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
     projectId: string | number;
     organisationId: string;
     outputAssetType?: string;
+    workflowContentType?: ContentTypeName;
+    workflowObjectId?: number;
+    workflowTemplateId?: number;
   } | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
@@ -205,7 +216,10 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
       const saveContext = {
         projectId: params.projectId,
         organisationId: params.organisationId,
-        outputAssetType: params.outputAssetType
+        outputAssetType: params.outputAssetType,
+        workflowContentType: params.workflowContentType,
+        workflowObjectId: params.workflowObjectId,
+        workflowTemplateId: params.workflowTemplateId,
       };
       console.log('📝 Storing context for save:', saveContext);
 
@@ -381,12 +395,42 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         const saveJson = await response.json();
         const saveData = saveJson?.data?.data || saveJson?.data || saveJson;
         console.log('💾 Save response:', saveData);
-        return {
+
+        const result: SaveResult = {
           file_asset_id: saveData?.file_asset_id,
           brand_asset_id: saveData?.brand_asset_id,
           storage_path: saveData?.storage_path,
           asset_type: saveData?.asset_type,
         };
+
+        // ── Auto-create workflow instance if configured ─────────────
+        if (context?.workflowContentType && context?.workflowObjectId && context?.workflowTemplateId) {
+          try {
+            const contentTypeId = await resolveContentTypeId(context.workflowContentType);
+            if (contentTypeId) {
+              await createWorkflowInstance({
+                workflow: context.workflowTemplateId,
+                project: Number(context.projectId),
+                content_type: contentTypeId,
+                object_id: context.workflowObjectId,
+                context: {
+                  auto_created: true,
+                  asset_type: context.outputAssetType,
+                  file_asset_id: result.file_asset_id,
+                  brand_asset_id: result.brand_asset_id,
+                },
+              });
+              console.log('🔄 Auto-created workflow instance for', context.workflowContentType, context.workflowObjectId);
+              // Notify other components to refresh workflow data
+              window.dispatchEvent(new Event('workflowChanged'));
+            }
+          } catch (wfErr) {
+            // Non-blocking: workflow creation failure should not break the save flow
+            console.warn('⚠️ Auto-workflow creation failed (non-blocking):', wfErr);
+          }
+        }
+
+        return result;
       } catch (e) {
         console.error('Error saving asset:', e);
         setError(e instanceof Error ? e.message : 'Opslaan mislukt');

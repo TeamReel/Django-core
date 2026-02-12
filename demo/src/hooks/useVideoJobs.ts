@@ -1,0 +1,313 @@
+/**
+ * useVideoJobs Hook
+ *
+ * Manages video processing jobs (B55):
+ * - List jobs with filters (status, type)
+ * - Create new jobs
+ * - Cancel queued jobs
+ * - Retry failed jobs
+ * - Poll for progress updates
+ *
+ * API: /api/v1/video/jobs/
+ */
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { getApiBaseUrl } from '../utils/apiBase';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export type VideoJobStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled';
+export type VideoJobType = 'transcode' | 'thumbnail' | 'compose' | 'lineup';
+
+export interface VideoPreset {
+  id: string;
+  name: string;
+  description: string;
+  output_format: string;
+  resolution: string;
+  is_system: boolean;
+}
+
+export interface VideoJobWorkflowInfo {
+  id: number;
+  current_state: string;
+  template_name: string;
+}
+
+export interface VideoJob {
+  id: string;
+  project: number;
+  created_by: number | null;
+  created_by_username?: string;
+  job_type: VideoJobType;
+  status: VideoJobStatus;
+  progress_percent: number;
+  input_file?: string | null;
+  output_file?: string | null;
+  preset?: string | null;
+  preset_name?: string;
+  workflow_instance?: VideoJobWorkflowInfo | null;
+  config: Record<string, unknown>;
+  metadata: Record<string, unknown>;
+  error_message?: string | null;
+  error_code?: string | null;
+  retry_count: number;
+  started_at?: string | null;
+  completed_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateVideoJobParams {
+  job_type: VideoJobType;
+  input_file_id?: string;
+  preset_id?: string;
+  platform_export_id?: string;
+  workflow_template_id?: string;
+  config?: Record<string, unknown>;
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+function getCsrfToken(): string {
+  const match = document.cookie.match(/csrftoken=([^;]+)/);
+  return match ? match[1] : '';
+}
+
+async function videoApiFetch<T>(
+  path: string,
+  projectId: string | number,
+  options?: RequestInit
+): Promise<T> {
+  const apiBase = getApiBaseUrl();
+  const url = `${apiBase}${path}`;
+
+  const response = await fetch(url, {
+    credentials: 'include',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'X-Project-ID': String(projectId),
+      'X-CSRFToken': getCsrfToken(),
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => '');
+    throw new Error(`HTTP ${response.status}: ${errorBody || response.statusText}`);
+  }
+
+  if (response.status === 204) return {} as T;
+  const json = await response.json();
+  return json?.data ?? json;
+}
+
+function unwrapResults<T>(payload: any): T[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.results)) return payload.results;
+  if (payload?.data && Array.isArray(payload.data.results)) return payload.data.results;
+  if (payload?.data && Array.isArray(payload.data)) return payload.data;
+  return [];
+}
+
+// ============================================================================
+// Status Display Helpers
+// ============================================================================
+
+export function getJobStatusDisplay(status: VideoJobStatus): {
+  color: string;
+  bgColor: string;
+  icon: string;
+  label: string;
+} {
+  switch (status) {
+    case 'queued':
+      return { color: '#6b7280', bgColor: '#f3f4f6', icon: '⏳', label: 'Queued' };
+    case 'processing':
+      return { color: '#2563eb', bgColor: '#dbeafe', icon: '🔄', label: 'Processing' };
+    case 'completed':
+      return { color: '#059669', bgColor: '#d1fae5', icon: '✅', label: 'Completed' };
+    case 'failed':
+      return { color: '#dc2626', bgColor: '#fee2e2', icon: '❌', label: 'Failed' };
+    case 'cancelled':
+      return { color: '#9ca3af', bgColor: '#f3f4f6', icon: '🚫', label: 'Cancelled' };
+  }
+}
+
+export function getJobTypeDisplay(type: VideoJobType): {
+  icon: string;
+  label: string;
+} {
+  switch (type) {
+    case 'transcode':
+      return { icon: '🎬', label: 'Transcode' };
+    case 'thumbnail':
+      return { icon: '🖼️', label: 'Thumbnail' };
+    case 'compose':
+      return { icon: '🎨', label: 'Compose' };
+    case 'lineup':
+      return { icon: '📋', label: 'Lineup' };
+  }
+}
+
+// ============================================================================
+// Hook: useVideoJobs
+// ============================================================================
+
+interface UseVideoJobsOptions {
+  projectId: string | number;
+  status?: VideoJobStatus;
+  jobType?: VideoJobType;
+  autoRefresh?: boolean;
+  refreshInterval?: number;
+}
+
+export function useVideoJobs(options: UseVideoJobsOptions) {
+  const { projectId, status, jobType, autoRefresh = true, refreshInterval = 10_000 } = options;
+
+  const [jobs, setJobs] = useState<VideoJob[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
+
+  useEffect(() => {
+    if (!projectId) return;
+
+    let cancelled = false;
+
+    async function fetchJobs() {
+      try {
+        if (refreshKey === 0) setLoading(true);
+
+        const params = new URLSearchParams();
+        params.append('project', String(projectId));
+        if (status) params.append('status', status);
+        if (jobType) params.append('job_type', jobType);
+        params.append('ordering', '-created_at');
+
+        const data = await videoApiFetch<any>(
+          `/api/v1/video/jobs/?${params.toString()}`,
+          projectId
+        );
+
+        if (!cancelled) {
+          setJobs(unwrapResults<VideoJob>(data));
+          setError(null);
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          setError(err.message || 'Failed to load video jobs');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchJobs();
+
+    return () => { cancelled = true; };
+  }, [projectId, status, jobType, refreshKey]);
+
+  // Auto-refresh when there are active jobs
+  useEffect(() => {
+    if (!autoRefresh) return;
+
+    const hasActiveJobs = jobs.some(j => j.status === 'queued' || j.status === 'processing');
+    if (!hasActiveJobs) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
+    intervalRef.current = setInterval(refresh, refreshInterval);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [jobs, autoRefresh, refreshInterval, refresh]);
+
+  // ── Mutations ────────────────────────────────────────────────────
+
+  const cancelJob = useCallback(async (jobId: string) => {
+    await videoApiFetch<void>(
+      `/api/v1/video/jobs/${jobId}/`,
+      projectId,
+      { method: 'DELETE' }
+    );
+    refresh();
+  }, [projectId, refresh]);
+
+  const retryJob = useCallback(async (jobId: string) => {
+    await videoApiFetch<VideoJob>(
+      `/api/v1/video/jobs/${jobId}/retry/`,
+      projectId,
+      { method: 'POST' }
+    );
+    refresh();
+  }, [projectId, refresh]);
+
+  const createJob = useCallback(async (params: CreateVideoJobParams) => {
+    const result = await videoApiFetch<VideoJob>(
+      '/api/v1/video/jobs/',
+      projectId,
+      { method: 'POST', body: JSON.stringify(params) }
+    );
+    refresh();
+    return result;
+  }, [projectId, refresh]);
+
+  return {
+    jobs,
+    loading,
+    error,
+    refresh,
+    cancelJob,
+    retryJob,
+    createJob,
+  };
+}
+
+// ============================================================================
+// Hook: useVideoPresets
+// ============================================================================
+
+export function useVideoPresets(projectId: string | number) {
+  const [presets, setPresets] = useState<VideoPreset[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!projectId) return;
+
+    let cancelled = false;
+
+    async function fetchPresets() {
+      try {
+        const data = await videoApiFetch<any>(
+          '/api/v1/video/presets/',
+          projectId
+        );
+        if (!cancelled) {
+          setPresets(unwrapResults<VideoPreset>(data));
+        }
+      } catch {
+        // Non-critical, presets are optional
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchPresets();
+    return () => { cancelled = true; };
+  }, [projectId]);
+
+  return { presets, loading };
+}

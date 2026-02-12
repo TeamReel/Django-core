@@ -5,7 +5,7 @@ import {
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
   LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder,
       Bell, CreditCard, UserCircle, Star, PanelLeftClose, PanelLeft, Calendar, Film, Fingerprint, Scissors,
-  ClipboardCheck, GitBranch
+  ClipboardCheck, GitBranch, Video
 } from 'lucide-react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -61,6 +61,7 @@ const NAV_CONFIG: NavSection[] = [
     items: [
       { path: '/medialib', label: 'Media Library', icon: Library, visibility: 'everyone' },
       { path: '/studio', label: 'AI Studio', icon: Sparkles, visibility: 'everyone' },
+      { path: '/studio/videos', label: 'Video Queue', icon: Video, visibility: 'everyone' },
       { path: '/approvals', label: 'Approvals', icon: ClipboardCheck, visibility: 'everyone' },
     ]
   },
@@ -822,6 +823,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             items = [
                 { label: 'Library', path: '/content', icon: Library },
                 { label: 'AI Studio', path: '/studio', icon: Sparkles },
+                { label: 'Video Queue', path: '/studio/videos', icon: Video },
                 { label: 'Approvals', path: '/approvals', icon: ClipboardCheck },
             ];
             break;

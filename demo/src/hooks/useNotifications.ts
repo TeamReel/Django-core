@@ -1,0 +1,282 @@
+/**
+ * useNotifications Hook
+ *
+ * Manages user notifications (B16):
+ * - Fetch notification list with pagination
+ * - Track unread count
+ * - Mark individual notifications read/unread
+ * - Mark all read/unread
+ * - Auto-poll for new notifications
+ * - Dispatch 'notificationChanged' events for cross-component sync
+ *
+ * API: /api/v1/user-notifications/
+ */
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { getApiBaseUrl } from '../utils/apiBase';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface UserNotification {
+  id: string;
+  title: string;
+  message: string;
+  level: 'info' | 'success' | 'warning' | 'error';
+  is_read: boolean;
+  created_at: string;
+  /** Legacy/extended fields */
+  type?: { code?: string; name?: string };
+  payload?: { title?: string; body?: string; message?: string };
+  metadata?: Record<string, unknown>;
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+function getCsrfToken(): string {
+  const match = document.cookie.match(/csrftoken=([^;]+)/);
+  return match ? match[1] : '';
+}
+
+function unwrapNotifications(raw: any): UserNotification[] {
+  const data = raw?.data ?? raw;
+  const list = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.results)
+      ? data.results
+      : [];
+  return list as UserNotification[];
+}
+
+function dispatchChange() {
+  window.dispatchEvent(new Event('notificationChanged'));
+}
+
+// ============================================================================
+// Level display helpers
+// ============================================================================
+
+export function getNotificationLevelDisplay(level: string): {
+  color: string;
+  bgColor: string;
+  icon: string;
+} {
+  switch (level) {
+    case 'success':
+      return { color: '#059669', bgColor: '#d1fae5', icon: '✅' };
+    case 'warning':
+      return { color: '#d97706', bgColor: '#fef3c7', icon: '⚠️' };
+    case 'error':
+      return { color: '#dc2626', bgColor: '#fee2e2', icon: '❌' };
+    default: // 'info'
+      return { color: '#2563eb', bgColor: '#dbeafe', icon: 'ℹ️' };
+  }
+}
+
+// ============================================================================
+// Hook: useNotifications
+// ============================================================================
+
+interface UseNotificationsOptions {
+  /** Auto-poll interval in ms (0 = disabled, default 30s) */
+  pollInterval?: number;
+  /** Maximum notifications to fetch per page */
+  pageSize?: number;
+}
+
+export function useNotifications(options: UseNotificationsOptions = {}) {
+  const { pollInterval = 30_000, pageSize = 50 } = options;
+
+  const [notifications, setNotifications] = useState<UserNotification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const apiBaseRef = useRef(getApiBaseUrl());
+
+  // ── Fetch notifications ─────────────────────────────────────────
+
+  const fetchNotifications = useCallback(async (silent = false) => {
+    try {
+      if (!silent) setLoading(true);
+
+      const response = await fetch(
+        `${apiBaseRef.current}/api/v1/user-notifications/?page_size=${pageSize}`,
+        { credentials: 'include' }
+      );
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const raw = await response.json();
+      setNotifications(unwrapNotifications(raw));
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load notifications');
+    } finally {
+      setLoading(false);
+    }
+  }, [pageSize]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  // Auto-poll
+  useEffect(() => {
+    if (!pollInterval) return;
+    const interval = setInterval(() => fetchNotifications(true), pollInterval);
+    return () => clearInterval(interval);
+  }, [pollInterval, fetchNotifications]);
+
+  // Listen for cross-component changes
+  useEffect(() => {
+    const handler = () => fetchNotifications(true);
+    window.addEventListener('notificationChanged', handler);
+    return () => window.removeEventListener('notificationChanged', handler);
+  }, [fetchNotifications]);
+
+  // ── Computed values ─────────────────────────────────────────────
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadNotifications = notifications.filter(n => !n.is_read);
+  const readNotifications = notifications.filter(n => n.is_read);
+
+  // ── Mutations ───────────────────────────────────────────────────
+
+  const markRead = useCallback(async (notificationId: string) => {
+    try {
+      await fetch(
+        `${apiBaseRef.current}/api/v1/user-notifications/${notificationId}/`,
+        {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+          },
+          body: JSON.stringify({ is_read: true }),
+        }
+      );
+      // Optimistic update
+      setNotifications(prev =>
+        prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+      );
+      dispatchChange();
+    } catch (err) {
+      console.error('Failed to mark notification read:', err);
+    }
+  }, []);
+
+  const markUnread = useCallback(async (notificationId: string) => {
+    try {
+      await fetch(
+        `${apiBaseRef.current}/api/v1/user-notifications/${notificationId}/`,
+        {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+          },
+          body: JSON.stringify({ is_read: false }),
+        }
+      );
+      setNotifications(prev =>
+        prev.map(n => n.id === notificationId ? { ...n, is_read: false } : n)
+      );
+      dispatchChange();
+    } catch (err) {
+      console.error('Failed to mark notification unread:', err);
+    }
+  }, []);
+
+  const markAllRead = useCallback(async () => {
+    try {
+      await fetch(
+        `${apiBaseRef.current}/api/v1/user-notifications/mark-all-read/`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'X-CSRFToken': getCsrfToken() },
+        }
+      );
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      dispatchChange();
+    } catch (err) {
+      console.error('Failed to mark all read:', err);
+    }
+  }, []);
+
+  const markAllUnread = useCallback(async () => {
+    try {
+      await fetch(
+        `${apiBaseRef.current}/api/v1/user-notifications/mark-all-unread/`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'X-CSRFToken': getCsrfToken() },
+        }
+      );
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: false })));
+      dispatchChange();
+    } catch (err) {
+      console.error('Failed to mark all unread:', err);
+    }
+  }, []);
+
+  const refresh = useCallback(() => fetchNotifications(), [fetchNotifications]);
+
+  return {
+    notifications,
+    unreadCount,
+    unreadNotifications,
+    readNotifications,
+    loading,
+    error,
+    markRead,
+    markUnread,
+    markAllRead,
+    markAllUnread,
+    refresh,
+  };
+}
+
+// ============================================================================
+// Hook: useUnreadCount (lightweight, for TopNavbar bell)
+// ============================================================================
+
+export function useUnreadCount() {
+  const [count, setCount] = useState(0);
+  const apiBaseRef = useRef(getApiBaseUrl());
+
+  const fetchCount = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${apiBaseRef.current}/api/v1/user-notifications/`,
+        { credentials: 'include' }
+      );
+      if (!response.ok) return;
+
+      const raw = await response.json();
+      const list = unwrapNotifications(raw);
+      setCount(list.filter(n => !n.is_read).length);
+    } catch {
+      // Silent fail for badge
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCount();
+    const interval = setInterval(fetchCount, 30_000);
+    const handler = () => fetchCount();
+    window.addEventListener('notificationChanged', handler);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('notificationChanged', handler);
+    };
+  }, [fetchCount]);
+
+  return count;
+}
