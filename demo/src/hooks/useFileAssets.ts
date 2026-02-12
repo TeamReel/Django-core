@@ -103,7 +103,7 @@ export function useFileAssets(): UseFileAssetsReturn {
 
       if (!res.ok) throw new Error(`Failed to load files: ${res.statusText}`);
       const data = await res.json();
-      setFiles(data.results || data || []);
+      setFiles(Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : []);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         setError(err.message || 'Failed to load files');

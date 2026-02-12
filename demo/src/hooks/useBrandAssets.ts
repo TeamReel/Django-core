@@ -144,7 +144,7 @@ export function useBrandAssets(): UseBrandAssetsReturn {
 
       if (!profilesRes.ok) throw new Error(`Failed to load profiles: ${profilesRes.statusText}`);
       const profilesData = await profilesRes.json();
-      const profiles: BrandProfile[] = profilesData.results || profilesData || [];
+      const profiles: BrandProfile[] = Array.isArray(profilesData.results) ? profilesData.results : Array.isArray(profilesData) ? profilesData : [];
 
       if (profiles.length === 0) {
         setAssets([]);
@@ -164,7 +164,7 @@ export function useBrandAssets(): UseBrandAssetsReturn {
         });
         if (!res.ok) return [];
         const data = await res.json();
-        const items: BrandAsset[] = data.results || data || [];
+        const items: BrandAsset[] = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
         // Enrich with profile name
         return items.map((a) => ({
           ...a,

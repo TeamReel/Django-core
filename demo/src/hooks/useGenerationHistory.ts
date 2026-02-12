@@ -129,12 +129,12 @@ export function useGenerationHistory(): UseGenerationHistoryReturn {
 
       if (assetRes.ok) {
         const data = await assetRes.json();
-        setAssetTemplates(data.results || data || []);
+        setAssetTemplates(Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : []);
       }
 
       if (contentRes.ok) {
         const data = await contentRes.json();
-        setContentTemplates(data.results || data || []);
+        setContentTemplates(Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : []);
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
@@ -158,7 +158,7 @@ export function useGenerationHistory(): UseGenerationHistoryReturn {
 
       if (res.ok) {
         const data = await res.json();
-        setHistory(data.results || data || []);
+        setHistory(Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : []);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load history');

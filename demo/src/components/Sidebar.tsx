@@ -331,19 +331,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             return null;
         }
 
-        // Hide Panel B for non-APP landing/section pages
+        // Hide Panel B for section landing pages only (tile grids)
         if (
             path === '/apps' ||
             path === '/content' ||
-            path === '/settings' ||
-            path === '/medialib' ||
-            path.startsWith('/medialib/') ||
-            path === '/studio' ||
-            path.startsWith('/studio/') ||
-            path === '/content-templates' ||
-            path.startsWith('/content-templates/') ||
-            path === '/approvals' ||
-            path === '/workflow-templates'
+            path === '/settings'
         ) {
             return null;
         }
