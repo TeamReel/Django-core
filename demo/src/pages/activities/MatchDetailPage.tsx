@@ -7,6 +7,7 @@ import { Table } from '../../shims/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { fetchFlags } from '../../utils/featureFlagsApi';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
+import { getAssetUrl, useBrandProfile } from '../../hooks/useBrandProfile';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import GovernanceSummaryCard from '../../components/Governance/GovernanceSummaryCard';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
@@ -210,6 +211,30 @@ export default function HierarchyMatchDetailPage() {
   const [selectedContentItem, setSelectedContentItem] = useState<ContentItem | null>(null);
   const [isContentPreviewOpen, setIsContentPreviewOpen] = useState(false);
 
+  // Saved content (BrandAssets) – lineup announcement is saved via /api/v1/generative/assets/save/
+  const brandOrganisationId = String(org?.id || orgId || '').trim() || undefined;
+  const brandProjectId = match?.project?.id ?? project?.id ?? null;
+  const matchBrand = useBrandProfile({
+    organisationId: brandOrganisationId,
+    projectId: brandProjectId,
+    autoFetch: true,
+  });
+
+  const lineupAssetType = match?.id ? `lineup_${String(match.id).slice(0, 8)}` : null;
+  const lineupBrandAsset = lineupAssetType ? matchBrand.getAsset(lineupAssetType) : undefined;
+  const lineupBrandAssetUrl = lineupBrandAsset ? getAssetUrl(lineupBrandAsset.url) : null;
+  const lineupBrandAssetIsVideo = Boolean(
+    lineupBrandAsset?.file_details?.content_type?.startsWith('video/') ||
+    (lineupBrandAssetUrl ? /\.(mp4|webm|mov)$/i.test(lineupBrandAssetUrl) : false)
+  );
+
+  const [savedAssetPreview, setSavedAssetPreview] = useState<{
+    title: string;
+    url: string;
+    isVideo: boolean;
+    subtitle?: string;
+  } | null>(null);
+
   const normalizeFlagKey = (value: string): string =>
     String(value || '').trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
 
@@ -298,6 +323,7 @@ export default function HierarchyMatchDetailPage() {
     setSelectedContentTypeLabel('');
     // Refresh content items to show newly generated content
     fetchContentItems();
+    void matchBrand.refresh();
   };
 
   // Open content preview modal
@@ -2104,6 +2130,121 @@ export default function HierarchyMatchDetailPage() {
           </div>
         )}
 
+        {/* Saved Asset Preview Modal */}
+        {savedAssetPreview && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            }}
+            onClick={() => setSavedAssetPreview(null)}
+          >
+            <div
+              style={{
+                backgroundColor: 'var(--app-card-bg)',
+                borderRadius: '12px',
+                maxWidth: '900px',
+                width: '92%',
+                maxHeight: '90vh',
+                overflow: 'auto',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '16px 20px',
+                  borderBottom: '1px solid var(--app-border)',
+                }}
+              >
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>{savedAssetPreview.title}</h3>
+                  {savedAssetPreview.subtitle && (
+                    <div style={{ fontSize: '13px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
+                      {savedAssetPreview.subtitle}
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => setSavedAssetPreview(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    color: 'var(--app-muted-text)',
+                    padding: '4px 8px',
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div style={{ padding: '20px' }}>
+                <div style={{ textAlign: 'center' }}>
+                  {savedAssetPreview.isVideo ? (
+                    <video
+                      src={savedAssetPreview.url}
+                      controls
+                      style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px' }}
+                    />
+                  ) : (
+                    <img
+                      src={savedAssetPreview.url}
+                      alt={savedAssetPreview.title}
+                      style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', objectFit: 'contain' }}
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  padding: '16px 20px',
+                  borderTop: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-bg)',
+                  borderRadius: '0 0 12px 12px',
+                  gap: '8px',
+                }}
+              >
+                <a
+                  href={savedAssetPreview.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    backgroundColor: 'var(--app-primary)',
+                    color: 'white',
+                    borderRadius: '6px',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                  }}
+                >
+                  🔗 Open
+                </a>
+                <Button variant="secondary" onClick={() => setSavedAssetPreview(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Mobile Tab Bar */}
         <MobileTabBar
           tabs={[
@@ -2280,6 +2421,10 @@ export default function HierarchyMatchDetailPage() {
                       const isGenerating = existingItem && ['queued', 'generating'].includes(existingItem.status);
                       const isFailed = existingItem?.status === 'failed';
 
+                      // Lineup videos are saved as BrandAssets (generative/assets/save) and are not part of ContentItems.
+                      const hasSavedLineup = item.subtype === 'lineup' && Boolean(lineupBrandAssetUrl);
+                      const effectiveGenerated = Boolean(isGenerated) || hasSavedLineup;
+
                       // Determine border and background based on status
                       let borderColor = hasTemplate ? 'var(--app-border)' : 'var(--app-border)';
                       let bgColor = hasTemplate ? 'var(--app-card-bg)' : 'var(--app-bg)';
@@ -2291,6 +2436,11 @@ export default function HierarchyMatchDetailPage() {
                         bgColor = 'rgba(34, 197, 94, 0.1)';
                         statusIcon = '✓';
                         statusTooltip = 'Content generated - click to view';
+                      } else if (hasSavedLineup) {
+                        borderColor = '#22c55e'; // green
+                        bgColor = 'rgba(34, 197, 94, 0.1)';
+                        statusIcon = '✓';
+                        statusTooltip = 'Saved lineup video - click to view';
                       } else if (isGenerating) {
                         borderColor = '#f59e0b'; // amber
                         bgColor = 'rgba(245, 158, 11, 0.1)';
@@ -2304,7 +2454,14 @@ export default function HierarchyMatchDetailPage() {
                       }
 
                       const handleTileClick = () => {
-                        if (isGenerated && existingItem) {
+                        if (hasSavedLineup && lineupBrandAssetUrl) {
+                          setSavedAssetPreview({
+                            title: item.label,
+                            subtitle: 'Saved to project assets',
+                            url: lineupBrandAssetUrl,
+                            isVideo: lineupBrandAssetIsVideo,
+                          });
+                        } else if (isGenerated && existingItem) {
                           // Open preview modal for generated content
                           openContentPreview(existingItem);
                         } else if (hasTemplate && !isGenerating) {
@@ -2312,6 +2469,8 @@ export default function HierarchyMatchDetailPage() {
                           openContentModal(matchedTemplate, item.label);
                         }
                       };
+
+                      const showSavedPreview = item.subtype === 'lineup' && Boolean(lineupBrandAssetUrl);
 
                       return (
                         <div
@@ -2323,7 +2482,7 @@ export default function HierarchyMatchDetailPage() {
                           }
                           style={{
                             position: 'relative',
-                            width: '100px',
+                            width: showSavedPreview ? '140px' : '100px',
                             padding: '12px 8px',
                             border: `2px solid ${borderColor}`,
                             borderRadius: '8px',
@@ -2332,13 +2491,13 @@ export default function HierarchyMatchDetailPage() {
                             alignItems: 'center',
                             justifyContent: 'center',
                             textAlign: 'center',
-                            cursor: (hasTemplate || isGenerated) ? 'pointer' : 'not-allowed',
-                            opacity: (hasTemplate || isGenerated) ? 1 : 0.5,
+                            cursor: (hasTemplate || effectiveGenerated) ? 'pointer' : 'not-allowed',
+                            opacity: (hasTemplate || effectiveGenerated) ? 1 : 0.5,
                             backgroundColor: bgColor,
                             transition: 'all 0.2s ease',
                           }}
                           onMouseEnter={(e) => {
-                            if (hasTemplate || isGenerated) {
+                            if (hasTemplate || effectiveGenerated) {
                               e.currentTarget.style.borderColor = isGenerated ? '#16a34a' : 'var(--app-primary)';
                               e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
                               e.currentTarget.style.transform = 'translateY(-2px)';
@@ -2371,24 +2530,78 @@ export default function HierarchyMatchDetailPage() {
                               {statusIcon}
                             </div>
                           )}
-                          <div style={{
-                            fontSize: '20px',
-                            marginBottom: '4px',
-                            filter: (hasTemplate || isGenerated) ? 'none' : 'grayscale(100%)',
-                          }}>
-                            {item.icon}
-                          </div>
+                          {showSavedPreview && lineupBrandAssetUrl ? (
+                            <div
+                              style={{
+                                width: '116px',
+                                height: '70px',
+                                marginBottom: '6px',
+                                borderRadius: '6px',
+                                overflow: 'hidden',
+                                background: '#000',
+                                position: 'relative',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                              }}
+                            >
+                              {lineupBrandAssetIsVideo ? (
+                                <video
+                                  src={lineupBrandAssetUrl}
+                                  muted
+                                  playsInline
+                                  preload="metadata"
+                                  onLoadedMetadata={(e) => {
+                                    try {
+                                      const el = e.currentTarget;
+                                      el.currentTime = 0.1;
+                                    } catch {
+                                      // ignore
+                                    }
+                                  }}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                              ) : (
+                                <img
+                                  src={lineupBrandAssetUrl}
+                                  alt={item.label}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                              )}
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'rgba(255,255,255,0.95)',
+                                  fontSize: '18px',
+                                  textShadow: '0 2px 10px rgba(0,0,0,0.7)',
+                                  pointerEvents: 'none',
+                                }}
+                              >
+                                ▶
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{
+                              fontSize: '20px',
+                              marginBottom: '4px',
+                              filter: (hasTemplate || effectiveGenerated) ? 'none' : 'grayscale(100%)',
+                            }}>
+                              {item.icon}
+                            </div>
+                          )}
                           <div style={{
                             fontWeight: 600,
                             fontSize: '11px',
-                            color: (hasTemplate || isGenerated) ? 'var(--app-text)' : 'var(--app-muted-text)',
+                            color: (hasTemplate || effectiveGenerated) ? 'var(--app-text)' : 'var(--app-muted-text)',
                             lineHeight: 1.3,
                             textAlign: 'center',
                           }}>
                             {item.label}
                           </div>
                           {/* Show status or template info */}
-                          {isGenerated ? (
+                          {effectiveGenerated ? (
                             <div style={{ marginTop: '6px' }}>
                               <Badge variant="success" size="sm" style={{ fontSize: '9px', padding: '2px 6px' }}>
                                 Generated
@@ -2427,6 +2640,84 @@ export default function HierarchyMatchDetailPage() {
                   </Card>
                 );
               })}
+
+              <Card title="Saved Content">
+                {!lineupBrandAssetUrl ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <div className="text-3xl mb-2">📁</div>
+                    <p>No saved content yet</p>
+                    <p className="text-sm">Save a generated asset to show it here</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px' }}>
+                    <div
+                      onClick={() => {
+                        if (!lineupBrandAssetUrl) return;
+                        setSavedAssetPreview({
+                          title: 'Lineup Announcement',
+                          subtitle: 'Saved to project assets',
+                          url: lineupBrandAssetUrl,
+                          isVideo: lineupBrandAssetIsVideo,
+                        });
+                      }}
+                      style={{
+                        border: '1px solid var(--app-border)',
+                        borderRadius: '10px',
+                        overflow: 'hidden',
+                        background: 'var(--app-card-bg)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <div style={{ height: '140px', background: '#000', position: 'relative' }}>
+                        {lineupBrandAssetIsVideo ? (
+                          <video
+                            src={lineupBrandAssetUrl}
+                            muted
+                            playsInline
+                            preload="metadata"
+                            onLoadedMetadata={(e) => {
+                              try {
+                                const el = e.currentTarget;
+                                el.currentTime = 0.1;
+                              } catch {
+                                // ignore
+                              }
+                            }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <img
+                            src={lineupBrandAssetUrl}
+                            alt="Lineup Announcement"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        )}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'rgba(255,255,255,0.95)',
+                            fontSize: '28px',
+                            textShadow: '0 2px 14px rgba(0,0,0,0.7)',
+                            pointerEvents: 'none',
+                          }}
+                        >
+                          ▶
+                        </div>
+                      </div>
+                      <div style={{ padding: '10px 12px' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700 }}>Lineup Announcement</div>
+                        <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
+                          {lineupBrandAsset?.updated_at ? `Updated ${new Date(lineupBrandAsset.updated_at).toLocaleString()}` : 'Saved'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </Card>
 
               <Card title={`Generated Content${contentItems.length > 0 ? ` (${contentItems.length})` : ''}`}>
                 {contentItemsLoading ? (
