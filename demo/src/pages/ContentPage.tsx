@@ -1,10 +1,17 @@
 import React from 'react';
-import { Library, Sparkles, Film, Image } from 'lucide-react';
+import { Library, Sparkles, Film, Image, Clapperboard } from 'lucide-react';
 import { SectionPageLayout } from '../components/SectionPageLayout';
 import { TileGrid, TileItem } from '../components/TileGrid';
 
 export default function ContentPage() {
   const tiles: TileItem[] = [
+    {
+      path: '/contentlib',
+      label: 'Content Library',
+      description: 'Browse all generated content: flyers, lineups, reels, and more',
+      icon: Clapperboard,
+      color: '#dc2626',
+    },
     {
       path: '/medialib',
       label: 'Media Library',

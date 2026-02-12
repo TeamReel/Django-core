@@ -821,6 +821,15 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Member', path: '/medialib?tab=member', icon: UserCircle },
                     { label: 'Files', path: '/medialib?tab=files', icon: Folder },
                 ];
+            } else if (path === '/contentlib' || path.startsWith('/contentlib?')) {
+                title = 'Content Library';
+                items = [
+                    { label: 'Match', path: '/contentlib?tab=match', icon: Trophy },
+                    { label: 'Season', path: '/contentlib?tab=season', icon: Calendar },
+                    { label: 'Member', path: '/contentlib?tab=member', icon: UserCircle },
+                    { label: 'Team', path: '/contentlib?tab=team', icon: Shirt },
+                    { label: 'Club', path: '/contentlib?tab=club', icon: Shield },
+                ];
             } else if (path === '/studio' && !path.startsWith('/studio/')) {
                 title = 'AI Studio';
                 items = [
@@ -849,6 +858,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 // Fallback for other content pages
                 title = 'Content';
                 items = [
+                    { label: 'Content Library', path: '/contentlib', icon: Film },
                     { label: 'Media Library', path: '/medialib', icon: Library },
                     { label: 'AI Studio', path: '/studio', icon: Sparkles },
                     { label: 'Video Queue', path: '/studio/videos', icon: Video },

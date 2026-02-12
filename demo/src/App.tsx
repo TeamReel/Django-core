@@ -64,6 +64,7 @@ import ApprovalsPage from './pages/ApprovalsPage';
 // Section Landing Pages
 import AppsPage from './pages/AppsPage';
 import ContentPage from './pages/ContentPage';
+import ContentLibraryPage from './pages/content/ContentLibraryPage';
 import SettingsLandingPage from './pages/SettingsLandingPage';
 
 // Platform pages
@@ -460,6 +461,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ContentPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/contentlib"
+        element={
+          <ProtectedRoute>
+            <ContentLibraryPage />
           </ProtectedRoute>
         }
       />
