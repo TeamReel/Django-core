@@ -765,28 +765,13 @@ const MediaLibraryPage: React.FC = () => {
           `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
           memberUser.email || 'Unknown';
 
-        // Helper to convert storage path to full URL
-        const toFullUrl = (urlOrPath: string): string => {
-          if (!urlOrPath) return '';
-          // Already a full URL
-          if (urlOrPath.startsWith('http://') || urlOrPath.startsWith('https://')) {
-            return urlOrPath;
-          }
-          // Storage path - convert to S3 URL (or could use presigned URL endpoint)
-          // Using direct S3 URL for now - works if bucket allows public reads or use presigned URLs
-          const bucket = 'teamreel-assets-demo';
-          const region = 'eu-north-1';
-          return `https://${bucket}.s3.${region}.amazonaws.com/${urlOrPath}`;
-        };
-
-        // Helper to add asset
+        // Helper to add asset - URL will be converted to presigned URL later
         const addAsset = (assetType: string, url: string, kitType?: string) => {
           if (!url) return;
-          const fullUrl = toFullUrl(url);
           memberAssets.push({
             id: `${membership.id}-${assetType}${kitType ? `-${kitType}` : ''}`,
             name: `${memberName} - ${assetType}${kitType ? ` (${kitType})` : ''}`,
-            url: fullUrl,
+            url,  // Will be converted to presigned URL after collection
             asset_type: `member_${assetType}`,
             member_id: membership.id,
             member_name: memberName,
@@ -837,6 +822,41 @@ const MediaLibraryPage: React.FC = () => {
       }
 
       console.log('[MediaLib] Member assets extracted:', memberAssets.length);
+
+      // Convert storage paths to presigned URLs
+      // Collect all paths that need conversion (not starting with http)
+      const pathsToConvert = memberAssets
+        .map(a => a.url)
+        .filter(url => url && !url.startsWith('http://') && !url.startsWith('https://'));
+
+      if (pathsToConvert.length > 0) {
+        console.log('[MediaLib] Converting', pathsToConvert.length, 'storage paths to presigned URLs');
+        try {
+          const presignedRes = await fetch(`${apiBaseUrl}/api/v1/files/presigned-urls/`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paths: pathsToConvert }),
+          });
+          if (presignedRes.ok) {
+            const presignedJson = await presignedRes.json();
+            const urlMap = presignedJson.data?.urls || presignedJson.urls || {};
+
+            // Replace paths with presigned URLs
+            for (const asset of memberAssets) {
+              if (urlMap[asset.url]) {
+                asset.url = urlMap[asset.url];
+              }
+            }
+            console.log('[MediaLib] Converted paths to presigned URLs');
+          } else {
+            console.warn('[MediaLib] Presigned URL fetch failed:', presignedRes.status);
+          }
+        } catch (presignErr) {
+          console.warn('[MediaLib] Presigned URL conversion error:', presignErr);
+        }
+      }
+
       setMemberMedia(memberAssets);
     } catch (err) {
       console.error('[MediaLib] Failed to fetch member assets:', err);

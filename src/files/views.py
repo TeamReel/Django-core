@@ -261,3 +261,45 @@ class FileViewSet(viewsets.ModelViewSet):
                 {"detail": "Download URL generation not supported by current backend."},
                 status=status.HTTP_501_NOT_IMPLEMENTED,
             )
+
+    @action(detail=False, methods=["post"], url_path="presigned-urls")
+    def presigned_urls(self, request):
+        """
+        Generate presigned URLs for multiple storage paths.
+
+        Request body:
+            {"paths": ["path/to/file1.png", "path/to/file2.jpg"]}
+
+        Returns:
+            {"urls": {"path/to/file1.png": "https://...", "path/to/file2.jpg": "https://..."}}
+
+        Useful for converting storage paths stored in metadata to displayable URLs.
+        Max 100 paths per request.
+        """
+        paths = request.data.get("paths", [])
+
+        if not isinstance(paths, list):
+            return Response(
+                {"detail": "paths must be a list of storage paths"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if len(paths) > 100:
+            return Response(
+                {"detail": "Maximum 100 paths per request"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        backend = get_storage_backend()
+        urls = {}
+
+        for path in paths:
+            if not path or not isinstance(path, str):
+                continue
+            try:
+                urls[path] = backend.get_url(path, signed=True)
+            except Exception:
+                # Skip paths that fail
+                urls[path] = None
+
+        return Response({"urls": urls, "expires_in": 3600})
