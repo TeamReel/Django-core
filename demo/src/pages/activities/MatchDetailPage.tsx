@@ -8,6 +8,7 @@ import { getApiBaseUrl } from '../../utils/apiBase';
 import { fetchFlags } from '../../utils/featureFlagsApi';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
+import { MediaAssetCard, MediaAssetGrid, type MatchMediaItem } from '../../components/MediaAssetCard';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import GovernanceSummaryCard from '../../components/Governance/GovernanceSummaryCard';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
@@ -212,17 +213,6 @@ export default function HierarchyMatchDetailPage() {
   const [isContentPreviewOpen, setIsContentPreviewOpen] = useState(false);
 
   // ── Saved media items for this match (media-architecture.md: MediaItem ↔ Activity) ──
-  type MatchMediaItem = {
-    id: string;
-    title: string;
-    mime_type: string;
-    file_url: string | null;
-    storage_path: string | null;
-    state: string;
-    extraction_metadata?: Record<string, unknown>;
-    created_at: string;
-    updated_at: string;
-  };
   const [matchMedia, setMatchMedia] = useState<MatchMediaItem[]>([]);
   const [matchMediaLoading, setMatchMediaLoading] = useState(false);
 
@@ -250,25 +240,90 @@ export default function HierarchyMatchDetailPage() {
     if (match?.id) fetchMatchMedia();
   }, [match?.id, fetchMatchMedia]);
 
-  // Derive lineup media item (first video media with asset_type containing 'lineup')
-  const lineupMediaItem = useMemo(() => {
-    return matchMedia.find(
-      (m) =>
-        m.mime_type?.startsWith('video/') ||
-        (m.extraction_metadata as Record<string, unknown>)?.asset_type?.toString().includes('lineup')
-    ) ?? null;
+  /**
+   * Group media items by asset_type (subtype), ordered newest-first.
+   * Returns { [subtype]: { latest: MatchMediaItem, history: MatchMediaItem[] } }
+   */
+  const mediaBySubtype = useMemo(() => {
+    const grouped: Record<string, { latest: MatchMediaItem; history: MatchMediaItem[] }> = {};
+    // Sort all items newest-first
+    const sorted = [...matchMedia].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    for (const item of sorted) {
+      const subtype = (item.extraction_metadata?.asset_type as string) || 'other';
+      // Normalize: "lineup_07df73a6" → "lineup"
+      const normalizedSubtype = subtype.replace(/_[a-f0-9]{8}$/i, '');
+      if (!grouped[normalizedSubtype]) {
+        grouped[normalizedSubtype] = { latest: item, history: [] };
+      } else {
+        grouped[normalizedSubtype].history.push(item);
+      }
+    }
+    return grouped;
   }, [matchMedia]);
 
-  const lineupMediaUrl = lineupMediaItem
-    ? (lineupMediaItem.file_url || getAssetUrl(lineupMediaItem.storage_path))
-    : null;
-  const lineupMediaIsVideo = Boolean(
-    lineupMediaItem?.mime_type?.startsWith('video/') ||
-    (lineupMediaUrl ? /\.(mp4|webm|mov)$/i.test(lineupMediaUrl) : false)
-  );
+  // Get latest media item for a specific subtype
+  const getLatestMediaForSubtype = useCallback((subtype: string): MatchMediaItem | null => {
+    return mediaBySubtype[subtype]?.latest ?? null;
+  }, [mediaBySubtype]);
+
+  // Get history items (excluding latest) for a subtype
+  const getMediaHistoryForSubtype = useCallback((subtype: string): MatchMediaItem[] => {
+    return mediaBySubtype[subtype]?.history ?? [];
+  }, [mediaBySubtype]);
+
   const refreshMatchMedia = useCallback(async () => {
     await fetchMatchMedia();
   }, [fetchMatchMedia]);
+
+  // Delete a MediaItem via API
+  const handleDeleteMediaItem = useCallback(async (item: MatchMediaItem) => {
+    try {
+      const response = await fetch(
+        `${getApiBaseUrl()}/api/v1/media/items/${item.id}/`,
+        { method: 'DELETE', credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+      );
+      if (response.ok || response.status === 204) {
+        await fetchMatchMedia(); // Refresh
+      } else {
+        console.error('[Media] Delete failed:', response.status);
+      }
+    } catch (err) {
+      console.error('[Media] Error deleting media item:', err);
+    }
+  }, [fetchMatchMedia]);
+
+  // Restore a historical version by making it the "latest" (re-save with same file)
+  const handleRestoreMediaItem = useCallback(async (item: MatchMediaItem) => {
+    try {
+      // Restore by calling the save endpoint with the old item's storage path
+      const response = await fetch(
+        `${getApiBaseUrl()}/api/v1/generative/assets/save/`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            storage_path: item.storage_path,
+            filename: item.title,
+            mime_type: item.mime_type,
+            activity_id: match?.id,
+            organisation_id: org?.id,
+            project_id: match?.project?.id || project?.id,
+            asset_type: (item.extraction_metadata?.asset_type as string) || 'other',
+          }),
+        }
+      );
+      if (response.ok) {
+        await fetchMatchMedia(); // Refresh to show restored version as latest
+      } else {
+        console.error('[Media] Restore failed:', response.status);
+      }
+    } catch (err) {
+      console.error('[Media] Error restoring media item:', err);
+    }
+  }, [match?.id, org?.id, match?.project?.id, project?.id, fetchMatchMedia]);
 
   const [savedAssetPreview, setSavedAssetPreview] = useState<{
     title: string;
@@ -2421,430 +2476,88 @@ export default function HierarchyMatchDetailPage() {
                 </div>
               )}
 
-              {/* Match content types grouped by phase */}
-              {(['pre_match', 'during_match', 'post_match'] as const).map(categoryKey => {
-                const category = CONTENT_TYPES[categoryKey];
-                if (!category) return null;
-                return (
-                  <Card key={categoryKey} title={category.label}>
-                    <div style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '12px',
-                    }}>
-                      {category.items.map(item => {
-                      // Get all templates for this subtype
-                      let templates = availableTemplates[item.subtype] || [];
-                      let matchedTemplate: ContentTemplate | undefined;
+              {/* Match content types grouped by phase — MediaAssetCard tiles */}
+              {matchMediaLoading ? (
+                <Card title="Content">
+                  <div className="text-center py-8 text-gray-400">
+                    <div className="text-2xl mb-2">⏳</div>
+                    <p>Loading media...</p>
+                  </div>
+                </Card>
+              ) : (
+                (['pre_match', 'during_match', 'post_match'] as const).map(categoryKey => {
+                  const category = CONTENT_TYPES[categoryKey];
+                  if (!category) return null;
+                  return (
+                    <Card key={categoryKey} title={category.label}>
+                      <MediaAssetGrid>
+                        {category.items.map(item => {
+                          // Get all templates for this subtype
+                          const templates = availableTemplates[item.subtype] || [];
+                          let matchedTemplate: ContentTemplate | undefined;
 
-                      // Special handling for lineup: match on formation
-                      if (item.subtype === 'lineup' && templates.length > 0) {
-                        const matchFormation = match?.metadata?.formation; // e.g. "4-3-3"
-                        if (matchFormation) {
-                          // Try to find template with matching formation
-                          matchedTemplate = templates.find(t =>
-                            t.formation_detail?.code === matchFormation ||
-                            t.name.toLowerCase().includes(matchFormation.toLowerCase().replace(/-/g, ''))
-                          );
-                        }
-                        // Fallback to first template if no formation match
-                        if (!matchedTemplate) {
-                          matchedTemplate = templates[0];
-                        }
-                      } else {
-                        matchedTemplate = templates[0];
-                      }
-
-                      const hasTemplate = !!matchedTemplate;
-
-                      // Check if content has been generated for this subtype
-                      const existingItem = getContentItemForSubtype(item.subtype);
-                      const isGenerated = existingItem && ['completed', 'approved'].includes(existingItem.status);
-                      const isGenerating = existingItem && ['queued', 'generating'].includes(existingItem.status);
-                      const isFailed = existingItem?.status === 'failed';
-
-                      // Lineup videos are saved as MediaItems linked to the match activity
-                      const hasSavedLineup = item.subtype === 'lineup' && Boolean(lineupMediaUrl);
-                      const effectiveGenerated = Boolean(isGenerated) || hasSavedLineup;
-
-                      // Determine border and background based on status
-                      let borderColor = hasTemplate ? 'var(--app-border)' : 'var(--app-border)';
-                      let bgColor = hasTemplate ? 'var(--app-card-bg)' : 'var(--app-bg)';
-                      let statusIcon = '';
-                      let statusTooltip = '';
-
-                      if (isGenerated) {
-                        borderColor = '#22c55e'; // green
-                        bgColor = 'rgba(34, 197, 94, 0.1)';
-                        statusIcon = '✓';
-                        statusTooltip = 'Content generated - click to view';
-                      } else if (hasSavedLineup) {
-                        borderColor = '#22c55e'; // green
-                        bgColor = 'rgba(34, 197, 94, 0.1)';
-                        statusIcon = '✓';
-                        statusTooltip = 'Saved lineup video - click to view';
-                      } else if (isGenerating) {
-                        borderColor = '#f59e0b'; // amber
-                        bgColor = 'rgba(245, 158, 11, 0.1)';
-                        statusIcon = '⏳';
-                        statusTooltip = 'Content is being generated...';
-                      } else if (isFailed) {
-                        borderColor = '#ef4444'; // red
-                        bgColor = 'rgba(239, 68, 68, 0.1)';
-                        statusIcon = '!';
-                        statusTooltip = `Generation failed: ${existingItem?.error_message || 'Unknown error'}`;
-                      }
-
-                      const handleTileClick = () => {
-                        if (hasSavedLineup && lineupMediaUrl) {
-                          setSavedAssetPreview({
-                            title: item.label,
-                            subtitle: 'Saved to match media',
-                            url: lineupMediaUrl,
-                            isVideo: lineupMediaIsVideo,
-                          });
-                        } else if (isGenerated && existingItem) {
-                          // Open preview modal for generated content
-                          openContentPreview(existingItem);
-                        } else if (hasTemplate && !isGenerating) {
-                          // Open generation modal
-                          openContentModal(matchedTemplate, item.label);
-                        }
-                      };
-
-                      const showSavedPreview = item.subtype === 'lineup' && Boolean(lineupMediaUrl);
-
-                      return (
-                        <div
-                          key={`${categoryKey}-${item.id}`}
-                          onClick={handleTileClick}
-                          title={statusTooltip || (hasTemplate
-                            ? `Create ${item.label}${matchedTemplate?.style_variant ? ` (${matchedTemplate.style_variant})` : ''}`
-                            : `No ${item.label} template available`)
+                          // Special handling for lineup: match on formation
+                          if (item.subtype === 'lineup' && templates.length > 0) {
+                            const matchFormation = match?.metadata?.formation;
+                            if (matchFormation) {
+                              matchedTemplate = templates.find(t =>
+                                t.formation_detail?.code === matchFormation ||
+                                t.name.toLowerCase().includes(matchFormation.toLowerCase().replace(/-/g, ''))
+                              );
+                            }
+                            if (!matchedTemplate) matchedTemplate = templates[0];
+                          } else {
+                            matchedTemplate = templates[0];
                           }
-                          style={{
-                            position: 'relative',
-                            width: showSavedPreview ? '140px' : '100px',
-                            padding: '12px 8px',
-                            border: `2px solid ${borderColor}`,
-                            borderRadius: '8px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            textAlign: 'center',
-                            cursor: (hasTemplate || effectiveGenerated) ? 'pointer' : 'not-allowed',
-                            opacity: (hasTemplate || effectiveGenerated) ? 1 : 0.5,
-                            backgroundColor: bgColor,
-                            transition: 'all 0.2s ease',
-                          }}
-                          onMouseEnter={(e) => {
-                            if (hasTemplate || effectiveGenerated) {
-                              e.currentTarget.style.borderColor = isGenerated ? '#16a34a' : 'var(--app-primary)';
-                              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
-                              e.currentTarget.style.transform = 'translateY(-2px)';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = borderColor;
-                            e.currentTarget.style.boxShadow = 'none';
-                            e.currentTarget.style.transform = 'none';
-                          }}
-                        >
-                          {/* Status indicator badge */}
-                          {statusIcon && (
-                            <div style={{
-                              position: 'absolute',
-                              top: '-8px',
-                              right: '-8px',
-                              width: '20px',
-                              height: '20px',
-                              borderRadius: '50%',
-                              backgroundColor: isGenerated ? '#22c55e' : (isGenerating ? '#f59e0b' : '#ef4444'),
-                              color: 'white',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '12px',
-                              fontWeight: 700,
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                            }}>
-                              {statusIcon}
-                            </div>
-                          )}
-                          {showSavedPreview && lineupMediaUrl ? (
-                            <div
-                              style={{
-                                width: '116px',
-                                height: '70px',
-                                marginBottom: '6px',
-                                borderRadius: '6px',
-                                overflow: 'hidden',
-                                background: '#000',
-                                position: 'relative',
-                                border: '1px solid rgba(255,255,255,0.08)',
+
+                          const hasTemplate = !!matchedTemplate;
+
+                          // Check generation status from contentItems
+                          const existingItem = getContentItemForSubtype(item.subtype);
+                          const isGenerating = existingItem != null && ['queued', 'generating'].includes(existingItem.status);
+                          const isFailed = existingItem?.status === 'failed';
+
+                          // Get latest saved media + history for this subtype
+                          const latestMedia = getLatestMediaForSubtype(item.subtype);
+                          const historyItems = getMediaHistoryForSubtype(item.subtype);
+
+                          return (
+                            <MediaAssetCard
+                              key={`${categoryKey}-${item.id}`}
+                              label={item.label}
+                              subtype={item.subtype}
+                              mediaItem={latestMedia}
+                              icon={item.icon}
+                              isGenerating={isGenerating}
+                              isFailed={isFailed}
+                              errorMessage={existingItem?.error_message ?? undefined}
+                              historyItems={historyItems}
+                              onPreview={(mi) => {
+                                const previewUrl = mi.file_url || getAssetUrl(mi.storage_path);
+                                if (previewUrl) {
+                                  const isVid = Boolean(
+                                    mi.mime_type?.startsWith('video/') ||
+                                    /\.(mp4|webm|mov)$/i.test(previewUrl)
+                                  );
+                                  setSavedAssetPreview({
+                                    title: item.label,
+                                    subtitle: 'Match media',
+                                    url: previewUrl,
+                                    isVideo: isVid,
+                                  });
+                                }
                               }}
-                            >
-                              {lineupMediaIsVideo ? (
-                                <video
-                                  src={lineupMediaUrl}
-                                  muted
-                                  playsInline
-                                  preload="metadata"
-                                  onLoadedMetadata={(e) => {
-                                    try {
-                                      const el = e.currentTarget;
-                                      el.currentTime = 0.1;
-                                    } catch {
-                                      // ignore
-                                    }
-                                  }}
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                              ) : (
-                                <img
-                                  src={lineupMediaUrl}
-                                  alt={item.label}
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                              )}
-                              <div
-                                style={{
-                                  position: 'absolute',
-                                  inset: 0,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: 'rgba(255,255,255,0.95)',
-                                  fontSize: '18px',
-                                  textShadow: '0 2px 10px rgba(0,0,0,0.7)',
-                                  pointerEvents: 'none',
-                                }}
-                              >
-                                ▶
-                              </div>
-                            </div>
-                          ) : (
-                            <div style={{
-                              fontSize: '20px',
-                              marginBottom: '4px',
-                              filter: (hasTemplate || effectiveGenerated) ? 'none' : 'grayscale(100%)',
-                            }}>
-                              {item.icon}
-                            </div>
-                          )}
-                          <div style={{
-                            fontWeight: 600,
-                            fontSize: '11px',
-                            color: (hasTemplate || effectiveGenerated) ? 'var(--app-text)' : 'var(--app-muted-text)',
-                            lineHeight: 1.3,
-                            textAlign: 'center',
-                          }}>
-                            {item.label}
-                          </div>
-                          {/* Show status or template info */}
-                          {effectiveGenerated ? (
-                            <div style={{ marginTop: '6px' }}>
-                              <Badge variant="success" size="sm" style={{ fontSize: '9px', padding: '2px 6px' }}>
-                                Generated
-                              </Badge>
-                            </div>
-                          ) : isGenerating ? (
-                            <div style={{ marginTop: '6px' }}>
-                              <Badge variant="warning" size="sm" style={{ fontSize: '9px', padding: '2px 6px' }}>
-                                Processing...
-                              </Badge>
-                            </div>
-                          ) : isFailed ? (
-                            <div style={{ marginTop: '6px' }}>
-                              <Badge variant="error" size="sm" style={{ fontSize: '9px', padding: '2px 6px' }}>
-                                Failed
-                              </Badge>
-                            </div>
-                          ) : hasTemplate && matchedTemplate ? (
-                            <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
-                              {matchedTemplate.style_variant && (
-                                <Badge variant="info" size="sm" style={{ fontSize: '9px', padding: '2px 4px' }}>{matchedTemplate.style_variant}</Badge>
-                              )}
-                              {matchedTemplate.credits_required && matchedTemplate.credits_required > 0 && (
-                                <span style={{ fontSize: '9px', color: 'var(--app-muted-text)' }}>
-                                  {matchedTemplate.credits_required} cr
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <div style={{ fontSize: '9px', color: 'var(--app-muted-text)', marginTop: '4px' }}>—</div>
-                          )}
-                        </div>
-                      );
-                    })}
-                    </div>
-                  </Card>
-                );
-              })}
-
-              <Card title={`Saved Content${matchMedia.length > 0 ? ` (${matchMedia.length})` : ''}`}>
-                {matchMediaLoading ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <div className="text-2xl mb-2">⏳</div>
-                    <p>Loading saved media...</p>
-                  </div>
-                ) : matchMedia.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <div className="text-3xl mb-2">📁</div>
-                    <p>No saved content yet</p>
-                    <p className="text-sm">Save a generated asset to show it here</p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px' }}>
-                    {matchMedia.map((mediaItem) => {
-                      const mediaUrl = mediaItem.file_url || getAssetUrl(mediaItem.storage_path);
-                      const isVideo = Boolean(
-                        mediaItem.mime_type?.startsWith('video/') ||
-                        (mediaUrl ? /\.(mp4|webm|mov)$/i.test(mediaUrl) : false)
-                      );
-                      return (
-                        <div
-                          key={mediaItem.id}
-                          onClick={() => {
-                            if (!mediaUrl) return;
-                            setSavedAssetPreview({
-                              title: mediaItem.title || 'Saved Media',
-                              subtitle: 'Saved to match media',
-                              url: mediaUrl,
-                              isVideo,
-                            });
-                          }}
-                          style={{
-                            border: '1px solid var(--app-border)',
-                            borderRadius: '10px',
-                            overflow: 'hidden',
-                            background: 'var(--app-card-bg)',
-                            cursor: mediaUrl ? 'pointer' : 'default',
-                          }}
-                        >
-                          <div style={{ height: '140px', background: '#000', position: 'relative' }}>
-                            {isVideo ? (
-                              <video
-                                src={mediaUrl || undefined}
-                                muted
-                                playsInline
-                                preload="metadata"
-                                onLoadedMetadata={(e) => {
-                                  try { e.currentTarget.currentTime = 0.1; } catch { /* ignore */ }
-                                }}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                              />
-                            ) : (
-                              <img
-                                src={mediaUrl || undefined}
-                                alt={mediaItem.title || 'Saved Media'}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                              />
-                            )}
-                            {isVideo && (
-                              <div
-                                style={{
-                                  position: 'absolute',
-                                  inset: 0,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: 'rgba(255,255,255,0.95)',
-                                  fontSize: '28px',
-                                  textShadow: '0 2px 14px rgba(0,0,0,0.7)',
-                                  pointerEvents: 'none',
-                                }}
-                              >
-                                ▶
-                              </div>
-                            )}
-                          </div>
-                          <div style={{ padding: '10px 12px' }}>
-                            <div style={{ fontSize: '13px', fontWeight: 700 }}>{mediaItem.title || 'Saved Media'}</div>
-                            <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
-                              {mediaItem.updated_at ? `Updated ${new Date(mediaItem.updated_at).toLocaleString()}` : 'Saved'}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </Card>
-
-              <Card title={`Generated Content${contentItems.length > 0 ? ` (${contentItems.length})` : ''}`}>
-                {contentItemsLoading ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <div className="text-2xl mb-2">⏳</div>
-                    <p>Loading content...</p>
-                  </div>
-                ) : contentItems.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <div className="text-3xl mb-2">📭</div>
-                    <p>No content generated yet</p>
-                    <p className="text-sm">Click on a content type above to generate</p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
-                    {contentItems.map(item => {
-                      const isCompleted = ['completed', 'approved'].includes(item.status);
-                      const isPending = ['queued', 'generating'].includes(item.status);
-                      const isFailed = item.status === 'failed';
-
-                      return (
-                        <div
-                          key={item.id}
-                          onClick={() => isCompleted && openContentPreview(item)}
-                          style={{
-                            padding: '12px',
-                            border: `1px solid ${isCompleted ? '#22c55e' : (isPending ? '#f59e0b' : '#ef4444')}`,
-                            borderRadius: '8px',
-                            backgroundColor: isCompleted ? 'rgba(34, 197, 94, 0.05)' : (isPending ? 'rgba(245, 158, 11, 0.05)' : 'rgba(239, 68, 68, 0.05)'),
-                            cursor: isCompleted ? 'pointer' : 'default',
-                            transition: 'all 0.2s ease',
-                          }}
-                          onMouseEnter={(e) => {
-                            if (isCompleted) {
-                              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                              e.currentTarget.style.transform = 'translateY(-2px)';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.boxShadow = 'none';
-                            e.currentTarget.style.transform = 'none';
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                            <span style={{ fontWeight: 600, fontSize: '13px' }}>
-                              {item.template?.name || 'Content'}
-                            </span>
-                            <Badge
-                              variant={isCompleted ? 'success' : (isPending ? 'warning' : 'error')}
-                              size="sm"
-                            >
-                              {item.status}
-                            </Badge>
-                          </div>
-                          <div style={{ fontSize: '11px', color: 'var(--app-muted-text)' }}>
-                            {new Date(item.created_at).toLocaleString()}
-                          </div>
-                          {isFailed && item.error_message && (
-                            <div style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>
-                              {item.error_message}
-                            </div>
-                          )}
-                          {isCompleted && (
-                            <div style={{ fontSize: '11px', color: '#22c55e', marginTop: '4px' }}>
-                              Click to preview
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </Card>
+                              onReplace={hasTemplate ? () => openContentModal(matchedTemplate, item.label) : undefined}
+                              onDelete={(mi) => handleDeleteMediaItem(mi)}
+                              onRestore={(mi) => handleRestoreMediaItem(mi)}
+                            />
+                          );
+                        })}
+                      </MediaAssetGrid>
+                    </Card>
+                  );
+                })
+              )}
             </div>
           )}
 

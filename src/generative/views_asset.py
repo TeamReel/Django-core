@@ -1003,27 +1003,24 @@ def save_asset_view(request: Request) -> Response:
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Create (or reuse) MediaItem linked to this activity + file
-            media_item, mi_created = MediaItem.objects.update_or_create(
+            # Always create a NEW MediaItem (previous ones become history)
+            media_item = MediaItem.objects.create(
                 file=file_asset,
                 activity=activity,
-                defaults={
-                    "project": media_project,
-                    "title": filename,
-                    "description": f"AI-generated {asset_type.replace('_', ' ')}",
-                    "mime_type": mime_type,
-                    "file_size_bytes": file_size_bytes or 0,
-                    "state": MediaItemState.PROCESSED,
-                    "created_by": current_user,
-                    "extraction_metadata": {
-                        "source": "ai_generation_saved",
-                        "asset_type": asset_type,
-                    },
+                project=media_project,
+                title=filename,
+                description=f"AI-generated {asset_type.replace('_', ' ')}",
+                mime_type=mime_type,
+                file_size_bytes=file_size_bytes or 0,
+                state=MediaItemState.PROCESSED,
+                created_by=current_user,
+                extraction_metadata={
+                    "source": "ai_generation_saved",
+                    "asset_type": asset_type,
                 },
             )
-            action = "created" if mi_created else "updated"
             logger.info(
-                f"🎬 MediaItem {action}: {media_item.id} "
+                f"🎬 MediaItem created: {media_item.id} "
                 f"(activity={activity_id}, type={asset_type})"
             )
 
