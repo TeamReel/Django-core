@@ -765,13 +765,28 @@ const MediaLibraryPage: React.FC = () => {
           `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
           memberUser.email || 'Unknown';
 
+        // Helper to convert storage path to full URL
+        const toFullUrl = (urlOrPath: string): string => {
+          if (!urlOrPath) return '';
+          // Already a full URL
+          if (urlOrPath.startsWith('http://') || urlOrPath.startsWith('https://')) {
+            return urlOrPath;
+          }
+          // Storage path - convert to S3 URL (or could use presigned URL endpoint)
+          // Using direct S3 URL for now - works if bucket allows public reads or use presigned URLs
+          const bucket = 'teamreel-assets-demo';
+          const region = 'eu-north-1';
+          return `https://${bucket}.s3.${region}.amazonaws.com/${urlOrPath}`;
+        };
+
         // Helper to add asset
         const addAsset = (assetType: string, url: string, kitType?: string) => {
           if (!url) return;
+          const fullUrl = toFullUrl(url);
           memberAssets.push({
             id: `${membership.id}-${assetType}${kitType ? `-${kitType}` : ''}`,
             name: `${memberName} - ${assetType}${kitType ? ` (${kitType})` : ''}`,
-            url,
+            url: fullUrl,
             asset_type: `member_${assetType}`,
             member_id: membership.id,
             member_name: memberName,
