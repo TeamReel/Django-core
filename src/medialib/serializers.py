@@ -24,10 +24,13 @@ class MediaThumbnailSerializer(serializers.ModelSerializer):
         fields = ["id", "size_label", "width", "height", "url"]
 
     def get_url(self, obj):
-        if obj.file:
-            # Assumes FileAsset has get_presigned_url method or use storage directly
-            # For now mimicking MediaItemSerializer.get_file_url
-            return getattr(obj.file, "get_presigned_url", lambda: None)()
+        if obj.file_id:
+            try:
+                from generative.services.file_storage import GenerationFileService
+
+                return GenerationFileService.get_presigned_url(str(obj.file_id))
+            except Exception:
+                return getattr(obj.file, "storage_path", None)
         return None
 
 
@@ -46,8 +49,10 @@ class MediaItemSerializer(serializers.ModelSerializer):
     tags = MediaTagSerializer(many=True, read_only=True)
     thumbnails = MediaThumbnailSerializer(many=True, read_only=True)
     file_url = serializers.SerializerMethodField()
+    storage_path = serializers.CharField(source="file.storage_path", read_only=True)
     file_id = serializers.UUIDField(source="file.id", read_only=True)
     project_id = serializers.UUIDField(source="project.id", read_only=True)
+    activity_id = serializers.UUIDField(source="activity.id", read_only=True, default=None)
     created_by_name = serializers.CharField(source="created_by.get_full_name", read_only=True)
 
     # Write fields
@@ -65,6 +70,8 @@ class MediaItemSerializer(serializers.ModelSerializer):
             "file",
             "project_id",
             "file_id",
+            "storage_path",
+            "activity_id",
             "title",
             "description",
             "mime_type",
@@ -86,6 +93,8 @@ class MediaItemSerializer(serializers.ModelSerializer):
             "id",
             "project_id",
             "file_id",
+            "storage_path",
+            "activity_id",
             "state",
             "extraction_metadata",
             "width",
@@ -96,10 +105,15 @@ class MediaItemSerializer(serializers.ModelSerializer):
         ]
 
     def get_file_url(self, obj):
-        """Get presigned URL from B22 File Storage"""
-        if obj.file:
-            # FileAsset should have a method like get_presigned_url()
-            return getattr(obj.file, "get_presigned_url", lambda: None)()
+        """Get presigned URL from B22 File Storage via GenerationFileService"""
+        if obj.file_id:
+            try:
+                from generative.services.file_storage import GenerationFileService
+
+                return GenerationFileService.get_presigned_url(str(obj.file_id))
+            except Exception:
+                # Fallback: return storage_path for frontend getAssetUrl()
+                return getattr(obj.file, "storage_path", None)
         return None
 
     def create(self, validated_data):

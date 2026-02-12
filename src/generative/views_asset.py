@@ -749,6 +749,11 @@ class SaveAssetInputSerializer(serializers.Serializer):
         allow_null=True,
         help_text="Membership ID for member-scoped S3 path",
     )
+    activity_id = serializers.UUIDField(
+        required=False,
+        allow_null=True,
+        help_text="Activity (match) ID — when provided, saves as MediaItem instead of BrandAsset",
+    )
     asset_type = serializers.CharField(
         required=True,
         help_text="BrandAsset type (e.g. logo_light, sponsor_logo, kit_home, member_intro)",
@@ -779,6 +784,7 @@ def save_asset_view(request: Request) -> Response:
     organisation_id = serializer.validated_data.get("organisation_id")
     project_id = serializer.validated_data.get("project_id")
     membership_id = serializer.validated_data.get("membership_id")
+    activity_id = serializer.validated_data.get("activity_id")
     asset_type = serializer.validated_data.get("asset_type")
 
     logger.info(
@@ -972,46 +978,106 @@ def save_asset_view(request: Request) -> Response:
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    # Create or update BrandAsset record
+    # ── Persist as MediaItem (match-scoped) OR BrandAsset (org branding) ──
+    media_item = None
     brand_asset = None
-    try:
-        from branding.models import BrandAsset, BrandProfile
 
-        # Get the effective brand profile
-        brand_profile = BrandProfile.get_effective_brand(
-            organisation=organisation,
-            project=project,
-        )
+    if activity_id:
+        # ── MediaItem path: match/activity-scoped content (media-architecture.md) ──
+        try:
+            from activities.models import Activity
+            from medialib.models import MediaItem, MediaItemState
 
-        if not brand_profile:
-            # Create a default brand profile for this organisation
-            brand_profile = BrandProfile.objects.create(
-                organisation=organisation,
-                name=f"{organisation.name} Brand",
-                is_active=True,
-                created_by=current_user,
+            activity = Activity.objects.get(id=activity_id)
+
+            # Determine the project: explicit project > activity's project
+            media_project = project
+            if not media_project and hasattr(activity, "project_id") and activity.project_id:
+                from projects.models import Project as Proj
+
+                media_project = Proj.objects.filter(id=activity.project_id).first()
+
+            if not media_project:
+                return Response(
+                    {"error": "Cannot determine project for this activity."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Create (or reuse) MediaItem linked to this activity + file
+            media_item, mi_created = MediaItem.objects.update_or_create(
+                file=file_asset,
+                activity=activity,
+                defaults={
+                    "project": media_project,
+                    "title": filename,
+                    "description": f"AI-generated {asset_type.replace('_', ' ')}",
+                    "mime_type": mime_type,
+                    "file_size_bytes": file_size_bytes or 0,
+                    "state": MediaItemState.PROCESSED,
+                    "created_by": current_user,
+                    "extraction_metadata": {
+                        "source": "ai_generation_saved",
+                        "asset_type": asset_type,
+                    },
+                },
             )
-            logger.info(f"🆕 Created new BrandProfile: {brand_profile.id}")
+            action = "created" if mi_created else "updated"
+            logger.info(
+                f"🎬 MediaItem {action}: {media_item.id} "
+                f"(activity={activity_id}, type={asset_type})"
+            )
 
-        # Create or update the BrandAsset
-        brand_asset, created = BrandAsset.objects.update_or_create(
-            profile=brand_profile,
-            asset_type=asset_type,
-            defaults={
-                "file": file_asset,
-                "alt_text": f"AI-processed {asset_type.replace('_', ' ')}",
-                "is_active": True,
-            },
-        )
-        action = "created" if created else "updated"
-        logger.info(f"🎨 BrandAsset {action}: {brand_asset.id} (type={asset_type})")
+        except Activity.DoesNotExist:
+            return Response(
+                {"error": f"Activity {activity_id} not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            logger.exception(f"Failed to create MediaItem: {e}")
+            return Response(
+                {"error": f"Failed to create MediaItem: {e}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+    else:
+        # ── BrandAsset path: organisation-level branding (logos, kits, sponsors) ──
+        try:
+            from branding.models import BrandAsset, BrandProfile
 
-    except Exception as e:
-        logger.exception(f"Failed to create BrandAsset: {e}")
-        return Response(
-            {"error": f"Failed to create BrandAsset: {e}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+            # Get the effective brand profile
+            brand_profile = BrandProfile.get_effective_brand(
+                organisation=organisation,
+                project=project,
+            )
+
+            if not brand_profile:
+                # Create a default brand profile for this organisation
+                brand_profile = BrandProfile.objects.create(
+                    organisation=organisation,
+                    name=f"{organisation.name} Brand",
+                    is_active=True,
+                    created_by=current_user,
+                )
+                logger.info(f"🆕 Created new BrandProfile: {brand_profile.id}")
+
+            # Create or update the BrandAsset
+            brand_asset, created = BrandAsset.objects.update_or_create(
+                profile=brand_profile,
+                asset_type=asset_type,
+                defaults={
+                    "file": file_asset,
+                    "alt_text": f"AI-processed {asset_type.replace('_', ' ')}",
+                    "is_active": True,
+                },
+            )
+            action = "created" if created else "updated"
+            logger.info(f"🎨 BrandAsset {action}: {brand_asset.id} (type={asset_type})")
+
+        except Exception as e:
+            logger.exception(f"Failed to create BrandAsset: {e}")
+            return Response(
+                {"error": f"Failed to create BrandAsset: {e}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     return Response(
         {
@@ -1019,6 +1085,7 @@ def save_asset_view(request: Request) -> Response:
             "message": f"Asset saved as {asset_type}",
             "data": {
                 "file_asset_id": str(file_asset.id) if file_asset else None,
+                "media_item_id": str(media_item.id) if media_item else None,
                 "brand_asset_id": str(brand_asset.id) if brand_asset else None,
                 "storage_path": final_storage_path,
                 "asset_type": asset_type,

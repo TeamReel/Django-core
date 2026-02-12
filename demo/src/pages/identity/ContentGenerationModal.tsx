@@ -1104,7 +1104,9 @@ export default function ContentGenerationModal({
           // Context
           organisation_id: organisationId,
           project_id: matchData?.project?.id,
-          // Asset type for BrandAsset
+          // Activity (match) context — creates MediaItem instead of BrandAsset
+          activity_id: matchData?.id || null,
+          // Asset type
           asset_type: brandAssetType,
         }),
       });
@@ -1115,15 +1117,16 @@ export default function ContentGenerationModal({
       }
 
       const result = await response.json();
-      console.log('✅ Saved as BrandAsset:', result);
+      console.log('✅ Asset saved:', result);
 
       setSaveSuccess(true);
 
       // Update the variant's storage_info with the new IDs
       const updatedVariants = [...generatedVariants];
-      if (result.data?.brand_asset_id || result.brand_asset_id) {
+      if (result.data?.brand_asset_id || result.brand_asset_id || result.data?.media_item_id || result.media_item_id) {
         const returnedFileAssetId = result.data?.file_asset_id || result.file_asset_id;
         const returnedBrandAssetId = result.data?.brand_asset_id || result.brand_asset_id;
+        const returnedMediaItemId = result.data?.media_item_id || result.media_item_id;
         const returnedStoragePath = result.data?.storage_path || result.storage_path;
 
         const nextStorageInfo: NonNullable<GeneratedVariant['storage_info']> = selectedVariant.storage_info
@@ -1139,6 +1142,7 @@ export default function ContentGenerationModal({
         if (returnedStoragePath) nextStorageInfo.storage_path = returnedStoragePath;
         if (returnedFileAssetId) nextStorageInfo.file_asset_id = returnedFileAssetId;
         if (returnedBrandAssetId) nextStorageInfo.brand_asset_id = returnedBrandAssetId;
+        if (returnedMediaItemId) (nextStorageInfo as Record<string, unknown>).media_item_id = returnedMediaItemId;
 
         updatedVariants[selectedVariantIndex] = {
           ...selectedVariant,

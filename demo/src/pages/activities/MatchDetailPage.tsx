@@ -7,7 +7,7 @@ import { Table } from '../../shims/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { fetchFlags } from '../../utils/featureFlagsApi';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
-import { getAssetUrl, useBrandProfile } from '../../hooks/useBrandProfile';
+import { getAssetUrl } from '../../hooks/useBrandProfile';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import GovernanceSummaryCard from '../../components/Governance/GovernanceSummaryCard';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
@@ -211,36 +211,64 @@ export default function HierarchyMatchDetailPage() {
   const [selectedContentItem, setSelectedContentItem] = useState<ContentItem | null>(null);
   const [isContentPreviewOpen, setIsContentPreviewOpen] = useState(false);
 
-  // Saved content (BrandAssets) – lineup announcement is saved via /api/v1/generative/assets/save/
-  // get_effective_brand() cascades: project-level → org-level. The asset might live on either.
-  // We check both so the lineup always shows regardless of where it was saved.
-  const brandOrganisationId = String(org?.id || orgId || '').trim() || undefined;
-  const brandProjectId = match?.project?.id ?? project?.id ?? null;
-  const projectBrand = useBrandProfile({
-    organisationId: brandOrganisationId,
-    projectId: brandProjectId,
-    autoFetch: true,
-  });
-  const orgBrand = useBrandProfile({
-    organisationId: brandOrganisationId,
-    // no projectId → queries org-level profile only
-    autoFetch: true,
-  });
+  // ── Saved media items for this match (media-architecture.md: MediaItem ↔ Activity) ──
+  type MatchMediaItem = {
+    id: string;
+    title: string;
+    mime_type: string;
+    file_url: string | null;
+    storage_path: string | null;
+    state: string;
+    extraction_metadata?: Record<string, unknown>;
+    created_at: string;
+    updated_at: string;
+  };
+  const [matchMedia, setMatchMedia] = useState<MatchMediaItem[]>([]);
+  const [matchMediaLoading, setMatchMediaLoading] = useState(false);
 
-  const lineupAssetType = match?.id ? `lineup_${String(match.id).slice(0, 8)}` : null;
-  // Try project-level first, then org-level (mirrors get_effective_brand cascade)
-  const lineupBrandAsset = lineupAssetType
-    ? (projectBrand.getAsset(lineupAssetType) || orgBrand.getAsset(lineupAssetType))
-    : undefined;
-  const lineupBrandAssetUrl = lineupBrandAsset ? getAssetUrl(lineupBrandAsset.url) : null;
-  const lineupBrandAssetIsVideo = Boolean(
-    lineupBrandAsset?.file_details?.content_type?.startsWith('video/') ||
-    (lineupBrandAssetUrl ? /\.(mp4|webm|mov)$/i.test(lineupBrandAssetUrl) : false)
+  const fetchMatchMedia = useCallback(async () => {
+    if (!match?.id) return;
+    setMatchMediaLoading(true);
+    try {
+      const response = await fetch(
+        `${getApiBaseUrl()}/api/v1/media/items/?activity=${match.id}`,
+        { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        const items = data?.results || data?.data?.results || [];
+        setMatchMedia(Array.isArray(items) ? items : []);
+      }
+    } catch (err) {
+      console.error('[Media] Error fetching match media:', err);
+    } finally {
+      setMatchMediaLoading(false);
+    }
+  }, [match?.id]);
+
+  useEffect(() => {
+    if (match?.id) fetchMatchMedia();
+  }, [match?.id, fetchMatchMedia]);
+
+  // Derive lineup media item (first video media with asset_type containing 'lineup')
+  const lineupMediaItem = useMemo(() => {
+    return matchMedia.find(
+      (m) =>
+        m.mime_type?.startsWith('video/') ||
+        (m.extraction_metadata as Record<string, unknown>)?.asset_type?.toString().includes('lineup')
+    ) ?? null;
+  }, [matchMedia]);
+
+  const lineupMediaUrl = lineupMediaItem
+    ? (lineupMediaItem.file_url || getAssetUrl(lineupMediaItem.storage_path))
+    : null;
+  const lineupMediaIsVideo = Boolean(
+    lineupMediaItem?.mime_type?.startsWith('video/') ||
+    (lineupMediaUrl ? /\.(mp4|webm|mov)$/i.test(lineupMediaUrl) : false)
   );
-  // Expose a refresh that covers both profiles
-  const refreshBrandProfiles = useCallback(async () => {
-    await Promise.all([projectBrand.refresh(), orgBrand.refresh()]);
-  }, [projectBrand.refresh, orgBrand.refresh]);
+  const refreshMatchMedia = useCallback(async () => {
+    await fetchMatchMedia();
+  }, [fetchMatchMedia]);
 
   const [savedAssetPreview, setSavedAssetPreview] = useState<{
     title: string;
@@ -337,7 +365,7 @@ export default function HierarchyMatchDetailPage() {
     setSelectedContentTypeLabel('');
     // Refresh content items to show newly generated content
     fetchContentItems();
-    void refreshBrandProfiles();
+    void refreshMatchMedia();
   };
 
   // Open content preview modal
@@ -2435,8 +2463,8 @@ export default function HierarchyMatchDetailPage() {
                       const isGenerating = existingItem && ['queued', 'generating'].includes(existingItem.status);
                       const isFailed = existingItem?.status === 'failed';
 
-                      // Lineup videos are saved as BrandAssets (generative/assets/save) and are not part of ContentItems.
-                      const hasSavedLineup = item.subtype === 'lineup' && Boolean(lineupBrandAssetUrl);
+                      // Lineup videos are saved as MediaItems linked to the match activity
+                      const hasSavedLineup = item.subtype === 'lineup' && Boolean(lineupMediaUrl);
                       const effectiveGenerated = Boolean(isGenerated) || hasSavedLineup;
 
                       // Determine border and background based on status
@@ -2468,12 +2496,12 @@ export default function HierarchyMatchDetailPage() {
                       }
 
                       const handleTileClick = () => {
-                        if (hasSavedLineup && lineupBrandAssetUrl) {
+                        if (hasSavedLineup && lineupMediaUrl) {
                           setSavedAssetPreview({
                             title: item.label,
-                            subtitle: 'Saved to project assets',
-                            url: lineupBrandAssetUrl,
-                            isVideo: lineupBrandAssetIsVideo,
+                            subtitle: 'Saved to match media',
+                            url: lineupMediaUrl,
+                            isVideo: lineupMediaIsVideo,
                           });
                         } else if (isGenerated && existingItem) {
                           // Open preview modal for generated content
@@ -2484,7 +2512,7 @@ export default function HierarchyMatchDetailPage() {
                         }
                       };
 
-                      const showSavedPreview = item.subtype === 'lineup' && Boolean(lineupBrandAssetUrl);
+                      const showSavedPreview = item.subtype === 'lineup' && Boolean(lineupMediaUrl);
 
                       return (
                         <div
@@ -2544,7 +2572,7 @@ export default function HierarchyMatchDetailPage() {
                               {statusIcon}
                             </div>
                           )}
-                          {showSavedPreview && lineupBrandAssetUrl ? (
+                          {showSavedPreview && lineupMediaUrl ? (
                             <div
                               style={{
                                 width: '116px',
@@ -2557,9 +2585,9 @@ export default function HierarchyMatchDetailPage() {
                                 border: '1px solid rgba(255,255,255,0.08)',
                               }}
                             >
-                              {lineupBrandAssetIsVideo ? (
+                              {lineupMediaIsVideo ? (
                                 <video
-                                  src={lineupBrandAssetUrl}
+                                  src={lineupMediaUrl}
                                   muted
                                   playsInline
                                   preload="metadata"
@@ -2575,7 +2603,7 @@ export default function HierarchyMatchDetailPage() {
                                 />
                               ) : (
                                 <img
-                                  src={lineupBrandAssetUrl}
+                                  src={lineupMediaUrl}
                                   alt={item.label}
                                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
@@ -2655,8 +2683,13 @@ export default function HierarchyMatchDetailPage() {
                 );
               })}
 
-              <Card title="Saved Content">
-                {!lineupBrandAssetUrl ? (
+              <Card title={`Saved Content${matchMedia.length > 0 ? ` (${matchMedia.length})` : ''}`}>
+                {matchMediaLoading ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <div className="text-2xl mb-2">⏳</div>
+                    <p>Loading saved media...</p>
+                  </div>
+                ) : matchMedia.length === 0 ? (
                   <div className="text-center py-8 text-gray-400">
                     <div className="text-3xl mb-2">📁</div>
                     <p>No saved content yet</p>
@@ -2664,71 +2697,78 @@ export default function HierarchyMatchDetailPage() {
                   </div>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px' }}>
-                    <div
-                      onClick={() => {
-                        if (!lineupBrandAssetUrl) return;
-                        setSavedAssetPreview({
-                          title: 'Lineup Announcement',
-                          subtitle: 'Saved to project assets',
-                          url: lineupBrandAssetUrl,
-                          isVideo: lineupBrandAssetIsVideo,
-                        });
-                      }}
-                      style={{
-                        border: '1px solid var(--app-border)',
-                        borderRadius: '10px',
-                        overflow: 'hidden',
-                        background: 'var(--app-card-bg)',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <div style={{ height: '140px', background: '#000', position: 'relative' }}>
-                        {lineupBrandAssetIsVideo ? (
-                          <video
-                            src={lineupBrandAssetUrl}
-                            muted
-                            playsInline
-                            preload="metadata"
-                            onLoadedMetadata={(e) => {
-                              try {
-                                const el = e.currentTarget;
-                                el.currentTime = 0.1;
-                              } catch {
-                                // ignore
-                              }
-                            }}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          />
-                        ) : (
-                          <img
-                            src={lineupBrandAssetUrl}
-                            alt="Lineup Announcement"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          />
-                        )}
+                    {matchMedia.map((mediaItem) => {
+                      const mediaUrl = mediaItem.file_url || getAssetUrl(mediaItem.storage_path);
+                      const isVideo = Boolean(
+                        mediaItem.mime_type?.startsWith('video/') ||
+                        (mediaUrl ? /\.(mp4|webm|mov)$/i.test(mediaUrl) : false)
+                      );
+                      return (
                         <div
+                          key={mediaItem.id}
+                          onClick={() => {
+                            if (!mediaUrl) return;
+                            setSavedAssetPreview({
+                              title: mediaItem.title || 'Saved Media',
+                              subtitle: 'Saved to match media',
+                              url: mediaUrl,
+                              isVideo,
+                            });
+                          }}
                           style={{
-                            position: 'absolute',
-                            inset: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'rgba(255,255,255,0.95)',
-                            fontSize: '28px',
-                            textShadow: '0 2px 14px rgba(0,0,0,0.7)',
-                            pointerEvents: 'none',
+                            border: '1px solid var(--app-border)',
+                            borderRadius: '10px',
+                            overflow: 'hidden',
+                            background: 'var(--app-card-bg)',
+                            cursor: mediaUrl ? 'pointer' : 'default',
                           }}
                         >
-                          ▶
+                          <div style={{ height: '140px', background: '#000', position: 'relative' }}>
+                            {isVideo ? (
+                              <video
+                                src={mediaUrl || undefined}
+                                muted
+                                playsInline
+                                preload="metadata"
+                                onLoadedMetadata={(e) => {
+                                  try { e.currentTarget.currentTime = 0.1; } catch { /* ignore */ }
+                                }}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                            ) : (
+                              <img
+                                src={mediaUrl || undefined}
+                                alt={mediaItem.title || 'Saved Media'}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                            )}
+                            {isVideo && (
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'rgba(255,255,255,0.95)',
+                                  fontSize: '28px',
+                                  textShadow: '0 2px 14px rgba(0,0,0,0.7)',
+                                  pointerEvents: 'none',
+                                }}
+                              >
+                                ▶
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ padding: '10px 12px' }}>
+                            <div style={{ fontSize: '13px', fontWeight: 700 }}>{mediaItem.title || 'Saved Media'}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
+                              {mediaItem.updated_at ? `Updated ${new Date(mediaItem.updated_at).toLocaleString()}` : 'Saved'}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div style={{ padding: '10px 12px' }}>
-                        <div style={{ fontSize: '13px', fontWeight: 700 }}>Lineup Announcement</div>
-                        <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
-                          {lineupBrandAsset?.updated_at ? `Updated ${new Date(lineupBrandAsset.updated_at).toLocaleString()}` : 'Saved'}
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
                 )}
               </Card>
