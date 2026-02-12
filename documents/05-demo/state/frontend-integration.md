@@ -1,6 +1,6 @@
 # Frontend Integration Status
 
-> Last updated: 2026-02-12 (B37 Workflow UI Integration Complete)
+> Last updated: 2026-02-12 (B34↔B37 Pipeline + B55 Video Queue + B16 Notifications Hook)
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.
 
@@ -28,8 +28,8 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 - ✅ 76 tests passing (73-97% coverage)
 
 **Still TODO (B55 advanced features)**:
-- [ ] VideoJobListPage (standalone video processing queue UI)
-- [ ] `/studio/videos` route (currently dead link from ContentPage)
+- [x] VideoJobListPage (standalone video processing queue UI) ✅ 2026-02-12
+- [x] `/studio/videos` route + Sidebar nav ✅ 2026-02-12
 - [ ] PresetSelector component (quality/platform preset picker)
 - [ ] PlatformExportOptions (Instagram/TikTok/YouTube format selectors)
 - [ ] ThumbnailGeneratorModal (timestamp picker for frame extraction)
@@ -221,13 +221,12 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - ✅ MediaAssetCard: video rendering with play overlay
   - ✅ 2 video templates: `member_intro` (6s, 9:16) + `member_goal_celebration` (6s, 9:16)
   - ✅ useAssetGeneration: 150-poll async handler (~12.5 min max)
-  - ❌ No standalone video processing queue UI
+  - ✅ VideoQueuePage: standalone processing queue UI at `/studio/videos` (2026-02-12)
+  - ✅ useVideoJobs hook: list/cancel/retry + auto-polling for active jobs
+  - ✅ Sidebar: Video Queue in CONTENT section (Panel A + Panel B)
   - ❌ No platform export UI (Instagram/TikTok/YouTube selectors)
-  - ❌ `/studio/videos` route not implemented (dead link)
-- **Status**: ✅ Core video generation integrated, ❌ Advanced processing UI pending
+- **Status**: ✅ Core video generation + queue UI integrated, ❌ Advanced features pending
 - **TODO** (lower priority):
-  - [ ] VideoJobListPage (processing queue dashboard)
-  - [ ] `/studio/videos` route implementation
   - [ ] PresetSelector component (quality/platform picker)
   - [ ] PlatformExportOptions (format selectors)
   - [ ] ThumbnailGeneratorModal (frame extraction)
@@ -302,7 +301,13 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
 
 ### B16 Notifications ✅
 - **Backend**: 25,401 notifications
-- **Frontend**: NotificationsPage
+- **Frontend**:
+  - ✅ NotificationsPage (full list with read/unread toggle)
+  - ✅ TopNavbar bell badge (unread count + 30s polling)
+  - ✅ useNotifications hook: shared CRUD with optimistic updates (2026-02-12)
+  - ✅ useUnreadCount hook: lightweight for bell badge (2026-02-12)
+  - ✅ Cross-component sync via 'notificationChanged' events
+  - ✅ markRead/markUnread/markAllRead/markAllUnread mutations
 - **Status**: ✅ Volledig
 
 ### B17 Contextual Notifications ✅
@@ -375,29 +380,35 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - ✅ **Member Intro tab** (kit × pose video grid)
   - ✅ **Member Celebration tab** (kit × style video grid)
   - ✅ **Batch generation** with video template support
-- **Status**: ✅ Volledig (images + videos)
+- **B34↔B37 Integration** (2026-02-12):
+  - ✅ useContentTypes hook: resolves Django ContentType model→ID (session-cached)
+  - ✅ useAssetGeneration: auto-creates WorkflowInstance after asset save
+  - ✅ useWorkflowInstances: listens for 'workflowChanged' events for live refresh
+  - ✅ Backend: `GET /api/v1/workflows/content-types/` endpoint
+- **Status**: ✅ Volledig (images + videos + workflow pipeline)
 
 ---
 
 ## Priority TODO List (Frontend)
 
-### High Priority
-1. **B55 Video queue UI** — VideoJobListPage, `/studio/videos` route, PresetSelector
-2. **B34 Generative Pipeline ↔ B37 Workflow connect** — Auto-create WorkflowInstance when GenerationRequest completes; show workflow status on content cards
+### ~~High Priority~~ ✅ DONE
+1. ~~**B55 Video queue UI**~~ ✅ VideoQueuePage at `/studio/videos` (2026-02-12)
+2. ~~**B34↔B37 Pipeline connect**~~ ✅ Auto-create WorkflowInstance after save (2026-02-12)
 
-### Medium Priority
-3. **B16 Notification triggers** — Toast/bell notifications when workflow transitions happen (approve/reject/revision needed)
-4. **BrandProfile editor** — Create/update brand profiles (currently read-only)
-5. **MediaItem upload** — File upload integratie met MediaLibrary
-6. **Batch approval actions** — Select multiple items on ApprovalsPage, approve/reject in bulk
+### Medium Priority (Current)
+3. **B16 Notification triggers for workflow** — Toast notifications when workflow transitions happen (approve/reject); backend signal → create_notification call
+4. **Batch approval actions** — Select multiple items on ApprovalsPage, approve/reject in bulk
+5. **BrandProfile editor** — Create/update brand profiles (currently read-only)
+6. **MediaItem upload** — File upload integratie met MediaLibrary
 
 ### Low Priority
 7. **Hierarchical Search UI** — HierarchyTreeView in SearchPage
 8. **Platform Export UI** — Instagram/TikTok/YouTube format selectors
-9. **Task status widget** — Celery queue monitoring dashboard
+9. **PresetSelector** — Quality/platform video preset picker
+10. **Task status widget** — Celery queue monitoring dashboard
 
-### Recommended Next Step
-**Option A: B55 Video Queue UI** — Build `/studio/videos` page listing VideoJobs with status tracking, filtering, retry. Uses existing backend (8 endpoints, 76 tests). Quick win, fills the dead link on ContentPage.
+### Recommended Next Module
+**B34 Generative Pipelines — Phase 2 (Core Models & API)** — The backend spec, plan, and data model are complete in `kitty-specs/043-ai-generation-pipeline/`. Ready for implementation: migrations, serializers, ViewSets for GenerationTemplate/Request/Output.
 
 **Option B: B34 ↔ B37 Pipeline Connection** — Wire GenerationRequest completion to auto-create WorkflowInstance. Makes the Approvals page actually useful with real data flowing through. Deeper integration but higher value.
 
