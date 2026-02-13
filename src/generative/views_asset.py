@@ -659,30 +659,33 @@ def list_asset_templates_view(request: Request) -> Response:  # noqa: ARG001
     if not os.path.exists(prompts_path):
         prompts_path = os.path.join(settings.BASE_DIR, "teamreel_prompts.py")
 
+    # If no prompts file exists, return empty templates list
+    # This allows the page to load without errors while templates are being configured
     if not os.path.exists(prompts_path):
-        return Response(
-            {"error": "teamreel_prompts.py not found"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+        return Response({"templates": []}, status=status.HTTP_200_OK)
 
-    spec = importlib.util.spec_from_file_location("teamreel_prompts", prompts_path)
-    prompts_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(prompts_module)
+    try:
+        spec = importlib.util.spec_from_file_location("teamreel_prompts", prompts_path)
+        prompts_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(prompts_module)
 
-    templates = []
-    for _tid, t in prompts_module.TEMPLATES.items():
-        templates.append(
-            {
-                "id": t["id"],
-                "name": t["name"],
-                "category": t["category"],
-                "description": t["description"],
-                "input_requirements": t["input_requirements"],
-                "parameters": t["parameters"],
-            }
-        )
+        templates = []
+        for _tid, t in prompts_module.TEMPLATES.items():
+            templates.append(
+                {
+                    "id": t["id"],
+                    "name": t["name"],
+                    "category": t["category"],
+                    "description": t["description"],
+                    "input_requirements": t["input_requirements"],
+                    "parameters": t["parameters"],
+                }
+            )
 
-    return Response({"templates": templates}, status=status.HTTP_200_OK)
+        return Response({"templates": templates}, status=status.HTTP_200_OK)
+    except Exception:
+        # If there's any error loading the prompts file, return empty list
+        return Response({"templates": []}, status=status.HTTP_200_OK)
 
 
 # =============================================================================
@@ -1095,23 +1098,28 @@ def save_asset_view(request: Request) -> Response:
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def list_asset_history_view(request: Request) -> Response:
-    """List historical file assets for a specific asset type.
+    """List historical file assets, optionally filtered by asset type.
 
+    GET /api/v1/generative/assets/history/
     GET /api/v1/generative/assets/history/?project_id=...&asset_type=kit_home
+
+    When called without asset_type, returns recent history across all types (overview mode).
     """
     project_id = request.query_params.get("project_id")
     organisation_id = request.query_params.get("organisation_id")
     asset_type = request.query_params.get("asset_type")
-    limit = int(request.query_params.get("limit", 5))
-
-    if not asset_type:
-        return Response({"error": "asset_type required"}, status=400)
+    limit = int(request.query_params.get("limit", 20))
 
     from files.models import FileAsset
 
-    filters = {"metadata__asset_type": asset_type, "is_deleted": False}
+    # Build filters - is_deleted=False is always required
+    filters: dict = {"is_deleted": False}
 
-    # Scoping
+    # Only filter by asset_type if provided
+    if asset_type:
+        filters["metadata__asset_type"] = asset_type
+
+    # Scoping by project or organisation (optional for overview)
     if project_id:
         # Resolve org from project if possible, but FileAsset is linked to Org
         try:
@@ -1132,11 +1140,14 @@ def list_asset_history_view(request: Request) -> Response:
             return Response({"error": "Project not found"}, status=404)
     elif organisation_id:
         filters["organization_id"] = organisation_id
-    else:
-        return Response({"error": "project_id or organisation_id required"}, status=400)
+    # Note: If no project_id or organisation_id, we return global history (limited)
 
-    # Query recent files
-    assets_qs = FileAsset.objects.filter(**filters).order_by("-created_at")[:limit]
+    # Query recent files - only include those with asset_type metadata (generated assets)
+    assets_qs = (
+        FileAsset.objects.filter(**filters)
+        .filter(metadata__has_key="asset_type")
+        .order_by("-created_at")[:limit]
+    )
 
     # Serialize
     from files.utils import get_storage_backend
@@ -1157,7 +1168,9 @@ def list_asset_history_view(request: Request) -> Response:
                 "url": url,
                 "created_at": asset.created_at,
                 "original_name": asset.original_name,
+                "asset_type": asset.metadata.get("asset_type"),
                 "variant_index": asset.metadata.get("variant_index"),
+                "mime_type": asset.mime_type,
             }
         )
 
