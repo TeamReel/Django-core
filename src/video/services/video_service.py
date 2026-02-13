@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 
 from django.apps import apps
+from django.db import transaction
 from django.utils import timezone
 from files.utils import get_storage_backend
 from rest_framework.exceptions import ValidationError
@@ -75,8 +76,7 @@ class VideoService:
             )
             job.save(update_fields=["workflow_instance", "updated_at"])
 
-        # Dispatch immediately - for lineup jobs we use a background thread which shares
-        # the same process, so no transaction timing issues.
+        # Dispatch after commit to avoid race conditions.
         self._dispatch_job(job)
 
         logger.info(
@@ -89,7 +89,12 @@ class VideoService:
         return job
 
     def _dispatch_job(self, job: VideoJob) -> None:
-        """Dispatch job to appropriate Celery task."""
+        """Dispatch job to appropriate task runner.
+
+        Important: dispatch must happen after the DB transaction commits.
+        Otherwise background threads / Celery workers may not be able to load
+        the newly-created VideoJob yet, leaving it stuck in QUEUED.
+        """
         import threading
 
         from src.video.tasks import (
@@ -100,27 +105,30 @@ class VideoService:
 
         job_id = str(job.id)
 
-        if job.job_type == JobType.TRANSCODE:
-            transcode_video.delay(job_id)
-        elif job.job_type == JobType.THUMBNAIL:
-            generate_thumbnail.delay(job_id)
-        elif job.job_type == JobType.COMPOSE:
-            compose_video.delay(job_id)
-        elif job.job_type == JobType.LINEUP:
-            # Always process lineup jobs in a background thread directly.
-            # The Celery worker on Railway has persistent issues picking up these tasks
-            # (settings mismatch, queue routing, etc.). Background thread is reliable.
-            logger.info(
-                "Lineup job - processing in background thread",
-                extra={"job_id": job_id},
-            )
-            self._start_lineup_thread(threading, job_id)
-        else:
-            logger.error(
-                "Unknown job type for dispatch",
-                extra={"job_id": job_id, "job_type": job.job_type},
-            )
-            raise ValidationError({"job_type": f"Unknown job type: {job.job_type}"})
+        def _dispatch() -> None:
+            if job.job_type == JobType.TRANSCODE:
+                transcode_video.delay(job_id)
+            elif job.job_type == JobType.THUMBNAIL:
+                generate_thumbnail.delay(job_id)
+            elif job.job_type == JobType.COMPOSE:
+                compose_video.delay(job_id)
+            elif job.job_type == JobType.LINEUP:
+                # Always process lineup jobs in a background thread directly.
+                # The Celery worker on Railway has persistent issues picking up these tasks
+                # (settings mismatch, queue routing, etc.). Background thread is reliable.
+                logger.info(
+                    "Lineup job - processing in background thread",
+                    extra={"job_id": job_id},
+                )
+                self._start_lineup_thread(threading, job_id)
+            else:
+                logger.error(
+                    "Unknown job type for dispatch",
+                    extra={"job_id": job_id, "job_type": job.job_type},
+                )
+                raise ValidationError({"job_type": f"Unknown job type: {job.job_type}"})
+
+        transaction.on_commit(_dispatch)
 
     def _start_lineup_thread(self, threading_module, job_id: str) -> None:
         thread = threading_module.Thread(
