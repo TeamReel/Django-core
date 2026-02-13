@@ -206,10 +206,21 @@ class LineupSegmentBuilder:
                         is_active=True,
                     )
                     .select_related("file")
+                    .order_by("-updated_at")
                     .first()
                 )
-                if asset and asset.file:
-                    return self._get_presigned_url(asset.file.storage_path)
+                if not asset:
+                    continue
+
+                # Prefer the API-facing URL if it is persisted (often already presigned).
+                asset_url = getattr(asset, "url", None)
+                if asset_url:
+                    return asset_url
+
+                if asset.file:
+                    presigned = self._get_presigned_url(asset.file.storage_path)
+                    if presigned:
+                        return presigned
             return None
 
         logo_url = _resolve_asset_url(["logo_light", "logo_dark", "logo_upload"])
