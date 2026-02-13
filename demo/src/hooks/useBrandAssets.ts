@@ -93,6 +93,7 @@ const ASSET_TYPE_LABELS: Record<string, string> = {
   kit_training: 'Training Kit',
   kit_training_combined: 'Training Kit (Combined)',
   location_photo: 'Location Photo',
+  stadium_background: 'Stadium Background',
   other: 'Other',
 };
 
@@ -110,7 +111,7 @@ export function getContentType(assetType: string): ContentType {
   if (assetType.startsWith('member_closeup') || assetType === 'member_closeup') return 'closeup';
   if (assetType.startsWith('member_in_tenue') || assetType.includes('in_tenue')) return 'in_tenue';
   if (assetType.startsWith('lineup') || assetType.includes('lineup')) return 'lineup';
-  if (assetType === 'location_photo') return 'location';
+  if (assetType === 'location_photo' || assetType === 'stadium_background') return 'location';
   if (assetType === 'font_file') return 'font';
   return 'other';
 }

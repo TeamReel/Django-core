@@ -94,7 +94,17 @@ function AssetCard({
   if (isUploadType) {
     badgeColor = '#3b82f6'; // blue
     badgeText = 'Upload';
-  } else if (isProcessed && !['watermark', 'favicon', 'font_file', 'location_photo', 'other'].includes(assetType)) {
+  } else if (
+    isProcessed &&
+    ![
+      'watermark',
+      'favicon',
+      'font_file',
+      'location_photo',
+      'stadium_background',
+      'other',
+    ].includes(assetType)
+  ) {
     badgeColor = '#10b981'; // green
     badgeText = 'AI Bewerkt';
   }
@@ -140,7 +150,17 @@ function AssetCard({
         )}
 
         {/* History Button - always show if processed type, even if no asset set yet (might have history) */}
-        {!readOnly && onShowHistory && isProcessed && !['watermark', 'favicon', 'font_file', 'location_photo', 'other'].includes(assetType) && (
+        {!readOnly &&
+          onShowHistory &&
+          isProcessed &&
+          ![
+            'watermark',
+            'favicon',
+            'font_file',
+            'location_photo',
+            'stadium_background',
+            'other',
+          ].includes(assetType) && (
             <button
                 onClick={() => onShowHistory(assetType)}
                 style={{
@@ -745,7 +765,7 @@ export function AssetsTab({
         </div>
 
         {/* Location */}
-        <Section title="📍 Locatie" description="Stadion of veld foto's.">
+        <Section title="📍 Locatie" description="Stadion/veld foto's en achtergronden.">
           <AssetGrid>
             <AssetCard
               label="Locatie foto"
@@ -754,6 +774,14 @@ export function AssetsTab({
               onUpload={handleUpload}
               onDelete={handleDelete}
               aspectRatio="16 / 9"
+            />
+            <AssetCard
+              label="Stadion achtergrond (lineup)"
+              assetType="stadium_background"
+              asset={getAsset('stadium_background')}
+              onUpload={handleUpload}
+              onDelete={handleDelete}
+              aspectRatio="9 / 16"
             />
           </AssetGrid>
         </Section>

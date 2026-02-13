@@ -139,6 +139,7 @@ export const ASSET_TYPE_LABELS: Record<string, string> = {
   favicon: 'Favicon',
   font_file: 'Lettertype',
   location_photo: 'Locatie foto',
+  stadium_background: 'Stadion achtergrond',
   other: 'Overig',
 };
 
