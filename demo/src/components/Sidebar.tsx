@@ -60,7 +60,7 @@ const NAV_CONFIG: NavSection[] = [
     visibility: 'everyone',
     items: [
       { path: '/medialib', label: 'Media Library', icon: Library, visibility: 'everyone' },
-      { path: '/studio', label: 'AI Studio', icon: Sparkles, visibility: 'everyone' },
+      { path: '/studio?tab=library', label: 'AI Studio', icon: Sparkles, visibility: 'everyone' },
       { path: '/studio/videos', label: 'Video Queue', icon: Video, visibility: 'everyone' },
       { path: '/approvals', label: 'Approvals', icon: ClipboardCheck, visibility: 'everyone' },
     ]
@@ -825,21 +825,16 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 // Legacy route - redirect to AI Studio library tab
                 title = 'Content Library';
                 items = [
-                    { label: 'Match', path: '/studio?tab=library&level=match', icon: Trophy },
-                    { label: 'Season', path: '/studio?tab=library&level=season', icon: Calendar },
-                    { label: 'Member', path: '/studio?tab=library&level=member', icon: UserCircle },
-                    { label: 'Team', path: '/studio?tab=library&level=team', icon: Shirt },
-                    { label: 'Club', path: '/studio?tab=library&level=club', icon: Shield },
+                    { label: '📚 Library', path: '/studio?tab=library', icon: Film },
+                    { label: 'Templates', path: '/studio?tab=templates', icon: Library },
+                    { label: 'History', path: '/studio?tab=history', icon: Timer },
+                    { label: 'Quick Actions', path: '/studio?tab=actions', icon: Sparkles },
                 ];
             } else if (path.startsWith('/studio') && !path.startsWith('/studio/videos')) {
                 // AI Studio - always show main tabs
-                const studioParams = new URLSearchParams(location.search || '');
-                const studioTab = studioParams.get('tab') || 'library';
-                const studioLevel = studioParams.get('level') || 'match';
-
                 title = 'AI Studio';
                 items = [
-                    { label: '📚 Library', path: `/studio?tab=library&level=${studioLevel}`, icon: Film },
+                    { label: '📚 Library', path: '/studio?tab=library', icon: Film },
                     { label: 'Templates', path: '/studio?tab=templates', icon: Library },
                     { label: 'History', path: '/studio?tab=history', icon: Timer },
                     { label: 'Quick Actions', path: '/studio?tab=actions', icon: Sparkles },

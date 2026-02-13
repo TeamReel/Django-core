@@ -15,6 +15,10 @@
  * - Member: Intro, Celebration, etc.
  *
  * Data source: /api/v1/media/items/ filtered by project/activity
+ *
+ * Supports two modes:
+ * - Standalone: renders full page at /contentlib
+ * - Embedded: renders as a component inside AI Studio (pass `embedded={true}`)
  */
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
@@ -32,7 +36,7 @@ import { CONTENT_TYPES } from '../identity/ContentGenerationModal';
 // Types
 // ============================================================================
 
-type HierarchyTab = 'match' | 'season' | 'member' | 'team' | 'club';
+export type HierarchyTab = 'match' | 'season' | 'member' | 'team' | 'club';
 
 interface OrganisationOption {
   id: string;
@@ -104,6 +108,30 @@ const SUB_TABS: Record<HierarchyTab, { key: string; label: string }[]> = {
     { key: 'all', label: 'Alles' },
   ],
 };
+
+// All content type filter options (flat list for gallery view)
+const CONTENT_TYPE_FILTERS: { key: string; label: string; icon: string }[] = [
+  { key: 'all', label: 'All', icon: '📚' },
+  // Pre-match
+  { key: 'flyer', label: 'Match Flyer', icon: '📣' },
+  { key: 'lineup', label: 'Lineup', icon: '📋' },
+  { key: 'walkon', label: 'Walk-on', icon: '🚶' },
+  { key: 'anthem', label: 'Anthem', icon: '🎵' },
+  // During match
+  { key: 'goal', label: 'Goal Celebration', icon: '⚽' },
+  { key: 'score_update', label: 'Score Update', icon: '🔢' },
+  // Post-match
+  { key: 'end_score', label: 'Final Score', icon: '🏁' },
+  { key: 'match_summary', label: 'Match Summary', icon: '📊' },
+  { key: 'highlights', label: 'Highlights', icon: '🎬' },
+  // Season
+  { key: 'transformation', label: 'Then & Now', icon: '🔄' },
+  { key: 'season_recap', label: 'Season Recap', icon: '📅' },
+  // Member
+  { key: 'member_intro', label: 'Member Intro', icon: '👋' },
+  { key: 'member_goal_celebration', label: 'Member Goal', icon: '⚽' },
+  { key: 'member_in_tenue', label: 'In Tenue', icon: '👕' },
+];
 
 // Map asset_type to content phase
 function getContentPhase(assetType: string): string {
@@ -298,10 +326,24 @@ function EmptyState({ icon, message, sub }: { icon: string; message: string; sub
 }
 
 // ============================================================================
+// Props Interface
+// ============================================================================
+
+export interface ContentLibraryViewProps {
+  /** When true, renders without page chrome (for embedding in AI Studio) */
+  embedded?: boolean;
+  /** Override the active level (match/season/member/team/club) - useful when embedded */
+  overrideLevel?: HierarchyTab;
+}
+
+// ============================================================================
 // Main Page
 // ============================================================================
 
-const ContentLibraryPage: React.FC = () => {
+export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
+  embedded = false,
+  overrideLevel,
+}) => {
   const location = useLocation();
   const { context, organisations: myOrganisations } = useContextSwitcher();
   const { user } = useAuth();
@@ -311,8 +353,8 @@ const ContentLibraryPage: React.FC = () => {
   const userRole = String((user as any)?.role || '').toLowerCase();
   const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
 
-  // Read level from URL (set by Panel B sidebar)
-  const rawTab = new URLSearchParams(location.search).get('tab') || 'match';
+  // Read level from URL or use override prop (when embedded in AI Studio)
+  const rawTab = overrideLevel || new URLSearchParams(location.search).get('level') || new URLSearchParams(location.search).get('tab') || 'match';
   const activeLevel = (['match', 'season', 'member', 'team', 'club'].includes(rawTab) ? rawTab : 'match') as HierarchyTab;
 
   // Data state
@@ -520,13 +562,13 @@ const ContentLibraryPage: React.FC = () => {
   const filteredContent = useMemo(() => {
     let result = contentItems;
 
-    // Sub-filter (content phase)
+    // Sub-filter (content type - e.g. lineup, goal, transformation)
     if (subFilter !== 'all') {
       result = result.filter(item => {
         const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
+        // Normalize: remove UUID suffix like _a1b2c3d4
         const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
-        const phase = getContentPhase(normalizedType);
-        return phase === subFilter || normalizedType === subFilter;
+        return normalizedType === subFilter;
       });
     }
 
@@ -547,22 +589,14 @@ const ContentLibraryPage: React.FC = () => {
     return result;
   }, [contentItems, subFilter, searchQuery]);
 
-  // Sub-tab counts
-  const subTabCounts = useMemo(() => {
+  // Count items per content type (for filter chip badges)
+  const contentTypeCounts = useMemo(() => {
     const counts: Record<string, number> = { all: contentItems.length };
 
     contentItems.forEach(item => {
       const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
       const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
-      const phase = getContentPhase(normalizedType);
-
-      if (phase === 'pre_match') counts.pre_match = (counts.pre_match || 0) + 1;
-      else if (phase === 'during_match') counts.during_match = (counts.during_match || 0) + 1;
-      else if (phase === 'post_match') counts.post_match = (counts.post_match || 0) + 1;
-      else if (phase === 'season') counts.season = (counts.season || 0) + 1;
-      else if (normalizedType.startsWith('member_')) {
-        counts[normalizedType] = (counts[normalizedType] || 0) + 1;
-      }
+      counts[normalizedType] = (counts[normalizedType] || 0) + 1;
     });
 
     return counts;
@@ -597,23 +631,25 @@ const ContentLibraryPage: React.FC = () => {
 
   if (!orgId) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)', padding: 24 }}>
+      <div style={{ minHeight: embedded ? 'auto' : '100vh', backgroundColor: 'var(--app-bg)', padding: 24 }}>
         <Alert variant="info">Selecteer een organisatie om de content library te bekijken.</Alert>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)' }}>
-      {/* Header */}
-      <div style={{ padding: 24, borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
-        <Stack direction="column" gap="1">
-          <Text size="xl" weight="bold">Content Library</Text>
-          <Text size="md" color="secondary">
-            Gegenereerde content - {levelLabels[activeLevel]}
-          </Text>
-        </Stack>
-      </div>
+    <div style={{ minHeight: embedded ? 'auto' : '100vh', backgroundColor: 'var(--app-bg)' }}>
+      {/* Header - only show when not embedded */}
+      {!embedded && (
+        <div style={{ padding: 24, borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
+          <Stack direction="column" gap="1">
+            <Text size="xl" weight="bold">Content Library</Text>
+            <Text size="md" color="secondary">
+              Gegenereerde content - {levelLabels[activeLevel]}
+            </Text>
+          </Stack>
+        </div>
+      )}
 
       {/* Toolbar: directory-style filters */}
       <div style={{ padding: '16px 24px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', borderBottom: '1px solid var(--app-border)' }}>
@@ -751,18 +787,18 @@ const ContentLibraryPage: React.FC = () => {
       <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
         <Stack direction="column" gap="4">
 
-          {/* Sub-tabs (content phase chips) */}
+          {/* Content type filter chips (like Media Library) */}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {SUB_TABS[activeLevel].map(({ key, label }) => {
-              const count = subTabCounts[key] || 0;
-              // Only show tabs that have content or are 'all'
+            {CONTENT_TYPE_FILTERS.map(({ key, label, icon }) => {
+              const count = contentTypeCounts[key] || 0;
+              // Only show filters that have content or are 'all'
               if (key !== 'all' && count === 0) return null;
               return (
                 <FilterChip
                   key={key}
                   active={subFilter === key}
                   onClick={() => setSubFilter(key)}
-                  label={label}
+                  label={`${icon} ${label}`}
                   count={count}
                 />
               );
@@ -878,5 +914,12 @@ const ContentLibraryPage: React.FC = () => {
     </div>
   );
 };
+
+// ============================================================================
+// Standalone Page Export
+// ============================================================================
+
+/** Standalone page wrapper for /contentlib route */
+const ContentLibraryPage: React.FC = () => <ContentLibraryView embedded={false} />;
 
 export default ContentLibraryPage;

@@ -1,15 +1,17 @@
 /**
  * AI Studio Page — Content Generation Hub
  *
- * Three sections:
- * 1. Template Browser — browse available generation templates (asset + content)
- * 2. Recent Generations — history of past generations
- * 3. Quick Actions — links to generate content on entity detail pages
+ * Four sections:
+ * 1. Content Library — browse generated content (flyers, lineups, etc.)
+ * 2. Template Browser — browse available generation templates (asset + content)
+ * 3. Recent Generations — history of past generations
+ * 4. Quick Actions — links to generate content on entity detail pages
  *
  * Uses the same generation APIs as detail page modals:
  *   - /api/v1/generative/assets/templates/
  *   - /api/v1/generative/assets/history/
  *   - /api/v1/content-generation/templates/
+ *   - /api/v1/media/items/ (for content library)
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -24,8 +26,9 @@ import {
   type AssetTemplate,
   type GenerationHistoryItem,
 } from '../../hooks/useGenerationHistory';
+import { ContentLibraryView, type ContentLibraryViewProps } from '../content/ContentLibraryPage';
 
-type Tab = 'templates' | 'history' | 'actions';
+type Tab = 'library' | 'templates' | 'history' | 'actions';
 
 export default function AIStudioPage() {
   const navigate = useNavigate();
@@ -36,7 +39,8 @@ export default function AIStudioPage() {
   const { assetTemplates, contentTemplates, history, loading, error, fetchTemplates, fetchHistory } = useGenerationHistory();
 
   // Read tab from URL
-  const activeTab: Tab = (new URLSearchParams(location.search).get('tab') as Tab) || 'templates';
+  const params = new URLSearchParams(location.search);
+  const activeTab: Tab = (params.get('tab') as Tab) || 'library';
   const [templateFilter, setTemplateFilter] = useState<TemplateCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -128,16 +132,58 @@ export default function AIStudioPage() {
         <Stack direction="column" gap="1">
           <Text size="xl" weight="bold">AI Studio</Text>
           <Text size="md" color="secondary">
-            Browse templates, review generation history, and generate content.
+            {activeTab === 'library'
+              ? 'Browse and manage your generated content.'
+              : 'Browse templates, review generation history, and generate content.'}
           </Text>
         </Stack>
       </div>
 
+      {/* Tab Bar */}
+      <div style={{
+        padding: '12px 24px',
+        borderBottom: '1px solid var(--app-border)',
+        backgroundColor: 'var(--app-surface-2, #f9fafb)',
+        display: 'flex',
+        gap: '8px',
+        flexWrap: 'wrap',
+      }}>
+        {(['library', 'templates', 'history', 'actions'] as Tab[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: activeTab === tab ? 'var(--color-primary, #3b82f6)' : 'transparent',
+              color: activeTab === tab ? '#fff' : 'var(--app-text)',
+              fontSize: '14px',
+              fontWeight: activeTab === tab ? 600 : 400,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            {tab === 'library' ? '📚 Library' :
+             tab === 'templates' ? '📋 Templates' :
+             tab === 'history' ? '📜 History' : '⚡ Quick Actions'}
+          </button>
+        ))}
+      </div>
+
       {/* Content */}
-      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
         <Stack direction="column" gap="4">
 
           {error && <Alert variant="error">{error}</Alert>}
+
+          {/* LIBRARY TAB */}
+          {activeTab === 'library' && (
+            <>
+              {/* Embedded Content Library - has its own content-type filter chips */}
+              <ContentLibraryView embedded={true} />
+            </>
+          )}
 
           {/* TEMPLATES TAB */}
           {activeTab === 'templates' && (
