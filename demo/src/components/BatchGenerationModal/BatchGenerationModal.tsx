@@ -186,6 +186,8 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
   const [jobStatuses, setJobStatuses] = useState<Record<string, MemberJobStatus>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const abortRef = useRef(false);
+  // Mode selection: 'generate' (AI generation + optional processing) or 'processOnly' (skip generation, process existing)
+  const [batchMode, setBatchMode] = useState<'generate' | 'processOnly'>('generate');
   // If true, trigger backend processing (POST /api/v1/video/jobs/process-asset/) after
   // the generated asset is saved to membership metadata.
   const [processAfterGeneration, setProcessAfterGeneration] = useState<boolean>(false);
@@ -305,7 +307,102 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
 
       const params = getEffectiveParams(member.id);
       const inputAssets = getInputAssetsForMember(member, params);
+      const kitType = params.kit_type || 'home';
+      const category = selectedTemplate.category;
 
+      // ── PROCESS ONLY MODE: Skip generation, process existing asset ──
+      if (batchMode === 'processOnly') {
+        try {
+          // Check if member has existing raw asset for this kit_type
+          const existingRawUrl = member.fullbodyUrls[kitType];
+          if (!existingRawUrl) {
+            setJobStatuses((prev) => ({
+              ...prev,
+              [member.id]: { status: 'skipped', error: `Geen bestaande ${kitType} fullbody` },
+            }));
+            continue;
+          }
+
+          // Trigger processing directly
+          const procRes = await fetch(`${apiBase}/api/v1/video/jobs/process-asset/`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({
+              membership_id: member.id,
+              asset_type: category,
+              kit_type: kitType,
+              variant_id: params.style_variant || null,
+            }),
+          });
+
+          if (!procRes.ok) {
+            const errJson = await procRes.json().catch(() => ({}));
+            throw new Error(errJson?.error || `Process failed (${procRes.status})`);
+          }
+
+          setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'running', error: 'Bewerking bezig…' } }));
+
+          // Poll for completion
+          const POLL_INTERVAL = 3000;
+          const MAX_POLLS = 80; // ~4 minutes
+          let processed = false;
+
+          for (let p = 0; p < MAX_POLLS; p++) {
+            if (abortRef.current) break;
+            await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+            if (abortRef.current) break;
+
+            const mRes = await fetch(
+              `${apiBase}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
+              { credentials: 'include' }
+            );
+            if (!mRes.ok) continue;
+
+            const mJson = await mRes.json().catch(() => null);
+            const mData = mJson?.data || mJson;
+            const mMeta = mData?.metadata || {};
+            const tr = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
+
+            const metaKey = kitType;
+            const checkVal = ((tr.images || {})[category] || {})[metaKey];
+
+            if (checkVal && typeof checkVal === 'object') {
+              const state = checkVal.processing_state || checkVal.state || null;
+              if (state === 'processed') {
+                setJobStatuses((prev) => ({
+                  ...prev,
+                  [member.id]: { status: 'success', resultUrl: checkVal.processed || checkVal.processed_url || '' },
+                }));
+                processed = true;
+                break;
+              }
+              if (state === 'failed') {
+                throw new Error(checkVal.error || 'Processing failed');
+              }
+            }
+          }
+
+          if (!processed && !abortRef.current) {
+            throw new Error('Processing timeout');
+          }
+        } catch (err) {
+          console.error(`Batch processing failed for ${member.name}:`, err);
+          setJobStatuses((prev) => ({
+            ...prev,
+            [member.id]: {
+              status: 'error',
+              error: err instanceof Error ? err.message : 'Onbekende fout',
+            },
+          }));
+        }
+        continue;
+      }
+
+      // ── GENERATE MODE: AI generation + optional processing ──
       // Check if required inputs are available
       if (!inputAssets.person) {
         setJobStatuses((prev) => ({
@@ -479,7 +576,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
     }
 
     setStep('done');
-  }, [members, getEffectiveParams, getInputAssetsForMember, selectedTemplate, organisationId, projectId, apiBase]);
+  }, [members, getEffectiveParams, getInputAssetsForMember, selectedTemplate, organisationId, projectId, apiBase, batchMode]);
 
   // Update membership metadata after successful generation
   const updateMembershipMetadata = useCallback(
@@ -672,10 +769,10 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         {/* Header */}
         <div style={headerStyle}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '24px' }}>🚀</span>
+            <span style={{ fontSize: '24px' }}>{batchMode === 'processOnly' ? '⚙️' : '🚀'}</span>
             <div>
               <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
-                Batch AI Generatie
+                {batchMode === 'processOnly' ? 'Batch Bewerking' : 'Batch AI Generatie'}
               </h2>
               <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
                 {members.length} {members.length === 1 ? 'member' : 'members'} geselecteerd
@@ -683,7 +780,8 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
             </div>
           </div>
 
-              {/* Option: Process generated asset after save */}
+              {/* Option: Process generated asset after save (only in generate mode) */}
+              {batchMode === 'generate' && (
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
                   <input
@@ -694,6 +792,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                   <span style={{ fontSize: '13px' }}>Bewerk asset na generatie (achtergrond verwijderen / formaat aanpassen)</span>
                 </label>
               </div>
+              )}
           <button
             onClick={onClose}
             disabled={step === 'running'}
@@ -714,7 +813,63 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         <div style={bodyStyle}>
           {step === 'configure' && (
             <>
+              {/* Mode selector */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
+                  Modus
+                </label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => setBatchMode('generate')}
+                    style={{
+                      flex: 1,
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      border: `2px solid ${batchMode === 'generate' ? '#3b82f6' : 'var(--app-border, #444)'}`,
+                      background: batchMode === 'generate' ? 'rgba(59,130,246,0.15)' : 'var(--app-surface-2, #252540)',
+                      color: 'var(--app-text)',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <span>🎨</span>
+                    <div style={{ textAlign: 'left' }}>
+                      <div style={{ fontWeight: 600 }}>Genereer + Bewerk</div>
+                      <div style={{ fontSize: '11px', opacity: 0.7 }}>AI generatie → optioneel bewerken</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setBatchMode('processOnly')}
+                    style={{
+                      flex: 1,
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      border: `2px solid ${batchMode === 'processOnly' ? '#3b82f6' : 'var(--app-border, #444)'}`,
+                      background: batchMode === 'processOnly' ? 'rgba(59,130,246,0.15)' : 'var(--app-surface-2, #252540)',
+                      color: 'var(--app-text)',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <span>⚙️</span>
+                    <div style={{ textAlign: 'left' }}>
+                      <div style={{ fontWeight: 600 }}>Alleen Bewerken</div>
+                      <div style={{ fontSize: '11px', opacity: 0.7 }}>Bestaande assets bewerken</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               {/* Template selector */}
+              {batchMode === 'generate' && (
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
                   Template
@@ -798,9 +953,11 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                 {members.map((member) => {
                   const isExpanded = expandedMembers.has(member.id);
                   const effectiveParams = getEffectiveParams(member.id);
+                  const kitType = effectiveParams.kit_type || 'home';
                   const hasOverrides = Object.keys(memberOverrides[member.id] || {}).length > 0;
                   const inputAssets = getInputAssetsForMember(member, effectiveParams);
-                  const missingPerson = !inputAssets.person;
+                  const missingPerson = batchMode === 'generate' && !inputAssets.person;
+                  const missingExisting = batchMode === 'processOnly' && !member.fullbodyUrls[kitType];
 
                   return (
                     <div key={member.id} style={{ marginBottom: '4px' }}>
@@ -809,7 +966,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                         style={{
                           ...memberRowStyle,
                           cursor: 'pointer',
-                          opacity: missingPerson ? 0.5 : 1,
+                          opacity: (missingPerson || missingExisting) ? 0.5 : 1,
                           borderColor: hasOverrides ? '#3b82f6' : 'var(--app-border, #333)',
                         }}
                       >
@@ -824,6 +981,9 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                           <div style={{ fontSize: '14px', fontWeight: 500 }}>{member.name}</div>
                           {missingPerson && (
                             <div style={{ fontSize: '11px', color: '#ef4444' }}>⚠️ Geen input foto beschikbaar</div>
+                          )}
+                          {missingExisting && (
+                            <div style={{ fontSize: '11px', color: '#ef4444' }}>⚠️ Geen bestaande {kitType} fullbody</div>
                           )}
                           {hasOverrides && (
                             <div style={{ fontSize: '11px', color: '#3b82f6' }}>Aangepaste instellingen</div>
@@ -981,8 +1141,11 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
           {step === 'configure' && (
             <>
               <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
-                💎 {selectedTemplate ? selectedTemplate.creditsCost * members.length : 0} credits totaal
-                ({selectedTemplate?.creditsCost || 0} per member)
+                {batchMode === 'generate' ? (
+                  <>💎 {selectedTemplate ? selectedTemplate.creditsCost * members.length : 0} credits totaal ({selectedTemplate?.creditsCost || 0} per member)</>
+                ) : (
+                  <>⚙️ Bewerking: gratis (geen AI generatie)</>
+                )}
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <Button variant="secondary" onClick={onClose}>
@@ -993,7 +1156,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                   onClick={startBatch}
                   disabled={members.length === 0}
                 >
-                  🚀 Start Batch ({members.length})
+                  {batchMode === 'processOnly' ? '⚙️' : '🚀'} Start Batch ({members.length})
                 </Button>
               </div>
             </>
