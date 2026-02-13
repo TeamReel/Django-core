@@ -42,6 +42,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH" \
     PYTHONPATH="/app/src" \
+    NUMBA_CACHE_DIR="/tmp/numba_cache" \
     DJANGO_SETTINGS_MODULE=config.settings.production
 
 # Install runtime system dependencies only
@@ -53,6 +54,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Create non-root user for security (B03 alignment)
 RUN groupadd -r django && useradd -r -g django -u 1000 django
+
+# Numba (used by pymatting/rembg) tries to write JIT caches next to source files.
+# In production the venv is not writable for the non-root user, so we provide
+# an explicit writable cache dir.
+RUN mkdir -p /tmp/numba_cache && chown -R django:django /tmp/numba_cache
 
 # Copy virtual environment from builder stage
 COPY --from=builder /opt/venv /opt/venv
