@@ -154,3 +154,75 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
         output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
         return Response(output.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["post"], url_path="lineup-from-template")
+    def lineup_from_template(self, request: Request) -> Response:
+        """Create a lineup video job from ContentTemplate + Activity.
+
+        POST /api/v1/video/jobs/lineup-from-template/
+
+        Request body:
+        {
+            "activity_id": "uuid",  # Required: match/activity ID
+            "template_id": "uuid",  # Optional: ContentTemplate ID
+            "output_resolution": "vertical_1080p"  # Optional
+        }
+        """
+        from src.video.models.job import JobType
+        from src.video.services.lineup_builder import build_lineup_video_config
+        from src.video.tasks import process_lineup_video
+
+        activity_id = request.data.get("activity_id")
+        template_id = request.data.get("template_id")
+        output_resolution = request.data.get("output_resolution", "vertical_1080p")
+
+        if not activity_id:
+            return Response(
+                {"error": "activity_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Get activity and its project
+        Activity = apps.get_model("activities", "Activity")
+        try:
+            activity = Activity.objects.select_related("period__project").get(id=activity_id)
+        except Activity.DoesNotExist:
+            return Response(
+                {"error": f"Activity {activity_id} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        project = activity.period.project
+
+        # Check project membership
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+        if not ProjectMembership.objects.filter(project=project, user=request.user).exists():
+            raise PermissionDenied("You must be a project member to create lineup videos.")
+
+        # Build segments config from template + activity data
+        try:
+            config = build_lineup_video_config(
+                activity_id=activity_id,
+                template_id=template_id,
+                output_resolution=output_resolution,
+            )
+        except Exception as e:  # noqa: BLE001
+            return Response(
+                {"error": f"Failed to build lineup config: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Create the video job
+        job = VideoJob.objects.create(
+            project=project,
+            created_by=request.user,
+            job_type=JobType.LINEUP,
+            status=JobStatus.QUEUED,
+            config=config,
+        )
+
+        # Queue the Celery task
+        process_lineup_video.delay(str(job.id))
+
+        output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
+        return Response(output.data, status=status.HTTP_201_CREATED)

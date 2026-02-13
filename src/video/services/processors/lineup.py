@@ -312,13 +312,22 @@ class LineupProcessor(BaseVideoProcessor):
         return prepared
 
     def _download_segment(self, url: str, idx: int) -> str | None:
-        """Download a segment from URL (http, https, or s3)."""
+        """Download a segment from URL (http, https, s3, or file)."""
         parsed = urlparse(url)
         ext = Path(parsed.path).suffix or ".mp4"
         local_path = self.temp_dir / f"segment_{idx:03d}_source{ext}"
 
         try:
-            if parsed.scheme in ("http", "https"):
+            if parsed.scheme == "file":
+                # Local file - just copy it
+                source_path = parsed.path
+                # On Windows, remove leading slash from /C:/path
+                if os.name == "nt" and source_path.startswith("/") and len(source_path) > 2:
+                    if source_path[2] == ":":
+                        source_path = source_path[1:]
+                shutil.copy(source_path, local_path)
+
+            elif parsed.scheme in ("http", "https"):
                 # HTTP download
                 response = requests.get(url, timeout=60, stream=True)
                 response.raise_for_status()
