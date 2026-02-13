@@ -588,7 +588,7 @@ def generate_asset_view(request: Request) -> Response:
 
                         # Add organisation context
                         if organisation:
-                            meta["organisation_id"] = organisation.id
+                            meta["organisation_id"] = str(organisation.id)
                             meta["organisation_name"] = organisation.name
 
                         # Add activity/match context
@@ -1069,7 +1069,7 @@ def save_asset_view(request: Request) -> Response:
 
             # Add organisation context
             if organisation:
-                meta["organisation_id"] = organisation.id
+                meta["organisation_id"] = str(organisation.id)
                 meta["organisation_name"] = organisation.name
 
             # Add activity/match context
