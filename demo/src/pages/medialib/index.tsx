@@ -18,7 +18,7 @@
  */
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Card, Stack, Text, Alert, Badge, Button } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
@@ -180,14 +180,229 @@ function levelLabel(level: HierarchyLevel): string {
   }
 }
 
+type PreviewItem = {
+  url: string | null;
+  title: string;
+  subtitle?: string;
+  isVideo: boolean;
+  linkHref?: string | null;
+};
+
+function normalizeKitType(raw?: string | null): string {
+  const k = String(raw || '').trim().toLowerCase();
+  if (!k) return '';
+  if (k === 'gk') return 'goalkeeper';
+  if (k === 'keeper') return 'goalkeeper';
+  return k;
+}
+
+function inferKitTypeFromBrandAssetType(assetType: string): string {
+  const t = String(assetType || '').toLowerCase();
+  if (t.includes('kit_home')) return 'home';
+  if (t.includes('kit_away')) return 'away';
+  if (t.includes('kit_third')) return 'third';
+  if (t.includes('kit_goalkeeper')) return 'goalkeeper';
+  if (t.includes('kit_coach')) return 'coach';
+  if (t.includes('kit_training')) return 'training';
+  if (t.includes('kit_assistant')) return 'assistant';
+  return '';
+}
+
+function getBrandAssetTags(asset: BrandAsset): string[] {
+  const tags: string[] = [];
+  const type = String(asset.asset_type || '').toLowerCase();
+
+  if (type.startsWith('kit_')) {
+    tags.push('tenue');
+    const kitType = inferKitTypeFromBrandAssetType(type);
+    if (kitType) tags.push(kitType);
+  }
+
+  if (type.startsWith('member_fullbody')) tags.push('full_body');
+  if (type.startsWith('member_closeup')) tags.push('closeup');
+
+  if (type.startsWith('member_intro')) tags.push('intro');
+  if (type.includes('celebration')) tags.push('celebration');
+
+  return Array.from(new Set(tags));
+}
+
+function getMemberMediaTags(item: {
+  asset_type: string;
+  kit_type?: string;
+}): string[] {
+  const tags: string[] = [];
+  const t = String(item.asset_type || '').toLowerCase();
+
+  if (t.includes('fullbody')) tags.push('full_body');
+  if (t.includes('closeup')) tags.push('closeup');
+  if (t.includes('profile')) tags.push('profile');
+  if (t.includes('intro')) tags.push('intro');
+  if (t.includes('celebration')) tags.push('celebration');
+
+  const k = normalizeKitType(item.kit_type);
+  if (k) tags.push(k);
+
+  return Array.from(new Set(tags));
+}
+
+function buildBrandAssetPageHref(asset: BrandAsset, orgSlugOrId?: string): string | null {
+  const orgKey = String(orgSlugOrId || '').trim();
+  if (!orgKey) return null;
+
+  const projectType = String((asset as any)?.project_type || asset.project_type || '').trim().toLowerCase();
+  const projectId = String((asset as any)?.project_id || '').trim();
+  const parentProjectId = String((asset as any)?.parent_project_id || '').trim();
+
+  if (projectType === 'team') {
+    if (!parentProjectId || !projectId) return null;
+    return `/${encodeURIComponent(orgKey)}/${encodeURIComponent(parentProjectId)}/${encodeURIComponent(projectId)}?tab=assets`;
+  }
+
+  if (projectType === 'club') {
+    if (!projectId) return null;
+    return `/${encodeURIComponent(orgKey)}/${encodeURIComponent(projectId)}?tab=assets`;
+  }
+
+  return `/${encodeURIComponent(orgKey)}?tab=identity`;
+}
+
+function buildMemberAssetPageHref(item: { member_id: string }, orgSlugOrId?: string): string | null {
+  const orgKey = String(orgSlugOrId || '').trim();
+  const memberKey = String(item.member_id || '').trim();
+  if (!orgKey || !memberKey) return null;
+  return `/organisations/${encodeURIComponent(orgKey)}/members/${encodeURIComponent(memberKey)}`;
+}
+
+function PreviewModal({ item, onClose }: { item: PreviewItem; onClose: () => void }) {
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: 'min(1000px, 100%)',
+          maxHeight: '85vh',
+          backgroundColor: 'var(--app-surface)',
+          border: '1px solid var(--app-border)',
+          borderRadius: 12,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <div style={{
+          padding: 12,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          borderBottom: '1px solid var(--app-border)',
+        }}>
+          <div style={{ minWidth: 0 }}>
+            <Text weight="bold" size="sm" style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              {item.title}
+            </Text>
+            {item.subtitle && (
+              <Text size="xs" color="secondary" style={{
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}>
+                {item.subtitle}
+              </Text>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {item.linkHref && (
+              <Link
+                to={item.linkHref}
+                style={{
+                  fontSize: 12,
+                  color: 'var(--color-primary, #2563eb)',
+                  textDecoration: 'none',
+                }}
+              >
+                Open asset pagina
+              </Link>
+            )}
+            <button
+              onClick={onClose}
+              style={{
+                border: '1px solid var(--app-border)',
+                background: 'transparent',
+                borderRadius: 8,
+                padding: '6px 10px',
+                cursor: 'pointer',
+                color: 'var(--app-text)',
+                fontSize: 12,
+              }}
+            >
+              Sluiten
+            </button>
+          </div>
+        </div>
+
+        <div style={{
+          flex: 1,
+          backgroundColor: 'var(--app-bg)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 12,
+        }}>
+          {item.url ? (
+            item.isVideo ? (
+              <video
+                src={item.url}
+                controls
+                autoPlay
+                playsInline
+                style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain' }}
+              />
+            ) : (
+              <img
+                src={item.url}
+                alt={item.title}
+                style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain' }}
+              />
+            )
+          ) : (
+            <Text color="secondary">Geen preview beschikbaar.</Text>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ============================================================================
 // Asset Card
 // ============================================================================
 
-function AssetCard({ asset }: { asset: BrandAsset }) {
+function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset; orgSlugOrId?: string; onPreview: (item: PreviewItem) => void }) {
   const level = getHierarchyLevel(asset);
   const contentType = getContentType(asset.asset_type);
   const isVideo = asset.file_details?.content_type?.startsWith('video/');
+  const tags = getBrandAssetTags(asset);
+  const linkHref = buildBrandAssetPageHref(asset, orgSlugOrId);
 
   return (
     <Card style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -196,7 +411,19 @@ function AssetCard({ asset }: { asset: BrandAsset }) {
         height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center',
         backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
         overflow: 'hidden', position: 'relative',
-      }}>
+        cursor: asset.url ? 'pointer' : 'default',
+      }}
+      onClick={() => {
+        if (!asset.url) return;
+        onPreview({
+          url: asset.url,
+          title: friendlyAssetLabel(asset),
+          subtitle: asset.project_name || asset.profile_name || asset.organisation_name || undefined,
+          isVideo: Boolean(isVideo),
+          linkHref,
+        });
+      }}
+      >
         {asset.url ? (
           isVideo ? (
             <video
@@ -253,12 +480,37 @@ function AssetCard({ asset }: { asset: BrandAsset }) {
         {/* Badges row */}
         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
           <Badge size="sm" variant="default">{CONTENT_TYPE_LABELS[contentType] || contentType}</Badge>
+          {tags.map((t) => (
+            <Badge
+              key={t}
+              size="sm"
+              variant="default"
+              style={{ opacity: 0.85 }}
+            >
+              {t}
+            </Badge>
+          ))}
           {asset.file_details?.content_type && (
             <Badge size="sm" variant="default" style={{ opacity: 0.7 }}>
               {asset.file_details.content_type.split('/')[1]?.toUpperCase() || asset.file_details.content_type}
             </Badge>
           )}
         </div>
+
+        {linkHref && (
+          <Link
+            to={linkHref}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              fontSize: 12,
+              color: 'var(--color-primary, #2563eb)',
+              textDecoration: 'none',
+              marginTop: 2,
+            }}
+          >
+            Open asset pagina
+          </Link>
+        )}
 
         {/* File details */}
         {asset.file_details && (
@@ -316,7 +568,7 @@ function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (id: stri
 // Member Media Card
 // ============================================================================
 
-function MemberMediaCard({ item }: { item: {
+function MemberMediaCard({ item, orgSlugOrId, onPreview }: { item: {
   id: string;
   name: string;
   url: string;
@@ -328,8 +580,10 @@ function MemberMediaCard({ item }: { item: {
   parent_project_id: string | null;
   kit_type?: string;
   created_at?: string;
-} }) {
+}; orgSlugOrId?: string; onPreview: (item: PreviewItem) => void }) {
   const isVideo = item.asset_type.includes('intro') || item.asset_type.includes('celebration');
+  const tags = getMemberMediaTags(item);
+  const linkHref = buildMemberAssetPageHref(item, orgSlugOrId);
 
   // Map asset types to friendly labels
   const assetTypeLabels: Record<string, string> = {
@@ -348,7 +602,18 @@ function MemberMediaCard({ item }: { item: {
         height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center',
         backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
         overflow: 'hidden', position: 'relative',
-      }}>
+        cursor: item.url ? 'pointer' : 'default',
+      }}
+      onClick={() => {
+        onPreview({
+          url: item.url || null,
+          title: item.member_name || item.name || 'Member Media',
+          subtitle: item.project_name || undefined,
+          isVideo: Boolean(isVideo),
+          linkHref,
+        });
+      }}
+      >
         {item.url ? (
           isVideo ? (
             <video
@@ -398,12 +663,32 @@ function MemberMediaCard({ item }: { item: {
         </Text>
         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
           <Badge size="sm" variant="default">{friendlyType}</Badge>
-          {item.kit_type && (
-            <Badge size="sm" variant="default" style={{ opacity: 0.7 }}>
-              {item.kit_type.toUpperCase()}
+          {tags.map((t) => (
+            <Badge
+              key={t}
+              size="sm"
+              variant="default"
+              style={{ opacity: 0.85 }}
+            >
+              {t}
             </Badge>
-          )}
+          ))}
         </div>
+
+        {linkHref && (
+          <Link
+            to={linkHref}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              fontSize: 12,
+              color: 'var(--color-primary, #2563eb)',
+              textDecoration: 'none',
+              marginTop: 2,
+            }}
+          >
+            Open asset pagina
+          </Link>
+        )}
       </div>
     </Card>
   );
@@ -466,6 +751,8 @@ const MediaLibraryPage: React.FC = () => {
   const [kitFilter, setKitFilter] = useState<string>('all');  // Kit type filter (home, away, etc.)
   const [fileTypeFilter, setFileTypeFilter] = useState<FileTypeFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const [previewItem, setPreviewItem] = useState<PreviewItem | null>(null);
 
   // Reset kit filter when sub-filter changes
   useEffect(() => {
@@ -1412,7 +1699,12 @@ const MediaLibraryPage: React.FC = () => {
                 gap: 16,
               }}>
                 {filteredBrandAssets.map((asset) => (
-                  <AssetCard key={asset.id} asset={asset} />
+                  <AssetCard
+                    key={asset.id}
+                    asset={asset}
+                    orgSlugOrId={orgSlug || orgId}
+                    onPreview={(it) => setPreviewItem(it)}
+                  />
                 ))}
               </div>
             ) : (
@@ -1431,7 +1723,12 @@ const MediaLibraryPage: React.FC = () => {
                 gap: 16,
               }}>
                 {filteredMemberMedia.map((item) => (
-                  <MemberMediaCard key={item.id} item={item} />
+                  <MemberMediaCard
+                    key={item.id}
+                    item={item}
+                    orgSlugOrId={orgSlug || orgId}
+                    onPreview={(it) => setPreviewItem(it)}
+                  />
                 ))}
               </div>
             ) : (
@@ -1473,6 +1770,13 @@ const MediaLibraryPage: React.FC = () => {
           </div>
         </Stack>
       </div>
+
+      {previewItem && (
+        <PreviewModal
+          item={previewItem}
+          onClose={() => setPreviewItem(null)}
+        />
+      )}
     </div>
   );
 };
