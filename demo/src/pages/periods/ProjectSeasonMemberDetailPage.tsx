@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
@@ -310,6 +310,61 @@ async function triggerAssetProcessing(
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'Unknown error' };
+  }
+}
+
+/**
+ * Poll membership metadata until a variant's processing_state resolves to 'processed' or 'failed'.
+ * Calls setMembership to trigger the useEffect that re-derives videoVariants.
+ */
+async function pollProcessingResult(
+  apiBaseUrl: string,
+  projectId: string,
+  membershipId: string,
+  assetType: string,
+  kitType: string,
+  variantId: string | null | undefined,
+  setMembershipFn: (m: any) => void,
+  abortSignal?: AbortSignal,
+): Promise<void> {
+  const POLL_INTERVAL = 3000;
+  const MAX_POLLS = 80; // ~4 min
+  const isImage = assetType === 'fullbody' || assetType === 'closeup';
+  const compositeKey = variantId ? `${kitType}_${variantId}` : kitType;
+
+  for (let i = 0; i < MAX_POLLS; i++) {
+    if (abortSignal?.aborted) return;
+    await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+    if (abortSignal?.aborted) return;
+
+    try {
+      const res = await fetch(
+        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
+        { credentials: 'include' }
+      );
+      if (!res.ok) continue;
+      const json = await res.json();
+      const mData = json?.data || json;
+      const tr = mData?.metadata?.teamreel_assets || mData?.metadata?.teamreelAssets || {};
+
+      let checkVal: any = null;
+      if (isImage) {
+        checkVal = ((tr.images || {})[assetType] || {})[kitType];
+      } else {
+        checkVal = ((tr.videos || {})[assetType] || {})[compositeKey];
+      }
+
+      if (checkVal && typeof checkVal === 'object') {
+        const state = checkVal.processing_state;
+        if (state === 'processed' || state === 'failed') {
+          // Update full membership so useEffect re-derives videoVariants
+          setMembershipFn(mData);
+          return;
+        }
+      }
+    } catch {
+      // Network error — keep trying
+    }
   }
 }
 
@@ -2249,6 +2304,11 @@ export default function ProjectSeasonMemberDetailPage() {
                                               },
                                             };
                                             setVideoVariants(newVV);
+                                            // Poll for result and auto-refresh
+                                            void pollProcessingResult(
+                                              apiBaseUrl, project!.id, membershipId!,
+                                              'fullbody', kit.id, null, setMembership,
+                                            );
                                           }
                                         }}
                                         style={{
@@ -2442,6 +2502,11 @@ export default function ProjectSeasonMemberDetailPage() {
                                               },
                                             };
                                             setVideoVariants(newVV);
+                                            // Poll for result and auto-refresh
+                                            void pollProcessingResult(
+                                              apiBaseUrl, project!.id, membershipId!,
+                                              'closeup', kit.id, null, setMembership,
+                                            );
                                           }
                                         }}
                                         style={{

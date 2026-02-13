@@ -710,11 +710,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         const closeupUrls: Record<string, string> = {};
         const imgFb = tr?.images?.fullbody || {};
         const imgCu = tr?.images?.closeup || {};
+        // Handle both old string and new { raw, processed } variant format
+        // Prefer processed (bg-removed) URL for best AI input quality
+        const extractUrl = (val: any): string | null => {
+          if (!val) return null;
+          if (typeof val === 'string') return val;
+          if (typeof val === 'object') return val.processed || val.raw || null;
+          return null;
+        };
         for (const [k, v] of Object.entries(imgFb)) {
-          if (v) fullbodyUrls[k] = v as string;
+          const url = extractUrl(v);
+          if (url) fullbodyUrls[k] = url;
         }
         for (const [k, v] of Object.entries(imgCu)) {
-          if (v) closeupUrls[k] = v as string;
+          const url = extractUrl(v);
+          if (url) closeupUrls[k] = url;
         }
         // Fallback: check media.kit for home fullbody (legacy compat)
         if (!fullbodyUrls['home'] && tr?.media?.kit?.url) {
