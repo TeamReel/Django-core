@@ -125,10 +125,13 @@ class LineupSegmentBuilder:
 
     def _gather_lineup_data(self) -> LineupData:
         """Gather all required data from database."""
-        from src.activities.models import Activity, Participation
-        from src.branding.models import BrandAsset, BrandProfile
+        from django.apps import apps
 
-        # Membership is accessed via participation.member
+        # Use apps.get_model to avoid app_label issues
+        Activity = apps.get_model("activities", "Activity")
+        Participation = apps.get_model("activities", "Participation")
+        BrandProfile = apps.get_model("branding", "BrandProfile")
+        BrandAsset = apps.get_model("branding", "BrandAsset")
 
         # Get activity (match)
         activity = Activity.objects.select_related(
