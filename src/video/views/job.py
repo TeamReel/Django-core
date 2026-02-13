@@ -165,9 +165,17 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         {
             "activity_id": "uuid",  # Required: match/activity ID
             "template_id": "uuid",  # Optional: ContentTemplate ID
-            "output_resolution": "vertical_1080p"  # Optional
+            "output_resolution": "vertical_1080p",  # Optional
+            "segments": [...]  # Optional: pre-built segments from frontend
         }
+
+        If `segments` is provided, uses those directly.
+        Otherwise, builds segments from Activity participations + brand assets.
         """
+        import logging
+
+        logger = logging.getLogger(__name__)
+
         from src.video.models.job import JobType
         from src.video.services.lineup_builder import build_lineup_video_config
         from src.video.tasks import process_lineup_video
@@ -175,6 +183,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         activity_id = request.data.get("activity_id")
         template_id = request.data.get("template_id")
         output_resolution = request.data.get("output_resolution", "vertical_1080p")
+        frontend_segments = request.data.get("segments")  # Optional fallback
 
         if not activity_id:
             return Response(
@@ -207,16 +216,54 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 template_id=template_id,
                 output_resolution=output_resolution,
             )
+            # Check if backend found player segments (more than just header + field)
+            backend_segments = config.get("segments", [])
+            player_segments_count = len(
+                [
+                    s
+                    for s in backend_segments
+                    if s.get("type") != "image" or "lineup" not in s.get("url", "").lower()
+                ]
+            )
+
+            logger.info(
+                "Backend built %d segments, player segments: %d, frontend provided: %s",
+                len(backend_segments),
+                player_segments_count,
+                len(frontend_segments) if frontend_segments else "none",
+            )
+
+            # If backend found < 3 segments (just header+field) but frontend has segments, use frontend
+            if len(backend_segments) <= 2 and frontend_segments and len(frontend_segments) > 2:
+                logger.info(
+                    "Using frontend segments as fallback (%d segments)", len(frontend_segments)
+                )
+                config["segments"] = frontend_segments
+
         except Exception as e:  # noqa: BLE001
-            import logging
             import traceback
 
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to build lineup config: {e}\n{traceback.format_exc()}")
-            return Response(
-                {"error": f"Failed to build lineup config: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            logger.error("Failed to build lineup config: %s\n%s", e, traceback.format_exc())
+            # If frontend provided segments, use those as fallback
+            if frontend_segments and len(frontend_segments) > 0:
+                logger.info(
+                    "Using frontend segments after backend failure (%d segments)",
+                    len(frontend_segments),
+                )
+                config = {
+                    "segments": frontend_segments,
+                    "output_resolution": output_resolution,
+                    "output_fps": 30,
+                    "background_color": "#1a472a",
+                    "fade_duration": 0.3,
+                    "match_id": str(activity_id),
+                    "activity_id": str(activity_id),
+                }
+            else:
+                return Response(
+                    {"error": f"Failed to build lineup config: {str(e)}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         # Create the video job
         try:

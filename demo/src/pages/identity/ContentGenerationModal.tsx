@@ -766,8 +766,10 @@ export default function ContentGenerationModal({
 
       // Use template-based endpoint when matchData is available
       // This endpoint auto-builds segments from match participations + brand assets + field background
+      // Also pass frontend-calculated segments as fallback in case backend can't find participations
       if (matchData?.id) {
         console.log('🎬 Using template-based lineup video generation');
+        console.log('📦 Passing frontend segments as fallback:', segments.length);
         const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/lineup-from-template/`, {
           method: 'POST',
           credentials: 'include',
@@ -780,6 +782,7 @@ export default function ContentGenerationModal({
             activity_id: matchData.id,
             template_id: selectedTemplate?.id || null,
             output_resolution: 'vertical_1080p',
+            segments: segments,  // Pass frontend segments as fallback
           }),
         });
 
