@@ -5,7 +5,7 @@ Builds segments config for LineupProcessor from ContentTemplate + Match data.
 This service bridges:
 - ContentTemplate.input_requirements (defines what assets are needed)
 - Activity.participations (the actual lineup with players + positions)
-- Membership.metadata.teamreel_assets (player images/videos)
+- ProjectMembership.metadata.teamreel_assets (player images/videos)
 - BrandAsset (logos, sponsors)
 
 Output: segments[] array ready for LineupProcessor (FFmpeg concatenation)
@@ -200,6 +200,18 @@ class LineupSegmentBuilder:
             status="confirmed",
         ).select_related("member__user", "member__organisation")
 
+        # Get ProjectMembership model
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+
+        # Build a cache of ProjectMemberships for quick lookup
+        user_ids = [p.member.user_id for p in participations if p.member.user_id]
+        project_memberships = ProjectMembership.objects.filter(
+            project=project,
+            user_id__in=user_ids,
+            deleted_at__isnull=True,
+        ).select_related("user")
+        membership_by_user = {pm.user_id: pm for pm in project_memberships}
+
         # Group players by functional role
         keepers: list[PlayerSegment] = []
         defenders: list[PlayerSegment] = []
@@ -215,9 +227,14 @@ class LineupSegmentBuilder:
             x = data.get("x", 50)
             y = data.get("y", 50)
 
-            # Get member asset URLs
+            # Get member asset URLs from ProjectMembership.metadata
             member = p.member
-            teamreel_assets = (member.metadata or {}).get("teamreel_assets", {})
+            project_membership = membership_by_user.get(member.user_id) if member.user_id else None
+            teamreel_assets = (
+                (project_membership.metadata or {}).get("teamreel_assets", {})
+                if project_membership
+                else {}
+            )
             media = teamreel_assets.get("media", {})
 
             kit_url = media.get("kit", {}).get("url")
@@ -282,11 +299,17 @@ class LineupSegmentBuilder:
                 if coach_participation.member.user
                 else None
             )
-            coach_assets = (
-                (coach_participation.member.metadata or {})
-                .get("teamreel_assets", {})
-                .get("media", {})
+            # Get coach assets from ProjectMembership.metadata
+            coach_member = coach_participation.member
+            coach_project_membership = (
+                membership_by_user.get(coach_member.user_id) if coach_member.user_id else None
             )
+            coach_teamreel_assets = (
+                (coach_project_membership.metadata or {}).get("teamreel_assets", {})
+                if coach_project_membership
+                else {}
+            )
+            coach_assets = coach_teamreel_assets.get("media", {})
             coach_kit_url = coach_assets.get("kit", {}).get("url")
             if coach_kit_url and not coach_kit_url.startswith("http"):
                 coach_kit_url = self._get_presigned_url(coach_kit_url)
