@@ -154,20 +154,30 @@ class LineupSegmentBuilder:
 
         if brand_profile:
             # Get logo
-            logo_asset = BrandAsset.objects.filter(
-                profile=brand_profile,
-                asset_type__in=["logo_light", "logo_dark", "logo_upload"],
-                is_active=True,
-            ).first()
+            # Ensure we select_related('file') to access storage_path
+            logo_asset = (
+                BrandAsset.objects.filter(
+                    profile=brand_profile,
+                    asset_type__in=["logo_light", "logo_dark", "logo_upload"],
+                    is_active=True,
+                )
+                .select_related("file")
+                .first()
+            )
             if logo_asset and logo_asset.file:
                 logo_url = self._get_presigned_url(logo_asset.file.storage_path)
 
             # Get sponsor
-            sponsor_asset = BrandAsset.objects.filter(
-                profile=brand_profile,
-                asset_type__in=["sponsor_logo", "sponsor_logo_upload"],
-                is_active=True,
-            ).first()
+            # Ensure we select_related('file') to access storage_path
+            sponsor_asset = (
+                BrandAsset.objects.filter(
+                    profile=brand_profile,
+                    asset_type__in=["sponsor_logo", "sponsor_logo_upload"],
+                    is_active=True,
+                )
+                .select_related("file")
+                .first()
+            )
             if sponsor_asset and sponsor_asset.file:
                 sponsor_url = self._get_presigned_url(sponsor_asset.file.storage_path)
 
