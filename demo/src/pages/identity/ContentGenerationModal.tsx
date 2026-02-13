@@ -361,6 +361,7 @@ export default function ContentGenerationModal({
   const [selectedType, setSelectedType] = useState<{ type: string; subtype: string; label: string } | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
   const [progress, setProgress] = useState(0);
+  const [generationStartedAtMs, setGenerationStartedAtMs] = useState<number | null>(null);
   const [templates, setTemplates] = useState<ContentTemplate[]>([]);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [generatedOutput, setGeneratedOutput] = useState<GeneratedOutput | null>(null);
@@ -470,6 +471,7 @@ export default function ContentGenerationModal({
     if (isOpen) {
       // Always reset these on any open
       setProgress(0);
+      setGenerationStartedAtMs(null);
       setError(null);
       setGenerationError(null);
       setGeneratedOutput(null);
@@ -477,6 +479,9 @@ export default function ContentGenerationModal({
       setSelectedVariantIndex(0);
       setSavingAsset(false);
       setSaveSuccess(false);
+      setVideoJobId(null);
+      setVideoJobStatus(null);
+      setVideoJobProgressRaw(0);
 
       // Only reset selections on FRESH open (not when staying open or after error)
       if (freshOpen && !hasInitializedRef.current) {
@@ -600,6 +605,7 @@ export default function ContentGenerationModal({
   // State for video job polling
   const [videoJobId, setVideoJobId] = useState<string | null>(null);
   const [videoJobStatus, setVideoJobStatus] = useState<string | null>(null);
+  const [videoJobProgressRaw, setVideoJobProgressRaw] = useState<number>(0);
 
   // Helper to get member's asset URL
   const getMemberAssetUrl = (memberId: string, assetType: string): string | null => {
@@ -840,6 +846,7 @@ export default function ContentGenerationModal({
 
       setVideoJobId(jobId);
       setVideoJobStatus('queued');
+      setVideoJobProgressRaw(0);
       setProgress(30);
 
       // Poll for job completion
@@ -866,6 +873,7 @@ export default function ContentGenerationModal({
         const progressPercent = job.progress_percent || 0;
 
         setVideoJobStatus(status);
+        setVideoJobProgressRaw(progressPercent);
         setProgress(30 + (progressPercent * 0.6)); // Map 0-100% to 30-90%
 
         if (status === 'completed') {
@@ -960,6 +968,10 @@ export default function ContentGenerationModal({
     setGeneratedVariants([]);
     setSelectedVariantIndex(0);
     setSaveSuccess(false);
+    setGenerationStartedAtMs(Date.now());
+    setVideoJobId(null);
+    setVideoJobStatus(null);
+    setVideoJobProgressRaw(0);
 
     // Simulate initial progress
     let p = 0;
@@ -1713,15 +1725,162 @@ export default function ContentGenerationModal({
 
           {/* Generating */}
           {step === 'generating' && (
-            <div className="flex flex-col items-center justify-center h-full py-16">
-              <div className="w-full max-w-sm mb-6">
+            <div className="flex flex-col items-center justify-center h-full py-12">
+              <div className="w-full max-w-sm mb-4">
                 <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
                   <div className="h-full bg-blue-600 transition-all duration-300 rounded-full" style={{ width: `${progress}%` }} />
                 </div>
                 <div className="text-center text-sm text-gray-500 mt-2">{Math.round(progress)}%</div>
               </div>
-              <div className="text-xl font-medium text-gray-700 animate-pulse">Generating Content...</div>
-              <div className="text-sm text-gray-500 mt-2">Applying {matchData?.project?.name} branding</div>
+
+              {(() => {
+                const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
+                const isLineup = templateSubtype === 'lineup';
+                const status = (videoJobStatus || '').toLowerCase();
+
+                type StepStatus = 'pending' | 'active' | 'done' | 'error';
+                const StepRow = ({
+                  label,
+                  detail,
+                  state,
+                }: {
+                  label: string;
+                  detail?: string;
+                  state: StepStatus;
+                }) => {
+                  const pillClass =
+                    state === 'done'
+                      ? 'bg-blue-600 text-white'
+                      : state === 'active'
+                        ? 'bg-blue-100 text-blue-700'
+                        : state === 'error'
+                          ? 'bg-gray-300 text-gray-800'
+                          : 'bg-gray-200 text-gray-600';
+
+                  const glyph = state === 'done' ? '✓' : state === 'active' ? '…' : '';
+
+                  return (
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${pillClass}`}>
+                        {glyph}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm text-gray-700">{label}</div>
+                        {detail && <div className="text-xs text-gray-500 mt-0.5">{detail}</div>}
+                      </div>
+                    </div>
+                  );
+                };
+
+                let headline = 'Bezig met genereren…';
+                let subline = matchData?.project?.name ? `Voor ${matchData.project.name}` : 'Dit kan even duren.';
+                if (isLineup) {
+                  headline = 'Lineup video wordt gemaakt…';
+                  if (status === 'queued') subline = 'We wachten tot de verwerking start.';
+                  if (status === 'processing') subline = 'We bouwen de video stap voor stap op.';
+                }
+
+                const requestState: StepStatus = 'done';
+                const createState: StepStatus = isLineup ? (videoJobId ? 'done' : 'active') : 'done';
+                const queueState: StepStatus =
+                  isLineup && videoJobId
+                    ? status === 'queued'
+                      ? 'active'
+                      : status === 'processing' || status === 'completed'
+                        ? 'done'
+                        : 'pending'
+                    : 'pending';
+                const buildState: StepStatus =
+                  isLineup && videoJobId
+                    ? status === 'processing'
+                      ? 'active'
+                      : status === 'completed'
+                        ? 'done'
+                        : 'pending'
+                    : !isLineup
+                      ? progress >= 10
+                        ? 'active'
+                        : 'pending'
+                      : 'pending';
+                const finalizeState: StepStatus =
+                  isLineup && videoJobId
+                    ? status === 'processing' && videoJobProgressRaw >= 90
+                      ? 'active'
+                      : status === 'completed'
+                        ? 'done'
+                        : 'pending'
+                    : !isLineup
+                      ? progress >= 85
+                        ? 'active'
+                        : 'pending'
+                      : 'pending';
+                const doneState: StepStatus =
+                  isLineup && videoJobId
+                    ? status === 'completed'
+                      ? 'done'
+                      : 'pending'
+                    : progress >= 100
+                      ? 'done'
+                      : 'pending';
+
+                const createdDetail = isLineup
+                  ? videoJobId
+                    ? 'Video job is aangemaakt.'
+                    : 'We zetten alles klaar.'
+                  : 'Aanvraag is verstuurd.';
+
+                const queueDetail = isLineup
+                  ? status === 'queued'
+                    ? 'Wachten op start.'
+                    : status === 'processing' || status === 'completed'
+                      ? 'Gestart.'
+                      : undefined
+                  : undefined;
+
+                const buildDetail = isLineup
+                  ? status === 'processing'
+                    ? `Voortgang: ${Math.round(videoJobProgressRaw)}%`
+                    : status === 'completed'
+                      ? 'Afgerond.'
+                      : undefined
+                  : progress > 0
+                    ? `Voortgang: ${Math.round(progress)}%`
+                    : undefined;
+
+                const finalizeDetail = isLineup
+                  ? status === 'processing' && videoJobProgressRaw >= 90
+                    ? 'Bijna klaar.'
+                    : status === 'completed'
+                      ? 'Afgerond.'
+                      : undefined
+                  : progress >= 85 && progress < 100
+                    ? 'Bijna klaar.'
+                    : undefined;
+
+                const startedDetail = generationStartedAtMs
+                  ? `Gestart om ${new Date(generationStartedAtMs).toLocaleTimeString()}`
+                  : undefined;
+
+                return (
+                  <div className="w-full max-w-md">
+                    <div className="text-xl font-medium text-gray-700">{headline}</div>
+                    <div className="text-sm text-gray-500 mt-1">{subline}</div>
+                    {startedDetail && <div className="text-xs text-gray-500 mt-1">{startedDetail}</div>}
+
+                    <div className="bg-gray-50 rounded-lg p-4 mt-4 w-full">
+                      <div className="text-sm font-medium text-gray-700 mb-3">Status</div>
+                      <div className="flex flex-col gap-3">
+                        <StepRow label="Aanvraag verstuurd" state={requestState} />
+                        <StepRow label={isLineup ? 'Video job aanmaken' : 'Voorbereiden'} state={createState} detail={createdDetail} />
+                        {isLineup && <StepRow label="Wachtrij" state={queueState} detail={queueDetail} />}
+                        <StepRow label={isLineup ? 'Video maken' : 'Genereren'} state={buildState} detail={buildDetail} />
+                        <StepRow label="Afronden" state={finalizeState} detail={finalizeDetail} />
+                        <StepRow label="Klaar" state={doneState} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
