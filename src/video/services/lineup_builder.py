@@ -170,19 +170,25 @@ class LineupSegmentBuilder:
         Returns:
             dict with segments[] and other config for LineupProcessor
         """
-        self._load_render_mode()
-        lineup_data = self._gather_lineup_data()
-        segments = self._build_segments(lineup_data)
+        from src.video.services.lineup_scene_generator import reset_image_cache
 
-        return {
-            "segments": segments,
-            "output_resolution": self.output_resolution,
-            "output_fps": lineup_data.output_fps,
-            "background_color": "#1a472a",  # Dark green (field)
-            "fade_duration": 0.3,
-            "match_id": self.activity_id,
-            "activity_id": self.activity_id,
-        }
+        reset_image_cache()  # Fresh cache for this job
+        try:
+            self._load_render_mode()
+            lineup_data = self._gather_lineup_data()
+            segments = self._build_segments(lineup_data)
+
+            return {
+                "segments": segments,
+                "output_resolution": self.output_resolution,
+                "output_fps": lineup_data.output_fps,
+                "background_color": "#1a472a",  # Dark green (field)
+                "fade_duration": 0.3,
+                "match_id": self.activity_id,
+                "activity_id": self.activity_id,
+            }
+        finally:
+            reset_image_cache()  # Free memory
 
     def _gather_lineup_data(self) -> LineupData:
         """Gather all required data from database."""

@@ -27,6 +27,16 @@ from PIL import Image, ImageDraw, ImageFont
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# In-memory image cache (cleared per-job via reset_image_cache)
+# ---------------------------------------------------------------------------
+_image_cache: dict[str, Image.Image | None] = {}
+
+
+def reset_image_cache() -> None:
+    """Clear the download cache. Call at start/end of a lineup build job."""
+    _image_cache.clear()
+
 
 @dataclass(frozen=True)
 class ScenePlayer:
@@ -81,14 +91,21 @@ def _upload_and_get_url(img: Image.Image, prefix: str = "lineup_scene") -> str:
 
 
 def _download_image(url: str) -> Image.Image | None:
+    """Download an image from url, using in-memory cache to avoid repeated S3 round-trips."""
     if not url:
         return None
+    if url in _image_cache:
+        cached = _image_cache[url]
+        return cached.copy() if cached is not None else None
     try:
         response = requests.get(url, timeout=45)
         response.raise_for_status()
-        return Image.open(io.BytesIO(response.content))
+        img = Image.open(io.BytesIO(response.content))
+        _image_cache[url] = img.copy()
+        return img
     except Exception:  # noqa: BLE001
         logger.warning("Failed to download image from %s", url)
+        _image_cache[url] = None
         return None
 
 

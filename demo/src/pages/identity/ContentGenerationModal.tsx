@@ -770,8 +770,8 @@ export default function ContentGenerationModal({
       if (matchData?.id) {
         console.log('🎬 Using template-based lineup video generation');
         console.log('📦 Passing frontend segments as fallback:', segments.length);
-        // Use sync=true to process immediately (bypasses Celery for testing)
-        const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/lineup-from-template/?sync=true`, {
+        // Submit async job — frontend polls for completion
+        const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/lineup-from-template/`, {
           method: 'POST',
           credentials: 'include',
           headers: {
