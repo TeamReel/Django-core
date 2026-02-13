@@ -204,12 +204,28 @@ class LineupSegmentBuilder:
         if hasattr(activity, "competition") and activity.competition:
             competition_name = activity.competition.name
 
-        # Get lineup (participations)
+        # DEBUG: Log all participations for this activity
+        all_participations = Participation.objects.filter(activity=activity).select_related(
+            "member__user"
+        )
+        logger.info(
+            "DEBUG: All participations for activity %s: count=%d, roles=%s",
+            self.activity_id,
+            all_participations.count(),
+            list(all_participations.values_list("role", "status")),
+        )
+
+        # Get lineup (participations) - expanded role matching
         participations = Participation.objects.filter(
             activity=activity,
-            role__in=["starter", "starting"],
-            status="confirmed",
+            role__in=["starter", "starting", "player", "speler", "lineup"],
+            status__in=["confirmed", "active", "accepted"],
         ).select_related("member__user", "member__organisation")
+
+        logger.info(
+            "DEBUG: Filtered participations: count=%d",
+            participations.count(),
+        )
 
         # Get ProjectMembership model
         ProjectMembership = apps.get_model("projects", "ProjectMembership")
@@ -249,6 +265,12 @@ class LineupSegmentBuilder:
         midfielders: list[PlayerSegment] = []
         attackers: list[PlayerSegment] = []
 
+        logger.info(
+            "DEBUG: Processing %d participations, membership_by_user has %d entries",
+            len(list(participations)),
+            len(membership_by_user),
+        )
+
         for p in participations:
             data = p.data or {}
             position = data.get("position", "")
@@ -261,12 +283,26 @@ class LineupSegmentBuilder:
             # Get member asset URLs from ProjectMembership.metadata
             member = p.member
             project_membership = membership_by_user.get(member.user_id) if member.user_id else None
+
+            logger.info(
+                "DEBUG: Player %s (user_id=%s) - project_membership=%s",
+                member,
+                member.user_id,
+                project_membership.id if project_membership else None,
+            )
+
             teamreel_assets = (
                 (project_membership.metadata or {}).get("teamreel_assets", {})
                 if project_membership
                 else {}
             )
             media = teamreel_assets.get("media", {})
+
+            logger.info(
+                "DEBUG: Player %s - teamreel_assets.media=%s",
+                member,
+                list(media.keys()) if media else None,
+            )
 
             kit_url = media.get("kit", {}).get("url")
             intro_url = media.get("intro", {}).get("url")
@@ -454,6 +490,14 @@ class LineupSegmentBuilder:
             ("Aanval", data.attackers),
         ]
 
+        logger.info(
+            "DEBUG _build_segments: keepers=%d, defenders=%d, midfielders=%d, attackers=%d",
+            len(data.keepers),
+            len(data.defenders),
+            len(data.midfielders),
+            len(data.attackers),
+        )
+
         for _line_name, players in all_lines:
             if not players:
                 continue
@@ -461,6 +505,13 @@ class LineupSegmentBuilder:
             for player in players:
                 # Add player segments in sequence: fullbody → intro → closeup
                 # Each with name label
+                logger.info(
+                    "DEBUG: Adding segments for player %s: kit=%s, intro=%s, closeup=%s",
+                    player.member_name,
+                    bool(player.kit_url),
+                    bool(player.intro_url),
+                    bool(player.closeup_url),
+                )
 
                 # 1. Fullbody image
                 if player.kit_url:
