@@ -465,9 +465,34 @@ class LineupSegmentBuilder:
                 list(media.keys()) if media else None,
             )
 
-            kit_url = media.get("kit", {}).get("url")
-            intro_url = media.get("intro", {}).get("url")
-            closeup_url = media.get("closeup", {}).get("url")
+            # Resolve URLs: prefer per-variant processed → per-variant raw → flat media slot
+            from src.video.services.asset_processing_specs import get_best_url
+
+            images = teamreel_assets.get("images", {})
+            videos = teamreel_assets.get("videos", {})
+
+            # Kit (fullbody) — check images.fullbody.home first, then media.kit
+            kit_url = get_best_url((images.get("fullbody", {}) or {}).get("home")) or media.get(
+                "kit", {}
+            ).get("url")
+
+            # Intro — check videos.intro.home_* first, then media.intro
+            # Pick first available home intro variant
+            intro_variants = videos.get("intro", {}) or {}
+            intro_url = None
+            for key, val in intro_variants.items():
+                if key.startswith("home"):
+                    resolved = get_best_url(val)
+                    if resolved:
+                        intro_url = resolved
+                        break
+            if not intro_url:
+                intro_url = media.get("intro", {}).get("url")
+
+            # Closeup — check images.closeup.home first, then media.closeup
+            closeup_url = get_best_url((images.get("closeup", {}) or {}).get("home")) or media.get(
+                "closeup", {}
+            ).get("url")
 
             # Convert relative paths to presigned URLs if needed
             if kit_url and not kit_url.startswith("http"):

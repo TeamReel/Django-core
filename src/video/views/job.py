@@ -235,6 +235,190 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+    @action(detail=False, methods=["post"], url_path="process-asset")
+    def process_asset(self, request: Request) -> Response:
+        """Process a raw member asset to lineup-ready format.
+
+        POST /api/v1/video/jobs/process-asset/
+
+        Request body:
+        {
+            "membership_id": "uuid",
+            "asset_type": "fullbody" | "closeup" | "intro" | "celebration",
+            "kit_type": "home" | "away" | "third" | "goalkeeper" | ...,
+            "variant_id": "arms_crossed" | null    // for intro/celebration style
+        }
+
+        Triggers background removal + resize/crop to lineup-ready specs.
+        Updates membership.metadata.teamreel_assets in-place with { raw, processed, processing_state }.
+        """
+        import logging
+        import threading
+
+        logger = logging.getLogger(__name__)
+
+        membership_id = request.data.get("membership_id")
+        asset_type = request.data.get("asset_type")
+        kit_type = request.data.get("kit_type", "home")
+        variant_id = request.data.get("variant_id")
+
+        if not membership_id or not asset_type:
+            return Response(
+                {"error": "membership_id and asset_type are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        valid_asset_types = ["fullbody", "closeup", "intro", "celebration"]
+        if asset_type not in valid_asset_types:
+            return Response(
+                {"error": f"asset_type must be one of: {valid_asset_types}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Get membership
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+        try:
+            membership = ProjectMembership.objects.select_related("project").get(id=membership_id)
+        except ProjectMembership.DoesNotExist:
+            return Response(
+                {"error": f"Membership {membership_id} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Check project membership for the requesting user
+        if not ProjectMembership.objects.filter(
+            project=membership.project, user=request.user
+        ).exists():
+            raise PermissionDenied("You must be a project member.")
+
+        # Resolve the raw URL from metadata
+        teamreel_assets = (membership.metadata or {}).get("teamreel_assets", {})
+
+        raw_url = None
+        if asset_type in ("fullbody", "closeup"):
+            images = teamreel_assets.get("images", {})
+            variant_val = (images.get(asset_type, {}) or {}).get(kit_type)
+            # Handle both old string and new object format
+            if isinstance(variant_val, dict):
+                raw_url = variant_val.get("raw") or variant_val.get("processed")
+            elif isinstance(variant_val, str):
+                raw_url = variant_val
+            # Fallback: if home, check media.kit / media.closeup
+            if not raw_url and kit_type == "home":
+                media = teamreel_assets.get("media", {})
+                slot = "kit" if asset_type == "fullbody" else "closeup"
+                raw_url = (media.get(slot, {}) or {}).get("url")
+        else:
+            # intro / celebration → videos.{asset_type}.{kit_type}_{variant_id}
+            videos = teamreel_assets.get("videos", {})
+            composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+            variant_val = (videos.get(asset_type, {}) or {}).get(composite_key)
+            if isinstance(variant_val, dict):
+                raw_url = variant_val.get("raw") or variant_val.get("processed")
+            elif isinstance(variant_val, str):
+                raw_url = variant_val
+
+        if not raw_url:
+            return Response(
+                {"error": f"No raw asset found for {asset_type}.{kit_type}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Mark as "processing" immediately in metadata
+        self._update_variant_metadata(
+            membership,
+            asset_type,
+            kit_type,
+            variant_id,
+            {"raw": raw_url, "processed": None, "processing_state": "processing"},
+        )
+
+        # Run processing in background thread (like lineup jobs)
+        def _process_in_background() -> None:
+            try:
+                from src.video.services.asset_processor import AssetProcessor
+
+                processor = AssetProcessor()
+                result = processor.process_asset(
+                    raw_url=raw_url,
+                    asset_type=asset_type,
+                    membership_id=str(membership_id),
+                    kit_type=kit_type,
+                    variant_id=variant_id,
+                    organisation_id=str(membership.project.organisation_id)
+                    if hasattr(membership.project, "organisation_id")
+                    else None,
+                )
+
+                # Refresh membership and update metadata
+                membership.refresh_from_db()
+                self._update_variant_metadata(membership, asset_type, kit_type, variant_id, result)
+                logger.info(
+                    "Asset processing complete: %s.%s → %s",
+                    asset_type,
+                    kit_type,
+                    result.get("processing_state"),
+                )
+            except Exception:
+                logger.exception("Background asset processing failed")
+                try:
+                    membership.refresh_from_db()
+                    self._update_variant_metadata(
+                        membership,
+                        asset_type,
+                        kit_type,
+                        variant_id,
+                        {
+                            "raw": raw_url,
+                            "processed": None,
+                            "processing_state": "failed",
+                            "error": "Processing failed unexpectedly",
+                        },
+                    )
+                except Exception:
+                    logger.exception("Failed to update metadata after processing error")
+
+        thread = threading.Thread(target=_process_in_background, daemon=True)
+        thread.start()
+
+        return Response(
+            {
+                "status": "processing",
+                "membership_id": str(membership_id),
+                "asset_type": asset_type,
+                "kit_type": kit_type,
+                "variant_id": variant_id,
+                "raw_url": raw_url,
+            },
+            status=status.HTTP_202_ACCEPTED,
+        )
+
+    @staticmethod
+    def _update_variant_metadata(
+        membership: Any,
+        asset_type: str,
+        kit_type: str,
+        variant_id: str | None,
+        variant_value: dict,
+    ) -> None:
+        """Update membership.metadata.teamreel_assets with a variant value."""
+        meta = membership.metadata or {}
+        tr = meta.get("teamreel_assets", {})
+
+        if asset_type in ("fullbody", "closeup"):
+            images = tr.setdefault("images", {})
+            cat = images.setdefault(asset_type, {})
+            cat[kit_type] = variant_value
+        else:
+            videos = tr.setdefault("videos", {})
+            cat = videos.setdefault(asset_type, {})
+            composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+            cat[composite_key] = variant_value
+
+        meta["teamreel_assets"] = tr
+        membership.metadata = meta
+        membership.save(update_fields=["metadata", "updated_at"])
+
     @action(detail=False, methods=["post"], url_path="lineup-from-template")
     def lineup_from_template(self, request: Request) -> Response:
         """Create a lineup video job from ContentTemplate + Activity.
