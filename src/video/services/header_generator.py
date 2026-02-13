@@ -13,12 +13,48 @@ from __future__ import annotations
 import io
 import logging
 import tempfile
+import uuid as uuid_module
 from pathlib import Path
 
 import requests
 from PIL import Image, ImageDraw, ImageFont
 
 logger = logging.getLogger(__name__)
+
+
+def _upload_and_get_url(img: Image.Image, prefix: str = "lineup") -> str:
+    """Upload image to storage and return presigned URL.
+
+    Falls back to local file path if storage upload fails.
+    """
+    try:
+        from src.files.utils import get_storage_backend
+
+        # Save to bytes
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, "PNG")
+        img_bytes.seek(0)
+
+        # Generate storage path
+        storage_path = f"generated/{prefix}/{uuid_module.uuid4().hex}.png"
+
+        # Upload to storage
+        backend = get_storage_backend()
+        backend.save(storage_path, img_bytes)
+
+        # Get presigned URL (1 hour expiry)
+        url = backend.get_presigned_url(storage_path, expires_in=3600)
+        logger.info("Uploaded %s image to storage: %s", prefix, storage_path)
+        return url
+
+    except Exception as e:
+        logger.warning("Failed to upload %s image to storage: %s, using local file", prefix, e)
+        # Fallback to local file (works for local dev, not production)
+        temp_dir = Path(tempfile.gettempdir()) / f"lineup_{prefix}s"
+        temp_dir.mkdir(exist_ok=True)
+        output_path = temp_dir / f"{prefix}_{uuid_module.uuid4().hex}.png"
+        img.save(str(output_path), "PNG")
+        return f"file://{output_path}"
 
 
 # Default colors (can be overridden by brand colors)
@@ -203,16 +239,8 @@ def generate_header_image(
             fill=txt_secondary,
         )
 
-    # Save to temp file
-    temp_dir = Path(tempfile.gettempdir()) / "lineup_headers"
-    temp_dir.mkdir(exist_ok=True)
-
-    import uuid as uuid_module
-
-    output_path = temp_dir / f"header_{uuid_module.uuid4().hex}.png"
-    img.save(str(output_path), "PNG")
-
-    return str(output_path)
+    # Upload to storage and return URL
+    return _upload_and_get_url(img, "header")
 
 
 def generate_field_background(
@@ -346,13 +374,5 @@ def generate_field_background(
         width=line_width,
     )
 
-    # Save to temp file
-    temp_dir = Path(tempfile.gettempdir()) / "lineup_backgrounds"
-    temp_dir.mkdir(exist_ok=True)
-
-    import uuid as uuid_module
-
-    output_path = temp_dir / f"field_{uuid_module.uuid4().hex}.png"
-    img.save(str(output_path), "PNG")
-
-    return str(output_path)
+    # Upload to storage and return URL
+    return _upload_and_get_url(img, "field")
