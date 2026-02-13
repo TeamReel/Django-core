@@ -186,6 +186,9 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
   const [jobStatuses, setJobStatuses] = useState<Record<string, MemberJobStatus>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const abortRef = useRef(false);
+  // If true, trigger backend processing (POST /api/v1/video/jobs/process-asset/) after
+  // the generated asset is saved to membership metadata.
+  const [processAfterGeneration, setProcessAfterGeneration] = useState<boolean>(false);
 
   // Available templates for member context
   const memberTemplates = useMemo(() => getTemplatesForContext('member'), []);
@@ -562,6 +565,80 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         if (!res.ok) {
           console.error(`Failed to update metadata for ${member.name}:`, await res.text());
         }
+        // If requested, trigger backend processing for this newly-saved asset
+        if (processAfterGeneration) {
+          // Fire-and-poll: request processing then poll membership until processed/failed
+          void (async () => {
+            try {
+              // Trigger processing
+              const procRes = await fetch(`${apiBase}/api/v1/video/jobs/process-asset/`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': getCsrfToken(),
+                },
+                body: JSON.stringify({
+                  membership_id: member.id,
+                  asset_type: category,
+                  kit_type: kitType,
+                  variant_id: styleVariant || null,
+                }),
+              });
+
+              if (!procRes.ok) {
+                const errJson = await procRes.json().catch(() => null);
+                setJobStatuses((prev) => ({
+                  ...prev,
+                  [member.id]: { status: 'error', error: errJson?.error || `Process request failed (${procRes.status})` },
+                }));
+                return;
+              }
+
+              setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'running' } }));
+
+              // Poll for membership metadata update
+              const POLL_INTERVAL = 3000;
+              const MAX_POLLS = 80; // ~4 minutes
+              for (let p = 0; p < MAX_POLLS; p++) {
+                await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+                // Fetch membership record
+                const mRes = await fetch(
+                  `${apiBase}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
+                  { credentials: 'include' }
+                );
+                if (!mRes.ok) continue;
+                const mJson = await mRes.json().catch(() => null);
+                const mData = mJson?.data || mJson;
+                const mMeta = mData?.metadata || mData?.metadata || {};
+                const tr = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
+
+                let checkVal: any = null;
+                if (category === 'fullbody' || category === 'closeup') {
+                  checkVal = ((tr.images || {})[category] || {})[metaKey];
+                } else {
+                  checkVal = ((tr.videos || {})[category] || {})[metaKey];
+                }
+
+                if (checkVal && typeof checkVal === 'object') {
+                  const state = checkVal.processing_state || checkVal.state || null;
+                  if (state === 'processed') {
+                    setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'success', resultUrl: checkVal.processed || checkVal.processed_url || '' } }));
+                    break;
+                  }
+                  if (state === 'failed') {
+                    setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'error', error: checkVal.error || 'Processing failed' } }));
+                    break;
+                  }
+                }
+                // continue polling until timeout
+              }
+            } catch (err) {
+              console.error('Error triggering/polling processing for', member.id, err);
+              setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'error', error: String(err) } }));
+            }
+          })();
+        }
       } catch (err) {
         console.error(`Error updating metadata for ${member.name}:`, err);
       }
@@ -599,6 +676,18 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
               </span>
             </div>
           </div>
+
+              {/* Option: Process generated asset after save */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={processAfterGeneration}
+                    onChange={(e) => setProcessAfterGeneration(e.target.checked)}
+                  />
+                  <span style={{ fontSize: '13px' }}>Bewerk asset na generatie (achtergrond verwijderen / formaat aanpassen)</span>
+                </label>
+              </div>
           <button
             onClick={onClose}
             disabled={step === 'running'}
