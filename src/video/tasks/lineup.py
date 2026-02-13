@@ -82,8 +82,20 @@ def process_lineup_video(self, job_id: str) -> str | None:
     Raises:
         Retry exception if processing fails and retries remain
     """
+    # Log immediately when task starts
+    logger.info(
+        "LINEUP TASK RECEIVED: Starting process_lineup_video",
+        extra={"job_id": job_id, "task_id": self.request.id},
+    )
+
     try:
         job = VideoJob.objects.select_related("project", "preset", "created_by").get(id=job_id)
+        logger.info(
+            "LINEUP TASK: Found job, status=%s, segments=%d",
+            job.status,
+            len(job.config.get("segments", [])) if job.config else 0,
+            extra={"job_id": job_id},
+        )
     except VideoJob.DoesNotExist:
         logger.error("Lineup job not found", extra={"job_id": job_id})
         return None

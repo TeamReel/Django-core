@@ -287,12 +287,14 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
         # Queue the Celery task
         try:
-            process_lineup_video.delay(str(job.id))
+            task_result = process_lineup_video.delay(str(job.id))
+            logger.info(
+                "Celery task queued successfully: task_id=%s, job_id=%s",
+                task_result.id,
+                job.id,
+            )
         except Exception as e:  # noqa: BLE001
-            import logging
-
-            logger = logging.getLogger(__name__)
-            logger.warning(f"Failed to queue Celery task: {e} - job will remain queued")
+            logger.warning("Failed to queue Celery task: %s - job will remain queued", e)
             # Don't fail the request - job is created, can be processed later
 
         try:
