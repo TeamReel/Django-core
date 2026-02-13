@@ -454,7 +454,7 @@ class LineupSegmentBuilder:
             segments.append(
                 {
                     "type": "image",
-                    "url": f"file://{header_path}",
+                    "url": header_path,
                     "duration": self.HEADER_DURATION,
                     "transition": "fade",
                 }
@@ -473,7 +473,7 @@ class LineupSegmentBuilder:
             segments.append(
                 {
                     "type": "image",
-                    "url": f"file://{field_path}",
+                    "url": field_path,
                     "duration": self.FIELD_DURATION,
                     "label": "OPSTELLING",
                     "transition": "fade",

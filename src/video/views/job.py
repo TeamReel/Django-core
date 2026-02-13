@@ -294,7 +294,8 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 logger.info(
                     "Using frontend segments as fallback (%d segments)", len(frontend_segments)
                 )
-                config["segments"] = frontend_segments
+                # Keep backend brand intro (header/field) if present, then append frontend player segments.
+                config["segments"] = list(backend_segments) + list(frontend_segments)
 
         except Exception as e:  # noqa: BLE001
             import traceback
@@ -306,8 +307,20 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                     "Using frontend segments after backend failure (%d segments)",
                     len(frontend_segments),
                 )
+                # Try to at least generate the brand intro (header + field) even if lineup build failed.
+                intro_segments: list[dict] = []
+                try:
+                    intro_config = build_lineup_video_config(
+                        activity_id=activity_id,
+                        template_id=template_id,
+                        output_resolution=output_resolution,
+                    )
+                    intro_segments = list(intro_config.get("segments", [])[:2])
+                except Exception:  # noqa: BLE001
+                    intro_segments = []
+
                 config = {
-                    "segments": frontend_segments,
+                    "segments": intro_segments + list(frontend_segments),
                     "output_resolution": output_resolution,
                     "output_fps": 30,
                     "background_color": "#1a472a",
