@@ -208,22 +208,61 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 output_resolution=output_resolution,
             )
         except Exception as e:  # noqa: BLE001
+            import logging
+            import traceback
+
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to build lineup config: {e}\n{traceback.format_exc()}")
             return Response(
                 {"error": f"Failed to build lineup config: {str(e)}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Create the video job
-        job = VideoJob.objects.create(
-            project=project,
-            created_by=request.user,
-            job_type=JobType.LINEUP,
-            status=JobStatus.QUEUED,
-            config=config,
-        )
+        try:
+            job = VideoJob.objects.create(
+                project=project,
+                created_by=request.user,
+                job_type=JobType.LINEUP,
+                status=JobStatus.QUEUED,
+                config=config,
+            )
+        except Exception as e:  # noqa: BLE001
+            import logging
+            import traceback
+
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to create VideoJob: {e}\n{traceback.format_exc()}")
+            return Response(
+                {"error": f"Failed to create video job: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Queue the Celery task
-        process_lineup_video.delay(str(job.id))
+        try:
+            process_lineup_video.delay(str(job.id))
+        except Exception as e:  # noqa: BLE001
+            import logging
 
-        output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
-        return Response(output.data, status=status.HTTP_201_CREATED)
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Failed to queue Celery task: {e} - job will remain queued")
+            # Don't fail the request - job is created, can be processed later
+
+        try:
+            output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
+            return Response(output.data, status=status.HTTP_201_CREATED)
+        except Exception as e:  # noqa: BLE001
+            import logging
+            import traceback
+
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to serialize VideoJob: {e}\n{traceback.format_exc()}")
+            # Return minimal success response
+            return Response(
+                {
+                    "id": str(job.id),
+                    "status": "queued",
+                    "message": "Job created but serialization failed",
+                },
+                status=status.HTTP_201_CREATED,
+            )
