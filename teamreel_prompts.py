@@ -1,0 +1,940 @@
+"""
+TeamReel AI Prompt Templates Library
+=====================================
+
+Reusable, parameterized prompt templates for the TeamReel AI generation pipeline.
+Each template defines:
+  - id: unique slug
+  - name: human label
+  - category: logo | sponsor | tenue | keeper | tracksuit | coach | fullbody | closeup
+  - input_requirements: what files are needed
+  - parameters: user-configurable options (with defaults)
+  - prompt_template: the actual prompt string with {placeholders}
+  - preprocessing: any image preprocessing steps needed
+"""
+
+from dataclasses import dataclass, field
+from typing import Optional
+
+# =============================================================================
+# TEMPLATE DEFINITIONS
+# =============================================================================
+
+TEMPLATES = {
+
+    # =========================================================================
+    # 1. LOGO STANDARDIZATION
+    # =========================================================================
+    "logo_standardize": {
+        "id": "logo_standardize",
+        "name": "Logo Standaardiseren",
+        "category": "logo",
+        "description": "Zet een clublogo om naar een vierkant formaat met transparante achtergrond.",
+        "input_requirements": ["logo"],
+        "parameters": {
+            "background": {
+                "label": "Achtergrond",
+                "type": "select",
+                "options": ["transparent", "white", "light_grey"],
+                "default": "transparent",
+            },
+            "style": {
+                "label": "Stijl",
+                "type": "select",
+                "options": ["original", "clean_vector", "minimalist"],
+                "default": "original",
+            },
+        },
+        "preprocessing": {
+            "logo": "square_pad_512",  # Center on 512x512 transparent canvas
+        },
+        "prompt_template": """Convert this club logo into a clean, standardized format.
+
+OUTPUT SPECIFICATIONS:
+- Format: Perfect square (1:1 aspect ratio).
+- Background: {background_description}.
+- The logo must be CENTERED and fill approximately 80% of the canvas.
+- Style: {style_description}.
+- Preserve ALL original colors, shapes, text, and details of the logo EXACTLY.
+- No added decorations, shadows, or effects unless present in the original.
+- Output should look like a professional brand asset file.
+""",
+    },
+
+    # =========================================================================
+    # 2. SPONSOR STANDARDIZATION
+    # =========================================================================
+    "sponsor_standardize": {
+        "id": "sponsor_standardize",
+        "name": "Sponsor Standaardiseren",
+        "category": "sponsor",
+        "description": "Zet een sponsorlogo om naar standaard formaat met transparante achtergrond.",
+        "input_requirements": ["sponsor"],
+        "parameters": {
+            "background": {
+                "label": "Achtergrond",
+                "type": "select",
+                "options": ["transparent", "white"],
+                "default": "transparent",
+            },
+            "orientation": {
+                "label": "Oriëntatie",
+                "type": "select",
+                "options": ["landscape", "square"],
+                "default": "landscape",
+            },
+        },
+        "preprocessing": {
+            "sponsor": "pad_512_landscape",  # Center on 512x256 or 512x512
+        },
+        "prompt_template": """Convert this sponsor logo into a clean, standardized format for printing on sportswear.
+
+OUTPUT SPECIFICATIONS:
+- Format: {orientation_description}.
+- Background: {background_description}.
+- The sponsor logo must be CENTERED and fill ~80% of the canvas width.
+- Preserve ALL original colors, text, and graphic elements EXACTLY.
+- Clean edges, no artifacts, no added effects.
+- Must be suitable for heat-press printing on fabric.
+""",
+    },
+
+    # =========================================================================
+    # 3. TENUE (KIT) GENERATION
+    # =========================================================================
+    "tenue_generate": {
+        "id": "tenue_generate",
+        "name": "Tenue Genereren",
+        "category": "tenue",
+        "description": "Genereer een realistisch voetbaltenue (shirt + broek + sokken).",
+        "input_requirements": ["logo", "sponsor", "reference_photo"],
+        "parameters": {
+            "sleeves": {
+                "label": "Mouwen",
+                "type": "select",
+                "options": ["short", "long"],
+                "default": "short",
+            },
+            "neck": {
+                "label": "Hals",
+                "type": "select",
+                "options": ["round", "collar", "v_neck", "crew"],
+                "default": "round",
+            },
+            "kit_type": {
+                "label": "Type",
+                "type": "select",
+                "options": ["home", "away", "third"],
+                "default": "home",
+            },
+            "shirt_base": {
+                "label": "Shirt Kleur",
+                "type": "select",
+                "options": ["auto_home", "auto_away_contrast", "white", "black", "red", "blue", "green", "yellow", "orange", "purple", "navy", "maroon", "sky_blue"],
+                "default": "auto_home",
+            },
+            "pattern_style": {
+                "label": "Patroon",
+                "type": "select",
+                "options": ["solid", "vertical_stripes", "horizontal_hoops", "diagonal_sash", "half_half", "pinstripes", "subtle_graphic"],
+                "default": "solid",
+            },
+            "shorts_style": {
+                "label": "Broek Kleur",
+                "type": "select",
+                "options": ["match_shirt", "white", "black", "navy", "contrast"],
+                "default": "match_shirt",
+            },
+            "socks_style": {
+                "label": "Sokken Kleur",
+                "type": "select",
+                "options": ["match_shirt", "match_shorts", "white", "black", "contrast"],
+                "default": "match_shirt",
+            },
+        },
+        "preprocessing": {
+            "logo": "square_pad_512",
+            "sponsor": "pad_512_landscape",
+        },
+        "prompt_template": """Create a MODERN, REALISTIC football kit layout (Flat Lay Photography).
+
+DESIGN CONFIGURATION (PRIORITY OVER CONTEXT):
+- SHIRT COLOR: {shirt_base_description}.
+- PATTERN: {pattern_style_description}.
+- SHORTS COLOR: {shorts_style_description}.
+- SOCKS COLOR: {socks_style_description}.
+- KIT TYPE: {kit_type_label}.
+- SLEEVES: {sleeves_label}.
+- NECKLINE: {neck_label}.
+
+TEAM CONTEXT (Use for crest/sponsor style and secondary accents, but apply the specific colors defined above):
+{kit_analysis}
+
+COMPOSITION & FRAMING (CRITICAL):
+- FULL BODY SHOT: You must show the ENTIRE shirt, ENTIRE shorts, and complete pair of socks.
+- DO NOT CROP: Do not cut off the bottom of the socks or the top of the collar.
+- MAXIMIZE SPACE: The kit should fill the frame but keep a small margin.
+- Orientation: Vertical Portrait (9:16 Aspect Ratio). Image must be taller than it is wide.
+
+INTEGRATION:
+- LOGO: Use provided Club Logo on LEFT CHEST. Realistic embroidery.
+- SPONSOR: Use provided Sponsor image CENTERED on chest.
+
+STYLE:
+- Clean, high-end commercial sportswear photography.
+- Neutral light grey concrete texture background.
+- Natural cloth folds.
+""",
+    },
+
+    # =========================================================================
+    # 4. KEEPER TENUE
+    # =========================================================================
+    "keeper_tenue": {
+        "id": "keeper_tenue",
+        "name": "Keeperstenue Genereren",
+        "category": "keeper",
+        "description": "Genereer een keeperstenue met opvallende kleur.",
+        "input_requirements": ["logo", "sponsor", "reference_photo"],
+        "parameters": {
+            "sleeves": {
+                "label": "Mouwen",
+                "type": "select",
+                "options": ["long", "short"],
+                "default": "long",
+            },
+            "neck": {
+                "label": "Hals",
+                "type": "select",
+                "options": ["round", "collar", "v_neck"],
+                "default": "round",
+            },
+            "keeper_color": {
+                "label": "Hoofdkleur",
+                "type": "select",
+                "options": ["neon_green", "neon_orange", "purple", "neon_yellow", "pink", "black", "red", "blue", "grey"],
+                "default": "neon_green",
+            },
+            "pattern_style": {
+                "label": "Patroon",
+                "type": "select",
+                "options": ["solid", "graphic_print", "camo", "geometric", "gradient"],
+                "default": "solid",
+            },
+            "shorts_style": {
+                "label": "Broek Kleur",
+                "type": "select",
+                "options": ["match_shirt", "black", "contrast"],
+                "default": "match_shirt",
+            },
+        },
+        "preprocessing": {
+            "logo": "square_pad_512",
+            "sponsor": "pad_512_landscape",
+        },
+        "prompt_template": """Create a MODERN, REALISTIC GOALKEEPER football kit layout (Flat Lay Photography).
+
+GOALKEEPER SPECIFICATIONS:
+- Primary Color: {keeper_color_label}.
+- Pattern: {pattern_style_description}.
+- Shorts: {shorts_style_description}.
+- Socks: Matching goalkeeper primary color.
+- SLEEVES: {sleeves_label}.
+- NECKLINE: {neck_label}.
+- Design: Padded elbows and protective elements characteristic of goalkeeper gears.
+- GLOVES: Place a pair of matching professional goalkeeper gloves next to the kit.
+
+IMPORTANT: The goalkeeper kit must be DISTINCT from standard outfield players.
+
+TEAM CONTEXT (for logo/style reference):
+{kit_analysis}
+
+COMPOSITION & FRAMING:
+- FULL BODY SHOT: ENTIRE shirt, shorts, socks, and gloves visible.
+- Vertically oriented, do not crop.
+
+INTEGRATION:
+- LOGO: Left chest, realistic embroidery.
+- SPONSOR: Center chest, realistic heat-press.
+
+STYLE:
+- Clean, high-end sportswear photography.
+- Neutral light grey background.
+""",
+    },
+
+    # =========================================================================
+    # 5. TRAININGSPAK
+    # =========================================================================
+    "tracksuit_generate": {
+        "id": "tracksuit_generate",
+        "name": "Trainingspak Genereren",
+        "category": "tracksuit",
+        "description": "Genereer een trainingspak (jas + broek).",
+        "input_requirements": ["logo", "reference_photo"],
+        "parameters": {
+            "style": {
+                "label": "Stijl",
+                "type": "select",
+                "options": ["modern_slim", "classic", "windbreaker", "hoodie"],
+                "default": "modern_slim",
+            },
+            "tracksuit_color": {
+                "label": "Kleur",
+                "type": "select",
+                "options": ["team_primary", "black", "navy", "grey", "team_secondary", "red", "blue"],
+                "default": "team_primary",
+            },
+            "accent_color": {
+                "label": "Accent",
+                "type": "select",
+                "options": ["team_secondary", "white", "black", "neon", "gold", "silver"],
+                "default": "team_secondary",
+            },
+        },
+        "preprocessing": {
+            "logo": "square_pad_512",
+        },
+        "prompt_template": """Create a MODERN, REALISTIC football TRACKSUIT layout (Flat Lay Photography).
+
+TRACKSUIT CONFIGURATION:
+- Base Color: {tracksuit_color_description}.
+- Accent/Trim Color: {accent_color_description}.
+- Style: {style_label} fit.
+- Components: Full-zip jacket (or hoodie if specified) + Matching pants.
+
+TEAM CONTEXT (Use for color reference if 'team_primary' selected):
+{kit_analysis}
+
+COMPOSITION:
+- FULL SHOT: Show ENTIRE jacket/top and ENTIRE pants.
+- Organized layout (top above pants).
+- No cropping.
+
+INTEGRATION:
+- LOGO: Left chest, highly visible realistic embroidery.
+
+STYLE:
+- Professional presentation.
+- Neutral background.
+""",
+    },
+
+    # =========================================================================
+    # 5b. COACH OUTFIT GENERATION
+    # =========================================================================
+    "coach_outfit": {
+        "id": "coach_outfit",
+        "name": "Coach Outfit Genereren",
+        "category": "coach",
+        "description": "Genereer een coach/trainer outfit (net pak, sweater, coltrui, etc.).",
+        "input_requirements": ["logo", "sponsor", "reference_photo"],
+        "parameters": {
+            "outfit_style": {
+                "label": "Stijl",
+                "type": "select",
+                "options": ["net_pak", "trainings_sweater", "coltrui", "polo", "windbreaker"],
+                "default": "net_pak",
+            },
+            "outfit_color": {
+                "label": "Hoofdkleur",
+                "type": "select",
+                "options": ["team_primary", "black", "navy", "charcoal", "grey", "team_secondary"],
+                "default": "black",
+            },
+            "accent_color": {
+                "label": "Accentkleur",
+                "type": "select",
+                "options": ["team_secondary", "white", "black", "gold", "silver"],
+                "default": "team_secondary",
+            },
+        },
+        "preprocessing": {
+            "logo": "square_pad_512",
+            "sponsor": "pad_512_landscape",
+        },
+        "prompt_template": """Create a REALISTIC football COACH / TRAINER OUTFIT layout (Flat Lay Photography).
+
+OUTFIT CONFIGURATION:
+- Outfit Type: {outfit_style_description}.
+- Base Color: {outfit_color_description}.
+- Accent/Trim Color: {accent_color_description}.
+- This is a COACHING STAFF outfit — professional, authoritative appearance for the technical area / touchline.
+
+TEAM CONTEXT (Use for color reference if 'team_primary' selected):
+{kit_analysis}
+
+OUTFIT DETAILS (based on style):
+{outfit_style_details}
+
+COMPOSITION & FRAMING (CRITICAL):
+- FULL SHOT: Show ENTIRE top garment and ENTIRE trousers / pants.
+- DO NOT CROP: Do not cut off the bottom of the trousers or the top of the collar.
+- MAXIMIZE SPACE: The outfit should fill the frame but keep a small margin.
+- Orientation: Vertical Portrait (9:16 Aspect Ratio). Image must be taller than it is wide.
+- If the outfit includes multiple layers (e.g. shirt + jacket), show them layered naturally.
+
+INTEGRATION:
+- CLUB LOGO: Left chest, highly visible realistic embroidery or badge.
+- SPONSOR: Use provided Sponsor image CENTERED on chest/jacket or on the back (depending on style), realistic heat-press.
+- The logo must be clearly recognizable and professionally placed.
+
+STYLE:
+- Professional product photography presentation.
+- Neutral background (white or light grey).
+- Fabric texture must be realistic (wool for suit, knit for sweater, cotton for polo).
+- Clean, sharp details — stitching, buttons, zippers clearly visible.
+""",
+    },
+
+    # =========================================================================
+    # 6. FULLBODY PLAYER IN KIT
+    # =========================================================================
+    "fullbody_in_tenue": {
+        "id": "fullbody_in_tenue",
+        "name": "Speler in Tenue (Fullbody)",
+        "category": "fullbody",
+        "description": "Plaats een persoon in het volledige tenue met voetbalschoenen.",
+        "input_requirements": ["person_photo", "logo", "sponsor", "reference_photo"],
+        "parameters": {
+            "sleeves": {
+                "label": "Mouwen",
+                "type": "select",
+                "options": ["short", "long"],
+                "default": "short",
+            },
+            "pose": {
+                "label": "Pose",
+                "type": "select",
+                "options": ["standing_front", "standing_arms_crossed", "action_running", "ball_at_feet"],
+                "default": "standing_front",
+            },
+            "role": {
+                "label": "Rol",
+                "type": "select",
+                "options": ["player", "goalkeeper", "coach", "assistant"],
+                "default": "player",
+            },
+        },
+        "preprocessing": {
+            "logo": "square_pad_512",
+            "sponsor": "pad_512_landscape",
+        },
+        "prompt_template": """DRESS this person in the football kit shown in the reference image.
+
+═══════════════════════════════════════════════════════════
+MANDATORY OVERRIDES — These settings OVERRIDE the reference image:
+═══════════════════════════════════════════════════════════
+- SLEEVES: {sleeves_label}. If the reference shows different sleeves, IGNORE the reference and use {sleeves_label}.
+- POSE: {pose_label}. The player MUST be in this exact pose regardless of the input photo pose.
+- ROLE: {role_label}.
+═══════════════════════════════════════════════════════════
+
+KIT FROM REFERENCE (use for colors, patterns, logos, sponsor ONLY):
+- Match the EXACT colors, patterns, stripes, and design details from the reference kit
+- SAME logo placement and appearance
+- SAME sponsor placement and appearance
+- DO NOT modify, reinterpret, or "improve" the color scheme or pattern design
+- The person should look like they are WEARING this team's kit
+
+PERSON: Use the provided person photo. Preserve their face, hair, skin tone, and body proportions EXACTLY.
+
+EQUIPMENT:
+- Football boots (modern style, matching the kit colors from reference).
+{role_equipment}
+
+COMPOSITION:
+- FULL BODY: Head to toe must be visible. No cropping.
+- The person should be standing upright on a flat surface.
+- Professional sports photography lighting.
+- Background: PURE SOLID COLOR BACKGROUND (single flat color, no gradients, no scenery, no stadium). Use a bright green (#00FF00) or bright blue (#0000FF) chroma-key background so it can be easily removed later.
+
+STYLE:
+- High-end professional football player portrait.
+- Sharp focus on person, clean edges, no shadows on background.
+- Even studio lighting, slight rim light for depth.
+- The person must be FULLY SEPARATED from the background (no blending).
+
+FINAL CHECK:
+- Does the kit match the reference colors/patterns/logos? ✓
+- Are the sleeves {sleeves_label}? ✓ (THIS IS MANDATORY)
+- Is the player in this pose: {pose_label}? ✓ (THIS IS MANDATORY)
+- Is the full body visible from head to toe? ✓
+- Is the background a solid chroma-key color? ✓
+""",
+    },
+
+    # =========================================================================
+    # 7. CLOSEUP PLAYER IN KIT
+    # =========================================================================
+    "closeup_in_tenue": {
+        "id": "closeup_in_tenue",
+        "name": "Speler Close-up (In Tenue)",
+        "category": "closeup",
+        "description": "Close-up portret van speler in tenue, borst en gezicht.",
+        "input_requirements": ["person_photo", "logo", "sponsor", "reference_photo"],
+        "parameters": {
+            "neck": {
+                "label": "Hals",
+                "type": "select",
+                "options": ["round", "collar", "v_neck"],
+                "default": "round",
+            },
+            "expression": {
+                "label": "Uitdrukking",
+                "type": "select",
+                "options": ["neutral_confident", "smiling", "intense"],
+                "default": "neutral_confident",
+            },
+        },
+        "preprocessing": {
+            "logo": "square_pad_512",
+            "sponsor": "pad_512_landscape",
+        },
+        "prompt_template": """DRESS this person in the football kit shown in the reference image.
+
+═══════════════════════════════════════════════════════════
+MANDATORY OVERRIDES — These settings OVERRIDE the reference image:
+═══════════════════════════════════════════════════════════
+- NECKLINE: {neck_label}. Use this neckline style regardless of what the reference shows.
+- EXPRESSION: {expression_label}. The person MUST have this facial expression.
+═══════════════════════════════════════════════════════════
+
+KIT FROM REFERENCE (use for colors, patterns, logos, sponsor ONLY):
+- Match the EXACT colors, patterns, stripes, and design details from the reference kit
+- SAME logo placement and appearance
+- SAME sponsor placement and appearance
+- DO NOT modify, reinterpret, or "improve" the color scheme or pattern design
+
+PERSON: Use the provided person photo. Preserve their face, hair, skin tone EXACTLY.
+
+FRAMING:
+- Close-up: From MID-CHEST up to top of head. BOTH SHOULDERS must be FULLY visible.
+- The head must NEVER be cropped at the top.
+- Face, neck, both shoulders, and upper chest clearly visible.
+- Club logo on left chest must be visible (as shown in reference kit).
+- Sponsor on center chest should be partially visible (as shown in reference kit).
+
+COMPOSITION:
+- Professional sports portrait photography.
+- Background: PURE SOLID COLOR BACKGROUND (single flat color, no gradients, no scenery). Use bright green (#00FF00) or bright blue (#0000FF) chroma-key background for easy removal.
+- Sharp focus on face and upper body.
+
+STYLE:
+- High-end player card / media day photography style.
+- Natural skin tones, professional even studio lighting.
+- Person must be FULLY SEPARATED from the background (clean edges, no shadow bleed).
+
+FINAL CHECK:
+- Does the visible kit portion match the reference colors/patterns/logos? ✓
+- Is the neckline {neck_label}? ✓ (THIS IS MANDATORY)
+- Is the expression: {expression_label}? ✓ (THIS IS MANDATORY)
+- Is the background a solid chroma-key color? ✓
+- Are both shoulders fully visible? ✓
+""",
+    },
+
+    # =========================================================================
+    # 8. MEMBER SHORT INTRO (5-6 second intro video)
+    # =========================================================================
+    "member_intro": {
+        "id": "member_intro",
+        "name": "Speler Intro Video",
+        "category": "intro",
+        "output_type": "video",  # VIDEO output (6 seconds)
+        "description": "Genereer een korte intro video (6 sec) van speler in tenue met een karakteristieke pose.",
+        "input_requirements": ["person_photo"],
+        "parameters": {
+            "kit_type": {
+                "label": "Tenue Type",
+                "type": "select",
+                "options": ["home", "away", "third"],
+                "default": "home",
+            },
+            "style_variant": {
+                "label": "Pose Stijl",
+                "type": "select",
+                "options": ["arms_crossed", "hand_up", "thumbs_up"],
+                "default": "arms_crossed",
+            },
+        },
+        "video_config": {
+            "duration_seconds": 6,
+            "fps": 30,
+            "resolution": "1080p",
+            "aspect_ratio": "9:16",  # Vertical for social media
+            "loop": True,  # Start shot == End shot
+            "minimax_model": "video-01",
+        },
+        "prompt_template": """6-second realistic player intro video. Living portrait style.
+
+The provided image is the FIRST FRAME. Keep the player EXACTLY as shown — same face, hair, skin tone, body, clothing, and kit.
+Kit type: {kit_type_label}.
+
+MOVEMENT:
+- The player starts in the EXACT pose from the input image.
+- Subtle, natural motion only: breathing, slight weight shift, small head turn toward camera.
+- Pose action: {style_variant_label}
+- The player returns to the EXACT starting pose by the end of the video (seamless loop).
+- Movement must be slow, controlled, and realistic. No sudden jerks.
+
+BACKGROUND:
+- Plain solid color background (bright green #00FF00 or bright blue #0000FF chroma-key).
+- NO stadium, NO pitch, NO scenery, NO environment of any kind.
+- The player must be completely isolated against the flat color.
+
+RULES:
+- NO visual effects, NO particles, NO lens flares, NO fire, NO lightning, NO glow.
+- NO text overlays, NO graphics, NO logos added.
+- NO camera movement. Static locked-off camera. The player moves, not the camera.
+- Photorealistic quality. Natural lighting. Professional studio setup.
+- Full body must remain visible at all times (head to toe, no cropping).
+- 9:16 vertical aspect ratio.
+""",
+    },
+
+    # =========================================================================
+    # 9. MEMBER GOAL CELEBRATION (5-6 second celebration video)
+    # =========================================================================
+    "member_goal_celebration": {
+        "id": "member_goal_celebration",
+        "name": "Speler Doelpunt Viering Video",
+        "category": "celebration",
+        "output_type": "video",  # VIDEO output (6 seconds)
+        "description": "Genereer een korte viering video (6 sec) van speler met een doelpunt-viering pose.",
+        "input_requirements": ["person_photo"],
+        "parameters": {
+            "kit_type": {
+                "label": "Tenue Type",
+                "type": "select",
+                "options": ["home", "away", "third"],
+                "default": "home",
+            },
+            "style_variant": {
+                "label": "Viering Stijl",
+                "type": "select",
+                "options": ["arms_wide", "fist_pump", "point_to_sky", "slide"],
+                "default": "arms_wide",
+            },
+        },
+        "video_config": {
+            "duration_seconds": 6,
+            "fps": 30,
+            "resolution": "1080p",
+            "aspect_ratio": "9:16",  # Vertical for social media
+            "minimax_model": "video-01",
+        },
+        "prompt_template": """6-second realistic goal celebration video.
+
+The provided image is the FIRST FRAME. Keep the player EXACTLY as shown — same face, hair, skin tone, body, clothing, and kit.
+Kit type: {kit_type_label}.
+
+MOVEMENT:
+- The player starts in the EXACT pose from the input image.
+- The player transitions into a celebration: {style_variant_label}
+- Expression: joyful, triumphant, natural emotion.
+- The movement should be energetic but controlled and realistic.
+- The player returns to the STARTING POSE by the final frame (seamless loop back to first frame).
+- Full body must remain visible at all times (head to toe, no cropping).
+
+BACKGROUND:
+- Plain solid color background (bright green #00FF00 or bright blue #0000FF chroma-key).
+- NO stadium, NO pitch, NO scenery, NO crowd, NO environment of any kind.
+- The player must be completely isolated against the flat color.
+
+RULES:
+- NO visual effects, NO particles, NO confetti, NO lens flares, NO fire, NO glow.
+- NO text overlays, NO graphics, NO logos added.
+- NO camera movement. Static locked-off camera. The player moves, not the camera.
+- NO slow motion. Normal speed, real-time movement.
+- Photorealistic quality. Natural lighting. Professional studio setup.
+- 9:16 vertical aspect ratio.
+""",
+    },
+}
+
+
+# =============================================================================
+# PARAMETER RESOLVERS (Map option values to prompt text)
+# =============================================================================
+
+PARAM_RESOLVERS = {
+    "background": {
+        "transparent": "Fully TRANSPARENT (alpha channel). No background at all.",
+        "white": "Pure WHITE (#FFFFFF) background.",
+        "light_grey": "Light grey (#F0F0F0) background.",
+    },
+    "style": {
+        "original": "Keep the original design exactly as-is, only clean up edges and background.",
+        "clean_vector": "Clean vector-style rendering with crisp edges.",
+        "minimalist": "Simplified, minimalist interpretation maintaining core identity.",
+        "modern_slim": "Modern slim-fit athletic cut.",
+        "classic": "Classic relaxed-fit style.",
+        "windbreaker": "Lightweight windbreaker style.",
+        "hoodie": "Hooded tracksuit style with drawstring hood.",
+    },
+    "orientation": {
+        "landscape": "Landscape rectangle (2:1 aspect ratio, 512x256px).",
+        "square": "Perfect square (1:1 aspect ratio, 512x512px).",
+    },
+    "sleeves": {
+        "short": "SHORT SLEEVES",
+        "long": "LONG SLEEVES",
+    },
+    "neck": {
+        "round": "ROUND NECK (crew neck)",
+        "collar": "POLO COLLAR (button-up collar)",
+        "v_neck": "V-NECK",
+        "crew": "MODERN CREW NECK",
+    },
+    "kit_type": {
+        "home": "HOME KIT (primary team colors)",
+        "away": "AWAY KIT (secondary/inverted colors)",
+        "third": "THIRD KIT (alternative design)",
+        "goalkeeper": "GOALKEEPER KIT (distinctive keeper colors)",
+        "coach": "COACH / TRAINER outfit (tracksuit or training wear)",
+        "assistant": "ASSISTANT COACH outfit (same as coach/trainer)",
+        "training": "TRAINING KIT (casual training wear)",
+    },
+    "shirt_base": {
+        "auto_home": "Use the team's PRIMARY HOME colors from the reference photo analysis.",
+        "auto_away_contrast": "Use CONTRASTING colors to the home kit (inverted/opposite scheme).",
+        "white": "WHITE base shirt color.",
+        "black": "BLACK base shirt color.",
+        "red": "RED base shirt color.",
+        "blue": "BLUE base shirt color.",
+        "green": "GREEN base shirt color.",
+        "yellow": "YELLOW base shirt color.",
+        "orange": "ORANGE base shirt color.",
+        "purple": "PURPLE base shirt color.",
+        "navy": "NAVY BLUE base shirt color.",
+        "maroon": "MAROON / DARK RED base shirt color.",
+        "sky_blue": "SKY BLUE / LIGHT BLUE base shirt color.",
+    },
+    "pattern_style": {
+        "solid": "SOLID single color — no pattern, clean monochrome shirt.",
+        "vertical_stripes": "VERTICAL STRIPES — alternating colored vertical stripes down the shirt.",
+        "horizontal_hoops": "HORIZONTAL HOOPS — horizontal bands/stripes across the shirt.",
+        "diagonal_sash": "DIAGONAL SASH — a bold diagonal stripe across the chest.",
+        "half_half": "HALF & HALF — shirt split vertically into two distinct colors.",
+        "pinstripes": "PINSTRIPES — thin, subtle vertical pinstripes.",
+        "subtle_graphic": "SUBTLE GRAPHIC — a modern tonal graphic/texture pattern (e.g. geometric, camo-like).",
+        "graphic_print": "GRAPHIC PRINT — bold all-over graphic/artistic print pattern.",
+        "camo": "CAMOUFLAGE — military-inspired camo pattern.",
+        "geometric": "GEOMETRIC — angular geometric shapes and patterns.",
+        "gradient": "GRADIENT — smooth color gradient transition (top to bottom or left to right).",
+    },
+    "shorts_style": {
+        "match_shirt": "MATCH SHIRT color — shorts use the same primary color as the shirt.",
+        "white": "WHITE shorts.",
+        "black": "BLACK shorts.",
+        "navy": "NAVY BLUE shorts.",
+        "contrast": "CONTRASTING color — shorts use a contrasting/accent color from the kit.",
+    },
+    "socks_style": {
+        "match_shirt": "MATCH SHIRT color — socks use the same primary color as the shirt.",
+        "match_shorts": "MATCH SHORTS color — socks use the same color as the shorts.",
+        "white": "WHITE socks.",
+        "black": "BLACK socks.",
+        "contrast": "CONTRASTING color — socks use an accent color from the kit.",
+    },
+    "keeper_color": {
+        "neon_green": "NEON GREEN / Fluorescent Green",
+        "neon_orange": "NEON ORANGE / Fluorescent Orange",
+        "purple": "DEEP PURPLE / Violet",
+        "neon_yellow": "NEON YELLOW / Fluorescent Yellow",
+        "pink": "BRIGHT PINK / Magenta",
+        "black": "BLACK — classic dark goalkeeper kit",
+        "red": "RED — bold red goalkeeper kit",
+        "blue": "BLUE — royal blue goalkeeper kit",
+        "grey": "GREY — neutral grey goalkeeper kit",
+    },
+    "tracksuit_color": {
+        "team_primary": "Use the team's PRIMARY color from the kit/brand identity.",
+        "black": "BLACK base tracksuit.",
+        "navy": "NAVY BLUE base tracksuit.",
+        "grey": "GREY base tracksuit.",
+        "team_secondary": "Use the team's SECONDARY/accent color from the kit/brand identity.",
+        "red": "RED base tracksuit.",
+        "blue": "BLUE base tracksuit.",
+    },
+    "accent_color": {
+        "team_secondary": "Use the team's SECONDARY color as accent/trim.",
+        "white": "WHITE accent trim, zippers, and stripes.",
+        "black": "BLACK accent trim, zippers, and stripes.",
+        "neon": "NEON / Fluorescent accent highlights for a modern look.",
+        "gold": "GOLD / Metallic gold accent details.",
+        "silver": "SILVER / Metallic silver accent details.",
+    },
+    "outfit_style": {
+        "net_pak": "FORMAL SUIT (Net Pak) — tailored blazer/sport coat + dress trousers, professional touchline look",
+        "trainings_sweater": "TRAINING SWEATER — half-zip or quarter-zip training top + training trousers, athletic coaching look",
+        "coltrui": "TURTLENECK (Coltrui) — elegant turtleneck/rollneck sweater + trousers, sophisticated touchline style",
+        "polo": "POLO SHIRT — professional polo shirt + chinos/dress trousers, smart-casual coaching look",
+        "windbreaker": "WINDBREAKER — lightweight rain/wind jacket + training trousers, all-weather coaching gear",
+    },
+    "outfit_color": {
+        "team_primary": "Use the team's PRIMARY color from the kit/brand identity.",
+        "black": "BLACK — classic, authoritative black.",
+        "navy": "NAVY BLUE — professional dark navy.",
+        "charcoal": "CHARCOAL GREY — dark sophisticated grey.",
+        "grey": "GREY — neutral medium grey.",
+        "team_secondary": "Use the team's SECONDARY/accent color from the kit/brand identity.",
+    },
+    "pose": {
+        "standing_front": "Standing facing camera, arms at sides, confident stance",
+        "standing_arms_crossed": "Standing with arms crossed, confident power pose",
+        "action_running": "Dynamic running pose, mid-stride",
+        "ball_at_feet": "Standing with one foot on a football",
+    },
+    "expression": {
+        "neutral_confident": "Neutral, confident expression — match-day focus",
+        "smiling": "Friendly, approachable smile",
+        "intense": "Intense, competitive game-face",
+    },
+    "role": {
+        "player": "Field player",
+        "goalkeeper": "Goalkeeper",
+        "coach": "Head coach / Trainer",
+        "assistant": "Assistant coach / Staff member",
+    },
+    "color_scheme": {
+        "team_colors": "Use the team's primary and secondary colors from the kit analysis.",
+        "black_accent": "Black base with team color accents on zippers, stripes, and logo area.",
+        "navy_accent": "Navy blue base with team color accents.",
+    },
+    "style_variant": {
+        # Intro poses — subtle, controlled movements
+        "arms_crossed": "The player slowly crosses both arms over their chest, standing tall with a confident powerful stance. Chin slightly raised.",
+        "hand_up": "The player slowly raises one hand in a greeting wave toward the camera, friendly and approachable. Small natural smile.",
+        "thumbs_up": "The player gives a thumbs up with one hand toward the camera, positive and confident. Slight nod.",
+        # Goal celebration poses — more energetic but still controlled
+        "arms_wide": "The player spreads both arms wide open to the sides, triumphant celebration. Looks up briefly then back to camera.",
+        "fist_pump": "The player pumps one fist into the air with intensity, powerful celebration. Other arm bent at side.",
+        "point_to_sky": "The player points to the sky with one index finger, emotional dedication gesture. Other hand on chest.",
+        "slide": "The player drops to both knees in a knee slide, arms spread wide. Then stands back up to starting position.",
+    },
+}
+
+ROLE_EQUIPMENT = {
+    "player": "- Football boots (modern style).",
+    "goalkeeper": "- Football boots (modern style).\n- Goalkeeper gloves (matching team colors).",
+    "coach": "- Training shoes / sneakers (no football boots).\n- Optional: whistle on lanyard, stopwatch.",
+    "assistant": "- Training shoes / sneakers (no football boots).",
+}
+
+# Coach outfit style-specific prompt details
+OUTFIT_STYLE_DETAILS = {
+    "net_pak": """- TOP: Tailored single-breasted blazer / sport coat, modern slim fit.
+  - Two or three buttons, narrow lapels.
+  - Pocket square optional (team accent color).
+  - Club badge/logo embroidered on breast pocket.
+- SHIRT: Dress shirt underneath (white or light color), open collar (no tie).
+- TROUSERS: Matching tailored dress trousers, slim modern cut.
+- SHOES: Smart dress shoes or clean leather sneakers.""",
+    "trainings_sweater": """- TOP: Half-zip or quarter-zip training pullover, athletic fit.
+  - Technical moisture-wicking fabric look.
+  - Raglan sleeves with accent color piping/stripes on shoulders.
+  - Club logo embroidered on left chest.
+- UNDERSHIRT: Team-color base layer visible at collar.
+- TROUSERS: Matching tapered training trousers with side stripe.
+- SHOES: Modern training/running shoes.""",
+    "coltrui": """- TOP: Elegant fine-knit turtleneck / rollneck sweater, slim fit.
+  - Clean lines, no visible zippers or buttons.
+  - Club logo small embroidery on left chest.
+  - Premium wool or cashmere look.
+- TROUSERS: Tailored chinos or dress trousers, modern slim cut.
+- SHOES: Clean smart-casual shoes or leather sneakers.""",
+    "polo": """- TOP: Professional polo shirt, modern athletic fit.
+  - Flat knit collar, 2-3 button placket.
+  - Club logo embroidered on left chest.
+  - Optional: accent color on collar trim and sleeve bands.
+- TROUSERS: Smart chinos or tailored trousers.
+- SHOES: Clean smart-casual shoes or leather sneakers.""",
+    "windbreaker": """- TOP: Lightweight windbreaker / rain jacket, sport fit.
+  - Full-zip front, high collar with hood (stowable).
+  - Club logo on left chest, accent color on side panels.
+  - Water-resistant technical fabric look.
+- UNDERSHIRT: Team training shirt visible at collar.
+- TROUSERS: Matching waterproof training trousers.
+- SHOES: Modern training shoes.""",
+}
+
+
+def resolve_prompt(template_id: str, params: dict, kit_analysis: str = "", extra_context: dict = None) -> str:
+    """
+    Resolve a template into a final prompt string.
+
+    Args:
+        template_id: Key from TEMPLATES dict
+        params: User-selected parameter values (e.g. {"sleeves": "long", "neck": "collar"})
+        kit_analysis: The Gemini analysis of the reference photo
+        extra_context: Any additional context variables
+
+    Returns:
+        Fully resolved prompt string
+    """
+    template = TEMPLATES[template_id]
+    prompt = template["prompt_template"]
+
+    replacements = {
+        "kit_analysis": kit_analysis,
+    }
+
+    # Determine effectively active kit_type for logic controls
+    kit_type_default = template["parameters"].get("kit_type", {}).get("default", "home")
+    active_kit_type = params.get("kit_type", kit_type_default)
+    is_home_kit_design = (template_id == "tenue_generate" and active_kit_type == "home")
+
+    # Resolve each parameter
+    for param_key, param_def in template["parameters"].items():
+        value = params.get(param_key, param_def["default"])
+
+        # FIX: For Home Kit, force design parameters to follow reference analysis
+        # avoiding accidental overrides by default values (e.g. "solid" pattern)
+        if is_home_kit_design and param_key in ["shirt_base", "pattern_style", "shorts_style", "socks_style"]:
+             replacements[f"{param_key}_label"] = "MATCH REFERENCE"
+             replacements[f"{param_key}_description"] = "Strictly follow the design pattern and colors from the reference photo team context."
+             continue
+
+        # Get human-readable description
+        if param_key in PARAM_RESOLVERS and value in PARAM_RESOLVERS[param_key]:
+            replacements[f"{param_key}_label"] = PARAM_RESOLVERS[param_key][value]
+            replacements[f"{param_key}_description"] = PARAM_RESOLVERS[param_key][value]
+        else:
+            replacements[f"{param_key}_label"] = value.upper()
+            replacements[f"{param_key}_description"] = value
+
+    # Role equipment (for fullbody)
+    role = params.get("role", "player")
+    replacements["role_equipment"] = ROLE_EQUIPMENT.get(role, "")
+
+    # Outfit style details (for coach_outfit)
+    outfit_style = params.get("outfit_style", "net_pak")
+    replacements["outfit_style_details"] = OUTFIT_STYLE_DETAILS.get(outfit_style, "")
+
+    # Extra context
+    if extra_context:
+        replacements.update(extra_context)
+
+    # Apply replacements
+    for key, value in replacements.items():
+        prompt = prompt.replace(f"{{{key}}}", str(value))
+
+    # Append user instruction if present in params (for iterative feedback)
+    user_instruction = params.get("user_instruction", "").strip()
+    if user_instruction:
+        prompt += f"\n\nADDITIONAL USER INSTRUCTIONS:\n{user_instruction}"
+        prompt += "\n\nIMPORTANT: Please strictly follow the additional user instructions above to refine the result."
+
+    return prompt
+
+
+def get_template_summary():
+    """Print a summary of all available templates."""
+    for tid, t in TEMPLATES.items():
+        params = ", ".join(
+            f"{p['label']} ({'/'.join(p['options'])})"
+            for p in t["parameters"].values()
+        )
+        print(f"  [{t['category'].upper():10}] {t['name']:35} | Params: {params}")
