@@ -314,23 +314,46 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             asset_variants = videos.get(asset_type, {}) or {}
             composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
             variant_val = asset_variants.get(composite_key)
+
+            # Fallback 1: bare variant_id key (old metadata format stored
+            # "arms_crossed" instead of "home_arms_crossed")
+            if not variant_val and variant_id:
+                variant_val = asset_variants.get(variant_id)
+                if variant_val:
+                    logger.info(
+                        "process-asset: found old bare key '%s' for %s (expected '%s')",
+                        variant_id,
+                        asset_type,
+                        composite_key,
+                    )
+
+            # Fallback 2: no variant specified — find first key starting with kit_type
             if not variant_val and not variant_id:
-                # No exact match and no variant specified — find first key starting with kit_type
                 for key, val in asset_variants.items():
                     if key.startswith(kit_type):
                         variant_val = val
-                        # Extract the variant_id from the key for metadata updates
                         variant_id = key[len(kit_type) + 1 :] if "_" in key else None
                         composite_key = key
                         break
+
             if isinstance(variant_val, dict):
                 raw_url = variant_val.get("raw") or variant_val.get("processed")
             elif isinstance(variant_val, str):
                 raw_url = variant_val
 
+            if not raw_url:
+                logger.warning(
+                    "process-asset: no raw URL for %s.%s — available keys: %s",
+                    asset_type,
+                    composite_key,
+                    list(asset_variants.keys()),
+                )
+
         if not raw_url:
             return Response(
-                {"error": f"No raw asset found for {asset_type}.{kit_type}"},
+                {
+                    "error": f"No raw asset found for {asset_type}.{composite_key if asset_type in ('intro', 'celebration') else kit_type}"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -424,6 +447,9 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             cat = videos.setdefault(asset_type, {})
             composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
             cat[composite_key] = variant_value
+            # Clean up old bare variant key if it exists (migrate on write)
+            if variant_id and variant_id in cat and variant_id != composite_key:
+                cat.pop(variant_id, None)
 
         meta["teamreel_assets"] = tr
         membership.metadata = meta

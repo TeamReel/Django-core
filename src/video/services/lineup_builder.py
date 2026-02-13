@@ -472,22 +472,48 @@ class LineupSegmentBuilder:
             videos = teamreel_assets.get("videos", {})
 
             # Kit (fullbody) — check images.fullbody.home first, then media.kit
-            kit_url = get_best_url((images.get("fullbody", {}) or {}).get("home")) or media.get(
-                "kit", {}
-            ).get("url")
+            fullbody_home_val = (images.get("fullbody", {}) or {}).get("home")
+            kit_url = get_best_url(fullbody_home_val) or media.get("kit", {}).get("url")
+            logger.info(
+                "DEBUG: Player %s - fullbody.home raw value type=%s, value=%s → kit_url=%s",
+                member,
+                type(fullbody_home_val).__name__,
+                (
+                    {k: (str(v)[:60] if v else None) for k, v in fullbody_home_val.items()}
+                    if isinstance(fullbody_home_val, dict)
+                    else (str(fullbody_home_val)[:80] if fullbody_home_val else None)
+                ),
+                kit_url[:80] if kit_url else None,
+            )
 
-            # Intro — check videos.intro.home_* first, then media.intro
+            # Intro — check videos.intro.home_* first, then bare style keys, then media.intro
             # Pick first available home intro variant
             intro_variants = videos.get("intro", {}) or {}
             intro_url = None
+            # Pass 1: composite keys starting with "home" (new format)
             for key, val in intro_variants.items():
                 if key.startswith("home"):
                     resolved = get_best_url(val)
                     if resolved:
                         intro_url = resolved
                         break
+            # Pass 2: bare style variant keys (old format without kit prefix)
+            if not intro_url:
+                for key, val in intro_variants.items():
+                    if not key.startswith("home"):
+                        resolved = get_best_url(val)
+                        if resolved:
+                            intro_url = resolved
+                            break
             if not intro_url:
                 intro_url = media.get("intro", {}).get("url")
+            logger.info(
+                "DEBUG: Player %s - intro_url=%s (from %d variants: %s)",
+                member,
+                intro_url[:80] if intro_url else None,
+                len(intro_variants),
+                list(intro_variants.keys()),
+            )
 
             # Closeup — check images.closeup.home first, then media.closeup
             closeup_url = get_best_url((images.get("closeup", {}) or {}).get("home")) or media.get(
