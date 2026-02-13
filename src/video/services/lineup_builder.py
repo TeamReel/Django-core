@@ -183,19 +183,38 @@ class LineupSegmentBuilder:
         # - organisation brand
         brand_profiles: list = []
 
+        logger.info(
+            "DEBUG: Resolving brand profiles for Activity %s (Project: %s, Parent: %s, Org: %s)",
+            self.activity_id,
+            project.id,
+            project.parent_project_id if project.parent_project else "None",
+            organisation.name if organisation else "None",
+        )
+
         team_brand = BrandProfile.objects.filter(project=project, is_active=True).first()
         if team_brand:
             brand_profiles.append(team_brand)
+            logger.info(
+                "DEBUG: Found Team BrandProfile: %s (Project %s)", team_brand.id, project.id
+            )
 
         club_project = project.parent_project or None
         if club_project:
             club_brand = BrandProfile.objects.filter(project=club_project, is_active=True).first()
             if club_brand and club_brand not in brand_profiles:
                 brand_profiles.append(club_brand)
+                logger.info(
+                    "DEBUG: Found Club BrandProfile: %s (Project %s)",
+                    club_brand.id,
+                    club_project.id,
+                )
 
         org_brand = BrandProfile.objects.filter(organisation=organisation, is_active=True).first()
         if org_brand and org_brand not in brand_profiles:
             brand_profiles.append(org_brand)
+            logger.info(
+                "DEBUG: Found Org BrandProfile: %s (Org %s)", org_brand.id, organisation.name
+            )
 
         def _resolve_asset_url(asset_types: list[str]) -> str | None:
             for profile in brand_profiles:
@@ -210,7 +229,15 @@ class LineupSegmentBuilder:
                     .first()
                 )
                 if not asset:
+                    logger.info("DEBUG: No asset %s found in profile %s", asset_types, profile.id)
                     continue
+
+                logger.info(
+                    "DEBUG: Found asset %s in profile %s (ID: %s)",
+                    asset_types,
+                    profile.id,
+                    asset.id,
+                )
 
                 # Prefer the API-facing URL if it is persisted (often already presigned).
                 asset_url = getattr(asset, "url", None)
@@ -221,6 +248,11 @@ class LineupSegmentBuilder:
                     presigned = self._get_presigned_url(asset.file.storage_path)
                     if presigned:
                         return presigned
+            logger.warning(
+                "DEBUG: Could not resolve asset %s in any of %d profiles",
+                asset_types,
+                len(brand_profiles),
+            )
             return None
 
         logo_url = _resolve_asset_url(["logo_light", "logo_dark", "logo_upload"])
