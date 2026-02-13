@@ -155,6 +155,62 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
         return Response(output.data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["post"], url_path="process-sync")
+    def process_sync(self, request: Request, pk: str | None = None) -> Response:
+        """Process a queued job synchronously (bypasses Celery).
+
+        POST /api/v1/video/jobs/{id}/process-sync/
+
+        Use this for testing when Celery worker isn't available.
+        """
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        job = self.get_object()
+        if job.status not in [JobStatus.QUEUED, JobStatus.FAILED]:
+            return Response(
+                {"error": f"Job status must be queued or failed, got: {job.status}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if job.job_type != "lineup":
+            return Response(
+                {"error": "Only lineup jobs supported for sync processing"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        logger.info("Starting synchronous processing for job %s", job.id)
+
+        try:
+            from src.video.services.processors.lineup import LineupProcessor
+
+            processor = LineupProcessor(job)
+            processor.execute()
+
+            logger.info("Sync processing completed for job %s", job.id)
+
+            # Refresh and return
+            job.refresh_from_db()
+            output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            import traceback
+
+            logger.error(
+                "Sync processing failed for job %s: %s\n%s", job.id, e, traceback.format_exc()
+            )
+            job.refresh_from_db()
+            return Response(
+                {
+                    "error": str(e),
+                    "status": job.status,
+                    "error_message": job.error_message,
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
     @action(detail=False, methods=["post"], url_path="lineup-from-template")
     def lineup_from_template(self, request: Request) -> Response:
         """Create a lineup video job from ContentTemplate + Activity.
@@ -285,32 +341,62 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Queue the Celery task
-        try:
-            task_result = process_lineup_video.delay(str(job.id))
-            logger.info(
-                "Celery task queued successfully: task_id=%s, job_id=%s",
-                task_result.id,
-                job.id,
-            )
-        except Exception as e:  # noqa: BLE001
-            logger.warning("Failed to queue Celery task: %s - job will remain queued", e)
-            # Don't fail the request - job is created, can be processed later
+        # Check for sync processing request (bypasses Celery)
+        sync_mode = request.data.get("sync", False) or request.query_params.get("sync") == "true"
+
+        if sync_mode:
+            # Process synchronously (for testing/debugging)
+            logger.info("Processing job synchronously: %s", job.id)
+            try:
+                from src.video.services.processors.lineup import LineupProcessor
+
+                processor = LineupProcessor(job)
+                processor.execute()
+
+                logger.info("Sync processing completed for job %s", job.id)
+                job.refresh_from_db()
+            except Exception as e:
+                import traceback
+
+                logger.error(
+                    "Sync processing failed for job %s: %s\n%s", job.id, e, traceback.format_exc()
+                )
+                job.refresh_from_db()
+                # Return error but keep the job for debugging
+                return Response(
+                    {
+                        "id": str(job.id),
+                        "status": job.status,
+                        "error": str(e),
+                        "error_message": job.error_message,
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+        else:
+            # Queue the Celery task (normal async mode)
+            try:
+                task_result = process_lineup_video.delay(str(job.id))
+                logger.info(
+                    "Celery task queued successfully: task_id=%s, job_id=%s",
+                    task_result.id,
+                    job.id,
+                )
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Failed to queue Celery task: %s - job will remain queued", e)
+                # Don't fail the request - job is created, can be processed later
 
         try:
             output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
             return Response(output.data, status=status.HTTP_201_CREATED)
         except Exception as e:  # noqa: BLE001
-            import logging
             import traceback
 
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to serialize VideoJob: {e}\n{traceback.format_exc()}")
+            logger.error("Failed to serialize VideoJob: %s\n%s", e, traceback.format_exc())
             # Return minimal success response
             return Response(
                 {
                     "id": str(job.id),
-                    "status": "queued",
+                    "status": job.status if hasattr(job, "status") else "queued",
                     "message": "Job created but serialization failed",
                 },
                 status=status.HTTP_201_CREATED,
