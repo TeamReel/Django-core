@@ -69,5 +69,8 @@ PyJWT>=2.8.0,<3.0
 # Image processing (WP03)
 Pillow>=10.0.0,<11.0
 
+# Background removal for asset processing (rembg uses U2-Net ONNX model)
+rembg>=2.0.50,<3.0
+
 # JSON Schema validation (B34 Generative Pipelines)
 jsonschema>=4.20.0,<5.0

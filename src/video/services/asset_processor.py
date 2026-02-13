@@ -279,32 +279,28 @@ class AssetProcessor:
             raise AssetProcessingError(f"Failed to download from storage: {exc}") from exc
 
     def _remove_background_image(self, img: "Image.Image") -> "Image.Image":
-        """Remove background from an image using rembg (if available).
+        """Remove background from an image using rembg.
 
-        Falls back to a simple alpha-channel check if rembg is not installed.
+        Raises AssetProcessingError if rembg is not installed — background
+        removal is a hard requirement for lineup-ready assets.
         """
         try:
             from rembg import remove
-
-            # rembg works on bytes, returns bytes
-            buffer = io.BytesIO()
-            img.save(buffer, format="PNG")
-            buffer.seek(0)
-
-            result_bytes = remove(buffer.read())
-            from PIL import Image as PILImage
-
-            return PILImage.open(io.BytesIO(result_bytes))
-
         except ImportError:
-            logger.warning(
-                "rembg not installed — skipping background removal. "
-                "Install with: pip install rembg[gpu]"
+            raise AssetProcessingError(
+                "rembg is not installed. Background removal requires rembg. "
+                "Install with: pip install rembg"
             )
-            # If image already has alpha, return as-is
-            if img.mode == "RGBA":
-                return img
-            return img.convert("RGBA")
+
+        # rembg works on bytes, returns bytes
+        buffer = io.BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+
+        result_bytes = remove(buffer.read())
+        from PIL import Image as PILImage
+
+        return PILImage.open(io.BytesIO(result_bytes))
 
     def _resize_and_crop(self, img: "Image.Image", target_w: int, target_h: int) -> "Image.Image":
         """Resize and center-crop image to exact target dimensions.
