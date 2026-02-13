@@ -471,36 +471,48 @@ class LineupSegmentBuilder:
             images = teamreel_assets.get("images", {})
             videos = teamreel_assets.get("videos", {})
 
-            # Kit (fullbody) — check images.fullbody.home first, then media.kit
-            fullbody_home_val = (images.get("fullbody", {}) or {}).get("home")
-            kit_url = get_best_url(fullbody_home_val) or media.get("kit", {}).get("url")
+            # Determine kit type from functional role (goalkeeper → "goalkeeper", else → "home")
+            fr_lower = (functional_role or "").lower()
+            kit_type = "goalkeeper" if fr_lower in ("keeper", "doelman") else "home"
+
+            # Kit (fullbody) — check images.fullbody.{kit_type} first, fallback to "home", then media.kit
+            fullbody_dict = images.get("fullbody", {}) or {}
+            fullbody_val = fullbody_dict.get(kit_type)
+            kit_url = get_best_url(fullbody_val)
+            if not kit_url and kit_type != "home":
+                kit_url = get_best_url(fullbody_dict.get("home"))
+            if not kit_url:
+                kit_url = media.get("kit", {}).get("url")
             logger.info(
-                "DEBUG: Player %s - fullbody.home raw value type=%s, value=%s → kit_url=%s",
+                "DEBUG: Player %s - kit_type=%s, fullbody raw value type=%s → kit_url=%s",
                 member,
-                type(fullbody_home_val).__name__,
-                (
-                    {k: (str(v)[:60] if v else None) for k, v in fullbody_home_val.items()}
-                    if isinstance(fullbody_home_val, dict)
-                    else (str(fullbody_home_val)[:80] if fullbody_home_val else None)
-                ),
+                kit_type,
+                type(fullbody_val).__name__,
                 kit_url[:80] if kit_url else None,
             )
 
-            # Intro — check videos.intro.home_* first, then bare style keys, then media.intro
-            # Pick first available home intro variant
+            # Intro — check videos.intro.{kit_type}_* first, then "home_*", then bare style keys, then media.intro
             intro_variants = videos.get("intro", {}) or {}
             intro_url = None
-            # Pass 1: composite keys starting with "home" (new format)
+            # Pass 1: composite keys starting with kit_type (e.g. "goalkeeper_arms_crossed")
             for key, val in intro_variants.items():
-                if key.startswith("home"):
+                if key.startswith(kit_type):
                     resolved = get_best_url(val)
                     if resolved:
                         intro_url = resolved
                         break
-            # Pass 2: bare style variant keys (old format without kit prefix)
+            # Pass 2: fallback to "home_*" if kit_type was different
+            if not intro_url and kit_type != "home":
+                for key, val in intro_variants.items():
+                    if key.startswith("home"):
+                        resolved = get_best_url(val)
+                        if resolved:
+                            intro_url = resolved
+                            break
+            # Pass 3: bare style variant keys (old format without kit prefix)
             if not intro_url:
                 for key, val in intro_variants.items():
-                    if not key.startswith("home"):
+                    if not any(key.startswith(p) for p in ("home", "goalkeeper", "away")):
                         resolved = get_best_url(val)
                         if resolved:
                             intro_url = resolved
@@ -508,17 +520,21 @@ class LineupSegmentBuilder:
             if not intro_url:
                 intro_url = media.get("intro", {}).get("url")
             logger.info(
-                "DEBUG: Player %s - intro_url=%s (from %d variants: %s)",
+                "DEBUG: Player %s - intro_url=%s (kit_type=%s, from %d variants: %s)",
                 member,
                 intro_url[:80] if intro_url else None,
+                kit_type,
                 len(intro_variants),
                 list(intro_variants.keys()),
             )
 
-            # Closeup — check images.closeup.home first, then media.closeup
-            closeup_url = get_best_url((images.get("closeup", {}) or {}).get("home")) or media.get(
-                "closeup", {}
-            ).get("url")
+            # Closeup — check images.closeup.{kit_type} first, fallback to "home", then media.closeup
+            closeup_dict = images.get("closeup", {}) or {}
+            closeup_url = get_best_url(closeup_dict.get(kit_type))
+            if not closeup_url and kit_type != "home":
+                closeup_url = get_best_url(closeup_dict.get("home"))
+            if not closeup_url:
+                closeup_url = media.get("closeup", {}).get("url")
 
             # Convert relative paths to presigned URLs if needed
             if kit_url and not kit_url.startswith("http"):
@@ -714,10 +730,61 @@ class LineupSegmentBuilder:
             meta = pm.metadata or {}
             teamreel_assets = meta.get("teamreel_assets", {})
             media = teamreel_assets.get("media", {})
+            images = teamreel_assets.get("images", {})
+            videos = teamreel_assets.get("videos", {})
 
-            kit_url = media.get("kit", {}).get("url")
-            intro_url = media.get("intro", {}).get("url")
-            closeup_url = media.get("closeup", {}).get("url")
+            from src.video.services.asset_processing_specs import get_best_url
+
+            # Get role from metadata (may be empty)
+            functional_role = meta.get("functional_role", "") or meta.get("role", "")
+            position = meta.get("position", "")
+            jersey_number = meta.get("shirt_number") or meta.get("jersey_number")
+
+            # Determine kit type from functional role (goalkeeper → "goalkeeper", else → "home")
+            fr_lower = (functional_role or "").lower()
+            kit_type = "goalkeeper" if fr_lower in ("keeper", "doelman") else "home"
+
+            # Kit (fullbody) — images.fullbody.{kit_type} → images.fullbody.home → media.kit
+            fullbody_dict = images.get("fullbody", {}) or {}
+            kit_url = get_best_url(fullbody_dict.get(kit_type))
+            if not kit_url and kit_type != "home":
+                kit_url = get_best_url(fullbody_dict.get("home"))
+            if not kit_url:
+                kit_url = media.get("kit", {}).get("url")
+
+            # Intro — videos.intro.{kit_type}_* → videos.intro.home_* → bare keys → media.intro
+            intro_variants = videos.get("intro", {}) or {}
+            intro_url = None
+            for key, val in intro_variants.items():
+                if key.startswith(kit_type):
+                    resolved = get_best_url(val)
+                    if resolved:
+                        intro_url = resolved
+                        break
+            if not intro_url and kit_type != "home":
+                for key, val in intro_variants.items():
+                    if key.startswith("home"):
+                        resolved = get_best_url(val)
+                        if resolved:
+                            intro_url = resolved
+                            break
+            if not intro_url:
+                for key, val in intro_variants.items():
+                    if not any(key.startswith(p) for p in ("home", "goalkeeper", "away")):
+                        resolved = get_best_url(val)
+                        if resolved:
+                            intro_url = resolved
+                            break
+            if not intro_url:
+                intro_url = media.get("intro", {}).get("url")
+
+            # Closeup — images.closeup.{kit_type} → images.closeup.home → media.closeup
+            closeup_dict = images.get("closeup", {}) or {}
+            closeup_url = get_best_url(closeup_dict.get(kit_type))
+            if not closeup_url and kit_type != "home":
+                closeup_url = get_best_url(closeup_dict.get("home"))
+            if not closeup_url:
+                closeup_url = media.get("closeup", {}).get("url")
 
             # Convert relative paths to presigned URLs
             if kit_url and not kit_url.startswith("http"):
@@ -726,11 +793,6 @@ class LineupSegmentBuilder:
                 intro_url = self._get_presigned_url(intro_url)
             if closeup_url and not closeup_url.startswith("http"):
                 closeup_url = self._get_presigned_url(closeup_url)
-
-            # Get role from metadata (may be empty)
-            functional_role = meta.get("functional_role", "") or meta.get("role", "")
-            position = meta.get("position", "")
-            jersey_number = meta.get("shirt_number") or meta.get("jersey_number")
 
             user = pm.user
             name = user.get_full_name() if user else "Unknown"
