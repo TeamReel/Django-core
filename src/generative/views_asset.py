@@ -564,6 +564,57 @@ def generate_asset_view(request: Request) -> Response:
                     try:
                         from medialib.models import MediaItem, MediaItemRelation, MediaItemState
 
+                        # Build rich extraction_metadata with context
+                        meta = {
+                            "source": "ai_generation",
+                            "asset_type": f"{context_subtype}_{r['variant_index']}"
+                            if context_subtype
+                            else f"generated_{r['variant_index']}",
+                            "template_id": template_id,
+                            "template_type": context_type,
+                            "template_subtype": context_subtype,
+                            "variant_index": r["variant_index"],
+                        }
+
+                        # Add project context (club/team)
+                        if project:
+                            meta["project_id"] = project.id
+                            meta["project_name"] = project.name
+                            if project.parent_project:
+                                meta["club_name"] = project.parent_project.name
+                                meta["team_name"] = project.name
+                            else:
+                                meta["club_name"] = project.name
+
+                        # Add organisation context
+                        if organisation:
+                            meta["organisation_id"] = organisation.id
+                            meta["organisation_name"] = organisation.name
+
+                        # Add activity/match context
+                        if activity:
+                            meta["activity_id"] = str(activity.id)
+                            meta["activity_title"] = activity.title
+                            if hasattr(activity, "activity_date") and activity.activity_date:
+                                meta["activity_date"] = activity.activity_date.isoformat()
+                            # Add match-specific fields if available
+                            if hasattr(activity, "opponent") and activity.opponent:
+                                meta["opponent"] = activity.opponent
+                            if hasattr(activity, "home_away"):
+                                meta["home_away"] = activity.home_away
+                            if hasattr(activity, "score_home") and activity.score_home is not None:
+                                meta["score_home"] = activity.score_home
+                            if hasattr(activity, "score_away") and activity.score_away is not None:
+                                meta["score_away"] = activity.score_away
+
+                        # Add tags from params if provided
+                        if params and params.get("tags"):
+                            meta["tags"] = params.get("tags")
+
+                        # Add sport type from project if available
+                        if project and hasattr(project, "sport") and project.sport:
+                            meta["sport_type"] = project.sport.name
+
                         media_item = MediaItem.objects.create(
                             project=project,
                             file=file_asset,
@@ -572,13 +623,7 @@ def generate_asset_view(request: Request) -> Response:
                             mime_type=mime_type,
                             file_size_bytes=len(image_bytes),
                             state=MediaItemState.PROCESSED,
-                            extraction_metadata={
-                                "source": "ai_generation",
-                                "template_id": template_id,
-                                "template_type": context_type,
-                                "template_subtype": context_subtype,
-                                "variant_index": r["variant_index"],
-                            },
+                            extraction_metadata=meta,
                             created_by=current_user,
                             activity=activity,
                         )
@@ -1006,6 +1051,47 @@ def save_asset_view(request: Request) -> Response:
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            # Build rich extraction_metadata with context
+            meta = {
+                "source": "ai_generation_saved",
+                "asset_type": asset_type,
+            }
+
+            # Add project context (club/team)
+            if media_project:
+                meta["project_id"] = media_project.id
+                meta["project_name"] = media_project.name
+                if media_project.parent_project:
+                    meta["club_name"] = media_project.parent_project.name
+                    meta["team_name"] = media_project.name
+                else:
+                    meta["club_name"] = media_project.name
+
+            # Add organisation context
+            if organisation:
+                meta["organisation_id"] = organisation.id
+                meta["organisation_name"] = organisation.name
+
+            # Add activity/match context
+            if activity:
+                meta["activity_id"] = str(activity.id)
+                meta["activity_title"] = activity.title
+                if hasattr(activity, "activity_date") and activity.activity_date:
+                    meta["activity_date"] = activity.activity_date.isoformat()
+                # Add match-specific fields if available
+                if hasattr(activity, "opponent") and activity.opponent:
+                    meta["opponent"] = activity.opponent
+                if hasattr(activity, "home_away"):
+                    meta["home_away"] = activity.home_away
+                if hasattr(activity, "score_home") and activity.score_home is not None:
+                    meta["score_home"] = activity.score_home
+                if hasattr(activity, "score_away") and activity.score_away is not None:
+                    meta["score_away"] = activity.score_away
+
+            # Add sport type from project if available
+            if media_project and hasattr(media_project, "sport") and media_project.sport:
+                meta["sport_type"] = media_project.sport.name
+
             # Always create a NEW MediaItem (previous ones become history)
             media_item = MediaItem.objects.create(
                 file=file_asset,
@@ -1017,10 +1103,7 @@ def save_asset_view(request: Request) -> Response:
                 file_size_bytes=file_size_bytes or 0,
                 state=MediaItemState.PROCESSED,
                 created_by=current_user,
-                extraction_metadata={
-                    "source": "ai_generation_saved",
-                    "asset_type": asset_type,
-                },
+                extraction_metadata=meta,
             )
             logger.info(
                 f"🎬 MediaItem created: {media_item.id} "

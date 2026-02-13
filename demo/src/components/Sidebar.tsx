@@ -59,8 +59,8 @@ const NAV_CONFIG: NavSection[] = [
     title: 'CONTENT',
     visibility: 'everyone',
     items: [
+      { path: '/studio', label: 'Gallery', icon: Sparkles, visibility: 'everyone' },
       { path: '/medialib', label: 'Media Library', icon: Library, visibility: 'everyone' },
-      { path: '/studio?tab=library', label: 'AI Studio', icon: Sparkles, visibility: 'everyone' },
       { path: '/studio/videos', label: 'Video Queue', icon: Video, visibility: 'everyone' },
       { path: '/approvals', label: 'Approvals', icon: ClipboardCheck, visibility: 'everyone' },
     ]
@@ -143,7 +143,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         }
 
         if (pathname.startsWith('/studio')) {
-            addRecent({ kind: 'page', label: 'AI Studio', path: fullPath });
+            addRecent({ kind: 'page', label: 'Gallery', path: fullPath });
             return;
         }
 
@@ -822,22 +822,20 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Files', path: '/medialib?tab=files', icon: Folder },
                 ];
             } else if (path === '/contentlib' || path.startsWith('/contentlib?')) {
-                // Legacy route - redirect to AI Studio library tab
-                title = 'Content Library';
+                // Legacy route - redirect to Gallery
+                title = 'Gallery';
                 items = [
-                    { label: '📚 Library', path: '/studio?tab=library', icon: Film },
-                    { label: 'Templates', path: '/studio?tab=templates', icon: Library },
-                    { label: 'History', path: '/studio?tab=history', icon: Timer },
-                    { label: 'Quick Actions', path: '/studio?tab=actions', icon: Sparkles },
+                    { label: '🖼️ Gallery', path: '/studio', icon: Film },
+                    { label: 'Media Library', path: '/medialib', icon: Library },
+                    { label: 'Templates', path: '/content-templates', icon: Palette },
                 ];
             } else if (path.startsWith('/studio') && !path.startsWith('/studio/videos')) {
-                // AI Studio - always show main tabs
-                title = 'AI Studio';
+                // Gallery page - the highlight of the app
+                title = 'Gallery';
                 items = [
-                    { label: '📚 Library', path: '/studio?tab=library', icon: Film },
-                    { label: 'Templates', path: '/studio?tab=templates', icon: Library },
-                    { label: 'History', path: '/studio?tab=history', icon: Timer },
-                    { label: 'Quick Actions', path: '/studio?tab=actions', icon: Sparkles },
+                    { label: '🖼️ Gallery', path: '/studio', icon: Film },
+                    { label: 'Media Library', path: '/medialib', icon: Library },
+                    { label: 'Templates', path: '/content-templates', icon: Palette },
                 ];
             } else if (path === '/studio/videos' || path.startsWith('/studio/videos')) {
                 title = 'Video Queue';
@@ -860,7 +858,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 // Fallback for other content pages
                 title = 'Content';
                 items = [
-                    { label: 'AI Studio', path: '/studio?tab=library', icon: Sparkles },
+                    { label: 'Gallery', path: '/studio', icon: Sparkles },
                     { label: 'Media Library', path: '/medialib', icon: Library },
                     { label: 'Video Queue', path: '/studio/videos', icon: Video },
                     { label: 'Approvals', path: '/approvals', icon: ClipboardCheck },

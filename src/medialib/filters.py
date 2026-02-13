@@ -6,8 +6,8 @@ class MediaItemFilterSet(django_filters.FilterSet):
     # Text search (uses Postgres SearchVector via Service)
     q = django_filters.CharFilter(method="filter_search")
 
-    # Project filter
-    project = django_filters.UUIDFilter(field_name="project_id")
+    # Project filter (integer ID, not UUID - Project model uses default Django ID)
+    project = django_filters.NumberFilter(field_name="project_id")
 
     # State filter
     state = django_filters.ChoiceFilter(choices=MediaItemState.choices, field_name="state")

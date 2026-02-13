@@ -207,12 +207,19 @@ function ContentCard({
 
   // Extract context from metadata
   const projectName = typeof item.project === 'object' ? item.project?.name : '';
-  const activityTitle = typeof item.activity === 'object' ? item.activity?.title : '';
+  const activityTitle = (item.extraction_metadata?.activity_title as string) || (typeof item.activity === 'object' ? item.activity?.title : '');
   const sportType = (item.extraction_metadata?.sport_type as string) || '';
   const clubName = (item.extraction_metadata?.club_name as string) || '';
   const teamName = (item.extraction_metadata?.team_name as string) || '';
   const seasonKey = (item.extraction_metadata?.season_key as string) || '';
   const tags = (item.extraction_metadata?.tags as string[]) || [];
+
+  // Match-specific context
+  const opponent = (item.extraction_metadata?.opponent as string) || '';
+  const activityDate = (item.extraction_metadata?.activity_date as string) || '';
+  const homeAway = (item.extraction_metadata?.home_away as string) || '';
+  const scoreHome = item.extraction_metadata?.score_home as number | undefined;
+  const scoreAway = item.extraction_metadata?.score_away as number | undefined;
 
   return (
     <Card
@@ -308,6 +315,27 @@ function ContentCard({
           <Text size="xs" color="secondary" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {activityTitle}
           </Text>
+        )}
+
+        {/* Match details: opponent, date, score */}
+        {(opponent || activityDate || scoreHome !== undefined) && (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', fontSize: 10, color: 'var(--app-text-secondary)' }}>
+            {opponent && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {homeAway === 'away' ? '📍' : '🏠'} vs {opponent}
+              </span>
+            )}
+            {activityDate && (
+              <span>
+                📅 {new Date(activityDate).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
+              </span>
+            )}
+            {scoreHome !== undefined && scoreAway !== undefined && (
+              <span style={{ fontWeight: 700, color: 'var(--app-text-primary)' }}>
+                {scoreHome} - {scoreAway}
+              </span>
+            )}
+          </div>
         )}
 
         {/* Tags */}
@@ -771,9 +799,9 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       {!embedded && (
         <div style={{ padding: 24, borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
           <Stack direction="column" gap="1">
-            <Text size="xl" weight="bold">Content Library</Text>
+            <Text size="xl" weight="bold">🖼️ Gallery</Text>
             <Text size="md" color="secondary">
-              Gegenereerde content - {levelLabels[activeLevel]}
+              Al je gegenereerde content op één plek
             </Text>
           </Stack>
         </div>

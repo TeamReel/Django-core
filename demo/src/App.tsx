@@ -465,12 +465,11 @@ export default function App() {
         }
       />
 
+      {/* Legacy route - redirect to AI Studio library tab */}
       <Route
         path="/contentlib"
         element={
-          <ProtectedRoute>
-            <ContentLibraryPage />
-          </ProtectedRoute>
+          <Navigate to="/studio?tab=library" replace />
         }
       />
 

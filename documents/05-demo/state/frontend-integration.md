@@ -141,21 +141,38 @@ Dit document toont welke backend functionaliteit al in de frontend is geïntegre
   - [ ] MediaItem integration wanneer MediaItems beschikbaar zijn
   - [ ] Tag management UI (CRUD voor project-specifieke tags)
 
-### AI Studio ✅ (Rebuilt 2026-02-13)
-- **Purpose**: Central hub for AI content generation (template browsing, history, quick actions)
+### AI Studio + Content Library ✅ (Unified 2026-02-13)
+- **Purpose**: Central hub for AI content generation, browsing, and management
 - **Frontend**:
-  - ✅ AIStudioPage — 3-tab view at `/studio`
-  - ✅ `useGenerationHistory` hook — parallel fetch of asset + content templates + generation history
-  - ✅ Templates tab: browse all templates with category filtering (Member, Pre-Match, During Match, etc.)
-  - ✅ History tab: generation history with status badges (completed/failed/pending)
-  - ✅ Quick Actions tab: navigation cards to Match Content, Member Assets, Video Queue, Content Templates
-  - ✅ Template category labels mapping (TEMPLATE_CATEGORY_LABELS)
+  - ✅ AIStudioPage — 4-tab view at `/studio` (Library, Templates, History, Quick Actions)
+  - ✅ **Library tab**: Integrated Content Library with hierarchy level sub-tabs
+    - Level tabs: Match, Season, Member, Team, Club
+    - Phase sub-tabs per level (Pre-match, During, Post-match for Match)
+    - Directory-style filters (Org, Club, Team, Season, Match)
+    - Gallery grid with thumbnails + preview modal
+  - ✅ Templates tab: browse all templates with category filtering
+  - ✅ History tab: generation history with status badges
+  - ✅ Quick Actions tab: navigation cards
+  - ✅ `ContentLibraryView` component — reusable embedded view (accepts `embedded` prop)
+  - ✅ `useGenerationHistory` hook — parallel fetch of templates + history
+- **Routes**:
+  - `/studio?tab=library` — Content Library (default)
+  - `/studio?tab=library&level=match` — Match-level content
+  - `/studio?tab=templates` — Template browser
+  - `/studio?tab=history` — Generation history
+  - `/studio?tab=actions` — Quick actions
+  - `/contentlib` — Legacy route, redirects to `/studio?tab=library`
 - **APIs consumed**:
-  - `GET /api/v1/generative/assets/templates/` — asset generation templates (8 templates)
-  - `GET /api/v1/content-generation/templates/` — content templates (320 templates)
+  - `GET /api/v1/media/items/` — generated content (MediaItems)
+  - `GET /api/v1/generative/assets/templates/` — asset generation templates
+  - `GET /api/v1/content-generation/templates/` — content templates (320)
   - `GET /api/v1/generative/assets/history/` — generation history
-- **Architecture**: AI Studio does NOT duplicate generation modals (those live on entity detail pages). It serves as a _browser_ and _launchpad_ for templates and history.
-- **Status**: ✅ Volledig (replaced empty placeholder)
+- **Architecture**: AI Studio now serves as unified content hub:
+  1. **Library**: Browse all generated content organized by hierarchy
+  2. **Templates**: Browse available generation templates
+  3. **History**: View past generation jobs
+  4. **Quick Actions**: Navigate to entity pages to generate new content
+- **Status**: ✅ Volledig (Content Library merged into AI Studio)
 
 ### B33 Branding ✅
 - **Backend**: 102 BrandProfiles, 645 DesignTokens, 71 BrandAssets, 66 FileAssets
