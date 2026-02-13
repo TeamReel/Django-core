@@ -784,12 +784,12 @@ export default function ContentGenerationModal({
             template_id: selectedTemplate?.id || null,
             output_resolution: 'vertical_1080p',
             segments: segments,  // Pass frontend segments as fallback
-            selected_member_ids: [
-              ...targetGKs,
-              ...targetPlayers,
-              ...targetCoach,
-              ...targetAssistant,
-            ],
+            selected_member_ids: {
+              goalkeeper: targetGKs,
+              player: targetPlayers,
+              coach: targetCoach,
+              assistant: targetAssistant,
+            },
           }),
         });
 

@@ -105,11 +105,32 @@ class LineupSegmentBuilder:
         self.activity_id = str(activity_id)
         self.template_id = str(template_id) if template_id else None
         self.output_resolution = output_resolution
-        self.selected_member_ids = selected_member_ids
         self._render_mode: str = "classic"
         self._debug_trace: list[str] = []
-        if selected_member_ids:
-            self._debug_trace.append(f"Selected {len(selected_member_ids)} members from frontend")
+
+        # Normalise selected_member_ids into role-keyed dict.
+        # Accept either:
+        #   dict  {"goalkeeper": [...], "player": [...]}   (new format)
+        #   list  ["id1", "id2", ...]                     (legacy flat format)
+        if isinstance(selected_member_ids, dict):
+            self.selected_member_ids_by_role: dict[str, list[str]] = selected_member_ids
+            all_ids = []
+            for v in selected_member_ids.values():
+                all_ids.extend(v if isinstance(v, list) else [v])
+            self.selected_member_ids: list[str] | None = all_ids or None
+            self._debug_trace.append(
+                f"Role-keyed: GK={len(selected_member_ids.get('goalkeeper', []))} "
+                f"P={len(selected_member_ids.get('player', []))} "
+                f"C={len(selected_member_ids.get('coach', []))} "
+                f"A={len(selected_member_ids.get('assistant', []))}"
+            )
+        elif isinstance(selected_member_ids, list) and selected_member_ids:
+            self.selected_member_ids = selected_member_ids
+            self.selected_member_ids_by_role = {}  # unknown roles
+            self._debug_trace.append(f"Flat list: {len(selected_member_ids)} members")
+        else:
+            self.selected_member_ids = None
+            self.selected_member_ids_by_role = {}
 
     def _load_render_mode(self) -> None:
         """Determine how to render lineup based on the selected ContentTemplate.
@@ -464,17 +485,45 @@ class LineupSegmentBuilder:
                 y=y,
             )
 
-            # Group by functional role
-            if functional_role == "keeper" or position in ["GK"]:
+            # Group by functional role / position (case-insensitive, supports Dutch words + abbreviations)
+            fr_lower = (functional_role or "").lower()
+            pos_lower = (position or "").lower()
+
+            if fr_lower in ("keeper", "doelman") or pos_lower in (
+                "gk",
+                "keeper",
+                "doelman",
+            ):
                 keepers.append(player)
-            elif functional_role == "verdediger" or position in ["LB", "CB", "RB", "LWB", "RWB"]:
+            elif fr_lower in ("verdediger",) or pos_lower in (
+                "verdediger",
+                "lb",
+                "cb",
+                "rb",
+                "lwb",
+                "rwb",
+            ):
                 defenders.append(player)
-            elif functional_role == "middenvelder" or position in ["CDM", "CM", "CAM", "LM", "RM"]:
+            elif fr_lower in ("middenvelder",) or pos_lower in (
+                "middenvelder",
+                "cdm",
+                "cm",
+                "cam",
+                "lm",
+                "rm",
+            ):
                 midfielders.append(player)
-            elif functional_role == "aanvaller" or position in ["LW", "RW", "ST", "CF"]:
+            elif fr_lower in ("aanvaller", "spits") or pos_lower in (
+                "aanvaller",
+                "spits",
+                "lw",
+                "rw",
+                "st",
+                "cf",
+            ):
                 attackers.append(player)
             else:
-                # Default to midfield if unknown
+                # Unknown position — park in unassigned, distribute later
                 midfielders.append(player)
 
         # Sort each line by x position (left to right)
@@ -598,6 +647,12 @@ class LineupSegmentBuilder:
         # Default field positions per line (evenly spaced)
         line_y_positions = {"keeper": 90, "verdediger": 70, "middenvelder": 45, "aanvaller": 20}
 
+        # Use role-keyed IDs from frontend to know who is GK vs field player
+        gk_ids = {str(x) for x in self.selected_member_ids_by_role.get("goalkeeper", [])}
+        player_ids = {str(x) for x in self.selected_member_ids_by_role.get("player", [])}
+
+        self._debug_trace.append(f"PM fallback: gk_ids={len(gk_ids)}, player_ids={len(player_ids)}")
+
         for idx, pm in enumerate(memberships):
             meta = pm.metadata or {}
             teamreel_assets = meta.get("teamreel_assets", {})
@@ -615,7 +670,7 @@ class LineupSegmentBuilder:
             if closeup_url and not closeup_url.startswith("http"):
                 closeup_url = self._get_presigned_url(closeup_url)
 
-            # Get role from metadata
+            # Get role from metadata (may be empty)
             functional_role = meta.get("functional_role", "") or meta.get("role", "")
             position = meta.get("position", "")
             jersey_number = meta.get("shirt_number") or meta.get("jersey_number")
@@ -637,31 +692,82 @@ class LineupSegmentBuilder:
                 y=50,
             )
 
-            # Group by functional role
-            if functional_role == "keeper" or position in ["GK"]:
+            pm_id_str = str(pm.id)
+
+            # If frontend told us this is a GK, use that
+            if pm_id_str in gk_ids:
                 player.y = line_y_positions["keeper"]
                 keepers.append(player)
-            elif functional_role == "verdediger" or position in [
-                "LB",
-                "CB",
-                "RB",
-                "LWB",
-                "RWB",
-            ]:
-                player.y = line_y_positions["verdediger"]
-                defenders.append(player)
-            elif functional_role == "aanvaller" or position in [
-                "LW",
-                "RW",
-                "ST",
-                "CF",
-            ]:
-                player.y = line_y_positions["aanvaller"]
-                attackers.append(player)
+            elif pm_id_str in player_ids or not gk_ids:
+                # Field player — try metadata.position for sub-grouping
+                fr_lower = (functional_role or "").lower()
+                pos_lower = (position or "").lower()
+                if fr_lower in ("verdediger",) or pos_lower in (
+                    "verdediger",
+                    "lb",
+                    "cb",
+                    "rb",
+                    "lwb",
+                    "rwb",
+                ):
+                    player.y = line_y_positions["verdediger"]
+                    defenders.append(player)
+                elif fr_lower in ("aanvaller", "spits") or pos_lower in (
+                    "aanvaller",
+                    "spits",
+                    "lw",
+                    "rw",
+                    "st",
+                    "cf",
+                ):
+                    player.y = line_y_positions["aanvaller"]
+                    attackers.append(player)
+                elif fr_lower in ("middenvelder",) or pos_lower in (
+                    "middenvelder",
+                    "cdm",
+                    "cm",
+                    "cam",
+                    "lm",
+                    "rm",
+                ):
+                    player.y = line_y_positions["middenvelder"]
+                    midfielders.append(player)
+                else:
+                    # No position info — collect as unassigned (redistributed below)
+                    midfielders.append(player)
             else:
-                # Default to midfield (including explicit middenvelder)
-                player.y = line_y_positions["middenvelder"]
+                # Fallback
                 midfielders.append(player)
+
+        # Auto-split unpositioned field players using default formation (4-3-3)
+        # If ALL field players ended up in midfield (no def/att), redistribute.
+        if player_ids and len(defenders) == 0 and len(attackers) == 0 and len(midfielders) > 0:
+            field_players = list(midfielders)
+            midfielders.clear()
+            n = len(field_players)
+
+            # Pick formation split based on number of field players
+            if n <= 6:
+                n_def, n_mid = 2, 2  # rest attackers
+            elif n <= 8:
+                n_def, n_mid = 3, 3
+            else:
+                n_def, n_mid = 4, 3  # 4-3-3
+
+            for i, p in enumerate(field_players):
+                if i < n_def:
+                    p.y = line_y_positions["verdediger"]
+                    defenders.append(p)
+                elif i < n_def + n_mid:
+                    p.y = line_y_positions["middenvelder"]
+                    midfielders.append(p)
+                else:
+                    p.y = line_y_positions["aanvaller"]
+                    attackers.append(p)
+
+            self._debug_trace.append(
+                f"Auto-split {n} field players: D={len(defenders)} M={len(midfielders)} A={len(attackers)}"
+            )
 
         # Spread players evenly across x-axis within each line
         for line in [keepers, defenders, midfielders, attackers]:
