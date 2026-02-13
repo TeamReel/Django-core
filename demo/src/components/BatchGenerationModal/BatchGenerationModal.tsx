@@ -780,19 +780,6 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
             </div>
           </div>
 
-              {/* Option: Process generated asset after save (only in generate mode) */}
-              {batchMode === 'generate' && (
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
-                  <input
-                    type="checkbox"
-                    checked={processAfterGeneration}
-                    onChange={(e) => setProcessAfterGeneration(e.target.checked)}
-                  />
-                  <span style={{ fontSize: '13px' }}>Bewerk asset na generatie (achtergrond verwijderen / formaat aanpassen)</span>
-                </label>
-              </div>
-              )}
           <button
             onClick={onClose}
             disabled={step === 'running'}
@@ -901,9 +888,10 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                   ))}
                 </div>
               </div>
+              )}
 
               {/* Default params */}
-              {selectedTemplate && (
+              {batchMode === 'generate' && selectedTemplate && (
                 <div style={{ marginBottom: '20px' }}>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
                     Standaard Instellingen (voor alle members)
@@ -938,6 +926,20 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                     })}
                   </div>
                 </div>
+              )}
+
+              {/* Option: Process generated asset after save (only in generate mode) */}
+              {batchMode === 'generate' && (
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={processAfterGeneration}
+                    onChange={(e) => setProcessAfterGeneration(e.target.checked)}
+                  />
+                  <span style={{ fontSize: '13px' }}>Bewerk asset na generatie (achtergrond verwijderen / formaat aanpassen)</span>
+                </label>
+              </div>
               )}
 
               {/* Member list with optional per-member overrides */}
