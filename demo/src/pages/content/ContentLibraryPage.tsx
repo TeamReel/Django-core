@@ -193,9 +193,15 @@ function getAssetTypeIcon(assetType: string): string {
 function ContentCard({
   item,
   onPreview,
+  onDownload,
+  onShare,
+  onDelete,
 }: {
   item: ContentItem;
   onPreview?: (item: ContentItem) => void;
+  onDownload?: (item: ContentItem) => void;
+  onShare?: (item: ContentItem) => void;
+  onDelete?: (item: ContentItem) => void;
 }) {
   const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
   const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
@@ -376,6 +382,43 @@ function ContentCard({
             <> &middot; {formatFileSize(item.file_size_bytes)}</>
           )}
         </Text>
+
+        {/* Action buttons */}
+        <div style={{ display: 'flex', gap: 4, marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--app-border)' }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDownload?.(item); }}
+            title="Download"
+            style={{
+              flex: 1, padding: '6px 8px', border: '1px solid var(--app-border)', borderRadius: 4,
+              backgroundColor: 'var(--app-surface)', cursor: 'pointer', fontSize: 12,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+            }}
+          >
+            ⬇️
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onShare?.(item); }}
+            title="Share"
+            style={{
+              flex: 1, padding: '6px 8px', border: '1px solid var(--app-border)', borderRadius: 4,
+              backgroundColor: 'var(--app-surface)', cursor: 'pointer', fontSize: 12,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+            }}
+          >
+            📤
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete?.(item); }}
+            title="Delete"
+            style={{
+              flex: 1, padding: '6px 8px', border: '1px solid var(--app-border)', borderRadius: 4,
+              backgroundColor: 'var(--app-surface)', cursor: 'pointer', fontSize: 12,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+            }}
+          >
+            🗑️
+          </button>
+        </div>
       </div>
     </Card>
   );
@@ -455,8 +498,12 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
   const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
 
   // Read level from URL or use override prop (when embedded in AI Studio)
-  const rawTab = overrideLevel || new URLSearchParams(location.search).get('level') || new URLSearchParams(location.search).get('tab') || 'match';
+  const params = new URLSearchParams(location.search);
+  const rawTab = overrideLevel || params.get('level') || params.get('tab') || 'match';
   const activeLevel = (['match', 'season', 'member', 'team', 'club'].includes(rawTab) ? rawTab : 'match') as HierarchyTab;
+
+  // Read category from URL param (from Panel B sidebar)
+  const urlCategory = params.get('category') as ContentCategory | null;
 
   // Data state
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
@@ -476,12 +523,24 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
   const [selectedMatchId, setSelectedMatchId] = useState<string>('');
 
   // Sub-filter state: category (pre_match, during_match, etc.) + subtype (flyer, lineup, etc.)
-  const [categoryFilter, setCategoryFilter] = useState<ContentCategory>('all');
+  const [categoryFilter, setCategoryFilter] = useState<ContentCategory>(urlCategory || 'all');
   const [subtypeFilter, setSubtypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Sort state
+  type SortOption = 'newest' | 'oldest' | 'title' | 'type';
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+
   // Preview modal state
   const [previewItem, setPreviewItem] = useState<ContentItem | null>(null);
+
+  // Sync category from URL when it changes (Panel B sidebar navigation)
+  useEffect(() => {
+    if (urlCategory && ['all', 'pre_match', 'during_match', 'post_match', 'season', 'member'].includes(urlCategory)) {
+      setCategoryFilter(urlCategory);
+      setSubtypeFilter('all');
+    }
+  }, [urlCategory]);
 
   // Load organisations
   useEffect(() => {
@@ -704,8 +763,26 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       });
     }
 
+    // Sort
+    result = [...result].sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'title':
+          return (a.title || '').localeCompare(b.title || '');
+        case 'type':
+          const typeA = (a.extraction_metadata?.asset_type as string) || '';
+          const typeB = (b.extraction_metadata?.asset_type as string) || '';
+          return typeA.localeCompare(typeB);
+        default:
+          return 0;
+      }
+    });
+
     return result;
-  }, [contentItems, categoryFilter, subtypeFilter, searchQuery]);
+  }, [contentItems, categoryFilter, subtypeFilter, searchQuery, sortBy]);
 
   // Count items per category and subtype
   const categoryCounts = useMemo(() => {
@@ -785,6 +862,57 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
     setPreviewItem(null);
   };
 
+  const handleDownload = async (item: ContentItem) => {
+    const url = item.file_url || getAssetUrl(item.storage_path);
+    if (url) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = item.title || 'download';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleShare = async (item: ContentItem) => {
+    const url = item.file_url || getAssetUrl(item.storage_path);
+    if (navigator.share && url) {
+      try {
+        await navigator.share({
+          title: item.title || 'Generated Content',
+          url: url,
+        });
+      } catch {
+        // User cancelled or share failed
+      }
+    } else if (url) {
+      // Fallback: copy to clipboard
+      await navigator.clipboard.writeText(url);
+      alert('Link gekopieerd naar klembord');
+    }
+  };
+
+  const handleDelete = async (item: ContentItem) => {
+    if (confirm(`Weet je zeker dat je "${item.title || 'dit item'}" wilt verwijderen?`)) {
+      try {
+        const apiBaseUrl = getApiBaseUrl();
+        const response = await fetch(`${apiBaseUrl}/api/v1/media/items/${item.id}/`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+        if (response.ok) {
+          // Remove from local state
+          setContentItems(prev => prev.filter(i => i.id !== item.id));
+        } else {
+          alert('Verwijderen mislukt');
+        }
+      } catch {
+        alert('Verwijderen mislukt');
+      }
+    }
+  };
+
   if (!orgId) {
     return (
       <div style={{ minHeight: embedded ? 'auto' : '100vh', backgroundColor: 'var(--app-bg)', padding: 24 }}>
@@ -799,7 +927,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       {!embedded && (
         <div style={{ padding: 24, borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
           <Stack direction="column" gap="1">
-            <Text size="xl" weight="bold">🖼️ Gallery</Text>
+            <Text size="xl" weight="bold">Gallery</Text>
             <Text size="md" color="secondary">
               Al je gegenereerde content op één plek
             </Text>
@@ -821,6 +949,21 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
             fontSize: 13,
           }}
         />
+
+        {/* Sort dropdown */}
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as SortOption)}
+          style={{
+            padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
+            backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 140,
+          }}
+        >
+          <option value="newest">Nieuwste eerst</option>
+          <option value="oldest">Oudste eerst</option>
+          <option value="title">A-Z op titel</option>
+          <option value="type">Op type</option>
+        </select>
 
         {/* Organisation filter (only for superadmin) */}
         {isSuperAdmin && organisations.length > 1 && (
@@ -943,49 +1086,6 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
         <Stack direction="column" gap="4">
 
-          {/* Category tabs */}
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', borderBottom: '1px solid var(--app-border)', paddingBottom: 8 }}>
-            {CONTENT_CATEGORIES.map(({ key, label, icon }) => {
-              const count = categoryCounts[key] || 0;
-              const isActive = categoryFilter === key;
-              return (
-                <button
-                  key={key}
-                  onClick={() => {
-                    setCategoryFilter(key);
-                    setSubtypeFilter('all');
-                  }}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '8px 8px 0 0',
-                    border: 'none',
-                    backgroundColor: isActive ? 'var(--color-primary)' : 'transparent',
-                    color: isActive ? 'white' : 'var(--text-secondary)',
-                    fontWeight: isActive ? 600 : 500,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                  }}
-                >
-                  <span>{icon}</span>
-                  <span>{label}</span>
-                  <span style={{
-                    backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : 'var(--app-surface)',
-                    padding: '2px 6px',
-                    borderRadius: 10,
-                    fontSize: 11,
-                    marginLeft: 4,
-                  }}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
           {/* Subtype filter chips (show when category has subtypes) */}
           {categoryFilter !== 'all' && CONTENT_CATEGORIES.find(c => c.key === categoryFilter)?.subtypes.length! > 0 && (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -1050,7 +1150,14 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
                 gap: 16,
               }}>
                 {filteredContent.map((item) => (
-                  <ContentCard key={item.id} item={item} onPreview={handlePreview} />
+                  <ContentCard
+                    key={item.id}
+                    item={item}
+                    onPreview={handlePreview}
+                    onDownload={handleDownload}
+                    onShare={handleShare}
+                    onDelete={handleDelete}
+                  />
                 ))}
               </div>
             ) : (

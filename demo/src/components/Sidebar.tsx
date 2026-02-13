@@ -830,12 +830,15 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Templates', path: '/content-templates', icon: Palette },
                 ];
             } else if (path.startsWith('/studio') && !path.startsWith('/studio/videos')) {
-                // Gallery page - the highlight of the app
+                // Gallery page - category filter tabs
                 title = 'Gallery';
                 items = [
-                    { label: '🖼️ Gallery', path: '/studio', icon: Film },
-                    { label: 'Media Library', path: '/medialib', icon: Library },
-                    { label: 'Templates', path: '/content-templates', icon: Palette },
+                    { label: 'Alles', path: '/studio?category=all', icon: Film },
+                    { label: 'Pre-Match', path: '/studio?category=pre_match', icon: Calendar },
+                    { label: 'During Match', path: '/studio?category=during_match', icon: Activity },
+                    { label: 'Post-Match', path: '/studio?category=post_match', icon: Trophy },
+                    { label: 'Season', path: '/studio?category=season', icon: Calendar },
+                    { label: 'Member', path: '/studio?category=member', icon: UserCircle },
                 ];
             } else if (path === '/studio/videos' || path.startsWith('/studio/videos')) {
                 title = 'Video Queue';
