@@ -754,10 +754,6 @@ export default function ContentGenerationModal({
 
       console.log('📹 Lineup video segments:', segments);
 
-      if (segments.length === 0) {
-        throw new Error('No valid segments found. Make sure selected members have the required assets.');
-      }
-
       setProgress(20);
 
       // Get project ID from available sources
@@ -766,36 +762,71 @@ export default function ContentGenerationModal({
         throw new Error('No project ID available - cannot create video job');
       }
 
-      // Create video job
-      const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-          'X-Project-ID': String(projectId),
-        },
-        body: JSON.stringify({
-          job_type: 'lineup',
-          config: {
-            segments: segments,
-            output_resolution: 'auto',
-            output_fps: 30,
-            fade_duration: 0.5,
-            match_id: matchData?.id || null,
-            activity_id: matchData?.id || null,
+      let jobId: string;
+
+      // Use template-based endpoint when matchData is available
+      // This endpoint auto-builds segments from match participations + brand assets + field background
+      if (matchData?.id) {
+        console.log('🎬 Using template-based lineup video generation');
+        const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/lineup-from-template/`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+            'X-Project-ID': String(projectId),
           },
-        }),
-      });
+          body: JSON.stringify({
+            activity_id: matchData.id,
+            template_id: selectedTemplate?.id || null,
+            output_resolution: 'vertical_1080p',
+          }),
+        });
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData?.error || errData?.detail || `Failed to create video job: ${response.status}`);
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData?.error || errData?.detail || `Failed to create video job: ${response.status}`);
+        }
+
+        const jobData = await response.json();
+        jobId = jobData.data?.id || jobData.id;
+        console.log('🎬 Template-based video job created:', jobId);
+      } else {
+        // Fallback: manual segments mode (no match context)
+        if (segments.length === 0) {
+          throw new Error('No valid segments found. Make sure selected members have the required assets.');
+        }
+
+        const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+            'X-Project-ID': String(projectId),
+          },
+          body: JSON.stringify({
+            job_type: 'lineup',
+            config: {
+              segments: segments,
+              output_resolution: 'auto',
+              output_fps: 30,
+              fade_duration: 0.5,
+              match_id: null,
+              activity_id: null,
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData?.error || errData?.detail || `Failed to create video job: ${response.status}`);
+        }
+
+        const jobData = await response.json();
+        jobId = jobData.data?.id || jobData.id;
+        console.log('🎬 Manual video job created:', jobId);
       }
-
-      const jobData = await response.json();
-      const jobId = jobData.data?.id || jobData.id;
-      console.log('🎬 Video job created:', jobId);
 
       setVideoJobId(jobId);
       setVideoJobStatus('queued');

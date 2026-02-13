@@ -319,12 +319,15 @@ class LineupSegmentBuilder:
             output_fps=fps,
         )
 
+    # Default duration for field background
+    FIELD_DURATION = 2.5
+
     def _build_segments(self, data: LineupData) -> list[dict]:
         """Build the segments array for LineupProcessor.
 
         Video structure:
         1. Header (logo, sponsor, match info) - 3s
-        2. Field background fade-in
+        2. Field background fade-in - 2.5s
         3. Keeper line (1 player)
         4. Defender line (4 players side by side)
         5. Midfield line (3 players)
@@ -332,7 +335,10 @@ class LineupSegmentBuilder:
         7. Coach info (optional)
         8. End card with final lineup
         """
-        from src.video.services.header_generator import generate_header_image
+        from src.video.services.header_generator import (
+            generate_field_background,
+            generate_header_image,
+        )
 
         segments: list[dict] = []
 
@@ -362,6 +368,26 @@ class LineupSegmentBuilder:
             )
         except Exception:  # noqa: BLE001
             logger.warning("Failed to generate header image, skipping header segment")
+
+        # 2. Generate and add field background
+        try:
+            field_path = generate_field_background(
+                width=data.output_width,
+                height=data.output_height,
+                field_color="#228B22",  # Forest green
+                line_color="#ffffff",
+            )
+            segments.append(
+                {
+                    "type": "image",
+                    "url": f"file://{field_path}",
+                    "duration": self.FIELD_DURATION,
+                    "label": "OPSTELLING",
+                    "transition": "fade",
+                }
+            )
+        except Exception:  # noqa: BLE001
+            logger.warning("Failed to generate field background, skipping field segment")
 
         # Process each line
         all_lines = [
