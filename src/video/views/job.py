@@ -240,6 +240,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         template_id = request.data.get("template_id")
         output_resolution = request.data.get("output_resolution", "vertical_1080p")
         frontend_segments = request.data.get("segments")
+        selected_member_ids = request.data.get("selected_member_ids")
         allow_frontend_segments = request.query_params.get(
             "allow_frontend_segments"
         ) == "true" or bool(request.data.get("allow_frontend_segments"))
@@ -274,6 +275,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 activity_id=activity_id,
                 template_id=template_id,
                 output_resolution=output_resolution,
+                selected_member_ids=selected_member_ids,
             )
             if frontend_segments and not allow_frontend_segments:
                 logger.warning(

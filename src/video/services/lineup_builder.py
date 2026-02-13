@@ -92,6 +92,7 @@ class LineupSegmentBuilder:
         activity_id: str | UUID,
         template_id: str | UUID | None = None,
         output_resolution: str = "vertical_1080p",
+        selected_member_ids: list[str] | None = None,
     ):
         """Initialize builder with activity and optional template.
 
@@ -99,12 +100,16 @@ class LineupSegmentBuilder:
             activity_id: The match/activity ID
             template_id: Optional ContentTemplate ID (uses default 4-3-3 if None)
             output_resolution: Resolution preset (vertical_1080p, 1080p, 720p)
+            selected_member_ids: Optional list of member IDs (from frontend selection)
         """
         self.activity_id = str(activity_id)
         self.template_id = str(template_id) if template_id else None
         self.output_resolution = output_resolution
+        self.selected_member_ids = selected_member_ids
         self._render_mode: str = "classic"
         self._debug_trace: list[str] = []
+        if selected_member_ids:
+            self._debug_trace.append(f"Selected {len(selected_member_ids)} members from frontend")
 
     def _load_render_mode(self) -> None:
         """Determine how to render lineup based on the selected ContentTemplate.
@@ -303,6 +308,19 @@ class LineupSegmentBuilder:
             list(all_participations.values_list("role", "status")),
         )
 
+        # If frontend sent selected_member_ids (ProjectMembership UUIDs),
+        # resolve them to user_ids so we can filter Participations to only selected players.
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+        selected_user_ids: set[int] | None = None
+        if self.selected_member_ids:
+            pm_qs = ProjectMembership.objects.filter(
+                id__in=self.selected_member_ids,
+            ).values_list("user_id", flat=True)
+            selected_user_ids = set(pm_qs)
+            self._debug_trace.append(
+                f"Resolved {len(selected_user_ids)} user_ids from {len(self.selected_member_ids)} PM ids"
+            )
+
         # Get lineup (participations) - expanded role matching
         participations = Participation.objects.filter(
             activity=activity,
@@ -310,10 +328,34 @@ class LineupSegmentBuilder:
             status__in=["confirmed", "active", "accepted"],
         ).select_related("member__user", "member__organisation")
 
+        # If user selected specific members, filter to only those
+        if selected_user_ids is not None:
+            participations = participations.filter(member__user_id__in=selected_user_ids)
+            self._debug_trace.append(
+                f"Filtered participations to {participations.count()} (selected members only)"
+            )
+
         logger.info(
             "DEBUG: Filtered participations: count=%d",
             participations.count(),
         )
+
+        # If no participations found but we have selected_member_ids,
+        # build lineup directly from ProjectMembership data (no Participation records needed).
+        if participations.count() == 0 and selected_user_ids:
+            logger.info(
+                "DEBUG: No Participation records match, building from ProjectMembership data"
+            )
+            self._debug_trace.append("No Participations found, using ProjectMembership directly")
+            return self._gather_lineup_from_memberships(
+                activity=activity,
+                project=project,
+                organisation=organisation,
+                brand_profiles=brand_profiles,
+                logo_url=logo_url,
+                sponsor_url=sponsor_url,
+                field_background_url=field_background_url,
+            )
 
         # Fail fast if there is no lineup data. We intentionally do NOT fall back to frontend segments.
         if participations.count() == 0:
@@ -321,9 +363,6 @@ class LineupSegmentBuilder:
                 "No participations found for this activity to build a lineup. "
                 "Fill the match lineup (Participation records) first."
             )
-
-        # Get ProjectMembership model
-        ProjectMembership = apps.get_model("projects", "ProjectMembership")
 
         # Build a cache of ProjectMemberships for quick lookup
         user_ids = [p.member.user_id for p in participations if p.member.user_id]
@@ -500,6 +539,163 @@ class LineupSegmentBuilder:
             attackers=attackers,
             coach_name=coach_name,
             coach_kit_url=coach_kit_url,
+            assistant_name=None,
+            assistant_kit_url=None,
+            output_width=width,
+            output_height=height,
+            output_fps=fps,
+        )
+
+    def _gather_lineup_from_memberships(
+        self,
+        activity,
+        project,
+        organisation,
+        brand_profiles: list,
+        logo_url: str | None,
+        sponsor_url: str | None,
+        field_background_url: str | None,
+    ) -> LineupData:
+        """Build LineupData directly from ProjectMembership records.
+
+        Used when there are no Participation records for the activity,
+        but the user selected members in the frontend.
+        """
+        from django.apps import apps
+
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+
+        memberships = ProjectMembership.objects.filter(
+            id__in=self.selected_member_ids,
+        ).select_related("user")
+
+        width, height, fps = self._get_resolution_settings()
+
+        # Get team/club names
+        if project.parent_project:
+            own_team_name = f"{project.parent_project.name} {project.name}"
+        else:
+            own_team_name = project.name
+
+        opponent_name = getattr(activity, "opponent", None) or "Opponent"
+        match_date = activity.start_time.strftime("%d-%m-%Y") if activity.start_time else ""
+        kickoff_time = activity.start_time.strftime("%H:%M") if activity.start_time else None
+        is_home = getattr(activity, "home_away", "home") == "home"
+        score_home = getattr(activity, "score_home", None)
+        score_away = getattr(activity, "score_away", None)
+        venue = getattr(activity, "venue", None)
+        season_name = activity.period.name if activity.period else None
+        competition_name = None
+        if hasattr(activity, "competition") and activity.competition:
+            competition_name = activity.competition.name
+
+        # Build player segments from ProjectMembership metadata
+        keepers: list[PlayerSegment] = []
+        defenders: list[PlayerSegment] = []
+        midfielders: list[PlayerSegment] = []
+        attackers: list[PlayerSegment] = []
+
+        # Default field positions per line (evenly spaced)
+        line_y_positions = {"keeper": 90, "verdediger": 70, "middenvelder": 45, "aanvaller": 20}
+
+        for idx, pm in enumerate(memberships):
+            meta = pm.metadata or {}
+            teamreel_assets = meta.get("teamreel_assets", {})
+            media = teamreel_assets.get("media", {})
+
+            kit_url = media.get("kit", {}).get("url")
+            intro_url = media.get("intro", {}).get("url")
+            closeup_url = media.get("closeup", {}).get("url")
+
+            # Convert relative paths to presigned URLs
+            if kit_url and not kit_url.startswith("http"):
+                kit_url = self._get_presigned_url(kit_url)
+            if intro_url and not intro_url.startswith("http"):
+                intro_url = self._get_presigned_url(intro_url)
+            if closeup_url and not closeup_url.startswith("http"):
+                closeup_url = self._get_presigned_url(closeup_url)
+
+            # Get role from metadata
+            functional_role = meta.get("functional_role", "") or meta.get("role", "")
+            position = meta.get("position", "")
+            jersey_number = meta.get("shirt_number") or meta.get("jersey_number")
+
+            user = pm.user
+            name = user.get_full_name() if user else "Unknown"
+
+            player = PlayerSegment(
+                slot=idx,
+                position=position,
+                functional_role=functional_role,
+                member_id=str(pm.id),
+                member_name=name,
+                jersey_number=str(jersey_number) if jersey_number else None,
+                kit_url=kit_url,
+                intro_url=intro_url,
+                closeup_url=closeup_url,
+                x=50,  # Default center, will be spread per line
+                y=50,
+            )
+
+            # Group by functional role
+            if functional_role == "keeper" or position in ["GK"]:
+                player.y = line_y_positions["keeper"]
+                keepers.append(player)
+            elif functional_role == "verdediger" or position in [
+                "LB",
+                "CB",
+                "RB",
+                "LWB",
+                "RWB",
+            ]:
+                player.y = line_y_positions["verdediger"]
+                defenders.append(player)
+            elif functional_role == "aanvaller" or position in [
+                "LW",
+                "RW",
+                "ST",
+                "CF",
+            ]:
+                player.y = line_y_positions["aanvaller"]
+                attackers.append(player)
+            else:
+                # Default to midfield (including explicit middenvelder)
+                player.y = line_y_positions["middenvelder"]
+                midfielders.append(player)
+
+        # Spread players evenly across x-axis within each line
+        for line in [keepers, defenders, midfielders, attackers]:
+            if len(line) == 1:
+                line[0].x = 50
+            else:
+                for i, p in enumerate(line):
+                    p.x = int(15 + (70 * i / max(len(line) - 1, 1)))
+
+        self._debug_trace.append(
+            f"From PM: K={len(keepers)} D={len(defenders)} M={len(midfielders)} A={len(attackers)}"
+        )
+
+        return LineupData(
+            activity_id=self.activity_id,
+            match_date=match_date,
+            kickoff_time=kickoff_time,
+            own_team_name=own_team_name,
+            opponent_name=opponent_name,
+            score_home=score_home,
+            score_away=score_away,
+            is_home=is_home,
+            venue=venue,
+            season_name=season_name,
+            competition_name=competition_name,
+            logo_url=logo_url,
+            sponsor_url=sponsor_url,
+            field_background_url=field_background_url,
+            keepers=keepers,
+            defenders=defenders,
+            midfielders=midfielders,
+            attackers=attackers,
+            coach_name=None,
+            coach_kit_url=None,
             assistant_name=None,
             assistant_kit_url=None,
             output_width=width,
@@ -764,6 +960,7 @@ def build_lineup_video_config(
     activity_id: str | UUID,
     template_id: str | UUID | None = None,
     output_resolution: str = "vertical_1080p",
+    selected_member_ids: list[str] | None = None,
 ) -> dict:
     """Convenience function to build lineup video config.
 
@@ -771,6 +968,7 @@ def build_lineup_video_config(
         activity_id: The match/activity UUID
         template_id: Optional ContentTemplate ID
         output_resolution: Resolution preset
+        selected_member_ids: Optional list of member IDs from frontend
 
     Returns:
         Config dict ready for LineupProcessor
@@ -779,5 +977,6 @@ def build_lineup_video_config(
         activity_id=activity_id,
         template_id=template_id,
         output_resolution=output_resolution,
+        selected_member_ids=selected_member_ids,
     )
     return builder.build()
