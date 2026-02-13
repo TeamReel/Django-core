@@ -763,22 +763,35 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       });
     }
 
-    // Sort
+    // Sort (with secondary sort by id for stability when timestamps match)
     result = [...result].sort((a, b) => {
+      let cmp = 0;
       switch (sortBy) {
         case 'newest':
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          // Use activity_date (match date) if available, otherwise created_at
+          const dateA1 = a.extraction_metadata?.activity_date || a.created_at;
+          const dateB1 = b.extraction_metadata?.activity_date || b.created_at;
+          cmp = new Date(dateB1 as string).getTime() - new Date(dateA1 as string).getTime();
+          break;
         case 'oldest':
-          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          const dateA2 = a.extraction_metadata?.activity_date || a.created_at;
+          const dateB2 = b.extraction_metadata?.activity_date || b.created_at;
+          cmp = new Date(dateA2 as string).getTime() - new Date(dateB2 as string).getTime();
+          break;
         case 'title':
-          return (a.title || '').localeCompare(b.title || '');
+          cmp = (a.title || '').localeCompare(b.title || '');
+          break;
         case 'type':
           const typeA = (a.extraction_metadata?.asset_type as string) || '';
           const typeB = (b.extraction_metadata?.asset_type as string) || '';
-          return typeA.localeCompare(typeB);
-        default:
-          return 0;
+          cmp = typeA.localeCompare(typeB);
+          break;
       }
+      // Secondary sort by id for stability
+      if (cmp === 0) {
+        return String(a.id).localeCompare(String(b.id));
+      }
+      return cmp;
     });
 
     return result;
@@ -1098,7 +1111,6 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
               {CONTENT_CATEGORIES.find(c => c.key === categoryFilter)?.subtypes.map(st => {
                 const filter = CONTENT_TYPE_FILTERS.find(f => f.key === st);
                 const count = subtypeCounts[st] || 0;
-                if (count === 0) return null;
                 return (
                   <FilterChip
                     key={st}
@@ -1117,7 +1129,6 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {CONTENT_TYPE_FILTERS.map(({ key, label, icon }) => {
                 const count = subtypeCounts[key] || 0;
-                if (key !== 'all' && count === 0) return null;
                 return (
                   <FilterChip
                     key={key}

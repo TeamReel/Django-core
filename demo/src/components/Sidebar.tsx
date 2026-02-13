@@ -1382,8 +1382,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
             {/* Items */}
             {(() => {
-                // Check if this is a tab-based navigation (items have ?tab= query params)
-                const hasTabItems = panelBConfig.items.some(item => String(item.path || '').includes('?tab='));
+                // Check if this is a tab-based navigation (items have ?tab= or ?category= query params)
+                const hasTabItems = panelBConfig.items.some(item => {
+                    const path = String(item.path || '');
+                    return path.includes('?tab=') || path.includes('?category=');
+                });
 
                 if (hasTabItems) {
                     // Tab list layout (stacked vertically in Panel B)
@@ -1401,17 +1404,19 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                             {panelBConfig.items.map(item => {
                                 const [itemPathname, itemQuery = ''] = String(item.path || '').split('?');
                                 const itemSearch = itemQuery ? `?${itemQuery}` : '';
-                                const locationTab = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
+                const locationTab = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
+                                const locationCategory = String(new URLSearchParams(location.search).get('category') || '').trim().toLowerCase();
                                 const itemTab = String(new URLSearchParams(itemSearch).get('tab') || '').trim().toLowerCase();
-                                const effectiveLocationTab = locationTab || (
+                                const itemCategory = String(new URLSearchParams(itemSearch).get('category') || '').trim().toLowerCase();
+                                const effectiveLocationTab = locationTab || locationCategory || (
                                     location.pathname === '/directory' ? 'federations' :
                                     location.pathname === '/medialib' ? 'organisation' :
-                                    location.pathname === '/studio' ? 'library' :
+                                    location.pathname === '/studio' ? 'all' :
                                     location.pathname === '/studio/videos' ? 'all' :
                                     location.pathname === '/approvals' ? 'all' :
                                     'overview'
                                 );
-                                const effectiveItemTab = itemTab || 'overview';
+                                const effectiveItemTab = itemTab || itemCategory || 'overview';
                                 const isActive = location.pathname === itemPathname && effectiveLocationTab === effectiveItemTab;
 
                                 return (
