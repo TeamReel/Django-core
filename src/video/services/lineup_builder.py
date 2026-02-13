@@ -104,6 +104,7 @@ class LineupSegmentBuilder:
         self.template_id = str(template_id) if template_id else None
         self.output_resolution = output_resolution
         self._render_mode: str = "classic"
+        self._debug_trace: list[str] = []
 
     def _load_render_mode(self) -> None:
         """Determine how to render lineup based on the selected ContentTemplate.
@@ -183,6 +184,10 @@ class LineupSegmentBuilder:
         # - organisation brand
         brand_profiles: list = []
 
+        self._debug_trace.append(f"Activity: {self.activity_id}")
+        self._debug_trace.append(f"Project: {project.id} ({project.name})")
+        self._debug_trace.append(f"Parent: {project.parent_project_id}")
+
         logger.info(
             "DEBUG: Resolving brand profiles for Activity %s (Project: %s, Parent: %s, Org: %s)",
             self.activity_id,
@@ -194,29 +199,28 @@ class LineupSegmentBuilder:
         team_brand = BrandProfile.objects.filter(project=project, is_active=True).first()
         if team_brand:
             brand_profiles.append(team_brand)
-            logger.info(
-                "DEBUG: Found Team BrandProfile: %s (Project %s)", team_brand.id, project.id
-            )
+            msg = f"Found Team BrandProfile: {team_brand.id} (Project {project.id})"
+            self._debug_trace.append(msg)
+            logger.info("DEBUG: %s", msg)
 
         club_project = project.parent_project or None
         if club_project:
             club_brand = BrandProfile.objects.filter(project=club_project, is_active=True).first()
             if club_brand and club_brand not in brand_profiles:
                 brand_profiles.append(club_brand)
-                logger.info(
-                    "DEBUG: Found Club BrandProfile: %s (Project %s)",
-                    club_brand.id,
-                    club_project.id,
-                )
+                msg = f"Found Club BrandProfile: {club_brand.id} (Project {club_project.id})"
+                self._debug_trace.append(msg)
+                logger.info("DEBUG: %s", msg)
 
         org_brand = BrandProfile.objects.filter(organisation=organisation, is_active=True).first()
         if org_brand and org_brand not in brand_profiles:
             brand_profiles.append(org_brand)
-            logger.info(
-                "DEBUG: Found Org BrandProfile: %s (Org %s)", org_brand.id, organisation.name
-            )
+            msg = f"Found Org BrandProfile: {org_brand.id} (Org {organisation.name})"
+            self._debug_trace.append(msg)
+            logger.info("DEBUG: %s", msg)
 
         def _resolve_asset_url(asset_types: list[str]) -> str | None:
+            self._debug_trace.append(f"Resolving {asset_types}...")
             for profile in brand_profiles:
                 asset = (
                     BrandAsset.objects.filter(
@@ -229,6 +233,7 @@ class LineupSegmentBuilder:
                     .first()
                 )
                 if not asset:
+                    self._debug_trace.append(f"  Profile {profile.id}: No asset")
                     logger.info("DEBUG: No asset %s found in profile %s", asset_types, profile.id)
                     continue
 
@@ -238,21 +243,27 @@ class LineupSegmentBuilder:
                     profile.id,
                     asset.id,
                 )
+                self._debug_trace.append(f"  Profile {profile.id}: Found asset {asset.id}")
 
                 # Prefer the API-facing URL if it is persisted (often already presigned).
                 asset_url = getattr(asset, "url", None)
                 if asset_url:
+                    self._debug_trace.append("  Using asset.url")
                     return asset_url
 
                 if asset.file:
                     presigned = self._get_presigned_url(asset.file.storage_path)
                     if presigned:
+                        self._debug_trace.append("  Generated presigned URL")
                         return presigned
+                    self._debug_trace.append(f"  Presign failed for {asset.file.storage_path}")
+
             logger.warning(
                 "DEBUG: Could not resolve asset %s in any of %d profiles",
                 asset_types,
                 len(brand_profiles),
             )
+            self._debug_trace.append("Resolution failed")
             return None
 
         logo_url = _resolve_asset_url(["logo_light", "logo_dark", "logo_upload"])
@@ -549,9 +560,11 @@ class LineupSegmentBuilder:
             )
 
             if not background_url:
+                trace_str = " | ".join(self._debug_trace)
                 raise ValueError(
                     "No stadium_background BrandAsset found for this club/team/organisation brand profile. "
-                    "Upload asc/background.png as BrandAsset asset_type=stadium_background (e.g. Club → Assets tab)."
+                    "Upload asc/background.png as BrandAsset asset_type=stadium_background (e.g. Club → Assets tab). "
+                    f"Debug Trace: {trace_str}"
                 )
 
             line_defs = [
