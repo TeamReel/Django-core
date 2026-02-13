@@ -43,7 +43,7 @@ def _upload_and_get_url(img: Image.Image, prefix: str = "lineup") -> str:
         backend.save(storage_path, img_bytes)
 
         # Get presigned URL (1 hour expiry)
-        url = backend.get_presigned_url(storage_path, expires_in=3600)
+        url = backend.get_url(storage_path, signed=True, expiry_seconds=3600)
         logger.info("Uploaded %s image to storage: %s", prefix, storage_path)
         return url
 

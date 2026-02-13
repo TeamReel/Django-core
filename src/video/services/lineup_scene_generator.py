@@ -49,7 +49,7 @@ def _upload_and_get_url(img: Image.Image, prefix: str = "lineup_scene") -> str:
         storage_path = f"generated/lineup/{prefix}/{uuid_module.uuid4().hex}.png"
         backend = get_storage_backend()
         backend.save(storage_path, img_bytes)
-        return backend.get_presigned_url(storage_path, expires_in=3600)
+        return backend.get_url(storage_path, signed=True, expiry_seconds=3600)
 
     except Exception as exc:  # noqa: BLE001
         logger.warning("Failed to upload %s image to storage: %s", prefix, exc)

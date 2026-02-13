@@ -728,7 +728,8 @@ class LineupSegmentBuilder:
             from src.files.utils import get_storage_backend
 
             backend = get_storage_backend()
-            url = backend.get_presigned_url(storage_path, expires_in=3600)
+            # S3StorageBackend uses get_url(path, signed=True, expiry_seconds=3600)
+            url = backend.get_url(storage_path, signed=True, expiry_seconds=3600)
             if not url:
                 self._debug_trace.append(
                     f"Backend {type(backend).__name__} returned None for {storage_path}"
