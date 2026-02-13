@@ -235,6 +235,7 @@ class LineupProcessor(BaseVideoProcessor):
                 duration = segment.get("duration", 3.0)
                 label = segment.get("label", "")
                 scale = segment.get("scale", 1.0)  # PiP scale factor (< 1 = smaller)
+                background_url = segment.get("background_url")  # stadium bg for overlay
 
                 if not url:
                     logger.warning(f"Segment {idx} has no URL, skipping")
@@ -282,6 +283,11 @@ class LineupProcessor(BaseVideoProcessor):
                 # we might be processing with default 720p.
                 # This is why we need to ensure detected before converting if possible.
 
+                # Download background image for overlay compositing (intro on stadium)
+                bg_local_path = None
+                if background_url and segment_type == "video":
+                    bg_local_path = self._download_segment(background_url, 9000 + idx)
+
                 segment_video = self._convert_to_video(
                     local_path,
                     idx,
@@ -292,6 +298,7 @@ class LineupProcessor(BaseVideoProcessor):
                     fps,
                     label,
                     scale,
+                    background_path=bg_local_path,
                 )
 
                 if segment_video:
@@ -365,6 +372,7 @@ class LineupProcessor(BaseVideoProcessor):
         fps: int,
         label: str,
         scale: float = 1.0,
+        background_path: str | None = None,
     ) -> str | None:
         """Convert image/video to standardized video segment."""
         output_path = str(self.temp_dir / f"segment_{idx:03d}.mp4")
@@ -374,6 +382,11 @@ class LineupProcessor(BaseVideoProcessor):
                 # Convert image to video with duration
                 command = self._build_image_to_video_command(
                     local_path, output_path, duration, width, height, fps, label, scale
+                )
+            elif background_path:
+                # Transparent video overlaid on stadium background
+                command = self._build_video_on_background_command(
+                    local_path, background_path, output_path, width, height, fps, label
                 )
             else:
                 # Re-encode video to standard format
@@ -533,6 +546,69 @@ class LineupProcessor(BaseVideoProcessor):
             "48000",
             "-ac",
             "2",
+            output_path,
+        ]
+        return command
+
+    def _build_video_on_background_command(
+        self,
+        video_path: str,
+        background_path: str,
+        output_path: str,
+        width: int,
+        height: int,
+        fps: int,
+        label: str,
+    ) -> list[str]:
+        """Build FFmpeg command to overlay a transparent video on a background image.
+
+        The foreground video (WebM VP9 with alpha) is composited on top of
+        the stadium/pitch background, producing the same visual effect as the
+        still-image fullbody scenes — player on the field, no solid-colour
+        background.
+        """
+        # Scale the foreground video to fit within target, keeping aspect ratio.
+        # Then overlay it centered on the background image (which is scaled to fill).
+        filter_complex = (
+            f"[0:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
+            f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:color=0x00000000,format=rgba,"
+            f"setsar=1[bg];"
+            f"[1:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
+            f"format=rgba,setsar=1[fg];"
+            f"[bg][fg]overlay=(W-w)/2:(H-h)/2:format=auto,fps={fps}"
+        )
+
+        # Add text overlay if label provided
+        if label:
+            safe_label = label.replace("'", "\\'").replace(":", "\\:")
+            filter_complex += (
+                f",drawtext=text='{safe_label}':fontsize=48:fontcolor=white:"
+                f"x=(w-text_w)/2:y=h-100:box=1:boxcolor=black@0.5:boxborderw=10"
+            )
+
+        filter_complex += "[v]"
+
+        command = [
+            "ffmpeg",
+            "-y",
+            "-loop",
+            "1",
+            "-i",
+            background_path,  # input 0: background image (looped)
+            "-i",
+            video_path,  # input 1: transparent foreground video
+            "-filter_complex",
+            filter_complex,
+            "-map",
+            "[v]",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "ultrafast",
+            "-crf",
+            "23",
+            "-an",
+            "-shortest",
             output_path,
         ]
         return command

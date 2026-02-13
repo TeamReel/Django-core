@@ -1040,6 +1040,7 @@ class LineupSegmentBuilder:
                                 "url": p.intro_url,
                                 "label": player_label,
                                 "transition": "cut",
+                                "background_url": background_url,
                             }
                         )
 
@@ -1163,6 +1164,7 @@ class LineupSegmentBuilder:
                             "url": player.intro_url,
                             "label": f"{player.jersey_number or ''} {player.member_name}".strip(),
                             "transition": "cut",
+                            "background_url": background_url,
                         }
                     )
 
