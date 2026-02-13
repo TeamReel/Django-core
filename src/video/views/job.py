@@ -185,14 +185,15 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         # Get activity and its project
         Activity = apps.get_model("activities", "Activity")
         try:
-            activity = Activity.objects.select_related("period__project").get(id=activity_id)
+            activity = Activity.objects.select_related("project", "period").get(id=activity_id)
         except Activity.DoesNotExist:
             return Response(
                 {"error": f"Activity {activity_id} not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        project = activity.period.project
+        # Activity always has a project; Period.project can be NULL (org-wide periods)
+        project = activity.project
 
         # Check project membership
         ProjectMembership = apps.get_model("projects", "ProjectMembership")

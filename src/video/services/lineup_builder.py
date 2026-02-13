@@ -135,11 +135,12 @@ class LineupSegmentBuilder:
 
         # Get activity (match)
         activity = Activity.objects.select_related(
-            "period__project__organisation",
-            "period__project__parent_project",
+            "project__organisation",
+            "project__parent_project",
+            "period",
         ).get(id=self.activity_id)
 
-        project = activity.period.project
+        project = activity.project
         organisation = project.organisation
 
         # Get brand profile and assets
