@@ -177,57 +177,44 @@ class LineupSegmentBuilder:
         project = activity.project
         organisation = project.organisation
 
-        # Get brand profile and assets
-        brand_profile = BrandProfile.objects.filter(
-            organisation=organisation,
-            is_active=True,
-        ).first()
+        # Resolve brand profiles (most specific first)
+        # - team brand (project)
+        # - club brand (parent_project)
+        # - organisation brand
+        brand_profiles: list = []
 
-        logo_url = None
-        sponsor_url = None
-        field_background_url = None
+        team_brand = BrandProfile.objects.filter(project=project, is_active=True).first()
+        if team_brand:
+            brand_profiles.append(team_brand)
 
-        if brand_profile:
-            # Get logo
-            # Ensure we select_related('file') to access storage_path
-            logo_asset = (
-                BrandAsset.objects.filter(
-                    profile=brand_profile,
-                    asset_type__in=["logo_light", "logo_dark", "logo_upload"],
-                    is_active=True,
+        club_project = project.parent_project or None
+        if club_project:
+            club_brand = BrandProfile.objects.filter(project=club_project, is_active=True).first()
+            if club_brand and club_brand not in brand_profiles:
+                brand_profiles.append(club_brand)
+
+        org_brand = BrandProfile.objects.filter(organisation=organisation, is_active=True).first()
+        if org_brand and org_brand not in brand_profiles:
+            brand_profiles.append(org_brand)
+
+        def _resolve_asset_url(asset_types: list[str]) -> str | None:
+            for profile in brand_profiles:
+                asset = (
+                    BrandAsset.objects.filter(
+                        profile=profile,
+                        asset_type__in=asset_types,
+                        is_active=True,
+                    )
+                    .select_related("file")
+                    .first()
                 )
-                .select_related("file")
-                .first()
-            )
-            if logo_asset and logo_asset.file:
-                logo_url = self._get_presigned_url(logo_asset.file.storage_path)
+                if asset and asset.file:
+                    return self._get_presigned_url(asset.file.storage_path)
+            return None
 
-            # Get sponsor
-            # Ensure we select_related('file') to access storage_path
-            sponsor_asset = (
-                BrandAsset.objects.filter(
-                    profile=brand_profile,
-                    asset_type__in=["sponsor_logo", "sponsor_logo_upload"],
-                    is_active=True,
-                )
-                .select_related("file")
-                .first()
-            )
-            if sponsor_asset and sponsor_asset.file:
-                sponsor_url = self._get_presigned_url(sponsor_asset.file.storage_path)
-
-            # Optional: stadium/pitch background image for Instagram-format lineup scenes
-            stadium_bg_asset = (
-                BrandAsset.objects.filter(
-                    profile=brand_profile,
-                    asset_type__in=["stadium_background"],
-                    is_active=True,
-                )
-                .select_related("file")
-                .first()
-            )
-            if stadium_bg_asset and stadium_bg_asset.file:
-                field_background_url = self._get_presigned_url(stadium_bg_asset.file.storage_path)
+        logo_url = _resolve_asset_url(["logo_light", "logo_dark", "logo_upload"])
+        sponsor_url = _resolve_asset_url(["sponsor_logo", "sponsor_logo_upload"])
+        field_background_url = _resolve_asset_url(["stadium_background"])
 
         # Get team/club names
         if project.parent_project:
@@ -520,8 +507,8 @@ class LineupSegmentBuilder:
 
             if not background_url:
                 raise ValueError(
-                    "No stadium_background BrandAsset found for this organisation/project. "
-                    "Upload asc/background.png as BrandAsset asset_type=stadium_background."
+                    "No stadium_background BrandAsset found for this club/team/organisation brand profile. "
+                    "Upload asc/background.png as BrandAsset asset_type=stadium_background (e.g. Club → Assets tab)."
                 )
 
             line_defs = [
