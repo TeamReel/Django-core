@@ -114,8 +114,25 @@ class VideoService:
                 compose_video.delay(job_id)
             elif job.job_type == JobType.LINEUP:
                 # Always process lineup jobs in a background thread directly.
-                # The Celery worker on Railway has persistent issues picking up these tasks
-                # (settings mismatch, queue routing, etc.). Background thread is reliable.
+                # Make dispatch idempotent: only one runner should transition QUEUED → PROCESSING.
+                updated = VideoJob.objects.filter(
+                    id=job.id,
+                    status=JobStatus.QUEUED,
+                    started_at__isnull=True,
+                ).update(
+                    status=JobStatus.PROCESSING,
+                    started_at=timezone.now(),
+                    progress_percent=1,
+                    updated_at=timezone.now(),
+                )
+
+                if not updated:
+                    logger.info(
+                        "Lineup job dispatch skipped (already started or not queued)",
+                        extra={"job_id": job_id},
+                    )
+                    return
+
                 logger.info(
                     "Lineup job - processing in background thread",
                     extra={"job_id": job_id},
@@ -128,7 +145,14 @@ class VideoService:
                 )
                 raise ValidationError({"job_type": f"Unknown job type: {job.job_type}"})
 
-        transaction.on_commit(_dispatch)
+        # If we're inside an atomic transaction (e.g., ATOMIC_REQUESTS=True),
+        # delay dispatch until commit so the worker/thread can reliably read the job.
+        # If we're not in a transaction, dispatch immediately.
+        connection = transaction.get_connection()
+        if getattr(connection, "in_atomic_block", False):
+            transaction.on_commit(_dispatch)
+        else:
+            _dispatch()
 
     def _start_lineup_thread(self, threading_module, job_id: str) -> None:
         thread = threading_module.Thread(
@@ -137,6 +161,31 @@ class VideoService:
             daemon=True,
         )
         thread.start()
+
+    def kick_lineup_job(self, job_id: str) -> bool:
+        """Idempotently start a lineup job in a background thread.
+
+        Returns True if this call started processing, False if the job was
+        already started or not queued.
+        """
+        import threading
+
+        updated = VideoJob.objects.filter(
+            id=job_id,
+            status=JobStatus.QUEUED,
+            started_at__isnull=True,
+        ).update(
+            status=JobStatus.PROCESSING,
+            started_at=timezone.now(),
+            progress_percent=1,
+            updated_at=timezone.now(),
+        )
+
+        if not updated:
+            return False
+
+        self._start_lineup_thread(threading, str(job_id))
+        return True
 
     def _process_lineup_sync(self, job_id: str) -> None:
         """Process lineup job synchronously (for when Celery is unavailable)."""

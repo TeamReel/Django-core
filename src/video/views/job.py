@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import Any
 
 from django.apps import apps
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -17,7 +19,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from src.video.models import VideoJob
-from src.video.models.job import JobStatus
+from src.video.models.job import JobStatus, JobType
 from src.video.pagination import VideoJobPagination
 from src.video.permissions import IsProjectMember
 from src.video.serializers.job import (
@@ -81,6 +83,28 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             return VideoJobDetailSerializer
         return VideoJobListSerializer
+
+    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Retrieve job details.
+
+        Self-healing: if a lineup job remains QUEUED for too long without a start time,
+        attempt to kick it into processing (idempotent) and start the background thread.
+        """
+        job = self.get_object()
+
+        if (
+            job.job_type == JobType.LINEUP
+            and job.status == JobStatus.QUEUED
+            and job.started_at is None
+            and job.created_at <= timezone.now() - timedelta(seconds=10)
+        ):
+            from src.video.services.video_service import VideoService
+
+            if VideoService().kick_lineup_job(str(job.id)):
+                job.refresh_from_db()
+
+        output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
+        return Response(output.data, status=status.HTTP_200_OK)
 
     def _get_project_id(self, required: bool = False) -> str | None:
         header_id = self.request.headers.get("X-Project-ID")
@@ -232,7 +256,6 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
         logger = logging.getLogger(__name__)
 
-        from src.video.models.job import JobType
         from src.video.services.lineup_builder import build_lineup_video_config
         from src.video.services.video_service import VideoService
 
