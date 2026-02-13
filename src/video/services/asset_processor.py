@@ -286,11 +286,12 @@ class AssetProcessor:
         """
         try:
             from rembg import remove
-        except ImportError:
+        except ImportError as e:
             raise AssetProcessingError(
-                "rembg is not installed. Background removal requires rembg. "
+                f"rembg import failed: {e}. "
+                "Background removal requires rembg + onnxruntime. "
                 "Install with: pip install rembg"
-            )
+            ) from e
 
         # rembg works on bytes, returns bytes
         buffer = io.BytesIO()

@@ -359,7 +359,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                     kit_type,
                     result.get("processing_state"),
                 )
-            except Exception:
+            except Exception as exc:
                 logger.exception("Background asset processing failed")
                 try:
                     membership.refresh_from_db()
@@ -372,7 +372,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                             "raw": raw_url,
                             "processed": None,
                             "processing_state": "failed",
-                            "error": "Processing failed unexpectedly",
+                            "error": str(exc)[:500],
                         },
                     )
                 except Exception:
