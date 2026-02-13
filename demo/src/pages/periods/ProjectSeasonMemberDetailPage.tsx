@@ -1933,6 +1933,48 @@ export default function ProjectSeasonMemberDetailPage() {
                                             >
                                               Opnieuw
                                             </Button>
+                                            {!variantLineupReady && !variantProcessing && (
+                                              <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                onClick={async () => {
+                                                  const result = await triggerAssetProcessing(
+                                                    apiBaseUrl, membershipId!, 'intro', kit.id, variant.id
+                                                  );
+                                                  if (result.ok) {
+                                                    const rawUrl = getBestUrl(variantRaw) || '';
+                                                    const newVV: VideoVariantsMap = {
+                                                      ...videoVariants,
+                                                      intro: {
+                                                        ...videoVariants.intro,
+                                                        [compositeKey]: {
+                                                          raw: rawUrl,
+                                                          processed: null,
+                                                          processing_state: 'processing' as const,
+                                                        },
+                                                      },
+                                                    };
+                                                    setVideoVariants(newVV);
+                                                    void pollProcessingResult(
+                                                      apiBaseUrl, project!.id, membershipId!,
+                                                      'intro', kit.id, variant.id, setMembership,
+                                                    );
+                                                  }
+                                                }}
+                                                style={{
+                                                  fontSize: '10px',
+                                                  padding: '4px 8px',
+                                                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                                  border: 'none',
+                                                  color: '#fff',
+                                                }}
+                                              >
+                                                🔧 Bewerken
+                                              </Button>
+                                            )}
+                                            {variantLineupReady && (
+                                              <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
+                                            )}
                                             <Button
                                               size="sm"
                                               variant="ghost"
@@ -2043,6 +2085,8 @@ export default function ProjectSeasonMemberDetailPage() {
                                 const variantUrl = getBestUrl(variantRaw) || '';
                                 const hasVideo = Boolean(variantUrl);
                                 const resolvedUrl = hasVideo ? getAssetUrl(variantUrl) : null;
+                                const variantLineupReady = isLineupReady(variantRaw);
+                                const variantProcessing = isProcessing(variantRaw);
 
                                 return (
                                   <div key={variant.id} style={{
@@ -2119,6 +2163,48 @@ export default function ProjectSeasonMemberDetailPage() {
                                             >
                                               Opnieuw
                                             </Button>
+                                            {!variantLineupReady && !variantProcessing && (
+                                              <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                onClick={async () => {
+                                                  const result = await triggerAssetProcessing(
+                                                    apiBaseUrl, membershipId!, 'celebration', kit.id, variant.id
+                                                  );
+                                                  if (result.ok) {
+                                                    const rawUrl = getBestUrl(variantRaw) || '';
+                                                    const newVV: VideoVariantsMap = {
+                                                      ...videoVariants,
+                                                      celebration: {
+                                                        ...videoVariants.celebration,
+                                                        [compositeKey]: {
+                                                          raw: rawUrl,
+                                                          processed: null,
+                                                          processing_state: 'processing' as const,
+                                                        },
+                                                      },
+                                                    };
+                                                    setVideoVariants(newVV);
+                                                    void pollProcessingResult(
+                                                      apiBaseUrl, project!.id, membershipId!,
+                                                      'celebration', kit.id, variant.id, setMembership,
+                                                    );
+                                                  }
+                                                }}
+                                                style={{
+                                                  fontSize: '10px',
+                                                  padding: '4px 8px',
+                                                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                                  border: 'none',
+                                                  color: '#fff',
+                                                }}
+                                              >
+                                                🔧 Bewerken
+                                              </Button>
+                                            )}
+                                            {variantLineupReady && (
+                                              <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
+                                            )}
                                             <Button
                                               size="sm"
                                               variant="ghost"
