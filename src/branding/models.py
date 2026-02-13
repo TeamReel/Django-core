@@ -235,6 +235,7 @@ class BrandAsset(models.Model):
         ("kit_training", "Training Kit (AI Processed)"),
         ("kit_training_combined", "Training Kit (Combined: Kit+Logo+Sponsor)"),
         # ── Location & Other ──
+        ("stadium_background", "Stadium/Pitch Background"),
         ("location_photo", "Location Photo"),
         ("other", "Other"),
     ]

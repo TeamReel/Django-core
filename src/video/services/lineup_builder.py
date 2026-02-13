@@ -103,6 +103,39 @@ class LineupSegmentBuilder:
         self.activity_id = str(activity_id)
         self.template_id = str(template_id) if template_id else None
         self.output_resolution = output_resolution
+        self._render_mode: str = "classic"
+
+    def _load_render_mode(self) -> None:
+        """Determine how to render lineup based on the selected ContentTemplate.
+
+        - classic: sequential segments (legacy)
+        - line_scenes: per-line scenes composited onto a background with header overlay
+        """
+        if not self.template_id:
+            self._render_mode = "classic"
+            return
+
+        try:
+            from django.apps import apps
+
+            ContentTemplate = apps.get_model("content_generation", "ContentTemplate")
+            template = ContentTemplate.objects.filter(id=self.template_id).first()
+            if not template:
+                self._render_mode = "classic"
+                return
+
+            # Default: if a template is explicitly chosen for lineup, use per-line scenes.
+            # This matches the desired Instagram-style lineup look.
+            self._render_mode = "line_scenes"
+
+            # Allow explicit override via template_settings if present.
+            settings = getattr(template, "template_settings", None) or {}
+            mode = settings.get("render_mode")
+            if mode in {"classic", "line_scenes"}:
+                self._render_mode = mode
+
+        except Exception:  # noqa: BLE001
+            self._render_mode = "classic"
 
     def build(self) -> dict:
         """Build the complete segments config for LineupProcessor.
@@ -110,6 +143,7 @@ class LineupSegmentBuilder:
         Returns:
             dict with segments[] and other config for LineupProcessor
         """
+        self._load_render_mode()
         lineup_data = self._gather_lineup_data()
         segments = self._build_segments(lineup_data)
 
@@ -182,6 +216,19 @@ class LineupSegmentBuilder:
             if sponsor_asset and sponsor_asset.file:
                 sponsor_url = self._get_presigned_url(sponsor_asset.file.storage_path)
 
+            # Optional: stadium/pitch background image for Instagram-format lineup scenes
+            stadium_bg_asset = (
+                BrandAsset.objects.filter(
+                    profile=brand_profile,
+                    asset_type__in=["stadium_background"],
+                    is_active=True,
+                )
+                .select_related("file")
+                .first()
+            )
+            if stadium_bg_asset and stadium_bg_asset.file:
+                field_background_url = self._get_presigned_url(stadium_bg_asset.file.storage_path)
+
         # Get team/club names
         if project.parent_project:
             # Team under club
@@ -226,6 +273,13 @@ class LineupSegmentBuilder:
             "DEBUG: Filtered participations: count=%d",
             participations.count(),
         )
+
+        # Fail fast if there is no lineup data. We intentionally do NOT fall back to frontend segments.
+        if participations.count() == 0:
+            raise ValueError(
+                "No participations found for this activity to build a lineup. "
+                "Fill the match lineup (Participation records) first."
+            )
 
         # Get ProjectMembership model
         ProjectMembership = apps.get_model("projects", "ProjectMembership")
@@ -429,15 +483,14 @@ class LineupSegmentBuilder:
         8. End card with final lineup
         """
         from src.video.services.header_generator import (
-            generate_field_background,
             generate_header_image,
         )
 
         segments: list[dict] = []
 
-        # 1. Generate and add header image
+        # 1. Generate header overlay (used in both classic and scene modes)
         try:
-            header_path = generate_header_image(
+            header_url = generate_header_image(
                 width=data.output_width,
                 height=int(data.output_height * 0.15),  # 15% of video height
                 logo_url=data.logo_url,
@@ -451,36 +504,97 @@ class LineupSegmentBuilder:
                 kickoff_time=data.kickoff_time,
                 coach_name=data.coach_name,
             )
+        except Exception:  # noqa: BLE001
+            header_url = None
+            logger.warning("Failed to generate header image")
+
+        # Resolve background (prefer brand stadium_background)
+        background_url = data.field_background_url
+
+        # Scene mode: render per-line composited frames
+        if self._render_mode == "line_scenes":
+            from src.video.services.lineup_scene_generator import (
+                ScenePlayer,
+                generate_line_scene_image,
+            )
+
+            if not background_url:
+                raise ValueError(
+                    "No stadium_background BrandAsset found for this organisation/project. "
+                    "Upload asc/background.png as BrandAsset asset_type=stadium_background."
+                )
+
+            line_defs = [
+                ("KEEPER", data.keepers),
+                ("VERDEDIGING", data.defenders),
+                ("MIDDENVELD", data.midfielders),
+                ("AANVAL", data.attackers),
+            ]
+
+            for title, players in line_defs:
+                if not players:
+                    continue
+
+                scene_players: list[ScenePlayer] = []
+                for p in players:
+                    if not p.kit_url:
+                        raise ValueError(
+                            f"Missing kit asset for player '{p.member_name}' in {title}. "
+                            "(teamreel_assets.media.kit.url)"
+                        )
+                    scene_players.append(
+                        ScenePlayer(
+                            name=f"{p.jersey_number or ''} {p.member_name}".strip(),
+                            kit_url=p.kit_url,
+                            x_pct=int(p.x),
+                            y_pct=int(p.y),
+                        )
+                    )
+
+                scene_url = generate_line_scene_image(
+                    width=data.output_width,
+                    height=data.output_height,
+                    background_url=background_url,
+                    header_url=header_url,
+                    title=title,
+                    players=scene_players,
+                )
+
+                segments.append(
+                    {
+                        "type": "image",
+                        "url": scene_url,
+                        "duration": 3.5,
+                        "transition": "fade",
+                    }
+                )
+
+            if not segments:
+                raise ValueError("No lineup scenes were generated")
+
+            return segments
+
+        # Classic mode (legacy): keep old behavior (header + field + per-player assets)
+        if header_url:
             segments.append(
                 {
                     "type": "image",
-                    "url": header_path,
+                    "url": header_url,
                     "duration": self.HEADER_DURATION,
                     "transition": "fade",
                 }
             )
-        except Exception:  # noqa: BLE001
-            logger.warning("Failed to generate header image, skipping header segment")
 
-        # 2. Generate and add field background
-        try:
-            field_path = generate_field_background(
-                width=data.output_width,
-                height=data.output_height,
-                field_color="#228B22",  # Forest green
-                line_color="#ffffff",
-            )
+        if background_url:
             segments.append(
                 {
                     "type": "image",
-                    "url": field_path,
+                    "url": background_url,
                     "duration": self.FIELD_DURATION,
                     "label": "OPSTELLING",
                     "transition": "fade",
                 }
             )
-        except Exception:  # noqa: BLE001
-            logger.warning("Failed to generate field background, skipping field segment")
 
         # Process each line
         all_lines = [

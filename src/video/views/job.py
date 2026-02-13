@@ -239,7 +239,10 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         activity_id = request.data.get("activity_id")
         template_id = request.data.get("template_id")
         output_resolution = request.data.get("output_resolution", "vertical_1080p")
-        frontend_segments = request.data.get("segments")  # Optional fallback
+        frontend_segments = request.data.get("segments")
+        allow_frontend_segments = request.query_params.get(
+            "allow_frontend_segments"
+        ) == "true" or bool(request.data.get("allow_frontend_segments"))
 
         if not activity_id:
             return Response(
@@ -272,67 +275,24 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 template_id=template_id,
                 output_resolution=output_resolution,
             )
-            # Check if backend found player segments (more than just header + field)
-            backend_segments = config.get("segments", [])
-            player_segments_count = len(
-                [
-                    s
-                    for s in backend_segments
-                    if s.get("type") != "image" or "lineup" not in s.get("url", "").lower()
-                ]
-            )
-
-            logger.info(
-                "Backend built %d segments, player segments: %d, frontend provided: %s",
-                len(backend_segments),
-                player_segments_count,
-                len(frontend_segments) if frontend_segments else "none",
-            )
-
-            # If backend found < 3 segments (just header+field) but frontend has segments, use frontend
-            if len(backend_segments) <= 2 and frontend_segments and len(frontend_segments) > 2:
-                logger.info(
-                    "Using frontend segments as fallback (%d segments)", len(frontend_segments)
+            if frontend_segments and not allow_frontend_segments:
+                logger.warning(
+                    "Frontend segments were provided but are ignored (allow_frontend_segments=false): job will use backend lineup builder"
                 )
-                # Keep backend brand intro (header/field) if present, then append frontend player segments.
-                config["segments"] = list(backend_segments) + list(frontend_segments)
 
         except Exception as e:  # noqa: BLE001
             import traceback
 
             logger.error("Failed to build lineup config: %s\n%s", e, traceback.format_exc())
-            # If frontend provided segments, use those as fallback
-            if frontend_segments and len(frontend_segments) > 0:
-                logger.info(
-                    "Using frontend segments after backend failure (%d segments)",
-                    len(frontend_segments),
-                )
-                # Try to at least generate the brand intro (header + field) even if lineup build failed.
-                intro_segments: list[dict] = []
-                try:
-                    intro_config = build_lineup_video_config(
-                        activity_id=activity_id,
-                        template_id=template_id,
-                        output_resolution=output_resolution,
-                    )
-                    intro_segments = list(intro_config.get("segments", [])[:2])
-                except Exception:  # noqa: BLE001
-                    intro_segments = []
-
-                config = {
-                    "segments": intro_segments + list(frontend_segments),
-                    "output_resolution": output_resolution,
-                    "output_fps": 30,
-                    "background_color": "#1a472a",
-                    "fade_duration": 0.3,
-                    "match_id": str(activity_id),
-                    "activity_id": str(activity_id),
-                }
-            else:
-                return Response(
-                    {"error": f"Failed to build lineup config: {str(e)}"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            # Intentionally fail fast (no fallback) so template/lineup issues are visible.
+            return Response(
+                {
+                    "error": "Failed to build lineup config",
+                    "detail": str(e),
+                    "hint": "No fallback to frontend segments is enabled. Fix Participation lineup + member kit assets + stadium_background brand asset.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Create the video job
         try:
