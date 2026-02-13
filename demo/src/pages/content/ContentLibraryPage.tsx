@@ -133,6 +133,18 @@ const CONTENT_TYPE_FILTERS: { key: string; label: string; icon: string }[] = [
   { key: 'member_in_tenue', label: 'In Tenue', icon: '👕' },
 ];
 
+// Content category tabs with their subtypes
+type ContentCategory = 'all' | 'pre_match' | 'during_match' | 'post_match' | 'season' | 'member';
+
+const CONTENT_CATEGORIES: { key: ContentCategory; label: string; icon: string; subtypes: string[] }[] = [
+  { key: 'all', label: 'Alles', icon: '📚', subtypes: [] },
+  { key: 'pre_match', label: 'Pre-Match', icon: '📋', subtypes: ['flyer', 'lineup', 'walkon', 'anthem'] },
+  { key: 'during_match', label: 'During Match', icon: '⚡', subtypes: ['goal', 'score_update'] },
+  { key: 'post_match', label: 'Post-Match', icon: '📊', subtypes: ['end_score', 'match_summary', 'highlights'] },
+  { key: 'season', label: 'Season', icon: '📅', subtypes: ['transformation', 'season_recap'] },
+  { key: 'member', label: 'Member', icon: '👤', subtypes: ['member_intro', 'member_goal_celebration', 'member_in_tenue'] },
+];
+
 // Map asset_type to content phase
 function getContentPhase(assetType: string): string {
   // Pre-match
@@ -193,8 +205,14 @@ function ContentCard({
     (url ? /\.(mp4|webm|mov)$/i.test(url) : false)
   );
 
+  // Extract context from metadata
   const projectName = typeof item.project === 'object' ? item.project?.name : '';
   const activityTitle = typeof item.activity === 'object' ? item.activity?.title : '';
+  const sportType = (item.extraction_metadata?.sport_type as string) || '';
+  const clubName = (item.extraction_metadata?.club_name as string) || '';
+  const teamName = (item.extraction_metadata?.team_name as string) || '';
+  const seasonKey = (item.extraction_metadata?.season_key as string) || '';
+  const tags = (item.extraction_metadata?.tags as string[]) || [];
 
   return (
     <Card
@@ -246,6 +264,16 @@ function ContentCard({
             🎬 Video
           </span>
         )}
+        {/* Sport badge */}
+        {sportType && (
+          <span style={{
+            position: 'absolute', bottom: 8, left: 8,
+            fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 10,
+            backgroundColor: 'rgba(0,0,0,0.7)', color: '#fff',
+          }}>
+            ⚽ {sportType}
+          </span>
+        )}
       </div>
 
       {/* Info */}
@@ -254,19 +282,64 @@ function ContentCard({
           {item.title || getAssetTypeLabel(normalizedType)}
         </Text>
 
-        {(projectName || activityTitle) && (
+        {/* Context: Club / Team / Activity */}
+        {(clubName || teamName || projectName || activityTitle) && (
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+            {clubName && (
+              <span style={{ fontSize: 11, color: 'var(--app-text-secondary)', display: 'flex', alignItems: 'center', gap: 2 }}>
+                🏟️ {clubName}
+              </span>
+            )}
+            {teamName && (
+              <span style={{ fontSize: 11, color: 'var(--app-text-secondary)', display: 'flex', alignItems: 'center', gap: 2 }}>
+                👕 {teamName}
+              </span>
+            )}
+            {!clubName && !teamName && projectName && (
+              <span style={{ fontSize: 11, color: 'var(--app-text-secondary)' }}>
+                {projectName}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Activity / Match title */}
+        {activityTitle && (
           <Text size="xs" color="secondary" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {activityTitle || projectName}
+            {activityTitle}
           </Text>
         )}
 
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        {/* Tags */}
+        {tags.length > 0 && (
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {tags.slice(0, 3).map((tag, i) => (
+              <span key={i} style={{
+                fontSize: 10, padding: '1px 6px', borderRadius: 6,
+                backgroundColor: 'var(--app-surface-2, #f3f4f6)',
+                color: 'var(--app-text-secondary)',
+              }}>
+                #{tag}
+              </span>
+            ))}
+            {tags.length > 3 && (
+              <span style={{ fontSize: 10, color: 'var(--app-text-secondary)' }}>
+                +{tags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Metadata row */}
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 'auto' }}>
           <Badge size="sm" variant="default">
             {item.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'}
           </Badge>
-          <Badge size="sm" variant={item.state === 'processed' ? 'primary' : 'default'}>
-            {item.state === 'processed' ? 'Klaar' : item.state}
-          </Badge>
+          {seasonKey && (
+            <Badge size="sm" variant="default">
+              📅 {seasonKey}
+            </Badge>
+          )}
         </div>
 
         <Text size="xs" color="secondary" style={{ marginTop: 2 }}>
@@ -374,8 +447,9 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
   const [selectedMatchId, setSelectedMatchId] = useState<string>('');
 
-  // Sub-filter state
-  const [subFilter, setSubFilter] = useState<string>('all');
+  // Sub-filter state: category (pre_match, during_match, etc.) + subtype (flyer, lineup, etc.)
+  const [categoryFilter, setCategoryFilter] = useState<ContentCategory>('all');
+  const [subtypeFilter, setSubtypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Preview modal state
@@ -552,23 +626,35 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
     fetchContent();
   }, [fetchContent]);
 
-  // Reset sub-filter when level changes
+  // Reset filters when level changes
   useEffect(() => {
-    setSubFilter('all');
+    setCategoryFilter('all');
+    setSubtypeFilter('all');
     setSearchQuery('');
   }, [activeLevel]);
 
-  // Filter content by level + sub-filter + search
+  // Filter content by category + subtype + search
   const filteredContent = useMemo(() => {
     let result = contentItems;
 
-    // Sub-filter (content type - e.g. lineup, goal, transformation)
-    if (subFilter !== 'all') {
+    // Category filter (pre_match, during_match, post_match, season, member)
+    if (categoryFilter !== 'all') {
+      const category = CONTENT_CATEGORIES.find(c => c.key === categoryFilter);
+      if (category && category.subtypes.length > 0) {
+        result = result.filter(item => {
+          const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
+          const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
+          return category.subtypes.includes(normalizedType);
+        });
+      }
+    }
+
+    // Subtype filter (flyer, lineup, goal, etc.)
+    if (subtypeFilter !== 'all') {
       result = result.filter(item => {
         const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
-        // Normalize: remove UUID suffix like _a1b2c3d4
         const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
-        return normalizedType === subFilter;
+        return normalizedType === subtypeFilter;
       });
     }
 
@@ -577,30 +663,71 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       const q = searchQuery.toLowerCase();
       result = result.filter(item => {
         const assetType = (item.extraction_metadata?.asset_type as string) || '';
+        const clubName = (item.extraction_metadata?.club_name as string) || '';
+        const teamName = (item.extraction_metadata?.team_name as string) || '';
         return (
           item.title?.toLowerCase().includes(q) ||
           item.description?.toLowerCase().includes(q) ||
           assetType.toLowerCase().includes(q) ||
-          getAssetTypeLabel(assetType).toLowerCase().includes(q)
+          getAssetTypeLabel(assetType).toLowerCase().includes(q) ||
+          clubName.toLowerCase().includes(q) ||
+          teamName.toLowerCase().includes(q)
         );
       });
     }
 
     return result;
-  }, [contentItems, subFilter, searchQuery]);
+  }, [contentItems, categoryFilter, subtypeFilter, searchQuery]);
 
-  // Count items per content type (for filter chip badges)
-  const contentTypeCounts = useMemo(() => {
+  // Count items per category and subtype
+  const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { all: contentItems.length };
 
-    contentItems.forEach(item => {
-      const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
-      const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
-      counts[normalizedType] = (counts[normalizedType] || 0) + 1;
+    CONTENT_CATEGORIES.forEach(cat => {
+      if (cat.key !== 'all') {
+        counts[cat.key] = contentItems.filter(item => {
+          const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
+          const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
+          return cat.subtypes.includes(normalizedType);
+        }).length;
+      }
     });
 
     return counts;
   }, [contentItems]);
+
+  // Count items per subtype (for chips within active category)
+  const subtypeCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: 0 };
+
+    // Get subtypes for current category
+    const category = CONTENT_CATEGORIES.find(c => c.key === categoryFilter);
+    const subtypes = category?.subtypes || [];
+
+    // If category is 'all', count all subtypes
+    if (categoryFilter === 'all') {
+      CONTENT_TYPE_FILTERS.forEach(f => {
+        counts[f.key] = 0;
+      });
+    } else {
+      subtypes.forEach(st => {
+        counts[st] = 0;
+      });
+    }
+
+    // Count matching items
+    contentItems.forEach(item => {
+      const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
+      const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
+
+      if (categoryFilter === 'all' || subtypes.includes(normalizedType)) {
+        counts[normalizedType] = (counts[normalizedType] || 0) + 1;
+        counts.all = (counts.all || 0) + 1;
+      }
+    });
+
+    return counts;
+  }, [contentItems, categoryFilter]);
 
   const clearFilters = () => {
     setSelectedOrgId('');
@@ -608,7 +735,8 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
     setSelectedTeamId('');
     setSelectedSeasonId('');
     setSelectedMatchId('');
-    setSubFilter('all');
+    setCategoryFilter('all');
+    setSubtypeFilter('all');
     setSearchQuery('');
   };
 
@@ -787,23 +915,93 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
         <Stack direction="column" gap="4">
 
-          {/* Content type filter chips (like Media Library) */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {CONTENT_TYPE_FILTERS.map(({ key, label, icon }) => {
-              const count = contentTypeCounts[key] || 0;
-              // Only show filters that have content or are 'all'
-              if (key !== 'all' && count === 0) return null;
+          {/* Category tabs */}
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', borderBottom: '1px solid var(--app-border)', paddingBottom: 8 }}>
+            {CONTENT_CATEGORIES.map(({ key, label, icon }) => {
+              const count = categoryCounts[key] || 0;
+              const isActive = categoryFilter === key;
               return (
-                <FilterChip
+                <button
                   key={key}
-                  active={subFilter === key}
-                  onClick={() => setSubFilter(key)}
-                  label={`${icon} ${label}`}
-                  count={count}
-                />
+                  onClick={() => {
+                    setCategoryFilter(key);
+                    setSubtypeFilter('all');
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '8px 8px 0 0',
+                    border: 'none',
+                    backgroundColor: isActive ? 'var(--color-primary)' : 'transparent',
+                    color: isActive ? 'white' : 'var(--text-secondary)',
+                    fontWeight: isActive ? 600 : 500,
+                    fontSize: 13,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <span>{icon}</span>
+                  <span>{label}</span>
+                  <span style={{
+                    backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : 'var(--app-surface)',
+                    padding: '2px 6px',
+                    borderRadius: 10,
+                    fontSize: 11,
+                    marginLeft: 4,
+                  }}>
+                    {count}
+                  </span>
+                </button>
               );
             })}
           </div>
+
+          {/* Subtype filter chips (show when category has subtypes) */}
+          {categoryFilter !== 'all' && CONTENT_CATEGORIES.find(c => c.key === categoryFilter)?.subtypes.length! > 0 && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <FilterChip
+                active={subtypeFilter === 'all'}
+                onClick={() => setSubtypeFilter('all')}
+                label="All"
+                count={subtypeCounts.all || 0}
+              />
+              {CONTENT_CATEGORIES.find(c => c.key === categoryFilter)?.subtypes.map(st => {
+                const filter = CONTENT_TYPE_FILTERS.find(f => f.key === st);
+                const count = subtypeCounts[st] || 0;
+                if (count === 0) return null;
+                return (
+                  <FilterChip
+                    key={st}
+                    active={subtypeFilter === st}
+                    onClick={() => setSubtypeFilter(st)}
+                    label={`${filter?.icon || '📄'} ${filter?.label || getAssetTypeLabel(st)}`}
+                    count={count}
+                  />
+                );
+              })}
+            </div>
+          )}
+
+          {/* When 'all' category is selected, show all content type filters */}
+          {categoryFilter === 'all' && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {CONTENT_TYPE_FILTERS.map(({ key, label, icon }) => {
+                const count = subtypeCounts[key] || 0;
+                if (key !== 'all' && count === 0) return null;
+                return (
+                  <FilterChip
+                    key={key}
+                    active={subtypeFilter === key}
+                    onClick={() => setSubtypeFilter(key)}
+                    label={`${icon} ${label}`}
+                    count={count}
+                  />
+                );
+              })}
+            </div>
+          )}
 
           {/* Error */}
           {error && <Alert variant="error">{error}</Alert>}
