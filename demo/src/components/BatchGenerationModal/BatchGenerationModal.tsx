@@ -22,6 +22,17 @@ import { getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
 import { getApiBaseUrl } from '../../utils/apiBase';
 
 // ============================================================================
+// Constants
+// ============================================================================
+
+const PROCESS_ASSET_TYPES = [
+  { value: 'fullbody' as const, label: 'Fullbody', icon: '🧍' },
+  { value: 'closeup' as const, label: 'Close-up', icon: '👤' },
+  { value: 'intro' as const, label: 'Short Intro', icon: '🎬' },
+  { value: 'celebration' as const, label: 'Celebration', icon: '🎉' },
+];
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -191,6 +202,8 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
   // If true, trigger backend processing (POST /api/v1/video/jobs/process-asset/) after
   // the generated asset is saved to membership metadata.
   const [processAfterGeneration, setProcessAfterGeneration] = useState<boolean>(false);
+  // Asset type selection for processOnly mode
+  const [processAssetType, setProcessAssetType] = useState<'fullbody' | 'closeup' | 'intro' | 'celebration'>('fullbody');
 
   // Available templates for member context
   const memberTemplates = useMemo(() => getTemplatesForContext('member'), []);
@@ -283,6 +296,34 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
     [brandAssets, selectedTemplate]
   );
 
+  // Get existing asset URL for a member (used in processOnly mode)
+  const getExistingAssetUrl = useCallback(
+    (member: BatchMember, assetType: string, kitType: string): string | null => {
+      const tr = member.metadata?.teamreel_assets || {};
+      const extractUrl = (val: any): string | null => {
+        if (!val) return null;
+        if (typeof val === 'string') return val;
+        if (typeof val === 'object') return val.raw || val.processed || null;
+        return null;
+      };
+
+      if (assetType === 'fullbody') {
+        return member.fullbodyUrls[kitType] || null;
+      }
+      if (assetType === 'closeup') {
+        return member.closeupUrls[kitType] || null;
+      }
+      // intro / celebration → videos.{assetType}.{kitType} or {kitType}_{variant}
+      const videos = tr?.videos || {};
+      const typeVideos = videos[assetType] || {};
+      // Check plain kitType first, then any variant key starting with kitType
+      if (typeVideos[kitType]) return extractUrl(typeVideos[kitType]);
+      const variantKey = Object.keys(typeVideos).find((k) => k.startsWith(kitType));
+      return variantKey ? extractUrl(typeVideos[variantKey]) : null;
+    },
+    []
+  );
+
   // ---- Batch execution ----
   const startBatch = useCallback(async () => {
     setStep('running');
@@ -308,17 +349,18 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
       const params = getEffectiveParams(member.id);
       const inputAssets = getInputAssetsForMember(member, params);
       const kitType = params.kit_type || 'home';
-      const category = selectedTemplate.category;
+      const category = batchMode === 'processOnly' ? processAssetType : selectedTemplate.category;
 
       // ── PROCESS ONLY MODE: Skip generation, process existing asset ──
       if (batchMode === 'processOnly') {
         try {
-          // Check if member has existing raw asset for this kit_type
-          const existingRawUrl = member.fullbodyUrls[kitType];
+          // Check if member has existing raw asset for this kit_type + asset_type
+          const existingRawUrl = getExistingAssetUrl(member, processAssetType, kitType);
           if (!existingRawUrl) {
+            const typeLabel = PROCESS_ASSET_TYPES.find(t => t.value === processAssetType)?.label || processAssetType;
             setJobStatuses((prev) => ({
               ...prev,
-              [member.id]: { status: 'skipped', error: `Geen bestaande ${kitType} fullbody` },
+              [member.id]: { status: 'skipped', error: `Geen bestaande ${kitType} ${typeLabel}` },
             }));
             continue;
           }
@@ -333,7 +375,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
             },
             body: JSON.stringify({
               membership_id: member.id,
-              asset_type: category,
+              asset_type: processAssetType,
               kit_type: kitType,
               variant_id: params.style_variant || null,
             }),
@@ -368,7 +410,11 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
             const tr = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
 
             const metaKey = kitType;
-            const checkVal = ((tr.images || {})[category] || {})[metaKey];
+            // Check images for fullbody/closeup, videos for intro/celebration
+            const isVideoType = category === 'intro' || category === 'celebration';
+            const checkVal = isVideoType
+              ? ((tr.videos || {})[category] || {})[metaKey]
+              : ((tr.images || {})[category] || {})[metaKey];
 
             if (checkVal && typeof checkVal === 'object') {
               const state = checkVal.processing_state || checkVal.state || null;
@@ -855,6 +901,54 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                 </div>
               </div>
 
+              {/* Asset type selector for processOnly mode */}
+              {batchMode === 'processOnly' && (
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
+                  Asset Type
+                </label>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {PROCESS_ASSET_TYPES.map((t) => (
+                    <button
+                      key={t.value}
+                      onClick={() => setProcessAssetType(t.value)}
+                      style={{
+                        padding: '8px 14px',
+                        borderRadius: '8px',
+                        border: `2px solid ${processAssetType === t.value ? '#3b82f6' : 'var(--app-border, #444)'}`,
+                        background: processAssetType === t.value ? 'rgba(59,130,246,0.15)' : 'var(--app-surface-2, #252540)',
+                        color: 'var(--app-text)',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                      }}
+                    >
+                      <span>{t.icon}</span>
+                      <span>{t.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Kit type selector for processOnly mode */}
+                <div style={{ marginTop: '12px' }}>
+                  <label style={{ display: 'block', fontSize: '11px', color: 'var(--app-muted-text)', marginBottom: '3px' }}>
+                    Tenue Type
+                  </label>
+                  <select
+                    value={defaultParams.kit_type || 'home'}
+                    onChange={(e) => setDefaultParams((prev) => ({ ...prev, kit_type: e.target.value }))}
+                    style={selectStyle}
+                  >
+                    {KIT_ROLES.map((kr) => (
+                      <option key={kr.id} value={kr.id}>{kr.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              )}
+
               {/* Template selector */}
               {batchMode === 'generate' && (
               <div style={{ marginBottom: '20px' }}>
@@ -959,7 +1053,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                   const hasOverrides = Object.keys(memberOverrides[member.id] || {}).length > 0;
                   const inputAssets = getInputAssetsForMember(member, effectiveParams);
                   const missingPerson = batchMode === 'generate' && !inputAssets.person;
-                  const missingExisting = batchMode === 'processOnly' && !member.fullbodyUrls[kitType];
+                  const missingExisting = batchMode === 'processOnly' && !getExistingAssetUrl(member, processAssetType, kitType);
 
                   return (
                     <div key={member.id} style={{ marginBottom: '4px' }}>
@@ -985,7 +1079,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                             <div style={{ fontSize: '11px', color: '#ef4444' }}>⚠️ Geen input foto beschikbaar</div>
                           )}
                           {missingExisting && (
-                            <div style={{ fontSize: '11px', color: '#ef4444' }}>⚠️ Geen bestaande {kitType} fullbody</div>
+                            <div style={{ fontSize: '11px', color: '#ef4444' }}>⚠️ Geen bestaande {kitType} {PROCESS_ASSET_TYPES.find(t => t.value === processAssetType)?.label || processAssetType}</div>
                           )}
                           {hasOverrides && (
                             <div style={{ fontSize: '11px', color: '#3b82f6' }}>Aangepaste instellingen</div>
