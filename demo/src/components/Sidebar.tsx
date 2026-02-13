@@ -822,17 +822,24 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Files', path: '/medialib?tab=files', icon: Folder },
                 ];
             } else if (path === '/contentlib' || path.startsWith('/contentlib?')) {
+                // Legacy route - redirect to AI Studio library tab
                 title = 'Content Library';
                 items = [
-                    { label: 'Match', path: '/contentlib?tab=match', icon: Trophy },
-                    { label: 'Season', path: '/contentlib?tab=season', icon: Calendar },
-                    { label: 'Member', path: '/contentlib?tab=member', icon: UserCircle },
-                    { label: 'Team', path: '/contentlib?tab=team', icon: Shirt },
-                    { label: 'Club', path: '/contentlib?tab=club', icon: Shield },
+                    { label: 'Match', path: '/studio?tab=library&level=match', icon: Trophy },
+                    { label: 'Season', path: '/studio?tab=library&level=season', icon: Calendar },
+                    { label: 'Member', path: '/studio?tab=library&level=member', icon: UserCircle },
+                    { label: 'Team', path: '/studio?tab=library&level=team', icon: Shirt },
+                    { label: 'Club', path: '/studio?tab=library&level=club', icon: Shield },
                 ];
-            } else if (path === '/studio' && !path.startsWith('/studio/')) {
+            } else if (path.startsWith('/studio') && !path.startsWith('/studio/videos')) {
+                // AI Studio - always show main tabs
+                const studioParams = new URLSearchParams(location.search || '');
+                const studioTab = studioParams.get('tab') || 'library';
+                const studioLevel = studioParams.get('level') || 'match';
+
                 title = 'AI Studio';
                 items = [
+                    { label: '📚 Library', path: `/studio?tab=library&level=${studioLevel}`, icon: Film },
                     { label: 'Templates', path: '/studio?tab=templates', icon: Library },
                     { label: 'History', path: '/studio?tab=history', icon: Timer },
                     { label: 'Quick Actions', path: '/studio?tab=actions', icon: Sparkles },
@@ -858,9 +865,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 // Fallback for other content pages
                 title = 'Content';
                 items = [
-                    { label: 'Content Library', path: '/contentlib', icon: Film },
+                    { label: 'AI Studio', path: '/studio?tab=library', icon: Sparkles },
                     { label: 'Media Library', path: '/medialib', icon: Library },
-                    { label: 'AI Studio', path: '/studio', icon: Sparkles },
                     { label: 'Video Queue', path: '/studio/videos', icon: Video },
                     { label: 'Approvals', path: '/approvals', icon: ClipboardCheck },
                 ];
@@ -933,7 +939,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     if (items.length === 0) return null;
 
     return { title, items, isActive: true };
-    }, [location.pathname, orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId, competitionSlugOrId, matchId, teamName, seasonName, competitionName, isOrgAdmin, isSystemAdmin, isStaff, user?.email]);
+    }, [location.pathname, location.search, orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId, competitionSlugOrId, matchId, teamName, seasonName, competitionName, isOrgAdmin, isSystemAdmin, isStaff, user?.email]);
 
   // Filter groups and items based on permissions
   const visibleSections = useMemo(() => {
@@ -1404,7 +1410,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 const effectiveLocationTab = locationTab || (
                                     location.pathname === '/directory' ? 'federations' :
                                     location.pathname === '/medialib' ? 'organisation' :
-                                    location.pathname === '/studio' ? 'templates' :
+                                    location.pathname === '/studio' ? 'library' :
                                     location.pathname === '/studio/videos' ? 'all' :
                                     location.pathname === '/approvals' ? 'all' :
                                     'overview'
