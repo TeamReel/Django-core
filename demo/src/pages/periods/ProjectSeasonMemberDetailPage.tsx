@@ -328,8 +328,9 @@ async function pollProcessingResult(
   abortSignal?: AbortSignal,
 ): Promise<void> {
   const POLL_INTERVAL = 3000;
-  const MAX_POLLS = 80; // ~4 min
   const isImage = assetType === 'fullbody' || assetType === 'closeup';
+  // Videos need much longer for per-frame bg removal (~75 frames × ~1.5s = ~2min)
+  const MAX_POLLS = isImage ? 80 : 200; // images ~4min, videos ~10min
   const compositeKey = variantId ? `${kitType}_${variantId}` : kitType;
 
   for (let i = 0; i < MAX_POLLS; i++) {

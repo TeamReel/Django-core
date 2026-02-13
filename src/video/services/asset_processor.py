@@ -196,11 +196,10 @@ class AssetProcessor:
         variant_id: str | None,
         organisation_id: str | int | None,
     ) -> tuple[str, dict]:
-        """Process a video asset: download → resize → re-encode → upload.
+        """Process a video asset: download → extract frames → bg remove per frame → re-encode → upload.
 
-        Note: Full video background removal requires specialized tools (RunwayML,
-        rembg-video, etc.). For now, we standardize format/dimensions and flag
-        that bg_removed requires manual/AI pre-processing.
+        Uses rembg for per-frame background removal (same model as images).
+        Output is WebM VP9 with alpha channel for true transparency.
         """
         from files.utils import get_storage_backend
 
@@ -214,13 +213,39 @@ class AssetProcessor:
             input_path = tmpdir_path / "input.mp4"
             input_path.write_bytes(raw_data)
 
-            # 2. Build FFmpeg command for resize + re-encode
-            output_path = tmpdir_path / "output.mp4"
-            cmd = self._build_video_ffmpeg_command(str(input_path), str(output_path), spec)
+            # 2. Get source video info (fps, duration)
+            src_fps = self._get_video_fps(str(input_path)) or spec.fps
+            duration = self._get_video_duration(str(input_path))
 
-            # 3. Run FFmpeg
+            # Use reduced fps for bg removal to keep processing time reasonable:
+            # A 5s video at 30fps = 150 frames × ~1.5s/frame = ~225s.
+            # At 15fps = 75 frames × ~1.5s/frame = ~112s — much more practical.
+            process_fps = min(src_fps, 15)
+
+            logger.info(
+                "Video info: src_fps=%s, process_fps=%s, duration=%s",
+                src_fps,
+                process_fps,
+                duration,
+            )
+
+            # 3. Extract frames as PNG (preserves quality)
+            frames_dir = tmpdir_path / "frames"
+            frames_dir.mkdir()
+            extract_cmd = [
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(input_path),
+                "-vf",
+                f"scale={spec.width}:{spec.height}:force_original_aspect_ratio=decrease,"
+                f"pad={spec.width}:{spec.height}:(ow-iw)/2:(oh-ih)/2:color=black",
+                "-r",
+                str(process_fps),
+                str(frames_dir / "frame_%06d.png"),
+            ]
             result = subprocess.run(
-                cmd,
+                extract_cmd,
                 capture_output=True,
                 text=True,
                 timeout=120,
@@ -228,20 +253,91 @@ class AssetProcessor:
             )
             if result.returncode != 0:
                 raise AssetProcessingError(
-                    f"FFmpeg failed (exit {result.returncode}): {result.stderr[:500]}"
+                    f"FFmpeg frame extraction failed (exit {result.returncode}): "
+                    f"{result.stderr[:500]}"
+                )
+
+            frame_files = sorted(frames_dir.glob("frame_*.png"))
+            total_frames = len(frame_files)
+            if total_frames == 0:
+                raise AssetProcessingError("No frames extracted from video")
+
+            logger.info("Extracted %d frames, starting bg removal...", total_frames)
+
+            # 4. Remove background from each frame using rembg
+            try:
+                from rembg import remove, new_session
+            except ImportError as e:
+                raise AssetProcessingError(
+                    f"rembg import failed: {e}. " "Background removal requires rembg + onnxruntime."
+                ) from e
+
+            from PIL import Image as PILImage
+
+            processed_dir = tmpdir_path / "processed_frames"
+            processed_dir.mkdir()
+
+            # Create rembg session once (reuse model across all frames)
+            session = new_session("u2net")
+
+            for i, frame_path in enumerate(frame_files):
+                if i % 20 == 0:
+                    logger.info("BG removal: frame %d / %d", i + 1, total_frames)
+
+                img_data = frame_path.read_bytes()
+                result_bytes = remove(img_data, session=session)
+
+                # Save as RGBA PNG
+                out_img = PILImage.open(io.BytesIO(result_bytes)).convert("RGBA")
+                out_path = processed_dir / frame_path.name
+                out_img.save(str(out_path), format="PNG")
+
+            logger.info("BG removal complete for all %d frames", total_frames)
+
+            # 5. Re-encode frames to WebM VP9 with alpha channel
+            output_path = tmpdir_path / "output.webm"
+            encode_cmd = [
+                "ffmpeg",
+                "-y",
+                "-framerate",
+                str(process_fps),
+                "-i",
+                str(processed_dir / "frame_%06d.png"),
+                "-c:v",
+                "libvpx-vp9",
+                "-pix_fmt",
+                "yuva420p",  # VP9 with alpha
+                "-b:v",
+                "2M",
+                "-auto-alt-ref",
+                "0",  # Required for alpha in VP9
+                "-an",  # No audio
+                str(output_path),
+            ]
+            result = subprocess.run(
+                encode_cmd,
+                capture_output=True,
+                text=True,
+                timeout=600,  # VP9 encoding can be slow
+                check=False,
+            )
+            if result.returncode != 0:
+                raise AssetProcessingError(
+                    f"FFmpeg VP9 encode failed (exit {result.returncode}): "
+                    f"{result.stderr[:500]}"
                 )
 
             if not output_path.exists():
                 raise AssetProcessingError("FFmpeg produced no output file")
 
-            # 4. Get duration
-            duration = self._get_video_duration(str(output_path))
+            # 6. Get output duration
+            out_duration = self._get_video_duration(str(output_path))
 
-            # 5. Upload
+            # 7. Upload processed version (as .webm for transparency support)
             variant_suffix = f"_{variant_id}" if variant_id else ""
             storage_path = (
                 f"members/{membership_id}/processed/{asset_type}/"
-                f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.mp4"
+                f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.webm"
             )
 
             with open(output_path, "rb") as f:
@@ -250,11 +346,12 @@ class AssetProcessor:
             actual_specs = {
                 "width": spec.width,
                 "height": spec.height,
-                "format": "mp4",
-                "fps": spec.fps,
-                "codec": spec.codec,
-                "bg_removed": False,  # Video bg removal not yet automated
-                "duration": duration,
+                "format": "webm",
+                "fps": process_fps,
+                "codec": "vp9",
+                "bg_removed": True,
+                "duration": out_duration,
+                "total_frames": total_frames,
             }
 
             return saved_path, actual_specs
@@ -389,5 +486,35 @@ class AssetProcessor:
                 check=False,
             )
             return float(result.stdout.strip()) if result.stdout.strip() else None
+        except Exception:
+            return None
+
+    def _get_video_fps(self, path: str) -> float | None:
+        """Get video frame rate using ffprobe."""
+        try:
+            result = subprocess.run(
+                [
+                    "ffprobe",
+                    "-v",
+                    "error",
+                    "-select_streams",
+                    "v:0",
+                    "-show_entries",
+                    "stream=r_frame_rate",
+                    "-of",
+                    "default=noprint_wrappers=1:nokey=1",
+                    path,
+                ],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False,
+            )
+            # ffprobe returns fps as fraction like "30/1" or "24000/1001"
+            fps_str = result.stdout.strip()
+            if "/" in fps_str:
+                num, den = fps_str.split("/")
+                return float(num) / float(den) if float(den) > 0 else None
+            return float(fps_str) if fps_str else None
         except Exception:
             return None

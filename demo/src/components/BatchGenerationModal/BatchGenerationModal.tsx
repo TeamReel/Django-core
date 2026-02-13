@@ -390,7 +390,8 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
 
           // Poll for completion
           const POLL_INTERVAL = 3000;
-          const MAX_POLLS = 80; // ~4 minutes
+          const isVideoType = processAssetType === 'intro' || processAssetType === 'celebration';
+          const MAX_POLLS = isVideoType ? 200 : 80; // videos ~10min (per-frame bg removal), images ~4min
           let processed = false;
 
           for (let p = 0; p < MAX_POLLS; p++) {
