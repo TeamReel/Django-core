@@ -1870,7 +1870,9 @@ export default function ProjectSeasonMemberDetailPage() {
                                       onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
                                       style={{
                                         aspectRatio: '9/16',
-                                        background: hasVideo ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                        background: (hasVideo && !variantLineupReady)
+                                          ? '#000'
+                                          : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -1882,7 +1884,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                         <>
                                           <video
                                             src={resolvedUrl}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                             muted
                                             loop
                                             playsInline
@@ -2100,7 +2102,9 @@ export default function ProjectSeasonMemberDetailPage() {
                                       onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
                                       style={{
                                         aspectRatio: '9/16',
-                                        background: hasVideo ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                        background: (hasVideo && !variantLineupReady)
+                                          ? '#000'
+                                          : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -2112,7 +2116,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                         <>
                                           <video
                                             src={resolvedUrl}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                             muted
                                             loop
                                             playsInline

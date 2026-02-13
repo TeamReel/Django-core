@@ -229,7 +229,10 @@ class AssetProcessor:
                 duration,
             )
 
-            # 3. Extract frames as PNG (preserves quality)
+            # 3. Extract frames as PNG at NATIVE resolution (no scale/pad yet).
+            #    Scaling to target before bg removal causes issues: a 16:9 source
+            #    would become a tiny strip inside the 9:16 target, padded with black.
+            #    rembg works best on the native frame where the subject fills it.
             frames_dir = tmpdir_path / "frames"
             frames_dir.mkdir()
             extract_cmd = [
@@ -237,9 +240,6 @@ class AssetProcessor:
                 "-y",
                 "-i",
                 str(input_path),
-                "-vf",
-                f"scale={spec.width}:{spec.height}:force_original_aspect_ratio=decrease,"
-                f"pad={spec.width}:{spec.height}:(ow-iw)/2:(oh-ih)/2:color=black",
                 "-r",
                 str(process_fps),
                 str(frames_dir / "frame_%06d.png"),
@@ -280,6 +280,11 @@ class AssetProcessor:
             # Create rembg session once (reuse model across all frames)
             session = new_session("u2net")
 
+            # Track content bounding box across all frames so we can auto-crop
+            # to the player content after bg removal (makes the player fill more
+            # of the final target canvas instead of being a tiny strip).
+            all_bboxes: list[tuple[int, int, int, int]] = []
+
             for i, frame_path in enumerate(frame_files):
                 if i % 20 == 0:
                     logger.info("BG removal: frame %d / %d", i + 1, total_frames)
@@ -292,9 +297,57 @@ class AssetProcessor:
                 out_path = processed_dir / frame_path.name
                 out_img.save(str(out_path), format="PNG")
 
+                # Track non-transparent content bbox via alpha channel
+                bbox = out_img.split()[3].getbbox()  # alpha channel bbox
+                if bbox:
+                    all_bboxes.append(bbox)
+
             logger.info("BG removal complete for all %d frames", total_frames)
 
-            # 5. Re-encode frames to WebM VP9 with alpha channel
+            # 4b. Auto-crop all frames to the union bounding box of their content.
+            #     This eliminates dead transparent space around the player so that
+            #     subsequent scaling to the target size makes the player bigger.
+            if all_bboxes:
+                # Get the first processed frame dimensions for clamping
+                first_frame = PILImage.open(processed_dir / frame_files[0].name)
+                src_w, src_h = first_frame.size
+                first_frame.close()
+
+                union_bbox = (
+                    min(b[0] for b in all_bboxes),
+                    min(b[1] for b in all_bboxes),
+                    max(b[2] for b in all_bboxes),
+                    max(b[3] for b in all_bboxes),
+                )
+                # Add 5% margin so the player doesn't touch the edges
+                content_w = union_bbox[2] - union_bbox[0]
+                content_h = union_bbox[3] - union_bbox[1]
+                margin_x = max(int(content_w * 0.05), 4)
+                margin_y = max(int(content_h * 0.05), 4)
+                crop_bbox = (
+                    max(0, union_bbox[0] - margin_x),
+                    max(0, union_bbox[1] - margin_y),
+                    min(src_w, union_bbox[2] + margin_x),
+                    min(src_h, union_bbox[3] + margin_y),
+                )
+                logger.info(
+                    "Auto-crop: union_bbox=%s, crop_bbox=%s (src=%dx%d)",
+                    union_bbox,
+                    crop_bbox,
+                    src_w,
+                    src_h,
+                )
+
+                for pf in sorted(processed_dir.glob("frame_*.png")):
+                    img = PILImage.open(pf)
+                    img = img.crop(crop_bbox)
+                    img.save(str(pf), format="PNG")
+                    img.close()
+
+            # 5. Re-encode frames to WebM VP9 with alpha channel.
+            #    Scale to target dimensions here (AFTER bg removal) so padding
+            #    is transparent instead of black.  The pad color 0x00000000 is
+            #    fully-transparent black in RGBA.
             output_path = tmpdir_path / "output.webm"
             encode_cmd = [
                 "ffmpeg",
@@ -303,6 +356,9 @@ class AssetProcessor:
                 str(process_fps),
                 "-i",
                 str(processed_dir / "frame_%06d.png"),
+                "-vf",
+                f"scale={spec.width}:{spec.height}:force_original_aspect_ratio=decrease,"
+                f"pad={spec.width}:{spec.height}:(ow-iw)/2:(oh-ih)/2:color=0x00000000",
                 "-c:v",
                 "libvpx-vp9",
                 "-pix_fmt",
