@@ -108,3 +108,75 @@ export function getMediaUrl(membership: any, slotId: MediaSlotId): string | unde
 export function getMediaCaption(membership: any, slotId: MediaSlotId): string | undefined {
   return membership?.metadata?.teamreel_assets?.media?.[slotId]?.caption;
 }
+
+/**
+ * Mapping from flat media slot ID to per-variant category and storage branch.
+ * Only for slots that support processing (AI-generated assets).
+ */
+const SLOT_TO_VARIANT_CATEGORY: Record<string, { branch: 'images' | 'videos'; category: string }> = {
+  kit: { branch: 'images', category: 'fullbody' },
+  closeup: { branch: 'images', category: 'closeup' },
+  intro: { branch: 'videos', category: 'intro' },
+  celebration: { branch: 'videos', category: 'celebration' },
+};
+
+/**
+ * Get the processing status for a media slot:
+ *  - 'empty'     — no asset at all
+ *  - 'raw'       — has an asset but not processed (lineup-ready)
+ *  - 'processing' — currently being processed
+ *  - 'processed' — has a processed / lineup-ready version
+ *
+ * Checks both the flat media.{slot}.url AND the per-variant structure
+ * (images.fullbody.*, videos.intro.*, etc.).
+ */
+export function getMediaProcessingState(
+  membership: any,
+  slotId: MediaSlotId,
+): 'empty' | 'raw' | 'processing' | 'processed' {
+  const tr = membership?.metadata?.teamreel_assets || {};
+
+  // Check flat media slot first
+  const flatUrl = tr?.media?.[slotId]?.url;
+
+  const mapping = SLOT_TO_VARIANT_CATEGORY[slotId];
+  if (!mapping) {
+    // Non-processable slot (profile, legacy_photo, legacy) — binary check
+    return flatUrl ? 'processed' : 'empty';
+  }
+
+  // Check per-variant data (images.fullbody.home, videos.intro.home_*, etc.)
+  const branchData = tr?.[mapping.branch]?.[mapping.category];
+  if (!branchData || typeof branchData !== 'object') {
+    return flatUrl ? 'raw' : 'empty';
+  }
+
+  // Check all variants in this category; best state wins
+  let hasRaw = false;
+  let hasProcessing = false;
+  let hasProcessed = false;
+
+  for (const val of Object.values(branchData)) {
+    if (!val) continue;
+    if (typeof val === 'string') {
+      hasRaw = true;
+      continue;
+    }
+    if (typeof val === 'object') {
+      const v = val as Record<string, any>;
+      const state = v.processing_state;
+      if (state === 'processed' && v.processed) {
+        hasProcessed = true;
+      } else if (state === 'processing') {
+        hasProcessing = true;
+      } else if (v.raw || v.processed) {
+        hasRaw = true;
+      }
+    }
+  }
+
+  if (hasProcessed) return 'processed';
+  if (hasProcessing) return 'processing';
+  if (hasRaw || flatUrl) return 'raw';
+  return 'empty';
+}

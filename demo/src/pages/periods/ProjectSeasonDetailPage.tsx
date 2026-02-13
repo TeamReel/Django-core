@@ -6,7 +6,7 @@ import { KitsTab } from '../../components/KitsTab';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
-import { memberHasMedia, countFilledMediaSlots } from '../../utils/mediaHelpers';
+import { memberHasMedia, countFilledMediaSlots, getMediaProcessingState } from '../../utils/mediaHelpers';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import {
@@ -2831,19 +2831,28 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       )}
                                     </td>
                                     {MEDIA_SLOTS.map((slot) => {
-                                      const hasMedia = memberHasMedia(m, slot.id);
+                                      const procState = getMediaProcessingState(m, slot.id);
+                                      // 3-state indicator: empty / raw / processing / processed
+                                      const indicator = procState === 'processed' ? '✅'
+                                        : procState === 'processing' ? '⏳'
+                                        : procState === 'raw' ? '🔶'
+                                        : '⬜';
+                                      const title = procState === 'processed' ? `${slot.label}: Lineup-ready`
+                                        : procState === 'processing' ? `${slot.label}: Bezig met bewerken…`
+                                        : procState === 'raw' ? `${slot.label}: Ruw (nog niet bewerkt)`
+                                        : `${slot.label}: Ontbreekt`;
                                       return (
                                         <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
                                           {href ? (
                                             <Link
                                               to={`${href}?tab=${slot.id}`}
                                               style={{ textDecoration: 'none' }}
-                                              title={`Edit ${slot.label}`}
+                                              title={title}
                                             >
-                                              <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span>
+                                              <span style={{ fontSize: '14px' }}>{indicator}</span>
                                             </Link>
                                           ) : (
-                                            <span style={{ fontSize: '14px' }}>{hasMedia ? '✅' : '⬜'}</span>
+                                            <span style={{ fontSize: '14px' }} title={title}>{indicator}</span>
                                           )}
                                         </td>
                                       );
@@ -2864,13 +2873,31 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       {/* Legend */}
                       <div style={{ marginTop: '16px', padding: '12px', background: 'var(--app-muted)', borderRadius: '8px' }}>
                         <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>Legend</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '12px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '12px', marginBottom: '10px' }}>
                           {MEDIA_SLOTS.map((slot) => (
                             <div key={slot.id} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <span>{slot.icon}</span>
                               <span style={{ opacity: 0.8 }}>{slot.label}</span>
                             </div>
                           ))}
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '12px', borderTop: '1px solid var(--app-border, #333)', paddingTop: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span>✅</span>
+                            <span style={{ opacity: 0.8 }}>Lineup-ready (bewerkt)</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span>🔶</span>
+                            <span style={{ opacity: 0.8 }}>Ruw (niet bewerkt)</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span>⏳</span>
+                            <span style={{ opacity: 0.8 }}>Bezig met bewerken</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span>⬜</span>
+                            <span style={{ opacity: 0.8 }}>Ontbreekt</span>
+                          </div>
                         </div>
                       </div>
                     </div>
