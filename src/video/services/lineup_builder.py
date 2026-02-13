@@ -205,12 +205,32 @@ class LineupSegmentBuilder:
 
         # Build a cache of ProjectMemberships for quick lookup
         user_ids = [p.member.user_id for p in participations if p.member.user_id]
-        project_memberships = ProjectMembership.objects.filter(
-            project=project,
-            user_id__in=user_ids,
-            deleted_at__isnull=True,
-        ).select_related("user")
-        membership_by_user = {pm.user_id: pm for pm in project_memberships}
+        if not user_ids:
+            # No users to fetch memberships for
+            membership_by_user = {}
+        else:
+            membership_by_user = {}
+
+            # First, try to get period-specific memberships
+            if activity.period:
+                period_memberships = ProjectMembership.objects.filter(
+                    project=project,
+                    period=activity.period,
+                    user_id__in=user_ids,
+                    deleted_at__isnull=True,
+                ).select_related("user")
+                membership_by_user.update({pm.user_id: pm for pm in period_memberships})
+
+            # Then, for any missing users, get non-period memberships
+            remaining_user_ids = [uid for uid in user_ids if uid not in membership_by_user]
+            if remaining_user_ids:
+                general_memberships = ProjectMembership.objects.filter(
+                    project=project,
+                    period__isnull=True,
+                    user_id__in=remaining_user_ids,
+                    deleted_at__isnull=True,
+                ).select_related("user")
+                membership_by_user.update({pm.user_id: pm for pm in general_memberships})
 
         # Group players by functional role
         keepers: list[PlayerSegment] = []
