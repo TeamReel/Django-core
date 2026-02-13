@@ -278,6 +278,12 @@ def generate_asset_view(request: Request) -> Response:
             {"error": str(e)},
             status=status.HTTP_400_BAD_REQUEST,
         )
+    except Exception as e:  # noqa: BLE001
+        logger.exception("Failed to resolve template output type for %s: %s", template_id, e)
+        return Response(
+            {"error": f"Template resolution failed: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
     # Run the appropriate pipeline based on output type
     if output_type == "video":
@@ -374,10 +380,36 @@ def generate_asset_view(request: Request) -> Response:
         )
 
     # Save generated images to storage and include storage info in response
-    from files.utils import get_storage_backend
+    try:
+        from files.utils import get_storage_backend
 
-    storage = get_storage_backend()
-    storage_backend_name = storage.__class__.__name__
+        storage = get_storage_backend()
+        storage_backend_name = storage.__class__.__name__
+    except Exception as e:  # noqa: BLE001
+        logger.exception("Failed to initialise storage backend: %s", e)
+        # Return results without storage - base64 is still available
+        clean_variants = []
+        for r in results:
+            clean_variants.append(
+                {
+                    "variant_index": r["variant_index"],
+                    "image_base64": r.get("image_base64"),
+                    "mime_type": r.get("mime_type"),
+                    "filename": r.get("filename"),
+                    "error": r.get("error"),
+                    "metadata": r.get("metadata"),
+                    "presigned_url": None,
+                    "storage_info": None,
+                }
+            )
+        return Response(
+            {
+                "template_id": template_id,
+                "variant_count": variant_count,
+                "variants": clean_variants,
+            },
+            status=status.HTTP_200_OK,
+        )
 
     # Lookup project/organisation for proper scoping
     project = None

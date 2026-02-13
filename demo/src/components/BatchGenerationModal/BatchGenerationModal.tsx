@@ -406,7 +406,13 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
           responseData = json.data || json;
         } else {
           const errJson = await res.json().catch(() => ({}));
-          throw new Error((errJson as Record<string, string>)?.error || (errJson as Record<string, string>)?.detail || `HTTP ${res.status}`);
+          // Handle API envelope format: { status: "error", error: { code, message, details } }
+          const errField = (errJson as Record<string, unknown>)?.error;
+          const errMessage =
+            typeof errField === 'string' ? errField :
+            typeof errField === 'object' && errField ? (errField as Record<string, string>)?.message || JSON.stringify(errField) :
+            (errJson as Record<string, string>)?.detail || `HTTP ${res.status}`;
+          throw new Error(errMessage);
         }
 
         const variants = (responseData.variants || []) as Record<string, unknown>[];
