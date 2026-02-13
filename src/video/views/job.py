@@ -344,6 +344,8 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         # Check for sync processing request (bypasses Celery)
         sync_mode = request.data.get("sync", False) or request.query_params.get("sync") == "true"
 
+        celery_task_id: str | None = None
+
         if sync_mode:
             # Process synchronously (for testing/debugging)
             logger.info("Processing job synchronously: %s", job.id)
@@ -376,9 +378,10 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             # Queue the Celery task (normal async mode)
             try:
                 task_result = process_lineup_video.delay(str(job.id))
+                celery_task_id = getattr(task_result, "id", None)
                 logger.info(
                     "Celery task queued successfully: task_id=%s, job_id=%s",
-                    task_result.id,
+                    celery_task_id,
                     job.id,
                 )
             except Exception as e:  # noqa: BLE001
@@ -387,7 +390,11 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
         try:
             output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
-            return Response(output.data, status=status.HTTP_201_CREATED)
+            data = dict(output.data)
+            data["sync_mode"] = bool(sync_mode)
+            if celery_task_id:
+                data["celery_task_id"] = celery_task_id
+            return Response(data, status=status.HTTP_201_CREATED)
         except Exception as e:  # noqa: BLE001
             import traceback
 
@@ -397,6 +404,8 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 {
                     "id": str(job.id),
                     "status": job.status if hasattr(job, "status") else "queued",
+                    "sync_mode": bool(sync_mode),
+                    "celery_task_id": celery_task_id,
                     "message": "Job created but serialization failed",
                 },
                 status=status.HTTP_201_CREATED,

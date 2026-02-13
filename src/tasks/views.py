@@ -1,14 +1,32 @@
 """Task infrastructure health check and monitoring views."""
 
 from datetime import datetime
+from urllib.parse import urlsplit
 
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .health import get_celery_health_status
 from .inspector import get_task_summary
+
+
+def _redact_url(value: str | None) -> str | None:
+    if not value:
+        return value
+    try:
+        parts = urlsplit(value)
+        # Keep scheme + host + port only; strip user/pass + path + query.
+        host = parts.hostname or ""
+        port = f":{parts.port}" if parts.port else ""
+        scheme = parts.scheme or ""
+        if scheme:
+            return f"{scheme}://{host}{port}"
+        # Some celery transports may not be parseable URLs; fall back to prefix.
+        return value.split(":", 1)[0] + ":…"
+    except Exception:  # noqa: BLE001
+        return "<unparseable>"
 
 
 class TasksHealthView(APIView):
@@ -121,3 +139,96 @@ class TasksListView(APIView):
                 },
                 status=status.HTTP_200_OK,  # Return 200 even on error, with empty data
             )
+
+
+class TasksDebugView(APIView):
+    """Admin-only diagnostics for Celery connectivity and worker visibility.
+
+    GET /api/v1/tasks/debug/
+
+    This endpoint is intentionally more verbose than the public health check.
+    It helps diagnose issues like:
+    - Web app pointing at the wrong broker
+    - No workers deployed / workers not connected
+    - Task not registered on workers
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    authentication_classes = []  # Use default authentication
+
+    def get(self, request):  # noqa: ARG002
+        import os
+
+        from celery import current_app
+        from celery.exceptions import TimeoutError as CeleryTimeout
+
+        timeout = int(request.query_params.get("timeout", 2))
+
+        app = current_app
+        inspect = app.control.inspect(timeout=timeout)
+
+        broker_url = getattr(app.conf, "broker_url", None)
+        result_backend = getattr(app.conf, "result_backend", None)
+
+        debug: dict = {
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "django_settings_module": os.environ.get("DJANGO_SETTINGS_MODULE"),
+            "celery": {
+                "main": getattr(app, "main", None),
+                "task_always_eager": bool(getattr(app.conf, "task_always_eager", False)),
+                "broker_url": _redact_url(broker_url),
+                "result_backend": _redact_url(result_backend),
+                "default_queue": getattr(app.conf, "task_default_queue", None),
+            },
+            "workers": {
+                "ping": None,
+                "active_queues": None,
+                "stats": None,
+            },
+            "tasks": {
+                "registered_sample": [],
+                "has_lineup_task": None,
+            },
+        }
+
+        try:
+            # Most reliable quick check: do any workers respond at all?
+            debug["workers"]["ping"] = inspect.ping()
+        except CeleryTimeout:
+            debug["workers"]["ping"] = {"error": f"timeout after {timeout}s"}
+        except Exception as exc:  # noqa: BLE001
+            debug["workers"]["ping"] = {"error": str(exc)[:200]}
+
+        try:
+            debug["workers"]["active_queues"] = inspect.active_queues()
+        except CeleryTimeout:
+            debug["workers"]["active_queues"] = {"error": f"timeout after {timeout}s"}
+        except Exception as exc:  # noqa: BLE001
+            debug["workers"]["active_queues"] = {"error": str(exc)[:200]}
+
+        try:
+            # stats() also proves broker + workers are aligned
+            debug["workers"]["stats"] = inspect.stats()
+        except CeleryTimeout:
+            debug["workers"]["stats"] = {"error": f"timeout after {timeout}s"}
+        except Exception as exc:  # noqa: BLE001
+            debug["workers"]["stats"] = {"error": str(exc)[:200]}
+
+        try:
+            registered = inspect.registered() or {}
+            all_tasks: set[str] = set()
+            for task_list in registered.values():
+                all_tasks.update(task_list)
+            filtered = sorted([t for t in all_tasks if not t.startswith("celery.")])
+            debug["tasks"]["registered_sample"] = filtered[:50]
+            debug["tasks"]["has_lineup_task"] = (
+                "src.video.tasks.lineup.process_lineup_video" in all_tasks
+            )
+        except CeleryTimeout:
+            debug["tasks"]["registered_sample"] = [f"<timeout after {timeout}s>"]
+            debug["tasks"]["has_lineup_task"] = None
+        except Exception as exc:  # noqa: BLE001
+            debug["tasks"]["registered_sample"] = [f"<error: {str(exc)[:200]}>"]
+            debug["tasks"]["has_lineup_task"] = None
+
+        return Response(debug, status=status.HTTP_200_OK)
