@@ -180,8 +180,8 @@ class LineupSegmentBuilder:
 
         # Get match data
         opponent_name = getattr(activity, "opponent", None) or "Opponent"
-        match_date = activity.activity_date.strftime("%d-%m-%Y") if activity.activity_date else ""
-        kickoff_time = activity.activity_date.strftime("%H:%M") if activity.activity_date else None
+        match_date = activity.start_time.strftime("%d-%m-%Y") if activity.start_time else ""
+        kickoff_time = activity.start_time.strftime("%H:%M") if activity.start_time else None
         is_home = getattr(activity, "home_away", "home") == "home"
         score_home = getattr(activity, "score_home", None)
         score_away = getattr(activity, "score_away", None)
