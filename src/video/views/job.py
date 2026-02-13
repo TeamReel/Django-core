@@ -234,7 +234,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
         from src.video.models.job import JobType
         from src.video.services.lineup_builder import build_lineup_video_config
-        from src.video.tasks import process_lineup_video
+        from src.video.services.video_service import VideoService
 
         activity_id = request.data.get("activity_id")
         template_id = request.data.get("template_id")
@@ -269,6 +269,40 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         if not ProjectMembership.objects.filter(project=project, user=request.user).exists():
             raise PermissionDenied("You must be a project member to create lineup videos.")
 
+        # Check for sync processing request (bypasses background processing)
+        sync_mode = request.data.get("sync", False) or request.query_params.get("sync") == "true"
+
+        # Fast path (default): create a job immediately and do heavy work in background.
+        # This avoids the UI hanging on "Aanvraag verstuurd" while we generate scenes / download assets.
+        if not sync_mode:
+            if frontend_segments and not allow_frontend_segments:
+                logger.warning(
+                    "Frontend segments were provided but are ignored (allow_frontend_segments=false): job will use backend lineup builder"
+                )
+
+            service = VideoService()
+            job = service.create_job(
+                project=project,
+                user=request.user,
+                job_type=JobType.LINEUP,
+                config={
+                    # Defer segment building to the background thread.
+                    "activity_id": activity_id,
+                    "template_id": template_id,
+                    "output_resolution": output_resolution,
+                    "selected_member_ids": selected_member_ids,
+                    "allow_frontend_segments": allow_frontend_segments,
+                    # Preserve for debugging; backend is strict by default.
+                    "frontend_segments": frontend_segments,
+                },
+            )
+
+            output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
+            data = dict(output.data)
+            data["sync_mode"] = False
+            return Response(data, status=status.HTTP_201_CREATED)
+
+        # Slow path: sync mode is for debugging only.
         # Build segments config from template + activity data
         try:
             config = build_lineup_video_config(
@@ -306,69 +340,46 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 config=config,
             )
         except Exception as e:  # noqa: BLE001
-            import logging
             import traceback
 
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to create VideoJob: {e}\n{traceback.format_exc()}")
+            logger.error("Failed to create VideoJob: %s\n%s", e, traceback.format_exc())
             return Response(
                 {"error": f"Failed to create video job: {str(e)}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Check for sync processing request (bypasses Celery)
-        sync_mode = request.data.get("sync", False) or request.query_params.get("sync") == "true"
+        # Process synchronously (debug/testing)
+        logger.info("Processing job synchronously: %s", job.id)
+        try:
+            from src.video.services.processors.lineup import LineupProcessor
 
-        celery_task_id: str | None = None
+            processor = LineupProcessor(job)
+            processor.execute()
 
-        if sync_mode:
-            # Process synchronously (for testing/debugging)
-            logger.info("Processing job synchronously: %s", job.id)
-            try:
-                from src.video.services.processors.lineup import LineupProcessor
+            logger.info("Sync processing completed for job %s", job.id)
+            job.refresh_from_db()
+        except Exception as e:
+            import traceback
 
-                processor = LineupProcessor(job)
-                processor.execute()
-
-                logger.info("Sync processing completed for job %s", job.id)
-                job.refresh_from_db()
-            except Exception as e:
-                import traceback
-
-                logger.error(
-                    "Sync processing failed for job %s: %s\n%s", job.id, e, traceback.format_exc()
-                )
-                job.refresh_from_db()
-                # Return error but keep the job for debugging
-                return Response(
-                    {
-                        "id": str(job.id),
-                        "status": job.status,
-                        "error": str(e),
-                        "error_message": job.error_message,
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
-        else:
-            # Queue the Celery task (normal async mode)
-            try:
-                task_result = process_lineup_video.delay(str(job.id))
-                celery_task_id = getattr(task_result, "id", None)
-                logger.info(
-                    "Celery task queued successfully: task_id=%s, job_id=%s",
-                    celery_task_id,
-                    job.id,
-                )
-            except Exception as e:  # noqa: BLE001
-                logger.warning("Failed to queue Celery task: %s - job will remain queued", e)
-                # Don't fail the request - job is created, can be processed later
+            logger.error(
+                "Sync processing failed for job %s: %s\n%s", job.id, e, traceback.format_exc()
+            )
+            job.refresh_from_db()
+            # Return error but keep the job for debugging
+            return Response(
+                {
+                    "id": str(job.id),
+                    "status": job.status,
+                    "error": str(e),
+                    "error_message": job.error_message,
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         try:
             output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
             data = dict(output.data)
             data["sync_mode"] = bool(sync_mode)
-            if celery_task_id:
-                data["celery_task_id"] = celery_task_id
             return Response(data, status=status.HTTP_201_CREATED)
         except Exception as e:  # noqa: BLE001
             import traceback
@@ -380,7 +391,6 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                     "id": str(job.id),
                     "status": job.status if hasattr(job, "status") else "queued",
                     "sync_mode": bool(sync_mode),
-                    "celery_task_id": celery_task_id,
                     "message": "Job created but serialization failed",
                 },
                 status=status.HTTP_201_CREATED,

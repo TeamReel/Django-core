@@ -151,6 +151,49 @@ class VideoService:
             if job.status in (JobStatus.COMPLETED, JobStatus.CANCELLED):
                 return
 
+            config = job.config or {}
+            segments = config.get("segments") or []
+
+            # If segments are missing, build them now in the background thread.
+            # This is the key to making the API fast: the request returns immediately
+            # with a queued job, and the heavy lifting happens here.
+            if not segments:
+                activity_id = config.get("activity_id") or config.get("match_id")
+                template_id = config.get("template_id")
+                output_resolution = config.get("output_resolution", "vertical_1080p")
+                selected_member_ids = config.get("selected_member_ids")
+
+                if not activity_id:
+                    raise ValueError(
+                        "Lineup job config must include segments[] or activity_id for deferred build"
+                    )
+
+                # Mark as processing early so UI doesn't look stuck in queued.
+                if job.status == JobStatus.QUEUED:
+                    job.status = JobStatus.PROCESSING
+                    job.started_at = timezone.now()
+                    job.progress_percent = max(int(job.progress_percent or 0), 1)
+                    job.save(
+                        update_fields=[
+                            "status",
+                            "started_at",
+                            "progress_percent",
+                            "updated_at",
+                        ]
+                    )
+
+                from src.video.services.lineup_builder import build_lineup_video_config
+
+                built_config = build_lineup_video_config(
+                    activity_id=activity_id,
+                    template_id=template_id,
+                    output_resolution=output_resolution,
+                    selected_member_ids=selected_member_ids,
+                )
+                job.config = built_config
+                job.progress_percent = max(int(job.progress_percent or 0), 5)
+                job.save(update_fields=["config", "progress_percent", "updated_at"])
+
             processor = LineupProcessor(job)
             processor.execute()
 
@@ -245,11 +288,22 @@ class VideoService:
             raise ValidationError({"preset": "Preset is required for transcode jobs"})
 
         if job_type == JobType.LINEUP:
-            if not config or not config.get("segments"):
-                raise ValidationError({"config": "Lineup jobs require segments in config"})
-            segments = config.get("segments", [])
-            if len(segments) == 0:
-                raise ValidationError({"config": "At least one segment is required"})
-            for idx, seg in enumerate(segments):
-                if not seg.get("url"):
-                    raise ValidationError({"config": f"Segment {idx} missing required 'url' field"})
+            if not config:
+                raise ValidationError({"config": "Lineup jobs require config"})
+
+            segments = config.get("segments") or []
+            if segments:
+                for idx, seg in enumerate(segments):
+                    if not seg.get("url"):
+                        raise ValidationError(
+                            {"config": f"Segment {idx} missing required 'url' field"}
+                        )
+                return
+
+            # Deferred build mode (template/activity based)
+            if config.get("activity_id") or config.get("match_id"):
+                return
+
+            raise ValidationError(
+                {"config": "Lineup jobs require segments[] or activity_id for deferred build"}
+            )
