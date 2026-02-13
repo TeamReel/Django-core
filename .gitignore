@@ -84,6 +84,9 @@ Thumbs.db
 .kittify/
 node_modules
 
+# Local asset / video scratch files
+asc/
+
 # Large Data Exports & Backups
 SoccerWiki_*.json
 backup_*
