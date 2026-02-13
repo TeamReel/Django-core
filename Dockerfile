@@ -53,7 +53,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security (B03 alignment)
-RUN groupadd -r django && useradd -r -g django -u 1000 django
+# -m creates a home dir (needed by rembg/pooch to cache U2-Net model in ~/.u2net)
+RUN groupadd -r django && useradd -r -g django -u 1000 -m django
 
 # Numba (used by pymatting/rembg) tries to write JIT caches next to source files.
 # In production the venv is not writable for the non-root user, so we provide
