@@ -720,13 +720,31 @@ class LineupSegmentBuilder:
         if not storage_path:
             return None
 
+        # If it's already a full URL (startwith http), return as is.
+        if storage_path.startswith("http://") or storage_path.startswith("https://"):
+            return storage_path
+
         try:
             from src.files.utils import get_storage_backend
 
             backend = get_storage_backend()
-            return backend.get_presigned_url(storage_path, expires_in=3600)
-        except Exception:  # noqa: BLE001
-            logger.warning("Failed to get presigned URL for %s", storage_path)
+            url = backend.get_presigned_url(storage_path, expires_in=3600)
+            if not url:
+                self._debug_trace.append(
+                    f"Backend {type(backend).__name__} returned None for {storage_path}"
+                )
+            return url
+        except Exception as e:  # noqa: BLE001
+            import traceback
+
+            msg = f"Presign Error ({type(e).__name__}): {e}"
+            self._debug_trace.append(msg)
+            logger.warning(
+                "Failed to get presigned URL for %s: %s\n%s",
+                storage_path,
+                e,
+                traceback.format_exc(),
+            )
             return None
 
     def _get_resolution_settings(self) -> tuple[int, int, int]:
