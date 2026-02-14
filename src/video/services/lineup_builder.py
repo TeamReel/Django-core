@@ -1549,8 +1549,9 @@ class LineupSegmentBuilder:
                 fc.append("[bg][header]overlay=0:0[bg_h]")
                 last = "bg_h"
 
-            # Scale players to ~22% of screen height (heuristic from generator)
-            target_h = int(height * 0.22)
+            # Player height ≈ 1/3 of the football field area.
+            # Field occupies 85% of frame (header=15%), so 0.85/3 ≈ 0.28.
+            target_h = int(height * 0.28)
 
             for p in player_inputs:
                 pid = p["idx"]
