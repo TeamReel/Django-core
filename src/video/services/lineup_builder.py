@@ -1553,8 +1553,8 @@ class LineupSegmentBuilder:
             for p in player_inputs:
                 pid = p["idx"]
                 # Scale player asset
-                # Note: 'format=rgba' ensures alpha channel is preserved for overlay
-                fc.append(f"[{pid}:v]scale=-1:{target_h},format=rgba[p{pid}_s]")
+                # Use format=rgba BEFORE scale to ensure alpha is preserved
+                fc.append(f"[{pid}:v]format=rgba,scale=-1:{target_h}[p{pid}_s]")
 
                 # Position calculation
                 # x: Center of player is at x_pct of Field Width (width)
@@ -1567,7 +1567,11 @@ class LineupSegmentBuilder:
                 #    Data: Defenders y=15, Attackers y=25
                 y_expr = f"(H*0.15+(H*0.85)*{p['y_pct']}/100-h)"
 
-                fc.append(f"[{last}][p{pid}_s]overlay=x={x_expr}:y={y_expr}:shortest=1[ov{pid}]")
+                # Use eof_action=repeat to hold the last frame of the overlay if it ends before the background
+                # This prevents the video from disappearing or cutting short
+                fc.append(
+                    f"[{last}][p{pid}_s]overlay=x={x_expr}:y={y_expr}:shortest=0:eof_action=repeat[ov{pid}]"
+                )
                 last = f"ov{pid}"
 
             fc.append(f"[{last}]fps={fps},format=yuv420p[out]")
@@ -1576,7 +1580,20 @@ class LineupSegmentBuilder:
             cmd = (
                 ["ffmpeg", "-y"]
                 + inputs
-                + ["-filter_complex", ";".join(fc), "-map", "[out]", str(out_path)]
+                + [
+                    "-filter_complex",
+                    ";".join(fc),
+                    "-map",
+                    "[out]",
+                    "-t",
+                    "5",  # Force duration to 5s
+                    "-c:v",
+                    "libx264",
+                    "-preset",
+                    "veryfast",
+                    "-an",
+                    str(out_path),
+                ]
             )
 
             # Run composition
