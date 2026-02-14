@@ -307,7 +307,13 @@ class LineupProcessor(BaseVideoProcessor):
                 # Update progress (preparation is 0-50%)
                 progress = int((idx + 1) / total * 50)
                 self.job.progress_percent = progress
-                self.job.save(update_fields=["progress_percent", "updated_at"])
+                # Store current player label in metadata for frontend progress display
+                meta = self.job.metadata or {}
+                meta["current_segment"] = label or f"Segment {idx + 1}/{total}"
+                meta["segment_index"] = idx + 1
+                meta["segment_total"] = total
+                self.job.metadata = meta
+                self.job.save(update_fields=["progress_percent", "metadata", "updated_at"])
 
             except Exception as e:
                 logger.warning(

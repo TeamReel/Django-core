@@ -482,6 +482,7 @@ export default function ContentGenerationModal({
       setVideoJobId(null);
       setVideoJobStatus(null);
       setVideoJobProgressRaw(0);
+      setVideoJobMeta({});
 
       // Only reset selections on FRESH open (not when staying open or after error)
       if (freshOpen && !hasInitializedRef.current) {
@@ -606,6 +607,7 @@ export default function ContentGenerationModal({
   const [videoJobId, setVideoJobId] = useState<string | null>(null);
   const [videoJobStatus, setVideoJobStatus] = useState<string | null>(null);
   const [videoJobProgressRaw, setVideoJobProgressRaw] = useState<number>(0);
+  const [videoJobMeta, setVideoJobMeta] = useState<Record<string, unknown>>({});
 
   // Helper to get member's asset URL
   const getMemberAssetUrl = (memberId: string, assetType: string): string | null => {
@@ -874,6 +876,7 @@ export default function ContentGenerationModal({
 
         setVideoJobStatus(status);
         setVideoJobProgressRaw(progressPercent);
+        setVideoJobMeta(job.metadata || {});
         setProgress(30 + (progressPercent * 0.6)); // Map 0-100% to 30-90%
 
         if (status === 'completed') {
@@ -972,6 +975,7 @@ export default function ContentGenerationModal({
     setVideoJobId(null);
     setVideoJobStatus(null);
     setVideoJobProgressRaw(0);
+    setVideoJobMeta({});
 
     // Simulate initial progress
     let p = 0;
@@ -1265,6 +1269,9 @@ export default function ContentGenerationModal({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1100,
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        padding: '16px',
       }}
       onClick={onClose}
     >
@@ -1275,12 +1282,13 @@ export default function ContentGenerationModal({
           padding: '24px',
           borderRadius: '12px',
           width: '1200px',
-          maxWidth: '95%',
+          maxWidth: '100%',
           boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
           color: 'var(--app-text)',
           display: 'flex',
           flexDirection: 'column',
-          maxHeight: '95vh',
+          maxHeight: 'calc(100vh - 32px)',
+          margin: 'auto',
         }}
       >
         {/* Header */}
@@ -1837,9 +1845,15 @@ export default function ContentGenerationModal({
                       : undefined
                   : undefined;
 
+                const currentPlayer = (videoJobMeta as Record<string, unknown>)?.current_segment as string | undefined;
+                const segIdx = (videoJobMeta as Record<string, unknown>)?.segment_index as number | undefined;
+                const segTotal = (videoJobMeta as Record<string, unknown>)?.segment_total as number | undefined;
+
                 const buildDetail = isLineup
                   ? status === 'processing'
-                    ? `Voortgang: ${Math.round(videoJobProgressRaw)}%`
+                    ? currentPlayer
+                      ? `${currentPlayer}${segIdx && segTotal ? ` (${segIdx}/${segTotal})` : ''}`
+                      : `Voortgang: ${Math.round(videoJobProgressRaw)}%`
                     : status === 'completed'
                       ? 'Afgerond.'
                       : undefined
@@ -1878,6 +1892,22 @@ export default function ContentGenerationModal({
                         <StepRow label="Klaar" state={doneState} />
                       </div>
                     </div>
+
+                    {isLineup && videoJobId && (
+                      <div className="mt-6 text-center">
+                        <p className="text-xs text-gray-500 mb-2">
+                          De video blijft op de achtergrond verwerkt worden, ook als je dit venster sluit.
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={onClose}
+                          style={{ fontSize: '13px' }}
+                        >
+                          Sluiten — bekijk later in Video Queue
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 );
               })()}
