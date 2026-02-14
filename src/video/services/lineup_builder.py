@@ -973,10 +973,13 @@ class LineupSegmentBuilder:
         # Resolve background (prefer brand stadium_background)
         background_url = data.field_background_url
 
-        # Scene mode: render per-LINE scenes with all players of that line positioned
+        # Scene mode: per-LINE with full body → intro → closeup sequence
+        # Closeups accumulate across lines (keeper closeups visible during verdediging, etc.)
         if self._render_mode == "line_scenes":
             from src.video.services.lineup_scene_generator import (
+                CloseupOverlay,
                 ScenePlayer,
+                generate_composite_scene,
                 generate_line_scene_image,
             )
 
@@ -994,6 +997,9 @@ class LineupSegmentBuilder:
                 ("MIDDENVELD", data.midfielders, 40),
                 ("AANVAL", data.attackers, 15),
             ]
+
+            # Accumulated closeups that persist across ALL lines
+            accumulated_closeups: list[CloseupOverlay] = []
 
             for title, players, y_pct in line_defs:
                 if not players:
@@ -1026,8 +1032,8 @@ class LineupSegmentBuilder:
                 if not scene_players:
                     continue
 
-                # Generate ONE scene with all players of this line
-                scene_url = generate_line_scene_image(
+                # --- STEP 1: Full body scene (all players of this line together) ---
+                fullbody_url = generate_line_scene_image(
                     width=data.output_width,
                     height=data.output_height,
                     background_url=background_url,
@@ -1038,17 +1044,70 @@ class LineupSegmentBuilder:
                 segments.append(
                     {
                         "type": "image",
-                        "url": scene_url,
-                        "duration": 4.0,
+                        "url": fullbody_url,
+                        "duration": 2.5,
                         "transition": "fade",
-                        "label": title,
+                        "label": f"{title} - Full Body",
+                    }
+                )
+
+                # --- STEP 2: Intro videos per player (direct, no FFmpeg overlay) ---
+                # Assumes intro videos are already composited with background
+                for p in players:
+                    if p.intro_url:
+                        player_label = f"{p.jersey_number or ''} {p.member_name}".strip()
+                        segments.append(
+                            {
+                                "type": "video",
+                                "url": p.intro_url,
+                                "label": player_label,
+                                "transition": "cut",
+                            }
+                        )
+
+                # --- STEP 3: Add this line's players to accumulated closeups ---
+                for i, p in enumerate(players):
+                    if not p.closeup_url and not p.kit_url:
+                        continue
+                    closeup_image = p.closeup_url or p.kit_url
+                    player_label = f"{p.jersey_number or ''} {p.member_name}".strip()
+
+                    # Use player's actual field position for closeup placement
+                    accumulated_closeups.append(
+                        CloseupOverlay(
+                            name=player_label,
+                            image_url=closeup_image,
+                            x_pct=int(p.x),
+                            y_pct=int(p.y),
+                        )
+                    )
+
+                # --- STEP 4: Closeup scene showing ALL closeups so far ---
+                closeup_scene_url = generate_composite_scene(
+                    width=data.output_width,
+                    height=data.output_height,
+                    background_url=background_url,
+                    header_url=header_url,
+                    title=title,
+                    accumulated_closeups=list(accumulated_closeups),
+                    featured_player=None,
+                    prefix=f"closeups_{title.lower().replace(' ', '_')}",
+                )
+                segments.append(
+                    {
+                        "type": "image",
+                        "url": closeup_scene_url,
+                        "duration": 1.5,
+                        "transition": "cut",
+                        "label": f"{title} - Closeups",
                     }
                 )
 
                 logger.info(
-                    "Generated %s scene with %d players",
+                    "Generated %s: fullbody + %d intros + closeup scene (%d total closeups)",
                     title,
-                    len(scene_players),
+                    sum(1 for p in players if p.intro_url),
+                    len(accumulated_closeups),
                 )
 
             if not segments:
