@@ -973,12 +973,11 @@ class LineupSegmentBuilder:
         # Resolve background (prefer brand stadium_background)
         background_url = data.field_background_url
 
-        # Scene mode: render per-player reveal with persistent closeups
+        # Scene mode: render per-LINE scenes with all players of that line positioned
         if self._render_mode == "line_scenes":
             from src.video.services.lineup_scene_generator import (
-                CloseupOverlay,
-                FeaturedPlayer,
-                generate_composite_scene,
+                ScenePlayer,
+                generate_line_scene_image,
             )
 
             if not background_url:
@@ -990,111 +989,67 @@ class LineupSegmentBuilder:
                 )
 
             line_defs = [
-                ("KEEPER", data.keepers),
-                ("VERDEDIGING", data.defenders),
-                ("MIDDENVELD", data.midfielders),
-                ("AANVAL", data.attackers),
+                ("KEEPER", data.keepers, 85),  # (title, players, y_position_pct)
+                ("VERDEDIGING", data.defenders, 65),
+                ("MIDDENVELD", data.midfielders, 40),
+                ("AANVAL", data.attackers, 15),
             ]
 
-            # Accumulated closeups that persist across all lines
-            accumulated: list[CloseupOverlay] = []
-
-            for title, players in line_defs:
+            for title, players, y_pct in line_defs:
                 if not players:
                     continue
 
-                for p in players:
+                # Position all players in this line side by side
+                n = len(players)
+                scene_players: list[ScenePlayer] = []
+                for i, p in enumerate(players):
                     if not p.kit_url:
-                        raise ValueError(
-                            f"Missing kit asset for player '{p.member_name}' in {title}. "
-                            "(teamreel_assets.media.kit.url)"
-                        )
+                        logger.warning("Skipping player %s - no kit URL", p.member_name)
+                        continue
+
+                    # Spread players evenly across x-axis (15% to 85%)
+                    if n == 1:
+                        x_pct = 50
+                    else:
+                        x_pct = 15 + int(70 * i / (n - 1))
 
                     player_label = f"{p.jersey_number or ''} {p.member_name}".strip()
-
-                    featured = FeaturedPlayer(
-                        name=player_label,
-                        kit_url=p.kit_url,
-                    )
-
-                    # --- Step 1: Full body reveal (3s) ---
-                    scene_url = generate_composite_scene(
-                        width=data.output_width,
-                        height=data.output_height,
-                        background_url=background_url,
-                        header_url=header_url,
-                        title=title,
-                        accumulated_closeups=list(accumulated),
-                        featured_player=featured,
-                        prefix=f"reveal_{p.member_name.replace(' ', '_').lower()}",
-                    )
-                    segments.append(
-                        {"type": "image", "url": scene_url, "duration": 3.0, "transition": "fade"}
-                    )
-
-                    # --- Step 2: Intro video (if available) ---
-                    # Pre-compose the intro on background HERE so the lineup
-                    # processor only needs to do fast concat (no heavy overlays).
-                    if p.intro_url:
-                        composed_url = self._pre_compose_intro_on_background(
-                            intro_url=p.intro_url,
-                            background_url=background_url,
-                            width=data.output_width,
-                            height=data.output_height,
-                            fps=data.output_fps,
-                            prefix=f"intro_{p.member_name.replace(' ', '_').lower()}",
-                        )
-                        intro_final_url = composed_url or p.intro_url
-                        segments.append(
-                            {
-                                "type": "video",
-                                "url": intro_final_url,
-                                "label": player_label,
-                                "transition": "cut",
-                            }
-                        )
-
-                    # --- Step 3: Full body again (1s) ---
-                    scene_url_2 = generate_composite_scene(
-                        width=data.output_width,
-                        height=data.output_height,
-                        background_url=background_url,
-                        header_url=header_url,
-                        title=title,
-                        accumulated_closeups=list(accumulated),
-                        featured_player=featured,
-                        prefix=f"hold_{p.member_name.replace(' ', '_').lower()}",
-                    )
-                    segments.append(
-                        {"type": "image", "url": scene_url_2, "duration": 1.0, "transition": "cut"}
-                    )
-
-                    # --- Step 4: Closeup lands at field position (persists) ---
-                    # Use closeup image if available, else shrunk kit
-                    closeup_image_url = p.closeup_url or p.kit_url
-                    accumulated.append(
-                        CloseupOverlay(
+                    scene_players.append(
+                        ScenePlayer(
                             name=player_label,
-                            image_url=closeup_image_url,
-                            x_pct=int(p.x),
-                            y_pct=int(p.y),
+                            kit_url=p.kit_url,
+                            x_pct=x_pct,
+                            y_pct=y_pct,
                         )
                     )
 
-                    # Render the new accumulated state (closeup just appeared)
-                    scene_url_3 = generate_composite_scene(
-                        width=data.output_width,
-                        height=data.output_height,
-                        background_url=background_url,
-                        header_url=header_url,
-                        title=title,
-                        accumulated_closeups=list(accumulated),
-                        featured_player=None,  # No featured — just the closeups on the field
-                        prefix=f"placed_{p.member_name.replace(' ', '_').lower()}",
-                    )
-                    segments.append(
-                        {"type": "image", "url": scene_url_3, "duration": 0.8, "transition": "cut"}
-                    )
+                if not scene_players:
+                    continue
+
+                # Generate ONE scene with all players of this line
+                scene_url = generate_line_scene_image(
+                    width=data.output_width,
+                    height=data.output_height,
+                    background_url=background_url,
+                    header_url=header_url,
+                    title=title,
+                    players=scene_players,
+                )
+                segments.append(
+                    {
+                        "type": "image",
+                        "url": scene_url,
+                        "duration": 4.0,
+                        "transition": "fade",
+                        "label": title,
+                    }
+                )
+
+                logger.info(
+                    "Generated %s scene with %d players",
+                    title,
+                    len(scene_players),
+                )
 
             if not segments:
                 raise ValueError("No lineup scenes were generated")
