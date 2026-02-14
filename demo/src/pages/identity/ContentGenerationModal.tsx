@@ -854,20 +854,46 @@ export default function ContentGenerationModal({
       // Poll for job completion
       let pollCount = 0;
       const maxPolls = 360; // 30 minutes max (5s intervals)
+      let consecutiveErrors = 0;
+      const maxConsecutiveErrors = 5; // Allow up to 5 transient failures
 
       const pollJob = async (): Promise<void> => {
         if (pollCount >= maxPolls) {
           throw new Error('Video processing timed out. Please try again.');
         }
 
-        const statusRes = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/${jobId}/`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
+        let statusRes: Response;
+        try {
+          statusRes = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/${jobId}/`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+          });
+        } catch (networkErr) {
+          // Network error (offline, DNS, etc.) — retry
+          consecutiveErrors++;
+          console.warn(`⚠️ Poll network error (${consecutiveErrors}/${maxConsecutiveErrors}):`, networkErr);
+          if (consecutiveErrors >= maxConsecutiveErrors) {
+            throw new Error('Lost connection to server. Please check your network and try again.');
+          }
+          pollCount++;
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          return pollJob();
+        }
 
         if (!statusRes.ok) {
-          throw new Error('Failed to check job status');
+          // Server error (500, 502, etc.) — retry instead of aborting
+          consecutiveErrors++;
+          console.warn(`⚠️ Poll HTTP ${statusRes.status} (${consecutiveErrors}/${maxConsecutiveErrors})`);
+          if (consecutiveErrors >= maxConsecutiveErrors) {
+            throw new Error(`Server error while checking job status (HTTP ${statusRes.status})`);
+          }
+          pollCount++;
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          return pollJob();
         }
+
+        // Successful response — reset error counter
+        consecutiveErrors = 0;
 
         const statusData = await statusRes.json();
         const job = statusData.data || statusData;

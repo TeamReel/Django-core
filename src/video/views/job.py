@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import timedelta
 from typing import Any
 
@@ -27,6 +28,8 @@ from src.video.serializers.job import (
     VideoJobDetailSerializer,
     VideoJobListSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class VideoJobViewSet(viewsets.ModelViewSet):
@@ -100,8 +103,14 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         ):
             from src.video.services.video_service import VideoService
 
-            if VideoService().kick_lineup_job(str(job.id)):
-                job.refresh_from_db()
+            try:
+                if VideoService().kick_lineup_job(str(job.id)):
+                    job.refresh_from_db()
+            except Exception:
+                logger.exception(
+                    "Auto-kick failed for stuck lineup job",
+                    extra={"job_id": str(job.id)},
+                )
 
         output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
         return Response(output.data, status=status.HTTP_200_OK)
@@ -187,10 +196,6 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
         Use this for testing when Celery worker isn't available.
         """
-        import logging
-
-        logger = logging.getLogger(__name__)
-
         job = self.get_object()
         if job.status not in [JobStatus.QUEUED, JobStatus.FAILED]:
             return Response(
@@ -252,10 +257,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         Triggers background removal + resize/crop to lineup-ready specs.
         Updates membership.metadata.teamreel_assets in-place with { raw, processed, processing_state }.
         """
-        import logging
         import threading
-
-        logger = logging.getLogger(__name__)
 
         membership_id = request.data.get("membership_id")
         asset_type = request.data.get("asset_type")
@@ -472,10 +474,6 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         If `segments` is provided, uses those directly.
         Otherwise, builds segments from Activity participations + brand assets.
         """
-        import logging
-
-        logger = logging.getLogger(__name__)
-
         from src.video.services.lineup_builder import build_lineup_video_config
         from src.video.services.video_service import VideoService
 

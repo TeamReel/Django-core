@@ -77,7 +77,15 @@ class VideoService:
             job.save(update_fields=["workflow_instance", "updated_at"])
 
         # Dispatch after commit to avoid race conditions.
-        self._dispatch_job(job)
+        # Wrapped in try/except so the job is always returned even if dispatch
+        # fails.  The retrieve endpoint has auto-kick logic that will retry.
+        try:
+            self._dispatch_job(job)
+        except Exception:
+            logger.exception(
+                "Dispatch failed for job — auto-kick will retry on next poll",
+                extra={"job_id": str(job.id), "job_type": job.job_type},
+            )
 
         logger.info(
             "video_job_created",
