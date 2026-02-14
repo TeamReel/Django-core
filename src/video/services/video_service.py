@@ -199,6 +199,7 @@ class VideoService:
         """Process lineup job synchronously (for when Celery is unavailable)."""
         from django.db import close_old_connections
 
+        from src.video.services.processors.base import JobCancelledError
         from src.video.services.processors.lineup import LineupProcessor
 
         try:
@@ -256,6 +257,18 @@ class VideoService:
 
             logger.info("Lineup job processed in background thread", extra={"job_id": job_id})
 
+        except JobCancelledError:
+            # Cancellation is handled cooperatively inside the processor.
+            try:
+                job = VideoJob.objects.get(id=job_id)
+                if job.status != JobStatus.CANCELLED:
+                    job.status = JobStatus.CANCELLED
+                job.completed_at = timezone.now()
+                job.save(update_fields=["status", "completed_at", "updated_at"])
+            except Exception:
+                pass
+            return
+
         except Exception as exc:
             logger.exception("Lineup job failed in background thread", extra={"job_id": job_id})
             try:
@@ -271,12 +284,20 @@ class VideoService:
 
     def cancel_job(self, job: VideoJob) -> bool:
         """Cancel pending/queued job."""
-        if job.status != JobStatus.QUEUED:
-            return False
-        job.status = JobStatus.CANCELLED
-        job.completed_at = timezone.now()
-        job.save(update_fields=["status", "completed_at", "updated_at"])
-        return True
+        if job.status == JobStatus.QUEUED:
+            job.status = JobStatus.CANCELLED
+            job.completed_at = timezone.now()
+            job.save(update_fields=["status", "completed_at", "updated_at"])
+            return True
+
+        # Allow cancelling in-flight lineup jobs; processor will stop cooperatively.
+        if job.status == JobStatus.PROCESSING and job.job_type == JobType.LINEUP:
+            job.status = JobStatus.CANCELLED
+            job.completed_at = timezone.now()
+            job.save(update_fields=["status", "completed_at", "updated_at"])
+            return True
+
+        return False
 
     def retry_job(self, job: VideoJob) -> VideoJob:
         """Reset failed job and redispatch."""

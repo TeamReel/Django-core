@@ -11,6 +11,7 @@ from django.utils import timezone
 from src.video.models import VideoJob
 from src.video.models.job import JobStatus
 from src.video.services.processors.lineup import LineupProcessor
+from src.video.services.processors.base import JobCancelledError
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +118,14 @@ def process_lineup_video(self, job_id: str) -> str | None:
 
         return job_id
 
+    except JobCancelledError:
+        job.refresh_from_db()
+        if job.status != JobStatus.CANCELLED:
+            job.status = JobStatus.CANCELLED
+            job.completed_at = timezone.now()
+            job.save(update_fields=["status", "completed_at", "updated_at"])
+        return job_id
+
     except Exception as exc:
         logger.exception(
             "Lineup video processing failed",
@@ -131,8 +140,11 @@ def process_lineup_video(self, job_id: str) -> str | None:
             job.completed_at = timezone.now()
             job.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
 
-        # Retry with backoff if retries remain
+        # Retry with backoff if retries remain (but never retry cancelled jobs)
         if self.request.retries < self.max_retries:
+            job.refresh_from_db(fields=["status"])
+            if job.status == JobStatus.CANCELLED:
+                return None
             job.status = JobStatus.QUEUED
             job.retry_count = self.request.retries + 1
             job.save(update_fields=["status", "retry_count", "updated_at"])

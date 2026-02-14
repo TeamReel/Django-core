@@ -7,6 +7,7 @@ import mimetypes
 import os
 import shutil
 import subprocess
+import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Callable
@@ -23,6 +24,10 @@ logger = logging.getLogger(__name__)
 
 
 ProgressCallback = Callable[[int], None]
+
+
+class JobCancelledError(Exception):
+    pass
 
 
 class BaseVideoProcessor(ABC):
@@ -83,6 +88,14 @@ class BaseVideoProcessor(ABC):
 
             logger.info("Video processing completed", extra={"job_id": str(self.job.id)})
             return output_file
+        except JobCancelledError:
+            # Preserve CANCELLED status and mark completion time.
+            self.job.refresh_from_db()
+            if self.job.status != JobStatus.CANCELLED:
+                self.job.status = JobStatus.CANCELLED
+            self.job.completed_at = timezone.now()
+            self.job.save(update_fields=["status", "completed_at", "updated_at"])
+            raise
         finally:
             self._cleanup()
 
@@ -154,14 +167,50 @@ class BaseVideoProcessor(ABC):
         if self.job.input_file and self.job.input_file.metadata:
             duration = self.job.input_file.metadata.get("duration_seconds")
 
+        last_cancel_check = time.monotonic()
+
+        def _is_cancelled() -> bool:
+            self.job.refresh_from_db(fields=["status"])
+            return self.job.status == JobStatus.CANCELLED
+
+        def _terminate_process() -> None:
+            try:
+                process.terminate()
+            except Exception:
+                pass
+            try:
+                process.wait(timeout=5)
+            except Exception:
+                try:
+                    process.kill()
+                except Exception:
+                    pass
+
+        if _is_cancelled():
+            _terminate_process()
+            raise JobCancelledError("Job was cancelled")
+
         if process.stdout:
             for line in process.stdout:
+                # Cooperative cancellation: check roughly once per second.
+                now = time.monotonic()
+                if now - last_cancel_check >= 1.0:
+                    last_cancel_check = now
+                    if _is_cancelled():
+                        _terminate_process()
+                        raise JobCancelledError("Job was cancelled")
+
                 if line.startswith("out_time_ms=") and duration:
                     out_time_ms = int(line.split("=")[1].strip() or 0)
                     percent = min(int((out_time_ms / 1000000) / duration * 100), 99)
                     progress_callback(percent)
 
         return_code = process.wait()
+
+        if _is_cancelled():
+            _terminate_process()
+            raise JobCancelledError("Job was cancelled")
+
         if return_code != 0:
             stderr = process.stderr.read() if process.stderr else ""
             self.job.status = JobStatus.FAILED

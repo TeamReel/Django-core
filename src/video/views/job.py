@@ -146,15 +146,23 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         job = self.get_object()
-        if job.status != JobStatus.QUEUED:
-            return Response(
-                {"error": "Job cannot be cancelled unless queued."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # Allow cancelling queued jobs, and allow cancelling *processing* lineup jobs.
+        if job.status == JobStatus.QUEUED:
+            job.status = JobStatus.CANCELLED
+            job.completed_at = timezone.now()
+            job.save(update_fields=["status", "completed_at", "updated_at"])
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-        job.status = JobStatus.CANCELLED
-        job.save(update_fields=["status", "updated_at"])
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if job.status == JobStatus.PROCESSING and job.job_type == JobType.LINEUP:
+            job.status = JobStatus.CANCELLED
+            job.completed_at = timezone.now()
+            job.save(update_fields=["status", "completed_at", "updated_at"])
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(
+            {"error": "Job cannot be cancelled unless queued (or processing for lineup)."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     @action(detail=True, methods=["post"])
     def retry(self, request: Request, pk: str | None = None) -> Response:

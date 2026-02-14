@@ -183,7 +183,7 @@ function JobCard({
 
       {/* Actions */}
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        {job.status === 'queued' && (
+        {(job.status === 'queued' || job.status === 'processing') && (
           <button
             onClick={() => onCancel(job.id)}
             style={{

@@ -40,7 +40,7 @@ from django.utils import timezone
 from files.models import FileAsset
 from files.utils import get_storage_backend
 from src.video.models.job import JobStatus
-from src.video.services.processors.base import BaseVideoProcessor
+from src.video.services.processors.base import BaseVideoProcessor, JobCancelledError
 
 logger = logging.getLogger(__name__)
 
@@ -116,6 +116,15 @@ class LineupProcessor(BaseVideoProcessor):
 
             logger.info("lineup_processing_completed", extra={"job_id": str(self.job.id)})
             return output_file
+
+        except JobCancelledError:
+            self.job.refresh_from_db()
+            if self.job.status != JobStatus.CANCELLED:
+                self.job.status = JobStatus.CANCELLED
+            self.job.completed_at = timezone.now()
+            self.job.save(update_fields=["status", "completed_at", "updated_at"])
+            logger.info("lineup_processing_cancelled", extra={"job_id": str(self.job.id)})
+            raise
 
         except Exception as e:
             logger.exception(
@@ -230,6 +239,10 @@ class LineupProcessor(BaseVideoProcessor):
 
         for idx, segment in enumerate(segments):
             try:
+                self.job.refresh_from_db(fields=["status"])
+                if self.job.status == JobStatus.CANCELLED:
+                    raise JobCancelledError("Job was cancelled")
+
                 segment_type = segment.get("type", "video")
                 url = segment.get("url", "")
                 duration = segment.get("duration", 3.0)
@@ -325,6 +338,8 @@ class LineupProcessor(BaseVideoProcessor):
                 self.job.metadata = meta
                 self.job.save(update_fields=["progress_percent", "metadata", "updated_at"])
 
+            except JobCancelledError:
+                raise
             except Exception as e:
                 logger.warning(
                     f"Failed to prepare segment {idx}: {e}",
