@@ -676,19 +676,29 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         };
 
         // Update per-variant storage (images or videos)
+        // Store as object with {raw, processed, processing_state} for consistency
+        // Images need further processing (bg removal), videos from MiniMax are ready
         if (category === 'fullbody' || category === 'closeup') {
           const images = updatedTr.images || {};
           const subcat = images[category] || {};
+          // Images are stored as raw - need backend processing for lineup-ready format
           updatedTr.images = {
             ...images,
-            [category]: { ...subcat, [metaKey]: savedUrl },
+            [category]: {
+              ...subcat,
+              [metaKey]: { raw: savedUrl, processed: null, processing_state: 'raw' },
+            },
           };
         } else {
           const videos = updatedTr.videos || {};
           const subcat = videos[category] || {};
+          // MiniMax videos are already complete (have background) - mark as processed
           updatedTr.videos = {
             ...videos,
-            [category]: { ...subcat, [metaKey]: savedUrl },
+            [category]: {
+              ...subcat,
+              [metaKey]: { raw: savedUrl, processed: savedUrl, processing_state: 'processed' },
+            },
           };
         }
 
