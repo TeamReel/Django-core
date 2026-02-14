@@ -84,6 +84,21 @@ class LineupProcessor(BaseVideoProcessor):
             config = self.job.config or {}
             segments = config.get("segments", [])
 
+            # Fallback: frontend_segments may contain ready-to-use segments
+            # that were never copied to "segments" by the creation endpoint.
+            if not segments:
+                frontend_segments = config.get("frontend_segments", [])
+                if frontend_segments:
+                    logger.info(
+                        "Using %d frontend_segments as segments",
+                        len(frontend_segments),
+                        extra={"job_id": str(self.job.id)},
+                    )
+                    segments = frontend_segments
+                    config["segments"] = segments
+                    self.job.config = config
+                    self.job.save(update_fields=["config", "updated_at"])
+
             if not segments:
                 raise ValueError("No segments provided in config")
 

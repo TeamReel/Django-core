@@ -212,9 +212,25 @@ class VideoService:
             config = job.config or {}
             segments = config.get("segments") or []
 
-            # If segments are missing, build them now in the background thread.
-            # This is the key to making the API fast: the request returns immediately
-            # with a queued job, and the heavy lifting happens here.
+            # Priority 1: use frontend_segments if available (already built by UI).
+            # The lineup-from-template endpoint stores pre-built segments under
+            # "frontend_segments" but never copies them to "segments", so the
+            # processor would fall through to the slow builder path.
+            if not segments:
+                frontend_segments = config.get("frontend_segments") or []
+                if frontend_segments:
+                    logger.info(
+                        "Using %d frontend_segments as segments (skipping builder)",
+                        len(frontend_segments),
+                        extra={"job_id": job_id},
+                    )
+                    config["segments"] = frontend_segments
+                    segments = frontend_segments
+                    job.config = config
+                    job.progress_percent = max(int(job.progress_percent or 0), 5)
+                    job.save(update_fields=["config", "progress_percent", "updated_at"])
+
+            # Priority 2: build segments from activity/template if still empty.
             if not segments:
                 activity_id = config.get("activity_id") or config.get("match_id")
                 template_id = config.get("template_id")
@@ -223,7 +239,7 @@ class VideoService:
 
                 if not activity_id:
                     raise ValueError(
-                        "Lineup job config must include segments[] or activity_id for deferred build"
+                        "Lineup job config must include segments[], frontend_segments[], or activity_id for deferred build"
                     )
 
                 # Mark as processing early so UI doesn't look stuck in queued.
@@ -240,6 +256,10 @@ class VideoService:
                         ]
                     )
 
+                logger.info(
+                    "Building segments from activity/template (no frontend_segments)",
+                    extra={"job_id": job_id},
+                )
                 from src.video.services.lineup_builder import build_lineup_video_config
 
                 built_config = build_lineup_video_config(
