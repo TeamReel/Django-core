@@ -1554,7 +1554,11 @@ class LineupSegmentBuilder:
                 pid = p["idx"]
                 # Scale player asset
                 # Use format=rgba BEFORE scale to ensure alpha is preserved
-                fc.append(f"[{pid}:v]format=rgba,scale=-1:{target_h}[p{pid}_s]")
+                # Added colorkey to remove black background if the input is not transparent (e.g. MP4)
+                # 0x000000 is black, 0.1 is similarity, 0.1 is blend
+                fc.append(
+                    f"[{pid}:v]format=rgba,colorkey=0x000000:0.1:0.1,scale=-1:{target_h}[p{pid}_s]"
+                )
 
                 # Position calculation
                 # x: Center of player is at x_pct of Field Width (width)
