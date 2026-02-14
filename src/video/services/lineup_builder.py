@@ -1033,14 +1033,24 @@ class LineupSegmentBuilder:
                     )
 
                     # --- Step 2: Intro video (if available) ---
+                    # Pre-compose the intro on background HERE so the lineup
+                    # processor only needs to do fast concat (no heavy overlays).
                     if p.intro_url:
+                        composed_url = self._pre_compose_intro_on_background(
+                            intro_url=p.intro_url,
+                            background_url=background_url,
+                            width=data.output_width,
+                            height=data.output_height,
+                            fps=data.output_fps,
+                            prefix=f"intro_{p.member_name.replace(' ', '_').lower()}",
+                        )
+                        intro_final_url = composed_url or p.intro_url
                         segments.append(
                             {
                                 "type": "video",
-                                "url": p.intro_url,
+                                "url": intro_final_url,
                                 "label": player_label,
                                 "transition": "cut",
-                                "background_url": background_url,
                             }
                         )
 
@@ -1156,15 +1166,24 @@ class LineupSegmentBuilder:
                         }
                     )
 
-                # 2. Intro video
+                # 2. Intro video (pre-composed on background)
                 if player.intro_url:
+                    composed_url = None
+                    if background_url:
+                        composed_url = self._pre_compose_intro_on_background(
+                            intro_url=player.intro_url,
+                            background_url=background_url,
+                            width=data.output_width,
+                            height=data.output_height,
+                            fps=data.output_fps,
+                            prefix=f"intro_{player.member_name.replace(' ', '_').lower()}",
+                        )
                     segments.append(
                         {
                             "type": "video",
-                            "url": player.intro_url,
+                            "url": composed_url or player.intro_url,
                             "label": f"{player.jersey_number or ''} {player.member_name}".strip(),
                             "transition": "cut",
-                            "background_url": background_url,
                         }
                     )
 
@@ -1222,6 +1241,129 @@ class LineupSegmentBuilder:
                 traceback.format_exc(),
             )
             return None
+
+    def _pre_compose_intro_on_background(
+        self, intro_url: str, background_url: str, width: int, height: int, fps: int, prefix: str
+    ) -> str | None:
+        """Pre-compose a transparent intro video on a stadium background.
+
+        Downloads the WebM (alpha) and background image, runs a single FFmpeg
+        overlay, uploads the composited MP4 to S3, and returns its presigned URL.
+        This moves heavy compositing OUT of the lineup processor so it becomes
+        a simple assembler.
+        """
+        import subprocess
+        import tempfile
+        import uuid as uuid_module
+        from pathlib import Path
+
+        import requests as req
+
+        tmp_dir = Path(tempfile.mkdtemp(prefix="lineup_compose_"))
+        try:
+            # 1. Download intro video
+            ext = ".webm" if ".webm" in intro_url.lower() else ".mp4"
+            intro_path = tmp_dir / f"intro{ext}"
+            resp = req.get(intro_url, timeout=60, stream=True)
+            resp.raise_for_status()
+            with open(intro_path, "wb") as f:
+                for chunk in resp.iter_content(8192):
+                    f.write(chunk)
+
+            # 2. Download background image
+            bg_path = tmp_dir / "background.png"
+            resp_bg = req.get(background_url, timeout=60, stream=True)
+            resp_bg.raise_for_status()
+            with open(bg_path, "wb") as f:
+                for chunk in resp_bg.iter_content(8192):
+                    f.write(chunk)
+
+            # 3. Compose: overlay transparent video on looped background
+            out_path = tmp_dir / "composed.mp4"
+            is_alpha = ext == ".webm"  # WebM VP9 has alpha
+
+            if is_alpha:
+                filter_complex = (
+                    f"[0:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
+                    f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:color=black,"
+                    f"setsar=1,format=rgba[bg];"
+                    f"[1:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
+                    f"format=rgba,setsar=1[fg];"
+                    f"[bg][fg]overlay=(W-w)/2:(H-h)/2:format=auto,fps={fps}[v]"
+                )
+                cmd = [
+                    "ffmpeg",
+                    "-y",
+                    "-loop",
+                    "1",
+                    "-i",
+                    str(bg_path),
+                    "-i",
+                    str(intro_path),
+                    "-filter_complex",
+                    filter_complex,
+                    "-map",
+                    "[v]",
+                    "-c:v",
+                    "libx264",
+                    "-preset",
+                    "veryfast",
+                    "-crf",
+                    "23",
+                    "-an",
+                    "-shortest",
+                    str(out_path),
+                ]
+            else:
+                # Non-alpha MP4: just scale/pad to target resolution (fast re-encode)
+                cmd = [
+                    "ffmpeg",
+                    "-y",
+                    "-i",
+                    str(intro_path),
+                    "-vf",
+                    (
+                        f"scale={width}:{height}:force_original_aspect_ratio=decrease,"
+                        f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,"
+                        f"setsar=1,fps={fps}"
+                    ),
+                    "-c:v",
+                    "libx264",
+                    "-preset",
+                    "veryfast",
+                    "-crf",
+                    "23",
+                    "-an",
+                    str(out_path),
+                ]
+
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)  # noqa: S603
+            if result.returncode != 0:
+                logger.error(
+                    "Pre-compose FFmpeg failed: %s",
+                    result.stderr[:2000],
+                    extra={"prefix": prefix},
+                )
+                return None
+
+            # 4. Upload to S3
+            from src.files.utils import get_storage_backend
+
+            storage_path = f"generated/lineup/{prefix}/{uuid_module.uuid4().hex}.mp4"
+            backend = get_storage_backend()
+            with open(out_path, "rb") as f:
+                backend.save(storage_path, f)
+            url = backend.get_url(storage_path, signed=True, expiry_seconds=3600)
+            logger.info("Pre-composed intro uploaded: %s", prefix)
+            return url
+
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Pre-compose failed for %s: %s", prefix, exc)
+            return None
+        finally:
+            import shutil
+
+            shutil.rmtree(tmp_dir, ignore_errors=True)
 
     def _get_resolution_settings(self) -> tuple[int, int, int]:
         """Get width, height, fps for output resolution."""

@@ -235,7 +235,6 @@ class LineupProcessor(BaseVideoProcessor):
                 duration = segment.get("duration", 3.0)
                 label = segment.get("label", "")
                 scale = segment.get("scale", 1.0)  # PiP scale factor (< 1 = smaller)
-                background_url = segment.get("background_url")  # stadium bg for overlay
 
                 # Update metadata BEFORE processing so user sees current segment in real time
                 meta = self.job.metadata or {}
@@ -292,25 +291,15 @@ class LineupProcessor(BaseVideoProcessor):
                 # we might be processing with default 720p.
                 # This is why we need to ensure detected before converting if possible.
 
-                # Download background image for overlay compositing (intro on stadium)
-                # Only overlay on background if the video has alpha (WebM VP9).
-                # MP4 files are opaque — overlay is pointless and very slow.
-                bg_local_path = None
-                source_has_alpha = local_path.lower().endswith(".webm")
-                if background_url and segment_type == "video" and source_has_alpha:
-                    bg_local_path = self._download_segment(background_url, 9000 + idx)
-                elif background_url and segment_type == "video" and not source_has_alpha:
-                    logger.info(
-                        "Skipping background overlay for non-alpha video (MP4)",
-                        extra={"job_id": str(self.job.id), "segment_idx": idx},
-                    )
-
                 # Update status to processing before FFmpeg
                 meta = self.job.metadata or {}
                 meta["segment_status"] = "processing"
                 self.job.metadata = meta
                 self.job.save(update_fields=["metadata", "updated_at"])
 
+                # All compositing (WebM on stadium background) is done in the
+                # lineup builder. The processor is a simple assembler: just
+                # normalize format and concatenate.
                 segment_video = self._convert_to_video(
                     local_path,
                     idx,
@@ -319,9 +308,7 @@ class LineupProcessor(BaseVideoProcessor):
                     target_width,
                     target_height,
                     fps,
-                    label,
                     scale,
-                    background_path=bg_local_path,
                 )
 
                 if segment_video:
@@ -399,28 +386,26 @@ class LineupProcessor(BaseVideoProcessor):
         width: int,
         height: int,
         fps: int,
-        label: str,
         scale: float = 1.0,
-        background_path: str | None = None,
     ) -> str | None:
-        """Convert image/video to standardized video segment."""
+        """Convert image/video to standardized video segment.
+
+        This is a FAST assembler step — no heavy overlays or compositing.
+        All compositing (WebM on stadium background) is done beforehand
+        in the lineup builder.
+        """
         output_path = str(self.temp_dir / f"segment_{idx:03d}.mp4")
 
         try:
             if segment_type == "image":
                 # Convert image to video with duration
                 command = self._build_image_to_video_command(
-                    local_path, output_path, duration, width, height, fps, label, scale
-                )
-            elif background_path:
-                # Transparent video overlaid on stadium background
-                command = self._build_video_on_background_command(
-                    local_path, background_path, output_path, width, height, fps, label
+                    local_path, output_path, duration, width, height, fps, scale
                 )
             else:
-                # Re-encode video to standard format
+                # Re-encode video to standard format (fast scale+pad only)
                 command = self._build_video_reencode_command(
-                    local_path, output_path, width, height, fps, label, scale
+                    local_path, output_path, width, height, fps, scale
                 )
 
             logger.info(
@@ -447,7 +432,6 @@ class LineupProcessor(BaseVideoProcessor):
         width: int,
         height: int,
         fps: int,
-        label: str,
         scale: float = 1.0,
     ) -> list[str]:
         """Build FFmpeg command to convert image to video.
@@ -470,14 +454,6 @@ class LineupProcessor(BaseVideoProcessor):
                 f"[0:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
                 f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,"
                 f"setsar=1,fps={fps}"
-            )
-
-        # Add text overlay if label provided
-        if label:
-            safe_label = label.replace("'", "\\'").replace(":", "\\:")
-            filter_complex += (
-                f",drawtext=text='{safe_label}':fontsize=48:fontcolor=white:"
-                f"x=(w-text_w)/2:y=h-100:box=1:boxcolor=black@0.5:boxborderw=10"
             )
 
         filter_complex += "[v]"
@@ -521,7 +497,6 @@ class LineupProcessor(BaseVideoProcessor):
         width: int,
         height: int,
         fps: int,
-        label: str,
         scale: float = 1.0,
     ) -> list[str]:
         """Build FFmpeg command to re-encode video to standard format."""
@@ -540,14 +515,6 @@ class LineupProcessor(BaseVideoProcessor):
                 f"[0:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
                 f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,"
                 f"setsar=1,fps={fps}"
-            )
-
-        # Add text overlay if label provided
-        if label:
-            safe_label = label.replace("'", "\\'").replace(":", "\\:")
-            filter_complex += (
-                f",drawtext=text='{safe_label}':fontsize=48:fontcolor=white:"
-                f"x=(w-text_w)/2:y=h-100:box=1:boxcolor=black@0.5:boxborderw=10"
             )
 
         filter_complex += "[v]"
@@ -575,69 +542,6 @@ class LineupProcessor(BaseVideoProcessor):
             "48000",
             "-ac",
             "2",
-            output_path,
-        ]
-        return command
-
-    def _build_video_on_background_command(
-        self,
-        video_path: str,
-        background_path: str,
-        output_path: str,
-        width: int,
-        height: int,
-        fps: int,
-        label: str,
-    ) -> list[str]:
-        """Build FFmpeg command to overlay a transparent video on a background image.
-
-        The foreground video (WebM VP9 with alpha) is composited on top of
-        the stadium/pitch background, producing the same visual effect as the
-        still-image fullbody scenes — player on the field, no solid-colour
-        background.
-        """
-        # Scale the foreground video to fit within target, keeping aspect ratio.
-        # Then overlay it centered on the background image (which is scaled to fill).
-        filter_complex = (
-            f"[0:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
-            f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:color=0x00000000,format=rgba,"
-            f"setsar=1[bg];"
-            f"[1:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
-            f"format=rgba,setsar=1[fg];"
-            f"[bg][fg]overlay=(W-w)/2:(H-h)/2:format=auto,fps={fps}"
-        )
-
-        # Add text overlay if label provided
-        if label:
-            safe_label = label.replace("'", "\\'").replace(":", "\\:")
-            filter_complex += (
-                f",drawtext=text='{safe_label}':fontsize=48:fontcolor=white:"
-                f"x=(w-text_w)/2:y=h-100:box=1:boxcolor=black@0.5:boxborderw=10"
-            )
-
-        filter_complex += "[v]"
-
-        command = [
-            "ffmpeg",
-            "-y",
-            "-loop",
-            "1",
-            "-i",
-            background_path,  # input 0: background image (looped)
-            "-i",
-            video_path,  # input 1: transparent foreground video
-            "-filter_complex",
-            filter_complex,
-            "-map",
-            "[v]",
-            "-c:v",
-            "libx264",
-            "-preset",
-            "ultrafast",
-            "-crf",
-            "23",
-            "-an",
-            "-shortest",
             output_path,
         ]
         return command
