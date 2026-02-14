@@ -1521,12 +1521,14 @@ class LineupSegmentBuilder:
                     inputs.extend(["-loop", "1"])
                 inputs.extend(["-i", str(path)])
 
+                is_webm = ext == ".webm"
                 player_inputs.append(
                     {
                         "idx": base_idx + i,
                         "x_pct": p["x_pct"],
                         "y_pct": p["y_pct"],
                         "is_video": is_video,
+                        "is_webm": is_webm,
                     }
                 )
 
@@ -1553,12 +1555,16 @@ class LineupSegmentBuilder:
             for p in player_inputs:
                 pid = p["idx"]
                 # Scale player asset
-                # Use format=rgba BEFORE scale to ensure alpha is preserved
-                # Added colorkey to remove black background if the input is not transparent (e.g. MP4)
-                # 0x000000 is black, 0.1 is similarity, 0.1 is blend
-                fc.append(
-                    f"[{pid}:v]format=rgba,colorkey=0x000000:0.1:0.1,scale=-1:{target_h}[p{pid}_s]"
-                )
+                if p.get("is_webm"):
+                    # WebM with VP9 alpha: already has transparency.
+                    # Just ensure rgba pixel format is preserved through scaling.
+                    fc.append(f"[{pid}:v]format=rgba,scale=-1:{target_h}[p{pid}_s]")
+                else:
+                    # MP4 or PNG: no native alpha channel.
+                    # Use colorkey to remove black background (green-screen style).
+                    fc.append(
+                        f"[{pid}:v]format=rgba,colorkey=0x000000:0.15:0.1,scale=-1:{target_h}[p{pid}_s]"
+                    )
 
                 # Position calculation
                 # x: Center of player is at x_pct of Field Width (width)

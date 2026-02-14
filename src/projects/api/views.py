@@ -922,7 +922,8 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         user_id = serializer.validated_data["user_id"]
         role = serializer.validated_data["role"]
         period_id = serializer.validated_data.get("period_id")
-        metadata = serializer.validated_data.get("metadata")
+        # metadata is a read-only SerializerMethodField, read from request.data
+        metadata = self.request.data.get("metadata")
 
         # Get the user instance
         from django.contrib.auth import get_user_model
@@ -955,7 +956,9 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         self._check_can_manage_members(instance.project)
 
         new_role = serializer.validated_data.get("role")
-        new_metadata = serializer.validated_data.get("metadata")
+        # metadata is a read-only SerializerMethodField, so it won't appear in
+        # validated_data.  Read it directly from the request payload instead.
+        new_metadata = request.data.get("metadata")
 
         if new_role and new_role != instance.role:
             role_hierarchy = {
