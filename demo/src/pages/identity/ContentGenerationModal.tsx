@@ -281,7 +281,10 @@ function memberHasAsset(member: Participation, assetType: string, role?: string)
     if (hasRoleVariant) return true;
 
     // Also accept any video variant if no role-specific one found (fallback)
-    const hasAnyVariant = Object.values(variants).some((v: any) => v && typeof v === 'string' && v.trim());
+    const hasAnyVariant = Object.values(variants).some((v: any) => {
+      if (v && typeof v === 'object') return !!(v.processed || v.raw);
+      return v && typeof v === 'string' && v.trim();
+    });
     if (hasAnyVariant) return true;
   }
 
@@ -622,19 +625,31 @@ export default function ContentGenerationModal({
         const videos = tr?.videos || {};
         const legacyKit = tr?.kit || {};
 
-        // Check new format
-        if (media[mediaKey]?.url) return media[mediaKey].url;
-
-        // Check videos format (intro, closeup, celebration have variants)
+        // For video types (intro, closeup, celebration), prefer processed WebM
+        // (with VP9 alpha transparency) over raw MP4 (black background).
+        // videos.intro = { variant_key: { raw: "...mp4", processed: "...webm" } }
         if (['intro', 'closeup', 'celebration'].includes(mediaKey) && videos[mediaKey]) {
-          // Return first available variant
           const variants = videos[mediaKey] || {};
-          for (const [key, val] of Object.entries(variants)) {
+          // First pass: prefer processed (WebM with transparency)
+          for (const [, val] of Object.entries(variants)) {
+            if (val && typeof val === 'object' && (val as any).processed) {
+              return (val as any).processed;
+            }
+          }
+          // Second pass: fall back to raw if no processed exists
+          for (const [, val] of Object.entries(variants)) {
+            if (val && typeof val === 'object' && (val as any).raw) {
+              return (val as any).raw;
+            }
+            // Legacy: variant stored as plain string
             if (val && typeof val === 'string' && val.trim()) {
               return val;
             }
           }
         }
+
+        // Check media format (flat key: {url, caption})
+        if (media[mediaKey]?.url) return media[mediaKey].url;
 
         // Check legacy format
         if (mediaKey === 'profile' && legacyKit?.profile_photo_url) return legacyKit.profile_photo_url;
