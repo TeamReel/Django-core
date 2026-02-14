@@ -1848,11 +1848,13 @@ export default function ContentGenerationModal({
                 const currentPlayer = (videoJobMeta as Record<string, unknown>)?.current_segment as string | undefined;
                 const segIdx = (videoJobMeta as Record<string, unknown>)?.segment_index as number | undefined;
                 const segTotal = (videoJobMeta as Record<string, unknown>)?.segment_total as number | undefined;
+                const segStatus = (videoJobMeta as Record<string, unknown>)?.segment_status as string | undefined;
+                const segStatusLabel = segStatus === 'downloading' ? '⬇️' : segStatus === 'done' ? '✅' : '⚙️';
 
                 const buildDetail = isLineup
                   ? status === 'processing'
                     ? currentPlayer
-                      ? `${currentPlayer}${segIdx && segTotal ? ` (${segIdx}/${segTotal})` : ''}`
+                      ? `${segStatusLabel} ${currentPlayer}${segIdx && segTotal ? ` (${segIdx}/${segTotal})` : ''}`
                       : `Voortgang: ${Math.round(videoJobProgressRaw)}%`
                     : status === 'completed'
                       ? 'Afgerond.'

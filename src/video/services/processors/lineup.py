@@ -237,6 +237,15 @@ class LineupProcessor(BaseVideoProcessor):
                 scale = segment.get("scale", 1.0)  # PiP scale factor (< 1 = smaller)
                 background_url = segment.get("background_url")  # stadium bg for overlay
 
+                # Update metadata BEFORE processing so user sees current segment in real time
+                meta = self.job.metadata or {}
+                meta["current_segment"] = label or f"Segment {idx + 1}/{total}"
+                meta["segment_index"] = idx + 1
+                meta["segment_total"] = total
+                meta["segment_status"] = "downloading"
+                self.job.metadata = meta
+                self.job.save(update_fields=["metadata", "updated_at"])
+
                 if not url:
                     logger.warning(f"Segment {idx} has no URL, skipping")
                     continue
@@ -284,9 +293,23 @@ class LineupProcessor(BaseVideoProcessor):
                 # This is why we need to ensure detected before converting if possible.
 
                 # Download background image for overlay compositing (intro on stadium)
+                # Only overlay on background if the video has alpha (WebM VP9).
+                # MP4 files are opaque — overlay is pointless and very slow.
                 bg_local_path = None
-                if background_url and segment_type == "video":
+                source_has_alpha = local_path.lower().endswith(".webm")
+                if background_url and segment_type == "video" and source_has_alpha:
                     bg_local_path = self._download_segment(background_url, 9000 + idx)
+                elif background_url and segment_type == "video" and not source_has_alpha:
+                    logger.info(
+                        "Skipping background overlay for non-alpha video (MP4)",
+                        extra={"job_id": str(self.job.id), "segment_idx": idx},
+                    )
+
+                # Update status to processing before FFmpeg
+                meta = self.job.metadata or {}
+                meta["segment_status"] = "processing"
+                self.job.metadata = meta
+                self.job.save(update_fields=["metadata", "updated_at"])
 
                 segment_video = self._convert_to_video(
                     local_path,
@@ -307,11 +330,11 @@ class LineupProcessor(BaseVideoProcessor):
                 # Update progress (preparation is 0-50%)
                 progress = int((idx + 1) / total * 50)
                 self.job.progress_percent = progress
-                # Store current player label in metadata for frontend progress display
                 meta = self.job.metadata or {}
                 meta["current_segment"] = label or f"Segment {idx + 1}/{total}"
                 meta["segment_index"] = idx + 1
                 meta["segment_total"] = total
+                meta["segment_status"] = "done"
                 self.job.metadata = meta
                 self.job.save(update_fields=["progress_percent", "metadata", "updated_at"])
 
