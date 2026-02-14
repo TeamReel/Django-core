@@ -1064,38 +1064,79 @@ class LineupSegmentBuilder:
                 if not scene_players:
                     continue
 
-                # --- STEP 1: Full body scene (all players of this line together) ---
-                fullbody_url = generate_line_scene_image(
-                    width=data.output_width,
-                    height=data.output_height,
-                    background_url=background_url,
-                    header_url=header_url,
-                    title=title,
-                    players=scene_players,
-                )
-                segments.append(
-                    {
-                        "type": "image",
-                        "url": fullbody_url,
-                        "duration": 2.5,
-                        "transition": "fade",
-                        "label": f"{title} - Full Body",
-                    }
-                )
+                # --- STEP 1 & 2: Line Scene (Simultaneous Video) ---
+                # "En per linie tegelijk. Zonder achtergrond. Over het voetbalveld background."
 
-                # --- STEP 2: Intro videos per player (direct, no FFmpeg overlay) ---
-                # Assumes intro videos are already composited with background
-                for p in players:
-                    if p.intro_url:
-                        player_label = f"{p.jersey_number or ''} {p.member_name}".strip()
-                        segments.append(
+                # Check if we should use animated composition
+                has_intros = any(p.intro_url for p in players)
+                line_video_url = None
+
+                if has_intros and self._render_mode == "line_scenes":
+                    # Collect inputs for composition
+                    comp_inputs = []
+                    for sp, p in zip(scene_players, players):
+                        comp_inputs.append(
                             {
-                                "type": "video",
-                                "url": p.intro_url,
-                                "label": player_label,
-                                "transition": "cut",
+                                "intro_url": p.intro_url,
+                                "kit_url": p.kit_url,
+                                "x_pct": sp.x_pct,
+                                "y_pct": sp.y_pct,
                             }
                         )
+
+                    logger.info(f"Composing line video for {title} with {len(comp_inputs)} players")
+                    line_video_url = self._compose_line_intro_video(
+                        background_url=background_url,
+                        players=comp_inputs,
+                        width=data.output_width,
+                        height=data.output_height,
+                        fps=data.output_fps,
+                        prefix=f"intro_{title.lower().replace(' ', '_')}",
+                        header_url=header_url,
+                    )
+
+                if line_video_url:
+                    # Use the composited video
+                    segments.append(
+                        {
+                            "type": "video",
+                            "url": line_video_url,
+                            "duration": 5.0,  # Target duration
+                            "transition": "cut",  # Video handles transition or cut to next
+                            "label": f"{title} - Intro",
+                        }
+                    )
+                else:
+                    # Fallback to static image + individual intros (legacy behavior)
+                    fullbody_url = generate_line_scene_image(
+                        width=data.output_width,
+                        height=data.output_height,
+                        background_url=background_url,
+                        header_url=header_url,
+                        title=title,
+                        players=scene_players,
+                    )
+                    segments.append(
+                        {
+                            "type": "image",
+                            "url": fullbody_url,
+                            "duration": 2.5,
+                            "transition": "fade",
+                            "label": f"{title} - Full Body",
+                        }
+                    )
+                    # Legacy sequential intros if we failed to compose (or mode != line_scenes)
+                    for p in players:
+                        if p.intro_url:
+                            player_label = f"{p.jersey_number or ''} {p.member_name}".strip()
+                            segments.append(
+                                {
+                                    "type": "video",
+                                    "url": p.intro_url,
+                                    "label": player_label,
+                                    "transition": "cut",
+                                }
+                            )
 
                 # --- STEP 3: Add this line's players to accumulated closeups ---
                 for i, p in enumerate(players):
@@ -1409,6 +1450,152 @@ class LineupSegmentBuilder:
         finally:
             import shutil
 
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    def _compose_line_intro_video(
+        self,
+        background_url: str,
+        players: list[dict],
+        width: int,
+        height: int,
+        fps: int,
+        prefix: str,
+        header_url: str | None = None,
+    ) -> str | None:
+        """Compose multiple player intro videos/images onto a background.
+
+        Args:
+            players: List of dicts with {intro_url, kit_url, x_pct, y_pct}
+        """
+        import subprocess
+        import tempfile
+        import shutil
+        import uuid
+        from pathlib import Path
+        import requests as req
+        from src.files.utils import get_storage_backend
+
+        tmp_dir = Path(tempfile.mkdtemp(prefix="lineup_line_"))
+
+        try:
+            # 1. Download Background
+            bg_path = tmp_dir / "background.png"
+            with open(bg_path, "wb") as f:
+                f.write(req.get(background_url, timeout=30).content)
+
+            # 2. Prepare Inputs
+            # Input 0: Background
+            inputs = ["-loop", "1", "-i", str(bg_path)]
+
+            # Input 1: Header (if exists, overlay it)
+            header_idx = None
+            if header_url:
+                header_path = tmp_dir / "header.png"
+                with open(header_path, "wb") as f:
+                    f.write(req.get(header_url, timeout=30).content)
+                inputs.extend(["-loop", "1", "-i", str(header_path)])
+                header_idx = 1
+
+            # Player inputs
+            player_inputs = []
+            base_idx = 2 if header_idx else 1
+
+            for i, p in enumerate(players):
+                # Prefer intro, fallback to kit
+                url = p.get("intro_url") or p.get("kit_url")
+                if not url:
+                    continue
+
+                is_video = bool(p.get("intro_url"))
+                ext = ".webm" if is_video and "webm" in url else ".mp4" if is_video else ".png"
+                path = tmp_dir / f"p{i}{ext}"
+
+                # Only download if not exists (dedupe?) - Players distinct usually
+                with open(path, "wb") as f:
+                    resp = req.get(url, stream=True, timeout=60)
+                    resp.raise_for_status()
+                    for chunk in resp.iter_content(8192):
+                        f.write(chunk)
+
+                if not is_video:
+                    inputs.extend(["-loop", "1"])
+                inputs.extend(["-i", str(path)])
+
+                player_inputs.append(
+                    {
+                        "idx": base_idx + i,
+                        "x_pct": p["x_pct"],
+                        "y_pct": p["y_pct"],
+                        "is_video": is_video,
+                    }
+                )
+
+            if not player_inputs:
+                return None
+
+            # 3. Filter Complex
+            fc = []
+            # Scale background to output size
+            fc.append(
+                f"[0:v]scale={width}:{height}:force_original_aspect_ratio=increase,"
+                f"crop={width}:{height},setsar=1[bg]"
+            )
+            last = "bg"
+
+            if header_idx:
+                fc.append(f"[{header_idx}:v]scale={width}:-1[header]")
+                fc.append("[bg][header]overlay=0:0[bg_h]")
+                last = "bg_h"
+
+            # Scale players to ~22% of screen height (heuristic from generator)
+            target_h = int(height * 0.22)
+
+            for p in player_inputs:
+                pid = p["idx"]
+                # Scale player asset
+                # Note: 'format=rgba' ensures alpha channel is preserved for overlay
+                fc.append(f"[{pid}:v]scale=-1:{target_h},format=rgba[p{pid}_s]")
+
+                # Position calculation
+                # x: Center of player is at x_pct of Field Width (width)
+                #    x = (width * x_pct / 100) - (w / 2)
+                x_expr = f"(W*{p['x_pct']}/100-w/2)"
+
+                # y: Matches generate_line_scene_image heuristic
+                #    y = header_h + field_h * y_pct/100 - h
+                #    Approx: y = 0.15*H + 0.85*H * y_pct/100 - h
+                #    Data: Defenders y=15, Attackers y=25
+                y_expr = f"(H*0.15+(H*0.85)*{p['y_pct']}/100-h)"
+
+                fc.append(f"[{last}][p{pid}_s]overlay=x={x_expr}:y={y_expr}:shortest=1[ov{pid}]")
+                last = f"ov{pid}"
+
+            fc.append(f"[{last}]fps={fps},format=yuv420p[out]")
+
+            out_path = tmp_dir / "composed.mp4"
+            cmd = (
+                ["ffmpeg", "-y"]
+                + inputs
+                + ["-filter_complex", ";".join(fc), "-map", "[out]", str(out_path)]
+            )
+
+            # Run composition
+            subprocess.run(
+                cmd, check=True, capture_output=True, text=True, timeout=300
+            )  # 5 min timeout for line comp
+
+            # 4. Upload
+            s3_path = f"generated/lineup/{prefix}/{uuid.uuid4().hex}.mp4"
+            backend = get_storage_backend()
+            with open(out_path, "rb") as f:
+                backend.save(s3_path, f)
+
+            return backend.get_url(s3_path, signed=True, expiry_seconds=3600)
+
+        except Exception as e:
+            logger.error(f"Compose Multi Intro Failed: {e} prefix={prefix}")
+            return None
+        finally:
             shutil.rmtree(tmp_dir, ignore_errors=True)
 
     def _get_resolution_settings(self) -> tuple[int, int, int]:
