@@ -14,19 +14,18 @@ Usage:
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
 
 from django.core.management.base import BaseCommand
 
-from src.projects.models import ProjectMembership
+from projects.models import ProjectMembership
 
 logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = (
-        "Fix intro video metadata: convert plain URLs to {raw, processed, processing_state} format"
-    )
+    help = "Fix intro video metadata: convert plain URLs to {raw, processed, processing_state} format and migrate legacy media.intro"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -53,85 +52,110 @@ class Command(BaseCommand):
 
         total = 0
         fixed = 0
-        skipped = 0
+        scanned = 0
+
+        # Regex to extract kit and style from filename
+        # Example: member_intro_kit_type-home_style_variant-arms_crossed_1770805990...
+        filename_pattern = re.compile(
+            r"kit_type-(?P<kit>[^_]+).*?style_variant-(?P<style>[a-z_]+)_\d+"
+        )
 
         for membership in queryset.iterator():
+            scanned += 1
             meta = membership.metadata or {}
             tr = meta.get("teamreel_assets", {})
             videos = tr.get("videos", {})
-            intro = videos.get("intro", {})
+            media = tr.get("media", {})
 
-            if not intro or not isinstance(intro, dict):
-                continue
+            # Ensure structure exists
+            if "videos" not in tr:
+                tr["videos"] = {}
+                videos = tr["videos"]
+            if "intro" not in videos:
+                videos["intro"] = {}
 
-            total += 1
+            intro = videos["intro"]
             changes = {}
 
-            for key, val in intro.items():
-                if val is None:
-                    continue
+            # 1. Fix existing entries in videos.intro
+            if isinstance(intro, dict):
+                for key, val in intro.items():
+                    if not val:
+                        continue
 
-                # Already in correct format
-                if isinstance(val, dict) and "processing_state" in val:
-                    continue
+                    # Already in correct format
+                    if isinstance(val, dict) and "processing_state" in val:
+                        continue
 
-                # Plain string URL - convert to object format
-                if isinstance(val, str) and val.strip():
-                    url = val.strip()
-                    # MiniMax videos are complete - mark as processed
-                    changes[key] = {
-                        "raw": url,
-                        "processed": url,
-                        "processing_state": "processed",
-                    }
-                    self.stdout.write(
-                        f"  {membership.id} ({self._get_name(membership)}): " f"{key} → processed"
-                    )
-
-                # Old dict format without processing_state
-                elif isinstance(val, dict):
-                    url = val.get("url") or val.get("raw") or val.get("processed")
-                    if url:
+                    # Plain string URL - convert to object format
+                    if isinstance(val, str) and val.strip():
+                        url = val.strip()
                         changes[key] = {
                             "raw": url,
                             "processed": url,
                             "processing_state": "processed",
                         }
-                        self.stdout.write(
-                            f"  {membership.id} ({self._get_name(membership)}): "
-                            f"{key} → processed (from dict)"
-                        )
+
+                    # Old dict format without processing_state
+                    elif isinstance(val, dict):
+                        url = val.get("url") or val.get("raw") or val.get("processed")
+                        if url:
+                            changes[key] = {
+                                "raw": url,
+                                "processed": url,
+                                "processing_state": "processed",
+                            }
+
+            # 2. Migrate legacy media.intro if needed
+            legacy_url = media.get("intro", {}).get("url")
+            if legacy_url and isinstance(legacy_url, str) and legacy_url.strip():
+                # Check if we already have this URL in videos.intro
+                already_exists = False
+                for v in intro.values():
+                    v_url = v if isinstance(v, str) else v.get("processed") or v.get("raw")
+                    if v_url == legacy_url:
+                        already_exists = True
+                        break
+
+                if not already_exists:
+                    # Try to parse filename
+                    match = filename_pattern.search(legacy_url)
+                    if match:
+                        kit = match.group("kit")
+                        style = match.group("style")
+                        key = f"{kit}_{style}"
+                        if key not in intro and key not in changes:
+                            changes[key] = {
+                                "raw": legacy_url,
+                                "processed": legacy_url,
+                                "processing_state": "processed",
+                            }
+                            self.stdout.write(f"  Migrated legacy intro to {key}")
 
             if changes:
-                fixed += 1
-                if not dry_run:
-                    # Update metadata
-                    for key, new_val in changes.items():
-                        intro[key] = new_val
+                total += 1
+                if dry_run:
+                    self.stdout.write(f"  {membership.id}: Will update {list(changes.keys())}")
+                else:
+                    intro.update(changes)
+                    # Helper to safeguard metadata save
+                    if not membership.metadata:
+                        membership.metadata = {}
+                    if "teamreel_assets" not in membership.metadata:
+                        membership.metadata["teamreel_assets"] = {}
 
-                    # Ensure nested structure exists
-                    if "videos" not in tr:
-                        tr["videos"] = {}
-                    tr["videos"]["intro"] = intro
-
-                    if "teamreel_assets" not in meta:
-                        meta["teamreel_assets"] = {}
-                    meta["teamreel_assets"] = tr
-
-                    membership.metadata = meta
+                    # We modified 'intro' dict in place (it's a reference to meta...videos['intro'])
+                    # but we need to ensure the parent dicts are connected up to membership.metadata
+                    membership.metadata["teamreel_assets"] = tr
                     membership.save(update_fields=["metadata"])
-            else:
-                skipped += 1
+                    fixed += 1
+                    self.stdout.write(f"  Fixed {membership.id}")
 
-        self.stdout.write("")
         self.stdout.write(
             self.style.SUCCESS(
-                f"Done! Checked {total} memberships with intro data. "
-                f"Fixed: {fixed}, Already OK: {skipped}"
+                f"\nDone! Scanned {scanned} memberships. Found {total} to fix. Fixed: {fixed}"
             )
         )
-        if dry_run and fixed > 0:
-            self.stdout.write(self.style.WARNING(f"Run without --dry-run to apply {fixed} changes"))
 
     def _get_name(self, membership: Any) -> str:
         if membership.user:
