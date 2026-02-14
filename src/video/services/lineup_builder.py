@@ -19,6 +19,77 @@ from uuid import UUID
 
 logger = logging.getLogger(__name__)
 
+# Style priority for intro variants (most common poses first)
+_INTRO_STYLE_PRIORITY = ["arms_crossed", "thumbs_up", "hand_up"]
+
+
+def _find_best_intro_url(
+    intro_variants: dict,
+    kit_type: str,
+    get_best_url_fn: callable,
+) -> str | None:
+    """Find the best intro URL from variants dict.
+
+    Priority order:
+    1. kit_type variants in style priority order (e.g. goalkeeper_arms_crossed)
+    2. home variants in style priority order (fallback)
+    3. Bare style keys (old format without kit prefix)
+    4. Any remaining variant that has content
+
+    Args:
+        intro_variants: Dict of intro variants {key: value}
+        kit_type: Kit type to prefer (home, goalkeeper, etc.)
+        get_best_url_fn: Function to extract URL from variant value
+
+    Returns:
+        Best intro URL or None if none found
+    """
+
+    def find_with_prefix(prefix: str) -> str | None:
+        # Try styled variants in priority order
+        for style in _INTRO_STYLE_PRIORITY:
+            key = f"{prefix}_{style}"
+            val = intro_variants.get(key)
+            if val:
+                url = get_best_url_fn(val)
+                if url:
+                    return url
+        # Fallback: any key starting with prefix
+        for key, val in intro_variants.items():
+            if key.startswith(prefix) and val:
+                url = get_best_url_fn(val)
+                if url:
+                    return url
+        return None
+
+    # Pass 1: kit_type variants
+    url = find_with_prefix(kit_type)
+    if url:
+        return url
+
+    # Pass 2: fallback to home
+    if kit_type != "home":
+        url = find_with_prefix("home")
+        if url:
+            return url
+
+    # Pass 3: bare style keys
+    for style in _INTRO_STYLE_PRIORITY:
+        val = intro_variants.get(style)
+        if val:
+            url = get_best_url_fn(val)
+            if url:
+                return url
+
+    # Pass 4: any remaining variant
+    for val in intro_variants.values():
+        if val:
+            url = get_best_url_fn(val)
+            if url:
+                return url
+
+    return None
+
 
 @dataclass
 class PlayerSegment:
@@ -492,33 +563,14 @@ class LineupSegmentBuilder:
             )
 
             # Intro — check videos.intro.{kit_type}_* first, then "home_*", then bare style keys, then media.intro
+            # Priority: arms_crossed > thumbs_up > hand_up (most common first)
             intro_variants = videos.get("intro", {}) or {}
-            intro_url = None
-            # Pass 1: composite keys starting with kit_type (e.g. "goalkeeper_arms_crossed")
-            for key, val in intro_variants.items():
-                if key.startswith(kit_type):
-                    resolved = get_best_url(val)
-                    if resolved:
-                        intro_url = resolved
-                        break
-            # Pass 2: fallback to "home_*" if kit_type was different
-            if not intro_url and kit_type != "home":
-                for key, val in intro_variants.items():
-                    if key.startswith("home"):
-                        resolved = get_best_url(val)
-                        if resolved:
-                            intro_url = resolved
-                            break
-            # Pass 3: bare style variant keys (old format without kit prefix)
-            if not intro_url:
-                for key, val in intro_variants.items():
-                    if not any(key.startswith(p) for p in ("home", "goalkeeper", "away")):
-                        resolved = get_best_url(val)
-                        if resolved:
-                            intro_url = resolved
-                            break
+            intro_url = _find_best_intro_url(intro_variants, kit_type, get_best_url)
+
+            # Pass 5: legacy media.intro slot
             if not intro_url:
                 intro_url = media.get("intro", {}).get("url")
+
             logger.info(
                 "DEBUG: Player %s - intro_url=%s (kit_type=%s, from %d variants: %s)",
                 member,
@@ -754,27 +806,7 @@ class LineupSegmentBuilder:
 
             # Intro — videos.intro.{kit_type}_* → videos.intro.home_* → bare keys → media.intro
             intro_variants = videos.get("intro", {}) or {}
-            intro_url = None
-            for key, val in intro_variants.items():
-                if key.startswith(kit_type):
-                    resolved = get_best_url(val)
-                    if resolved:
-                        intro_url = resolved
-                        break
-            if not intro_url and kit_type != "home":
-                for key, val in intro_variants.items():
-                    if key.startswith("home"):
-                        resolved = get_best_url(val)
-                        if resolved:
-                            intro_url = resolved
-                            break
-            if not intro_url:
-                for key, val in intro_variants.items():
-                    if not any(key.startswith(p) for p in ("home", "goalkeeper", "away")):
-                        resolved = get_best_url(val)
-                        if resolved:
-                            intro_url = resolved
-                            break
+            intro_url = _find_best_intro_url(intro_variants, kit_type, get_best_url)
             if not intro_url:
                 intro_url = media.get("intro", {}).get("url")
 
