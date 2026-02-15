@@ -112,7 +112,8 @@ export const CONTENT_TYPES = {
     sportRequired: true,
     items: [
       { id: 'flyer', label: 'Match Flyer', icon: '📣', subtype: 'flyer' },
-      { id: 'lineup', label: 'Lineup Flyer', icon: '📋', subtype: 'lineup' },
+      { id: 'lineup', label: 'Lineup Video', icon: '🎬', subtype: 'lineup' },
+      { id: 'lineup_flyer', label: 'Lineup Flyer', icon: '📋', subtype: 'lineup_flyer' },
       { id: 'walkon', label: 'Walk-on Video', icon: '🚶', subtype: 'walkon' },
       { id: 'anthem', label: 'Anthem Video', icon: '🎵', subtype: 'anthem' },
     ],
@@ -795,7 +796,7 @@ export default function ContentGenerationModal({
         if (reqs.assistant?.asset_types?.length) assistantAssets = reqs.assistant.asset_types;
 
         // Force defaults if user specifically requested this standard lineup flow
-        if (selectedType?.subtype === 'lineup') {
+        if (selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer') {
             gkAssets = ['in_tenue', 'short_intro', 'in_tenue', 'close_up'];
             playerAssets = ['in_tenue', 'short_intro', 'in_tenue', 'close_up'];
             // Lineup = 1 goalkeeper + 10 players (no coaches/assistants)
@@ -1119,9 +1120,16 @@ export default function ContentGenerationModal({
       const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
 
       // Check if this is a lineup flyer generation
-      if (templateSubtype === 'lineup') {
+      if (templateSubtype === 'lineup_flyer') {
         clearInterval(progressInterval);
         await handleGenerateLineupFlyer();
+        return;
+      }
+
+      // Check if this is a lineup video generation
+      if (templateSubtype === 'lineup') {
+        clearInterval(progressInterval);
+        await handleGenerateLineupVideo();
         return;
       }
 
@@ -1257,7 +1265,7 @@ export default function ContentGenerationModal({
       } else if (templateSubtype.includes('kit') || templateSubtype.includes('tenue')) {
         const kitType = (selectedTemplate as ContentTemplate & { params?: { kit_type?: string } })?.params?.kit_type || 'home';
         brandAssetType = `kit_${kitType}`; // e.g. kit_home, kit_away
-      } else if (templateSubtype === 'lineup' || isVideo) {
+      } else if (templateSubtype === 'lineup' || templateSubtype === 'lineup_flyer' || isVideo) {
         // Lineup videos need a non-empty asset_type. Use a per-match unique value to avoid
         // overwriting due to unique(profile, asset_type).
         const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
@@ -1591,8 +1599,8 @@ export default function ContentGenerationModal({
                 </div>
               </div>
 
-              {/* Lineup Flyer Options - Formation & Player Style */}
-              {(selectedType?.subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup') && (
+              {/* Lineup Options - Formation & Player Style */}
+              {(selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h4 className="text-sm font-semibold text-gray-700 mb-3">Lineup Options</h4>
 
@@ -1930,7 +1938,7 @@ export default function ContentGenerationModal({
 
               {(() => {
                 const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
-                const isLineup = templateSubtype === 'lineup';
+                const isLineup = templateSubtype === 'lineup' || templateSubtype === 'lineup_flyer';
                 const status = (videoJobStatus || '').toLowerCase();
 
                 type StepStatus = 'pending' | 'active' | 'done' | 'error';

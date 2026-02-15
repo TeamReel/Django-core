@@ -2499,7 +2499,7 @@ export default function HierarchyMatchDetailPage() {
                           let matchedTemplate: ContentTemplate | undefined;
 
                           // Special handling for lineup: match on formation
-                          if (item.subtype === 'lineup' && templates.length > 0) {
+                          if ((item.subtype === 'lineup' || item.subtype === 'lineup_flyer') && templates.length > 0) {
                             const matchFormation = match?.metadata?.formation;
                             if (matchFormation) {
                               matchedTemplate = templates.find(t =>
