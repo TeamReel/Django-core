@@ -893,6 +893,8 @@ export default function ContentGenerationModal({
             activity_id: matchData.id,
             template_id: selectedTemplate?.id || null,
             output_resolution: 'vertical_1080p',
+            formation: lineupFormation || '4-3-3',
+            closeup_style: lineupCloseupStyle || 'popout',
             segments: segments,  // Pass frontend segments as fallback
             selected_member_ids: {
               goalkeeper: targetGKs,

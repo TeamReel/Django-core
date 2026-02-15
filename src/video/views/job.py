@@ -503,6 +503,8 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         output_resolution = request.data.get("output_resolution", "vertical_1080p")
         frontend_segments = request.data.get("segments")
         selected_member_ids = request.data.get("selected_member_ids")
+        formation = request.data.get("formation", "4-3-3")
+        closeup_style = request.data.get("closeup_style", "popout")
         allow_frontend_segments = request.query_params.get(
             "allow_frontend_segments"
         ) == "true" or bool(request.data.get("allow_frontend_segments"))
@@ -553,6 +555,8 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                     "template_id": template_id,
                     "output_resolution": output_resolution,
                     "selected_member_ids": selected_member_ids,
+                    "formation": formation,
+                    "closeup_style": closeup_style,
                     "allow_frontend_segments": allow_frontend_segments,
                     # Preserve for debugging; backend is strict by default.
                     "frontend_segments": frontend_segments,
