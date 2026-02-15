@@ -64,7 +64,7 @@ class AssetProcessor:
         kit_type: str,
         variant_id: str | None = None,
         organisation_id: str | int | None = None,
-        bg_removal_backend: str = "rembg",
+        bg_removal_backend: str = "rvm",
     ) -> dict[str, Any]:
         """Process a raw asset to lineup-ready format.
 
@@ -75,9 +75,11 @@ class AssetProcessor:
             kit_type: Kit type (home, away, third, goalkeeper)
             variant_id: Optional style variant (e.g. 'arms_crossed')
             organisation_id: Organisation ID for S3 path scoping
-            bg_removal_backend: "rembg" (per-frame U2-Net) or "rvm" (Robust Video Matting)
+            bg_removal_backend: "rvm" (Robust Video Matting) or "rembg" (per-frame U2-Net)
                                 RVM is preferred for video — temporal consistency, no flicker.
                                 Falls back to rembg if RVM/torch not available.
+                                Only used for video types (intro, celebration);
+                                images always use rembg single-pass.
 
         Returns:
             Updated variant value dict with processed URL and specs

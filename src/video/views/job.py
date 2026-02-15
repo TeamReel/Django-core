@@ -382,6 +382,9 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 from src.video.services.asset_processor import AssetProcessor
 
                 processor = AssetProcessor()
+                # Images (fullbody, closeup): rembg single-pass (fast)
+                # Videos (intro, celebration): RVM stream (faster + temporal consistency)
+                backend = "rvm" if asset_type in ("intro", "celebration") else "rembg"
                 result = processor.process_asset(
                     raw_url=raw_url,
                     asset_type=asset_type,
@@ -391,6 +394,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                     organisation_id=str(membership.project.organisation_id)
                     if hasattr(membership.project, "organisation_id")
                     else None,
+                    bg_removal_backend=backend,
                 )
 
                 # Refresh membership and update metadata
