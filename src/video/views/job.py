@@ -657,3 +657,88 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_201_CREATED,
             )
+
+    @action(detail=False, methods=["post"], url_path="lineup-flyer")
+    def lineup_flyer(self, request: Request) -> Response:
+        """Generate a static lineup flyer (PNG) from Activity data.
+
+        POST /api/v1/video/jobs/lineup-flyer/
+
+        Request body:
+        {
+            "activity_id": "uuid",           # Required: match/activity ID
+            "template_id": "uuid",           # Optional: ContentTemplate ID
+            "formation": "4-3-3",            # Optional: formation (default 4-3-3)
+            "selected_member_ids": {...},     # Optional: member selection
+            "brand_primary": "#D2122E",      # Optional: brand color override
+            "brand_secondary": "#FFFFFF"     # Optional: brand color override
+        }
+
+        Returns:
+        {
+            "flyer_url": "https://s3.../flyer.png",
+            "formation": "4-3-3",
+            "activity_id": "uuid"
+        }
+        """
+        from src.video.services.lineup_flyer_generator import build_lineup_flyer
+
+        activity_id = request.data.get("activity_id")
+        if not activity_id:
+            return Response(
+                {"error": "activity_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        template_id = request.data.get("template_id")
+        formation = request.data.get("formation", "4-3-3")
+        selected_member_ids = request.data.get("selected_member_ids")
+        brand_primary = request.data.get("brand_primary")
+        brand_secondary = request.data.get("brand_secondary")
+
+        # Validate activity exists and user has access
+        Activity = apps.get_model("activities", "Activity")
+        try:
+            activity = Activity.objects.select_related("project").get(id=activity_id)
+        except Activity.DoesNotExist:
+            return Response(
+                {"error": f"Activity {activity_id} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        project = activity.project
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+        if not ProjectMembership.objects.filter(project=project, user=request.user).exists():
+            raise PermissionDenied("You must be a project member to generate lineup flyers.")
+
+        try:
+            flyer_url = build_lineup_flyer(
+                activity_id=str(activity_id),
+                template_id=str(template_id) if template_id else None,
+                formation=formation,
+                selected_member_ids=selected_member_ids,
+                brand_primary_hex=brand_primary,
+                brand_secondary_hex=brand_secondary,
+            )
+
+            return Response(
+                {
+                    "flyer_url": flyer_url,
+                    "formation": formation,
+                    "activity_id": str(activity_id),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            import traceback
+
+            logger.error(
+                "Failed to generate lineup flyer: %s\n%s",
+                e,
+                traceback.format_exc(),
+            )
+            return Response(
+                {"error": f"Failed to generate lineup flyer: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

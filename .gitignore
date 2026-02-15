@@ -86,6 +86,7 @@ node_modules
 
 # Local asset / video scratch files
 asc/
+local_lineup_test/
 
 # Large Data Exports & Backups
 SoccerWiki_*.json

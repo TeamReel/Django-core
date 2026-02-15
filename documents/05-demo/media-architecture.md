@@ -1176,3 +1176,11 @@ GET /api/v1/medialib/relations/?target_type=activities.period&target_id={season_
 | Geen FK's op FileAsset naar clubs/teams | ✅ | Voorkomt god-object, circulaire deps |
 | S3 path_prefix voor organisatie | ✅ | Logische folder structuur, geen DB impact |
 | Brand inheritance (team → club) | ✅ | `get_effective_brand()` + `get_merged_tokens()` |
+
+---
+
+## Gerelateerd: Content Generation Templates
+
+De **content generation laag** (lineup flyers, match updates, multi-sport templates) bouwt voort op deze media-architectuur. Output van templates wordt opgeslagen als `FileAsset` → `MediaItem` → `MediaItemRelation`.
+
+→ Zie [media-templates.md](media-templates.md) voor het volledige template systeem.

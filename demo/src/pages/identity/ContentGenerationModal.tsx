@@ -112,7 +112,7 @@ export const CONTENT_TYPES = {
     sportRequired: true,
     items: [
       { id: 'flyer', label: 'Match Flyer', icon: '📣', subtype: 'flyer' },
-      { id: 'lineup', label: 'Lineup Announcement', icon: '📋', subtype: 'lineup' },
+      { id: 'lineup', label: 'Lineup Flyer', icon: '📋', subtype: 'lineup' },
       { id: 'walkon', label: 'Walk-on Video', icon: '🚶', subtype: 'walkon' },
       { id: 'anthem', label: 'Anthem Video', icon: '🎵', subtype: 'anthem' },
     ],
@@ -677,6 +677,87 @@ export default function ContentGenerationModal({
     return 'Unknown';
   };
 
+  // Generate lineup flyer (static PNG) using the lineup_flyer_generator service
+  const handleGenerateLineupFlyer = async () => {
+    setProgress(10);
+
+    try {
+      // Get project ID from available sources
+      const projectId = matchData?.project?.id || season?.project_id;
+      if (!projectId) {
+        throw new Error('No project ID available');
+      }
+
+      if (!matchData?.id) {
+        throw new Error('No match/activity data available for flyer generation');
+      }
+
+      // Build selected member IDs (1 GK + 10 players for lineup)
+      const targetGKs = selectedMembers.goalkeeper?.slice(0, 1) || [];
+      const targetPlayers = selectedMembers.player?.slice(0, 10) || [];
+
+      // Determine formation from match metadata or default
+      const formation = matchData?.metadata?.formation || '4-3-3';
+
+      setProgress(30);
+
+      // Call the lineup-flyer endpoint (synchronous — returns URL directly)
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/lineup-flyer/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+          'X-Project-ID': String(projectId),
+        },
+        body: JSON.stringify({
+          activity_id: matchData.id,
+          template_id: selectedTemplate?.id || null,
+          formation: formation,
+          selected_member_ids: {
+            goalkeeper: targetGKs,
+            player: targetPlayers,
+          },
+        }),
+      });
+
+      setProgress(70);
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData?.error || errData?.detail || `Failed to generate lineup flyer: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('🖼️ Lineup flyer generated:', data);
+
+      const flyerUrl = data.flyer_url;
+      if (!flyerUrl) {
+        throw new Error('Flyer generated but no URL returned');
+      }
+
+      // Set result as a generated variant (image, not video)
+      setGeneratedVariants([{
+        variant_index: 0,
+        image_base64: null,
+        presigned_url: flyerUrl,
+        mime_type: 'image/png',
+        filename: `lineup_flyer_${matchData.id}.png`,
+        error: null,
+        storage_info: null,
+        metadata: { type: 'lineup_flyer', formation, activity_id: matchData.id },
+      }]);
+
+      setProgress(100);
+      setTimeout(() => setStep('success'), 300);
+
+    } catch (err) {
+      console.error('❌ Lineup flyer generation failed:', err);
+      setGenerationError(err instanceof Error ? err.message : 'Flyer generation failed');
+      setStep('error');
+    }
+  };
+
   // Generate lineup video using video module
   const handleGenerateLineupVideo = async () => {
     setProgress(10);
@@ -1029,10 +1110,10 @@ export default function ContentGenerationModal({
     try {
       const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
 
-      // Check if this is a lineup video generation
+      // Check if this is a lineup flyer generation
       if (templateSubtype === 'lineup') {
         clearInterval(progressInterval);
-        await handleGenerateLineupVideo();
+        await handleGenerateLineupFlyer();
         return;
       }
 

@@ -20,6 +20,8 @@ This documentation provides everything needed to integrate new backend modules w
 |----------|---------|
 | [README.md](README.md) | **Start here** - Quick integration guide |
 | [glossary.md](glossary.md) | Domain concepts, naming conventions, canonical data |
+| [media-architecture.md](media-architecture.md) | 4-laags media opslag (FileAsset → MediaItem → BrandAsset → VideoJob) |
+| [media-templates.md](media-templates.md) | Content generation: lineup, match updates, multi-sport templates |
 
 ### Schema Reference
 
@@ -63,6 +65,8 @@ python scripts/generate_demo_docs.py
 ├── index.md              # This file
 ├── README.md             # Quick start integration guide
 ├── glossary.md           # Domain concepts + naming conventions
+├── media-architecture.md # 4-laags media opslag model
+├── media-templates.md    # Content generation templates (lineup, updates, multi-sport)
 ├── schema/
 │   └── tables.md         # Auto-gen: Tables + FK relations
 ├── seeding/

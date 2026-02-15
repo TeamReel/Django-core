@@ -1034,80 +1034,38 @@ class LineupSegmentBuilder:
             accumulated_closeups: list[CloseupOverlay] = []
 
             for title, players, y_pct in line_defs:
-                if not players:
-                    continue
-
-                # Position all players in this line side by side
-                n = len(players)
-                scene_players: list[ScenePlayer] = []
-                for i, p in enumerate(players):
-                    if not p.kit_url:
-                        logger.warning("Skipping player %s - no kit URL", p.member_name)
+                try:
+                    if not players:
                         continue
 
-                    # Spread players evenly across x-axis (15% to 85%)
-                    if n == 1:
-                        x_pct = 50
-                    else:
-                        x_pct = 15 + int(70 * i / (n - 1))
+                    # Position all players in this line side by side
+                    n = len(players)
+                    scene_players: list[ScenePlayer] = []
+                    for i, p in enumerate(players):
+                        if not p.kit_url:
+                            logger.warning("Skipping player %s - no kit URL", p.member_name)
+                            continue
 
-                    player_label = f"{p.jersey_number or ''} {p.member_name}".strip()
-                    scene_players.append(
-                        ScenePlayer(
-                            name=player_label,
-                            kit_url=p.kit_url,
-                            x_pct=x_pct,
-                            y_pct=y_pct,
-                        )
-                    )
+                        # Spread players evenly across x-axis (15% to 85%)
+                        if n == 1:
+                            x_pct = 50
+                        else:
+                            x_pct = 15 + int(70 * i / (n - 1))
 
-                if not scene_players:
-                    continue
-
-                # --- STEP 1 & 2: Line Scene (Simultaneous Video) ---
-                # "En per linie tegelijk. Zonder achtergrond. Over het voetbalveld background."
-
-                # Check if we should use animated composition
-                has_intros = any(p.intro_url for p in players)
-                line_video_url = None
-
-                if has_intros and self._render_mode == "line_scenes":
-                    # Collect inputs for composition
-                    comp_inputs = []
-                    for sp, p in zip(scene_players, players):
-                        comp_inputs.append(
-                            {
-                                "intro_url": p.intro_url,
-                                "kit_url": p.kit_url,
-                                "x_pct": sp.x_pct,
-                                "y_pct": sp.y_pct,
-                            }
+                        player_label = f"{p.jersey_number or ''} {p.member_name}".strip()
+                        scene_players.append(
+                            ScenePlayer(
+                                name=player_label,
+                                kit_url=p.kit_url,
+                                x_pct=x_pct,
+                                y_pct=y_pct,
+                            )
                         )
 
-                    logger.info(f"Composing line video for {title} with {len(comp_inputs)} players")
-                    line_video_url = self._compose_line_intro_video(
-                        background_url=background_url,
-                        players=comp_inputs,
-                        width=data.output_width,
-                        height=data.output_height,
-                        fps=data.output_fps,
-                        prefix=f"intro_{title.lower().replace(' ', '_')}",
-                        header_url=header_url,
-                    )
+                    if not scene_players:
+                        continue
 
-                if line_video_url:
-                    # Use the composited video
-                    segments.append(
-                        {
-                            "type": "video",
-                            "url": line_video_url,
-                            "duration": 5.0,  # Target duration
-                            "transition": "cut",  # Video handles transition or cut to next
-                            "label": f"{title} - Intro",
-                        }
-                    )
-                else:
-                    # Fallback to static image + individual intros (legacy behavior)
+                    # --- STEP 1: Generate Static Full Body Image (Always required) ---
                     fullbody_url = generate_line_scene_image(
                         width=data.output_width,
                         height=data.output_height,
@@ -1116,72 +1074,163 @@ class LineupSegmentBuilder:
                         title=title,
                         players=scene_players,
                     )
+
+                    # Add 1st Segment: Full Body Static
                     segments.append(
                         {
                             "type": "image",
                             "url": fullbody_url,
-                            "duration": 2.5,
-                            "transition": "fade",
+                            "duration": 2.0,
+                            "transition": "cut",
                             "label": f"{title} - Full Body",
                         }
                     )
-                    # Legacy sequential intros if we failed to compose (or mode != line_scenes)
-                    for p in players:
-                        if p.intro_url:
-                            player_label = f"{p.jersey_number or ''} {p.member_name}".strip()
-                            segments.append(
-                                {
-                                    "type": "video",
-                                    "url": p.intro_url,
-                                    "label": player_label,
-                                    "transition": "cut",
-                                }
+
+                    # --- STEP 2: Line Scene (Intro Video) ---
+                    # Check if we should use animated composition
+                    has_intros = any(p.intro_url for p in players)
+                    line_video_url = None
+
+                    if has_intros and self._render_mode == "line_scenes":
+                        try:
+                            # Collect inputs for composition
+                            comp_inputs = []
+                            for sp, p in zip(scene_players, players):
+                                comp_inputs.append(
+                                    {
+                                        "intro_url": p.intro_url,
+                                        "kit_url": p.kit_url,
+                                        "x_pct": sp.x_pct,
+                                        "y_pct": sp.y_pct,
+                                    }
+                                )
+
+                            logger.info(
+                                f"Composing line video for {title} with {len(comp_inputs)} players"
                             )
+                            line_video_url = self._compose_line_intro_video(
+                                background_url=background_url,
+                                players=comp_inputs,
+                                width=data.output_width,
+                                height=data.output_height,
+                                fps=data.output_fps,
+                                prefix=f"intro_{title.lower().replace(' ', '_')}",
+                                header_url=header_url,
+                            )
+                        except Exception as e:
+                            logger.error(
+                                f"Failed to compose line video for {title}: {e}", exc_info=True
+                            )
+                            line_video_url = None
 
-                # --- STEP 3: Add this line's players to accumulated closeups ---
-                for i, p in enumerate(players):
-                    if not p.closeup_url and not p.kit_url:
-                        continue
-                    closeup_image = p.closeup_url or p.kit_url
-                    player_label = f"{p.jersey_number or ''} {p.member_name}".strip()
-
-                    # Use player's actual field position for closeup placement
-                    accumulated_closeups.append(
-                        CloseupOverlay(
-                            name=player_label,
-                            image_url=closeup_image,
-                            x_pct=int(p.x),
-                            y_pct=int(p.y),
+                    if line_video_url:
+                        # Add 2nd Segment: Intro Video
+                        segments.append(
+                            {
+                                "type": "video",
+                                "url": line_video_url,
+                                "duration": 5.0,  # Target duration
+                                "transition": "cut",  # Video handles transition or cut to next
+                                "label": f"{title} - Intro",
+                            }
                         )
+                        # Add 3rd Segment: Full Body Static (Again)
+                        segments.append(
+                            {
+                                "type": "image",
+                                "url": fullbody_url,
+                                "duration": 2.0,
+                                "transition": "fade",
+                                "label": f"{title} - Full Body (Return)",
+                            }
+                        )
+
+                        # Add 4th Segment: Individual Closeups for each player in this line
+                        # "Fullbody in tenue -> Short intro -> Fullbody in tenue -> Closeup"
+                        for p in players:
+                            closeup_asset = p.closeup_url or p.kit_url
+                            if closeup_asset:
+                                player_label = f"{p.jersey_number or ''} {p.member_name}".strip()
+                                segments.append(
+                                    {
+                                        "type": "image",
+                                        "url": closeup_asset,
+                                        "duration": 1.5,
+                                        "transition": "cut",
+                                        "label": f"{player_label} - Closeup",
+                                    }
+                                )
+                    else:
+                        # If no video, we just keep the first Full Body image we added
+                        # But maybe extend duration? Or just add individual intros?
+
+                        # Legacy sequential intros if we failed to compose (or mode != line_scenes)
+                        for p in players:
+                            if p.intro_url:
+                                player_label = f"{p.jersey_number or ''} {p.member_name}".strip()
+                                segments.append(
+                                    {
+                                        "type": "video",
+                                        "url": p.intro_url,
+                                        "label": player_label,
+                                        "transition": "cut",
+                                    }
+                                )
+
+                    # --- STEP 3: Add this line's players to accumulated closeups ---
+                    for i, p in enumerate(players):
+                        if not p.closeup_url and not p.kit_url:
+                            continue
+                        closeup_image = p.closeup_url or p.kit_url
+                        player_label = f"{p.jersey_number or ''} {p.member_name}".strip()
+
+                        # Use player's actual field position for closeup placement
+                        accumulated_closeups.append(
+                            CloseupOverlay(
+                                name=player_label,
+                                image_url=closeup_image,
+                                x_pct=int(p.x),
+                                y_pct=int(p.y),
+                            )
+                        )
+
+                    # --- STEP 4: Closeup scene showing ALL closeups so far ---
+                    try:
+                        closeup_scene_url = generate_composite_scene(
+                            width=data.output_width,
+                            height=data.output_height,
+                            background_url=background_url,
+                            header_url=header_url,
+                            title=title,
+                            accumulated_closeups=list(accumulated_closeups),
+                            featured_player=None,
+                            prefix=f"closeups_{title.lower().replace(' ', '_')}",
+                        )
+                        segments.append(
+                            {
+                                "type": "image",
+                                "url": closeup_scene_url,
+                                "duration": 1.5,
+                                "transition": "cut",
+                                "label": f"{title} - Closeups",
+                            }
+                        )
+                    except Exception as e:
+                        logger.error(
+                            f"Failed to generate composite closeup scene for {title}: {e}",
+                            exc_info=True,
+                        )
+
+                    logger.info(
+                        "Generated %s: fullbody + %d intros + closeup scene (%d total closeups)",
+                        title,
+                        sum(1 for p in players if p.intro_url),
+                        len(accumulated_closeups),
                     )
 
-                # --- STEP 4: Closeup scene showing ALL closeups so far ---
-                closeup_scene_url = generate_composite_scene(
-                    width=data.output_width,
-                    height=data.output_height,
-                    background_url=background_url,
-                    header_url=header_url,
-                    title=title,
-                    accumulated_closeups=list(accumulated_closeups),
-                    featured_player=None,
-                    prefix=f"closeups_{title.lower().replace(' ', '_')}",
-                )
-                segments.append(
-                    {
-                        "type": "image",
-                        "url": closeup_scene_url,
-                        "duration": 1.5,
-                        "transition": "cut",
-                        "label": f"{title} - Closeups",
-                    }
-                )
-
-                logger.info(
-                    "Generated %s: fullbody + %d intros + closeup scene (%d total closeups)",
-                    title,
-                    sum(1 for p in players if p.intro_url),
-                    len(accumulated_closeups),
-                )
+                except Exception as e:
+                    logger.error(f"Generate Line Scene Failed for {title}: {e}", exc_info=True)
+                    continue
 
             if not segments:
                 raise ValueError("No lineup scenes were generated")
