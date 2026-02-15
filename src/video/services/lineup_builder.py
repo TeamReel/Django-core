@@ -714,6 +714,142 @@ class LineupSegmentBuilder:
                 # Unknown position — park in unassigned, distribute later
                 midfielders.append(player)
 
+        # ── Supplement missing players from ProjectMembership ──
+        # When only some players have Participation records (e.g. keeper has one but
+        # field players don't), the list above will be incomplete.  Detect this by
+        # comparing the collected member IDs with the frontend-selected IDs and pull
+        # in the missing members from ProjectMembership metadata directly.
+        if self.selected_member_ids_by_role:
+            collected_pm_ids = set()
+            for pl in keepers + defenders + midfielders + attackers:
+                collected_pm_ids.add(pl.member_id)
+
+            # Find selected player IDs that weren't matched to a Participation
+            selected_player_ids = {
+                str(x) for x in self.selected_member_ids_by_role.get("player", [])
+            }
+            selected_gk_ids = {
+                str(x) for x in self.selected_member_ids_by_role.get("goalkeeper", [])
+            }
+            missing_player_ids = selected_player_ids - collected_pm_ids
+            missing_gk_ids = selected_gk_ids - collected_pm_ids
+
+            if missing_player_ids or missing_gk_ids:
+                all_missing = list(missing_player_ids | missing_gk_ids)
+                logger.info(
+                    "Supplementing %d missing members from ProjectMembership (missing_players=%d, missing_gk=%d)",
+                    len(all_missing),
+                    len(missing_player_ids),
+                    len(missing_gk_ids),
+                )
+                self._debug_trace.append(
+                    f"Supplementing {len(all_missing)} missing members from PM"
+                )
+
+                from src.video.services.asset_processing_specs import (
+                    get_best_url as _get_best_url,
+                )
+
+                supplement_pms = ProjectMembership.objects.filter(
+                    id__in=all_missing,
+                ).select_related("user")
+
+                for pm in supplement_pms:
+                    pm_meta = pm.metadata or {}
+                    pm_tr = pm_meta.get("teamreel_assets", {})
+                    pm_media = pm_tr.get("media", {})
+                    pm_images = pm_tr.get("images", {})
+                    pm_videos = pm_tr.get("videos", {})
+
+                    pm_id_str = str(pm.id)
+                    is_gk = pm_id_str in missing_gk_ids
+                    pm_kit_type = "goalkeeper" if is_gk else "home"
+
+                    # Kit (fullbody)
+                    fb_dict = pm_images.get("fullbody", {}) or {}
+                    s_kit_url = _get_best_url(fb_dict.get(pm_kit_type))
+                    if not s_kit_url and pm_kit_type != "home":
+                        s_kit_url = _get_best_url(fb_dict.get("home"))
+                    if not s_kit_url:
+                        s_kit_url = pm_media.get("kit", {}).get("url")
+
+                    # Intro
+                    s_intro_variants = pm_videos.get("intro", {}) or {}
+                    s_intro_url = _find_best_intro_url(s_intro_variants, pm_kit_type, _get_best_url)
+                    if not s_intro_url:
+                        s_intro_url = pm_media.get("intro", {}).get("url")
+
+                    # Closeup
+                    cu_dict = pm_images.get("closeup", {}) or {}
+                    s_closeup_url = _get_best_url(cu_dict.get(pm_kit_type))
+                    if not s_closeup_url and pm_kit_type != "home":
+                        s_closeup_url = _get_best_url(cu_dict.get("home"))
+                    if not s_closeup_url:
+                        s_closeup_url = pm_media.get("closeup", {}).get("url")
+
+                    # Presign relative paths
+                    if s_kit_url and not s_kit_url.startswith("http"):
+                        s_kit_url = self._get_presigned_url(s_kit_url)
+                    if s_intro_url and not s_intro_url.startswith("http"):
+                        s_intro_url = self._get_presigned_url(s_intro_url)
+                    if s_closeup_url and not s_closeup_url.startswith("http"):
+                        s_closeup_url = self._get_presigned_url(s_closeup_url)
+
+                    user = pm.user
+                    name = user.get_full_name() if user else "Unknown"
+
+                    supplemented_player = PlayerSegment(
+                        slot=len(keepers) + len(defenders) + len(midfielders) + len(attackers),
+                        position="",
+                        functional_role="goalkeeper" if is_gk else "",
+                        member_id=pm_id_str,
+                        member_name=name,
+                        jersey_number=None,
+                        kit_url=s_kit_url,
+                        intro_url=s_intro_url,
+                        closeup_url=s_closeup_url,
+                        x=50,
+                        y=50,
+                    )
+
+                    if is_gk:
+                        keepers.append(supplemented_player)
+                    else:
+                        midfielders.append(supplemented_player)
+
+                # Auto-split if all supplemented field players ended up in midfield
+                total_field = len(defenders) + len(midfielders) + len(attackers)
+                if total_field > 0 and len(defenders) == 0 and len(attackers) == 0:
+                    field_players_to_split = list(midfielders)
+                    midfielders.clear()
+                    n = len(field_players_to_split)
+                    if n <= 6:
+                        n_def, n_mid = 2, 2
+                    elif n <= 8:
+                        n_def, n_mid = 3, 3
+                    else:
+                        n_def, n_mid = 4, 3
+
+                    for i, p in enumerate(field_players_to_split):
+                        if i < n_def:
+                            defenders.append(p)
+                        elif i < n_def + n_mid:
+                            midfielders.append(p)
+                        else:
+                            attackers.append(p)
+
+                    self._debug_trace.append(
+                        f"Auto-split supplemented: D={len(defenders)} M={len(midfielders)} A={len(attackers)}"
+                    )
+
+                # Spread x positions
+                for line in [keepers, defenders, midfielders, attackers]:
+                    if len(line) == 1:
+                        line[0].x = 50
+                    else:
+                        for i, p in enumerate(line):
+                            p.x = int(15 + (70 * i / max(len(line) - 1, 1)))
+
         # Sort each line by x position (left to right)
         defenders.sort(key=lambda p: p.x)
         midfielders.sort(key=lambda p: p.x)
