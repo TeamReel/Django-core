@@ -1936,7 +1936,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                             >
                                               Opnieuw
                                             </Button>
-                                            {!variantLineupReady && !variantProcessing && (
+                                            {!variantProcessing && (
                                               <Button
                                                 size="sm"
                                                 variant="secondary"
@@ -1972,7 +1972,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                   color: '#fff',
                                                 }}
                                               >
-                                                🔧 Bewerken
+                                                {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                               </Button>
                                             )}
                                             {variantLineupReady && (
@@ -2168,7 +2168,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                             >
                                               Opnieuw
                                             </Button>
-                                            {!variantLineupReady && !variantProcessing && (
+                                            {!variantProcessing && (
                                               <Button
                                                 size="sm"
                                                 variant="secondary"
@@ -2204,7 +2204,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                   color: '#fff',
                                                 }}
                                               >
-                                                🔧 Bewerken
+                                                {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                               </Button>
                                             )}
                                             {variantLineupReady && (
