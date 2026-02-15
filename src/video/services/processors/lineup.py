@@ -84,12 +84,38 @@ class LineupProcessor(BaseVideoProcessor):
             config = self.job.config or {}
             segments = config.get("segments", [])
 
+            # ── New composer path ──
+            # When the job was created via the fast path (no segments), use
+            # the formation-based lineup composer that produces the full video
+            # directly (field background, header, badge transitions, etc.).
+            if not segments and config.get("activity_id"):
+                output_path = self._compose_lineup_video(config)
+                # Skip the old segment-based pipeline entirely — jump to upload.
+                output_file = self._upload_output(output_path)
+
+                self.job.output_file = output_file
+                self.job.status = JobStatus.COMPLETED
+                self.job.completed_at = timezone.now()
+                self.job.progress_percent = 100
+                self.job.save(
+                    update_fields=[
+                        "output_file",
+                        "status",
+                        "completed_at",
+                        "progress_percent",
+                        "updated_at",
+                    ]
+                )
+                logger.info("lineup_compose_completed", extra={"job_id": str(self.job.id)})
+                return output_file
+
             if not segments:
                 raise ValueError(
-                    "No segments provided in config. "
-                    "The lineup builder must run first to composite assets onto the stadium background."
+                    "No segments provided in config and no activity_id for composer. "
+                    "Either provide segments[] or activity_id + selected_member_ids."
                 )
 
+            # ── Legacy segment-based pipeline ──
             # Download and prepare all segments
             prepared_segments = self._prepare_segments(segments)
 
@@ -140,6 +166,81 @@ class LineupProcessor(BaseVideoProcessor):
             raise
         finally:
             self._cleanup()
+
+    def _compose_lineup_video(self, config: dict) -> str:
+        """Use the formation-based lineup composer to generate the full video.
+
+        This is the new pipeline (ported from local_lineup_test/build_lineup.py)
+        that creates a proper formation video with field background, header,
+        per-phase player reveals, badge transitions, and persistent closeups.
+
+        Args:
+            config: Job config dict with activity_id, formation, closeup_style,
+                    selected_member_ids, etc.
+
+        Returns:
+            Local file path to the composed MP4.
+        """
+        from src.video.services.lineup_builder import LineupSegmentBuilder
+        from src.video.services.lineup_composer import compose_lineup_video
+
+        activity_id = config["activity_id"]
+        template_id = config.get("template_id")
+        output_resolution = config.get("output_resolution", "vertical_1080p")
+        selected_member_ids = config.get("selected_member_ids")
+        formation = config.get("formation", "4-3-3")
+        closeup_style = config.get("closeup_style", "popout")
+
+        logger.info(
+            "Starting lineup composition (new pipeline)",
+            extra={
+                "job_id": str(self.job.id),
+                "activity_id": activity_id,
+                "formation": formation,
+                "closeup_style": closeup_style,
+            },
+        )
+
+        # Update job metadata so user sees progress
+        meta = self.job.metadata or {}
+        meta["pipeline"] = "composer"
+        meta["current_segment"] = "Gathering lineup data..."
+        self.job.metadata = meta
+        self.job.save(update_fields=["metadata", "updated_at"])
+
+        # Gather lineup data from database
+        builder = LineupSegmentBuilder(
+            activity_id=activity_id,
+            template_id=template_id,
+            output_resolution=output_resolution,
+            selected_member_ids=selected_member_ids,
+        )
+        lineup_data = builder.gather_lineup_data()
+
+        # Progress callback that updates the VideoJob
+        def _progress(pct: int) -> None:
+            self.job.progress_percent = pct
+            meta = self.job.metadata or {}
+            meta["compose_progress"] = pct
+            if pct < 20:
+                meta["current_segment"] = "Downloading assets..."
+            elif pct < 80:
+                meta["current_segment"] = "Compositing video..."
+            else:
+                meta["current_segment"] = "Finalising..."
+            self.job.metadata = meta
+            self.job.save(update_fields=["progress_percent", "metadata", "updated_at"])
+
+        # Run the composer
+        output_path = compose_lineup_video(
+            lineup_data=lineup_data,
+            formation=formation,
+            closeup_style=closeup_style,
+            output_dir=self.temp_dir,
+            progress_callback=_progress,
+        )
+
+        return str(output_path)
 
     def _upload_output(self, output_path: str) -> FileAsset:
         """Upload output to S3 under match/lineup/ path when match context is available."""

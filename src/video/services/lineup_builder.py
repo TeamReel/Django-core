@@ -261,6 +261,15 @@ class LineupSegmentBuilder:
         finally:
             reset_image_cache()  # Free memory
 
+    def gather_lineup_data(self) -> LineupData:
+        """Gather all required data from database.
+
+        Public entry point used by lineup_composer for formation-based
+        video compositing without building segments.
+        """
+        self._load_render_mode()
+        return self._gather_lineup_data()
+
     def _gather_lineup_data(self) -> LineupData:
         """Gather all required data from database."""
         from django.apps import apps
