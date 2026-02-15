@@ -619,7 +619,7 @@ export default function ContentGenerationModal({
   const [videoJobMeta, setVideoJobMeta] = useState<Record<string, unknown>>({});
 
   // Helper to get member's asset URL
-  const getMemberAssetUrl = (memberId: string, assetType: string): string | null => {
+  const getMemberAssetUrl = (memberId: string, assetType: string, memberRole?: string): string | null => {
     // Find the member in seasonSquad
     for (const role of ['goalkeeper', 'player', 'coach', 'assistant']) {
       const member = seasonSquad[role]?.find(p => p.id === memberId);
@@ -629,14 +629,47 @@ export default function ContentGenerationModal({
         const tr = (meta as any)?.teamreel_assets || {};
         const media = tr?.media || {};
         const videos = tr?.videos || {};
+        const images = tr?.images || {};
         const legacyKit = tr?.kit || {};
 
-        // For video types (intro, closeup, celebration), prefer processed WebM
+        // Determine the role variant key for images structure
+        const effectiveRole = memberRole || role;
+        let roleKey = 'home'; // Default for player
+        if (effectiveRole === 'goalkeeper') roleKey = 'goalkeeper';
+        else if (effectiveRole === 'coach' || effectiveRole === 'assistant') roleKey = 'coach';
+
+        // Map media keys to images structure keys (they differ!)
+        // images uses: fullbody, closeup — media uses: kit, closeup
+        const imageStructureKey = mediaKey === 'kit' ? 'fullbody' : mediaKey;
+
+        // 1. Check the 'images' structure (images.{type}.{variant})
+        // e.g. images.closeup.goalkeeper or images.fullbody.home
+        if (images[imageStructureKey]?.[roleKey]?.url) {
+          return images[imageStructureKey][roleKey].url;
+        }
+        // Fallback: try 'home' variant if role-specific not found
+        if (roleKey !== 'home' && images[imageStructureKey]?.home?.url) {
+          return images[imageStructureKey].home.url;
+        }
+
+        // 2. For video types (intro, closeup, celebration), prefer processed WebM
         // (with VP9 alpha transparency) over raw MP4 (black background).
         // videos.intro = { variant_key: { raw: "...mp4", processed: "...webm" } }
         if (['intro', 'closeup', 'celebration'].includes(mediaKey) && videos[mediaKey]) {
           const variants = videos[mediaKey] || {};
-          // First pass: prefer processed (WebM with transparency)
+          // First: try role-specific variant (e.g. goalkeeper_thumbs_up)
+          const roleVariantEntries = Object.entries(variants).filter(([k]) =>
+            k.toLowerCase().includes(roleKey) || k.toLowerCase().startsWith(roleKey)
+          );
+          // Role-specific: prefer processed
+          for (const [, val] of roleVariantEntries) {
+            if (val && typeof val === 'object' && (val as any).processed) return (val as any).processed;
+          }
+          for (const [, val] of roleVariantEntries) {
+            if (val && typeof val === 'object' && (val as any).raw) return (val as any).raw;
+            if (val && typeof val === 'string' && val.trim()) return val;
+          }
+          // Fallback: any variant — prefer processed
           for (const [, val] of Object.entries(variants)) {
             if (val && typeof val === 'object' && (val as any).processed) {
               return (val as any).processed;
@@ -654,10 +687,10 @@ export default function ContentGenerationModal({
           }
         }
 
-        // Check media format (flat key: {url, caption})
+        // 3. Check media format (flat key: {url, caption})
         if (media[mediaKey]?.url) return media[mediaKey].url;
 
-        // Check legacy format
+        // 4. Check legacy format
         if (mediaKey === 'profile' && legacyKit?.profile_photo_url) return legacyKit.profile_photo_url;
         if (mediaKey === 'kit' && legacyKit?.full_body_url) return legacyKit.full_body_url;
         if (mediaKey === 'celebration' && legacyKit?.goal_celebration_url) return legacyKit.goal_celebration_url;
@@ -808,16 +841,16 @@ export default function ContentGenerationModal({
       }
 
       // Helper to add segments for a list of members
-      const addMemberSegments = (members: string[], assets: string[]) => {
+      const addMemberSegments = (members: string[], assets: string[], role?: string) => {
         for (const memberId of members) {
           const memberName = getMemberName(memberId);
 
           for (const assetType of assets) {
-            const url = getMemberAssetUrl(memberId, assetType);
+            const url = getMemberAssetUrl(memberId, assetType, role);
             if (!url) {
               // Try fallback for close_up -> profile_photo if missing
               if (assetType === 'close_up') {
-                 const altUrl = getMemberAssetUrl(memberId, 'profile_photo');
+                 const altUrl = getMemberAssetUrl(memberId, 'profile_photo', role);
                  if (altUrl) {
                     segments.push({
                         type: 'image',
@@ -858,10 +891,10 @@ export default function ContentGenerationModal({
         }
       };
 
-      addMemberSegments(targetGKs, gkAssets);
-      addMemberSegments(targetPlayers, playerAssets);
-      addMemberSegments(targetCoach, coachAssets);
-      addMemberSegments(targetAssistant, assistantAssets);
+      addMemberSegments(targetGKs, gkAssets, 'goalkeeper');
+      addMemberSegments(targetPlayers, playerAssets, 'player');
+      addMemberSegments(targetCoach, coachAssets, 'coach');
+      addMemberSegments(targetAssistant, assistantAssets, 'assistant');
 
       console.log('📹 Lineup video segments:', segments);
 
