@@ -1591,6 +1591,62 @@ export default function ContentGenerationModal({
                 </div>
               </div>
 
+              {/* Lineup Flyer Options - Formation & Player Style */}
+              {(selectedType?.subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup') && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Lineup Options</h4>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Formation selector */}
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Formation</label>
+                      <div className="flex gap-2">
+                        {['4-3-3', '4-4-2', '3-4-3'].map(f => (
+                          <button
+                            key={f}
+                            onClick={() => setLineupFormation(f)}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              lineupFormation === f
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            {f}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Closeup style selector */}
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Player Style</label>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setLineupCloseupStyle('popout')}
+                          className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-center ${
+                            lineupCloseupStyle === 'popout'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          🧍 Popout
+                        </button>
+                        <button
+                          onClick={() => setLineupCloseupStyle('badge')}
+                          className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-center ${
+                            lineupCloseupStyle === 'badge'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          ⭕ Badge
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Member Selection - Compact Dropdown Layout */}
               {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map(role => {
                 const req = selectedTemplate.input_requirements?.members?.[role];
@@ -1859,63 +1915,6 @@ export default function ContentGenerationModal({
                 </div>
               )}
 
-              {/* Lineup Flyer Options */}
-              {(selectedType?.subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup') && (
-                <div className="bg-gray-50 rounded-lg p-4 mt-4 w-full max-w-md">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Lineup Options</h4>
-
-                  {/* Formation selector */}
-                  <div className="mb-4">
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Formation</label>
-                    <div className="flex gap-2">
-                      {['4-3-3', '4-4-2', '3-4-3'].map(f => (
-                        <button
-                          key={f}
-                          onClick={() => setLineupFormation(f)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            lineupFormation === f
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          {f}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Closeup style selector */}
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Player Style</label>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setLineupCloseupStyle('popout')}
-                        className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-center ${
-                          lineupCloseupStyle === 'popout'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
-                        }`}
-                      >
-                        <div className="text-lg mb-1">🧍</div>
-                        <div>Popout</div>
-                        <div className="text-xs opacity-75">Full body kit</div>
-                      </button>
-                      <button
-                        onClick={() => setLineupCloseupStyle('badge')}
-                        className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-center ${
-                          lineupCloseupStyle === 'badge'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
-                        }`}
-                      >
-                        <div className="text-lg mb-1">⭕</div>
-                        <div>Badge</div>
-                        <div className="text-xs opacity-75">Circular closeup</div>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
