@@ -64,6 +64,7 @@ class AssetProcessor:
         kit_type: str,
         variant_id: str | None = None,
         organisation_id: str | int | None = None,
+        bg_removal_backend: str = "rembg",
     ) -> dict[str, Any]:
         """Process a raw asset to lineup-ready format.
 
@@ -74,6 +75,9 @@ class AssetProcessor:
             kit_type: Kit type (home, away, third, goalkeeper)
             variant_id: Optional style variant (e.g. 'arms_crossed')
             organisation_id: Organisation ID for S3 path scoping
+            bg_removal_backend: "rembg" (per-frame U2-Net) or "rvm" (Robust Video Matting)
+                                RVM is preferred for video — temporal consistency, no flicker.
+                                Falls back to rembg if RVM/torch not available.
 
         Returns:
             Updated variant value dict with processed URL and specs
@@ -101,7 +105,14 @@ class AssetProcessor:
                 )
             elif isinstance(spec, VideoSpec):
                 processed_url, actual_specs = self._process_video(
-                    raw_url, spec, membership_id, asset_type, kit_type, variant_id, organisation_id
+                    raw_url,
+                    spec,
+                    membership_id,
+                    asset_type,
+                    kit_type,
+                    variant_id,
+                    organisation_id,
+                    bg_removal_backend=bg_removal_backend,
                 )
             else:
                 raise AssetProcessingError(f"Unsupported spec type: {type(spec)}")
@@ -195,10 +206,17 @@ class AssetProcessor:
         kit_type: str,
         variant_id: str | None,
         organisation_id: str | int | None,
+        bg_removal_backend: str = "rembg",
     ) -> tuple[str, dict]:
-        """Process a video asset: download → extract frames → bg remove per frame → re-encode → upload.
+        """Process a video asset: download → bg remove → re-encode → upload.
 
-        Uses rembg for per-frame background removal (same model as images).
+        Supports two bg removal backends:
+          - "rvm": Robust Video Matting (PyTorch). Temporal consistency via recurrent
+            state → flicker-free mattes. Preferred for intro/celebration videos.
+            Processes full video as a stream (no frame extraction to disk).
+          - "rembg": Per-frame U2-Net background removal. No temporal consistency
+            but doesn't require PyTorch. Fallback when RVM not available.
+
         Output is WebM VP9 with alpha channel for true transparency.
         """
         from files.utils import get_storage_backend
@@ -213,204 +231,311 @@ class AssetProcessor:
             input_path = tmpdir_path / "input.mp4"
             input_path.write_bytes(raw_data)
 
-            # 2. Get source video info (fps, duration)
-            src_fps = self._get_video_fps(str(input_path)) or spec.fps
-            duration = self._get_video_duration(str(input_path))
+            # Determine effective bg removal backend
+            effective_backend = bg_removal_backend
+            if effective_backend == "rvm":
+                from src.video.services.rvm_processor import is_rvm_available
 
-            # Use reduced fps for bg removal to keep processing time reasonable:
-            # A 5s video at 30fps = 150 frames × ~1.5s/frame = ~225s.
-            # At 15fps = 75 frames × ~1.5s/frame = ~112s — much more practical.
-            process_fps = min(src_fps, 15)
+                if not is_rvm_available():
+                    logger.warning("RVM requested but torch not available, falling back to rembg")
+                    effective_backend = "rembg"
 
+            if effective_backend == "rvm":
+                return self._process_video_rvm(
+                    input_path,
+                    spec,
+                    membership_id,
+                    asset_type,
+                    kit_type,
+                    variant_id,
+                    backend,
+                )
+
+            # Fall through to original rembg pipeline
+            return self._process_video_rembg(
+                input_path,
+                spec,
+                membership_id,
+                asset_type,
+                kit_type,
+                variant_id,
+                backend,
+            )
+
+    def _process_video_rvm(
+        self,
+        input_path: Path,
+        spec: VideoSpec,
+        membership_id: str,
+        asset_type: str,
+        kit_type: str,
+        variant_id: str | None,
+        storage_backend: Any,
+    ) -> tuple[str, dict]:
+        """Process video using RVM (Robust Video Matting).
+
+        Streams FFmpeg decode → RVM GPU inference → FFmpeg encode.
+        Temporal consistency via recurrent state = no flicker.
+        """
+        from src.video.services.rvm_processor import process_video_rvm
+
+        output_path = input_path.parent / "output_rvm.webm"
+
+        # Portrait mode for intro/celebration (9:16)
+        portrait = spec.height > spec.width
+
+        metrics = process_video_rvm(
+            input_path=input_path,
+            output_path=output_path,
+            downsample_ratio=0.40,
+            portrait=portrait,
+            output_format="webm",
+            target_width=spec.width,
+            target_height=spec.height,
+        )
+
+        if not output_path.exists():
+            raise AssetProcessingError("RVM produced no output file")
+
+        # Upload processed version
+        variant_suffix = f"_{variant_id}" if variant_id else ""
+        storage_path = (
+            f"members/{membership_id}/processed/{asset_type}/"
+            f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.webm"
+        )
+
+        with open(output_path, "rb") as f:
+            saved_path = storage_backend.save(storage_path, f)
+
+        actual_specs = {
+            "width": spec.width,
+            "height": spec.height,
+            "format": "webm",
+            "fps": metrics.get("fps", spec.fps),
+            "codec": "vp9",
+            "bg_removed": True,
+            "bg_removal_backend": "rvm",
+            "duration": None,
+            "total_frames": metrics.get("frame_count", 0),
+            "mask_stability": metrics.get("mask_stability_mean_diff", 0),
+        }
+
+        return saved_path, actual_specs
+
+    def _process_video_rembg(
+        self,
+        input_path: Path,
+        spec: VideoSpec,
+        membership_id: str,
+        asset_type: str,
+        kit_type: str,
+        variant_id: str | None,
+        storage_backend: Any,
+    ) -> tuple[str, dict]:
+        """Process video using rembg (per-frame U2-Net bg removal).
+
+        Extract frames → rembg per frame → auto-crop → re-encode VP9 WebM.
+        """
+        tmpdir_path = input_path.parent
+
+        # 2. Get source video info (fps, duration)
+        src_fps = self._get_video_fps(str(input_path)) or spec.fps
+        duration = self._get_video_duration(str(input_path))
+
+        # Use reduced fps for bg removal to keep processing time reasonable:
+        # A 5s video at 30fps = 150 frames × ~1.5s/frame = ~225s.
+        # At 15fps = 75 frames × ~1.5s/frame = ~112s — much more practical.
+        process_fps = min(src_fps, 15)
+
+        logger.info(
+            "Video info: src_fps=%s, process_fps=%s, duration=%s",
+            src_fps,
+            process_fps,
+            duration,
+        )
+
+        # 3. Extract frames as PNG at NATIVE resolution (no scale/pad yet).
+        #    Scaling to target before bg removal causes issues: a 16:9 source
+        #    would become a tiny strip inside the 9:16 target, padded with black.
+        #    rembg works best on the native frame where the subject fills it.
+        frames_dir = tmpdir_path / "frames"
+        frames_dir.mkdir()
+        extract_cmd = [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(input_path),
+            "-r",
+            str(process_fps),
+            str(frames_dir / "frame_%06d.png"),
+        ]
+        result = subprocess.run(
+            extract_cmd,
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=False,
+        )
+        if result.returncode != 0:
+            raise AssetProcessingError(
+                f"FFmpeg frame extraction failed (exit {result.returncode}): "
+                f"{result.stderr[:500]}"
+            )
+
+        frame_files = sorted(frames_dir.glob("frame_*.png"))
+        total_frames = len(frame_files)
+        if total_frames == 0:
+            raise AssetProcessingError("No frames extracted from video")
+
+        logger.info("Extracted %d frames, starting bg removal...", total_frames)
+
+        # 4. Remove background from each frame using rembg
+        try:
+            from rembg import remove, new_session
+        except ImportError as e:
+            raise AssetProcessingError(
+                f"rembg import failed: {e}. " "Background removal requires rembg + onnxruntime."
+            ) from e
+
+        from PIL import Image as PILImage
+
+        processed_dir = tmpdir_path / "processed_frames"
+        processed_dir.mkdir()
+
+        # Create rembg session once (reuse model across all frames)
+        session = new_session("u2net")
+
+        # Track content bounding box across all frames so we can auto-crop
+        # to the player content after bg removal (makes the player fill more
+        # of the final target canvas instead of being a tiny strip).
+        all_bboxes: list[tuple[int, int, int, int]] = []
+
+        for i, frame_path in enumerate(frame_files):
+            if i % 20 == 0:
+                logger.info("BG removal: frame %d / %d", i + 1, total_frames)
+
+            img_data = frame_path.read_bytes()
+            result_bytes = remove(img_data, session=session)
+
+            # Save as RGBA PNG
+            out_img = PILImage.open(io.BytesIO(result_bytes)).convert("RGBA")
+            out_path = processed_dir / frame_path.name
+            out_img.save(str(out_path), format="PNG")
+
+            # Track non-transparent content bbox via alpha channel
+            bbox = out_img.split()[3].getbbox()  # alpha channel bbox
+            if bbox:
+                all_bboxes.append(bbox)
+
+        logger.info("BG removal complete for all %d frames", total_frames)
+
+        # 4b. Auto-crop all frames to the union bounding box of their content.
+        #     This eliminates dead transparent space around the player so that
+        #     subsequent scaling to the target size makes the player bigger.
+        if all_bboxes:
+            # Get the first processed frame dimensions for clamping
+            first_frame = PILImage.open(processed_dir / frame_files[0].name)
+            src_w, src_h = first_frame.size
+            first_frame.close()
+
+            union_bbox = (
+                min(b[0] for b in all_bboxes),
+                min(b[1] for b in all_bboxes),
+                max(b[2] for b in all_bboxes),
+                max(b[3] for b in all_bboxes),
+            )
+            # Add 5% margin so the player doesn't touch the edges
+            content_w = union_bbox[2] - union_bbox[0]
+            content_h = union_bbox[3] - union_bbox[1]
+            margin_x = max(int(content_w * 0.05), 4)
+            margin_y = max(int(content_h * 0.05), 4)
+            crop_bbox = (
+                max(0, union_bbox[0] - margin_x),
+                max(0, union_bbox[1] - margin_y),
+                min(src_w, union_bbox[2] + margin_x),
+                min(src_h, union_bbox[3] + margin_y),
+            )
             logger.info(
-                "Video info: src_fps=%s, process_fps=%s, duration=%s",
-                src_fps,
-                process_fps,
-                duration,
+                "Auto-crop: union_bbox=%s, crop_bbox=%s (src=%dx%d)",
+                union_bbox,
+                crop_bbox,
+                src_w,
+                src_h,
             )
 
-            # 3. Extract frames as PNG at NATIVE resolution (no scale/pad yet).
-            #    Scaling to target before bg removal causes issues: a 16:9 source
-            #    would become a tiny strip inside the 9:16 target, padded with black.
-            #    rembg works best on the native frame where the subject fills it.
-            frames_dir = tmpdir_path / "frames"
-            frames_dir.mkdir()
-            extract_cmd = [
-                "ffmpeg",
-                "-y",
-                "-i",
-                str(input_path),
-                "-r",
-                str(process_fps),
-                str(frames_dir / "frame_%06d.png"),
-            ]
-            result = subprocess.run(
-                extract_cmd,
-                capture_output=True,
-                text=True,
-                timeout=120,
-                check=False,
-            )
-            if result.returncode != 0:
-                raise AssetProcessingError(
-                    f"FFmpeg frame extraction failed (exit {result.returncode}): "
-                    f"{result.stderr[:500]}"
-                )
+            for pf in sorted(processed_dir.glob("frame_*.png")):
+                img = PILImage.open(pf)
+                img = img.crop(crop_bbox)
+                img.save(str(pf), format="PNG")
+                img.close()
 
-            frame_files = sorted(frames_dir.glob("frame_*.png"))
-            total_frames = len(frame_files)
-            if total_frames == 0:
-                raise AssetProcessingError("No frames extracted from video")
-
-            logger.info("Extracted %d frames, starting bg removal...", total_frames)
-
-            # 4. Remove background from each frame using rembg
-            try:
-                from rembg import remove, new_session
-            except ImportError as e:
-                raise AssetProcessingError(
-                    f"rembg import failed: {e}. " "Background removal requires rembg + onnxruntime."
-                ) from e
-
-            from PIL import Image as PILImage
-
-            processed_dir = tmpdir_path / "processed_frames"
-            processed_dir.mkdir()
-
-            # Create rembg session once (reuse model across all frames)
-            session = new_session("u2net")
-
-            # Track content bounding box across all frames so we can auto-crop
-            # to the player content after bg removal (makes the player fill more
-            # of the final target canvas instead of being a tiny strip).
-            all_bboxes: list[tuple[int, int, int, int]] = []
-
-            for i, frame_path in enumerate(frame_files):
-                if i % 20 == 0:
-                    logger.info("BG removal: frame %d / %d", i + 1, total_frames)
-
-                img_data = frame_path.read_bytes()
-                result_bytes = remove(img_data, session=session)
-
-                # Save as RGBA PNG
-                out_img = PILImage.open(io.BytesIO(result_bytes)).convert("RGBA")
-                out_path = processed_dir / frame_path.name
-                out_img.save(str(out_path), format="PNG")
-
-                # Track non-transparent content bbox via alpha channel
-                bbox = out_img.split()[3].getbbox()  # alpha channel bbox
-                if bbox:
-                    all_bboxes.append(bbox)
-
-            logger.info("BG removal complete for all %d frames", total_frames)
-
-            # 4b. Auto-crop all frames to the union bounding box of their content.
-            #     This eliminates dead transparent space around the player so that
-            #     subsequent scaling to the target size makes the player bigger.
-            if all_bboxes:
-                # Get the first processed frame dimensions for clamping
-                first_frame = PILImage.open(processed_dir / frame_files[0].name)
-                src_w, src_h = first_frame.size
-                first_frame.close()
-
-                union_bbox = (
-                    min(b[0] for b in all_bboxes),
-                    min(b[1] for b in all_bboxes),
-                    max(b[2] for b in all_bboxes),
-                    max(b[3] for b in all_bboxes),
-                )
-                # Add 5% margin so the player doesn't touch the edges
-                content_w = union_bbox[2] - union_bbox[0]
-                content_h = union_bbox[3] - union_bbox[1]
-                margin_x = max(int(content_w * 0.05), 4)
-                margin_y = max(int(content_h * 0.05), 4)
-                crop_bbox = (
-                    max(0, union_bbox[0] - margin_x),
-                    max(0, union_bbox[1] - margin_y),
-                    min(src_w, union_bbox[2] + margin_x),
-                    min(src_h, union_bbox[3] + margin_y),
-                )
-                logger.info(
-                    "Auto-crop: union_bbox=%s, crop_bbox=%s (src=%dx%d)",
-                    union_bbox,
-                    crop_bbox,
-                    src_w,
-                    src_h,
-                )
-
-                for pf in sorted(processed_dir.glob("frame_*.png")):
-                    img = PILImage.open(pf)
-                    img = img.crop(crop_bbox)
-                    img.save(str(pf), format="PNG")
-                    img.close()
-
-            # 5. Re-encode frames to WebM VP9 with alpha channel.
-            #    Scale to target dimensions here (AFTER bg removal) so padding
-            #    is transparent instead of black.  The pad color 0x00000000 is
-            #    fully-transparent black in RGBA.
-            output_path = tmpdir_path / "output.webm"
-            encode_cmd = [
-                "ffmpeg",
-                "-y",
-                "-framerate",
-                str(process_fps),
-                "-i",
-                str(processed_dir / "frame_%06d.png"),
-                "-vf",
-                f"scale={spec.width}:{spec.height}:force_original_aspect_ratio=decrease,"
-                f"pad={spec.width}:{spec.height}:(ow-iw)/2:(oh-ih)/2:color=0x00000000",
-                "-c:v",
-                "libvpx-vp9",
-                "-pix_fmt",
-                "yuva420p",  # VP9 with alpha
-                "-b:v",
-                "2M",
-                "-auto-alt-ref",
-                "0",  # Required for alpha in VP9
-                "-an",  # No audio
-                str(output_path),
-            ]
-            result = subprocess.run(
-                encode_cmd,
-                capture_output=True,
-                text=True,
-                timeout=600,  # VP9 encoding can be slow
-                check=False,
-            )
-            if result.returncode != 0:
-                raise AssetProcessingError(
-                    f"FFmpeg VP9 encode failed (exit {result.returncode}): "
-                    f"{result.stderr[:500]}"
-                )
-
-            if not output_path.exists():
-                raise AssetProcessingError("FFmpeg produced no output file")
-
-            # 6. Get output duration
-            out_duration = self._get_video_duration(str(output_path))
-
-            # 7. Upload processed version (as .webm for transparency support)
-            variant_suffix = f"_{variant_id}" if variant_id else ""
-            storage_path = (
-                f"members/{membership_id}/processed/{asset_type}/"
-                f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.webm"
+        # 5. Re-encode frames to WebM VP9 with alpha channel.
+        #    Scale to target dimensions here (AFTER bg removal) so padding
+        #    is transparent instead of black.  The pad color 0x00000000 is
+        #    fully-transparent black in RGBA.
+        output_path = tmpdir_path / "output.webm"
+        encode_cmd = [
+            "ffmpeg",
+            "-y",
+            "-framerate",
+            str(process_fps),
+            "-i",
+            str(processed_dir / "frame_%06d.png"),
+            "-vf",
+            f"scale={spec.width}:{spec.height}:force_original_aspect_ratio=decrease,"
+            f"pad={spec.width}:{spec.height}:(ow-iw)/2:(oh-ih)/2:color=0x00000000",
+            "-c:v",
+            "libvpx-vp9",
+            "-pix_fmt",
+            "yuva420p",  # VP9 with alpha
+            "-b:v",
+            "2M",
+            "-auto-alt-ref",
+            "0",  # Required for alpha in VP9
+            "-an",  # No audio
+            str(output_path),
+        ]
+        result = subprocess.run(
+            encode_cmd,
+            capture_output=True,
+            text=True,
+            timeout=600,  # VP9 encoding can be slow
+            check=False,
+        )
+        if result.returncode != 0:
+            raise AssetProcessingError(
+                f"FFmpeg VP9 encode failed (exit {result.returncode}): " f"{result.stderr[:500]}"
             )
 
-            with open(output_path, "rb") as f:
-                saved_path = backend.save(storage_path, f)
+        if not output_path.exists():
+            raise AssetProcessingError("FFmpeg produced no output file")
 
-            actual_specs = {
-                "width": spec.width,
-                "height": spec.height,
-                "format": "webm",
-                "fps": process_fps,
-                "codec": "vp9",
-                "bg_removed": True,
-                "duration": out_duration,
-                "total_frames": total_frames,
-            }
+        # 6. Get output duration
+        out_duration = self._get_video_duration(str(output_path))
 
-            return saved_path, actual_specs
+        # 7. Upload processed version (as .webm for transparency support)
+        variant_suffix = f"_{variant_id}" if variant_id else ""
+        storage_path = (
+            f"members/{membership_id}/processed/{asset_type}/"
+            f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.webm"
+        )
+
+        with open(output_path, "rb") as f:
+            saved_path = storage_backend.save(storage_path, f)
+
+        actual_specs = {
+            "width": spec.width,
+            "height": spec.height,
+            "format": "webm",
+            "fps": process_fps,
+            "codec": "vp9",
+            "bg_removed": True,
+            "bg_removal_backend": "rembg",
+            "duration": out_duration,
+            "total_frames": total_frames,
+        }
+
+        return saved_path, actual_specs
 
     def _download_asset(self, url_or_path: str, backend: Any) -> bytes:
         """Download asset from S3 or URL."""
