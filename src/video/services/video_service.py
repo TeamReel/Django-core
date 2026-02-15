@@ -212,16 +212,12 @@ class VideoService:
             config = job.config or {}
             segments = config.get("segments") or []
 
-            # If segments are missing, build them via the lineup builder.
-            # NOTE: frontend_segments are RAW asset URLs (transparent PNGs,
-            # WebM intros) — they are NOT ready-to-use segments.  The builder
-            # composites them onto the stadium background, adds match header,
-            # and generates per-line scenes.  NEVER skip the builder.
+            # If segments are missing, the LineupProcessor.execute() method
+            # will handle it: when activity_id is present it routes to the
+            # formation-based lineup composer (new pipeline).  We no longer
+            # pre-build segments here — that was the OLD sequential pipeline.
             if not segments:
                 activity_id = config.get("activity_id") or config.get("match_id")
-                template_id = config.get("template_id")
-                output_resolution = config.get("output_resolution", "vertical_1080p")
-                selected_member_ids = config.get("selected_member_ids")
 
                 if not activity_id:
                     raise ValueError(
@@ -241,31 +237,6 @@ class VideoService:
                             "updated_at",
                         ]
                     )
-
-                logger.info(
-                    "Building segments via lineup builder (compositing on stadium bg)",
-                    extra={"job_id": job_id},
-                )
-
-                # Update metadata so UI shows what the job is doing
-                job.metadata = job.metadata or {}
-                job.metadata["current_segment"] = "Scenes opbouwen..."
-                job.metadata["segment_status"] = "compositing"
-                job.save(update_fields=["metadata", "updated_at"])
-
-                from src.video.services.lineup_builder import build_lineup_video_config
-
-                built_config = build_lineup_video_config(
-                    activity_id=activity_id,
-                    template_id=template_id,
-                    output_resolution=output_resolution,
-                    selected_member_ids=selected_member_ids,
-                )
-                job.config = built_config
-                job.progress_percent = max(int(job.progress_percent or 0), 5)
-                job.metadata["current_segment"] = "Scenes klaar, video samenstellen..."
-                job.metadata["segment_status"] = "assembling"
-                job.save(update_fields=["config", "progress_percent", "metadata", "updated_at"])
 
             processor = LineupProcessor(job)
             processor.execute()
