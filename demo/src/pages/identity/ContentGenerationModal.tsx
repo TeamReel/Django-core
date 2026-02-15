@@ -211,6 +211,7 @@ interface ContentGenerationModalProps {
     participations?: Participation[];
     start_time?: string;
     location?: string;
+    metadata?: { formation?: string; [key: string]: unknown };
   } | null;
   season?: {
     id: string;
