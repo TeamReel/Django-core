@@ -373,11 +373,22 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             asset_type,
             kit_type,
             variant_id,
-            {"raw": raw_url, "processed": None, "processing_state": "processing"},
+            {
+                "raw": raw_url,
+                "processed": None,
+                "processing_state": "processing",
+                "processing_started_at": timezone.now().isoformat(),
+            },
         )
 
         # Run processing in background thread (like lineup jobs)
         def _process_in_background() -> None:
+            from django.db import close_old_connections
+
+            # Ensure clean DB connection for this thread (Django connections
+            # are thread-local; the main thread's connection won't work here).
+            close_old_connections()
+
             try:
                 from src.video.services.asset_processor import AssetProcessor
 
@@ -409,6 +420,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             except Exception as exc:
                 logger.exception("Background asset processing failed")
                 try:
+                    close_old_connections()
                     membership.refresh_from_db()
                     self._update_variant_metadata(
                         membership,
@@ -424,6 +436,8 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                     )
                 except Exception:
                     logger.exception("Failed to update metadata after processing error")
+            finally:
+                close_old_connections()
 
         thread = threading.Thread(target=_process_in_background, daemon=True)
         thread.start()
