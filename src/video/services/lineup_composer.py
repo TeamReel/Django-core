@@ -961,6 +961,7 @@ def compose_lineup_video(
         width=WIDTH,
         height=HEADER_HEIGHT,
         logo_url=lineup_data.logo_url,
+        opponent_logo_url=lineup_data.opponent_logo_url,
         sponsor_url=lineup_data.sponsor_url,
         match_date=f"Za {lineup_data.match_date}" if lineup_data.match_date else "",
         own_team_name=lineup_data.own_team_name,
@@ -970,6 +971,7 @@ def compose_lineup_video(
         score_away=lineup_data.score_away,
         kickoff_time=lineup_data.kickoff_time,
         coach_name=lineup_data.coach_name,
+        competition_name=lineup_data.competition_name,
     )
     if not _download_file(header_url, header_path):
         # header_url may be a file:// URL

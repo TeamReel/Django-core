@@ -127,6 +127,7 @@ class LineupData:
 
     # Brand assets
     logo_url: str | None
+    opponent_logo_url: str | None
     sponsor_url: str | None
     field_background_url: str | None
 
@@ -285,6 +286,7 @@ class LineupSegmentBuilder:
             "project__organisation",
             "project__parent_project",
             "period",
+            "opponent_project__parent_project",
         ).get(id=self.activity_id)
 
         project = activity.project
@@ -382,6 +384,47 @@ class LineupSegmentBuilder:
         sponsor_url = _resolve_asset_url(["sponsor_logo", "sponsor_logo_upload"])
         field_background_url = _resolve_asset_url(["stadium_background"])
 
+        # Resolve opponent logo from opponent_project's brand profile
+        opponent_logo_url: str | None = None
+        if activity.opponent_project:
+            opp_project = activity.opponent_project
+            opp_club = opp_project.parent_project
+            opp_brand_profiles = []
+            opp_team_brand = BrandProfile.objects.filter(
+                project=opp_project, is_active=True
+            ).first()
+            if opp_team_brand:
+                opp_brand_profiles.append(opp_team_brand)
+            if opp_club:
+                opp_club_brand = BrandProfile.objects.filter(
+                    project=opp_club, is_active=True
+                ).first()
+                if opp_club_brand and opp_club_brand not in opp_brand_profiles:
+                    opp_brand_profiles.append(opp_club_brand)
+            for opp_profile in opp_brand_profiles:
+                asset = (
+                    BrandAsset.objects.filter(
+                        profile=opp_profile,
+                        asset_type__in=["logo_light", "logo_dark", "logo_upload"],
+                    )
+                    .select_related("file")
+                    .first()
+                )
+                if asset:
+                    asset_url = getattr(asset, "url", None)
+                    if asset_url:
+                        opponent_logo_url = asset_url
+                        break
+                    if asset.file:
+                        presigned = self._get_presigned_url(asset.file.storage_path)
+                        if presigned:
+                            opponent_logo_url = presigned
+                            break
+            if opponent_logo_url:
+                logger.info("Resolved opponent logo from %s", opp_project.name)
+            else:
+                logger.info("No logo found for opponent %s", opp_project.name)
+
         # Get team/club names
         if project.parent_project:
             # Team under club
@@ -389,20 +432,31 @@ class LineupSegmentBuilder:
         else:
             own_team_name = project.name
 
-        # Get match data
-        opponent_name = getattr(activity, "opponent", None) or "Opponent"
+        # Get match data — prefer opponent_project FK, then metadata, then fallback
+        meta = activity.metadata or {}
+        if activity.opponent_project:
+            opponent_name = activity.opponent_project.name
+        else:
+            opponent_name = (
+                meta.get("teamreel", {}).get("vars", {}).get("away_team_name")
+                or meta.get("teamreel", {}).get("vars", {}).get("home_team_name")
+                or getattr(activity, "opponent", None)
+                or "Opponent"
+            )
         match_date = activity.start_time.strftime("%d-%m-%Y") if activity.start_time else ""
         kickoff_time = activity.start_time.strftime("%H:%M") if activity.start_time else None
-        is_home = getattr(activity, "home_away", "home") == "home"
-        score_home = getattr(activity, "score_home", None)
-        score_away = getattr(activity, "score_away", None)
-        venue = getattr(activity, "venue", None)
+        is_home = meta.get("is_home", meta.get("venue", "Home") == "Home")
+        score_meta = meta.get("score", {})
+        score_home = score_meta.get("home") if isinstance(score_meta, dict) else None
+        score_away = score_meta.get("away") if isinstance(score_meta, dict) else None
+        venue = meta.get("venue") or getattr(activity, "location", None)
 
-        # Get season/competition names
+        # Get season/competition names — period name often IS the competition
         season_name = activity.period.name if activity.period else None
-        competition_name = None
-        if hasattr(activity, "competition") and activity.competition:
-            competition_name = activity.competition.name
+        competition_name = meta.get("teamreel", {}).get("vars", {}).get("competition_name")
+        if not competition_name and activity.period:
+            # Period name is often the competition (e.g. "Eredivisie")
+            competition_name = activity.period.name
 
         # DEBUG: Log all participations for this activity
         all_participations = Participation.objects.filter(activity=activity).select_related(
@@ -714,6 +768,7 @@ class LineupSegmentBuilder:
             season_name=season_name,
             competition_name=competition_name,
             logo_url=logo_url,
+            opponent_logo_url=opponent_logo_url,
             sponsor_url=sponsor_url,
             field_background_url=field_background_url,
             keepers=keepers,
@@ -760,17 +815,57 @@ class LineupSegmentBuilder:
         else:
             own_team_name = project.name
 
-        opponent_name = getattr(activity, "opponent", None) or "Opponent"
+        # Get match data — prefer opponent_project FK, then metadata
+        meta = activity.metadata or {}
+        if activity.opponent_project:
+            opponent_name = activity.opponent_project.name
+        else:
+            opponent_name = (
+                meta.get("teamreel", {}).get("vars", {}).get("away_team_name")
+                or meta.get("teamreel", {}).get("vars", {}).get("home_team_name")
+                or "Opponent"
+            )
         match_date = activity.start_time.strftime("%d-%m-%Y") if activity.start_time else ""
         kickoff_time = activity.start_time.strftime("%H:%M") if activity.start_time else None
-        is_home = getattr(activity, "home_away", "home") == "home"
-        score_home = getattr(activity, "score_home", None)
-        score_away = getattr(activity, "score_away", None)
-        venue = getattr(activity, "venue", None)
+        is_home = meta.get("is_home", meta.get("venue", "Home") == "Home")
+        score_meta = meta.get("score", {})
+        score_home = score_meta.get("home") if isinstance(score_meta, dict) else None
+        score_away = score_meta.get("away") if isinstance(score_meta, dict) else None
+        venue = meta.get("venue") or getattr(activity, "location", None)
         season_name = activity.period.name if activity.period else None
-        competition_name = None
-        if hasattr(activity, "competition") and activity.competition:
-            competition_name = activity.competition.name
+        competition_name = meta.get("teamreel", {}).get("vars", {}).get("competition_name")
+        if not competition_name and activity.period:
+            competition_name = activity.period.name
+
+        # Resolve opponent logo (reuse logic from _gather_lineup_data)
+        opponent_logo_url: str | None = None
+        if activity.opponent_project:
+            BrandProfile = apps.get_model("branding", "BrandProfile")
+            BrandAsset = apps.get_model("branding", "BrandAsset")
+            opp_project = activity.opponent_project
+            opp_club = getattr(opp_project, "parent_project", None)
+            for bp_target in [opp_project, opp_club] if opp_club else [opp_project]:
+                bp = BrandProfile.objects.filter(project=bp_target, is_active=True).first()
+                if not bp:
+                    continue
+                asset = (
+                    BrandAsset.objects.filter(
+                        profile=bp,
+                        asset_type__in=["logo_light", "logo_dark", "logo_upload"],
+                    )
+                    .select_related("file")
+                    .first()
+                )
+                if asset:
+                    asset_url = getattr(asset, "url", None)
+                    if asset_url:
+                        opponent_logo_url = asset_url
+                        break
+                    if asset.file:
+                        presigned = self._get_presigned_url(asset.file.storage_path)
+                        if presigned:
+                            opponent_logo_url = presigned
+                            break
 
         # Build player segments from ProjectMembership metadata
         keepers: list[PlayerSegment] = []
@@ -954,6 +1049,7 @@ class LineupSegmentBuilder:
             season_name=season_name,
             competition_name=competition_name,
             logo_url=logo_url,
+            opponent_logo_url=opponent_logo_url,
             sponsor_url=sponsor_url,
             field_background_url=field_background_url,
             keepers=keepers,
@@ -997,6 +1093,7 @@ class LineupSegmentBuilder:
                 width=data.output_width,
                 height=int(data.output_height * 0.15),  # 15% of video height
                 logo_url=data.logo_url,
+                opponent_logo_url=data.opponent_logo_url,
                 sponsor_url=data.sponsor_url,
                 match_date=f"Za {data.match_date}",
                 own_team_name=data.own_team_name,
@@ -1006,6 +1103,7 @@ class LineupSegmentBuilder:
                 score_away=data.score_away,
                 kickoff_time=data.kickoff_time,
                 coach_name=data.coach_name,
+                competition_name=data.competition_name,
             )
         except Exception:  # noqa: BLE001
             header_url = None

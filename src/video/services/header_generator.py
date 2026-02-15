@@ -113,6 +113,7 @@ def generate_header_image(
     width: int,
     height: int,
     logo_url: str | None = None,
+    opponent_logo_url: str | None = None,
     sponsor_url: str | None = None,
     match_date: str = "",
     own_team_name: str = "",
@@ -122,6 +123,7 @@ def generate_header_image(
     score_away: int | None = None,
     kickoff_time: str | None = None,
     coach_name: str | None = None,
+    competition_name: str | None = None,
     background_color: str | None = None,
     text_color: str | None = None,
 ) -> str:
@@ -131,6 +133,7 @@ def generate_header_image(
         width: Image width
         height: Header height (typically 200-300px)
         logo_url: URL to club logo
+        opponent_logo_url: URL to opponent club logo
         sponsor_url: URL to sponsor logo
         match_date: Date string (e.g., "Za 27-09-2025")
         own_team_name: Club/team name
@@ -140,6 +143,7 @@ def generate_header_image(
         score_away: Away score (if match completed)
         kickoff_time: Kickoff time string (if match not started)
         coach_name: Coach name
+        competition_name: Competition/league name (e.g., "Eredivisie")
         background_color: Background color hex
         text_color: Text color hex
 
@@ -169,8 +173,17 @@ def generate_header_image(
             logo_y = (height - logo_img.height) // 2
             img.paste(logo_img, (logo_x, logo_y), logo_img)
 
-    # Download and place sponsor (right side)
-    if sponsor_url:
+    # Download and place opponent logo (right side)
+    if opponent_logo_url:
+        opp_img = download_image(opponent_logo_url)
+        if opp_img:
+            opp_img = opp_img.convert("RGBA")
+            opp_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
+            opp_x = width - logo_margin - opp_img.width
+            opp_y = (height - opp_img.height) // 2
+            img.paste(opp_img, (opp_x, opp_y), opp_img)
+    elif sponsor_url:
+        # Fall back to sponsor on right when no opponent logo
         sponsor_img = download_image(sponsor_url)
         if sponsor_img:
             sponsor_img = sponsor_img.convert("RGBA")
@@ -184,13 +197,26 @@ def generate_header_image(
     font_teams = get_font(36, bold=True)
     font_score = get_font(32, bold=True)
     font_coach = get_font(20)
+    font_comp = get_font(18)
+
+    # Draw competition name (top center, above date)
+    if competition_name:
+        comp_bbox = draw.textbbox((0, 0), competition_name, font=font_comp)
+        comp_width = comp_bbox[2] - comp_bbox[0]
+        draw.text(
+            (center_x - comp_width // 2, int(height * 0.05)),
+            competition_name,
+            font=font_comp,
+            fill=txt_secondary,
+        )
 
     # Draw date (top center)
     date_text = match_date
     date_bbox = draw.textbbox((0, 0), date_text, font=font_date)
     date_width = date_bbox[2] - date_bbox[0]
+    date_y = int(height * 0.18) if competition_name else int(height * 0.15)
     draw.text(
-        (center_x - date_width // 2, int(height * 0.15)),
+        (center_x - date_width // 2, date_y),
         date_text,
         font=font_date,
         fill=txt_secondary,
