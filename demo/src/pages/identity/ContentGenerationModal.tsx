@@ -737,7 +737,7 @@ export default function ContentGenerationModal({
       const data = await response.json();
       console.log('🖼️ Lineup flyer generated:', data);
 
-      const flyerUrl = data.flyer_url;
+      const flyerUrl = data.data?.flyer_url || data.flyer_url;
       if (!flyerUrl) {
         throw new Error('Flyer generated but no URL returned');
       }
