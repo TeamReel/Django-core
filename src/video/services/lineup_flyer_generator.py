@@ -32,6 +32,7 @@ HEIGHT = 1920
 # ── Player sizing ───────────────────────────────────────────────────────────
 FLYER_SCALE = 0.20  # fullbody height as fraction of HEIGHT
 CLOSEUP_SCALE = 0.11  # for label sizing reference
+BADGE_SIZE = 160  # diameter for badge/circle closeup style
 
 # ── Label styling ───────────────────────────────────────────────────────────
 LABEL_TEXT_COLOR = "#FFFFFF"
@@ -438,6 +439,7 @@ def generate_lineup_flyer(
     formation: str = "4-3-3",
     brand_primary_hex: str = "#D2122E",
     brand_secondary_hex: str = "#FFFFFF",
+    closeup_style: str = "popout",
 ) -> str:
     """Generate a lineup flyer PNG and upload to S3.
 
@@ -446,6 +448,7 @@ def generate_lineup_flyer(
         formation: Formation string (e.g. "4-3-3")
         brand_primary_hex: Primary brand color hex
         brand_secondary_hex: Secondary brand color hex
+        closeup_style: "popout" (full-body kit) or "badge" (circular closeup)
 
     Returns:
         Presigned URL to the generated PNG on S3.
@@ -459,10 +462,29 @@ def generate_lineup_flyer(
             formation=formation,
             brand_primary_hex=brand_primary_hex,
             tmp_dir=tmp_dir,
+            closeup_style=closeup_style,
         )
     finally:
         _reset_cache()
         shutil.rmtree(tmp_dir, ignore_errors=True)
+
+
+def _make_circle_badge(img: Image.Image, diameter: int) -> Image.Image:
+    """Crop image to a circle with the given diameter."""
+    img = img.convert("RGBA").resize((diameter, diameter), Image.Resampling.LANCZOS)
+    mask = Image.new("L", (diameter, diameter), 0)
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0, diameter - 1, diameter - 1), fill=255)
+    result = Image.new("RGBA", (diameter, diameter), (0, 0, 0, 0))
+    result.paste(img, (0, 0), mask)
+    # Add white border ring
+    border_draw = ImageDraw.Draw(result)
+    border_draw.ellipse(
+        (1, 1, diameter - 2, diameter - 2),
+        outline=(255, 255, 255, 255),
+        width=3,
+    )
+    return result
 
 
 def _compose_flyer(
@@ -470,9 +492,11 @@ def _compose_flyer(
     formation: str,
     brand_primary_hex: str,
     tmp_dir: Path,
+    closeup_style: str = "popout",
 ) -> str:
     """Core compositor: download assets, render with PIL, composite with FFmpeg."""
 
+    is_badge = closeup_style == "badge"
     full_h = int(HEIGHT * FLYER_SCALE)
 
     # Parse brand color
@@ -538,8 +562,11 @@ def _compose_flyer(
         xs = _get_x_positions(len(group), role)
 
         for idx, player in enumerate(group):
-            # Download player image
-            img_url = player.kit_url or player.closeup_url
+            # Download player image — badge uses closeup, popout uses kit
+            if is_badge:
+                img_url = player.closeup_url or player.kit_url
+            else:
+                img_url = player.kit_url or player.closeup_url
             if not img_url:
                 logger.warning("No image URL for player %s, skipping", player.member_name)
                 continue
@@ -548,6 +575,10 @@ def _compose_flyer(
             if player_img is None:
                 logger.warning("Failed to download image for %s", player.member_name)
                 continue
+
+            # Badge mode: crop to circle
+            if is_badge:
+                player_img = _make_circle_badge(player_img, BADGE_SIZE)
 
             # Save to temp
             p_path = tmp_dir / f"player_{len(render_players)}.png"
@@ -726,12 +757,21 @@ def _compose_flyer(
 
     for i, rp in enumerate(render_players):
         in_idx = base_idx + i
-        y_expr = f"(H*{rp.y}-{full_h})"
         next_bg = f"bg_p{i}"
-        fc.append(
-            f"[{in_idx}:v]scale=-1:{full_h}[p{i}];"
-            f"[{last_bg}][p{i}]overlay=(W*{rp.x}-w/2):{y_expr}[{next_bg}]"
-        )
+        if is_badge:
+            # Badge: small circle, center on position
+            fc.append(
+                f"[{in_idx}:v]scale={BADGE_SIZE}:{BADGE_SIZE}[p{i}];"
+                f"[{last_bg}][p{i}]overlay=(W*{rp.x}-{BADGE_SIZE // 2}):"
+                f"(H*{rp.y}-{BADGE_SIZE // 2})[{next_bg}]"
+            )
+        else:
+            # Popout: full-body, bottom aligned
+            y_expr = f"(H*{rp.y}-{full_h})"
+            fc.append(
+                f"[{in_idx}:v]scale=-1:{full_h}[p{i}];"
+                f"[{last_bg}][p{i}]overlay=(W*{rp.x}-w/2):{y_expr}[{next_bg}]"
+            )
 
         # Label overlay
         l_idx = label_base_idx + i
@@ -807,6 +847,7 @@ def build_lineup_flyer(
     selected_member_ids: list[str] | None = None,
     brand_primary_hex: str | None = None,
     brand_secondary_hex: str | None = None,
+    closeup_style: str = "popout",
 ) -> str:
     """Build a lineup flyer from activity data.
 
@@ -849,6 +890,7 @@ def build_lineup_flyer(
         formation=formation,
         brand_primary_hex=brand_primary_hex,
         brand_secondary_hex=brand_secondary_hex,
+        closeup_style=closeup_style,
     )
 
 

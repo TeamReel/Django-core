@@ -695,6 +695,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         selected_member_ids = request.data.get("selected_member_ids")
         brand_primary = request.data.get("brand_primary")
         brand_secondary = request.data.get("brand_secondary")
+        closeup_style = request.data.get("closeup_style", "popout")
 
         # Validate activity exists and user has access
         Activity = apps.get_model("activities", "Activity")
@@ -719,6 +720,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 selected_member_ids=selected_member_ids,
                 brand_primary_hex=brand_primary,
                 brand_secondary_hex=brand_secondary,
+                closeup_style=closeup_style,
             )
 
             return Response(
