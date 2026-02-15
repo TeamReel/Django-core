@@ -501,8 +501,34 @@ class LineupSegmentBuilder:
             participations.count(),
         )
 
-        # If no participations found but we have selected_member_ids,
-        # build lineup directly from ProjectMembership data (no Participation records needed).
+        # When the frontend provides role-keyed selected_member_ids (goalkeeper/player),
+        # always use the ProjectMembership path.  This is the robust path because:
+        #   1) Participation records are often incomplete or missing entirely
+        #   2) The PM path already handles role assignment and formation splitting
+        #   3) The Participation member_id (OrganisationMember) != PM id, which breaks
+        #      supplementation logic that tries to compare the two
+        if self.selected_member_ids and self.selected_member_ids_by_role:
+            logger.info(
+                "Using ProjectMembership path — frontend provided %d members with roles "
+                "(participations found: %d, but PM path is preferred)",
+                len(self.selected_member_ids),
+                participations.count(),
+            )
+            self._debug_trace.append(
+                f"Using PM path: {len(self.selected_member_ids)} members with roles "
+                f"(skipping {participations.count()} participations)"
+            )
+            return self._gather_lineup_from_memberships(
+                activity=activity,
+                project=project,
+                organisation=organisation,
+                brand_profiles=brand_profiles,
+                logo_url=logo_url,
+                sponsor_url=sponsor_url,
+                field_background_url=field_background_url,
+            )
+
+        # Legacy fallback: no role-keyed IDs but participations exist
         if participations.count() == 0 and selected_user_ids:
             logger.info(
                 "DEBUG: No Participation records match, building from ProjectMembership data"
