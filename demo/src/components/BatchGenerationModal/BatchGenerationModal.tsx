@@ -983,7 +983,17 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                     </label>
                     <select
                       value={defaultParams.style_variant || ''}
-                      onChange={(e) => setDefaultParams((prev) => ({ ...prev, style_variant: e.target.value || undefined }))}
+                      onChange={(e) => {
+                        setDefaultParams((prev) => {
+                          const next = { ...prev };
+                          if (e.target.value) {
+                            next.style_variant = e.target.value;
+                          } else {
+                            delete next.style_variant;
+                          }
+                          return next;
+                        });
+                      }}
                       style={selectStyle}
                     >
                       <option value="">Automatisch (eerste variant)</option>
