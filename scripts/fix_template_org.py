@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 """Fix templates with NULL organisation - link to KNVB."""
+import os
+
 import psycopg2
 
-conn = psycopg2.connect(
-    'postgresql://postgres:amItuWgShiNxWkvKmKyojIAahAtKTXPp@switchback.proxy.rlwy.net:17304/railway'
-)
+db_url = os.environ.get("DATABASE_URL")
+if not db_url:
+    raise RuntimeError(
+        "DATABASE_URL env var is required (e.g. postgresql://postgres:<PASSWORD>@<HOST>:<PORT>/railway)"
+    )
+
+conn = psycopg2.connect(db_url)
 cur = conn.cursor()
 
 # Get KNVB organisation id

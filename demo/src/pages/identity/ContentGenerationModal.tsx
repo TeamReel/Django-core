@@ -891,13 +891,6 @@ export default function ContentGenerationModal({
         }
       };
 
-      addMemberSegments(targetGKs, gkAssets, 'goalkeeper');
-      addMemberSegments(targetPlayers, playerAssets, 'player');
-      addMemberSegments(targetCoach, coachAssets, 'coach');
-      addMemberSegments(targetAssistant, assistantAssets, 'assistant');
-
-      console.log('📹 Lineup video segments:', segments);
-
       setProgress(20);
 
       // Get project ID from available sources
@@ -910,10 +903,8 @@ export default function ContentGenerationModal({
 
       // Use template-based endpoint when matchData is available
       // This endpoint auto-builds segments from match participations + brand assets + field background
-      // Also pass frontend-calculated segments as fallback in case backend can't find participations
       if (matchData?.id) {
         console.log('🎬 Using template-based lineup video generation');
-        console.log('📦 Passing frontend segments as fallback:', segments.length);
         // Submit async job — frontend polls for completion
         const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/lineup-from-template/`, {
           method: 'POST',
@@ -929,7 +920,6 @@ export default function ContentGenerationModal({
             output_resolution: 'vertical_1080p',
             formation: lineupFormation || '4-3-3',
             closeup_style: lineupCloseupStyle || 'popout',
-            segments: segments,  // Pass frontend segments as fallback
             selected_member_ids: {
               goalkeeper: targetGKs,
               player: targetPlayers,
@@ -948,6 +938,13 @@ export default function ContentGenerationModal({
         jobId = jobData.data?.id || jobData.id;
         console.log('🎬 Template-based video job created:', jobId);
       } else {
+        addMemberSegments(targetGKs, gkAssets, 'goalkeeper');
+        addMemberSegments(targetPlayers, playerAssets, 'player');
+        addMemberSegments(targetCoach, coachAssets, 'coach');
+        addMemberSegments(targetAssistant, assistantAssets, 'assistant');
+
+        console.log('📹 Lineup video segments:', segments);
+
         // Fallback: manual segments mode (no match context)
         if (segments.length === 0) {
           throw new Error('No valid segments found. Make sure selected members have the required assets.');

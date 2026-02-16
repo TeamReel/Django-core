@@ -1084,6 +1084,42 @@ def compose_lineup_video(
         midfielders = field_players[4:7]
         attackers = field_players[7:10]
 
+    # ── 3b. Validate we have enough players for the formation (fail fast) ──
+    formation_requirements = {
+        "4-4-2": {"defenders": 4, "midfielders": 4, "attackers": 2},
+        "3-4-3": {"defenders": 3, "midfielders": 4, "attackers": 3},
+        "4-3-3": {"defenders": 4, "midfielders": 3, "attackers": 3},
+    }
+    req = formation_requirements.get(formation, formation_requirements["4-3-3"])
+    required_field = req["defenders"] + req["midfielders"] + req["attackers"]
+
+    if not keepers:
+        raise ValueError(
+            "Cannot generate lineup video — no goalkeeper resolved. "
+            "Select a goalkeeper and ensure they have goalkeeper fullbody/closeup assets."
+        )
+
+    if len(field_players) < required_field:
+        resolved_names = ", ".join([p.name for p in field_players]) if field_players else "(none)"
+        raise ValueError(
+            "Cannot generate lineup video — not enough field players resolved for formation "
+            f"{formation}. Required {required_field}, got {len(field_players)}. "
+            "This usually means the Activity has no usable lineup/participation data for the selected members, "
+            "or members are missing required assets. "
+            f"Resolved field players: {resolved_names}"
+        )
+
+    if (
+        len(defenders) != req["defenders"]
+        or len(midfielders) != req["midfielders"]
+        or len(attackers) != req["attackers"]
+    ):
+        raise ValueError(
+            "Cannot generate lineup video — formation slicing produced incomplete groups. "
+            f"Expected D/M/A={req['defenders']}/{req['midfielders']}/{req['attackers']} for {formation} "
+            f"but got {len(defenders)}/{len(midfielders)}/{len(attackers)}."
+        )
+
     # Assign correct roles
     for p in defenders:
         p.role = "defender"
@@ -1108,7 +1144,10 @@ def compose_lineup_video(
 
     for idx, (name, group) in enumerate(phases):
         if not group:
-            continue
+            raise ValueError(
+                f"Cannot generate lineup video — phase '{name}' has 0 players. "
+                "Fix the lineup selection / participation data so all formation lines are populated."
+            )
 
         logger.info("Composing phase %d: %s (%d players)", idx, name, len(group))
 
@@ -1145,7 +1184,10 @@ def compose_lineup_video(
         if segs:
             all_segments.extend(segs)
         else:
-            logger.warning("Phase %d (%s) produced no output, skipping", idx, name)
+            raise ValueError(
+                f"Cannot generate lineup video — phase '{name}' produced no output. "
+                "This indicates missing input assets or an FFmpeg composition failure for that phase."
+            )
 
         # Add to persistent (skip coach)
         if name == "coach":
