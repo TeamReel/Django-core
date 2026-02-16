@@ -410,17 +410,37 @@ def _download_player_assets(
             dest = asset_dir / f"{prefix}_fullbody.png"
             if _download_file(p.kit_url, dest):
                 fullbody = dest
+            else:
+                logger.warning(
+                    "Failed to download fullbody for %s: %s", p.member_name, p.kit_url[:120]
+                )
 
         if p.closeup_url:
             dest = asset_dir / f"{prefix}_closeup.png"
             if _download_file(p.closeup_url, dest):
                 closeup = dest
+            else:
+                logger.warning(
+                    "Failed to download closeup for %s: %s", p.member_name, p.closeup_url[:120]
+                )
 
         if p.intro_url:
             ext = ".webm" if ".webm" in p.intro_url.lower() else ".mp4"
             dest = asset_dir / f"{prefix}_intro{ext}"
             if _download_file(p.intro_url, dest):
                 intro = dest
+            else:
+                logger.warning(
+                    "Failed to download intro for %s: %s", p.member_name, p.intro_url[:120]
+                )
+
+        if not fullbody and not closeup:
+            raise ValueError(
+                f"Player {p.member_name} ({role}) has NO downloadable visual assets. "
+                f"kit_url={bool(p.kit_url)}, closeup_url={bool(p.closeup_url)}, "
+                f"intro_url={bool(p.intro_url)}. "
+                f"Cannot proceed — all players must have at least a fullbody or closeup image."
+            )
 
         result.append(
             _LocalPlayer(
@@ -556,11 +576,16 @@ def _compose_phase(
     cmd1 = ["ffmpeg", "-y"] + input_args
     f1 = base_filter
 
+    actual_inp1 = base_cnt
     for i, p in enumerate(active_players):
-        inp = base_cnt + i
         path = p.fullbody or p.closeup
         if not path:
-            continue
+            raise ValueError(
+                f"Phase {phase_idx} player {i} ({p.name}) has no fullbody or closeup asset. "
+                f"Cannot compose lineup — all players must have visual assets."
+            )
+        inp = actual_inp1
+        actual_inp1 += 1
         cmd1 += ["-loop", "1", "-i", str(path)]
         fh = int(HEIGHT * scale_full)
         ty = f"(main_h*{active_ys[i]}-{fh})"
@@ -600,20 +625,27 @@ def _compose_phase(
     cmd2 = ["ffmpeg", "-y"] + input_args
     f2 = base_filter
 
+    actual_inp2 = base_cnt
     for i, p in enumerate(active_players):
-        inp = base_cnt + i
         fh = int(HEIGHT * scale_full)
         oy = f"(main_h*{active_ys[i]}-{fh})"
         ny_expr = f"({oy}+{fh}+10)"
 
         if p.intro:
+            inp = actual_inp2
+            actual_inp2 += 1
             cmd2 += ["-i", str(p.intro)]
             f2 += f"[{inp}:v]scale=-1:{fh}[act{i}];"
             f2 += f"[bg][act{i}]overlay=(W*{active_xs[i]}-w/2):{oy}:eof_action=pass[bg_tmp{i}];"
         else:
             path = p.fullbody or p.closeup
             if not path:
-                continue
+                raise ValueError(
+                    f"Phase {phase_idx} player {i} ({p.name}) has no intro, fullbody, or closeup asset. "
+                    f"Cannot compose intro phase — all players must have visual assets."
+                )
+            inp = actual_inp2
+            actual_inp2 += 1
             cmd2 += ["-loop", "1", "-i", str(path)]
             f2 += f"[{inp}:v]scale=-1:{fh}[act{i}];"
             f2 += f"[bg][act{i}]overlay=(W*{active_xs[i]}-w/2):{oy}[bg_tmp{i}];"
@@ -658,13 +690,18 @@ def _compose_phase(
     zoom = BADGE_ZOOM_POPOUT if popout else BADGE_ZOOM_INSIDE
     body_off = BADGE_BODY_OFFSET_POPOUT if popout else BADGE_BODY_OFFSET_INSIDE
 
+    actual_inp3 = base_cnt
     for i, p in enumerate(active_players):
-        idx_full = base_cnt + i * 2
-        idx_close = base_cnt + i * 2 + 1
         path_full = p.fullbody or p.closeup
         path_close = p.closeup or p.fullbody
         if not path_full or not path_close:
-            continue
+            raise ValueError(
+                f"Phase {phase_idx} player {i} ({p.name}) has no fullbody/closeup pair. "
+                f"Cannot compose transition phase — all players must have visual assets."
+            )
+        idx_full = actual_inp3
+        idx_close = actual_inp3 + 1
+        actual_inp3 += 2
         cmd3 += ["-loop", "1", "-i", str(path_full)]
         cmd3 += ["-loop", "1", "-i", str(path_close)]
 
@@ -1003,7 +1040,28 @@ def compose_lineup_video(
     if progress_callback:
         progress_callback(10)
 
-    # ── 2. Download player assets ──
+    # ── 2. Pre-validate player assets (fail fast) ──
+    missing: list[str] = []
+    for phase_name, segment_list in [
+        ("keeper", lineup_data.keepers),
+        ("defender", lineup_data.defenders),
+        ("midfielder", lineup_data.midfielders),
+        ("attacker", lineup_data.attackers),
+    ]:
+        for seg in segment_list:
+            if not seg.kit_url and not seg.closeup_url:
+                missing.append(
+                    f"  • {seg.member_name} ({phase_name}): no fullbody or closeup image"
+                )
+    if missing:
+        detail = "\n".join(missing)
+        raise ValueError(
+            f"Cannot generate lineup video — {len(missing)} player(s) missing required assets:\n"
+            f"{detail}\n"
+            f"Generate fullbody + closeup images for these players first."
+        )
+
+    # ── 3. Download player assets ──
     logger.info("Downloading player assets...")
     keepers = _download_player_assets(lineup_data.keepers, "keeper", asset_dir)
     field_players = (
@@ -1037,7 +1095,7 @@ def compose_lineup_video(
     if progress_callback:
         progress_callback(20)
 
-    # ── 3. Compose phases ──
+    # ── 4. Compose phases ──
     phases = [
         ("keeper", keepers),
         ("defenders", defenders),
@@ -1053,6 +1111,23 @@ def compose_lineup_video(
             continue
 
         logger.info("Composing phase %d: %s (%d players)", idx, name, len(group))
+
+        # Log asset availability for diagnostics
+        for pi, p in enumerate(group):
+            has_fb = bool(p.fullbody)
+            has_cu = bool(p.closeup)
+            has_in = bool(p.intro)
+            if not (has_fb or has_cu):
+                logger.warning(
+                    "Phase %d player %d (%s) has NO visual assets (fullbody=%s, closeup=%s, intro=%s)",
+                    idx,
+                    pi,
+                    p.name,
+                    has_fb,
+                    has_cu,
+                    has_in,
+                )
+
         segs = _compose_phase(
             idx,
             name,
@@ -1098,7 +1173,7 @@ def compose_lineup_video(
             pct = 20 + int((idx + 1) / len(phases) * 60)
             progress_callback(pct)
 
-    # ── 4. Final hold ──
+    # ── 5. Final hold ──
     logger.info("Composing final hold frame...")
     hold = _compose_hold(
         persistent_players,
@@ -1119,7 +1194,7 @@ def compose_lineup_video(
     if progress_callback:
         progress_callback(85)
 
-    # ── 5. Concatenate ──
+    # ── 6. Concatenate ──
     logger.info("Concatenating %d segments...", len(all_segments))
     concat_list = tmp_dir / "concat.txt"
     with open(concat_list, "w", encoding="utf-8") as f:

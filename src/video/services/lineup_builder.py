@@ -1047,6 +1047,25 @@ class LineupSegmentBuilder:
         for idx, pm in enumerate(memberships):
             meta = pm.metadata or {}
             teamreel_assets = meta.get("teamreel_assets", {})
+
+            # Cross-membership asset fallback: if this membership has no
+            # teamreel_assets, check other memberships of the same user in
+            # the same project (mirrors the API serializer logic).
+            if not teamreel_assets and pm.user_id:
+                other_pm = (
+                    ProjectMembership.objects.filter(
+                        project_id=pm.project_id,
+                        user_id=pm.user_id,
+                        deleted_at__isnull=True,
+                        metadata__has_key="teamreel_assets",
+                    )
+                    .exclude(id=pm.id)
+                    .first()
+                )
+                if other_pm:
+                    teamreel_assets = (other_pm.metadata or {}).get("teamreel_assets", {})
+                    self._debug_trace.append(f"PM {pm.id}: assets inherited from PM {other_pm.id}")
+
             media = teamreel_assets.get("media", {})
             images = teamreel_assets.get("images", {})
             videos = teamreel_assets.get("videos", {})
@@ -1094,6 +1113,17 @@ class LineupSegmentBuilder:
 
             user = pm.user
             name = user.get_full_name() if user else "Unknown"
+
+            # Diagnostic logging for asset resolution
+            self._debug_trace.append(
+                f"PM {pm.id} ({name}): kit={bool(kit_url)} intro={bool(intro_url)} closeup={bool(closeup_url)}"
+            )
+            if not kit_url and not closeup_url:
+                logger.warning(
+                    "Player %s (PM %s) has NO fullbody/closeup assets in teamreel_assets metadata",
+                    name,
+                    pm.id,
+                )
 
             player = PlayerSegment(
                 slot=idx,

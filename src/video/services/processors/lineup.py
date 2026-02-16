@@ -217,6 +217,21 @@ class LineupProcessor(BaseVideoProcessor):
         )
         lineup_data = builder.gather_lineup_data()
 
+        # Store asset resolution diagnostics in job metadata
+        meta = self.job.metadata or {}
+        meta["lineup_data_summary"] = {
+            "keepers": len(lineup_data.keepers),
+            "defenders": len(lineup_data.defenders),
+            "midfielders": len(lineup_data.midfielders),
+            "attackers": len(lineup_data.attackers),
+            "has_field_bg": bool(lineup_data.field_background_url),
+            "has_logo": bool(lineup_data.logo_url),
+            "has_sponsor": bool(lineup_data.sponsor_url),
+            "debug_trace": builder._debug_trace[-20:],  # Last 20 entries
+        }
+        self.job.metadata = meta
+        self.job.save(update_fields=["metadata", "updated_at"])
+
         # Progress callback that updates the VideoJob
         def _progress(pct: int) -> None:
             self.job.progress_percent = pct
