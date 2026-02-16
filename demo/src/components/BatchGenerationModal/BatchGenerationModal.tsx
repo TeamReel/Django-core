@@ -410,12 +410,29 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
             const mMeta = mData?.metadata || {};
             const tr = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
 
-            const metaKey = kitType;
-            // Check images for fullbody/closeup, videos for intro/celebration
+            // Build the composite key for polling.
+            // For video types (intro/celebration), metadata is stored under
+            // composite keys like "home_arms_crossed". When style_variant is set,
+            // use it. Otherwise, find any key starting with kitType (the backend
+            // also falls back to the first matching key).
             const isVideoType = category === 'intro' || category === 'celebration';
-            const checkVal = isVideoType
-              ? ((tr.videos || {})[category] || {})[metaKey]
-              : ((tr.images || {})[category] || {})[metaKey];
+            let checkVal: any = null;
+
+            if (isVideoType) {
+              const videoCategory = (tr.videos || {})[category] || {};
+              if (params.style_variant) {
+                checkVal = videoCategory[`${kitType}_${params.style_variant}`];
+              } else {
+                // No variant specified — find the first key starting with kitType
+                // that is in a processing/processed/failed state
+                const matchingKey = Object.keys(videoCategory).find((k) =>
+                  k === kitType || k.startsWith(`${kitType}_`)
+                );
+                if (matchingKey) checkVal = videoCategory[matchingKey];
+              }
+            } else {
+              checkVal = ((tr.images || {})[category] || {})[kitType];
+            }
 
             if (checkVal && typeof checkVal === 'object') {
               const state = checkVal.processing_state || checkVal.state || null;
@@ -957,6 +974,37 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                     ))}
                   </select>
                 </div>
+
+                {/* Style variant selector for intro/celebration processing */}
+                {(processAssetType === 'intro' || processAssetType === 'celebration') && (
+                  <div style={{ marginTop: '12px' }}>
+                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--app-muted-text)', marginBottom: '3px' }}>
+                      Stijl Variant (optioneel — leeg = eerste beschikbare)
+                    </label>
+                    <select
+                      value={defaultParams.style_variant || ''}
+                      onChange={(e) => setDefaultParams((prev) => ({ ...prev, style_variant: e.target.value || undefined }))}
+                      style={selectStyle}
+                    >
+                      <option value="">Automatisch (eerste variant)</option>
+                      {processAssetType === 'intro' ? (
+                        <>
+                          <option value="arms_crossed">Armen gekruist</option>
+                          <option value="thumbs_up">Duimen omhoog</option>
+                          <option value="pointing">Wijzend</option>
+                          <option value="waving">Zwaaiend</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="arms_wide">Armen wijd</option>
+                          <option value="fist_pump">Vuist omhoog</option>
+                          <option value="point_to_sky">Wijs naar hemel</option>
+                          <option value="slide">Knieën slide</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+                )}
               </div>
               )}
 

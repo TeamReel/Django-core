@@ -32,7 +32,7 @@ export interface VideoProcessingSpec {
   /** Target height in pixels */
   height: number;
   /** Output format */
-  format: 'mp4';
+  format: 'mp4' | 'webm';
   /** Frames per second */
   fps: number;
   /** Whether background must be removed (chroma-key or AI) */
@@ -40,7 +40,7 @@ export interface VideoProcessingSpec {
   /** Max duration in seconds (null = keep original) */
   maxDuration: number | null;
   /** Video codec */
-  codec: 'h264';
+  codec: 'h264' | 'vp9';
   /** Aspect ratio label for display */
   aspectRatio: string;
 }
@@ -76,34 +76,34 @@ export const CLOSEUP_SPEC: ImageProcessingSpec = {
 };
 
 /**
- * Short Intro video — MP4, 9:16, transparent/green-screen background removed
+ * Short Intro video — WebM VP9, 9:16, transparent background via RVM
  * Used as: player intro segment in lineup video
  */
 export const INTRO_SPEC: VideoProcessingSpec = {
   type: 'video',
   width: 1080,
   height: 1920,
-  format: 'mp4',
+  format: 'webm',
   fps: 30,
   bgRemoved: true,
   maxDuration: null, // keep original duration
-  codec: 'h264',
+  codec: 'vp9',
   aspectRatio: '9:16',
 };
 
 /**
- * Celebration video — MP4, 9:16, transparent/green-screen background removed
+ * Celebration video — WebM VP9, 9:16, transparent background via RVM
  * Used as: goal celebration segment
  */
 export const CELEBRATION_SPEC: VideoProcessingSpec = {
   type: 'video',
   width: 1080,
   height: 1920,
-  format: 'mp4',
+  format: 'webm',
   fps: 30,
   bgRemoved: true,
   maxDuration: null,
-  codec: 'h264',
+  codec: 'vp9',
   aspectRatio: '9:16',
 };
 
