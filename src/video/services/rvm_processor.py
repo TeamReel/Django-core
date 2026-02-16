@@ -45,16 +45,25 @@ class RVMProcessingCancelled(Exception):
 
 
 def _get_ffmpeg_path() -> str:
-    """Find FFmpeg binary."""
-    path = shutil.which("ffmpeg")
-    if path:
-        return path
+    """Find FFmpeg binary.
+
+    Prefers imageio-ffmpeg's static binary over the system FFmpeg because
+    the Debian apt FFmpeg does NOT support VP9 alpha encoding (yuva420p),
+    which is critical for RVM processed intros with transparency.
+    """
+    # 1. imageio-ffmpeg ships a static binary with full VP9 alpha support
     try:
         import imageio_ffmpeg
 
-        return imageio_ffmpeg.get_ffmpeg_exe()
+        path = imageio_ffmpeg.get_ffmpeg_exe()
+        if path:
+            return path
     except Exception:  # noqa: BLE001
         pass
+    # 2. System ffmpeg (may lack VP9 alpha on Debian)
+    path = shutil.which("ffmpeg")
+    if path:
+        return path
     return "ffmpeg"
 
 

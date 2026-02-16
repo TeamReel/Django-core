@@ -366,7 +366,7 @@ class AssetProcessor:
         """
         from src.video.services.rvm_processor import RVMProcessingCancelled, process_video_rvm
 
-        output_path = input_path.parent / "output_rvm.mov"
+        output_path = input_path.parent / "output_rvm.webm"
 
         # Portrait mode for intro/celebration (9:16)
         portrait = spec.height > spec.width
@@ -378,7 +378,7 @@ class AssetProcessor:
                 output_path=output_path,
                 downsample_ratio=0.40,
                 portrait=portrait,
-                output_format="mov",
+                output_format="webm",
                 target_width=spec.width,
                 target_height=spec.height,
                 should_cancel=should_cancel,
@@ -414,14 +414,14 @@ class AssetProcessor:
         variant_suffix = f"_{variant_id}" if variant_id else ""
         storage_path = (
             f"members/{membership_id}/processed/{asset_type}/"
-            f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.mov"
+            f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.webm"
         )
 
         t_up = time.monotonic()
         with open(output_path, "rb") as f:
             saved_path = storage_backend.save(storage_path, f)
         logger.info(
-            "asset_processing_upload_done type=%s format=mov backend=rvm in=%.3fs storage_path=%s",
+            "asset_processing_upload_done type=%s format=webm backend=rvm in=%.3fs storage_path=%s",
             asset_type,
             time.monotonic() - t_up,
             storage_path,
@@ -430,9 +430,9 @@ class AssetProcessor:
         actual_specs = {
             "width": spec.width,
             "height": spec.height,
-            "format": "mov",
+            "format": "webm",
             "fps": metrics.get("fps", spec.fps),
-            "codec": "qtrle",
+            "codec": "vp9",
             "bg_removed": True,
             "bg_removal_backend": "rvm",
             "duration": None,
