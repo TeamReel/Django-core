@@ -618,6 +618,24 @@ export default function ContentGenerationModal({
   const [videoJobProgressRaw, setVideoJobProgressRaw] = useState<number>(0);
   const [videoJobMeta, setVideoJobMeta] = useState<Record<string, unknown>>({});
 
+  // Abortable polling controller for lineup video jobs.
+  // Prevents duplicate poll loops that keep running after closing the modal or navigating away.
+  const activeVideoJobPollRef = useRef<AbortController | null>(null);
+
+  const abortActiveVideoJobPoll = () => {
+    const ctrl = activeVideoJobPollRef.current;
+    if (ctrl) {
+      ctrl.abort();
+      activeVideoJobPollRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen) abortActiveVideoJobPoll();
+    return () => abortActiveVideoJobPoll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
   // Helper to get member's asset URL
   const getMemberAssetUrl = (memberId: string, assetType: string, memberRole?: string): string | null => {
     // Find the member in seasonSquad
@@ -800,6 +818,8 @@ export default function ContentGenerationModal({
 
   // Generate lineup video using video module
   const handleGenerateLineupVideo = async () => {
+    // If a previous job poll is still running (e.g. user retried or reopened), stop it.
+    abortActiveVideoJobPoll();
     setProgress(10);
 
     try {
@@ -986,6 +1006,11 @@ export default function ContentGenerationModal({
       setVideoJobProgressRaw(0);
       setProgress(30);
 
+      // Create a fresh abort controller for this polling session
+      const pollController = new AbortController();
+      activeVideoJobPollRef.current = pollController;
+      const pollSignal = pollController.signal;
+
       // Poll for job completion
       let pollCount = 0;
       const maxPolls = 360; // 30 minutes max (5s intervals)
@@ -993,6 +1018,7 @@ export default function ContentGenerationModal({
       const maxConsecutiveErrors = 5; // Allow up to 5 transient failures
 
       const pollJob = async (): Promise<void> => {
+        if (pollSignal.aborted) return;
         if (pollCount >= maxPolls) {
           throw new Error('Video processing timed out. Please try again.');
         }
@@ -1002,8 +1028,10 @@ export default function ContentGenerationModal({
           statusRes = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/${jobId}/`, {
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
+            signal: pollSignal,
           });
         } catch (networkErr) {
+          if ((networkErr as any)?.name === 'AbortError' || pollSignal.aborted) return;
           // Network error (offline, DNS, etc.) — retry
           consecutiveErrors++;
           console.warn(`⚠️ Poll network error (${consecutiveErrors}/${maxConsecutiveErrors}):`, networkErr);
@@ -1059,14 +1087,18 @@ export default function ContentGenerationModal({
           } else {
             throw new Error('Video completed but no output file found');
           }
+          // Stop polling once resolved
+          abortActiveVideoJobPoll();
           return;
         }
 
         if (status === 'failed') {
+          abortActiveVideoJobPoll();
           throw new Error(job.error_message || 'Video processing failed');
         }
 
         if (status === 'cancelled') {
+          abortActiveVideoJobPoll();
           throw new Error('Video processing was cancelled');
         }
 
@@ -1079,6 +1111,7 @@ export default function ContentGenerationModal({
       await pollJob();
 
     } catch (err) {
+      if ((err as any)?.name === 'AbortError') return;
       console.error('❌ Lineup video generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Video generation failed');
       setStep('error');

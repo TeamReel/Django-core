@@ -26,7 +26,7 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 from uuid import uuid4
 
 if TYPE_CHECKING:
@@ -48,6 +48,10 @@ class AssetProcessingError(Exception):
     """Raised when asset processing fails."""
 
 
+class AssetProcessingCancelled(Exception):
+    """Raised when asset processing is cancelled by the user."""
+
+
 class AssetProcessor:
     """Processes raw member assets to lineup-ready format.
 
@@ -65,6 +69,7 @@ class AssetProcessor:
         variant_id: str | None = None,
         organisation_id: str | int | None = None,
         bg_removal_backend: str = "rvm",
+        should_cancel: Callable[[], bool] | None = None,
     ) -> dict[str, Any]:
         """Process a raw asset to lineup-ready format.
 
@@ -77,7 +82,7 @@ class AssetProcessor:
             organisation_id: Organisation ID for S3 path scoping
             bg_removal_backend: "rvm" (Robust Video Matting) or "rembg" (per-frame U2-Net)
                                 RVM is preferred for video — temporal consistency, no flicker.
-                                Falls back to rembg if RVM/torch not available.
+                                If "rvm" is requested but unavailable, processing fails (no fallback).
                                 Only used for video types (intro, celebration);
                                 images always use rembg single-pass.
 
@@ -99,6 +104,16 @@ class AssetProcessor:
         )
 
         start_time = time.monotonic()
+        logger.info(
+            "asset_processing_start type=%s kit=%s variant=%s backend=%s raw_url_type=%s",
+            asset_type,
+            kit_type,
+            variant_id or "default",
+            bg_removal_backend,
+            "http"
+            if raw_url.startswith("http://") or raw_url.startswith("https://")
+            else "storage",
+        )
 
         try:
             if isinstance(spec, ImageSpec):
@@ -106,6 +121,11 @@ class AssetProcessor:
                     raw_url, spec, membership_id, asset_type, kit_type, variant_id, organisation_id
                 )
             elif isinstance(spec, VideoSpec):
+                logger.info(
+                    "asset_processing_video_path type=%s effective_backend=%s",
+                    asset_type,
+                    bg_removal_backend,
+                )
                 processed_url, actual_specs = self._process_video(
                     raw_url,
                     spec,
@@ -115,13 +135,14 @@ class AssetProcessor:
                     variant_id,
                     organisation_id,
                     bg_removal_backend=bg_removal_backend,
+                    should_cancel=should_cancel,
                 )
             else:
                 raise AssetProcessingError(f"Unsupported spec type: {type(spec)}")
 
             elapsed = time.monotonic() - start_time
             logger.info(
-                "Asset processed in %.1fs: %s → %s",
+                "asset_processing_done type=%s in=%.3fs processed_url=%s",
                 elapsed,
                 asset_type,
                 processed_url,
@@ -132,6 +153,23 @@ class AssetProcessor:
                 "processed": processed_url,
                 "processing_state": ProcessingState.PROCESSED.value,
                 "specs": actual_specs,
+                "processed_at": timezone.now().isoformat(),
+            }
+
+        except AssetProcessingCancelled:
+            elapsed = time.monotonic() - start_time
+            logger.info(
+                "asset_processing_cancelled type=%s kit=%s variant=%s after=%.3fs",
+                asset_type,
+                kit_type,
+                variant_id or "default",
+                elapsed,
+            )
+            return {
+                "raw": raw_url,
+                "processed": None,
+                "processing_state": ProcessingState.CANCELLED.value,
+                "cancelled_at": timezone.now().isoformat(),
                 "processed_at": timezone.now().isoformat(),
             }
 
@@ -162,7 +200,14 @@ class AssetProcessor:
         backend = get_storage_backend()
 
         # 1. Download raw image
+        t0 = time.monotonic()
         raw_data = self._download_asset(raw_url, backend)
+        logger.info(
+            "asset_processing_download_done type=%s bytes=%d in=%.3fs",
+            asset_type,
+            len(raw_data),
+            time.monotonic() - t0,
+        )
         img = Image.open(io.BytesIO(raw_data))
 
         # 2. Background removal (if needed and not already transparent)
@@ -188,7 +233,14 @@ class AssetProcessor:
             f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.png"
         )
 
+        t_up = time.monotonic()
         saved_path = backend.save(storage_path, buffer)
+        logger.info(
+            "asset_processing_upload_done type=%s format=png in=%.3fs storage_path=%s",
+            asset_type,
+            time.monotonic() - t_up,
+            storage_path,
+        )
 
         actual_specs = {
             "width": spec.width,
@@ -209,6 +261,7 @@ class AssetProcessor:
         variant_id: str | None,
         organisation_id: str | int | None,
         bg_removal_backend: str = "rembg",
+        should_cancel: Callable[[], bool] | None = None,
     ) -> tuple[str, dict]:
         """Process a video asset: download → bg remove → re-encode → upload.
 
@@ -217,7 +270,7 @@ class AssetProcessor:
             state → flicker-free mattes. Preferred for intro/celebration videos.
             Processes full video as a stream (no frame extraction to disk).
           - "rembg": Per-frame U2-Net background removal. No temporal consistency
-            but doesn't require PyTorch. Fallback when RVM not available.
+                        but doesn't require PyTorch.
 
         Output is WebM VP9 with alpha channel for true transparency.
         """
@@ -228,10 +281,29 @@ class AssetProcessor:
         with tempfile.TemporaryDirectory(prefix="asset_proc_") as tmpdir:
             tmpdir_path = Path(tmpdir)
 
+            if should_cancel and should_cancel():
+                raise AssetProcessingCancelled()
+
             # 1. Download raw video
+            t0 = time.monotonic()
             raw_data = self._download_asset(raw_url, backend)
+            logger.info(
+                "asset_processing_download_done type=%s bytes=%d in=%.3fs",
+                asset_type,
+                len(raw_data),
+                time.monotonic() - t0,
+            )
             input_path = tmpdir_path / "input.mp4"
             input_path.write_bytes(raw_data)
+            try:
+                logger.info(
+                    "asset_processing_input_written type=%s path=%s size_bytes=%d",
+                    asset_type,
+                    str(input_path),
+                    input_path.stat().st_size,
+                )
+            except Exception:  # noqa: BLE001
+                pass
 
             # Determine effective bg removal backend
             effective_backend = bg_removal_backend
@@ -239,10 +311,16 @@ class AssetProcessor:
                 from src.video.services.rvm_processor import is_rvm_available
 
                 if not is_rvm_available():
-                    logger.warning("RVM requested but torch not available, falling back to rembg")
-                    effective_backend = "rembg"
+                    raise AssetProcessingError(
+                        "RVM requested but torch is not available in this environment. "
+                        "Install torch or run processing in an environment that supports RVM."
+                    )
 
             if effective_backend == "rvm":
+                logger.info(
+                    "asset_processing_video_backend_selected type=%s backend=rvm",
+                    asset_type,
+                )
                 return self._process_video_rvm(
                     input_path,
                     spec,
@@ -251,9 +329,14 @@ class AssetProcessor:
                     kit_type,
                     variant_id,
                     backend,
+                    should_cancel=should_cancel,
                 )
 
             # Fall through to original rembg pipeline
+            logger.info(
+                "asset_processing_video_backend_selected type=%s backend=rembg",
+                asset_type,
+            )
             return self._process_video_rembg(
                 input_path,
                 spec,
@@ -262,6 +345,7 @@ class AssetProcessor:
                 kit_type,
                 variant_id,
                 backend,
+                should_cancel=should_cancel,
             )
 
     def _process_video_rvm(
@@ -273,31 +357,58 @@ class AssetProcessor:
         kit_type: str,
         variant_id: str | None,
         storage_backend: Any,
+        should_cancel: Callable[[], bool] | None = None,
     ) -> tuple[str, dict]:
         """Process video using RVM (Robust Video Matting).
 
         Streams FFmpeg decode → RVM GPU inference → FFmpeg encode.
         Temporal consistency via recurrent state = no flicker.
         """
-        from src.video.services.rvm_processor import process_video_rvm
+        from src.video.services.rvm_processor import RVMProcessingCancelled, process_video_rvm
 
         output_path = input_path.parent / "output_rvm.webm"
 
         # Portrait mode for intro/celebration (9:16)
         portrait = spec.height > spec.width
 
-        metrics = process_video_rvm(
-            input_path=input_path,
-            output_path=output_path,
-            downsample_ratio=0.40,
-            portrait=portrait,
-            output_format="webm",
-            target_width=spec.width,
-            target_height=spec.height,
+        t_proc = time.monotonic()
+        try:
+            metrics = process_video_rvm(
+                input_path=input_path,
+                output_path=output_path,
+                downsample_ratio=0.40,
+                portrait=portrait,
+                output_format="webm",
+                target_width=spec.width,
+                target_height=spec.height,
+                should_cancel=should_cancel,
+            )
+        except RVMProcessingCancelled as exc:
+            raise AssetProcessingCancelled() from exc
+
+        logger.info(
+            "asset_processing_rvm_done type=%s in=%.3fs frames=%s avg_ms=%s fps=%s",
+            asset_type,
+            time.monotonic() - t_proc,
+            metrics.get("frame_count"),
+            metrics.get("avg_ms_per_frame"),
+            metrics.get("fps"),
         )
+
+        if should_cancel and should_cancel():
+            raise AssetProcessingCancelled()
 
         if not output_path.exists():
             raise AssetProcessingError("RVM produced no output file")
+
+        try:
+            logger.info(
+                "asset_processing_rvm_output_file path=%s size_bytes=%d",
+                str(output_path),
+                output_path.stat().st_size,
+            )
+        except Exception:  # noqa: BLE001
+            pass
 
         # Upload processed version
         variant_suffix = f"_{variant_id}" if variant_id else ""
@@ -306,8 +417,15 @@ class AssetProcessor:
             f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.webm"
         )
 
+        t_up = time.monotonic()
         with open(output_path, "rb") as f:
             saved_path = storage_backend.save(storage_path, f)
+        logger.info(
+            "asset_processing_upload_done type=%s format=webm backend=rvm in=%.3fs storage_path=%s",
+            asset_type,
+            time.monotonic() - t_up,
+            storage_path,
+        )
 
         actual_specs = {
             "width": spec.width,
@@ -333,12 +451,16 @@ class AssetProcessor:
         kit_type: str,
         variant_id: str | None,
         storage_backend: Any,
+        should_cancel: Callable[[], bool] | None = None,
     ) -> tuple[str, dict]:
         """Process video using rembg (per-frame U2-Net bg removal).
 
         Extract frames → rembg per frame → auto-crop → re-encode VP9 WebM.
         """
         tmpdir_path = input_path.parent
+
+        if should_cancel and should_cancel():
+            raise AssetProcessingCancelled()
 
         # 2. Get source video info (fps, duration)
         src_fps = self._get_video_fps(str(input_path)) or spec.fps
@@ -356,6 +478,12 @@ class AssetProcessor:
             duration,
         )
 
+        logger.info(
+            "asset_processing_rembg_plan type=%s frames_estimate=%s",
+            asset_type,
+            None if duration is None else int(duration * process_fps),
+        )
+
         # 3. Extract frames as PNG at NATIVE resolution (no scale/pad yet).
         #    Scaling to target before bg removal causes issues: a 16:9 source
         #    would become a tiny strip inside the 9:16 target, padded with black.
@@ -371,6 +499,7 @@ class AssetProcessor:
             str(process_fps),
             str(frames_dir / "frame_%06d.png"),
         ]
+        logger.info("asset_processing_ffmpeg_extract_cmd cmd=%s", extract_cmd)
         result = subprocess.run(
             extract_cmd,
             capture_output=True,
@@ -413,6 +542,8 @@ class AssetProcessor:
         all_bboxes: list[tuple[int, int, int, int]] = []
 
         for i, frame_path in enumerate(frame_files):
+            if should_cancel and i % 5 == 0 and should_cancel():
+                raise AssetProcessingCancelled()
             if i % 20 == 0:
                 logger.info("BG removal: frame %d / %d", i + 1, total_frames)
 
@@ -466,6 +597,8 @@ class AssetProcessor:
             )
 
             for pf in sorted(processed_dir.glob("frame_*.png")):
+                if should_cancel and should_cancel():
+                    raise AssetProcessingCancelled()
                 img = PILImage.open(pf)
                 img = img.crop(crop_bbox)
                 img.save(str(pf), format="PNG")
@@ -497,6 +630,7 @@ class AssetProcessor:
             "-an",  # No audio
             str(output_path),
         ]
+        logger.info("asset_processing_ffmpeg_encode_cmd cmd=%s", encode_cmd)
         result = subprocess.run(
             encode_cmd,
             capture_output=True,
@@ -512,6 +646,9 @@ class AssetProcessor:
         if not output_path.exists():
             raise AssetProcessingError("FFmpeg produced no output file")
 
+        if should_cancel and should_cancel():
+            raise AssetProcessingCancelled()
+
         # 6. Get output duration
         out_duration = self._get_video_duration(str(output_path))
 
@@ -522,8 +659,15 @@ class AssetProcessor:
             f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.webm"
         )
 
+        t_up = time.monotonic()
         with open(output_path, "rb") as f:
             saved_path = storage_backend.save(storage_path, f)
+        logger.info(
+            "asset_processing_upload_done type=%s format=webm backend=rembg in=%.3fs storage_path=%s",
+            asset_type,
+            time.monotonic() - t_up,
+            storage_path,
+        )
 
         actual_specs = {
             "width": spec.width,
@@ -545,12 +689,14 @@ class AssetProcessor:
 
         # If it's a presigned URL or https URL, download directly
         if url_or_path.startswith("http://") or url_or_path.startswith("https://"):
+            logger.info("asset_processing_download_start source=http")
             resp = requests.get(url_or_path, timeout=60)
             resp.raise_for_status()
             return resp.content
 
         # Otherwise treat as S3 storage path
         try:
+            logger.info("asset_processing_download_start source=storage path=%s", url_or_path)
             file_obj = backend.open(url_or_path, "rb")
             data = file_obj.read()
             file_obj.close()

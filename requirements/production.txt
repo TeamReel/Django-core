@@ -78,6 +78,20 @@ rembg>=2.0.50,<3.0
 # Explicit runtime dependency for rembg (avoids: No module named 'onnxruntime')
 onnxruntime>=1.17.0,<2.0
 
+# Numpy 2.x currently triggers runtime compatibility issues for some compiled
+# dependencies we use in asset/video processing (and can break torch numpy
+# bridging). Keep production on the stable 1.x line for now.
+numpy<2
+
+# RVM (Robust Video Matting) requires PyTorch.
+# IMPORTANT: we want CPU-only wheels in production to avoid pulling CUDA/NVIDIA runtime
+# wheels (which are huge and unnecessary on Railway CPU machines).
+#
+# The "+cpu" build tags are hosted on the PyTorch CPU index.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2+cpu
+torchvision==0.17.2+cpu
+
 # ============================================================================
 # Production-Only Dependencies
 # ============================================================================

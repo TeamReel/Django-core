@@ -313,6 +313,39 @@ async function triggerAssetProcessing(
   }
 }
 
+async function cancelAssetProcessing(
+  apiBaseUrl: string,
+  membershipId: string,
+  assetType: string,
+  kitType: string,
+  variantId?: string | null,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const csrfToken = getCsrfToken();
+    const res = await fetch(`${apiBaseUrl}/api/v1/video/jobs/cancel-asset-processing/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify({
+        membership_id: membershipId,
+        asset_type: assetType,
+        kit_type: kitType,
+        variant_id: variantId || null,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      return { ok: false, error: err?.error || `HTTP ${res.status}` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Unknown error' };
+  }
+}
+
 /**
  * Poll membership metadata until a variant's processing_state resolves to 'processed' or 'failed'.
  * Calls setMembership to trigger the useEffect that re-derives videoVariants.
@@ -357,7 +390,7 @@ async function pollProcessingResult(
 
       if (checkVal && typeof checkVal === 'object') {
         const state = checkVal.processing_state;
-        if (state === 'processed' || state === 'failed') {
+        if (state === 'processed' || state === 'failed' || state === 'cancelled') {
           // Update full membership so useEffect re-derives videoVariants
           setMembershipFn(mData);
           return;
@@ -866,6 +899,47 @@ export default function ProjectSeasonMemberDetailPage() {
 
   const [form, setForm] = useState<MemberMediaForm>(() => createEmptyMediaForm());
   const [videoVariants, setVideoVariants] = useState<VideoVariantsMap>(() => createEmptyVideoVariants());
+
+  // Processing polling: ensure we never start multiple concurrent pollers for the same asset.
+  // Without this, navigating away/back (unmount/remount) or re-clicking can leave old poll loops running,
+  // causing hundreds of repeated GET requests.
+  const activePollsRef = useRef<Record<string, AbortController>>({});
+
+  const startProcessingPoll = useCallback((assetType: string, kitType: string, variantId?: string | null) => {
+    if (!project?.id || !membershipId) return;
+    const key = `${assetType}:${kitType}:${variantId || ''}`;
+
+    const existing = activePollsRef.current[key];
+    if (existing) existing.abort();
+
+    const controller = new AbortController();
+    activePollsRef.current[key] = controller;
+
+    void pollProcessingResult(
+      apiBaseUrl,
+      project.id,
+      membershipId,
+      assetType,
+      kitType,
+      variantId || null,
+      setMembership,
+      controller.signal,
+    ).finally(() => {
+      if (activePollsRef.current[key] === controller) {
+        delete activePollsRef.current[key];
+      }
+    });
+  }, [apiBaseUrl, membershipId, project?.id]);
+
+  useEffect(() => {
+    return () => {
+      // Abort any in-flight pollers when this page unmounts.
+      for (const controller of Object.values(activePollsRef.current)) {
+        controller.abort();
+      }
+      activePollsRef.current = {};
+    };
+  }, []);
 
   // AI Generation Modal State
   const [showAiModal, setShowAiModal] = useState(false);
@@ -1858,6 +1932,10 @@ export default function ProjectSeasonMemberDetailPage() {
                                 const resolvedUrl = hasVideo ? getAssetUrl(variantUrl) : null;
                                 const variantLineupReady = isLineupReady(variantRaw);
                                 const variantProcessing = isProcessing(variantRaw);
+                                const normalizedVariant = normalizeVariantValue(variantRaw as any);
+                                const isCancellingOrProcessing =
+                                  normalizedVariant?.processing_state === 'processing' ||
+                                  normalizedVariant?.processing_state === 'cancelling';
 
                                 return (
                                   <div key={variant.id} style={{
@@ -1945,7 +2023,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                     apiBaseUrl, membershipId!, 'intro', kit.id, variant.id
                                                   );
                                                   if (result.ok) {
-                                                    const rawUrl = getBestUrl(variantRaw) || '';
+                                                    const rawUrl = getVariantRawUrl(variantRaw) || '';
                                                     const newVV: VideoVariantsMap = {
                                                       ...videoVariants,
                                                       intro: {
@@ -1958,10 +2036,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                       },
                                                     };
                                                     setVideoVariants(newVV);
-                                                    void pollProcessingResult(
-                                                      apiBaseUrl, project!.id, membershipId!,
-                                                      'intro', kit.id, variant.id, setMembership,
-                                                    );
+                                                    startProcessingPoll('intro', kit.id, variant.id);
                                                   }
                                                 }}
                                                 style={{
@@ -1973,6 +2048,41 @@ export default function ProjectSeasonMemberDetailPage() {
                                                 }}
                                               >
                                                 {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                                              </Button>
+                                            )}
+
+                                            {isCancellingOrProcessing && (
+                                              <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={async () => {
+                                                  const result = await cancelAssetProcessing(
+                                                    apiBaseUrl,
+                                                    membershipId!,
+                                                    'intro',
+                                                    kit.id,
+                                                    variant.id,
+                                                  );
+                                                  if (result.ok) {
+                                                    const rawUrl = getVariantRawUrl(variantRaw) || '';
+                                                    const newVV: VideoVariantsMap = {
+                                                      ...videoVariants,
+                                                      intro: {
+                                                        ...videoVariants.intro,
+                                                        [compositeKey]: {
+                                                          raw: rawUrl,
+                                                          processed: null,
+                                                          processing_state: 'cancelling' as const,
+                                                        },
+                                                      },
+                                                    };
+                                                    setVideoVariants(newVV);
+                                                    startProcessingPoll('intro', kit.id, variant.id);
+                                                  }
+                                                }}
+                                                style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
+                                              >
+                                                ⏹️ Cancel
                                               </Button>
                                             )}
                                             {variantLineupReady && (
@@ -2090,6 +2200,10 @@ export default function ProjectSeasonMemberDetailPage() {
                                 const resolvedUrl = hasVideo ? getAssetUrl(variantUrl) : null;
                                 const variantLineupReady = isLineupReady(variantRaw);
                                 const variantProcessing = isProcessing(variantRaw);
+                                const normalizedVariant = normalizeVariantValue(variantRaw as any);
+                                const isCancellingOrProcessing =
+                                  normalizedVariant?.processing_state === 'processing' ||
+                                  normalizedVariant?.processing_state === 'cancelling';
 
                                 return (
                                   <div key={variant.id} style={{
@@ -2177,7 +2291,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                     apiBaseUrl, membershipId!, 'celebration', kit.id, variant.id
                                                   );
                                                   if (result.ok) {
-                                                    const rawUrl = getBestUrl(variantRaw) || '';
+                                                    const rawUrl = getVariantRawUrl(variantRaw) || '';
                                                     const newVV: VideoVariantsMap = {
                                                       ...videoVariants,
                                                       celebration: {
@@ -2190,10 +2304,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                       },
                                                     };
                                                     setVideoVariants(newVV);
-                                                    void pollProcessingResult(
-                                                      apiBaseUrl, project!.id, membershipId!,
-                                                      'celebration', kit.id, variant.id, setMembership,
-                                                    );
+                                                    startProcessingPoll('celebration', kit.id, variant.id);
                                                   }
                                                 }}
                                                 style={{
@@ -2205,6 +2316,41 @@ export default function ProjectSeasonMemberDetailPage() {
                                                 }}
                                               >
                                                 {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                                              </Button>
+                                            )}
+
+                                            {isCancellingOrProcessing && (
+                                              <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={async () => {
+                                                  const result = await cancelAssetProcessing(
+                                                    apiBaseUrl,
+                                                    membershipId!,
+                                                    'celebration',
+                                                    kit.id,
+                                                    variant.id,
+                                                  );
+                                                  if (result.ok) {
+                                                    const rawUrl = getVariantRawUrl(variantRaw) || '';
+                                                    const newVV: VideoVariantsMap = {
+                                                      ...videoVariants,
+                                                      celebration: {
+                                                        ...videoVariants.celebration,
+                                                        [compositeKey]: {
+                                                          raw: rawUrl,
+                                                          processed: null,
+                                                          processing_state: 'cancelling' as const,
+                                                        },
+                                                      },
+                                                    };
+                                                    setVideoVariants(newVV);
+                                                    startProcessingPoll('celebration', kit.id, variant.id);
+                                                  }
+                                                }}
+                                                style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
+                                              >
+                                                ⏹️ Cancel
                                               </Button>
                                             )}
                                             {variantLineupReady && (
@@ -2372,7 +2518,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                     >
                                       {assetUrl ? '🔄 Opnieuw' : '✨ Genereer'}
                                     </Button>
-                                    {assetUrl && !lineupReady && !currentlyProcessing && (
+                                    {assetUrl && !currentlyProcessing && (
                                       <Button
                                         size="sm"
                                         variant="secondary"
@@ -2396,10 +2542,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                             };
                                             setVideoVariants(newVV);
                                             // Poll for result and auto-refresh
-                                            void pollProcessingResult(
-                                              apiBaseUrl, project!.id, membershipId!,
-                                              'fullbody', kit.id, null, setMembership,
-                                            );
+                                            startProcessingPoll('fullbody', kit.id, null);
                                           }
                                         }}
                                         style={{
@@ -2410,7 +2553,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                           color: '#fff',
                                         }}
                                       >
-                                        🔧 Bewerken
+                                        {lineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                       </Button>
                                     )}
                                     {assetUrl && lineupReady && (
@@ -2571,7 +2714,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                     >
                                       {assetUrl ? '🔄 Opnieuw' : '✨ Genereer'}
                                     </Button>
-                                    {assetUrl && !lineupReady && !currentlyProcessing && (
+                                    {assetUrl && !currentlyProcessing && (
                                       <Button
                                         size="sm"
                                         variant="secondary"
@@ -2594,10 +2737,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                             };
                                             setVideoVariants(newVV);
                                             // Poll for result and auto-refresh
-                                            void pollProcessingResult(
-                                              apiBaseUrl, project!.id, membershipId!,
-                                              'closeup', kit.id, null, setMembership,
-                                            );
+                                            startProcessingPoll('closeup', kit.id, null);
                                           }
                                         }}
                                         style={{
@@ -2608,7 +2748,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                           color: '#fff',
                                         }}
                                       >
-                                        🔧 Bewerken
+                                        {lineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                       </Button>
                                     )}
                                     {assetUrl && (

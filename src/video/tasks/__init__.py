@@ -1,6 +1,7 @@
 """Celery tasks for async video processing."""
 
 from src.video.tasks.compose import compose_video
+from src.video.tasks.asset_processing import process_member_asset
 from src.video.tasks.lineup import process_lineup_video
 
 # Legacy task for backwards compatibility
@@ -13,5 +14,6 @@ __all__ = [
     "generate_thumbnail",
     "compose_video",
     "process_lineup_video",
+    "process_member_asset",
     "process_video_job",  # Legacy
 ]

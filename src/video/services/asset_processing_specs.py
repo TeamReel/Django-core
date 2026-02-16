@@ -31,6 +31,8 @@ class ProcessingState(str, Enum):
 
     RAW = "raw"
     PROCESSING = "processing"
+    CANCELLING = "cancelling"
+    CANCELLED = "cancelled"
     PROCESSED = "processed"
     FAILED = "failed"
 

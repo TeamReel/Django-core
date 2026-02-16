@@ -7,7 +7,7 @@
 
 // ── Processing States ────────────────────────────────────────────────────────
 
-export type AssetProcessingState = 'raw' | 'processing' | 'processed' | 'failed';
+export type AssetProcessingState = 'raw' | 'processing' | 'cancelling' | 'cancelled' | 'processed' | 'failed';
 
 // ── Asset Spec Definitions ───────────────────────────────────────────────────
 
@@ -203,7 +203,7 @@ export function isLineupReady(value: string | AssetVariantValue | null | undefin
 export function isProcessing(value: string | AssetVariantValue | null | undefined): boolean {
   const normalized = normalizeVariantValue(value);
   if (!normalized) return false;
-  return normalized.processing_state === 'processing';
+  return normalized.processing_state === 'processing' || normalized.processing_state === 'cancelling';
 }
 
 /**
@@ -215,6 +215,10 @@ export function getProcessingStateLabel(state: AssetProcessingState): { label: s
       return { label: 'Ruw', color: '#f59e0b', icon: '🔶' };
     case 'processing':
       return { label: 'Bezig...', color: '#3b82f6', icon: '⏳' };
+    case 'cancelling':
+      return { label: 'Annuleren...', color: '#3b82f6', icon: '⏹️' };
+    case 'cancelled':
+      return { label: 'Geannuleerd', color: '#f59e0b', icon: '⏹️' };
     case 'processed':
       return { label: 'Lineup-ready', color: '#10b981', icon: '✅' };
     case 'failed':

@@ -384,6 +384,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         # Run processing in background thread (like lineup jobs)
         def _process_in_background() -> None:
             from django.db import close_old_connections
+            import time
 
             # Ensure clean DB connection for this thread (Django connections
             # are thread-local; the main thread's connection won't work here).
@@ -392,10 +393,45 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             try:
                 from src.video.services.asset_processor import AssetProcessor
 
+                # Cooperative cancellation: poll membership metadata for this variant.
+                last_check_s = 0.0
+                cancelled = False
+
+                def should_cancel() -> bool:
+                    nonlocal last_check_s, cancelled
+                    if cancelled:
+                        return True
+                    now_s = time.monotonic()
+                    if now_s - last_check_s < 0.75:
+                        return False
+                    last_check_s = now_s
+                    try:
+                        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+                        m = ProjectMembership.objects.only("metadata").get(id=membership_id)
+                        v = self._get_variant_metadata(m, asset_type, kit_type, variant_id)
+                        if isinstance(v, dict):
+                            st = v.get("processing_state")
+                            if st in ("cancelling", "cancel_requested"):
+                                cancelled = True
+                                return True
+                    except Exception:
+                        # Best effort: if we can't check, assume not cancelled.
+                        return False
+                    return False
+
                 processor = AssetProcessor()
                 # Images (fullbody, closeup): rembg single-pass (fast)
                 # Videos (intro, celebration): RVM stream (faster + temporal consistency)
                 backend = "rvm" if asset_type in ("intro", "celebration") else "rembg"
+
+                logger.info(
+                    "process_asset_background_start membership_id=%s asset_type=%s kit_type=%s variant_id=%s backend=%s",
+                    str(membership_id),
+                    asset_type,
+                    kit_type,
+                    variant_id or "",
+                    backend,
+                )
                 result = processor.process_asset(
                     raw_url=raw_url,
                     asset_type=asset_type,
@@ -406,10 +442,28 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                     if hasattr(membership.project, "organisation_id")
                     else None,
                     bg_removal_backend=backend,
+                    should_cancel=should_cancel,
                 )
 
                 # Refresh membership and update metadata
                 membership.refresh_from_db()
+
+                # If cancellation was requested while processing, don't overwrite with a processed result.
+                if should_cancel():
+                    self._update_variant_metadata(
+                        membership,
+                        asset_type,
+                        kit_type,
+                        variant_id,
+                        {
+                            "raw": raw_url,
+                            "processed": None,
+                            "processing_state": "cancelled",
+                            "cancelled_at": timezone.now().isoformat(),
+                        },
+                    )
+                    return
+
                 self._update_variant_metadata(membership, asset_type, kit_type, variant_id, result)
                 logger.info(
                     "Asset processing complete: %s.%s → %s",
@@ -450,6 +504,98 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 "kit_type": kit_type,
                 "variant_id": variant_id,
                 "raw_url": raw_url,
+            },
+            status=status.HTTP_202_ACCEPTED,
+        )
+
+    @action(detail=False, methods=["post"], url_path="cancel-asset-processing")
+    def cancel_asset_processing(self, request: Request) -> Response:
+        """Request cancellation of an in-flight asset processing operation.
+
+        POST /api/v1/video/jobs/cancel-asset-processing/
+
+        Body:
+        {
+            "membership_id": "uuid",
+            "asset_type": "fullbody" | "closeup" | "intro" | "celebration",
+            "kit_type": "home" | "away" | "third" | "goalkeeper" | ...,
+            "variant_id": "arms_crossed" | null
+        }
+
+        This is cooperative cancellation: we mark the variant as "cancelling" in
+        metadata, and the background processor periodically checks this flag and
+        exits early.
+        """
+        membership_id = request.data.get("membership_id")
+        asset_type = request.data.get("asset_type")
+        kit_type = request.data.get("kit_type", "home")
+        variant_id = request.data.get("variant_id")
+
+        if not membership_id or not asset_type:
+            return Response(
+                {"error": "membership_id and asset_type are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        valid_asset_types = ["fullbody", "closeup", "intro", "celebration"]
+        if asset_type not in valid_asset_types:
+            return Response(
+                {"error": f"asset_type must be one of: {valid_asset_types}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+        try:
+            membership = ProjectMembership.objects.select_related("project").get(id=membership_id)
+        except ProjectMembership.DoesNotExist:
+            return Response(
+                {"error": f"Membership {membership_id} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not ProjectMembership.objects.filter(
+            project=membership.project, user=request.user
+        ).exists():
+            raise PermissionDenied("You must be a project member.")
+
+        existing_variant = self._get_variant_metadata(membership, asset_type, kit_type, variant_id)
+        if not existing_variant:
+            return Response(
+                {"error": "No variant found for provided asset identifiers"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        state = (
+            existing_variant.get("processing_state") if isinstance(existing_variant, dict) else None
+        )
+        if state not in ("processing", "cancelling"):
+            return Response(
+                {"error": f"Variant is not processing (current state: {state})"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        raw_url = existing_variant.get("raw") if isinstance(existing_variant, dict) else None
+        self._update_variant_metadata(
+            membership,
+            asset_type,
+            kit_type,
+            variant_id,
+            {
+                **(existing_variant if isinstance(existing_variant, dict) else {}),
+                "raw": raw_url,
+                "processed": None,
+                "processing_state": "cancelling",
+                "cancel_requested_at": timezone.now().isoformat(),
+            },
+        )
+
+        return Response(
+            {
+                "status": "cancelling",
+                "membership_id": str(membership_id),
+                "asset_type": asset_type,
+                "kit_type": kit_type,
+                "variant_id": variant_id,
             },
             status=status.HTTP_202_ACCEPTED,
         )
@@ -495,6 +641,31 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         meta["teamreel_assets"] = tr
         membership.metadata = meta
         membership.save(update_fields=["metadata", "updated_at"])
+
+    @staticmethod
+    def _get_variant_metadata(
+        membership: Any,
+        asset_type: str,
+        kit_type: str,
+        variant_id: str | None,
+    ) -> dict | str | None:
+        """Read the variant value from membership.metadata.teamreel_assets."""
+        meta = membership.metadata or {}
+        tr = meta.get("teamreel_assets") or {}
+
+        if asset_type in ("fullbody", "closeup"):
+            images = tr.get("images", {}) or {}
+            return ((images.get(asset_type) or {}) or {}).get(kit_type)
+
+        videos = tr.get("videos", {}) or {}
+        cat = videos.get(asset_type, {}) or {}
+        composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+        if composite_key in cat:
+            return cat.get(composite_key)
+        if variant_id and variant_id in cat:
+            # Support old metadata keying (bare variant_id)
+            return cat.get(variant_id)
+        return None
 
     @action(detail=False, methods=["post"], url_path="lineup-from-template")
     def lineup_from_template(self, request: Request) -> Response:

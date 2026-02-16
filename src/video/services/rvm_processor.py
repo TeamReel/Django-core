@@ -40,6 +40,10 @@ _rvm_model: Any | None = None
 _rvm_device: Any | None = None
 
 
+class RVMProcessingCancelled(Exception):
+    """Raised when RVM processing is cancelled."""
+
+
 def _get_ffmpeg_path() -> str:
     """Find FFmpeg binary."""
     path = shutil.which("ffmpeg")
@@ -88,7 +92,7 @@ def load_rvm_model(model_name: str = "mobilenetv3") -> tuple[Any, Any]:
     import torch
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    logger.info("Loading RVM model (%s) on %s...", model_name, device)
+    logger.info("rvm_model_load_start model=%s device=%s", model_name, device)
 
     model = torch.hub.load(
         "PeterL1n/RobustVideoMatting",
@@ -100,7 +104,7 @@ def load_rvm_model(model_name: str = "mobilenetv3") -> tuple[Any, Any]:
 
     _rvm_model = model
     _rvm_device = device
-    logger.info("RVM model loaded successfully")
+    logger.info("rvm_model_load_done model=%s device=%s", model_name, device)
 
     return model, device
 
@@ -147,6 +151,7 @@ def process_video_rvm(
     model_name: str = "mobilenetv3",
     target_width: int = 1080,
     target_height: int = 1920,
+    should_cancel: Any | None = None,
 ) -> dict[str, Any]:
     """Process a video with RVM background removal.
 
@@ -189,6 +194,20 @@ def process_video_rvm(
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     ffmpeg = _get_ffmpeg_path()
+    ffprobe = _get_ffprobe_path()
+
+    logger.info(
+        "rvm_start input=%s output=%s model=%s device=%s portrait=%s vf=%s downsample=%.2f ffmpeg=%s ffprobe=%s",
+        str(input_path),
+        str(output_path),
+        model_name,
+        device,
+        bool(portrait),
+        vf or "",
+        downsample_ratio,
+        ffmpeg,
+        ffprobe,
+    )
 
     # Reader: decode to raw RGB24
     read_cmd = [ffmpeg, "-v", "quiet", "-i", str(input_path)]
@@ -251,6 +270,9 @@ def process_video_rvm(
             str(output_path),
         ]
 
+    logger.info("rvm_ffmpeg_read_cmd cmd=%s", read_cmd)
+    logger.info("rvm_ffmpeg_write_cmd cmd=%s", write_cmd)
+
     logger.info(
         "RVM processing: %s → %s (%dx%d @ %.1ffps, downsample=%.2f)",
         input_path.name,
@@ -272,9 +294,30 @@ def process_video_rvm(
     # RVM recurrent state — initialized to None, model manages internally
     rec: list[Any] = [None] * 4
 
+    def _terminate_processes() -> None:
+        for p in (reader, writer):
+            try:
+                if p.poll() is None:
+                    p.terminate()
+            except Exception:  # noqa: BLE001
+                pass
+        for p in (reader, writer):
+            try:
+                p.wait(timeout=3)
+            except Exception:  # noqa: BLE001
+                try:
+                    if p.poll() is None:
+                        p.kill()
+                except Exception:  # noqa: BLE001
+                    pass
+
     try:
         with torch.no_grad():
             while True:
+                if should_cancel and should_cancel():
+                    _terminate_processes()
+                    raise RVMProcessingCancelled()
+
                 assert reader.stdout is not None
                 raw = reader.stdout.read(frame_size_rgb)
                 if len(raw) < frame_size_rgb:
@@ -327,19 +370,41 @@ def process_video_rvm(
     finally:
         if writer.stdin and not writer.stdin.closed:
             writer.stdin.close()
-        writer.wait()
-        reader.wait()
+        try:
+            writer.wait(timeout=5)
+        except Exception:  # noqa: BLE001
+            try:
+                writer.kill()
+            except Exception:  # noqa: BLE001
+                pass
+        try:
+            reader.wait(timeout=5)
+        except Exception:  # noqa: BLE001
+            try:
+                reader.kill()
+            except Exception:  # noqa: BLE001
+                pass
+
+        logger.info(
+            "rvm_ffmpeg_exit reader_rc=%s writer_rc=%s",
+            reader.returncode,
+            writer.returncode,
+        )
 
     total_time = sum(frame_times)
     avg_time = total_time / max(frame_count, 1)
     avg_stability = float(np.mean(mask_diffs)) if mask_diffs else 0.0
 
     logger.info(
-        "RVM complete: %d frames, %.1fs total, %.0fms/frame, stability=%.2f",
+        "rvm_done frames=%d total_time_s=%.2f avg_ms_per_frame=%.1f stability=%.2f out_w=%d out_h=%d fps=%.3f format=%s",
         frame_count,
         total_time,
         avg_time * 1000,
         avg_stability,
+        width,
+        height,
+        fps,
+        output_format,
     )
 
     return {
