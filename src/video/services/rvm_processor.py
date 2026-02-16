@@ -78,18 +78,31 @@ def _get_ffmpeg_path() -> str:
 
 def _get_ffprobe_path() -> str:
     """Find ffprobe binary."""
-    path = shutil.which("ffprobe")
-    if path:
-        return path
-    # ffprobe is usually next to ffmpeg
+    # 1. Static build installed by Dockerfile
+    static_path = Path("/usr/local/bin/ffprobe")
+    if static_path.exists():
+        logger.info("ffprobe_path_selected source=static path=%s", static_path)
+        return str(static_path)
+
+    # 2. Next to the selected ffmpeg (common for static bundles)
     ffmpeg = _get_ffmpeg_path()
     if ffmpeg and ffmpeg != "ffmpeg":
         probe = Path(ffmpeg).parent / "ffprobe"
         if probe.exists():
+            logger.info("ffprobe_path_selected source=adjacent path=%s", probe)
             return str(probe)
         probe = Path(ffmpeg).parent / "ffprobe.exe"
         if probe.exists():
+            logger.info("ffprobe_path_selected source=adjacent path=%s", probe)
             return str(probe)
+
+    # 3. System ffprobe
+    path = shutil.which("ffprobe")
+    if path:
+        logger.info("ffprobe_path_selected source=system path=%s", path)
+        return path
+
+    logger.warning("ffprobe_path_selected source=fallback path=ffprobe")
     return "ffprobe"
 
 
@@ -434,11 +447,15 @@ def process_video_rvm(
     if output_format == "webm":
         alpha_ok = _preflight_vp9_alpha(ffmpeg)
         if not alpha_ok:
-            logger.error(
-                "PREFLIGHT_FAIL: FFmpeg binary at %s does NOT support VP9 alpha (yuva420p). "
-                "Output will be opaque. Consider installing a static FFmpeg build with VP9 alpha support.",
-                ffmpeg,
+            message = (
+                "FFmpeg VP9-alpha preflight failed. "
+                f"Selected ffmpeg='{ffmpeg}' cannot produce an alpha pix_fmt (expected yuva420p). "
+                "This environment will only produce opaque WebM (yuv420p), so RVM outputs will be unusable. "
+                "Fix the runtime FFmpeg build (use a static ffmpeg with --enable-libvpx and VP9 alpha support) "
+                "and redeploy/restart the Celery worker service."
             )
+            logger.error("PREFLIGHT_FAIL: %s", message)
+            raise RuntimeError(message)
 
     logger.info(
         "RVM processing: %s → %s (%dx%d @ %.1ffps, downsample=%.2f)",
@@ -671,7 +688,8 @@ def _validate_rvm_output(output_path: Path, ffprobe: str, output_format: str) ->
             raise RuntimeError(
                 f"RVM output pix_fmt is '{pix_fmt}', expected a format with alpha "
                 f"(e.g. argb, yuva420p). The output has no alpha channel — "
-                f"lineup compositing will fail."
+                f"lineup compositing will fail. "
+                f"(codec='{codec}', output_format='{output_format}', ffprobe='{ffprobe}', file='{output_path.name}')"
             )
     except (subprocess.TimeoutExpired, _json.JSONDecodeError) as exc:
         logger.warning("rvm_validate_skip reason=%s output=%s", type(exc).__name__, output_path)
