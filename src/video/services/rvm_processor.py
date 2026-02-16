@@ -268,10 +268,12 @@ def process_video_rvm(
             "18",
             "-auto-alt-ref",
             "0",
-            "-quality",
-            "realtime",
-            "-speed",
-            "6",
+            "-deadline",
+            "good",
+            "-cpu-used",
+            "5",
+            "-row-mt",
+            "1",
             str(output_path),
         ]
 
