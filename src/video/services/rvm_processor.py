@@ -240,6 +240,7 @@ def process_video_rvm(
         ]
     else:
         # WebM VP9 with alpha (default)
+        # MUST use libvpx-vp9 — libvpx (VP8) does NOT support alpha.
         write_cmd = [
             ffmpeg,
             "-y",
@@ -256,7 +257,7 @@ def process_video_rvm(
             "-i",
             "-",
             "-c:v",
-            "libvpx",
+            "libvpx-vp9",
             "-pix_fmt",
             "yuva420p",
             "-metadata:s:v:0",
@@ -264,9 +265,13 @@ def process_video_rvm(
             "-b:v",
             "1M",
             "-crf",
-            "10",
+            "18",
             "-auto-alt-ref",
             "0",
+            "-quality",
+            "realtime",
+            "-speed",
+            "6",
             str(output_path),
         ]
 
@@ -395,6 +400,10 @@ def process_video_rvm(
     avg_time = total_time / max(frame_count, 1)
     avg_stability = float(np.mean(mask_diffs)) if mask_diffs else 0.0
 
+    # ── Output validation: ensure the file is actually VP9 with alpha ──
+    if output_format == "webm" and output_path.exists():
+        _validate_rvm_output(output_path, ffprobe)
+
     logger.info(
         "rvm_done frames=%d total_time_s=%.2f avg_ms_per_frame=%.1f stability=%.2f out_w=%d out_h=%d fps=%.3f format=%s",
         frame_count,
@@ -417,6 +426,62 @@ def process_video_rvm(
         "fps": fps,
         "output_format": output_format,
     }
+
+
+def _validate_rvm_output(output_path: Path, ffprobe: str) -> None:
+    """Validate that the RVM output file is VP9 with alpha.
+
+    Raises RuntimeError if the output is not VP9 or lacks yuva420p pixel format.
+    This prevents silently storing opaque videos that break lineup compositing.
+    """
+    import json as _json
+
+    try:
+        result = subprocess.run(
+            [
+                ffprobe,
+                "-v",
+                "error",
+                "-select_streams",
+                "v:0",
+                "-show_entries",
+                "stream=codec_name,pix_fmt",
+                "-of",
+                "json",
+                str(output_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        info = _json.loads(result.stdout)
+        streams = info.get("streams", [])
+        if not streams:
+            logger.error("rvm_validate_fail reason=no_video_stream output=%s", output_path)
+            raise RuntimeError(f"RVM output has no video stream: {output_path}")
+
+        codec = streams[0].get("codec_name", "")
+        pix_fmt = streams[0].get("pix_fmt", "")
+        logger.info(
+            "rvm_validate output=%s codec=%s pix_fmt=%s",
+            output_path.name,
+            codec,
+            pix_fmt,
+        )
+
+        if codec != "vp9":
+            raise RuntimeError(
+                f"RVM output codec is '{codec}', expected 'vp9'. "
+                f"This means the encoder used the wrong codec (libvpx instead of libvpx-vp9)."
+            )
+        if "yuva" not in pix_fmt:
+            raise RuntimeError(
+                f"RVM output pix_fmt is '{pix_fmt}', expected 'yuva420p' or similar with alpha. "
+                f"The output has no alpha channel — lineup compositing will fail."
+            )
+    except (subprocess.TimeoutExpired, _json.JSONDecodeError) as exc:
+        logger.warning("rvm_validate_skip reason=%s output=%s", type(exc).__name__, output_path)
+        # Don't block pipeline on validation timeout; the output may still be usable.
 
 
 def is_rvm_available() -> bool:
