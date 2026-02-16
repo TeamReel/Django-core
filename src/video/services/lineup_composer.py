@@ -581,7 +581,16 @@ def _compose_phase(
 
     # ── Part 1: Fullbody slide-up (3 s) ──
     part1 = tmp_dir / f"phase_{phase_idx}_1_full.mp4"
-    cmd1 = ["ffmpeg", "-y"] + input_args
+    cmd1 = [
+        "ffmpeg",
+        "-y",
+        "-threads",
+        "1",
+        "-filter_threads",
+        "1",
+        "-filter_complex_threads",
+        "1",
+    ] + input_args
     f1 = base_filter
 
     actual_inp1 = base_cnt
@@ -629,7 +638,16 @@ def _compose_phase(
 
     # ── Part 2: Intros (variable) ──
     part2 = tmp_dir / f"phase_{phase_idx}_2_intro.mp4"
-    cmd2 = ["ffmpeg", "-y"] + input_args
+    cmd2 = [
+        "ffmpeg",
+        "-y",
+        "-threads",
+        "1",
+        "-filter_threads",
+        "1",
+        "-filter_complex_threads",
+        "1",
+    ] + input_args
     f2 = base_filter
 
     actual_inp2 = base_cnt
@@ -686,7 +704,16 @@ def _compose_phase(
 
     # ── Part 3: Transition fullbody→closeup (1 s) ──
     part3 = tmp_dir / f"phase_{phase_idx}_3_trans.mp4"
-    cmd3 = ["ffmpeg", "-y"] + input_args
+    cmd3 = [
+        "ffmpeg",
+        "-y",
+        "-threads",
+        "1",
+        "-filter_threads",
+        "1",
+        "-filter_complex_threads",
+        "1",
+    ] + input_args
     f3 = base_filter
     trans_dur = 1.0
     cutoff_h = int(circle_size * BADGE_CUT_FRACTION)
@@ -885,6 +912,12 @@ def _compose_hold(
     cmd = [
         "ffmpeg",
         "-y",
+        "-threads",
+        "1",
+        "-filter_threads",
+        "1",
+        "-filter_complex_threads",
+        "1",
         "-loop",
         "1",
         "-i",
@@ -1252,6 +1285,8 @@ def compose_lineup_video(
         [
             "ffmpeg",
             "-y",
+            "-threads",
+            "1",
             "-f",
             "concat",
             "-safe",
