@@ -459,18 +459,26 @@ def _download_player_assets(
 # ─────────────────────────────────────────────────────────────────
 
 
-def _run_ffmpeg(cmd: list[str], desc: str) -> bool:
+def _run_ffmpeg(cmd: list[str], desc: str) -> None:
+    """Run FFmpeg and raise on failure.
+
+    We intentionally *do not* swallow FFmpeg failures. The lineup pipeline is strict:
+    missing/bad inputs should fail fast with an actionable error.
+    """
+
     logger.info("FFmpeg: %s", desc)
     try:
         subprocess.run(cmd, check=True, capture_output=True, timeout=300)
-        return True
     except subprocess.CalledProcessError as e:
         stderr = e.stderr.decode(errors="replace") if e.stderr else ""
-        logger.error("FFmpeg failed (%s): %s", desc, stderr[-4000:])
-        return False
-    except subprocess.TimeoutExpired:
+        tail = stderr[-2000:] if stderr else ""
+        logger.error("FFmpeg failed (%s): %s", desc, tail)
+        raise RuntimeError(
+            f"FFmpeg failed during {desc}. " f"Return code: {e.returncode}. " f"Stderr tail: {tail}"
+        ) from e
+    except subprocess.TimeoutExpired as e:
         logger.error("FFmpeg timed out (%s)", desc)
-        return False
+        raise RuntimeError(f"FFmpeg timed out during {desc}.") from e
 
 
 def _compose_phase(
@@ -617,8 +625,7 @@ def _compose_phase(
         "veryfast",
         str(part1),
     ]
-    if not _run_ffmpeg(cmd1, f"Phase {phase_idx} Part 1 (Fullbody)"):
-        return None
+    _run_ffmpeg(cmd1, f"Phase {phase_idx} Part 1 (Fullbody)")
 
     # ── Part 2: Intros (variable) ──
     part2 = tmp_dir / f"phase_{phase_idx}_2_intro.mp4"
@@ -672,8 +679,7 @@ def _compose_phase(
         "veryfast",
         str(part2),
     ]
-    if not _run_ffmpeg(cmd2, f"Phase {phase_idx} Part 2 (Intro)"):
-        return None
+    _run_ffmpeg(cmd2, f"Phase {phase_idx} Part 2 (Intro)")
 
     if is_coach:
         return [part1, part2]
@@ -823,8 +829,7 @@ def _compose_phase(
         "veryfast",
         str(part3),
     ]
-    if not _run_ffmpeg(cmd3, f"Phase {phase_idx} Part 3 (Transition)"):
-        return None
+    _run_ffmpeg(cmd3, f"Phase {phase_idx} Part 3 (Transition)")
 
     return [part1, part2, part3]
 
@@ -933,9 +938,8 @@ def _compose_hold(
         "veryfast",
         str(hold_out),
     ]
-    if _run_ffmpeg(cmd, "Hold Frame"):
-        return hold_out
-    return None
+    _run_ffmpeg(cmd, "Hold Frame")
+    return hold_out
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -1244,7 +1248,7 @@ def compose_lineup_video(
             f.write(f"file '{seg.absolute()}'\n")
 
     output_file = output_dir / "lineup_video.mp4"
-    concat_ok = _run_ffmpeg(
+    _run_ffmpeg(
         [
             "ffmpeg",
             "-y",
@@ -1261,8 +1265,6 @@ def compose_lineup_video(
         ],
         "Final Concat",
     )
-    if not concat_ok:
-        raise RuntimeError("FFmpeg concat failed.")
 
     if progress_callback:
         progress_callback(95)
