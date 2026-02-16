@@ -48,15 +48,22 @@ def _get_ffmpeg_path() -> str:
     """Find FFmpeg binary.
 
     Priority order:
-    1. /usr/local/bin/ffmpeg — static build with VP9 alpha support (from Dockerfile)
+    1. /usr/local/ffmpeg/bin/ffmpeg — bundled build (from Dockerfile)
+    2. /usr/local/bin/ffmpeg — legacy static location (from Dockerfile)
     2. imageio-ffmpeg — pip-installed static binary
     3. System ffmpeg — Debian apt (may lack VP9 alpha)
     """
-    # 1. Static build installed by Dockerfile (guaranteed VP9 alpha)
-    static_path = Path("/usr/local/bin/ffmpeg")
-    if static_path.exists():
-        logger.info("ffmpeg_path_selected source=static path=%s", static_path)
-        return str(static_path)
+    # 1. Bundled build installed by Dockerfile
+    bundled_path = Path("/usr/local/ffmpeg/bin/ffmpeg")
+    if bundled_path.exists():
+        logger.info("ffmpeg_path_selected source=bundled path=%s", bundled_path)
+        return str(bundled_path)
+
+    # 2. Legacy static location (older images)
+    legacy_static_path = Path("/usr/local/bin/ffmpeg")
+    if legacy_static_path.exists():
+        logger.info("ffmpeg_path_selected source=static path=%s", legacy_static_path)
+        return str(legacy_static_path)
     # 2. imageio-ffmpeg static binary
     try:
         import imageio_ffmpeg
@@ -78,11 +85,17 @@ def _get_ffmpeg_path() -> str:
 
 def _get_ffprobe_path() -> str:
     """Find ffprobe binary."""
-    # 1. Static build installed by Dockerfile
-    static_path = Path("/usr/local/bin/ffprobe")
-    if static_path.exists():
-        logger.info("ffprobe_path_selected source=static path=%s", static_path)
-        return str(static_path)
+    # 1. Bundled build installed by Dockerfile
+    bundled_path = Path("/usr/local/ffmpeg/bin/ffprobe")
+    if bundled_path.exists():
+        logger.info("ffprobe_path_selected source=bundled path=%s", bundled_path)
+        return str(bundled_path)
+
+    # 2. Legacy static location (older images)
+    legacy_static_path = Path("/usr/local/bin/ffprobe")
+    if legacy_static_path.exists():
+        logger.info("ffprobe_path_selected source=static path=%s", legacy_static_path)
+        return str(legacy_static_path)
 
     # 2. Next to the selected ffmpeg (common for static bundles)
     ffmpeg = _get_ffmpeg_path()

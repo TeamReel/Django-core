@@ -48,21 +48,23 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Install runtime system dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
-    ffmpeg \
     libgomp1 \
     curl \
     xz-utils \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Install static FFmpeg with full VP9 alpha support.
-# The Debian apt FFmpeg does NOT support VP9 alpha encoding (yuva420p is
-# silently downgraded to yuv420p). The John Van Sickle static build includes
-# libvpx compiled with alpha channel support.
-# Place in /usr/local/bin/ so it takes priority over /usr/bin/ffmpeg.
-RUN curl -sL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz \
-    | tar -xJ --strip-components=1 -C /usr/local/bin/ --wildcards '*/ffmpeg' '*/ffprobe' \
-    && chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe \
-    && /usr/local/bin/ffmpeg -version | head -1
+# Install a known-good FFmpeg bundle.
+# NOTE: Debian apt FFmpeg frequently cannot encode VP9 alpha (yuva420p).
+# We use BtbN's Linux x86_64 builds and keep them in /usr/local/ffmpeg so
+# any bundled libs can be resolved via $ORIGIN.
+RUN mkdir -p /usr/local/ffmpeg \
+    && curl -sSL -o /tmp/ffmpeg.tar.xz \
+        https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linux64-lgpl-7.1.tar.xz \
+    && tar -xJf /tmp/ffmpeg.tar.xz -C /usr/local/ffmpeg --strip-components=1 \
+    && rm -f /tmp/ffmpeg.tar.xz \
+    && /usr/local/ffmpeg/bin/ffmpeg -version | head -1 \
+    && /usr/local/ffmpeg/bin/ffprobe -version | head -1
 
 # Create non-root user for security (B03 alignment)
 # -m creates a home dir (needed by rembg/pooch to cache U2-Net model in ~/.u2net)
