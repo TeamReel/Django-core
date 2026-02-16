@@ -338,7 +338,7 @@ def process_video_rvm(
         output_path: Path for output video with alpha
         downsample_ratio: RVM inference resolution ratio (0.25-1.0, lower=faster)
         portrait: If True, crop to 9:16 portrait before matting
-        output_format: "webm" (VP9+alpha) or "mov" (QuickTime Animation+alpha)
+        output_format: "webm" (VP9+alpha) or "mov" (ProRes 4444+alpha)
         model_name: RVM backbone ("mobilenetv3" or "resnet50")
         target_width: Target output width (when portrait=True)
         target_height: Target output height (when portrait=True)
@@ -394,7 +394,7 @@ def process_video_rvm(
             ffmpeg,
             "-y",
             "-v",
-            "quiet",
+            "warning",
             "-f",
             "rawvideo",
             "-pix_fmt",
@@ -406,9 +406,13 @@ def process_video_rvm(
             "-i",
             "-",
             "-c:v",
-            "qtrle",
+            "prores_ks",
+            "-profile:v",
+            "4",
             "-pix_fmt",
-            "argb",
+            "yuva444p10le",
+            "-movflags",
+            "+faststart",
             str(output_path),
         ]
     else:

@@ -366,23 +366,48 @@ class AssetProcessor:
         """
         from src.video.services.rvm_processor import RVMProcessingCancelled, process_video_rvm
 
+        # Prefer WebM VP9+alpha for size/perf, but some FFmpeg builds cannot encode VP9 alpha.
+        # In that case, fall back to MOV ProRes 4444 which reliably carries alpha.
         output_path = input_path.parent / "output_rvm.webm"
+        output_format = "webm"
 
         # Portrait mode for intro/celebration (9:16)
         portrait = spec.height > spec.width
 
         t_proc = time.monotonic()
         try:
-            metrics = process_video_rvm(
-                input_path=input_path,
-                output_path=output_path,
-                downsample_ratio=0.40,
-                portrait=portrait,
-                output_format="webm",
-                target_width=spec.width,
-                target_height=spec.height,
-                should_cancel=should_cancel,
-            )
+            try:
+                metrics = process_video_rvm(
+                    input_path=input_path,
+                    output_path=output_path,
+                    downsample_ratio=0.40,
+                    portrait=portrait,
+                    output_format=output_format,
+                    target_width=spec.width,
+                    target_height=spec.height,
+                    should_cancel=should_cancel,
+                )
+            except RuntimeError as exc:
+                message = str(exc)
+                if "VP9-alpha preflight failed" not in message:
+                    raise
+
+                logger.warning(
+                    "asset_processing_rvm_vp9_alpha_unsupported fallback=mov reason=%s",
+                    message[:300],
+                )
+                output_format = "mov"
+                output_path = input_path.parent / "output_rvm.mov"
+                metrics = process_video_rvm(
+                    input_path=input_path,
+                    output_path=output_path,
+                    downsample_ratio=0.40,
+                    portrait=portrait,
+                    output_format=output_format,
+                    target_width=spec.width,
+                    target_height=spec.height,
+                    should_cancel=should_cancel,
+                )
         except RVMProcessingCancelled as exc:
             raise AssetProcessingCancelled() from exc
 
@@ -412,17 +437,20 @@ class AssetProcessor:
 
         # Upload processed version
         variant_suffix = f"_{variant_id}" if variant_id else ""
+
+        ext = ".mov" if output_format == "mov" else ".webm"
         storage_path = (
             f"members/{membership_id}/processed/{asset_type}/"
-            f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.webm"
+            f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}{ext}"
         )
 
         t_up = time.monotonic()
         with open(output_path, "rb") as f:
             saved_path = storage_backend.save(storage_path, f)
         logger.info(
-            "asset_processing_upload_done type=%s format=webm backend=rvm in=%.3fs storage_path=%s",
+            "asset_processing_upload_done type=%s format=%s backend=rvm in=%.3fs storage_path=%s",
             asset_type,
+            output_format,
             time.monotonic() - t_up,
             storage_path,
         )
@@ -430,9 +458,9 @@ class AssetProcessor:
         actual_specs = {
             "width": spec.width,
             "height": spec.height,
-            "format": "webm",
+            "format": output_format,
             "fps": metrics.get("fps", spec.fps),
-            "codec": "vp9",
+            "codec": "prores" if output_format == "mov" else "vp9",
             "bg_removed": True,
             "bg_removal_backend": "rvm",
             "duration": None,
