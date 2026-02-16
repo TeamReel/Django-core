@@ -50,7 +50,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     ffmpeg \
     libgomp1 \
+    curl \
+    xz-utils \
     && rm -rf /var/lib/apt/lists/*
+
+# Install static FFmpeg with full VP9 alpha support.
+# The Debian apt FFmpeg does NOT support VP9 alpha encoding (yuva420p is
+# silently downgraded to yuv420p). The John Van Sickle static build includes
+# libvpx compiled with alpha channel support.
+# Place in /usr/local/bin/ so it takes priority over /usr/bin/ffmpeg.
+RUN curl -sL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz \
+    | tar -xJ --strip-components=1 -C /usr/local/bin/ --wildcards '*/ffmpeg' '*/ffprobe' \
+    && chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe \
+    && /usr/local/bin/ffmpeg -version | head -1
 
 # Create non-root user for security (B03 alignment)
 # -m creates a home dir (needed by rembg/pooch to cache U2-Net model in ~/.u2net)

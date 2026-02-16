@@ -47,23 +47,32 @@ class RVMProcessingCancelled(Exception):
 def _get_ffmpeg_path() -> str:
     """Find FFmpeg binary.
 
-    Prefers imageio-ffmpeg's static binary over the system FFmpeg because
-    the Debian apt FFmpeg does NOT support VP9 alpha encoding (yuva420p),
-    which is critical for RVM processed intros with transparency.
+    Priority order:
+    1. /usr/local/bin/ffmpeg — static build with VP9 alpha support (from Dockerfile)
+    2. imageio-ffmpeg — pip-installed static binary
+    3. System ffmpeg — Debian apt (may lack VP9 alpha)
     """
-    # 1. imageio-ffmpeg ships a static binary with full VP9 alpha support
+    # 1. Static build installed by Dockerfile (guaranteed VP9 alpha)
+    static_path = Path("/usr/local/bin/ffmpeg")
+    if static_path.exists():
+        logger.info("ffmpeg_path_selected source=static path=%s", static_path)
+        return str(static_path)
+    # 2. imageio-ffmpeg static binary
     try:
         import imageio_ffmpeg
 
         path = imageio_ffmpeg.get_ffmpeg_exe()
         if path:
+            logger.info("ffmpeg_path_selected source=imageio-ffmpeg path=%s", path)
             return path
-    except Exception:  # noqa: BLE001
-        pass
-    # 2. System ffmpeg (may lack VP9 alpha on Debian)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("ffmpeg_imageio_import_failed error=%s", exc)
+    # 3. System ffmpeg (may lack VP9 alpha on Debian)
     path = shutil.which("ffmpeg")
     if path:
+        logger.info("ffmpeg_path_selected source=system path=%s", path)
         return path
+    logger.warning("ffmpeg_path_selected source=fallback path=ffmpeg")
     return "ffmpeg"
 
 
@@ -82,6 +91,135 @@ def _get_ffprobe_path() -> str:
         if probe.exists():
             return str(probe)
     return "ffprobe"
+
+
+def _log_ffmpeg_version(ffmpeg: str) -> None:
+    """Log FFmpeg version and libvpx support for debugging."""
+    try:
+        result = subprocess.run(
+            [ffmpeg, "-version"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        lines = result.stdout.strip().split("\n")
+        version_line = lines[0] if lines else "unknown"
+        # Check for libvpx support
+        has_libvpx = "libvpx" in result.stdout.lower()
+        logger.info(
+            "ffmpeg_version binary=%s version=%s has_libvpx=%s",
+            ffmpeg,
+            version_line,
+            has_libvpx,
+        )
+        # Log the configuration line (contains --enable-libvpx etc.)
+        config_lines = [line for line in lines if "configuration:" in line.lower()]
+        if config_lines:
+            logger.info("ffmpeg_config %s", config_lines[0][:500])
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("ffmpeg_version_check_failed error=%s", exc)
+
+
+def _preflight_vp9_alpha(ffmpeg: str) -> bool:
+    """Quick pre-flight test: can this FFmpeg encode VP9 with alpha?
+
+    Encodes a single 8x8 RGBA frame to WebM VP9 and checks the output.
+    Returns True if the output has alpha (yuva420p), False otherwise.
+    """
+    import json as _json
+    import tempfile
+
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tmp:
+            tmp_path = tmp.name
+
+        # Generate a single 8x8 RGBA frame (32 bytes per pixel row × 8 rows × 4 channels)
+        frame_data = bytes([255, 0, 0, 128] * 64)  # 8×8 red semi-transparent
+
+        cmd = [
+            ffmpeg,
+            "-y",
+            "-v",
+            "warning",
+            "-f",
+            "rawvideo",
+            "-pix_fmt",
+            "rgba",
+            "-s",
+            "8x8",
+            "-r",
+            "1",
+            "-i",
+            "-",
+            "-frames:v",
+            "1",
+            "-c:v",
+            "libvpx-vp9",
+            "-pix_fmt",
+            "yuva420p",
+            "-auto-alt-ref",
+            "0",
+            tmp_path,
+        ]
+        proc = subprocess.run(
+            cmd,
+            input=frame_data,
+            capture_output=True,
+            timeout=15,
+        )
+        logger.info(
+            "preflight_vp9_alpha_encode rc=%d stderr=%s",
+            proc.returncode,
+            proc.stderr.decode(errors="replace")[:500],
+        )
+
+        if proc.returncode != 0:
+            return False
+
+        # Check output pix_fmt
+        ffprobe = _get_ffprobe_path()
+        probe_result = subprocess.run(
+            [
+                ffprobe,
+                "-v",
+                "error",
+                "-select_streams",
+                "v:0",
+                "-show_entries",
+                "stream=pix_fmt",
+                "-of",
+                "json",
+                tmp_path,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        info = _json.loads(probe_result.stdout)
+        pix_fmt = info.get("streams", [{}])[0].get("pix_fmt", "")
+        has_alpha = pix_fmt in {
+            "yuva420p",
+            "yuva422p",
+            "yuva444p",
+            "yuva420p10le",
+            "yuva422p10le",
+            "yuva444p10le",
+        }
+        logger.info(
+            "preflight_vp9_alpha_result pix_fmt=%s has_alpha=%s binary=%s",
+            pix_fmt,
+            has_alpha,
+            ffmpeg,
+        )
+        return has_alpha
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("preflight_vp9_alpha_error error=%s", exc)
+        return False
+    finally:
+        try:
+            Path(tmp_path).unlink(missing_ok=True)
+        except Exception:  # noqa: BLE001
+            pass
 
 
 def load_rvm_model(model_name: str = "mobilenetv3") -> tuple[Any, Any]:
@@ -254,7 +392,7 @@ def process_video_rvm(
             ffmpeg,
             "-y",
             "-v",
-            "quiet",
+            "warning",
             "-f",
             "rawvideo",
             "-pix_fmt",
@@ -286,8 +424,21 @@ def process_video_rvm(
             str(output_path),
         ]
 
-    logger.info("rvm_ffmpeg_read_cmd cmd=%s", read_cmd)
-    logger.info("rvm_ffmpeg_write_cmd cmd=%s", write_cmd)
+    logger.info("rvm_ffmpeg_read_cmd cmd=%s", " ".join(str(c) for c in read_cmd))
+    logger.info("rvm_ffmpeg_write_cmd cmd=%s", " ".join(str(c) for c in write_cmd))
+
+    # Log FFmpeg binary details for debugging VP9 alpha issues
+    _log_ffmpeg_version(ffmpeg)
+
+    # Pre-flight: can this FFmpeg actually encode VP9 with alpha?
+    if output_format == "webm":
+        alpha_ok = _preflight_vp9_alpha(ffmpeg)
+        if not alpha_ok:
+            logger.error(
+                "PREFLIGHT_FAIL: FFmpeg binary at %s does NOT support VP9 alpha (yuva420p). "
+                "Output will be opaque. Consider installing a static FFmpeg build with VP9 alpha support.",
+                ffmpeg,
+            )
 
     logger.info(
         "RVM processing: %s → %s (%dx%d @ %.1ffps, downsample=%.2f)",
@@ -300,7 +451,7 @@ def process_video_rvm(
     )
 
     reader = subprocess.Popen(read_cmd, stdout=subprocess.PIPE)
-    writer = subprocess.Popen(write_cmd, stdin=subprocess.PIPE)
+    writer = subprocess.Popen(write_cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
 
     frame_count = 0
     frame_times: list[float] = []
@@ -387,7 +538,7 @@ def process_video_rvm(
         if writer.stdin and not writer.stdin.closed:
             writer.stdin.close()
         try:
-            writer.wait(timeout=5)
+            writer.wait(timeout=30)
         except Exception:  # noqa: BLE001
             try:
                 writer.kill()
@@ -400,6 +551,16 @@ def process_video_rvm(
                 reader.kill()
             except Exception:  # noqa: BLE001
                 pass
+
+        # Capture and log FFmpeg writer stderr for debugging
+        writer_stderr = ""
+        if writer.stderr:
+            try:
+                writer_stderr = writer.stderr.read().decode(errors="replace")
+            except Exception:  # noqa: BLE001
+                pass
+        if writer_stderr:
+            logger.info("rvm_ffmpeg_writer_stderr: %s", writer_stderr[:2000])
 
         logger.info(
             "rvm_ffmpeg_exit reader_rc=%s writer_rc=%s",
