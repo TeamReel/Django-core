@@ -1077,9 +1077,17 @@ class LineupSegmentBuilder:
             position = meta.get("position", "")
             jersey_number = meta.get("shirt_number") or meta.get("jersey_number")
 
-            # Determine kit type from functional role (goalkeeper → "goalkeeper", else → "home")
+            # Determine kit type: frontend role assignment takes precedence over metadata.
+            # The frontend explicitly tells us who is a GK via gk_ids — use that to
+            # look up goalkeeper-variant assets (images.fullbody.goalkeeper, etc.).
+            pm_id_str = str(pm.id)
             fr_lower = (functional_role or "").lower()
-            kit_type = "goalkeeper" if fr_lower in ("keeper", "doelman") else "home"
+            if pm_id_str in gk_ids:
+                kit_type = "goalkeeper"
+            elif fr_lower in ("keeper", "doelman"):
+                kit_type = "goalkeeper"
+            else:
+                kit_type = "home"
 
             # Kit (fullbody) — images.fullbody.{kit_type} → images.fullbody.home → media.kit
             fullbody_dict = images.get("fullbody", {}) or {}
@@ -1116,7 +1124,8 @@ class LineupSegmentBuilder:
 
             # Diagnostic logging for asset resolution
             self._debug_trace.append(
-                f"PM {pm.id} ({name}): kit={bool(kit_url)} intro={bool(intro_url)} closeup={bool(closeup_url)}"
+                f"PM {pm.id} ({name}): kit_type={kit_type} "
+                f"kit={bool(kit_url)} intro={bool(intro_url)} closeup={bool(closeup_url)}"
             )
             if not kit_url and not closeup_url:
                 logger.warning(
@@ -1138,8 +1147,6 @@ class LineupSegmentBuilder:
                 x=50,  # Default center, will be spread per line
                 y=50,
             )
-
-            pm_id_str = str(pm.id)
 
             # If frontend told us this is a GK, use that
             if pm_id_str in gk_ids:
