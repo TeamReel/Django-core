@@ -533,7 +533,13 @@ def _download_player_assets(
                 )
 
         if p.intro_url:
-            ext = ".webm" if ".webm" in p.intro_url.lower() else ".mp4"
+            intro_lower = p.intro_url.lower()
+            if ".mov" in intro_lower:
+                ext = ".mov"
+            elif ".webm" in intro_lower:
+                ext = ".webm"
+            else:
+                ext = ".mp4"
             dest = asset_dir / f"{prefix}_intro{ext}"
             if _download_file(p.intro_url, dest):
                 intro = dest

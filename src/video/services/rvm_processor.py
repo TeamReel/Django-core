@@ -402,9 +402,9 @@ def process_video_rvm(
     avg_time = total_time / max(frame_count, 1)
     avg_stability = float(np.mean(mask_diffs)) if mask_diffs else 0.0
 
-    # ── Output validation: ensure the file is actually VP9 with alpha ──
-    if output_format == "webm" and output_path.exists():
-        _validate_rvm_output(output_path, ffprobe)
+    # ── Output validation: ensure the file actually has alpha ──
+    if output_path.exists():
+        _validate_rvm_output(output_path, ffprobe, output_format)
 
     logger.info(
         "rvm_done frames=%d total_time_s=%.2f avg_ms_per_frame=%.1f stability=%.2f out_w=%d out_h=%d fps=%.3f format=%s",
@@ -430,13 +430,38 @@ def process_video_rvm(
     }
 
 
-def _validate_rvm_output(output_path: Path, ffprobe: str) -> None:
-    """Validate that the RVM output file is VP9 with alpha.
+def _validate_rvm_output(output_path: Path, ffprobe: str, output_format: str) -> None:
+    """Validate that the RVM output file has an alpha channel.
 
-    Raises RuntimeError if the output is not VP9 or lacks yuva420p pixel format.
+    For WebM: expects VP9 + yuva420p.
+    For MOV: expects qtrle + argb (or any pix_fmt with alpha).
+
+    Raises RuntimeError if validation fails.
     This prevents silently storing opaque videos that break lineup compositing.
     """
     import json as _json
+
+    # Pixel formats that carry alpha channel
+    _ALPHA_PIX_FMTS = {
+        "argb",
+        "rgba",
+        "bgra",
+        "abgr",
+        "yuva420p",
+        "yuva422p",
+        "yuva444p",
+        "yuva420p10le",
+        "yuva422p10le",
+        "yuva444p10le",
+        "gbrap",
+        "gbrap10le",
+        "gbrap12le",
+        "gbrap16le",
+        "rgba64le",
+        "rgba64be",
+        "ya8",
+        "ya16le",
+    }
 
     try:
         result = subprocess.run(
@@ -465,21 +490,18 @@ def _validate_rvm_output(output_path: Path, ffprobe: str) -> None:
         codec = streams[0].get("codec_name", "")
         pix_fmt = streams[0].get("pix_fmt", "")
         logger.info(
-            "rvm_validate output=%s codec=%s pix_fmt=%s",
+            "rvm_validate output=%s codec=%s pix_fmt=%s format=%s",
             output_path.name,
             codec,
             pix_fmt,
+            output_format,
         )
 
-        if codec != "vp9":
+        if pix_fmt not in _ALPHA_PIX_FMTS:
             raise RuntimeError(
-                f"RVM output codec is '{codec}', expected 'vp9'. "
-                f"This means the encoder used the wrong codec (libvpx instead of libvpx-vp9)."
-            )
-        if "yuva" not in pix_fmt:
-            raise RuntimeError(
-                f"RVM output pix_fmt is '{pix_fmt}', expected 'yuva420p' or similar with alpha. "
-                f"The output has no alpha channel — lineup compositing will fail."
+                f"RVM output pix_fmt is '{pix_fmt}', expected a format with alpha "
+                f"(e.g. argb, yuva420p). The output has no alpha channel — "
+                f"lineup compositing will fail."
             )
     except (subprocess.TimeoutExpired, _json.JSONDecodeError) as exc:
         logger.warning("rvm_validate_skip reason=%s output=%s", type(exc).__name__, output_path)
