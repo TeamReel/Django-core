@@ -692,7 +692,8 @@ def _compose_phase(
         )
         last_bg = name_bg
 
-    fc.append(f"[{last_bg}]null[bg]")
+    # Ensure RGBA base so alpha-bearing overlays (intro WebM) composite correctly.
+    fc.append(f"[{last_bg}]format=rgba[bg]")
     base_filter = ";".join(fc) + ";"
     base_cnt = persist_start + len(persistent_players)
     is_coach = role == "coach"
@@ -779,7 +780,8 @@ def _compose_phase(
             inp = actual_inp2
             actual_inp2 += 1
             cmd2 += ["-i", str(p.intro)]
-            f2 += f"[{inp}:v]scale=-1:{fh}[act{i}];"
+            # Intro videos can be VP9 WebM with alpha — keep alpha through the chain.
+            f2 += f"[{inp}:v]scale=-1:{fh},format=rgba[act{i}];"
             f2 += f"[bg][act{i}]overlay=(W*{active_xs[i]}-w/2):{oy}:eof_action=pass[bg_tmp{i}];"
         else:
             path = p.fullbody or p.closeup
@@ -791,7 +793,7 @@ def _compose_phase(
             inp = actual_inp2
             actual_inp2 += 1
             cmd2 += ["-loop", "1", "-i", str(path)]
-            f2 += f"[{inp}:v]scale=-1:{fh}[act{i}];"
+            f2 += f"[{inp}:v]scale=-1:{fh},format=rgba[act{i}];"
             f2 += f"[bg][act{i}]overlay=(W*{active_xs[i]}-w/2):{oy}[bg_tmp{i}];"
 
         lbl = fullbody_label(p.name, role, len(active_players))
