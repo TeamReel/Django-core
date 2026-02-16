@@ -6,8 +6,8 @@ from "raw" (AI-generated / uploaded) to "lineup-ready" (standardized).
 Asset Types:
   fullbody  — Full body in tenue (PNG, 1080×1920, transparent bg)
   closeup   — Close-up portrait (PNG, 512×512, transparent bg)
-  intro     — Short intro video (WebM VP9, 1080×1920, 30fps, transparent bg via RVM)
-  celebration — Celebration video (WebM VP9, 1080×1920, 30fps, transparent bg via RVM)
+  intro     — Short intro video (WebM VP9, 540×960, 25fps, transparent bg via RVM)
+  celebration — Celebration video (WebM VP9, 540×960, 25fps, transparent bg via RVM)
 
 Variant Value Structure:
   Old: images.fullbody.home = "s3://path/to/image.png"
@@ -104,10 +104,10 @@ CLOSEUP_SPEC = ImageSpec(
 )
 
 INTRO_SPEC = VideoSpec(
-    width=1080,
-    height=1920,
+    width=540,
+    height=960,
     format="webm",
-    fps=30,
+    fps=25,
     codec="vp9",
     bg_removed=True,
     max_duration=None,
@@ -115,10 +115,10 @@ INTRO_SPEC = VideoSpec(
 )
 
 CELEBRATION_SPEC = VideoSpec(
-    width=1080,
-    height=1920,
+    width=540,
+    height=960,
     format="webm",
-    fps=30,
+    fps=25,
     codec="vp9",
     bg_removed=True,
     max_duration=None,
