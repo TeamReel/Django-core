@@ -379,6 +379,114 @@ def _badge_filter(
     return name_bg
 
 
+def _render_badge_body_png(
+    src_path: Path,
+    mask_path: Path,
+    border_path: Path,
+    out_path: Path,
+    circle_size: int,
+    popout: bool = True,
+) -> None:
+    """Render a badge *body* (no name label) to a transparent PNG.
+
+    This is an optimisation: the full badge mask pipeline is expensive. We render
+    it once per player closeup and then just overlay the PNG in phase filters.
+    """
+
+    cutoff_h = int(circle_size * BADGE_CUT_FRACTION)
+    visible_h = circle_size - cutoff_h
+    shift = BADGE_SHIFT_PX
+    total_h = circle_size + shift
+    zoom = BADGE_ZOOM_POPOUT if popout else BADGE_ZOOM_INSIDE
+    body_off = BADGE_BODY_OFFSET_POPOUT if popout else BADGE_BODY_OFFSET_INSIDE
+    sw = int(circle_size * zoom)
+
+    # Inputs: 0=mask, 1=border, 2=player closeup
+    filters: list[str] = []
+    filters.append(f"[0:v]scale={circle_size}:{circle_size},format=gray,setsar=1[mb]")
+    filters.append(f"[mb]crop={circle_size}:{visible_h}:0:0,format=gray[mc]")
+    filters.append(f"color=c=black:s={circle_size}x{circle_size},format=gray[mcv]")
+    filters.append("[mcv][mc]overlay=0:0,format=gray[mf]")
+    filters.append("[mf]split=2[ma][mff]")
+
+    filters.append(f"[1:v]scale={circle_size}:{circle_size},format=rgba,setsar=1[bb]")
+    filters.append(f"[bb]crop={circle_size}:{visible_h}:0:0,format=rgba[bc]")
+    filters.append(f"color=c=black@0:s={circle_size}x{circle_size},format=rgba[bcv]")
+    filters.append("[bcv][bc]overlay=0:0,format=rgba[bf]")
+
+    filters.append(
+        f"[2:v]scale={sw}:{sw}:force_original_aspect_ratio=increase," f"format=rgba,setsar=1[ps]"
+    )
+    filters.append(f"[ps]crop={circle_size}:{total_h}:(iw-ow)/2:0.0[psrc]")
+
+    if popout:
+        bcy = max(0, min(shift + body_off, total_h - circle_size))
+        popout_h = int(shift + circle_size * BADGE_HEAD_FRAC)
+        filters.append("[psrc]split=2[pbs][phs]")
+        filters.append(f"[pbs]crop={circle_size}:{circle_size}:0:{bcy}[pbr]")
+        filters.append(f"[phs]crop={circle_size}:{popout_h}:0:0[phc]")
+    else:
+        eff = shift + body_off
+        pad_top = max(0, int(-eff) + 40) if eff < 0 else 0
+        if pad_top > 0:
+            filters.append(f"[psrc]pad=iw:ih+{pad_top}:0:{pad_top}:color=black@0,format=rgba[pbs]")
+        else:
+            filters.append("[psrc]null[pbs]")
+        bcy = max(0, shift + body_off + pad_top)
+        filters.append(f"[pbs]crop={circle_size}:{circle_size}:0:{bcy}[pbr]")
+
+    filters.append("[pbr]split=2[prgb][paf]")
+    filters.append("[paf]alphaextract,format=gray[pa]")
+    filters.append("[pa][ma]blend=all_mode=multiply:all_opacity=1,format=gray[pam]")
+    filters.append("[prgb][pam]alphamerge[pmsk]")
+
+    filters.append(f"color=c={BADGE_FILL_COLOR}@1:s={circle_size}x{circle_size},format=rgba[fl]")
+    filters.append("[fl][mff]alphamerge[fls]")
+    filters.append("[fls][pmsk]overlay=0:0,format=rgba[pwf]")
+    filters.append("[pwf][bf]overlay=0:0,format=rgba[prd]")
+
+    filters.append(f"color=c=black@0:s={circle_size}x{total_h},format=rgba[cv]")
+    filters.append(f"[cv][prd]overlay=0:{shift},format=rgba[cvb]")
+
+    if popout:
+        filters.append("[cvb][phc]overlay=0:0,format=rgba[out]")
+    else:
+        filters.append("[cvb]copy,format=rgba[out]")
+
+    cmd = [
+        "ffmpeg",
+        "-y",
+        "-threads",
+        "1",
+        "-filter_threads",
+        "1",
+        "-filter_complex_threads",
+        "1",
+        "-loop",
+        "1",
+        "-i",
+        str(mask_path),
+        "-loop",
+        "1",
+        "-i",
+        str(border_path),
+        "-loop",
+        "1",
+        "-i",
+        str(src_path),
+        "-filter_complex",
+        ";".join(filters),
+        "-map",
+        "[out]",
+        "-frames:v",
+        "1",
+        "-pix_fmt",
+        "rgba",
+        str(out_path),
+    ]
+    _run_ffmpeg(cmd, f"Render badge body: {src_path.name}")
+
+
 # ─────────────────────────────────────────────────────────────────
 # Asset downloader
 # ─────────────────────────────────────────────────────────────────
@@ -526,7 +634,10 @@ def _compose_phase(
     persist_start = 5
 
     for pp in persistent_players:
-        input_args += ["-loop", "1", "-i", str(pp["path"])]
+        badge_path = pp.get("badge_body") or pp.get("path")
+        if not badge_path:
+            raise ValueError("Persistent player missing badge_body/path")
+        input_args += ["-loop", "1", "-i", str(badge_path)]
 
     # ── Base filter chain ──
     fc: list[str] = []
@@ -556,22 +667,30 @@ def _compose_phase(
     else:
         last_bg = "bg0"
 
-    # Persistent badges
+    # Persistent badges (pre-rendered body + cheap overlay + label)
+    cutoff_h = int(circle_size * BADGE_CUT_FRACTION)
+    label_w = circle_size + BADGE_LABEL_EXTRA_W
     for i, pp in enumerate(persistent_players):
         idx = persist_start + i
-        last_bg = _badge_filter(
-            fc,
-            f"persist{i}",
-            idx,
-            2,
-            3,
-            pp["x"],
-            pp["y"],
-            pp["name"],
-            last_bg,
-            circle_size,
-            popout,
+        next_bg = f"bg_persist_{i}"
+        fc.append(f"[{last_bg}][{idx}:v]overlay=(W*{pp['x']}-w/2):(H*{pp['y']}-h)[{next_bg}]")
+
+        lbl = closeup_label(pp["name"])
+        fs = min(BADGE_LABEL_FONTSIZE, closeup_fontsize(lbl))
+        lx = f"({WIDTH}*{pp['x']}-{label_w // 2})"
+        ly = f"({HEIGHT}*{pp['y']}-{cutoff_h}+{BADGE_LABEL_GAP})"
+        name_bg = f"bg_persist_n_{i}"
+        fc.append(
+            f"[{next_bg}]"
+            f"drawbox=x={lx}:y={ly}:w={label_w}:h={BADGE_LABEL_H}:"
+            f"color={BADGE_LABEL_BG}:t=fill,"
+            f"drawtext=fontfile='{FONT_PATH}':text='{lbl}':"
+            f"fontcolor={BADGE_LABEL_TEXT_COLOR}:fontsize={fs}:"
+            f"x={lx}+({label_w}-text_w)/2:"
+            f"y={ly}+({BADGE_LABEL_H}-text_h)/2"
+            f"[{name_bg}]"
         )
+        last_bg = name_bg
 
     fc.append(f"[{last_bg}]null[bg]")
     base_filter = ";".join(fc) + ";"
@@ -941,21 +1060,35 @@ def _compose_hold(
         cmd += ["-f", "lavfi", "-i", "color=c=black@0:s=1x1:r=1,format=rgba"]
 
     persist_start = 5
+    cutoff_h = int(circle_size * BADGE_CUT_FRACTION)
+    label_w = circle_size + BADGE_LABEL_EXTRA_W
+
     for i, pp in enumerate(persistent_players):
-        cmd += ["-loop", "1", "-i", str(pp["path"])]
-        last_bg = _badge_filter(
-            fc,
-            f"persist_hold_{i}",
-            persist_start + i,
-            2,
-            3,
-            pp["x"],
-            pp["y"],
-            pp["name"],
-            last_bg,
-            circle_size,
-            popout,
+        badge_path = pp.get("badge_body") or pp.get("path")
+        if not badge_path:
+            raise ValueError("Persistent player missing badge_body/path")
+        cmd += ["-loop", "1", "-i", str(badge_path)]
+
+        idx = persist_start + i
+        next_bg = f"bg_hold_persist_{i}"
+        fc.append(f"[{last_bg}][{idx}:v]overlay=(W*{pp['x']}-w/2):(H*{pp['y']}-h)[{next_bg}]")
+
+        lbl = closeup_label(pp["name"])
+        fs = min(BADGE_LABEL_FONTSIZE, closeup_fontsize(lbl))
+        lx = f"({WIDTH}*{pp['x']}-{label_w // 2})"
+        ly = f"({HEIGHT}*{pp['y']}-{cutoff_h}+{BADGE_LABEL_GAP})"
+        name_bg = f"bg_hold_persist_n_{i}"
+        fc.append(
+            f"[{next_bg}]"
+            f"drawbox=x={lx}:y={ly}:w={label_w}:h={BADGE_LABEL_H}:"
+            f"color={BADGE_LABEL_BG}:t=fill,"
+            f"drawtext=fontfile='{FONT_PATH}':text='{lbl}':"
+            f"fontcolor={BADGE_LABEL_TEXT_COLOR}:fontsize={fs}:"
+            f"x={lx}+({label_w}-text_w)/2:"
+            f"y={ly}+({BADGE_LABEL_H}-text_h)/2"
+            f"[{name_bg}]"
         )
+        last_bg = name_bg
 
     fc.append(f"[{last_bg}]format=yuv420p[out]")
     cmd += [
@@ -1073,6 +1206,9 @@ def compose_lineup_video(
     border_path = asset_dir / "circle_border.png"
     _generate_circle_mask(circle_size * 2, mask_path)
     _generate_circle_border(circle_size * 2, border_path)
+
+    badge_body_dir = asset_dir / "badge_bodies"
+    badge_body_dir.mkdir(exist_ok=True)
 
     if progress_callback:
         progress_callback(10)
@@ -1239,9 +1375,19 @@ def compose_lineup_video(
 
         for i, p in enumerate(group):
             if p.closeup:
+                badge_out = badge_body_dir / f"badge_{len(persistent_players):02d}.png"
+                _render_badge_body_png(
+                    src_path=p.closeup,
+                    mask_path=mask_path,
+                    border_path=border_path,
+                    out_path=badge_out,
+                    circle_size=circle_size,
+                    popout=popout,
+                )
                 persistent_players.append(
                     {
                         "path": p.closeup,
+                        "badge_body": badge_out,
                         "x": axs[i],
                         "y": cu_ys[i],
                         "name": p.name,
