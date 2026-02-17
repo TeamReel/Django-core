@@ -1042,7 +1042,13 @@ class LineupSegmentBuilder:
         gk_ids = {str(x) for x in self.selected_member_ids_by_role.get("goalkeeper", [])}
         player_ids = {str(x) for x in self.selected_member_ids_by_role.get("player", [])}
 
-        self._debug_trace.append(f"PM fallback: gk_ids={len(gk_ids)}, player_ids={len(player_ids)}")
+        # IMPORTANT: Exclude goalkeeper IDs from player_ids to avoid double-counting.
+        # The frontend may send a goalkeeper in both 'player' and 'goalkeeper' arrays.
+        player_ids = player_ids - gk_ids
+
+        self._debug_trace.append(
+            f"PM fallback: gk_ids={len(gk_ids)}, player_ids={len(player_ids)} (after dedup)"
+        )
 
         for idx, pm in enumerate(memberships):
             meta = pm.metadata or {}
