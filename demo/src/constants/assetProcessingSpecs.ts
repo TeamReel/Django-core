@@ -214,7 +214,7 @@ export function isProcessing(value: string | AssetVariantValue | null | undefine
 /**
  * Human-readable label for processing state.
  */
-export function getProcessingStateLabel(state: AssetProcessingState): { label: string; color: string; icon: string } {
+export function getProcessingStateLabel(state: AssetProcessingState | null | undefined): { label: string; color: string; icon: string } {
   switch (state) {
     case 'raw':
       return { label: 'Ruw', color: '#f59e0b', icon: '🔶' };
@@ -228,5 +228,8 @@ export function getProcessingStateLabel(state: AssetProcessingState): { label: s
       return { label: 'Lineup-ready', color: '#10b981', icon: '✅' };
     case 'failed':
       return { label: 'Fout', color: '#ef4444', icon: '❌' };
+    default:
+      // null/undefined means no processing state yet - treat as raw
+      return { label: 'Ruw', color: '#f59e0b', icon: '🔶' };
   }
 }
