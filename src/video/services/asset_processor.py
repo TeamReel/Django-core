@@ -519,7 +519,58 @@ class AssetProcessor:
             ffmpeg = _get_ffmpeg_path()
             ffprobe = _get_ffprobe_path()
 
+            # First, probe the input MOV to verify it's readable and get duration
+            input_probe_cmd = [
+                ffprobe,
+                "-v",
+                "error",
+                "-select_streams",
+                "v:0",
+                "-show_entries",
+                "format=duration:stream=nb_frames,codec_name,pix_fmt,width,height",
+                "-of",
+                "json",
+                str(mov_path),
+            ]
+            input_probe = subprocess.run(
+                input_probe_cmd, capture_output=True, timeout=30, check=False
+            )
+            input_duration: float | None = None
+            input_frames: int | None = None
+            if input_probe.returncode == 0:
+                try:
+                    idata = json.loads(input_probe.stdout.decode("utf-8", errors="replace"))
+                    dur_raw = (idata.get("format") or {}).get("duration")
+                    if dur_raw not in (None, "N/A", ""):
+                        input_duration = float(dur_raw)
+                    streams = idata.get("streams") or []
+                    if streams:
+                        fr = streams[0].get("nb_frames")
+                        if fr not in (None, "N/A", ""):
+                            input_frames = int(fr)
+                    logger.info(
+                        "mov_to_mp4_input_probe duration_s=%s frames=%s codec=%s pix_fmt=%s",
+                        input_duration,
+                        input_frames,
+                        streams[0].get("codec_name") if streams else None,
+                        streams[0].get("pix_fmt") if streams else None,
+                    )
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning(
+                        "mov_to_mp4_input_probe_failed rc=%d error=%s stdout=%s",
+                        input_probe.returncode,
+                        exc,
+                        input_probe.stdout.decode(errors="replace")[:200],
+                    )
+            else:
+                logger.warning(
+                    "mov_to_mp4_input_probe_error rc=%d stderr=%s",
+                    input_probe.returncode,
+                    input_probe.stderr.decode(errors="replace")[:300],
+                )
+
             t_transcode = time.monotonic()
+            # Simpler command: let FFmpeg auto-negotiate input, force yuv420p output
             cmd = [
                 ffmpeg,
                 "-y",
@@ -527,36 +578,42 @@ class AssetProcessor:
                 "warning",
                 "-i",
                 str(mov_path),
-                # Some environments end up producing MP4s with broken/zero duration
-                # unless we force CFR timestamps.
-                "-fps_mode",
-                "cfr",
-                "-r",
-                "25",
-                "-vf",
-                "fps=25,format=yuv420p",
                 "-c:v",
                 "libx264",
                 "-preset",
                 "veryfast",
                 "-crf",
                 "23",
+                "-pix_fmt",
+                "yuv420p",
+                "-r",
+                "25",
                 "-movflags",
                 "+faststart",
                 "-an",
                 str(preview_path),
             ]
+            logger.info("mov_to_mp4_transcode_cmd cmd=%s", " ".join(cmd))
 
             result = subprocess.run(cmd, capture_output=True, timeout=180, check=False)
+            transcode_s = time.monotonic() - t_transcode
+
+            # Always log stderr for debugging, even on success
+            stderr_preview = result.stderr.decode(errors="replace")[:500] if result.stderr else ""
             if result.returncode != 0:
                 logger.warning(
-                    "mov_to_mp4_preview_failed rc=%d stderr=%s",
+                    "mov_to_mp4_preview_failed rc=%d transcode_s=%.3f stderr=%s",
                     result.returncode,
-                    result.stderr.decode(errors="replace")[:500],
+                    transcode_s,
+                    stderr_preview,
                 )
                 return None
-
-            transcode_s = time.monotonic() - t_transcode
+            else:
+                logger.info(
+                    "mov_to_mp4_transcode_done rc=0 transcode_s=%.3f stderr=%s",
+                    transcode_s,
+                    stderr_preview[:200] if stderr_preview else "(none)",
+                )
 
             # Validate the produced MP4 to avoid uploading 0-second files.
             probe_cmd = [
