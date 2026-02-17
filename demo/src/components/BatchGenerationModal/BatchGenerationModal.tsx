@@ -557,6 +557,141 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
       }
 
       // ── GENERATE MODE: AI generation + optional processing ──
+
+      // For video types (intro/celebration): Check if member already has an existing
+      // raw video variant that can be processed, to avoid re-generating unnecessarily.
+      // If found, process the existing one instead of generating a new one.
+      const isVideoCategory = selectedTemplate?.category === 'intro' || selectedTemplate?.category === 'celebration';
+      if (isVideoCategory) {
+        const tr = member.metadata?.teamreel_assets || {};
+        const videoCategory = (tr.videos || {})[selectedTemplate.category] || {};
+
+        // Look for any variant with a raw URL that is not yet processed
+        let existingVariantToProcess: { key: string; rawUrl: string } | null = null;
+        for (const [key, val] of Object.entries(videoCategory)) {
+          if (!val || typeof val !== 'object') continue;
+          const v = val as any;
+          const state = v.processing_state || 'raw';
+          // If there's a raw URL and it's not already processed or being processed
+          if (v.raw && state !== 'processed' && state !== 'processing') {
+            existingVariantToProcess = { key, rawUrl: v.raw };
+            break; // Use the first unprocessed variant found
+          }
+        }
+
+        if (existingVariantToProcess) {
+          console.log(`🔄 Batch: Found existing ${selectedTemplate.category} for ${member.name}: ${existingVariantToProcess.key}`);
+          setJobStatuses((prev) => ({
+            ...prev,
+            [member.id]: { status: 'running', error: `Bestaande ${existingVariantToProcess!.key} verwerken…` },
+          }));
+
+          try {
+            // Use process-all-variants to process the existing variant
+            const procRes = await fetch(`${apiBase}/api/v1/video/jobs/process-all-variants/`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+              },
+              body: JSON.stringify({
+                membership_id: member.id,
+                asset_type: selectedTemplate.category,
+              }),
+            });
+
+            const procJson = await procRes.json().catch(() => ({}));
+
+            if (!procRes.ok) {
+              throw new Error(procJson?.error || `Process failed (${procRes.status})`);
+            }
+
+            if (procJson.status === 'nothing_to_process') {
+              setJobStatuses((prev) => ({
+                ...prev,
+                [member.id]: { status: 'success', error: 'Al verwerkt' },
+              }));
+            } else {
+              // Poll for completion (same as processOnly mode)
+              const totalQueued = procJson.total_queued || 0;
+              setJobStatuses((prev) => ({
+                ...prev,
+                [member.id]: { status: 'running', error: `${totalQueued} variant(en) bezig…` }
+              }));
+
+              const POLL_INTERVAL = 5000;
+              const MAX_POLLS = 360;
+              let allDone = false;
+
+              for (let p = 0; p < MAX_POLLS; p++) {
+                if (abortRef.current) break;
+                await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+                if (abortRef.current) break;
+
+                const mRes = await fetch(
+                  `${apiBase}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
+                  { credentials: 'include' }
+                );
+                if (!mRes.ok) continue;
+
+                const mJson = await mRes.json().catch(() => null);
+                const mData = mJson?.data || mJson;
+                const mMeta = mData?.metadata || {};
+                const trPoll = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
+                const videoCategoryPoll = (trPoll.videos || {})[selectedTemplate.category] || {};
+
+                let stillProcessing = 0;
+                let processed = 0;
+                let failed = 0;
+
+                for (const [, pollVal] of Object.entries(videoCategoryPoll)) {
+                  if (!pollVal || typeof pollVal !== 'object') continue;
+                  const pollState = (pollVal as any).processing_state || 'raw';
+                  if (pollState === 'processing' || pollState === 'cancelling') stillProcessing++;
+                  else if (pollState === 'processed') processed++;
+                  else if (pollState === 'failed') failed++;
+                }
+
+                setJobStatuses((prev) => ({
+                  ...prev,
+                  [member.id]: {
+                    status: 'running',
+                    error: `${processed} voltooid, ${stillProcessing} bezig${failed > 0 ? `, ${failed} mislukt` : ''}`
+                  },
+                }));
+
+                if (stillProcessing === 0 && (processed > 0 || failed > 0)) {
+                  allDone = true;
+                  setJobStatuses((prev) => ({
+                    ...prev,
+                    [member.id]: {
+                      status: failed > 0 ? 'error' : 'success',
+                      error: `${processed} voltooid${failed > 0 ? `, ${failed} mislukt` : ''}`,
+                    },
+                  }));
+                  break;
+                }
+              }
+
+              if (!allDone && !abortRef.current) {
+                throw new Error('Processing timeout');
+              }
+            }
+          } catch (err) {
+            console.error(`Batch processing existing variant failed for ${member.name}:`, err);
+            setJobStatuses((prev) => ({
+              ...prev,
+              [member.id]: {
+                status: 'error',
+                error: err instanceof Error ? err.message : 'Onbekende fout',
+              },
+            }));
+          }
+          continue;
+        }
+      }
+
       // Check if required inputs are available
       if (!inputAssets.person) {
         setJobStatuses((prev) => ({
