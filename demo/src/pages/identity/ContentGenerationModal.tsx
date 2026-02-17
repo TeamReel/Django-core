@@ -854,7 +854,6 @@ export default function ContentGenerationModal({
           template_id: selectedTemplate?.id || null,
           formation: formation,
           closeup_style: lineupCloseupStyle,
-          animation_style: lineupAnimationStyle,
           selected_member_ids: {
             goalkeeper: targetGKs,
             player: targetPlayers,
@@ -1412,7 +1411,10 @@ export default function ContentGenerationModal({
       } else if (templateSubtype.includes('kit') || templateSubtype.includes('tenue')) {
         const kitType = (selectedTemplate as ContentTemplate & { params?: { kit_type?: string } })?.params?.kit_type || 'home';
         brandAssetType = `kit_${kitType}`; // e.g. kit_home, kit_away
-      } else if (templateSubtype === 'lineup' || templateSubtype === 'lineup_flyer' || isVideo) {
+      } else if (templateSubtype === 'lineup_flyer') {
+        const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
+        brandAssetType = `lineup_flyer_${matchSuffix}`;
+      } else if (templateSubtype === 'lineup' || isVideo) {
         // Lineup videos need a non-empty asset_type. Use a per-match unique value to avoid
         // overwriting due to unique(profile, asset_type).
         const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
@@ -1836,7 +1838,8 @@ export default function ContentGenerationModal({
                     </div>
                   </div>
 
-                  {/* Animation style selector */}
+                  {/* Animation style selector — only for video, not for static flyer */}
+                  {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
                   <div>
                     <label className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-4 block">Animatie Stijl</label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -1862,6 +1865,7 @@ export default function ContentGenerationModal({
                       ))}
                     </div>
                   </div>
+                  )}
                 </div>
               )}
 
@@ -2107,7 +2111,9 @@ export default function ContentGenerationModal({
             <div className="flex flex-col items-center justify-center h-full py-12">
               {(() => {
                 const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
-                const isLineup = templateSubtype === 'lineup' || templateSubtype === 'lineup_flyer';
+                const isLineupVideo = templateSubtype === 'lineup';
+                const isLineupFlyer = templateSubtype === 'lineup_flyer';
+                const isLineup = isLineupVideo || isLineupFlyer;
                 const status = (videoJobStatus || '').toLowerCase();
 
                 // Determine progress value (use videoJobProgressRaw for lineup, progress for others)
@@ -2117,7 +2123,10 @@ export default function ContentGenerationModal({
                 let headline = 'Bezig met genereren…';
                 let description = 'Even geduld, we maken je content.';
 
-                if (isLineup) {
+                if (isLineupFlyer) {
+                  headline = 'Flyer wordt gemaakt';
+                  description = 'Even geduld, we genereren je lineup flyer.';
+                } else if (isLineupVideo) {
                   headline = 'Video wordt gemaakt';
 
                   const currentPlayer = (videoJobMeta as Record<string, unknown>)?.current_segment as string | undefined;
@@ -2146,7 +2155,7 @@ export default function ContentGenerationModal({
                 return (
                   <div className="w-full max-w-md text-center">
                     {/* Icon */}
-                    <div className="text-5xl mb-6 animate-pulse">🎬</div>
+                    <div className="text-5xl mb-6 animate-pulse">{isLineupFlyer ? '📋' : '🎬'}</div>
 
                     {/* Headline */}
                     <h2 className="text-xl font-semibold text-gray-800 mb-2">{headline}</h2>

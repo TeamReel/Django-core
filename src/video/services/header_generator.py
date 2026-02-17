@@ -163,31 +163,55 @@ def generate_header_image(  # noqa: PLR0913
     background_color: str | None = None,
     text_color: str | None = None,  # noqa: ARG001 - kept for API compat
 ) -> str:
-    """Generate header image with 3-panel layout and return presigned URL.
+    """Generate header image and return presigned URL.
+
+    This is a convenience wrapper around ``render_header_pil`` that uploads
+    the result to object storage (S3) and returns a presigned URL.  For
+    callers that need the raw PIL Image (e.g. the lineup-flyer compositor)
+    use ``render_header_pil`` directly.
+    """
+    img = render_header_pil(
+        width=width,
+        height=height,
+        logo_url=logo_url,
+        opponent_logo_url=opponent_logo_url,
+        sponsor_url=sponsor_url,
+        match_date=match_date,
+        own_team_name=own_team_name,
+        opponent_name=opponent_name,
+        is_home=is_home,
+        kickoff_time=kickoff_time,
+        competition_name=competition_name,
+        venue=venue,
+        background_color=background_color,
+    )
+    return _upload_and_get_url(img, "header")
+
+
+def render_header_pil(  # noqa: PLR0913
+    width: int,
+    height: int,
+    logo_url: str | None = None,
+    opponent_logo_url: str | None = None,
+    sponsor_url: str | None = None,
+    match_date: str = "",
+    own_team_name: str = "",
+    opponent_name: str = "",
+    is_home: bool = True,
+    kickoff_time: str | None = None,
+    competition_name: str | None = None,
+    venue: str | None = None,
+    background_color: str | None = None,
+) -> Image.Image:
+    """Render header as a PIL Image (no upload).
 
     Layout: [Home logo] [Brand color center: STARTING XI / match / comp / venue / date] [Away logo]
 
-    Args:
-        width: Image width (typically 1080)
-        height: Header height (typically 300px)
-        logo_url: URL to own club logo
-        opponent_logo_url: URL to opponent club logo
-        sponsor_url: URL to sponsor logo (displayed bottom-left)
-        match_date: Date string (e.g., "15 FEB 2026")
-        own_team_name: Club/team name
-        opponent_name: Opponent name
-        is_home: True if home match
-        score_home: Home score (if match completed)
-        score_away: Away score (if match completed)
-        kickoff_time: Kickoff time string (e.g., "20:00")
-        coach_name: Coach name (unused in new design)
-        competition_name: Competition/league name (e.g., "EREDIVISIE")
-        venue: Stadium/venue name (e.g., "Johan Cruijff Arena")
-        background_color: Brand primary color hex for center panel (default: #D2122E)
-        text_color: Text color hex (unused, uses white/black per panel)
+    This is the single source of truth for the header layout.  Both the
+    lineup-video compositor and the lineup-flyer generator call this.
 
     Returns:
-        Presigned URL to uploaded header image
+        PIL ``Image`` in RGBA mode.
     """
     # Colors
     white = (255, 255, 255, 255)
@@ -290,8 +314,7 @@ def generate_header_image(  # noqa: PLR0913
     # Note: sponsor is intentionally NOT rendered into the header.
     # The lineup compositor overlays sponsor at bottom-left of the full video frame.
 
-    # Upload to storage and return URL
-    return _upload_and_get_url(img, "header")
+    return img
 
 
 def generate_field_background(

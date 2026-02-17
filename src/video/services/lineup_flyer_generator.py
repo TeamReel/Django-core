@@ -293,133 +293,6 @@ def _apply_formation_tweaks(
     return _clamp(x), _clamp(y)
 
 
-# ── Header generator ──────────────────────────────────────────────────────
-
-
-def _generate_flyer_header(
-    data: LineupData,
-    *,
-    brand_primary: tuple[int, int, int, int] = (210, 18, 46, 255),
-) -> Image.Image:
-    """Generate header image (PIL) matching the local prototype style.
-
-    Layout: [Home logo + name] [Red center: STARTING XI / comp / venue / date] [Away logo + name]
-    """
-    w, h = HEADER_WIDTH, HEADER_HEIGHT
-    white = (255, 255, 255, 255)
-    black = (0, 0, 0, 255)
-
-    img = Image.new("RGBA", (w, h), white)
-    draw = ImageDraw.Draw(img)
-
-    # Sections: left 25%, center 50%, right 25%
-    x_left_end = 270
-    x_right_start = 810
-
-    # Center red panel
-    draw.rectangle([(x_left_end, 0), (x_right_start, h)], fill=brand_primary)
-    draw.rectangle([(0, 0), (x_left_end, h)], fill=white)
-    draw.rectangle([(x_right_start, 0), (w, h)], fill=white)
-
-    # Fonts
-    fonts = {
-        "xl": _get_font(80, bold=True),  # STARTING XI
-        "lg": _get_font(36, bold=True),  # competition
-        "team": _get_font(72, bold=True),  # team names
-        "sm": _get_font(30, bold=True),  # date/time
-        "xs": _get_font(36, bold=True),  # venue
-    }
-
-    # Center text: STARTING XI
-    cx = w // 2
-    _draw_centered_text(draw, "STARTING XI", cx, 48, fonts["xl"], white, black, stroke=5)
-
-    # Competition
-    comp = (data.competition_name or "").upper()
-    if comp:
-        _draw_centered_text(draw, comp, cx, 140, fonts["lg"], white, None)
-
-    # Venue
-    venue = (data.venue or "").upper()
-    if venue:
-        _draw_centered_text(draw, venue, cx, 185, fonts["xs"], white, None)
-
-    # Date + time
-    date_str = data.match_date or ""
-    time_str = data.kickoff_time or ""
-    dt_text = f"{date_str} • {time_str}" if time_str else date_str
-    if dt_text.strip():
-        _draw_centered_text(draw, dt_text.upper(), cx, 235, fonts["sm"], white, None)
-
-    # Home team (left panel)
-    home_name = data.own_team_name.upper() if data.is_home else data.opponent_name.upper()
-    away_name = data.opponent_name.upper() if data.is_home else data.own_team_name.upper()
-
-    _draw_centered_text(draw, home_name, x_left_end // 2, 48, fonts["team"], black, None)
-    _draw_centered_text(
-        draw, away_name, x_right_start + (w - x_right_start) // 2, 48, fonts["team"], black, None
-    )
-
-    # Logos
-    logo_size = 260
-    logo_cy = 205
-
-    # Home logo (our logo when home, opponent when away)
-    home_logo_url = data.logo_url if data.is_home else None
-    away_logo_url = data.logo_url if not data.is_home else None
-
-    if home_logo_url:
-        logo_img = _download_image(home_logo_url)
-        if logo_img:
-            logo_img = logo_img.convert("RGBA")
-            logo_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
-            lx = (x_left_end - logo_img.width) // 2
-            ly = logo_cy - logo_img.height // 2
-            img.paste(logo_img, (lx, ly), logo_img)
-
-    if away_logo_url:
-        logo_img = _download_image(away_logo_url)
-        if logo_img:
-            logo_img = logo_img.convert("RGBA")
-            logo_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
-            lx = x_right_start + (w - x_right_start - logo_img.width) // 2
-            ly = logo_cy - logo_img.height // 2
-            img.paste(logo_img, (lx, ly), logo_img)
-
-    # Make side panels transparent (for overlay on field)
-    # Keep the red center opaque, sides become see-through
-    pixels = img.load()
-    for px_x in range(w):
-        for px_y in range(h):
-            if px_x < x_left_end or px_x > x_right_start:
-                r, g, b, a = pixels[px_x, px_y]
-                # Make white areas transparent
-                if r > 240 and g > 240 and b > 240:
-                    pixels[px_x, px_y] = (r, g, b, 0)
-
-    return img
-
-
-def _draw_centered_text(
-    draw: ImageDraw.Draw,
-    text: str,
-    cx: int,
-    y: int,
-    font: ImageFont.FreeTypeFont,
-    fill: tuple,
-    stroke_fill: tuple | None,
-    stroke: int = 0,
-) -> None:
-    """Draw text centered horizontally at (cx, y)."""
-    bbox = draw.textbbox((0, 0), text, font=font)
-    tw = bbox[2] - bbox[0]
-    x = cx - tw // 2
-    if stroke_fill and stroke > 0:
-        draw.text((x, y), text, font=font, fill=fill, stroke_width=stroke, stroke_fill=stroke_fill)
-    else:
-        draw.text((x, y), text, font=font, fill=fill)
-
-
 # ── Alpha bounding box helper ─────────────────────────────────────────────
 
 
@@ -499,10 +372,6 @@ def _compose_flyer(
     is_badge = closeup_style == "badge"
     full_h = int(HEIGHT * FLYER_SCALE)
 
-    # Parse brand color
-    hex_s = brand_primary_hex.lstrip("#")
-    brand_rgba = (int(hex_s[0:2], 16), int(hex_s[2:4], 16), int(hex_s[4:6], 16), 255)
-
     # ── 1. Download background ─────────────────────────────────────────────
     bg_img = _download_image(data.field_background_url) if data.field_background_url else None
     if bg_img is None:
@@ -510,8 +379,24 @@ def _compose_flyer(
     bg_path = tmp_dir / "background.jpg"
     bg_img.convert("RGB").save(str(bg_path), "JPEG", quality=95)
 
-    # ── 2. Generate header ─────────────────────────────────────────────────
-    header_img = _generate_flyer_header(data, brand_primary=brand_rgba)
+    # ── 2. Generate header (shared with lineup video) ────────────────────
+    from src.video.services.header_generator import render_header_pil
+
+    header_img = render_header_pil(
+        width=HEADER_WIDTH,
+        height=HEADER_HEIGHT,
+        logo_url=data.logo_url,
+        opponent_logo_url=data.opponent_logo_url,
+        sponsor_url=data.sponsor_url,
+        match_date=data.match_date or "",
+        own_team_name=data.own_team_name,
+        opponent_name=data.opponent_name,
+        is_home=data.is_home,
+        kickoff_time=data.kickoff_time,
+        competition_name=data.competition_name,
+        venue=data.venue,
+        background_color=brand_primary_hex,
+    )
     header_path = tmp_dir / "header.png"
     header_img.save(str(header_path), "PNG")
 
