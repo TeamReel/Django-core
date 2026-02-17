@@ -1065,25 +1065,8 @@ def _compose_hold(
     fc.append("[base][header]overlay=0:0[b1]")
     fc.append(f"[b1][field]overlay=0:{HEADER_HEIGHT}[bg0]")
 
-    has_sponsor = sponsor_path and sponsor_path.exists()
-    if has_sponsor:
-        sbox_w = SPONSOR_W + 2 * SPONSOR_PAD
-        fc.append(f"[4:v]scale={SPONSOR_W}:-1[sponsor]")
-        fc.append(
-            "[bg0]"
-            f"drawbox=x={SPONSOR_MARGIN}:y=h-{SPONSOR_BOX_H}-{SPONSOR_MARGIN}:"
-            f"w={sbox_w}:h={SPONSOR_BOX_H}:color=white@0.95:t=fill,"
-            f"drawbox=x={SPONSOR_MARGIN}:y=h-{SPONSOR_BOX_H}-{SPONSOR_MARGIN}:"
-            f"w={sbox_w}:h={SPONSOR_BOX_H}:color=black@0.90:t=4"
-            "[bg0b]"
-        )
-        fc.append(
-            f"[bg0b][sponsor]overlay=({SPONSOR_MARGIN + SPONSOR_PAD}):"
-            f"(H-h-{SPONSOR_MARGIN + SPONSOR_PAD})[bg0s]"
-        )
-        last_bg = "bg0s"
-    else:
-        last_bg = "bg0"
+    # Sponsor box removed - no longer overlaid on video
+    last_bg = "bg0"
 
     cmd = [
         _get_ffmpeg_path(),
@@ -1111,10 +1094,8 @@ def _compose_hold(
         "-i",
         str(border_path),
     ]
-    if has_sponsor:
-        cmd += ["-loop", "1", "-i", str(sponsor_path)]
-    else:
-        cmd += ["-f", "lavfi", "-i", "color=c=black@0:s=1x1:r=1,format=rgba"]
+    # Sponsor removed - use transparent dummy to preserve input indices
+    cmd += ["-f", "lavfi", "-i", "color=c=black@0:s=1x1:r=1,format=rgba"]
 
     persist_start = 5
     cutoff_h = int(circle_size * BADGE_CUT_FRACTION)
