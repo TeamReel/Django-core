@@ -143,7 +143,9 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
       if (!res.ok) {
         throw new Error(`Failed to fetch active jobs: ${res.status}`);
       }
-      const data = await res.json();
+      const json = await res.json();
+      // Handle API envelope: { status, data: { jobs: [...] } }
+      const data = json.data || json;
       setJobs(data.jobs || []);
     } catch (err) {
       setError(String(err));
