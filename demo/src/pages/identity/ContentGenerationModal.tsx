@@ -1541,6 +1541,14 @@ export default function ContentGenerationModal({
     return role.charAt(0).toUpperCase() + role.slice(1) + 's';
   };
 
+  const isLineupFlow =
+    selectedType?.subtype === 'lineup' ||
+    selectedType?.subtype === 'lineup_flyer' ||
+    selectedTemplate?.template_subtype === 'lineup' ||
+    selectedTemplate?.template_subtype === 'lineup_flyer' ||
+    initialTemplate?.template_subtype === 'lineup' ||
+    initialTemplate?.template_subtype === 'lineup_flyer';
+
   return (
     <div
       style={{
@@ -1595,12 +1603,15 @@ export default function ContentGenerationModal({
               )}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className={`text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-2xl ${(step === 'generating' || step === 'members') ? 'hidden' : ''}`}
-          >
-            ×
-          </button>
+          {!(isLineupFlow || step === 'generating' || step === 'members') && (
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-2xl"
+              aria-label="Close"
+            >
+              ×
+            </button>
+          )}
         </div>
 
         {/* Progress indicator - only show for multi-step flow */}
@@ -1885,16 +1896,16 @@ export default function ContentGenerationModal({
                         // Calculate position label based on role and formation
                         let positionLabel = '';
                         if (role === 'goalkeeper') {
-                          positionLabel = '#1 — Keeper';
+                          positionLabel = 'Keeper';
                         } else if (role === 'player') {
                           // Get position label from formation layout if available
                           const slotNumber = idx + 2; // Players start at slot 2 (after goalkeeper)
                           const formationLayout = FORMATION_LAYOUTS[lineupFormation];
                           const positionData = formationLayout?.positions.find(p => p.slot === slotNumber);
                           if (positionData) {
-                            positionLabel = `#${slotNumber} — ${positionData.label}`;
+                            positionLabel = positionData.label;
                           } else {
-                            positionLabel = `#${slotNumber}`;
+                            positionLabel = 'Speler';
                           }
                         } else if (role === 'coach') {
                           positionLabel = idx === 0 ? 'Coach' : `Coach ${idx + 1}`;
