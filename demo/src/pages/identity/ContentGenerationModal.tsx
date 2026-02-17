@@ -1759,47 +1759,68 @@ export default function ContentGenerationModal({
 
               {/* Lineup Options - Formation & Player Style */}
               {(selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6">
-                  <h4 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-5">Lineup Opties</h4>
+                <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  {/* Section header */}
+                  <div className="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 px-6 py-4">
+                    <h4 className="text-lg font-bold text-white tracking-wide">⚽ Lineup Opties</h4>
+                  </div>
 
-                  {/* Formation selector - Large visual buttons */}
-                  <div className="mb-6">
-                    <label className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-4 block">Formatie</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="p-6 space-y-8 bg-white dark:bg-gray-900">
+                  {/* Formation selector */}
+                  <div>
+                    <label className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4 block">Formatie</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                       {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
                         const isSelected = lineupFormation === code;
                         return (
                           <button
                             key={code}
                             onClick={() => setLineupFormation(code)}
-                            className={`relative rounded-2xl border-2 transition-all overflow-hidden p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 ${
+                            className={`group relative rounded-xl transition-all duration-200 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                               isSelected
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 shadow-lg ring-2 ring-blue-300 dark:ring-blue-600'
-                                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
+                                ? 'ring-2 ring-blue-500 shadow-xl shadow-blue-500/20 scale-[1.02]'
+                                : 'hover:scale-[1.02] hover:shadow-lg'
                             }`}
                           >
                             {/* Mini field */}
-                            <div className="relative w-full aspect-[3/4] min-h-[160px] bg-gradient-to-b from-green-500 to-green-700 rounded-xl">
-                              {/* Field lines */}
-                              <div className="absolute inset-x-2 top-[15%] h-px bg-white/40" />
-                              <div className="absolute inset-x-2 top-[50%] h-px bg-white/40" />
-                              <div className="absolute left-1/2 top-[50%] w-8 h-8 -translate-x-1/2 -translate-y-1/2 border-2 border-white/40 rounded-full" />
-                              <div className="absolute inset-x-[20%] bottom-0 h-[18%] border-t-2 border-l-2 border-r-2 border-white/40" />
+                            <div className={`relative w-full aspect-[3/4] ${
+                              isSelected
+                                ? 'bg-gradient-to-b from-green-500 to-green-700'
+                                : 'bg-gradient-to-b from-green-600/80 to-green-800/80 group-hover:from-green-500 group-hover:to-green-700'
+                            }`}>
+                              {/* Field markings */}
+                              <div className="absolute inset-x-3 top-[15%] h-px bg-white/30" />
+                              <div className="absolute inset-x-3 top-[50%] h-px bg-white/30" />
+                              <div className="absolute left-1/2 top-[50%] w-6 h-6 -translate-x-1/2 -translate-y-1/2 border border-white/30 rounded-full" />
+                              <div className="absolute inset-x-[22%] bottom-0 h-[16%] border-t border-l border-r border-white/30" />
 
-                              {/* Position dots - no numbers */}
+                              {/* Position dots */}
                               {layout.positions.map(pos => (
                                 <div
                                   key={pos.slot}
-                                  className={`absolute w-4 h-4 rounded-full transform -translate-x-1/2 -translate-y-1/2 ${
-                                    isSelected ? 'bg-white shadow-md' : 'bg-white/90'
+                                  className={`absolute w-3.5 h-3.5 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all ${
+                                    isSelected
+                                      ? 'bg-white shadow-lg shadow-white/40 scale-110'
+                                      : 'bg-white/70 group-hover:bg-white/90'
                                   }`}
                                   style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
                                 />
                               ))}
+
+                              {/* Selected check */}
+                              {isSelected && (
+                                <div className="absolute top-2 right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </div>
+                              )}
                             </div>
-                            {/* Formation name */}
-                            <div className={`py-4 text-xl font-bold text-center ${
-                              isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-200'
+                            {/* Formation code */}
+                            <div className={`py-3 text-center font-bold text-base transition-colors ${
+                              isSelected
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 group-hover:bg-gray-200 dark:group-hover:bg-gray-700'
                             }`}>
                               {code}
                             </div>
@@ -1809,63 +1830,86 @@ export default function ContentGenerationModal({
                     </div>
                   </div>
 
-                  {/* Closeup style selector - Larger buttons */}
-                  <div className="mb-6">
-                    <label className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-4 block">Weergave Stijl</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <button
-                        onClick={() => setLineupCloseupStyle('popout')}
-                        className={`px-6 py-6 rounded-2xl text-lg font-semibold transition-all flex items-center justify-center gap-3 border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 ${
-                          lineupCloseupStyle === 'popout'
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-lg ring-2 ring-blue-300 dark:ring-blue-600'
-                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
-                        }`}
-                      >
-                        <span className="text-3xl">🧍</span>
-                        <span>Popout</span>
-                      </button>
-                      <button
-                        onClick={() => setLineupCloseupStyle('badge')}
-                        className={`px-6 py-6 rounded-2xl text-lg font-semibold transition-all flex items-center justify-center gap-3 border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 ${
-                          lineupCloseupStyle === 'badge'
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-lg ring-2 ring-blue-300 dark:ring-blue-600'
-                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
-                        }`}
-                      >
-                        <span className="text-3xl">⭕</span>
-                        <span>Badge</span>
-                      </button>
+                  {/* Closeup style selector */}
+                  <div>
+                    <label className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4 block">Weergave Stijl</label>
+                    <div className="grid grid-cols-2 gap-4">
+                      {[
+                        { value: 'popout' as const, label: 'Popout', desc: 'Speler los van achtergrond', icon: '🧍' },
+                        { value: 'badge' as const, label: 'Badge', desc: 'Ronde spelersfoto', icon: '⭕' },
+                      ].map(opt => {
+                        const isSelected = lineupCloseupStyle === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => setLineupCloseupStyle(opt.value)}
+                            className={`group relative rounded-xl p-5 transition-all duration-200 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                              isSelected
+                                ? 'bg-blue-500 text-white shadow-xl shadow-blue-500/20 ring-2 ring-blue-500 scale-[1.02]'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:scale-[1.02] hover:shadow-lg'
+                            }`}
+                          >
+                            <div className="flex items-center gap-4">
+                              <span className="text-4xl flex-shrink-0">{opt.icon}</span>
+                              <div>
+                                <div className="text-lg font-bold">{opt.label}</div>
+                                <div className={`text-sm mt-0.5 ${isSelected ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                                  {opt.desc}
+                                </div>
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <div className="absolute top-3 right-3 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
                   {/* Animation style selector — only for video, not for static flyer */}
                   {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
                   <div>
-                    <label className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-4 block">Animatie Stijl</label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <label className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4 block">Animatie Stijl</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                       {[
                         { value: 'slide_up', label: 'Omhoog', icon: '⬆️' },
                         { value: 'appear', label: 'Direct', icon: '✨' },
                         { value: 'slide_in', label: 'Naar binnen', icon: '↔️' },
                         { value: 'zoom', label: 'Inzoomen', icon: '🔍' },
                         { value: 'fade', label: 'Vervagen', icon: '🌫️' },
-                      ].map(opt => (
-                        <button
-                          key={opt.value}
-                          onClick={() => setLineupAnimationStyle(opt.value as typeof lineupAnimationStyle)}
-                          className={`px-6 py-5 rounded-2xl text-base font-semibold transition-all flex flex-col items-center gap-2 border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 ${
-                            lineupAnimationStyle === opt.value
-                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-lg ring-2 ring-blue-300 dark:ring-blue-600'
-                              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
-                          }`}
-                        >
-                          <span className="text-2xl">{opt.icon}</span>
-                          <span>{opt.label}</span>
-                        </button>
-                      ))}
+                      ].map(opt => {
+                        const isSelected = lineupAnimationStyle === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => setLineupAnimationStyle(opt.value as typeof lineupAnimationStyle)}
+                            className={`group relative rounded-xl py-4 px-3 transition-all duration-200 flex flex-col items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                              isSelected
+                                ? 'bg-blue-500 text-white shadow-xl shadow-blue-500/20 ring-2 ring-blue-500 scale-[1.04]'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:scale-[1.04] hover:shadow-lg'
+                            }`}
+                          >
+                            <span className="text-3xl">{opt.icon}</span>
+                            <span className="font-bold text-sm">{opt.label}</span>
+                            {isSelected && (
+                              <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
+                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                   )}
+                  </div>
                 </div>
               )}
 
