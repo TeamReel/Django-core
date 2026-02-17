@@ -134,6 +134,10 @@ export interface AssetVariantValue {
   processed: string | null;
   /** Current processing state */
   processing_state: AssetProcessingState;
+  /** Browser-playable preview URL (e.g. MP4 when processed is MOV) */
+  preview_url?: string;
+  /** Original processed file before browser conversion (e.g. ProRes MOV) */
+  processed_source?: string;
   /** Actual specs of the processed file (set after processing) */
   specs?: {
     width?: number;
@@ -176,7 +180,8 @@ export function normalizeVariantValue(value: string | AssetVariantValue | null |
 export function getBestUrl(value: string | AssetVariantValue | null | undefined): string | null {
   const normalized = normalizeVariantValue(value);
   if (!normalized) return null;
-  return normalized.processed || normalized.raw || null;
+  // Prefer browser-playable preview (e.g. MP4) over processed (may be MOV)
+  return normalized.preview_url || normalized.processed || normalized.raw || null;
 }
 
 /**

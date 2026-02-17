@@ -158,7 +158,13 @@ class AssetProcessor:
             # Propagate browser-playable preview URL if the processed format
             # is not natively playable in browsers (e.g. ProRes MOV).
             if actual_specs.get("preview_url"):
-                result_dict["preview_url"] = actual_specs.pop("preview_url")
+                preview = actual_specs.pop("preview_url")
+                result_dict["preview_url"] = preview
+                # The frontend uses `processed` as <video> src.
+                # Browsers cannot play ProRes MOV, so override `processed`
+                # with the browser-playable MP4 preview.
+                result_dict["processed_source"] = processed_url
+                result_dict["processed"] = preview
             return result_dict
 
         except AssetProcessingCancelled:
