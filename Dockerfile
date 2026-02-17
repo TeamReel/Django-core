@@ -46,12 +46,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     DJANGO_SETTINGS_MODULE=config.settings.production
 
 # Install runtime system dependencies only
+# fonts-dejavu-core: needed for FFmpeg drawtext filter (lineup video labels)
+# fontconfig: font discovery (fc-cache auto-runs on install)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     libgomp1 \
     curl \
     xz-utils \
     ca-certificates \
+    fonts-dejavu-core \
+    fontconfig \
     && rm -rf /var/lib/apt/lists/*
 
 # Install a known-good FFmpeg bundle.
