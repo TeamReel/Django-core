@@ -89,8 +89,14 @@ class S3StorageBackend(StorageBackend):
                 ACL="public-read",
                 **extra_args,
             )
-        except Exception:
+        except Exception as e:
             # Bucket may block public ACLs — upload without ACL
+            import logging
+            logging.getLogger(__name__).warning(
+                "s3_acl_public_read_failed path=%s error=%s falling_back_to_private=True",
+                path,
+                str(e)[:200],
+            )
             self._client.put_object(
                 Bucket=self.bucket_name,
                 Key=path,
