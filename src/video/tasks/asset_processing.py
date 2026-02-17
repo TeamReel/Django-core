@@ -21,6 +21,7 @@ from django.utils import timezone
 
 from src.video.services.asset_processing_specs import ProcessingState
 from src.video.services.asset_processor import AssetProcessor
+from src.video.services.asset_processor import AssetProcessingCancelled
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,31 @@ def _update_variant_metadata(
     meta["teamreel_assets"] = tr
     membership.metadata = meta
     membership.save(update_fields=["metadata", "updated_at"])
+
+
+def _get_variant_state(
+    membership: object,
+    *,
+    asset_type: str,
+    kit_type: str,
+    variant_id: str | None,
+) -> str | None:
+    """Get the current processing_state for a variant.
+
+    Returns the state string or None if not found.
+    """
+    meta = getattr(membership, "metadata", None) or {}
+    tr = meta.get("teamreel_assets", {})
+
+    if asset_type in ("fullbody", "closeup"):
+        variant_val = (tr.get("images", {}).get(asset_type, {}) or {}).get(kit_type)
+    else:
+        composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+        variant_val = (tr.get("videos", {}).get(asset_type, {}) or {}).get(composite_key)
+
+    if isinstance(variant_val, dict):
+        return variant_val.get("processing_state")
+    return None
 
 
 @shared_task(
@@ -139,6 +165,38 @@ def process_member_asset(
             extra={"membership_id": membership_id, "error": str(mark_exc)},
         )
 
+    # Create a should_cancel callback that checks the DB for "cancelling" state.
+    # We use a closure to avoid re-querying too often (check at most every 5s).
+    _last_check = {"time": 0.0, "cancelled": False}
+
+    def should_cancel() -> bool:
+        import time as time_module
+
+        now = time_module.time()
+        # Only check DB at most every 5 seconds
+        if now - _last_check["time"] < 5.0:
+            return _last_check["cancelled"]
+
+        _last_check["time"] = now
+        try:
+            membership.refresh_from_db(fields=["metadata"])
+            state = _get_variant_state(
+                membership,
+                asset_type=asset_type,
+                kit_type=kit_type,
+                variant_id=variant_id,
+            )
+            if state == "cancelling":
+                logger.info(
+                    "process_member_asset: cancellation requested",
+                    extra={"membership_id": membership_id},
+                )
+                _last_check["cancelled"] = True
+                return True
+        except Exception:  # noqa: BLE001
+            pass  # On DB error, don't cancel
+        return False
+
     try:
         processor = AssetProcessor()
         effective_backend = bg_removal_backend
@@ -155,6 +213,7 @@ def process_member_asset(
             if hasattr(membership.project, "organisation_id")
             else None,
             bg_removal_backend=effective_backend,
+            should_cancel=should_cancel,
         )
 
         # Refresh before writing final result (avoid clobber)
@@ -178,6 +237,38 @@ def process_member_asset(
                 "state": result.get("processing_state"),
             },
         )
+        return membership_id
+
+    except AssetProcessingCancelled:
+        logger.info(
+            "process_member_asset cancelled by user",
+            extra={
+                "membership_id": membership_id,
+                "asset_type": asset_type,
+                "kit_type": kit_type,
+                "variant_id": variant_id,
+            },
+        )
+        # Write cancelled state to metadata
+        try:
+            membership.refresh_from_db()
+            _update_variant_metadata(
+                membership,
+                asset_type=asset_type,
+                kit_type=kit_type,
+                variant_id=variant_id,
+                variant_value={
+                    "raw": raw_url,
+                    "processed": None,
+                    "processing_state": "cancelled",
+                    "processed_at": timezone.now().isoformat(),
+                },
+            )
+        except (DatabaseError, ValueError, TypeError) as write_exc:
+            logger.exception(
+                "Failed to write cancelled state",
+                extra={"membership_id": membership_id, "error": str(write_exc)},
+            )
         return membership_id
 
     except Exception as exc:  # noqa: BLE001
