@@ -321,7 +321,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
       const variantKey = Object.keys(typeVideos).find((k) => k.startsWith(kitType));
       if (variantKey) return extractUrl(typeVideos[variantKey]);
       // Fallback: any bare style key (old format like "arms_crossed" without kit prefix)
-      const bareKey = Object.keys(typeVideos).find((k) => 
+      const bareKey = Object.keys(typeVideos).find((k) =>
         k && !k.startsWith('home') && !k.startsWith('away') && !k.startsWith('third') && !k.startsWith('goalkeeper')
       );
       return bareKey ? extractUrl(typeVideos[bareKey]) : null;
@@ -388,25 +388,26 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
               const skippedReasons = (procJson.skipped || []).map((s: any) => s.reason).join(', ');
               setJobStatuses((prev) => ({
                 ...prev,
-                [member.id]: { 
-                  status: 'skipped', 
-                  error: skippedReasons.includes('already_processed') 
-                    ? 'Alle varianten al verwerkt' 
-                    : 'Geen varianten gevonden' 
+                [member.id]: {
+                  status: 'skipped',
+                  error: skippedReasons.includes('already_processed')
+                    ? 'Alle varianten al verwerkt'
+                    : 'Geen varianten gevonden'
                 },
               }));
               continue;
             }
 
             const totalQueued = procJson.total_queued || 0;
-            setJobStatuses((prev) => ({ 
-              ...prev, 
-              [member.id]: { status: 'running', error: `${totalQueued} variant(en) bezig…` } 
+            setJobStatuses((prev) => ({
+              ...prev,
+              [member.id]: { status: 'running', error: `${totalQueued} variant(en) bezig…` }
             }));
 
             // Poll until ALL queued variants are processed
-            const POLL_INTERVAL = 3000;
-            const MAX_POLLS = 200; // ~10 min per variant
+            // RVM video processing can take 15-30 min per video
+            const POLL_INTERVAL = 5000;
+            const MAX_POLLS = 360; // ~30 min total
             let allDone = false;
 
             for (let p = 0; p < MAX_POLLS; p++) {
@@ -441,9 +442,9 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
 
               setJobStatuses((prev) => ({
                 ...prev,
-                [member.id]: { 
-                  status: 'running', 
-                  error: `${processed} voltooid, ${stillProcessing} bezig${failed > 0 ? `, ${failed} mislukt` : ''}` 
+                [member.id]: {
+                  status: 'running',
+                  error: `${processed} voltooid, ${stillProcessing} bezig${failed > 0 ? `, ${failed} mislukt` : ''}`
                 },
               }));
 
@@ -452,8 +453,8 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                 allDone = true;
                 setJobStatuses((prev) => ({
                   ...prev,
-                  [member.id]: { 
-                    status: failed > 0 ? 'error' : 'success', 
+                  [member.id]: {
+                    status: failed > 0 ? 'error' : 'success',
                     error: `${processed} voltooid${failed > 0 ? `, ${failed} mislukt` : ''}`,
                   },
                 }));
@@ -1066,10 +1067,10 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
 
                 {/* Info text for intro/celebration - all variants are processed */}
                 {(processAssetType === 'intro' || processAssetType === 'celebration') && (
-                  <div style={{ 
-                    marginTop: '12px', 
-                    padding: '12px', 
-                    background: 'rgba(59,130,246,0.1)', 
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '12px',
+                    background: 'rgba(59,130,246,0.1)',
                     borderRadius: '8px',
                     border: '1px solid rgba(59,130,246,0.3)',
                     fontSize: '13px',
