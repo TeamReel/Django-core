@@ -1322,6 +1322,24 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
               )}
 
               {/* Member list with optional per-member overrides */}
+              {/* Info box for video templates: existing variants are auto-detected */}
+              {batchMode === 'generate' && selectedTemplate && (selectedTemplate.category === 'intro' || selectedTemplate.category === 'celebration') && (
+                <div style={{
+                  marginBottom: '16px',
+                  padding: '12px',
+                  background: 'rgba(34, 197, 94, 0.1)',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(34, 197, 94, 0.3)',
+                  fontSize: '13px',
+                  color: 'var(--app-text)',
+                }}>
+                  <div style={{ fontWeight: 600, marginBottom: '4px' }}>🔄 Slimme video verwerking</div>
+                  <div style={{ fontSize: '12px', opacity: 0.9 }}>
+                    Members met een bestaande onverwerkte video worden automatisch verwerkt in plaats van opnieuw gegenereerd.
+                    Alleen members zonder video krijgen een nieuwe gegenereerd.
+                  </div>
+                </div>
+              )}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <label style={{ fontSize: '13px', fontWeight: 600 }}>
@@ -1339,6 +1357,22 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                   const inputAssets = getInputAssetsForMember(member, effectiveParams);
                   const missingPerson = batchMode === 'generate' && !inputAssets.person;
                   const missingExisting = batchMode === 'processOnly' && !getExistingAssetUrl(member, processAssetType, kitType);
+
+                  // Check for existing unprocessed video variant (in generate mode with video template)
+                  let existingVideoVariant: string | null = null;
+                  if (batchMode === 'generate' && selectedTemplate && (selectedTemplate.category === 'intro' || selectedTemplate.category === 'celebration')) {
+                    const tr = member.metadata?.teamreel_assets || {};
+                    const videoCategory = (tr.videos || {})[selectedTemplate.category] || {};
+                    for (const [key, val] of Object.entries(videoCategory)) {
+                      if (!val || typeof val !== 'object') continue;
+                      const v = val as any;
+                      const state = v.processing_state || 'raw';
+                      if (v.raw && state !== 'processed' && state !== 'processing' && state !== 'cancelling') {
+                        existingVideoVariant = key;
+                        break;
+                      }
+                    }
+                  }
 
                   return (
                     <div key={member.id} style={{ marginBottom: '4px' }}>
@@ -1365,6 +1399,9 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                           )}
                           {missingExisting && (
                             <div style={{ fontSize: '11px', color: '#ef4444' }}>⚠️ Geen bestaande {kitType} {PROCESS_ASSET_TYPES.find(t => t.value === processAssetType)?.label || processAssetType}</div>
+                          )}
+                          {existingVideoVariant && (
+                            <div style={{ fontSize: '11px', color: '#22c55e' }}>✅ Bestaande {existingVideoVariant.replace(/_/g, ' ')} wordt verwerkt</div>
                           )}
                           {hasOverrides && (
                             <div style={{ fontSize: '11px', color: '#3b82f6' }}>Aangepaste instellingen</div>
