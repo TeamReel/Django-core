@@ -391,8 +391,9 @@ class AssetProcessor:
         # Portrait mode for intro/celebration (9:16)
         portrait = spec.height > spec.width
 
-        # Higher downsample = faster CPU processing (0.50 vs 0.40)
-        downsample = 0.50
+        # Lower downsample = faster CPU processing, reduces throttling on Railway burst CPU
+        # 0.35 is ~40% faster than 0.50, with minimal quality loss at 540x960 output
+        downsample = 0.35
 
         t_proc = time.monotonic()
         try:

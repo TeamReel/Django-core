@@ -12,6 +12,7 @@ commands and batch tooling.
 from __future__ import annotations
 
 import logging
+import time
 
 from celery import shared_task
 from django.apps import apps
@@ -270,6 +271,17 @@ def process_member_asset(
                 "state": result.get("processing_state"),
             },
         )
+
+        # Cooldown delay for video processing to let Railway CPU credits recover
+        # This prevents throttling when processing multiple videos in batch
+        if asset_type in ("intro", "celebration"):
+            cooldown_secs = 45
+            logger.info(
+                "process_member_asset cooldown",
+                extra={"cooldown_secs": cooldown_secs, "reason": "cpu_credits_recovery"},
+            )
+            time.sleep(cooldown_secs)
+
         return membership_id
 
     except AssetProcessingCancelled:
