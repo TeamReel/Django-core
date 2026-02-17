@@ -69,6 +69,7 @@ def _get_ffmpeg_path() -> str:
 
     return "ffmpeg"
 
+
 # ── Video / canvas settings ──
 WIDTH = 1080
 HEIGHT = 1920
@@ -163,6 +164,37 @@ def _download_file(url: str, dest: Path, timeout: int = 60) -> bool:
     except Exception:
         logger.warning("Failed to download %s", url, exc_info=True)
         return False
+
+
+def _resolve_brand_color(activity_id: str) -> str | None:
+    """Look up brand primary color from the project's BrandProfile.
+
+    Returns hex color string (e.g., "#D2122E") or None if not found.
+    """
+    try:
+        from django.apps import apps
+
+        Activity = apps.get_model("activities", "Activity")
+        BrandProfile = apps.get_model("branding", "BrandProfile")
+
+        activity = Activity.objects.select_related("project__parent_project").get(id=activity_id)
+        project = activity.project
+
+        # Try team brand first, then club brand
+        for proj in [project, project.parent_project]:
+            if not proj:
+                continue
+            brand = BrandProfile.objects.filter(project=proj, is_active=True).first()
+            if brand:
+                tokens = getattr(brand, "design_tokens", None) or {}
+                colors = tokens.get("colors", {})
+                value = colors.get("primary_color") or colors.get("primary")
+                if value:
+                    return value
+        return None
+    except Exception:  # noqa: BLE001
+        logger.warning("Failed to resolve brand color for activity %s", activity_id, exc_info=True)
+        return None
 
 
 def _generate_circle_mask(size: int, dest: Path) -> None:
@@ -1206,6 +1238,9 @@ def compose_lineup_video(
     if not _download_file(lineup_data.field_background_url, bg_path):
         raise ValueError("Failed to download field background image.")
 
+    # Resolve brand primary color for header
+    brand_primary_hex = _resolve_brand_color(lineup_data.activity_id)
+
     # Generate header using the production header_generator
     from src.video.services.header_generator import generate_header_image
 
@@ -1215,7 +1250,7 @@ def compose_lineup_video(
         logo_url=lineup_data.logo_url,
         opponent_logo_url=lineup_data.opponent_logo_url,
         sponsor_url=lineup_data.sponsor_url,
-        match_date=f"Za {lineup_data.match_date}" if lineup_data.match_date else "",
+        match_date=lineup_data.match_date or "",
         own_team_name=lineup_data.own_team_name,
         opponent_name=lineup_data.opponent_name,
         is_home=lineup_data.is_home,
@@ -1224,6 +1259,8 @@ def compose_lineup_video(
         kickoff_time=lineup_data.kickoff_time,
         coach_name=lineup_data.coach_name,
         competition_name=lineup_data.competition_name,
+        venue=lineup_data.venue,
+        background_color=brand_primary_hex,
     )
     if not _download_file(header_url, header_path):
         # header_url may be a file:// URL

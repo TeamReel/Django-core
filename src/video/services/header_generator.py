@@ -109,161 +109,175 @@ def get_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
     return ImageFont.load_default()
 
 
-def generate_header_image(
+def _hex_to_rgba(hex_color: str) -> tuple[int, int, int, int]:
+    """Convert hex color to RGBA tuple."""
+    hex_color = hex_color.lstrip("#")
+    if len(hex_color) == 3:
+        hex_color = "".join(c * 2 for c in hex_color)
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+    return (r, g, b, 255)
+
+
+def _draw_centered_text(
+    draw: ImageDraw.ImageDraw,
+    text: str,
+    cx: int,
+    cy: int,
+    font: ImageFont.FreeTypeFont,
+    fill: tuple[int, int, int, int],
+    stroke_fill: tuple[int, int, int, int] | None = None,
+    stroke_width: int = 0,
+) -> None:
+    """Draw text centered at (cx, cy)."""
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+    x = cx - tw // 2
+    y = cy - th // 2
+    if stroke_fill and stroke_width:
+        draw.text(
+            (x, y), text, font=font, fill=fill, stroke_width=stroke_width, stroke_fill=stroke_fill
+        )
+    else:
+        draw.text((x, y), text, font=font, fill=fill)
+
+
+def generate_header_image(  # noqa: PLR0913
     width: int,
     height: int,
     logo_url: str | None = None,
     opponent_logo_url: str | None = None,
-    sponsor_url: str | None = None,
+    sponsor_url: str | None = None,  # noqa: ARG001 - kept for API compat
     match_date: str = "",
     own_team_name: str = "",
     opponent_name: str = "",
     is_home: bool = True,
-    score_home: int | None = None,
-    score_away: int | None = None,
+    score_home: int | None = None,  # noqa: ARG001 - kept for API compat
+    score_away: int | None = None,  # noqa: ARG001 - kept for API compat
     kickoff_time: str | None = None,
-    coach_name: str | None = None,
+    coach_name: str | None = None,  # noqa: ARG001 - kept for API compat
     competition_name: str | None = None,
+    venue: str | None = None,
     background_color: str | None = None,
-    text_color: str | None = None,
+    text_color: str | None = None,  # noqa: ARG001 - kept for API compat
 ) -> str:
-    """Generate header image and return path to saved file.
+    """Generate header image with 3-panel layout and return presigned URL.
+
+    Layout: [Home logo + name] [Brand color center: STARTING XI / comp / venue / date] [Away logo + name]
 
     Args:
-        width: Image width
-        height: Header height (typically 200-300px)
-        logo_url: URL to club logo
+        width: Image width (typically 1080)
+        height: Header height (typically 300px)
+        logo_url: URL to own club logo
         opponent_logo_url: URL to opponent club logo
-        sponsor_url: URL to sponsor logo
-        match_date: Date string (e.g., "Za 27-09-2025")
+        sponsor_url: URL to sponsor logo (unused in new design)
+        match_date: Date string (e.g., "15 FEB 2026")
         own_team_name: Club/team name
         opponent_name: Opponent name
         is_home: True if home match
         score_home: Home score (if match completed)
         score_away: Away score (if match completed)
-        kickoff_time: Kickoff time string (if match not started)
-        coach_name: Coach name
-        competition_name: Competition/league name (e.g., "Eredivisie")
-        background_color: Background color hex
-        text_color: Text color hex
+        kickoff_time: Kickoff time string (e.g., "20:00")
+        coach_name: Coach name (unused in new design)
+        competition_name: Competition/league name (e.g., "EREDIVISIE")
+        venue: Stadium/venue name (e.g., "Johan Cruijff Arena")
+        background_color: Brand primary color hex for center panel (default: #D2122E)
+        text_color: Text color hex (unused, uses white/black per panel)
 
     Returns:
-        Path to generated image file
+        Presigned URL to uploaded header image
     """
-    bg_color = background_color or DEFAULT_COLORS["background"]
-    txt_color = text_color or DEFAULT_COLORS["text_primary"]
-    txt_secondary = DEFAULT_COLORS["text_secondary"]
+    # Colors
+    white = (255, 255, 255, 255)
+    black = (0, 0, 0, 255)
+    brand_primary = _hex_to_rgba(background_color) if background_color else (210, 18, 46, 255)
 
-    # Create image
-    img = Image.new("RGBA", (width, height), bg_color)
+    # Create opaque white base
+    img = Image.new("RGBA", (width, height), white)
     draw = ImageDraw.Draw(img)
 
-    # Layout constants
-    logo_size = int(height * 0.6)
-    logo_margin = int(width * 0.05)
-    center_x = width // 2
+    # Panel boundaries: left 25%, center 50%, right 25%
+    x_left_end = int(width * 0.25)
+    x_right_start = int(width * 0.75)
 
-    # Download and place logo (left side)
-    if logo_url:
-        logo_img = download_image(logo_url)
+    # Draw 3 panels
+    draw.rectangle([(0, 0), (x_left_end, height)], fill=white)
+    draw.rectangle([(x_left_end, 0), (x_right_start, height)], fill=brand_primary)
+    draw.rectangle([(x_right_start, 0), (width, height)], fill=white)
+
+    # Fonts (scaled relative to header height)
+    scale = height / 300.0
+    fonts = {
+        "xl": get_font(int(72 * scale), bold=True),  # STARTING XI
+        "lg": get_font(int(32 * scale), bold=True),  # competition
+        "team": get_font(int(56 * scale), bold=True),  # team names
+        "sm": get_font(int(26 * scale), bold=True),  # date/time
+        "xs": get_font(int(28 * scale), bold=True),  # venue
+    }
+
+    # Center panel text
+    cx = width // 2
+
+    # "STARTING XI" at top center (with black stroke for readability)
+    _draw_centered_text(
+        draw, "STARTING XI", cx, int(height * 0.22), fonts["xl"], white, black, stroke_width=4
+    )
+
+    # Competition name
+    if competition_name:
+        comp_text = competition_name.upper()
+        _draw_centered_text(draw, comp_text, cx, int(height * 0.48), fonts["lg"], white)
+
+    # Venue
+    if venue:
+        venue_text = venue.upper()
+        _draw_centered_text(draw, venue_text, cx, int(height * 0.65), fonts["xs"], white)
+
+    # Date + kickoff time
+    date_str = match_date or ""
+    time_str = kickoff_time or ""
+    if time_str:
+        dt_text = f"{date_str}  •  {time_str}"
+    else:
+        dt_text = date_str
+    if dt_text.strip():
+        _draw_centered_text(draw, dt_text.upper(), cx, int(height * 0.85), fonts["sm"], white)
+
+    # Determine home/away teams
+    home_name = own_team_name.upper() if is_home else opponent_name.upper()
+    away_name = opponent_name.upper() if is_home else own_team_name.upper()
+    home_logo_url = logo_url if is_home else opponent_logo_url
+    away_logo_url = opponent_logo_url if is_home else logo_url
+
+    # Left panel: Home team name + logo
+    left_cx = x_left_end // 2
+    _draw_centered_text(draw, home_name, left_cx, int(height * 0.18), fonts["team"], black)
+
+    if home_logo_url:
+        logo_img = download_image(home_logo_url)
         if logo_img:
             logo_img = logo_img.convert("RGBA")
+            logo_size = int(height * 0.6)
             logo_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
-            logo_x = logo_margin
-            logo_y = (height - logo_img.height) // 2
+            logo_x = left_cx - logo_img.width // 2
+            logo_y = int(height * 0.65) - logo_img.height // 2
             img.paste(logo_img, (logo_x, logo_y), logo_img)
 
-    # Download and place opponent logo (right side)
-    if opponent_logo_url:
-        opp_img = download_image(opponent_logo_url)
-        if opp_img:
-            opp_img = opp_img.convert("RGBA")
-            opp_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
-            opp_x = width - logo_margin - opp_img.width
-            opp_y = (height - opp_img.height) // 2
-            img.paste(opp_img, (opp_x, opp_y), opp_img)
-    elif sponsor_url:
-        # Fall back to sponsor on right when no opponent logo
-        sponsor_img = download_image(sponsor_url)
-        if sponsor_img:
-            sponsor_img = sponsor_img.convert("RGBA")
-            sponsor_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
-            sponsor_x = width - logo_margin - sponsor_img.width
-            sponsor_y = (height - sponsor_img.height) // 2
-            img.paste(sponsor_img, (sponsor_x, sponsor_y), sponsor_img)
+    # Right panel: Away team name + logo
+    right_cx = x_right_start + (width - x_right_start) // 2
+    _draw_centered_text(draw, away_name, right_cx, int(height * 0.18), fonts["team"], black)
 
-    # Fonts
-    font_date = get_font(24)
-    font_teams = get_font(36, bold=True)
-    font_score = get_font(32, bold=True)
-    font_coach = get_font(20)
-    font_comp = get_font(18)
-
-    # Draw competition name (top center, above date)
-    if competition_name:
-        comp_bbox = draw.textbbox((0, 0), competition_name, font=font_comp)
-        comp_width = comp_bbox[2] - comp_bbox[0]
-        draw.text(
-            (center_x - comp_width // 2, int(height * 0.05)),
-            competition_name,
-            font=font_comp,
-            fill=txt_secondary,
-        )
-
-    # Draw date (top center)
-    date_text = match_date
-    date_bbox = draw.textbbox((0, 0), date_text, font=font_date)
-    date_width = date_bbox[2] - date_bbox[0]
-    date_y = int(height * 0.18) if competition_name else int(height * 0.15)
-    draw.text(
-        (center_x - date_width // 2, date_y),
-        date_text,
-        font=font_date,
-        fill=txt_secondary,
-    )
-
-    # Draw teams (center)
-    if is_home:
-        teams_text = f"{own_team_name} - {opponent_name}"
-    else:
-        teams_text = f"{opponent_name} - {own_team_name}"
-
-    teams_bbox = draw.textbbox((0, 0), teams_text, font=font_teams)
-    teams_width = teams_bbox[2] - teams_bbox[0]
-    draw.text(
-        (center_x - teams_width // 2, int(height * 0.35)),
-        teams_text,
-        font=font_teams,
-        fill=txt_color,
-    )
-
-    # Draw score or kickoff time
-    if score_home is not None and score_away is not None:
-        score_text = f"{score_home} - {score_away}"
-    else:
-        score_text = kickoff_time or ""
-
-    if score_text:
-        score_bbox = draw.textbbox((0, 0), score_text, font=font_score)
-        score_width = score_bbox[2] - score_bbox[0]
-        draw.text(
-            (center_x - score_width // 2, int(height * 0.55)),
-            score_text,
-            font=font_score,
-            fill=txt_color,
-        )
-
-    # Draw coach (bottom center)
-    if coach_name:
-        coach_text = f"Coach: {coach_name}"
-        coach_bbox = draw.textbbox((0, 0), coach_text, font=font_coach)
-        coach_width = coach_bbox[2] - coach_bbox[0]
-        draw.text(
-            (center_x - coach_width // 2, int(height * 0.75)),
-            coach_text,
-            font=font_coach,
-            fill=txt_secondary,
-        )
+    if away_logo_url:
+        logo_img = download_image(away_logo_url)
+        if logo_img:
+            logo_img = logo_img.convert("RGBA")
+            logo_size = int(height * 0.6)
+            logo_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
+            logo_x = right_cx - logo_img.width // 2
+            logo_y = int(height * 0.65) - logo_img.height // 2
+            img.paste(logo_img, (logo_x, logo_y), logo_img)
 
     # Upload to storage and return URL
     return _upload_and_get_url(img, "header")
