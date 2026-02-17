@@ -699,13 +699,10 @@ def _compose_phase(
     input_args += ["-loop", "1", "-i", str(mask_path)]
     input_args += ["-loop", "1", "-i", str(border_path)]
 
-    # Sponsor (idx 4) — use 1x1 transparent dummy if no sponsor
-    if sponsor_path and sponsor_path.exists():
-        input_args += ["-loop", "1", "-i", str(sponsor_path)]
-    else:
-        input_args += ["-f", "lavfi", "-i", "color=c=black@0:s=1x1:r=1,format=rgba"]
+    # Sponsor removed - no longer used in video overlay
+    # Keep input index 4 as dummy to preserve persist_start offset
+    input_args += ["-f", "lavfi", "-i", "color=c=black@0:s=1x1:r=1,format=rgba"]
 
-    has_sponsor = sponsor_path and sponsor_path.exists()
     persist_start = 5
 
     for pp in persistent_players:
@@ -722,25 +719,8 @@ def _compose_phase(
     fc.append("[base][header]overlay=0:0[b1]")
     fc.append(f"[b1][field]overlay=0:{HEADER_HEIGHT}[bg0]")
 
-    # Sponsor overlay
-    if has_sponsor:
-        sbox_w = SPONSOR_W + 2 * SPONSOR_PAD
-        fc.append(f"[4:v]scale={SPONSOR_W}:-1[sponsor]")
-        fc.append(
-            "[bg0]"
-            f"drawbox=x={SPONSOR_MARGIN}:y=h-{SPONSOR_BOX_H}-{SPONSOR_MARGIN}:"
-            f"w={sbox_w}:h={SPONSOR_BOX_H}:color=white@0.95:t=fill,"
-            f"drawbox=x={SPONSOR_MARGIN}:y=h-{SPONSOR_BOX_H}-{SPONSOR_MARGIN}:"
-            f"w={sbox_w}:h={SPONSOR_BOX_H}:color=black@0.90:t=4"
-            "[bg0b]"
-        )
-        fc.append(
-            f"[bg0b][sponsor]overlay=({SPONSOR_MARGIN + SPONSOR_PAD}):"
-            f"(H-h-{SPONSOR_MARGIN + SPONSOR_PAD})[bg0s]"
-        )
-        last_bg = "bg0s"
-    else:
-        last_bg = "bg0"
+    # Sponsor box removed - no longer overlaid on video
+    last_bg = "bg0"
 
     # Persistent badges (pre-rendered body + cheap overlay + label)
     cutoff_h = int(circle_size * BADGE_CUT_FRACTION)

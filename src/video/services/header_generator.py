@@ -255,6 +255,13 @@ def generate_header_image(  # noqa: PLR0913
     left_cx = x_left_end // 2
     _draw_centered_text(draw, home_name, left_cx, int(height * 0.18), fonts["team"], black)
 
+    logger.info(
+        "header_logo_left home_logo_url=%s is_home=%s logo_url=%s opponent_logo_url=%s",
+        home_logo_url,
+        is_home,
+        logo_url,
+        opponent_logo_url,
+    )
     if home_logo_url:
         logo_img = download_image(home_logo_url)
         if logo_img:
@@ -264,6 +271,11 @@ def generate_header_image(  # noqa: PLR0913
             logo_x = left_cx - logo_img.width // 2
             logo_y = int(height * 0.65) - logo_img.height // 2
             img.paste(logo_img, (logo_x, logo_y), logo_img)
+            logger.info("header_logo_left_pasted size=%dx%d", logo_img.width, logo_img.height)
+        else:
+            logger.warning("header_logo_left_download_failed url=%s", home_logo_url)
+    else:
+        logger.warning("header_logo_left_url_missing is_home=%s", is_home)
 
     # Right panel: Away team name + logo
     right_cx = x_right_start + (width - x_right_start) // 2
@@ -278,6 +290,11 @@ def generate_header_image(  # noqa: PLR0913
             logo_x = right_cx - logo_img.width // 2
             logo_y = int(height * 0.65) - logo_img.height // 2
             img.paste(logo_img, (logo_x, logo_y), logo_img)
+            logger.info("header_logo_right_pasted size=%dx%d", logo_img.width, logo_img.height)
+        else:
+            logger.warning("header_logo_right_download_failed url=%s", away_logo_url)
+    else:
+        logger.info("header_logo_right_url_missing (no opponent logo)")
 
     # Upload to storage and return URL
     return _upload_and_get_url(img, "header")
