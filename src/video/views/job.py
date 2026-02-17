@@ -628,7 +628,13 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         # Keep the flat media.{slot}.url in sync with the best available URL.
         # The frontend reads media.{slot}.url as a quick lookup; prefer the
         # processed (WebM/transparent) URL when available, otherwise raw.
-        best_url = variant_value.get("processed") or variant_value.get("raw")
+        # Prefer a browser-playable preview URL (e.g. MP4) for the frontend.
+        # Falls back to the processed URL, then raw.
+        best_url = (
+            variant_value.get("preview_url")
+            or variant_value.get("processed")
+            or variant_value.get("raw")
+        )
         if best_url:
             media = tr.setdefault("media", {})
             media_slot = media.get(asset_type, {})

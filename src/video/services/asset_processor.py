@@ -148,13 +148,18 @@ class AssetProcessor:
                 processed_url,
             )
 
-            return {
+            result_dict: dict = {
                 "raw": raw_url,
                 "processed": processed_url,
                 "processing_state": ProcessingState.PROCESSED.value,
                 "specs": actual_specs,
                 "processed_at": timezone.now().isoformat(),
             }
+            # Propagate browser-playable preview URL if the processed format
+            # is not natively playable in browsers (e.g. ProRes MOV).
+            if actual_specs.get("preview_url"):
+                result_dict["preview_url"] = actual_specs.pop("preview_url")
+            return result_dict
 
         except AssetProcessingCancelled:
             elapsed = time.monotonic() - start_time
@@ -439,9 +444,10 @@ class AssetProcessor:
         variant_suffix = f"_{variant_id}" if variant_id else ""
 
         ext = ".mov" if output_format == "mov" else ".webm"
+        hash_suffix = uuid4().hex[:8]
         storage_path = (
             f"members/{membership_id}/processed/{asset_type}/"
-            f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}{ext}"
+            f"{kit_type}{variant_suffix}_{hash_suffix}{ext}"
         )
 
         t_up = time.monotonic()
@@ -455,6 +461,19 @@ class AssetProcessor:
             storage_path,
         )
 
+        # When the output is MOV (ProRes), browsers cannot play it.
+        # Generate a browser-playable MP4 (H.264) preview and upload it too.
+        preview_url: str | None = None
+        if output_format == "mov":
+            preview_url = self._transcode_mov_to_mp4_preview(
+                mov_path=output_path,
+                membership_id=membership_id,
+                asset_type=asset_type,
+                kit_type=kit_type,
+                variant_suffix=variant_suffix,
+                hash_suffix=hash_suffix,
+            )
+
         actual_specs = {
             "width": spec.width,
             "height": spec.height,
@@ -467,8 +486,83 @@ class AssetProcessor:
             "total_frames": metrics.get("frame_count", 0),
             "mask_stability": metrics.get("mask_stability_mean_diff", 0),
         }
+        if preview_url:
+            actual_specs["preview_url"] = preview_url
 
         return saved_path, actual_specs
+
+    def _transcode_mov_to_mp4_preview(
+        self,
+        mov_path: Path,
+        membership_id: str,
+        asset_type: str,
+        kit_type: str,
+        variant_suffix: str,
+        hash_suffix: str,
+    ) -> str | None:
+        """Transcode a ProRes MOV (with alpha) to a browser-playable MP4 preview.
+
+        Returns the storage path of the uploaded MP4, or None on failure.
+        The MP4 uses H.264 with a black background (alpha composited to black).
+        """
+        from src.video.services.rvm_processor import _get_ffmpeg_path
+
+        preview_path = mov_path.parent / "preview.mp4"
+        try:
+            ffmpeg = _get_ffmpeg_path()
+            cmd = [
+                ffmpeg,
+                "-y",
+                "-v",
+                "warning",
+                "-i",
+                str(mov_path),
+                "-c:v",
+                "libx264",
+                "-preset",
+                "veryfast",
+                "-crf",
+                "23",
+                "-pix_fmt",
+                "yuv420p",
+                "-movflags",
+                "+faststart",
+                "-an",
+                str(preview_path),
+            ]
+            result = subprocess.run(cmd, capture_output=True, timeout=60)
+            if result.returncode != 0:
+                logger.warning(
+                    "mov_to_mp4_preview_failed rc=%d stderr=%s",
+                    result.returncode,
+                    result.stderr.decode(errors="replace")[:500],
+                )
+                return None
+
+            storage_path = (
+                f"members/{membership_id}/processed/{asset_type}/"
+                f"{kit_type}{variant_suffix}_{hash_suffix}_preview.mp4"
+            )
+            t_up = time.monotonic()
+            from django.core.files.storage import default_storage as storage_backend
+
+            with open(preview_path, "rb") as f:
+                storage_backend.save(storage_path, f)
+            logger.info(
+                "mov_to_mp4_preview_done in=%.3fs size_bytes=%d storage_path=%s",
+                time.monotonic() - t_up,
+                preview_path.stat().st_size,
+                storage_path,
+            )
+            return storage_path
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("mov_to_mp4_preview_error error=%s", exc)
+            return None
+        finally:
+            try:
+                preview_path.unlink(missing_ok=True)
+            except Exception:  # noqa: BLE001
+                pass
 
     def _process_video_rembg(
         self,
