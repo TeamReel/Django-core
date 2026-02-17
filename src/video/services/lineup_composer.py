@@ -1057,15 +1057,13 @@ def _compose_phase(
         label_w = circle_size + BADGE_LABEL_EXTRA_W
         lx = f"({WIDTH}*{active_xs[i]}-{label_w // 2})"
         ly = f"({HEIGHT}*{closeup_ys[i]}-{cutoff_h}+{BADGE_LABEL_GAP})"
-        # Use drawbox for consistent label background (no jumping)
+        # Use drawtext with large boxborderw for consistent label background
         f3 += (
-            f"[bg_step3_{i}]"
-            f"drawbox=x={lx}:y={ly}:w={label_w}:h={BADGE_LABEL_H}:"
-            f"color={BADGE_LABEL_BG}@'{alpha_in}':t=fill,"
-            f"drawtext=fontfile='{FONT_PATH}':text='{lbl_close}':"
+            f"[bg_step3_{i}]drawtext=fontfile='{FONT_PATH}':text='{lbl_close}':"
             f"fontcolor={BADGE_LABEL_TEXT_COLOR}:fontsize={fs_close}:"
             f"x={lx}+({label_w}-text_w)/2:"
             f"y={ly}+({BADGE_LABEL_H}-text_h)/2:"
+            f"box=1:boxcolor={BADGE_LABEL_BG}@1:boxborderw=12:"
             f"alpha='{alpha_in}'[bg];"
         )
 

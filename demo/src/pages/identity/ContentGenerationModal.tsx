@@ -1595,7 +1595,7 @@ export default function ContentGenerationModal({
               )}
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+          <button onClick={onClose} className={`text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-2xl ${step === 'generating' ? 'hidden' : ''}`}>×</button>
         </div>
 
         {/* Progress indicator - only show for multi-step flow */}
@@ -1741,12 +1741,12 @@ export default function ContentGenerationModal({
 
               {/* Lineup Options - Formation & Player Style */}
               {(selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
-                <div className="bg-gray-50 rounded-lg p-5">
-                  <h4 className="text-base font-semibold text-gray-800 mb-5">Lineup Opties</h4>
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-5">
+                  <h4 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-5">Lineup Opties</h4>
 
                   {/* Formation selector - Large visual buttons */}
                   <div className="mb-6">
-                    <label className="text-sm font-medium text-gray-600 mb-3 block">Formatie</label>
+                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3 block">Formatie</label>
                     <div className="grid grid-cols-3 gap-4">
                       {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
                         const isSelected = lineupFormation === code;
@@ -1754,10 +1754,10 @@ export default function ContentGenerationModal({
                           <button
                             key={code}
                             onClick={() => setLineupFormation(code)}
-                            className={`relative rounded-xl border-3 transition-all overflow-hidden p-1 ${
+                            className={`relative rounded-xl border-2 transition-all overflow-hidden p-1 ${
                               isSelected
-                                ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200'
-                                : 'border-gray-200 bg-white hover:border-gray-400 hover:shadow-md'
+                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 shadow-lg ring-2 ring-blue-300 dark:ring-blue-600'
+                                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
                             }`}
                           >
                             {/* Mini field */}
@@ -1781,7 +1781,7 @@ export default function ContentGenerationModal({
                             </div>
                             {/* Formation name */}
                             <div className={`py-3 text-lg font-bold text-center ${
-                              isSelected ? 'text-blue-600' : 'text-gray-700'
+                              isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-200'
                             }`}>
                               {code}
                             </div>
@@ -1793,14 +1793,14 @@ export default function ContentGenerationModal({
 
                   {/* Closeup style selector - Larger buttons */}
                   <div className="mb-6">
-                    <label className="text-sm font-medium text-gray-600 mb-3 block">Weergave Stijl</label>
+                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3 block">Weergave Stijl</label>
                     <div className="grid grid-cols-2 gap-4">
                       <button
                         onClick={() => setLineupCloseupStyle('popout')}
-                        className={`px-5 py-4 rounded-xl text-base font-semibold transition-all flex items-center justify-center gap-3 ${
+                        className={`px-5 py-4 rounded-xl text-base font-semibold transition-all flex items-center justify-center gap-3 border-2 ${
                           lineupCloseupStyle === 'popout'
-                            ? 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-200'
-                            : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-gray-400 hover:shadow-md'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-lg ring-2 ring-blue-300 dark:ring-blue-600'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
                         }`}
                       >
                         <span className="text-2xl">🧍</span>
@@ -1808,10 +1808,10 @@ export default function ContentGenerationModal({
                       </button>
                       <button
                         onClick={() => setLineupCloseupStyle('badge')}
-                        className={`px-5 py-4 rounded-xl text-base font-semibold transition-all flex items-center justify-center gap-3 ${
+                        className={`px-5 py-4 rounded-xl text-base font-semibold transition-all flex items-center justify-center gap-3 border-2 ${
                           lineupCloseupStyle === 'badge'
-                            ? 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-200'
-                            : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-gray-400 hover:shadow-md'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-lg ring-2 ring-blue-300 dark:ring-blue-600'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
                         }`}
                       >
                         <span className="text-2xl">⭕</span>
@@ -1822,7 +1822,7 @@ export default function ContentGenerationModal({
 
                   {/* Animation style selector */}
                   <div>
-                    <label className="text-sm font-medium text-gray-600 mb-3 block">Animatie Stijl</label>
+                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3 block">Animatie Stijl</label>
                     <div className="grid grid-cols-3 gap-3">
                       {[
                         { value: 'slide_up', label: 'Omhoog', icon: '⬆️' },
@@ -1834,10 +1834,10 @@ export default function ContentGenerationModal({
                         <button
                           key={opt.value}
                           onClick={() => setLineupAnimationStyle(opt.value as typeof lineupAnimationStyle)}
-                          className={`px-4 py-3 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-1 ${
+                          className={`px-4 py-3 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-1 border-2 ${
                             lineupAnimationStyle === opt.value
-                              ? 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-200'
-                              : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-gray-400 hover:shadow-md'
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-lg ring-2 ring-blue-300 dark:ring-blue-600'
+                              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
                           }`}
                         >
                           <span className="text-xl">{opt.icon}</span>
@@ -1867,25 +1867,9 @@ export default function ContentGenerationModal({
                 const assetLabels = assetTypes.map(t => ASSET_TYPE_LABELS[t] || t);
 
                 return (
-                  <div key={role} className="border border-gray-300 rounded-lg p-4 shadow-sm">
-                    <div className="flex justify-between items-center mb-3 pb-3 border-b">
-                      <div className="flex items-center gap-3">
-                        <span className="font-semibold text-base">{renderRoleLabel(role)}</span>
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          selected.length === req.count
-                            ? 'bg-green-100 text-green-700 font-medium'
-                            : 'bg-yellow-50 text-yellow-700'
-                        }`}>
-                          {selected.length} / {req.count}
-                        </span>
-                      </div>
-                      {assetLabels.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {assetLabels.map((label, idx) => (
-                            <Badge key={idx} variant="info" size="sm">📸 {label}</Badge>
-                          ))}
-                        </div>
-                      )}
+                  <div key={role} className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 shadow-sm">
+                    <div className="mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                      <span className="font-semibold text-base text-gray-800 dark:text-gray-100">{renderRoleLabel(role)}</span>
                     </div>
 
                     <div className="space-y-2">
