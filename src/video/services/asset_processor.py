@@ -21,6 +21,7 @@ Usage:
 from __future__ import annotations
 
 import io
+import json
 import logging
 import subprocess
 import tempfile
@@ -511,11 +512,14 @@ class AssetProcessor:
         Returns the storage path of the uploaded MP4, or None on failure.
         The MP4 uses H.264 with a black background (alpha composited to black).
         """
-        from src.video.services.rvm_processor import _get_ffmpeg_path
+        from src.video.services.rvm_processor import _get_ffmpeg_path, _get_ffprobe_path
 
         preview_path = mov_path.parent / "preview.mp4"
         try:
             ffmpeg = _get_ffmpeg_path()
+            ffprobe = _get_ffprobe_path()
+
+            t_transcode = time.monotonic()
             cmd = [
                 ffmpeg,
                 "-y",
@@ -523,25 +527,75 @@ class AssetProcessor:
                 "warning",
                 "-i",
                 str(mov_path),
+                # Some environments end up producing MP4s with broken/zero duration
+                # unless we force CFR timestamps.
+                "-fps_mode",
+                "cfr",
+                "-r",
+                "25",
+                "-vf",
+                "fps=25,format=yuv420p",
                 "-c:v",
                 "libx264",
                 "-preset",
                 "veryfast",
                 "-crf",
                 "23",
-                "-pix_fmt",
-                "yuv420p",
                 "-movflags",
                 "+faststart",
                 "-an",
                 str(preview_path),
             ]
-            result = subprocess.run(cmd, capture_output=True, timeout=60)
+
+            result = subprocess.run(cmd, capture_output=True, timeout=180, check=False)
             if result.returncode != 0:
                 logger.warning(
                     "mov_to_mp4_preview_failed rc=%d stderr=%s",
                     result.returncode,
                     result.stderr.decode(errors="replace")[:500],
+                )
+                return None
+
+            transcode_s = time.monotonic() - t_transcode
+
+            # Validate the produced MP4 to avoid uploading 0-second files.
+            probe_cmd = [
+                ffprobe,
+                "-v",
+                "error",
+                "-select_streams",
+                "v:0",
+                "-show_entries",
+                "format=duration:stream=nb_frames,avg_frame_rate,codec_name,pix_fmt",
+                "-of",
+                "json",
+                str(preview_path),
+            ]
+            probe = subprocess.run(probe_cmd, capture_output=True, timeout=30, check=False)
+            duration_s: float | None = None
+            nb_frames: int | None = None
+            if probe.returncode == 0:
+                try:
+                    data = json.loads(probe.stdout.decode("utf-8", errors="replace"))
+                    duration_raw = (data.get("format") or {}).get("duration")
+                    if duration_raw not in (None, "N/A", ""):
+                        duration_s = float(duration_raw)
+
+                    streams = data.get("streams") or []
+                    if streams:
+                        frames_raw = streams[0].get("nb_frames")
+                        if frames_raw not in (None, "N/A", ""):
+                            nb_frames = int(frames_raw)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("mov_to_mp4_preview_probe_parse_failed error=%s", exc)
+
+            if not duration_s or duration_s <= 0.01 or (nb_frames is not None and nb_frames <= 1):
+                logger.warning(
+                    "mov_to_mp4_preview_invalid duration_s=%s nb_frames=%s transcode_s=%.3f stderr=%s",
+                    duration_s,
+                    nb_frames,
+                    transcode_s,
+                    result.stderr.decode(errors="replace")[:300],
                 )
                 return None
 
@@ -555,9 +609,11 @@ class AssetProcessor:
             with open(preview_path, "rb") as f:
                 storage_backend.save(storage_path, f)
             logger.info(
-                "mov_to_mp4_preview_done in=%.3fs size_bytes=%d storage_path=%s",
+                "mov_to_mp4_preview_done transcode_s=%.3f upload_s=%.3f size_bytes=%d duration_s=%s storage_path=%s",
+                transcode_s,
                 time.monotonic() - t_up,
                 preview_path.stat().st_size,
+                duration_s,
                 storage_path,
             )
             return storage_path
