@@ -463,6 +463,7 @@ export default function ContentGenerationModal({
   // Lineup flyer options
   const [lineupFormation, setLineupFormation] = useState<string>(matchData?.metadata?.formation || '4-3-3');
   const [lineupCloseupStyle, setLineupCloseupStyle] = useState<'popout' | 'badge'>('popout');
+  const [lineupAnimationStyle, setLineupAnimationStyle] = useState<'slide_up' | 'appear' | 'slide_in' | 'zoom' | 'fade'>('slide_up');
 
   // Selected members per role
   const [selectedMembers, setSelectedMembers] = useState<Record<string, string[]>>({
@@ -853,6 +854,7 @@ export default function ContentGenerationModal({
           template_id: selectedTemplate?.id || null,
           formation: formation,
           closeup_style: lineupCloseupStyle,
+          animation_style: lineupAnimationStyle,
           selected_member_ids: {
             goalkeeper: targetGKs,
             player: targetPlayers,
@@ -1021,6 +1023,7 @@ export default function ContentGenerationModal({
             output_resolution: 'vertical_1080p',
             formation: lineupFormation || '4-3-3',
             closeup_style: lineupCloseupStyle || 'popout',
+            animation_style: lineupAnimationStyle || 'slide_up',
             selected_member_ids: {
               goalkeeper: targetGKs,
               player: targetPlayers,
@@ -1735,58 +1738,51 @@ export default function ContentGenerationModal({
           {/* Step 3: Select Members */}
           {step === 'members' && selectedTemplate && (
             <div className="space-y-6">
-              <div className="bg-blue-50 p-4 rounded-lg flex items-center gap-4">
-                <div className="text-3xl">📋</div>
-                <div>
-                  <div className="font-semibold">{selectedTemplate.name}</div>
-                  <div className="text-sm text-gray-600">Select the required members for this template</div>
-                </div>
-              </div>
 
               {/* Lineup Options - Formation & Player Style */}
               {(selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-4">Lineup Options</h4>
+                <div className="bg-gray-50 rounded-lg p-5">
+                  <h4 className="text-base font-semibold text-gray-800 mb-5">Lineup Opties</h4>
 
-                  {/* Formation selector with visual field */}
-                  <div className="mb-4">
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 block">Formatie</label>
-                    <div className="flex gap-3">
+                  {/* Formation selector - Large visual buttons */}
+                  <div className="mb-6">
+                    <label className="text-sm font-medium text-gray-600 mb-3 block">Formatie</label>
+                    <div className="grid grid-cols-3 gap-4">
                       {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
                         const isSelected = lineupFormation === code;
                         return (
                           <button
                             key={code}
                             onClick={() => setLineupFormation(code)}
-                            className={`relative flex-1 rounded-lg border-2 transition-all overflow-hidden ${
+                            className={`relative rounded-xl border-3 transition-all overflow-hidden p-1 ${
                               isSelected
-                                ? 'border-blue-500 bg-blue-50 shadow-md'
-                                : 'border-gray-200 bg-white hover:border-gray-300'
+                                ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200'
+                                : 'border-gray-200 bg-white hover:border-gray-400 hover:shadow-md'
                             }`}
                           >
                             {/* Mini field */}
-                            <div className="relative w-full aspect-[3/4] bg-gradient-to-b from-green-600 to-green-700 rounded-t">
+                            <div className="relative w-full aspect-[3/4] bg-gradient-to-b from-green-500 to-green-700 rounded-lg">
                               {/* Field lines */}
-                              <div className="absolute inset-x-2 top-[15%] h-px bg-white/30" />
-                              <div className="absolute inset-x-2 top-[50%] h-px bg-white/30" />
-                              <div className="absolute left-1/2 top-[50%] w-6 h-6 -translate-x-1/2 -translate-y-1/2 border border-white/30 rounded-full" />
-                              <div className="absolute inset-x-[25%] bottom-0 h-[15%] border-t border-l border-r border-white/30" />
+                              <div className="absolute inset-x-2 top-[15%] h-px bg-white/40" />
+                              <div className="absolute inset-x-2 top-[50%] h-px bg-white/40" />
+                              <div className="absolute left-1/2 top-[50%] w-8 h-8 -translate-x-1/2 -translate-y-1/2 border-2 border-white/40 rounded-full" />
+                              <div className="absolute inset-x-[20%] bottom-0 h-[18%] border-t-2 border-l-2 border-r-2 border-white/40" />
 
-                              {/* Position dots */}
+                              {/* Position dots - no numbers */}
                               {layout.positions.map(pos => (
                                 <div
                                   key={pos.slot}
-                                  className={`absolute w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold transform -translate-x-1/2 -translate-y-1/2 ${
-                                    isSelected ? 'bg-white text-blue-600' : 'bg-white/80 text-gray-700'
+                                  className={`absolute w-3 h-3 rounded-full transform -translate-x-1/2 -translate-y-1/2 ${
+                                    isSelected ? 'bg-white shadow-md' : 'bg-white/90'
                                   }`}
                                   style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-                                >
-                                  {pos.slot}
-                                </div>
+                                />
                               ))}
                             </div>
                             {/* Formation name */}
-                            <div className={`py-2 text-sm font-semibold text-center ${isSelected ? 'text-blue-600' : 'text-gray-700'}`}>
+                            <div className={`py-3 text-lg font-bold text-center ${
+                              isSelected ? 'text-blue-600' : 'text-gray-700'
+                            }`}>
                               {code}
                             </div>
                           </button>
@@ -1795,32 +1791,59 @@ export default function ContentGenerationModal({
                     </div>
                   </div>
 
-                  {/* Closeup style selector */}
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Speler Weergave</label>
-                    <div className="flex gap-2">
+                  {/* Closeup style selector - Larger buttons */}
+                  <div className="mb-6">
+                    <label className="text-sm font-medium text-gray-600 mb-3 block">Weergave Stijl</label>
+                    <div className="grid grid-cols-2 gap-4">
                       <button
                         onClick={() => setLineupCloseupStyle('popout')}
-                        className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-center flex items-center justify-center gap-2 ${
+                        className={`px-5 py-4 rounded-xl text-base font-semibold transition-all flex items-center justify-center gap-3 ${
                           lineupCloseupStyle === 'popout'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                            ? 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-200'
+                            : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-gray-400 hover:shadow-md'
                         }`}
                       >
-                        <span className="text-lg">🧍</span>
+                        <span className="text-2xl">🧍</span>
                         <span>Popout</span>
                       </button>
                       <button
                         onClick={() => setLineupCloseupStyle('badge')}
-                        className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-center flex items-center justify-center gap-2 ${
+                        className={`px-5 py-4 rounded-xl text-base font-semibold transition-all flex items-center justify-center gap-3 ${
                           lineupCloseupStyle === 'badge'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                            ? 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-200'
+                            : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-gray-400 hover:shadow-md'
                         }`}
                       >
-                        <span className="text-lg">⭕</span>
+                        <span className="text-2xl">⭕</span>
                         <span>Badge</span>
                       </button>
+                    </div>
+                  </div>
+
+                  {/* Animation style selector */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-600 mb-3 block">Animatie Stijl</label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { value: 'slide_up', label: 'Omhoog', icon: '⬆️' },
+                        { value: 'appear', label: 'Direct', icon: '✨' },
+                        { value: 'slide_in', label: 'Naar binnen', icon: '↔️' },
+                        { value: 'zoom', label: 'Inzoomen', icon: '🔍' },
+                        { value: 'fade', label: 'Vervagen', icon: '🌫️' },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          onClick={() => setLineupAnimationStyle(opt.value as typeof lineupAnimationStyle)}
+                          className={`px-4 py-3 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-1 ${
+                            lineupAnimationStyle === opt.value
+                              ? 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-200'
+                              : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-gray-400 hover:shadow-md'
+                          }`}
+                        >
+                          <span className="text-xl">{opt.icon}</span>
+                          <span>{opt.label}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -2057,45 +2080,20 @@ export default function ContentGenerationModal({
           {step === 'confirm' && (
             <div className="flex flex-col items-center justify-center h-full py-12">
               <div className="text-6xl mb-6">🎬</div>
-              <h3 className="text-2xl font-bold mb-2">Ready to Generate</h3>
+              <h3 className="text-2xl font-bold mb-2">Klaar om te genereren</h3>
               <p className="text-gray-600 mb-6 text-center max-w-md">
-                You're about to generate a <strong>{selectedType?.label || selectedTemplate?.name}</strong> for this match.
+                Je gaat een <strong>{selectedType?.label || selectedTemplate?.name}</strong> maken.
               </p>
-
-              {/* Template info */}
-              {selectedTemplate && (
-                <div className="bg-gray-50 rounded-lg p-4 mb-6 w-full max-w-md">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Badge variant="info">{selectedTemplate.template_type}</Badge>
-                    {selectedTemplate.style_variant && (
-                      <Badge variant="default">{selectedTemplate.style_variant}</Badge>
-                    )}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    <strong>Template:</strong> {selectedTemplate.name}
-                  </div>
-                  {selectedTemplate.description && (
-                    <div className="text-sm text-gray-500 mt-1">
-                      {selectedTemplate.description}
-                    </div>
-                  )}
-                  {selectedTemplate.credits_required && selectedTemplate.credits_required > 0 && (
-                    <div className="text-sm text-gray-600 mt-2">
-                      <strong>Cost:</strong> {selectedTemplate.credits_required} credits
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* Match info */}
               {matchData && (
                 <div className="bg-blue-50 rounded-lg p-4 w-full max-w-md">
                   <div className="text-sm text-blue-800">
-                    <strong>Match:</strong> {matchData.title || 'Match'}
+                    <strong>Wedstrijd:</strong> {matchData.title || `${matchData.project?.name} vs ${matchData.opponent_project?.name || 'Opponent'}`}
                   </div>
                   {matchData.start_time && (
                     <div className="text-sm text-blue-600 mt-1">
-                      {new Date(matchData.start_time).toLocaleDateString()}
+                      {new Date(matchData.start_time).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </div>
                   )}
                 </div>

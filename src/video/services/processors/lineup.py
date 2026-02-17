@@ -190,6 +190,7 @@ class LineupProcessor(BaseVideoProcessor):
         selected_member_ids = config.get("selected_member_ids")
         formation = config.get("formation", "4-3-3")
         closeup_style = config.get("closeup_style", "popout")
+        animation_style = config.get("animation_style", "slide_up")
 
         logger.info(
             "Starting lineup composition (new pipeline)",
@@ -198,6 +199,7 @@ class LineupProcessor(BaseVideoProcessor):
                 "activity_id": activity_id,
                 "formation": formation,
                 "closeup_style": closeup_style,
+                "animation_style": animation_style,
             },
         )
 
@@ -251,6 +253,7 @@ class LineupProcessor(BaseVideoProcessor):
             lineup_data=lineup_data,
             formation=formation,
             closeup_style=closeup_style,
+            animation_style=animation_style,
             output_dir=self.temp_dir,
             progress_callback=_progress,
         )

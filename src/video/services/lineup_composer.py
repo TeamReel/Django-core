@@ -642,6 +642,45 @@ def _download_player_assets(
 # ─────────────────────────────────────────────────────────────────
 
 
+def _get_animation_expr(animation_style: str, ty: str, tx: str, active_x: float) -> tuple[str, str]:
+    """Generate FFmpeg y-expression and x-expression for player animation.
+
+    Args:
+        animation_style: One of 'slide_up', 'appear', 'slide_in', 'zoom', 'fade'
+        ty: The target y position expression (e.g., '(main_h*0.5-height)')
+        tx: The target x position expression (e.g., '(W*0.5-w/2)')
+        active_x: The x-position ratio (0-1) used to determine slide direction
+
+    Returns:
+        Tuple of (y_expression, x_expression) for FFmpeg overlay.
+    """
+    if animation_style == "appear":
+        # Instant appear - no animation
+        return (f"'{ty}'", tx)
+    elif animation_style == "slide_in":
+        # Slide horizontally from left/right edge towards center
+        # Players on left half slide from left, players on right half slide from right
+        if active_x < 0.5:
+            # Slide from left edge
+            xe = f"'-w + ({tx} + w) * min(t/1.5, 1)'"
+        else:
+            # Slide from right edge
+            xe = f"'W + ({tx} - W) * min(t/1.5, 1)'"
+        return (f"'{ty}'", xe)
+    elif animation_style == "zoom":
+        # Zoom effect - scale from small to full (handled via scale filter, y stays fixed)
+        # This requires more complex filter changes; for now, just appear
+        return (f"'{ty}'", tx)
+    elif animation_style == "fade":
+        # Fade in - opacity transition (handled via overlay alpha, y stays fixed)
+        # This requires alpha overlay; for now, just appear
+        return (f"'{ty}'", tx)
+    else:
+        # Default: slide_up - slide from bottom
+        ye = f"'{ty} + (main_h - {ty}) * (1 - min(t/1.5, 1))'"
+        return (ye, tx)
+
+
 def _run_ffmpeg(cmd: list[str], desc: str) -> None:
     """Run FFmpeg and raise on failure.
 
@@ -677,6 +716,7 @@ def _compose_phase(
     tmp_dir: Path,
     formation: str,
     popout: bool = True,
+    animation_style: str = "slide_up",
 ) -> list[Path] | None:
     """Generate clips for one phase (e.g. 'defenders')."""
     role = role_from_group(group_name)
@@ -781,17 +821,25 @@ def _compose_phase(
         cmd1 += ["-loop", "1", "-i", str(path)]
         fh = int(HEIGHT * scale_full)
         ty = f"(main_h*{active_ys[i]}-{fh})"
-        ye = f"'{ty} + (main_h - {ty}) * (1 - min(t/1.5, 1))'"
+        tx = f"(W*{active_xs[i]}-w/2)"
+        ye, xe = _get_animation_expr(animation_style, ty, tx, active_xs[i])
         f1 += f"[{inp}:v]scale=-1:{fh}[act{i}];"
-        f1 += f"[bg][act{i}]overlay=(W*{active_xs[i]}-w/2):{ye}[bg_tmp{i}];"
+        f1 += f"[bg][act{i}]overlay={xe}:{ye}[bg_tmp{i}];"
         lbl = fullbody_label(p.name, role, len(active_players))
         ty_t = f"(h*{active_ys[i]}-{fh})"
-        ys = f"{ty_t} + (h - {ty_t}) * (1 - min(t/1.5, 1))"
-        ny = f"'({ys}) + {fh} + 10'"
+        # Text animation follows the same pattern
+        if animation_style == "appear":
+            txt_y = f"'({ty_t}) + {fh} + 10'"
+        elif animation_style == "slide_in":
+            txt_y = f"'({ty_t}) + {fh} + 10'"  # Text doesn't move, only players slide
+        else:
+            # Default slide_up: text also slides up with the player
+            ys = f"{ty_t} + (h - {ty_t}) * (1 - min(t/1.5, 1))"
+            txt_y = f"'({ys}) + {fh} + 10'"
         fs = fullbody_fontsize(role, len(active_players), lbl)
         f1 += (
             f"[bg_tmp{i}]drawtext=fontfile='{FONT_PATH}':text='{lbl}':"
-            f"fontcolor=black:fontsize={fs}:x={text_x_expr(active_xs[i])}:y={ny}:"
+            f"fontcolor=black:fontsize={fs}:x={text_x_expr(active_xs[i])}:y={txt_y}:"
             f"box=1:boxcolor=white@1:boxborderw=10[bg];"
         )
 
@@ -1009,12 +1057,15 @@ def _compose_phase(
         label_w = circle_size + BADGE_LABEL_EXTRA_W
         lx = f"({WIDTH}*{active_xs[i]}-{label_w // 2})"
         ly = f"({HEIGHT}*{closeup_ys[i]}-{cutoff_h}+{BADGE_LABEL_GAP})"
+        # Use drawbox for consistent label background (no jumping)
         f3 += (
-            f"[bg_step3_{i}]drawtext=fontfile='{FONT_PATH}':text='{lbl_close}':"
+            f"[bg_step3_{i}]"
+            f"drawbox=x={lx}:y={ly}:w={label_w}:h={BADGE_LABEL_H}:"
+            f"color={BADGE_LABEL_BG}@'{alpha_in}':t=fill,"
+            f"drawtext=fontfile='{FONT_PATH}':text='{lbl_close}':"
             f"fontcolor={BADGE_LABEL_TEXT_COLOR}:fontsize={fs_close}:"
             f"x={lx}+({label_w}-text_w)/2:"
             f"y={ly}+({BADGE_LABEL_H}-text_h)/2:"
-            f"box=1:boxcolor={BADGE_LABEL_BG}@1:boxborderw=8:"
             f"alpha='{alpha_in}'[bg];"
         )
 
@@ -1155,6 +1206,7 @@ def compose_lineup_video(
     lineup_data: "LineupData",
     formation: str = "4-3-3",
     closeup_style: str = "popout",
+    animation_style: str = "slide_up",
     output_dir: Path | None = None,
     progress_callback=None,
 ) -> Path:
@@ -1164,6 +1216,7 @@ def compose_lineup_video(
         lineup_data: Fully resolved player data, brand assets, match info
         formation: Formation string (4-3-3, 4-4-2, 3-4-3)
         closeup_style: Badge style (popout / inside)
+        animation_style: Player reveal animation (slide_up, appear, slide_in, zoom, fade)
         output_dir: Where to write the final MP4. Uses tempfile if None.
         progress_callback: Optional fn(percent: int) for progress updates.
 
@@ -1396,6 +1449,7 @@ def compose_lineup_video(
             tmp_dir,
             formation,
             popout,
+            animation_style,
         )
         if segs:
             all_segments.extend(segs)

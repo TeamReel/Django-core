@@ -149,7 +149,7 @@ def generate_header_image(  # noqa: PLR0913
     height: int,
     logo_url: str | None = None,
     opponent_logo_url: str | None = None,
-    sponsor_url: str | None = None,  # noqa: ARG001 - kept for API compat
+    sponsor_url: str | None = None,
     match_date: str = "",
     own_team_name: str = "",
     opponent_name: str = "",
@@ -165,14 +165,14 @@ def generate_header_image(  # noqa: PLR0913
 ) -> str:
     """Generate header image with 3-panel layout and return presigned URL.
 
-    Layout: [Home logo + name] [Brand color center: STARTING XI / comp / venue / date] [Away logo + name]
+    Layout: [Home logo] [Brand color center: STARTING XI / match / comp / venue / date] [Away logo]
 
     Args:
         width: Image width (typically 1080)
         height: Header height (typically 300px)
         logo_url: URL to own club logo
         opponent_logo_url: URL to opponent club logo
-        sponsor_url: URL to sponsor logo (unused in new design)
+        sponsor_url: URL to sponsor logo (displayed bottom-left)
         match_date: Date string (e.g., "15 FEB 2026")
         own_team_name: Club/team name
         opponent_name: Opponent name
@@ -191,7 +191,6 @@ def generate_header_image(  # noqa: PLR0913
     """
     # Colors
     white = (255, 255, 255, 255)
-    black = (0, 0, 0, 255)
     brand_primary = _hex_to_rgba(background_color) if background_color else (210, 18, 46, 255)
 
     # Create opaque white base
@@ -211,8 +210,7 @@ def generate_header_image(  # noqa: PLR0913
     scale = height / 300.0
     fonts = {
         "xl": get_font(int(72 * scale), bold=True),  # STARTING XI
-        "lg": get_font(int(32 * scale), bold=True),  # competition
-        "team": get_font(int(56 * scale), bold=True),  # team names
+        "lg": get_font(int(32 * scale), bold=True),  # competition / match title
         "sm": get_font(int(26 * scale), bold=True),  # date/time
         "xs": get_font(int(28 * scale), bold=True),  # venue
     }
@@ -221,19 +219,26 @@ def generate_header_image(  # noqa: PLR0913
     cx = width // 2
 
     # "STARTING XI" at top center (with black stroke for readability)
+    black = (0, 0, 0, 255)
     _draw_centered_text(
-        draw, "STARTING XI", cx, int(height * 0.22), fonts["xl"], white, black, stroke_width=4
+        draw, "STARTING XI", cx, int(height * 0.18), fonts["xl"], white, black, stroke_width=4
     )
+
+    # Match title: "Home - Away" (e.g., "Ajax - Heracles Almelo")
+    home_name = own_team_name if is_home else opponent_name
+    away_name = opponent_name if is_home else own_team_name
+    match_title = f"{home_name} - {away_name}"
+    _draw_centered_text(draw, match_title.upper(), cx, int(height * 0.40), fonts["lg"], white)
 
     # Competition name
     if competition_name:
         comp_text = competition_name.upper()
-        _draw_centered_text(draw, comp_text, cx, int(height * 0.48), fonts["lg"], white)
+        _draw_centered_text(draw, comp_text, cx, int(height * 0.56), fonts["lg"], white)
 
     # Venue
     if venue:
         venue_text = venue.upper()
-        _draw_centered_text(draw, venue_text, cx, int(height * 0.65), fonts["xs"], white)
+        _draw_centered_text(draw, venue_text, cx, int(height * 0.72), fonts["xs"], white)
 
     # Date + kickoff time
     date_str = match_date or ""
@@ -243,33 +248,22 @@ def generate_header_image(  # noqa: PLR0913
     else:
         dt_text = date_str
     if dt_text.strip():
-        _draw_centered_text(draw, dt_text.upper(), cx, int(height * 0.85), fonts["sm"], white)
+        _draw_centered_text(draw, dt_text.upper(), cx, int(height * 0.88), fonts["sm"], white)
 
-    # Determine home/away teams
-    home_name = own_team_name.upper() if is_home else opponent_name.upper()
-    away_name = opponent_name.upper() if is_home else own_team_name.upper()
+    # Determine home/away logos based on is_home
     home_logo_url = logo_url if is_home else opponent_logo_url
     away_logo_url = opponent_logo_url if is_home else logo_url
 
-    # Left panel: Home team name + logo
+    # Left panel: Home team logo only (centered in panel)
     left_cx = x_left_end // 2
-    _draw_centered_text(draw, home_name, left_cx, int(height * 0.18), fonts["team"], black)
-
-    logger.info(
-        "header_logo_left home_logo_url=%s is_home=%s logo_url=%s opponent_logo_url=%s",
-        home_logo_url,
-        is_home,
-        logo_url,
-        opponent_logo_url,
-    )
     if home_logo_url:
         logo_img = download_image(home_logo_url)
         if logo_img:
             logo_img = logo_img.convert("RGBA")
-            logo_size = int(height * 0.6)
+            logo_size = int(height * 0.7)
             logo_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
             logo_x = left_cx - logo_img.width // 2
-            logo_y = int(height * 0.65) - logo_img.height // 2
+            logo_y = (height - logo_img.height) // 2
             img.paste(logo_img, (logo_x, logo_y), logo_img)
             logger.info("header_logo_left_pasted size=%dx%d", logo_img.width, logo_img.height)
         else:
@@ -277,24 +271,37 @@ def generate_header_image(  # noqa: PLR0913
     else:
         logger.warning("header_logo_left_url_missing is_home=%s", is_home)
 
-    # Right panel: Away team name + logo
+    # Right panel: Away team logo only (centered in panel)
     right_cx = x_right_start + (width - x_right_start) // 2
-    _draw_centered_text(draw, away_name, right_cx, int(height * 0.18), fonts["team"], black)
-
     if away_logo_url:
         logo_img = download_image(away_logo_url)
         if logo_img:
             logo_img = logo_img.convert("RGBA")
-            logo_size = int(height * 0.6)
+            logo_size = int(height * 0.7)
             logo_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
             logo_x = right_cx - logo_img.width // 2
-            logo_y = int(height * 0.65) - logo_img.height // 2
+            logo_y = (height - logo_img.height) // 2
             img.paste(logo_img, (logo_x, logo_y), logo_img)
             logger.info("header_logo_right_pasted size=%dx%d", logo_img.width, logo_img.height)
         else:
             logger.warning("header_logo_right_download_failed url=%s", away_logo_url)
     else:
         logger.info("header_logo_right_url_missing (no opponent logo)")
+
+    # Sponsor logo: bottom-left corner of left panel
+    if sponsor_url:
+        sponsor_img = download_image(sponsor_url)
+        if sponsor_img:
+            sponsor_img = sponsor_img.convert("RGBA")
+            sponsor_max_w = int(x_left_end * 0.4)
+            sponsor_max_h = int(height * 0.25)
+            sponsor_img.thumbnail((sponsor_max_w, sponsor_max_h), Image.Resampling.LANCZOS)
+            sponsor_x = 10  # 10px from left edge
+            sponsor_y = height - sponsor_img.height - 10  # 10px from bottom
+            img.paste(sponsor_img, (sponsor_x, sponsor_y), sponsor_img)
+            logger.info("header_sponsor_pasted size=%dx%d", sponsor_img.width, sponsor_img.height)
+        else:
+            logger.warning("header_sponsor_download_failed url=%s", sponsor_url)
 
     # Upload to storage and return URL
     return _upload_and_get_url(img, "header")
