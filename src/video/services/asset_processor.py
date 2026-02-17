@@ -143,8 +143,8 @@ class AssetProcessor:
             elapsed = time.monotonic() - start_time
             logger.info(
                 "asset_processing_done type=%s in=%.3fs processed_url=%s",
-                elapsed,
                 asset_type,
+                elapsed,
                 processed_url,
             )
 
