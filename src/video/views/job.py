@@ -496,9 +496,11 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             if isinstance(val, dict):
                 raw_url = val.get("raw")
                 state = val.get("processing_state", "raw")
+                cancel_requested_at = val.get("cancel_requested_at")
             elif isinstance(val, str):
                 raw_url = val
                 state = "raw"
+                cancel_requested_at = None
             else:
                 continue
 
@@ -510,7 +512,30 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             if state == "processed":
                 skipped.append({"key": key, "reason": "already_processed"})
                 continue
-            if state in ("processing", "cancelling"):
+
+            # For "cancelling" state: allow reprocessing if stuck > 5 min
+            if state == "cancelling":
+                stuck_threshold_minutes = 5
+                is_stuck = False
+                if cancel_requested_at:
+                    from datetime import datetime
+
+                    try:
+                        req_time = datetime.fromisoformat(
+                            cancel_requested_at.replace("Z", "+00:00")
+                        )
+                        age_seconds = (timezone.now() - req_time).total_seconds()
+                        if age_seconds > stuck_threshold_minutes * 60:
+                            is_stuck = True
+                            # Reset to allow reprocessing
+                            state = "raw"
+                    except (ValueError, TypeError):
+                        pass
+                if not is_stuck:
+                    skipped.append({"key": key, "reason": "cancelling"})
+                    continue
+
+            if state == "processing":
                 skipped.append({"key": key, "reason": "already_processing"})
                 continue
 
@@ -525,12 +550,14 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 kit_type = "home"
                 variant_id = key
 
-            variants_to_process.append({
-                "key": key,
-                "kit_type": kit_type,
-                "variant_id": variant_id,
-                "raw_url": raw_url,
-            })
+            variants_to_process.append(
+                {
+                    "key": key,
+                    "kit_type": kit_type,
+                    "variant_id": variant_id,
+                    "raw_url": raw_url,
+                }
+            )
 
         if not variants_to_process:
             return Response(
@@ -574,11 +601,13 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 bg_removal_backend=backend,
             )
 
-            queued.append({
-                "key": v["key"],
-                "kit_type": v["kit_type"],
-                "variant_id": v["variant_id"],
-            })
+            queued.append(
+                {
+                    "key": v["key"],
+                    "kit_type": v["kit_type"],
+                    "variant_id": v["variant_id"],
+                }
+            )
 
             logger.info(
                 "process_all_variants queued membership_id=%s asset_type=%s key=%s",
