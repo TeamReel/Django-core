@@ -32,6 +32,43 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+
+def _get_ffmpeg_path() -> str:
+    """Find FFmpeg binary.
+
+    Priority order:
+    1. /usr/local/ffmpeg/bin/ffmpeg — bundled build (from Dockerfile)
+    2. /usr/local/bin/ffmpeg — legacy static location
+    3. imageio-ffmpeg — pip-installed static binary
+    4. System ffmpeg
+    """
+    # 1. Bundled build installed by Dockerfile
+    bundled_path = Path("/usr/local/ffmpeg/bin/ffmpeg")
+    if bundled_path.exists():
+        return str(bundled_path)
+
+    # 2. Legacy static location
+    legacy_static_path = Path("/usr/local/bin/ffmpeg")
+    if legacy_static_path.exists():
+        return str(legacy_static_path)
+
+    # 3. imageio-ffmpeg static binary
+    try:
+        import imageio_ffmpeg
+
+        path = imageio_ffmpeg.get_ffmpeg_exe()
+        if path:
+            return path
+    except Exception:  # noqa: BLE001
+        pass
+
+    # 4. System ffmpeg
+    path = shutil.which("ffmpeg")
+    if path:
+        return path
+
+    return "ffmpeg"
+
 # ── Video / canvas settings ──
 WIDTH = 1080
 HEIGHT = 1920
@@ -454,7 +491,7 @@ def _render_badge_body_png(
         filters.append("[cvb]copy,format=rgba[out]")
 
     cmd = [
-        "ffmpeg",
+        _get_ffmpeg_path(),
         "-y",
         "-threads",
         "1",
@@ -708,7 +745,7 @@ def _compose_phase(
     # ── Part 1: Fullbody slide-up (3 s) ──
     part1 = tmp_dir / f"phase_{phase_idx}_1_full.mp4"
     cmd1 = [
-        "ffmpeg",
+        _get_ffmpeg_path(),
         "-y",
         "-threads",
         "1",
@@ -765,7 +802,7 @@ def _compose_phase(
     # ── Part 2: Intros (variable) ──
     part2 = tmp_dir / f"phase_{phase_idx}_2_intro.mp4"
     cmd2 = [
-        "ffmpeg",
+        _get_ffmpeg_path(),
         "-y",
         "-threads",
         "1",
@@ -832,7 +869,7 @@ def _compose_phase(
     # ── Part 3: Transition fullbody→closeup (1 s) ──
     part3 = tmp_dir / f"phase_{phase_idx}_3_trans.mp4"
     cmd3 = [
-        "ffmpeg",
+        _get_ffmpeg_path(),
         "-y",
         "-threads",
         "1",
@@ -1037,7 +1074,7 @@ def _compose_hold(
         last_bg = "bg0"
 
     cmd = [
-        "ffmpeg",
+        _get_ffmpeg_path(),
         "-y",
         "-threads",
         "1",
@@ -1437,7 +1474,7 @@ def compose_lineup_video(
     output_file = output_dir / "lineup_video.mp4"
     _run_ffmpeg(
         [
-            "ffmpeg",
+            _get_ffmpeg_path(),
             "-y",
             "-threads",
             "1",
