@@ -59,6 +59,8 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
         TeamReel assets are stored per-membership but should be accessible when viewing
         a user in any season/period context. This merges assets from the user's other
         memberships in the same project.
+
+        Uses context caching to avoid N+1 queries when serializing multiple memberships.
         """
         try:
             meta = dict(obj.metadata or {})
@@ -67,19 +69,31 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
             if meta.get("teamreel_assets"):
                 return meta
 
-            # Otherwise, look for assets on other memberships of the same user in same project
-            other_memberships = ProjectMembership.objects.filter(
-                project_id=obj.project_id,
-                user_id=obj.user_id,
-                deleted_at__isnull=True,
-                metadata__has_key="teamreel_assets",
-            ).exclude(id=obj.id)
+            # Check context cache first (populated by view for batch queries)
+            teamreel_cache = self.context.get("teamreel_assets_cache")
+            if teamreel_cache is not None:
+                # Cache key is (project_id, user_id)
+                cache_key = (obj.project_id, obj.user_id)
+                if cache_key in teamreel_cache:
+                    meta["teamreel_assets"] = teamreel_cache[cache_key]
+                return meta
 
-            for other in other_memberships:
-                other_meta = other.metadata or {}
-                if other_meta.get("teamreel_assets"):
-                    meta["teamreel_assets"] = other_meta["teamreel_assets"]
-                    break  # Use the first one found (most recent would be better but this is simpler)
+            # Fallback: single query (for single object serialization)
+            other = (
+                ProjectMembership.objects.filter(
+                    project_id=obj.project_id,
+                    user_id=obj.user_id,
+                    deleted_at__isnull=True,
+                    metadata__has_key="teamreel_assets",
+                )
+                .exclude(id=obj.id)
+                .only("metadata")
+                .first()
+            )
+            if other and other.metadata:
+                tr = other.metadata.get("teamreel_assets")
+                if tr:
+                    meta["teamreel_assets"] = tr
 
             return meta
         except Exception:
@@ -93,17 +107,27 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
         - This is team-level domain data, distinct from access roles.
         - We also include a derived 'coach' role when the membership access role is admin.
         - During transition, we also read legacy metadata hints (team_role/character_role).
+
+        Uses context caching to avoid N+1 queries when serializing multiple memberships.
         """
         roles = set()
 
         try:
-            from projects.models import ProjectFunctionalRoleAssignment
+            # Check context cache first (populated by view for batch queries)
+            roles_cache = self.context.get("functional_roles_cache")
+            if roles_cache is not None:
+                cache_key = (obj.project_id, obj.user_id)
+                if cache_key in roles_cache:
+                    roles.update(roles_cache[cache_key])
+            else:
+                # Fallback: single query (for single object serialization)
+                from projects.models import ProjectFunctionalRoleAssignment
 
-            qs = ProjectFunctionalRoleAssignment.objects.filter(
-                project_id=obj.project_id,
-                user_id=obj.user_id,
-            ).values_list("role", flat=True)
-            roles.update(qs)
+                qs = ProjectFunctionalRoleAssignment.objects.filter(
+                    project_id=obj.project_id,
+                    user_id=obj.user_id,
+                ).values_list("role", flat=True)
+                roles.update(qs)
         except Exception:
             # Best-effort: do not break members endpoint if functional roles table is missing.
             pass

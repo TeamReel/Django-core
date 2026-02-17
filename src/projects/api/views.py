@@ -912,6 +912,70 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
 
         return qs
 
+    def list(self, request, *args, **kwargs):
+        """List memberships with optimized N+1 prevention via context caching.
+
+        Pre-loads teamreel_assets and functional roles for all memberships
+        to avoid N+1 queries during serialization.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        memberships = page if page is not None else list(queryset)
+
+        # Build caches for serializer context to avoid N+1 queries
+        teamreel_cache: dict[tuple, dict] = {}
+        functional_roles_cache: dict[tuple, set] = {}
+
+        if memberships:
+            project_id = memberships[0].project_id
+            user_ids = {m.user_id for m in memberships}
+
+            # Batch-load teamreel_assets from ALL memberships in this project for these users
+            # (assets may be on a different season's membership)
+            from projects.models import ProjectMembership
+
+            all_memberships_with_assets = ProjectMembership.objects.filter(
+                project_id=project_id,
+                user_id__in=user_ids,
+                deleted_at__isnull=True,
+                metadata__has_key="teamreel_assets",
+            ).only("user_id", "metadata")
+
+            for m in all_memberships_with_assets:
+                cache_key = (project_id, m.user_id)
+                if cache_key not in teamreel_cache:
+                    tr = (m.metadata or {}).get("teamreel_assets")
+                    if tr:
+                        teamreel_cache[cache_key] = tr
+
+            # Batch-load functional roles
+            try:
+                from projects.models import ProjectFunctionalRoleAssignment
+
+                role_qs = ProjectFunctionalRoleAssignment.objects.filter(
+                    project_id=project_id,
+                    user_id__in=user_ids,
+                ).values("user_id", "role")
+
+                for r in role_qs:
+                    cache_key = (project_id, r["user_id"])
+                    if cache_key not in functional_roles_cache:
+                        functional_roles_cache[cache_key] = set()
+                    functional_roles_cache[cache_key].add(r["role"])
+            except Exception:
+                pass  # Table may not exist yet
+
+        # Serialize with context caches
+        context = self.get_serializer_context()
+        context["teamreel_assets_cache"] = teamreel_cache
+        context["functional_roles_cache"] = functional_roles_cache
+
+        serializer = self.get_serializer(memberships, many=True, context=context)
+
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
+
     def perform_create(self, serializer):
         """Use service to add member."""
         project = self._get_project()

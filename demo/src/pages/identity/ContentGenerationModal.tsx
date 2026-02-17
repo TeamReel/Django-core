@@ -244,6 +244,78 @@ const ASSET_TYPE_TO_MEDIA_KEY: Record<string, string> = {
   'closeup': 'closeup',
 };
 
+// Formation position layout data (x, y as percentages on a mini-field)
+// Positions numbered 1-11: 1=GK, 2-5=DEF, 6-8=MID, 9-11=ATT (varies by formation)
+interface FormationPosition {
+  slot: number;
+  x: number;  // percentage from left
+  y: number;  // percentage from top (0 = attacking end)
+  label: string;
+}
+
+const FORMATION_LAYOUTS: Record<string, { name: string; positions: FormationPosition[] }> = {
+  '4-3-3': {
+    name: '4-3-3',
+    positions: [
+      // Goalkeeper
+      { slot: 1, x: 50, y: 90, label: 'GK' },
+      // Defense (4)
+      { slot: 2, x: 15, y: 72, label: 'LB' },
+      { slot: 3, x: 35, y: 75, label: 'CB' },
+      { slot: 4, x: 65, y: 75, label: 'CB' },
+      { slot: 5, x: 85, y: 72, label: 'RB' },
+      // Midfield (3)
+      { slot: 6, x: 30, y: 50, label: 'CM' },
+      { slot: 7, x: 50, y: 55, label: 'CDM' },
+      { slot: 8, x: 70, y: 50, label: 'CM' },
+      // Attack (3)
+      { slot: 9, x: 20, y: 22, label: 'LW' },
+      { slot: 10, x: 50, y: 18, label: 'ST' },
+      { slot: 11, x: 80, y: 22, label: 'RW' },
+    ],
+  },
+  '4-4-2': {
+    name: '4-4-2',
+    positions: [
+      // Goalkeeper
+      { slot: 1, x: 50, y: 90, label: 'GK' },
+      // Defense (4)
+      { slot: 2, x: 15, y: 72, label: 'LB' },
+      { slot: 3, x: 35, y: 75, label: 'CB' },
+      { slot: 4, x: 65, y: 75, label: 'CB' },
+      { slot: 5, x: 85, y: 72, label: 'RB' },
+      // Midfield (4)
+      { slot: 6, x: 15, y: 48, label: 'LM' },
+      { slot: 7, x: 38, y: 52, label: 'CM' },
+      { slot: 8, x: 62, y: 52, label: 'CM' },
+      { slot: 9, x: 85, y: 48, label: 'RM' },
+      // Attack (2)
+      { slot: 10, x: 35, y: 22, label: 'ST' },
+      { slot: 11, x: 65, y: 22, label: 'ST' },
+    ],
+  },
+  '3-4-3': {
+    name: '3-4-3',
+    positions: [
+      // Goalkeeper
+      { slot: 1, x: 50, y: 90, label: 'GK' },
+      // Defense (3)
+      { slot: 2, x: 25, y: 75, label: 'CB' },
+      { slot: 3, x: 50, y: 78, label: 'CB' },
+      { slot: 4, x: 75, y: 75, label: 'CB' },
+      // Midfield (4)
+      { slot: 5, x: 15, y: 50, label: 'LWB' },
+      { slot: 6, x: 38, y: 55, label: 'CM' },
+      { slot: 7, x: 62, y: 55, label: 'CM' },
+      { slot: 8, x: 85, y: 50, label: 'RWB' },
+      // Attack (3)
+      { slot: 9, x: 20, y: 22, label: 'LW' },
+      { slot: 10, x: 50, y: 18, label: 'ST' },
+      { slot: 11, x: 80, y: 22, label: 'RW' },
+    ],
+  },
+};
+
 // Check if a member has a specific asset, optionally verifying role-specific variant
 function memberHasAsset(member: Participation, assetType: string, role?: string): boolean {
   const mediaKey = ASSET_TYPE_TO_MEDIA_KEY[assetType] || assetType;
@@ -260,45 +332,54 @@ function memberHasAsset(member: Participation, assetType: string, role?: string)
   // media uses: kit, closeup
   const imageStructureKey = mediaKey === 'kit' ? 'fullbody' : mediaKey;
 
-  // Determine the role variant key
-  let roleKey = 'home'; // Default for player
-  if (role === 'goalkeeper') roleKey = 'goalkeeper';
-  else if (role === 'coach' || role === 'assistant') roleKey = 'coach';
+  // Determine the role variant keys to check
+  // For players: check both 'home' and 'away' variants (either is acceptable)
+  // For goalkeeper: check 'goalkeeper' variant
+  // For coach/assistant: check 'coach' variant
+  let roleKeys: string[] = ['home']; // Default for player
+  if (role === 'goalkeeper') {
+    roleKeys = ['goalkeeper'];
+  } else if (role === 'coach' || role === 'assistant') {
+    roleKeys = ['coach'];
+  } else if (role === 'player') {
+    // Players can use either home or away kit
+    roleKeys = ['home', 'away'];
+  }
 
   // 1. Check the new 'images' structure (images.{type}.{variant})
   // e.g. images.fullbody.goalkeeper or images.closeup.home
-  if (images[imageStructureKey] && images[imageStructureKey][roleKey]) {
-    return true;
-  }
+  const hasImageAsset = roleKeys.some(roleKey =>
+    images[imageStructureKey] && images[imageStructureKey][roleKey]
+  );
+  if (hasImageAsset) return true;
 
   // 2. Check videos structure for role-specific variants
   // e.g. videos.intro.goalkeeper_thumbs_up or videos.intro.home_hand_up
   if (videos[mediaKey]) {
     const variants = videos[mediaKey];
-    // Check if any variant key contains/starts with the role key
+    // Check if any variant key contains/starts with any of the role keys
     const hasRoleVariant = Object.keys(variants).some(k => {
       const normalizedKey = k.toLowerCase();
-      return (normalizedKey.includes(roleKey) || normalizedKey.startsWith(roleKey)) && variants[k];
+      return roleKeys.some(roleKey =>
+        (normalizedKey.includes(roleKey) || normalizedKey.startsWith(roleKey)) && variants[k]
+      );
     });
     if (hasRoleVariant) return true;
-
-    // Also accept any video variant if no role-specific one found (fallback)
-    const hasAnyVariant = Object.values(variants).some((v: any) => {
-      if (v && typeof v === 'object') return !!(v.processed || v.raw);
-      return v && typeof v === 'string' && v.trim();
-    });
-    if (hasAnyVariant) return true;
+    // NO FALLBACK: We require explicit role-specific variants for lineup filtering
+    // This ensures goalkeeper-only members don't appear in player dropdowns
   }
 
   // 3. Check the 'media' structure (generic, not role-specific)
-  // This is the older format: media.{slot}.url
-  if (media[mediaKey]?.url) return true;
+  // This is the older format: media.{slot}.url - only use when no role specified
+  if (!role && media[mediaKey]?.url) return true;
 
-  // 4. Check legacy format
-  if (mediaKey === 'profile' && legacyKit?.profile_photo_url) return true;
-  if (mediaKey === 'kit' && legacyKit?.full_body_url) return true;
-  if (mediaKey === 'celebration' && legacyKit?.goal_celebration_url) return true;
-  if (mediaKey === 'legacy_photo' && tr?.old?.profile_photo_url) return true;
+  // 4. Check legacy format (only when no role specified or for backwards compatibility)
+  if (!role) {
+    if (mediaKey === 'profile' && legacyKit?.profile_photo_url) return true;
+    if (mediaKey === 'kit' && legacyKit?.full_body_url) return true;
+    if (mediaKey === 'celebration' && legacyKit?.goal_celebration_url) return true;
+    if (mediaKey === 'legacy_photo' && tr?.old?.profile_photo_url) return true;
+  }
 
   return false;
 }
@@ -1665,54 +1746,81 @@ export default function ContentGenerationModal({
               {/* Lineup Options - Formation & Player Style */}
               {(selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Lineup Options</h4>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-4">Lineup Options</h4>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Formation selector */}
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Formation</label>
-                      <div className="flex gap-2">
-                        {['4-3-3', '4-4-2', '3-4-3'].map(f => (
+                  {/* Formation selector with visual field */}
+                  <div className="mb-4">
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 block">Formatie</label>
+                    <div className="flex gap-3">
+                      {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
+                        const isSelected = lineupFormation === code;
+                        return (
                           <button
-                            key={f}
-                            onClick={() => setLineupFormation(f)}
-                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                              lineupFormation === f
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                            key={code}
+                            onClick={() => setLineupFormation(code)}
+                            className={`relative flex-1 rounded-lg border-2 transition-all overflow-hidden ${
+                              isSelected
+                                ? 'border-blue-500 bg-blue-50 shadow-md'
+                                : 'border-gray-200 bg-white hover:border-gray-300'
                             }`}
                           >
-                            {f}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                            {/* Mini field */}
+                            <div className="relative w-full aspect-[3/4] bg-gradient-to-b from-green-600 to-green-700 rounded-t">
+                              {/* Field lines */}
+                              <div className="absolute inset-x-2 top-[15%] h-px bg-white/30" />
+                              <div className="absolute inset-x-2 top-[50%] h-px bg-white/30" />
+                              <div className="absolute left-1/2 top-[50%] w-6 h-6 -translate-x-1/2 -translate-y-1/2 border border-white/30 rounded-full" />
+                              <div className="absolute inset-x-[25%] bottom-0 h-[15%] border-t border-l border-r border-white/30" />
 
-                    {/* Closeup style selector */}
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Player Style</label>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setLineupCloseupStyle('popout')}
-                          className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-center ${
-                            lineupCloseupStyle === 'popout'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          🧍 Popout
-                        </button>
-                        <button
-                          onClick={() => setLineupCloseupStyle('badge')}
-                          className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-center ${
-                            lineupCloseupStyle === 'badge'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          ⭕ Badge
-                        </button>
-                      </div>
+                              {/* Position dots */}
+                              {layout.positions.map(pos => (
+                                <div
+                                  key={pos.slot}
+                                  className={`absolute w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold transform -translate-x-1/2 -translate-y-1/2 ${
+                                    isSelected ? 'bg-white text-blue-600' : 'bg-white/80 text-gray-700'
+                                  }`}
+                                  style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+                                >
+                                  {pos.slot}
+                                </div>
+                              ))}
+                            </div>
+                            {/* Formation name */}
+                            <div className={`py-2 text-sm font-semibold text-center ${isSelected ? 'text-blue-600' : 'text-gray-700'}`}>
+                              {code}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Closeup style selector */}
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Speler Weergave</label>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setLineupCloseupStyle('popout')}
+                        className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-center flex items-center justify-center gap-2 ${
+                          lineupCloseupStyle === 'popout'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        <span className="text-lg">🧍</span>
+                        <span>Popout</span>
+                      </button>
+                      <button
+                        onClick={() => setLineupCloseupStyle('badge')}
+                        className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-center flex items-center justify-center gap-2 ${
+                          lineupCloseupStyle === 'badge'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        <span className="text-lg">⭕</span>
+                        <span>Badge</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1762,17 +1870,24 @@ export default function ContentGenerationModal({
                         const currentSelection = selected[idx];
                         const currentMember = available.find(p => p.id === currentSelection);
 
-                        // Calculate position number based on role
+                        // Calculate position label based on role and formation
                         let positionLabel = '';
                         if (role === 'goalkeeper') {
-                          positionLabel = 'Goalkeeper #1';
+                          positionLabel = '#1 — Keeper';
                         } else if (role === 'player') {
-                          // Players start at #2 (after goalkeeper #1)
-                          positionLabel = `Player #${idx + 2}`;
+                          // Get position label from formation layout if available
+                          const slotNumber = idx + 2; // Players start at slot 2 (after goalkeeper)
+                          const formationLayout = FORMATION_LAYOUTS[lineupFormation];
+                          const positionData = formationLayout?.positions.find(p => p.slot === slotNumber);
+                          if (positionData) {
+                            positionLabel = `#${slotNumber} — ${positionData.label}`;
+                          } else {
+                            positionLabel = `#${slotNumber}`;
+                          }
                         } else if (role === 'coach') {
                           positionLabel = idx === 0 ? 'Coach' : `Coach ${idx + 1}`;
                         } else if (role === 'assistant') {
-                          positionLabel = idx === 0 ? 'Assistant' : `Assistant ${idx + 1}`;
+                          positionLabel = idx === 0 ? 'Assistent' : `Assistent ${idx + 1}`;
                         } else {
                           positionLabel = `${renderRoleLabel(role)} ${idx + 1}`;
                         }
@@ -1782,8 +1897,8 @@ export default function ContentGenerationModal({
                         const ineligibleMembers = available.filter(p => !memberHasRequiredAssets(p, assetTypes, role));
 
                         return (
-                          <div key={idx} className="grid grid-cols-[120px_1fr] gap-3 items-center">
-                            <label className="text-sm text-gray-600 font-medium">
+                          <div key={idx} className="grid grid-cols-[100px_1fr] gap-3 items-center">
+                            <label className="text-sm text-gray-600 font-medium truncate" title={positionLabel}>
                               {positionLabel}
                             </label>
                             <select
@@ -1992,179 +2107,76 @@ export default function ContentGenerationModal({
           {/* Generating */}
           {step === 'generating' && (
             <div className="flex flex-col items-center justify-center h-full py-12">
-              <div className="w-full max-w-sm mb-4">
-                <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-600 transition-all duration-300 rounded-full" style={{ width: `${progress}%` }} />
-                </div>
-                <div className="text-center text-sm text-gray-500 mt-2">{Math.round(progress)}%</div>
-              </div>
-
               {(() => {
                 const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
                 const isLineup = templateSubtype === 'lineup' || templateSubtype === 'lineup_flyer';
                 const status = (videoJobStatus || '').toLowerCase();
 
-                type StepStatus = 'pending' | 'active' | 'done' | 'error';
-                const StepRow = ({
-                  label,
-                  detail,
-                  state,
-                }: {
-                  label: string;
-                  detail?: string;
-                  state: StepStatus;
-                }) => {
-                  const pillClass =
-                    state === 'done'
-                      ? 'bg-blue-600 text-white'
-                      : state === 'active'
-                        ? 'bg-blue-100 text-blue-700'
-                        : state === 'error'
-                          ? 'bg-gray-300 text-gray-800'
-                          : 'bg-gray-200 text-gray-600';
+                // Determine progress value (use videoJobProgressRaw for lineup, progress for others)
+                const displayProgress = isLineup && videoJobProgressRaw > 0 ? videoJobProgressRaw : progress;
 
-                  const glyph = state === 'done' ? '✓' : state === 'active' ? '…' : '';
-
-                  return (
-                    <div className="flex items-start gap-3">
-                      <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${pillClass}`}>
-                        {glyph}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-sm text-gray-700">{label}</div>
-                        {detail && <div className="text-xs text-gray-500 mt-0.5">{detail}</div>}
-                      </div>
-                    </div>
-                  );
-                };
-
+                // Dynamic headline and description based on status
                 let headline = 'Bezig met genereren…';
-                let subline = matchData?.project?.name ? `Voor ${matchData.project.name}` : 'Dit kan even duren.';
+                let description = 'Even geduld, we maken je content.';
+
                 if (isLineup) {
-                  headline = 'Lineup video wordt gemaakt…';
-                  if (status === 'queued') subline = 'We wachten tot de verwerking start.';
-                  if (status === 'processing') subline = 'We bouwen de video stap voor stap op.';
+                  headline = 'Video wordt gemaakt';
+
+                  const currentPlayer = (videoJobMeta as Record<string, unknown>)?.current_segment as string | undefined;
+                  const segIdx = (videoJobMeta as Record<string, unknown>)?.segment_index as number | undefined;
+                  const segTotal = (videoJobMeta as Record<string, unknown>)?.segment_total as number | undefined;
+
+                  if (status === 'queued') {
+                    description = 'Wachten op verwerking…';
+                  } else if (status === 'processing') {
+                    if (currentPlayer && segIdx && segTotal) {
+                      description = `${currentPlayer} (${segIdx}/${segTotal})`;
+                    } else if (displayProgress > 0) {
+                      description = displayProgress < 50
+                        ? 'Intro en spelers worden verwerkt…'
+                        : displayProgress < 85
+                          ? 'Segmenten worden samengevoegd…'
+                          : 'Bijna klaar, video wordt afgerond…';
+                    } else {
+                      description = 'Assets worden geladen…';
+                    }
+                  } else if (status === 'completed') {
+                    description = 'Voltooid!';
+                  }
                 }
 
-                const requestState: StepStatus = 'done';
-                const createState: StepStatus = isLineup ? (videoJobId ? 'done' : 'active') : 'done';
-                const queueState: StepStatus =
-                  isLineup && videoJobId
-                    ? status === 'queued'
-                      ? 'active'
-                      : status === 'processing' || status === 'completed'
-                        ? 'done'
-                        : 'pending'
-                    : 'pending';
-                const buildState: StepStatus =
-                  isLineup && videoJobId
-                    ? status === 'processing'
-                      ? 'active'
-                      : status === 'completed'
-                        ? 'done'
-                        : 'pending'
-                    : !isLineup
-                      ? progress >= 10
-                        ? 'active'
-                        : 'pending'
-                      : 'pending';
-                const finalizeState: StepStatus =
-                  isLineup && videoJobId
-                    ? status === 'processing' && videoJobProgressRaw >= 90
-                      ? 'active'
-                      : status === 'completed'
-                        ? 'done'
-                        : 'pending'
-                    : !isLineup
-                      ? progress >= 85
-                        ? 'active'
-                        : 'pending'
-                      : 'pending';
-                const doneState: StepStatus =
-                  isLineup && videoJobId
-                    ? status === 'completed'
-                      ? 'done'
-                      : 'pending'
-                    : progress >= 100
-                      ? 'done'
-                      : 'pending';
-
-                const createdDetail = isLineup
-                  ? videoJobId
-                    ? 'Video job is aangemaakt.'
-                    : 'We zetten alles klaar.'
-                  : 'Aanvraag is verstuurd.';
-
-                const queueDetail = isLineup
-                  ? status === 'queued'
-                    ? 'Wachten op start.'
-                    : status === 'processing' || status === 'completed'
-                      ? 'Gestart.'
-                      : undefined
-                  : undefined;
-
-                const currentPlayer = (videoJobMeta as Record<string, unknown>)?.current_segment as string | undefined;
-                const segIdx = (videoJobMeta as Record<string, unknown>)?.segment_index as number | undefined;
-                const segTotal = (videoJobMeta as Record<string, unknown>)?.segment_total as number | undefined;
-                const segStatus = (videoJobMeta as Record<string, unknown>)?.segment_status as string | undefined;
-                const segStatusLabel = segStatus === 'downloading' ? '⬇️' : segStatus === 'done' ? '✅' : '⚙️';
-
-                const buildDetail = isLineup
-                  ? status === 'processing'
-                    ? currentPlayer
-                      ? `${segStatusLabel} ${currentPlayer}${segIdx && segTotal ? ` (${segIdx}/${segTotal})` : ''}`
-                      : `Voortgang: ${Math.round(videoJobProgressRaw)}%`
-                    : status === 'completed'
-                      ? 'Afgerond.'
-                      : undefined
-                  : progress > 0
-                    ? `Voortgang: ${Math.round(progress)}%`
-                    : undefined;
-
-                const finalizeDetail = isLineup
-                  ? status === 'processing' && videoJobProgressRaw >= 90
-                    ? 'Bijna klaar.'
-                    : status === 'completed'
-                      ? 'Afgerond.'
-                      : undefined
-                  : progress >= 85 && progress < 100
-                    ? 'Bijna klaar.'
-                    : undefined;
-
-                const startedDetail = generationStartedAtMs
-                  ? `Gestart om ${new Date(generationStartedAtMs).toLocaleTimeString()}`
-                  : undefined;
-
                 return (
-                  <div className="w-full max-w-md">
-                    <div className="text-xl font-medium text-gray-700">{headline}</div>
-                    <div className="text-sm text-gray-500 mt-1">{subline}</div>
-                    {startedDetail && <div className="text-xs text-gray-500 mt-1">{startedDetail}</div>}
+                  <div className="w-full max-w-md text-center">
+                    {/* Icon */}
+                    <div className="text-5xl mb-6 animate-pulse">🎬</div>
 
-                    <div className="bg-gray-50 rounded-lg p-4 mt-4 w-full">
-                      <div className="text-sm font-medium text-gray-700 mb-3">Status</div>
-                      <div className="flex flex-col gap-3">
-                        <StepRow label="Aanvraag verstuurd" state={requestState} />
-                        <StepRow label={isLineup ? 'Video job aanmaken' : 'Voorbereiden'} state={createState} detail={createdDetail} />
-                        {isLineup && <StepRow label="Wachtrij" state={queueState} detail={queueDetail} />}
-                        <StepRow label={isLineup ? 'Video maken' : 'Genereren'} state={buildState} detail={buildDetail} />
-                        <StepRow label="Afronden" state={finalizeState} detail={finalizeDetail} />
-                        <StepRow label="Klaar" state={doneState} />
-                      </div>
+                    {/* Headline */}
+                    <h2 className="text-xl font-semibold text-gray-800 mb-2">{headline}</h2>
+
+                    {/* Description */}
+                    <p className="text-sm text-gray-500 mb-6 min-h-[20px]">{description}</p>
+
+                    {/* Progress bar */}
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden">
+                      <div
+                        className="bg-blue-600 h-full rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${Math.max(displayProgress, 2)}%` }}
+                      />
                     </div>
+                    <div className="text-sm text-gray-600 font-medium">{Math.round(displayProgress)}%</div>
 
+                    {/* Close option for lineup (runs in background) */}
                     {isLineup && videoJobId && (
-                      <div className="mt-6 text-center">
-                        <p className="text-xs text-gray-500 mb-2">
-                          De video blijft op de achtergrond verwerkt worden, ook als je dit venster sluit.
+                      <div className="mt-8">
+                        <p className="text-xs text-gray-400 mb-2">
+                          Je kunt dit venster sluiten — de video wordt op de achtergrond verwerkt.
                         </p>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={onClose}
-                          style={{ fontSize: '13px' }}
                         >
-                          Sluiten — bekijk later in Video Queue
+                          Sluiten
                         </Button>
                       </div>
                     )}
