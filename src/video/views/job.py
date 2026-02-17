@@ -265,8 +265,6 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         Triggers background removal + resize/crop to lineup-ready specs.
         Updates membership.metadata.teamreel_assets in-place with { raw, processed, processing_state }.
         """
-        import threading
-
         membership_id = request.data.get("membership_id")
         asset_type = request.data.get("asset_type")
         kit_type = request.data.get("kit_type", "home")
@@ -367,7 +365,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Mark as "processing" immediately in metadata
+        # Mark as "processing" immediately in metadata for instant UI feedback
         self._update_variant_metadata(
             membership,
             asset_type,
@@ -381,120 +379,29 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             },
         )
 
-        # Run processing in background thread (like lineup jobs)
-        def _process_in_background() -> None:
-            from django.db import close_old_connections
-            import time
+        # Dispatch to Celery worker for async processing
+        # This runs on a dedicated worker service, not blocking HTTP requests
+        from src.video.tasks.asset_processing import process_member_asset
 
-            # Ensure clean DB connection for this thread (Django connections
-            # are thread-local; the main thread's connection won't work here).
-            close_old_connections()
+        backend = "rvm" if asset_type in ("intro", "celebration") else "rembg"
 
-            try:
-                from src.video.services.asset_processor import AssetProcessor
+        logger.info(
+            "process_asset_background_start membership_id=%s asset_type=%s kit_type=%s variant_id=%s backend=%s",
+            str(membership_id),
+            asset_type,
+            kit_type,
+            variant_id or "",
+            backend,
+        )
 
-                # Cooperative cancellation: poll membership metadata for this variant.
-                last_check_s = 0.0
-                cancelled = False
-
-                def should_cancel() -> bool:
-                    nonlocal last_check_s, cancelled
-                    if cancelled:
-                        return True
-                    now_s = time.monotonic()
-                    if now_s - last_check_s < 0.75:
-                        return False
-                    last_check_s = now_s
-                    try:
-                        ProjectMembership = apps.get_model("projects", "ProjectMembership")
-                        m = ProjectMembership.objects.only("metadata").get(id=membership_id)
-                        v = self._get_variant_metadata(m, asset_type, kit_type, variant_id)
-                        if isinstance(v, dict):
-                            st = v.get("processing_state")
-                            if st in ("cancelling", "cancel_requested"):
-                                cancelled = True
-                                return True
-                    except Exception:
-                        # Best effort: if we can't check, assume not cancelled.
-                        return False
-                    return False
-
-                processor = AssetProcessor()
-                # Images (fullbody, closeup): rembg single-pass (fast)
-                # Videos (intro, celebration): RVM stream (faster + temporal consistency)
-                backend = "rvm" if asset_type in ("intro", "celebration") else "rembg"
-
-                logger.info(
-                    "process_asset_background_start membership_id=%s asset_type=%s kit_type=%s variant_id=%s backend=%s",
-                    str(membership_id),
-                    asset_type,
-                    kit_type,
-                    variant_id or "",
-                    backend,
-                )
-                result = processor.process_asset(
-                    raw_url=raw_url,
-                    asset_type=asset_type,
-                    membership_id=str(membership_id),
-                    kit_type=kit_type,
-                    variant_id=variant_id,
-                    organisation_id=str(membership.project.organisation_id)
-                    if hasattr(membership.project, "organisation_id")
-                    else None,
-                    bg_removal_backend=backend,
-                    should_cancel=should_cancel,
-                )
-
-                # Refresh membership and update metadata
-                membership.refresh_from_db()
-
-                # If cancellation was requested while processing, don't overwrite with a processed result.
-                if should_cancel():
-                    self._update_variant_metadata(
-                        membership,
-                        asset_type,
-                        kit_type,
-                        variant_id,
-                        {
-                            "raw": raw_url,
-                            "processed": None,
-                            "processing_state": "cancelled",
-                            "cancelled_at": timezone.now().isoformat(),
-                        },
-                    )
-                    return
-
-                self._update_variant_metadata(membership, asset_type, kit_type, variant_id, result)
-                logger.info(
-                    "Asset processing complete: %s.%s → %s",
-                    asset_type,
-                    kit_type,
-                    result.get("processing_state"),
-                )
-            except Exception as exc:
-                logger.exception("Background asset processing failed")
-                try:
-                    close_old_connections()
-                    membership.refresh_from_db()
-                    self._update_variant_metadata(
-                        membership,
-                        asset_type,
-                        kit_type,
-                        variant_id,
-                        {
-                            "raw": raw_url,
-                            "processed": None,
-                            "processing_state": "failed",
-                            "error": str(exc)[:500],
-                        },
-                    )
-                except Exception:
-                    logger.exception("Failed to update metadata after processing error")
-            finally:
-                close_old_connections()
-
-        thread = threading.Thread(target=_process_in_background, daemon=True)
-        thread.start()
+        process_member_asset.delay(
+            membership_id=str(membership_id),
+            asset_type=asset_type,
+            kit_type=kit_type,
+            raw_url=raw_url,
+            variant_id=variant_id,
+            bg_removal_backend=backend,
+        )
 
         return Response(
             {
