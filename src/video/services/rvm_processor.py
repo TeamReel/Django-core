@@ -23,6 +23,7 @@ Usage:
 
 from __future__ import annotations
 
+import gc
 import json
 import logging
 import shutil
@@ -34,6 +35,22 @@ from typing import Any
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
+
+def _get_memory_mb() -> float:
+    """Get current process memory usage in MB (RSS)."""
+    try:
+        import resource
+        # Linux: maxrss is in KB
+        return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+    except ImportError:
+        pass
+    try:
+        import psutil
+        return psutil.Process().memory_info().rss / (1024 * 1024)
+    except ImportError:
+        pass
+    return 0.0
 
 # ── Lazy singleton for model + device ──────────────────────────────────────
 _rvm_model: Any | None = None
@@ -265,7 +282,12 @@ def load_rvm_model(model_name: str = "mobilenetv3") -> tuple[Any, Any]:
     import torch
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    logger.info("rvm_model_load_start model=%s device=%s", model_name, device)
+    logger.info(
+        "rvm_model_load_start model=%s device=%s mem_mb=%.0f",
+        model_name,
+        device,
+        _get_memory_mb(),
+    )
 
     model = torch.hub.load(
         "PeterL1n/RobustVideoMatting",
@@ -277,7 +299,12 @@ def load_rvm_model(model_name: str = "mobilenetv3") -> tuple[Any, Any]:
 
     _rvm_model = model
     _rvm_device = device
-    logger.info("rvm_model_load_done model=%s device=%s", model_name, device)
+    logger.info(
+        "rvm_model_load_done model=%s device=%s mem_mb=%.0f",
+        model_name,
+        device,
+        _get_memory_mb(),
+    )
 
     return model, device
 
@@ -501,6 +528,8 @@ def process_video_rvm(
     # RVM recurrent state — initialized to None, model manages internally
     rec: list[Any] = [None] * 4
 
+    logger.info("rvm_pre_loop mem_mb=%.0f", _get_memory_mb())
+
     def _terminate_processes() -> None:
         for p in (reader, writer):
             try:
@@ -574,16 +603,29 @@ def process_video_rvm(
                 assert writer.stdin is not None
                 writer.stdin.write(rgba.tobytes())
 
+                # ── Memory cleanup: prevent OOM on Railway ──
+                del frame_np, frame_t, fgr, pha, fgr_np, rgba
+                # Force garbage collection every 30 frames to reclaim memory
+                if frame_count % 30 == 0:
+                    gc.collect()
+
                 frame_count += 1
                 if frame_count == 1:
                     logger.info(
-                        "rvm_first_frame_processed ms=%.1f alpha_mean=%.1f",
+                        "rvm_first_frame_processed ms=%.1f alpha_mean=%.1f mem_mb=%.0f",
                         (t1 - t0) * 1000,
                         float(np.mean(alpha_np)),
+                        _get_memory_mb(),
                     )
                 if frame_count % 30 == 0:
                     avg_ms = float(np.mean(frame_times[-30:])) * 1000
-                    logger.info("RVM frame %d (%.0fms/frame)", frame_count, avg_ms)
+                    mem_mb = _get_memory_mb()
+                    logger.info(
+                        "RVM frame %d (%.0fms/frame, mem=%.0fMB)",
+                        frame_count,
+                        avg_ms,
+                        mem_mb,
+                    )
 
     finally:
         if writer.stdin and not writer.stdin.closed:
@@ -618,6 +660,11 @@ def process_video_rvm(
             reader.returncode,
             writer.returncode,
         )
+
+    # ── Final memory cleanup ──
+    del rec, prev_alpha_np
+    gc.collect()
+    logger.info("rvm_cleanup_done mem_mb=%.0f", _get_memory_mb())
 
     total_time = sum(frame_times)
     avg_time = total_time / max(frame_count, 1)
