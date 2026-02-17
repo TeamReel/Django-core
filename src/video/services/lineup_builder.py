@@ -380,7 +380,18 @@ class LineupSegmentBuilder:
             self._debug_trace.append("Resolution failed")
             return None
 
-        logo_url = _resolve_asset_url(["logo_light", "logo_dark", "logo_upload"])
+        logo_url = _resolve_asset_url(
+            [
+                # Current / preferred
+                "logo_light",
+                "logo_dark",
+                "logo_upload",
+                # Legacy / alternate naming used in some environments
+                "club_logo",
+                "club_logo_upload",
+                "logo",
+            ]
+        )
         sponsor_url = _resolve_asset_url(["sponsor_logo", "sponsor_logo_upload"])
         field_background_url = _resolve_asset_url(["stadium_background"])
 
@@ -405,7 +416,14 @@ class LineupSegmentBuilder:
                 asset = (
                     BrandAsset.objects.filter(
                         profile=opp_profile,
-                        asset_type__in=["logo_light", "logo_dark", "logo_upload"],
+                        asset_type__in=[
+                            "logo_light",
+                            "logo_dark",
+                            "logo_upload",
+                            "club_logo",
+                            "club_logo_upload",
+                            "logo",
+                        ],
                     )
                     .select_related("file")
                     .first()
@@ -806,7 +824,9 @@ class LineupSegmentBuilder:
 
                     # Intro - use _get_ffmpeg_best_url to get alpha-enabled .mov
                     s_intro_variants = pm_videos.get("intro", {}) or {}
-                    s_intro_url = _find_best_intro_url(s_intro_variants, pm_kit_type, _get_ffmpeg_best_url)
+                    s_intro_url = _find_best_intro_url(
+                        s_intro_variants, pm_kit_type, _get_ffmpeg_best_url
+                    )
                     if not s_intro_url:
                         s_intro_url = pm_media.get("intro", {}).get("url")
 

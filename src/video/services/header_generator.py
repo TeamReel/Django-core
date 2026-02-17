@@ -254,16 +254,16 @@ def generate_header_image(  # noqa: PLR0913
     home_logo_url = logo_url if is_home else opponent_logo_url
     away_logo_url = opponent_logo_url if is_home else logo_url
 
-    # Left panel: Home team logo only (centered in panel)
-    left_cx = x_left_end // 2
+    # Left panel: Home team logo (top-left)
+    margin = int(10 * scale)
     if home_logo_url:
         logo_img = download_image(home_logo_url)
         if logo_img:
             logo_img = logo_img.convert("RGBA")
-            logo_size = int(height * 0.7)
+            logo_size = int(height * 0.55)
             logo_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
-            logo_x = left_cx - logo_img.width // 2
-            logo_y = (height - logo_img.height) // 2
+            logo_x = margin
+            logo_y = margin
             img.paste(logo_img, (logo_x, logo_y), logo_img)
             logger.info("header_logo_left_pasted size=%dx%d", logo_img.width, logo_img.height)
         else:
@@ -271,16 +271,15 @@ def generate_header_image(  # noqa: PLR0913
     else:
         logger.warning("header_logo_left_url_missing is_home=%s", is_home)
 
-    # Right panel: Away team logo only (centered in panel)
-    right_cx = x_right_start + (width - x_right_start) // 2
+    # Right panel: Away team logo (top-right)
     if away_logo_url:
         logo_img = download_image(away_logo_url)
         if logo_img:
             logo_img = logo_img.convert("RGBA")
-            logo_size = int(height * 0.7)
+            logo_size = int(height * 0.55)
             logo_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
-            logo_x = right_cx - logo_img.width // 2
-            logo_y = (height - logo_img.height) // 2
+            logo_x = width - margin - logo_img.width
+            logo_y = margin
             img.paste(logo_img, (logo_x, logo_y), logo_img)
             logger.info("header_logo_right_pasted size=%dx%d", logo_img.width, logo_img.height)
         else:
@@ -288,20 +287,8 @@ def generate_header_image(  # noqa: PLR0913
     else:
         logger.info("header_logo_right_url_missing (no opponent logo)")
 
-    # Sponsor logo: bottom-left corner of left panel
-    if sponsor_url:
-        sponsor_img = download_image(sponsor_url)
-        if sponsor_img:
-            sponsor_img = sponsor_img.convert("RGBA")
-            sponsor_max_w = int(x_left_end * 0.4)
-            sponsor_max_h = int(height * 0.25)
-            sponsor_img.thumbnail((sponsor_max_w, sponsor_max_h), Image.Resampling.LANCZOS)
-            sponsor_x = 10  # 10px from left edge
-            sponsor_y = height - sponsor_img.height - 10  # 10px from bottom
-            img.paste(sponsor_img, (sponsor_x, sponsor_y), sponsor_img)
-            logger.info("header_sponsor_pasted size=%dx%d", sponsor_img.width, sponsor_img.height)
-        else:
-            logger.warning("header_sponsor_download_failed url=%s", sponsor_url)
+    # Note: sponsor is intentionally NOT rendered into the header.
+    # The lineup compositor overlays sponsor at bottom-left of the full video frame.
 
     # Upload to storage and return URL
     return _upload_and_get_url(img, "header")

@@ -654,6 +654,8 @@ def _get_animation_expr(animation_style: str, ty: str, tx: str, active_x: float)
     Returns:
         Tuple of (y_expression, x_expression) for FFmpeg overlay.
     """
+    anim_dur = 2.2  # seconds (slower than the initial 1.5s)
+
     if animation_style == "appear":
         # Instant appear - no animation
         return (f"'{ty}'", tx)
@@ -662,10 +664,10 @@ def _get_animation_expr(animation_style: str, ty: str, tx: str, active_x: float)
         # Players on left half slide from left, players on right half slide from right
         if active_x < 0.5:
             # Slide from left edge
-            xe = f"'-w + ({tx} + w) * min(t/1.5, 1)'"
+            xe = f"'-w + ({tx} + w) * min(t/{anim_dur}, 1)'"
         else:
             # Slide from right edge
-            xe = f"'W + ({tx} - W) * min(t/1.5, 1)'"
+            xe = f"'W + ({tx} - W) * min(t/{anim_dur}, 1)'"
         return (f"'{ty}'", xe)
     elif animation_style == "zoom":
         # Zoom effect - scale from small to full (handled via scale filter, y stays fixed)
@@ -677,7 +679,7 @@ def _get_animation_expr(animation_style: str, ty: str, tx: str, active_x: float)
         return (f"'{ty}'", tx)
     else:
         # Default: slide_up - slide from bottom
-        ye = f"'{ty} + (main_h - {ty}) * (1 - min(t/1.5, 1))'"
+        ye = f"'{ty} + (main_h - {ty}) * (1 - min(t/{anim_dur}, 1))'"
         return (ye, tx)
 
 
@@ -739,9 +741,11 @@ def _compose_phase(
     input_args += ["-loop", "1", "-i", str(mask_path)]
     input_args += ["-loop", "1", "-i", str(border_path)]
 
-    # Sponsor removed - no longer used in video overlay
-    # Keep input index 4 as dummy to preserve persist_start offset
-    input_args += ["-f", "lavfi", "-i", "color=c=black@0:s=1x1:r=1,format=rgba"]
+    # Sponsor logo overlay (bottom-left of the full video). Keep input index 4 stable.
+    if sponsor_path:
+        input_args += ["-loop", "1", "-i", str(sponsor_path)]
+    else:
+        input_args += ["-f", "lavfi", "-i", "color=c=black@0:s=1x1:r=1,format=rgba"]
 
     persist_start = 5
 
@@ -759,8 +763,12 @@ def _compose_phase(
     fc.append("[base][header]overlay=0:0[b1]")
     fc.append(f"[b1][field]overlay=0:{HEADER_HEIGHT}[bg0]")
 
-    # Sponsor box removed - no longer overlaid on video
     last_bg = "bg0"
+    if sponsor_path:
+        sponsor_w = int(WIDTH * 0.22)
+        fc.append(f"[4:v]scale={sponsor_w}:-1[sponsor]")
+        fc.append(f"[{last_bg}][sponsor]overlay=30:main_h-h-30[bg_sponsor]")
+        last_bg = "bg_sponsor"
 
     # Persistent badges (pre-rendered body + cheap overlay + label)
     cutoff_h = int(circle_size * BADGE_CUT_FRACTION)
@@ -834,7 +842,7 @@ def _compose_phase(
             txt_y = f"'({ty_t}) + {fh} + 10'"  # Text doesn't move, only players slide
         else:
             # Default slide_up: text also slides up with the player
-            ys = f"{ty_t} + (h - {ty_t}) * (1 - min(t/1.5, 1))"
+            ys = f"{ty_t} + (h - {ty_t}) * (1 - min(t/2.2, 1))"
             txt_y = f"'({ys}) + {fh} + 10'"
         fs = fullbody_fontsize(role, len(active_players), lbl)
         f1 += (
@@ -1114,8 +1122,12 @@ def _compose_hold(
     fc.append("[base][header]overlay=0:0[b1]")
     fc.append(f"[b1][field]overlay=0:{HEADER_HEIGHT}[bg0]")
 
-    # Sponsor box removed - no longer overlaid on video
     last_bg = "bg0"
+    if sponsor_path:
+        sponsor_w = int(WIDTH * 0.22)
+        fc.append(f"[4:v]scale={sponsor_w}:-1[sponsor]")
+        fc.append(f"[{last_bg}][sponsor]overlay=30:main_h-h-30[bg_sponsor]")
+        last_bg = "bg_sponsor"
 
     cmd = [
         _get_ffmpeg_path(),
@@ -1143,8 +1155,11 @@ def _compose_hold(
         "-i",
         str(border_path),
     ]
-    # Sponsor removed - use transparent dummy to preserve input indices
-    cmd += ["-f", "lavfi", "-i", "color=c=black@0:s=1x1:r=1,format=rgba"]
+    # Sponsor logo overlay (keep input index 4 stable)
+    if sponsor_path:
+        cmd += ["-loop", "1", "-i", str(sponsor_path)]
+    else:
+        cmd += ["-f", "lavfi", "-i", "color=c=black@0:s=1x1:r=1,format=rgba"]
 
     persist_start = 5
     cutoff_h = int(circle_size * BADGE_CUT_FRACTION)

@@ -1595,7 +1595,12 @@ export default function ContentGenerationModal({
               )}
             </div>
           </div>
-          <button onClick={onClose} className={`text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-2xl ${step === 'generating' ? 'hidden' : ''}`}>×</button>
+          <button
+            onClick={onClose}
+            className={`text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-2xl ${(step === 'generating' || step === 'members') ? 'hidden' : ''}`}
+          >
+            ×
+          </button>
         </div>
 
         {/* Progress indicator - only show for multi-step flow */}
@@ -1741,27 +1746,27 @@ export default function ContentGenerationModal({
 
               {/* Lineup Options - Formation & Player Style */}
               {(selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-5">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6">
                   <h4 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-5">Lineup Opties</h4>
 
                   {/* Formation selector - Large visual buttons */}
                   <div className="mb-6">
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3 block">Formatie</label>
-                    <div className="grid grid-cols-3 gap-4">
+                    <label className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-4 block">Formatie</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
                         const isSelected = lineupFormation === code;
                         return (
                           <button
                             key={code}
                             onClick={() => setLineupFormation(code)}
-                            className={`relative rounded-xl border-2 transition-all overflow-hidden p-1 ${
+                            className={`relative rounded-2xl border-2 transition-all overflow-hidden p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 ${
                               isSelected
                                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 shadow-lg ring-2 ring-blue-300 dark:ring-blue-600'
                                 : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
                             }`}
                           >
                             {/* Mini field */}
-                            <div className="relative w-full aspect-[3/4] bg-gradient-to-b from-green-500 to-green-700 rounded-lg">
+                            <div className="relative w-full aspect-[3/4] min-h-[160px] bg-gradient-to-b from-green-500 to-green-700 rounded-xl">
                               {/* Field lines */}
                               <div className="absolute inset-x-2 top-[15%] h-px bg-white/40" />
                               <div className="absolute inset-x-2 top-[50%] h-px bg-white/40" />
@@ -1772,7 +1777,7 @@ export default function ContentGenerationModal({
                               {layout.positions.map(pos => (
                                 <div
                                   key={pos.slot}
-                                  className={`absolute w-3 h-3 rounded-full transform -translate-x-1/2 -translate-y-1/2 ${
+                                  className={`absolute w-4 h-4 rounded-full transform -translate-x-1/2 -translate-y-1/2 ${
                                     isSelected ? 'bg-white shadow-md' : 'bg-white/90'
                                   }`}
                                   style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
@@ -1780,7 +1785,7 @@ export default function ContentGenerationModal({
                               ))}
                             </div>
                             {/* Formation name */}
-                            <div className={`py-3 text-lg font-bold text-center ${
+                            <div className={`py-4 text-xl font-bold text-center ${
                               isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-200'
                             }`}>
                               {code}
@@ -1793,28 +1798,28 @@ export default function ContentGenerationModal({
 
                   {/* Closeup style selector - Larger buttons */}
                   <div className="mb-6">
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3 block">Weergave Stijl</label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <label className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-4 block">Weergave Stijl</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <button
                         onClick={() => setLineupCloseupStyle('popout')}
-                        className={`px-5 py-4 rounded-xl text-base font-semibold transition-all flex items-center justify-center gap-3 border-2 ${
+                        className={`px-6 py-6 rounded-2xl text-lg font-semibold transition-all flex items-center justify-center gap-3 border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 ${
                           lineupCloseupStyle === 'popout'
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-lg ring-2 ring-blue-300 dark:ring-blue-600'
                             : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
                         }`}
                       >
-                        <span className="text-2xl">🧍</span>
+                        <span className="text-3xl">🧍</span>
                         <span>Popout</span>
                       </button>
                       <button
                         onClick={() => setLineupCloseupStyle('badge')}
-                        className={`px-5 py-4 rounded-xl text-base font-semibold transition-all flex items-center justify-center gap-3 border-2 ${
+                        className={`px-6 py-6 rounded-2xl text-lg font-semibold transition-all flex items-center justify-center gap-3 border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 ${
                           lineupCloseupStyle === 'badge'
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-lg ring-2 ring-blue-300 dark:ring-blue-600'
                             : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
                         }`}
                       >
-                        <span className="text-2xl">⭕</span>
+                        <span className="text-3xl">⭕</span>
                         <span>Badge</span>
                       </button>
                     </div>
@@ -1822,8 +1827,8 @@ export default function ContentGenerationModal({
 
                   {/* Animation style selector */}
                   <div>
-                    <label className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3 block">Animatie Stijl</label>
-                    <div className="grid grid-cols-3 gap-3">
+                    <label className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-4 block">Animatie Stijl</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {[
                         { value: 'slide_up', label: 'Omhoog', icon: '⬆️' },
                         { value: 'appear', label: 'Direct', icon: '✨' },
@@ -1834,13 +1839,13 @@ export default function ContentGenerationModal({
                         <button
                           key={opt.value}
                           onClick={() => setLineupAnimationStyle(opt.value as typeof lineupAnimationStyle)}
-                          className={`px-4 py-3 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-1 border-2 ${
+                          className={`px-6 py-5 rounded-2xl text-base font-semibold transition-all flex flex-col items-center gap-2 border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 ${
                             lineupAnimationStyle === opt.value
                               ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-lg ring-2 ring-blue-300 dark:ring-blue-600'
                               : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md'
                           }`}
                         >
-                          <span className="text-xl">{opt.icon}</span>
+                          <span className="text-2xl">{opt.icon}</span>
                           <span>{opt.label}</span>
                         </button>
                       ))}
