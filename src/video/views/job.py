@@ -431,6 +431,174 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             status=status.HTTP_202_ACCEPTED,
         )
 
+    @action(detail=False, methods=["post"], url_path="process-all-variants")
+    def process_all_variants(self, request: Request) -> Response:
+        """Process ALL unprocessed variants for a member's asset type.
+
+        POST /api/v1/video/jobs/process-all-variants/
+
+        Request body:
+        {
+            "membership_id": "uuid",
+            "asset_type": "intro" | "celebration"  (video types only)
+        }
+
+        Finds all variants in videos.{asset_type} that have a raw URL but are
+        not yet processed (processing_state != 'processed'), and queues
+        background processing for each.
+
+        Returns summary of queued variants.
+        """
+        membership_id = request.data.get("membership_id")
+        asset_type = request.data.get("asset_type")
+
+        if not membership_id or not asset_type:
+            return Response(
+                {"error": "membership_id and asset_type are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Only video types support multiple variants
+        if asset_type not in ("intro", "celebration"):
+            return Response(
+                {"error": "process-all-variants only supports intro/celebration"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+        try:
+            membership = ProjectMembership.objects.select_related("project").get(id=membership_id)
+        except ProjectMembership.DoesNotExist:
+            return Response(
+                {"error": f"Membership {membership_id} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not ProjectMembership.objects.filter(
+            project=membership.project, user=request.user
+        ).exists():
+            raise PermissionDenied("You must be a project member.")
+
+        teamreel_assets = (membership.metadata or {}).get("teamreel_assets", {})
+        videos = teamreel_assets.get("videos", {})
+        asset_variants = videos.get(asset_type, {}) or {}
+
+        # Find all variants that need processing
+        # Key format: {kit_type}_{style} e.g. "home_arms_crossed", "goalkeeper_thumbs_up"
+        variants_to_process = []
+        skipped = []
+
+        for key, val in asset_variants.items():
+            if not val:
+                continue
+
+            # Extract raw URL and current state
+            if isinstance(val, dict):
+                raw_url = val.get("raw")
+                state = val.get("processing_state", "raw")
+            elif isinstance(val, str):
+                raw_url = val
+                state = "raw"
+            else:
+                continue
+
+            if not raw_url:
+                skipped.append({"key": key, "reason": "no_raw_url"})
+                continue
+
+            # Skip if already processed or currently processing
+            if state == "processed":
+                skipped.append({"key": key, "reason": "already_processed"})
+                continue
+            if state in ("processing", "cancelling"):
+                skipped.append({"key": key, "reason": "already_processing"})
+                continue
+
+            # Parse kit_type and variant_id from composite key
+            # Format: {kit_type}_{variant_id} or bare {variant_id}
+            if "_" in key:
+                parts = key.split("_", 1)
+                kit_type = parts[0]
+                variant_id = parts[1]
+            else:
+                # Bare key like "arms_crossed" - assume home kit
+                kit_type = "home"
+                variant_id = key
+
+            variants_to_process.append({
+                "key": key,
+                "kit_type": kit_type,
+                "variant_id": variant_id,
+                "raw_url": raw_url,
+            })
+
+        if not variants_to_process:
+            return Response(
+                {
+                    "status": "nothing_to_process",
+                    "membership_id": str(membership_id),
+                    "asset_type": asset_type,
+                    "skipped": skipped,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        # Queue processing for each variant
+        from src.video.tasks.asset_processing import process_member_asset
+
+        backend = "rvm"
+        queued = []
+
+        for v in variants_to_process:
+            # Mark as processing immediately
+            self._update_variant_metadata(
+                membership,
+                asset_type,
+                v["kit_type"],
+                v["variant_id"],
+                {
+                    "raw": v["raw_url"],
+                    "processed": None,
+                    "processing_state": "processing",
+                    "processing_started_at": timezone.now().isoformat(),
+                },
+            )
+
+            # Queue Celery task
+            process_member_asset.delay(
+                membership_id=str(membership_id),
+                asset_type=asset_type,
+                kit_type=v["kit_type"],
+                raw_url=v["raw_url"],
+                variant_id=v["variant_id"],
+                bg_removal_backend=backend,
+            )
+
+            queued.append({
+                "key": v["key"],
+                "kit_type": v["kit_type"],
+                "variant_id": v["variant_id"],
+            })
+
+            logger.info(
+                "process_all_variants queued membership_id=%s asset_type=%s key=%s",
+                str(membership_id),
+                asset_type,
+                v["key"],
+            )
+
+        return Response(
+            {
+                "status": "processing",
+                "membership_id": str(membership_id),
+                "asset_type": asset_type,
+                "queued": queued,
+                "skipped": skipped,
+                "total_queued": len(queued),
+            },
+            status=status.HTTP_202_ACCEPTED,
+        )
+
     @action(detail=False, methods=["post"], url_path="cancel-asset-processing")
     def cancel_asset_processing(self, request: Request) -> Response:
         """Request cancellation of an in-flight asset processing operation.

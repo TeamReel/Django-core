@@ -358,115 +358,187 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
 
       // ── PROCESS ONLY MODE: Skip generation, process existing asset ──
       if (batchMode === 'processOnly') {
+        const isVideoType = processAssetType === 'intro' || processAssetType === 'celebration';
+
         try {
-          // Check if member has existing raw asset for this kit_type + asset_type
-          const existingRawUrl = getExistingAssetUrl(member, processAssetType, kitType);
-          if (!existingRawUrl) {
-            const typeLabel = PROCESS_ASSET_TYPES.find(t => t.value === processAssetType)?.label || processAssetType;
-            setJobStatuses((prev) => ({
-              ...prev,
-              [member.id]: { status: 'skipped', error: `Geen bestaande ${kitType} ${typeLabel}` },
-            }));
-            continue;
-          }
+          // For video types (intro/celebration): use process-all-variants endpoint
+          // This processes ALL unprocessed variants for this asset type
+          if (isVideoType) {
+            const procRes = await fetch(`${apiBase}/api/v1/video/jobs/process-all-variants/`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+              },
+              body: JSON.stringify({
+                membership_id: member.id,
+                asset_type: processAssetType,
+              }),
+            });
 
-          // Trigger processing directly
-          const procRes = await fetch(`${apiBase}/api/v1/video/jobs/process-asset/`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCsrfToken(),
-            },
-            body: JSON.stringify({
-              membership_id: member.id,
-              asset_type: processAssetType,
-              kit_type: kitType,
-              variant_id: params.style_variant || null,
-            }),
-          });
+            const procJson = await procRes.json().catch(() => ({}));
 
-          if (!procRes.ok) {
-            const errJson = await procRes.json().catch(() => ({}));
-            throw new Error(errJson?.error || `Process failed (${procRes.status})`);
-          }
-
-          setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'running', error: 'Bewerking bezig…' } }));
-
-          // Poll for completion
-          const POLL_INTERVAL = 3000;
-          const isVideoType = processAssetType === 'intro' || processAssetType === 'celebration';
-          const MAX_POLLS = isVideoType ? 200 : 80; // videos ~10min (per-frame bg removal), images ~4min
-          let processed = false;
-
-          for (let p = 0; p < MAX_POLLS; p++) {
-            if (abortRef.current) break;
-            await new Promise((r) => setTimeout(r, POLL_INTERVAL));
-            if (abortRef.current) break;
-
-            const mRes = await fetch(
-              `${apiBase}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
-              { credentials: 'include' }
-            );
-            if (!mRes.ok) continue;
-
-            const mJson = await mRes.json().catch(() => null);
-            const mData = mJson?.data || mJson;
-            const mMeta = mData?.metadata || {};
-            const tr = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
-
-            // Build the composite key for polling.
-            // For video types (intro/celebration), metadata is stored under
-            // composite keys like "home_arms_crossed". When style_variant is set,
-            // use it. Otherwise, find any key starting with kitType (the backend
-            // also falls back to the first matching key).
-            const isVideoType = category === 'intro' || category === 'celebration';
-            let checkVal: any = null;
-
-            if (isVideoType) {
-              const videoCategory = (tr.videos || {})[category] || {};
-              if (params.style_variant) {
-                checkVal = videoCategory[`${kitType}_${params.style_variant}`];
-                // Fallback: try bare style key
-                if (!checkVal) checkVal = videoCategory[params.style_variant];
-              } else {
-                // No variant specified — find the first key starting with kitType
-                // that is in a processing/processed/failed state
-                const matchingKey = Object.keys(videoCategory).find((k) =>
-                  k === kitType || k.startsWith(`${kitType}_`)
-                );
-                if (matchingKey) {
-                  checkVal = videoCategory[matchingKey];
-                } else {
-                  // Fallback: any bare style key (old format)
-                  const bareKey = Object.keys(videoCategory).find((k) =>
-                    k && !k.startsWith('home') && !k.startsWith('away') && !k.startsWith('third') && !k.startsWith('goalkeeper')
-                  );
-                  if (bareKey) checkVal = videoCategory[bareKey];
-                }
-              }
-            } else {
-              checkVal = ((tr.images || {})[category] || {})[kitType];
+            if (!procRes.ok) {
+              throw new Error(procJson?.error || `Process failed (${procRes.status})`);
             }
 
-            if (checkVal && typeof checkVal === 'object') {
-              const state = checkVal.processing_state || checkVal.state || null;
-              if (state === 'processed') {
+            // Check if there was nothing to process
+            if (procJson.status === 'nothing_to_process') {
+              const skippedReasons = (procJson.skipped || []).map((s: any) => s.reason).join(', ');
+              setJobStatuses((prev) => ({
+                ...prev,
+                [member.id]: { 
+                  status: 'skipped', 
+                  error: skippedReasons.includes('already_processed') 
+                    ? 'Alle varianten al verwerkt' 
+                    : 'Geen varianten gevonden' 
+                },
+              }));
+              continue;
+            }
+
+            const totalQueued = procJson.total_queued || 0;
+            setJobStatuses((prev) => ({ 
+              ...prev, 
+              [member.id]: { status: 'running', error: `${totalQueued} variant(en) bezig…` } 
+            }));
+
+            // Poll until ALL queued variants are processed
+            const POLL_INTERVAL = 3000;
+            const MAX_POLLS = 200; // ~10 min per variant
+            let allDone = false;
+
+            for (let p = 0; p < MAX_POLLS; p++) {
+              if (abortRef.current) break;
+              await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+              if (abortRef.current) break;
+
+              const mRes = await fetch(
+                `${apiBase}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
+                { credentials: 'include' }
+              );
+              if (!mRes.ok) continue;
+
+              const mJson = await mRes.json().catch(() => null);
+              const mData = mJson?.data || mJson;
+              const mMeta = mData?.metadata || {};
+              const tr = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
+              const videoCategory = (tr.videos || {})[processAssetType] || {};
+
+              // Count how many are still processing
+              let stillProcessing = 0;
+              let processed = 0;
+              let failed = 0;
+
+              for (const [key, val] of Object.entries(videoCategory)) {
+                if (!val || typeof val !== 'object') continue;
+                const state = (val as any).processing_state || 'raw';
+                if (state === 'processing' || state === 'cancelling') stillProcessing++;
+                else if (state === 'processed') processed++;
+                else if (state === 'failed') failed++;
+              }
+
+              setJobStatuses((prev) => ({
+                ...prev,
+                [member.id]: { 
+                  status: 'running', 
+                  error: `${processed} voltooid, ${stillProcessing} bezig${failed > 0 ? `, ${failed} mislukt` : ''}` 
+                },
+              }));
+
+              // All done when nothing is processing and we had queued items
+              if (stillProcessing === 0 && (processed > 0 || failed > 0)) {
+                allDone = true;
                 setJobStatuses((prev) => ({
                   ...prev,
-                  [member.id]: { status: 'success', resultUrl: checkVal.processed || checkVal.processed_url || '' },
+                  [member.id]: { 
+                    status: failed > 0 ? 'error' : 'success', 
+                    error: `${processed} voltooid${failed > 0 ? `, ${failed} mislukt` : ''}`,
+                  },
                 }));
-                processed = true;
                 break;
               }
-              if (state === 'failed') {
-                throw new Error(checkVal.error || 'Processing failed');
+            }
+
+            if (!allDone && !abortRef.current) {
+              throw new Error('Processing timeout');
+            }
+          } else {
+            // For image types (fullbody/closeup): use single-variant endpoint
+            const existingRawUrl = getExistingAssetUrl(member, processAssetType, kitType);
+            if (!existingRawUrl) {
+              const typeLabel = PROCESS_ASSET_TYPES.find(t => t.value === processAssetType)?.label || processAssetType;
+              setJobStatuses((prev) => ({
+                ...prev,
+                [member.id]: { status: 'skipped', error: `Geen bestaande ${kitType} ${typeLabel}` },
+              }));
+              continue;
+            }
+
+            const procRes = await fetch(`${apiBase}/api/v1/video/jobs/process-asset/`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+              },
+              body: JSON.stringify({
+                membership_id: member.id,
+                asset_type: processAssetType,
+                kit_type: kitType,
+              }),
+            });
+
+            if (!procRes.ok) {
+              const errJson = await procRes.json().catch(() => ({}));
+              throw new Error(errJson?.error || `Process failed (${procRes.status})`);
+            }
+
+            setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'running', error: 'Bewerking bezig…' } }));
+
+            // Poll for completion
+            const POLL_INTERVAL = 3000;
+            const MAX_POLLS = 80; // images ~4min
+            let processed = false;
+
+            for (let p = 0; p < MAX_POLLS; p++) {
+              if (abortRef.current) break;
+              await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+              if (abortRef.current) break;
+
+              const mRes = await fetch(
+                `${apiBase}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
+                { credentials: 'include' }
+              );
+              if (!mRes.ok) continue;
+
+              const mJson = await mRes.json().catch(() => null);
+              const mData = mJson?.data || mJson;
+              const mMeta = mData?.metadata || {};
+              const tr = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
+
+              const checkVal = ((tr.images || {})[processAssetType] || {})[kitType];
+
+              if (checkVal && typeof checkVal === 'object') {
+                const state = checkVal.processing_state || checkVal.state || null;
+                if (state === 'processed') {
+                  setJobStatuses((prev) => ({
+                    ...prev,
+                    [member.id]: { status: 'success', resultUrl: checkVal.processed || '' },
+                  }));
+                  processed = true;
+                  break;
+                }
+                if (state === 'failed') {
+                  throw new Error(checkVal.error || 'Processing failed');
+                }
               }
             }
-          }
 
-          if (!processed && !abortRef.current) {
-            throw new Error('Processing timeout');
+            if (!processed && !abortRef.current) {
+              throw new Error('Processing timeout');
+            }
           }
         } catch (err) {
           console.error(`Batch processing failed for ${member.name}:`, err);
@@ -974,7 +1046,8 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                   ))}
                 </div>
 
-                {/* Kit type selector for processOnly mode */}
+                {/* Kit type selector for processOnly mode (images only) */}
+                {(processAssetType === 'fullbody' || processAssetType === 'closeup') && (
                 <div style={{ marginTop: '12px' }}>
                   <label style={{ display: 'block', fontSize: '11px', color: 'var(--app-muted-text)', marginBottom: '3px' }}>
                     Tenue Type
@@ -989,45 +1062,24 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                     ))}
                   </select>
                 </div>
+                )}
 
-                {/* Style variant selector for intro/celebration processing */}
+                {/* Info text for intro/celebration - all variants are processed */}
                 {(processAssetType === 'intro' || processAssetType === 'celebration') && (
-                  <div style={{ marginTop: '12px' }}>
-                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--app-muted-text)', marginBottom: '3px' }}>
-                      Stijl Variant (optioneel — leeg = eerste beschikbare)
-                    </label>
-                    <select
-                      value={defaultParams.style_variant || ''}
-                      onChange={(e) => {
-                        setDefaultParams((prev) => {
-                          const next = { ...prev };
-                          if (e.target.value) {
-                            next.style_variant = e.target.value;
-                          } else {
-                            delete next.style_variant;
-                          }
-                          return next;
-                        });
-                      }}
-                      style={selectStyle}
-                    >
-                      <option value="">Automatisch (eerste variant)</option>
-                      {processAssetType === 'intro' ? (
-                        <>
-                          <option value="arms_crossed">Armen gekruist</option>
-                          <option value="thumbs_up">Duimen omhoog</option>
-                          <option value="pointing">Wijzend</option>
-                          <option value="waving">Zwaaiend</option>
-                        </>
-                      ) : (
-                        <>
-                          <option value="arms_wide">Armen wijd</option>
-                          <option value="fist_pump">Vuist omhoog</option>
-                          <option value="point_to_sky">Wijs naar hemel</option>
-                          <option value="slide">Knieën slide</option>
-                        </>
-                      )}
-                    </select>
+                  <div style={{ 
+                    marginTop: '12px', 
+                    padding: '12px', 
+                    background: 'rgba(59,130,246,0.1)', 
+                    borderRadius: '8px',
+                    border: '1px solid rgba(59,130,246,0.3)',
+                    fontSize: '13px',
+                    color: 'var(--app-text)',
+                  }}>
+                    <div style={{ fontWeight: 600, marginBottom: '4px' }}>💡 Alle varianten worden verwerkt</div>
+                    <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                      Alle combinaties van tenue + stijl die nog niet bewerkt zijn worden automatisch verwerkt.
+                      Bijvoorbeeld: home_arms_crossed, goalkeeper_thumbs_up, etc.
+                    </div>
                   </div>
                 )}
               </div>
