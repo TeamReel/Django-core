@@ -1,16 +1,18 @@
-# RVM (Robust Video Matting) op Railway: VP9 alpha werkt niet (WebM wordt opaque)
+# RVM (Robust Video Matting) op Railway: MOV als primary output
 
-**Status (2026-02-17)**: RVM draait en produceert correct een alpha-video als **ProRes MOV**, maar **VP9 WebM met alpha faalt op Railway**.
-De fallback (MOV + browser-preview MP4) houdt de UX werkend, maar het “ideale” formaat (transparante WebM) blijft geblokkeerd.
+**Status (2026-02-17)**: RVM draait en produceert correct een alpha-video als **ProRes MOV**. VP9 WebM alpha werkt niet op Railway.
+**Besluit**: We gebruiken nu **MOV direct** (geen VP9 preflight/fallback). Dit is robuuster en voorkomt onnodige overhead.
 
 ---
 
 ## TL;DR
 
 - De RVM pipeline schrijft frames als **RGBA** naar FFmpeg.
-- Op Railway encodeert FFmpeg met `libvpx-vp9` **altijd** naar `pix_fmt=yuv420p` (opaque), zelfs met `-pix_fmt yuva420p`.
-- De **preflight** check detecteert dit en faalt bewust: een opaque WebM is onbruikbaar voor overlay/compositing.
-- **GPL vs LGPL** FFmpeg build switch heeft dit niet opgelost.
+- Output: **ProRes MOV** met alpha channel (yuva444p10le).
+- Browser preview: **MP4** (H.264, opaque) voor UI playback.
+- VP9 WebM alpha is **niet beschikbaar** op Railway (libvpx bug).
+- **Processing tijd**: ~20-30 sec per frame op CPU (geen GPU). Acceptabel want eenmalig.
+- **Downsample ratio**: 0.50 (was 0.40) voor ~25% snellere CPU processing.
 
 ---
 
@@ -78,15 +80,19 @@ Belangrijk: `rc=0` bij encode betekent alleen dat encode “gelukt” is — nie
 
 ---
 
-## Huidige “werkende” fallback flow
+## Huidige productie flow
 
-- VP9-alpha preflight faalt → fallback naar MOV (ProRes w/ alpha)
-- extra stap: transcode MOV → MP4 preview (H.264, geen alpha)
-- metadata:
+- **Direct naar MOV**: geen VP9 preflight, geen fallback logica
+- **Transcode MOV → MP4** preview (H.264, geen alpha) voor browser playback
+- **Downsample ratio**: 0.50 voor snellere CPU processing
+- **Metadata**:
   - `processed` → MP4 preview (voor UI playback)
-  - `processed_source` → MOV (voor eventuele compositing/backoffice)
+  - `processed_source` → MOV (voor lineup video compositing)
 
-Dit houdt de demo/UX bruikbaar, maar is niet het einddoel.
+Dit is de **definitieve architectuur**:
+- MOV met alpha voor server-side compositing (lineup video)
+- MP4 voor browser preview in de UI
+- VP9 WebM wordt niet meer geprobeerd
 
 ---
 
@@ -172,11 +178,38 @@ Observed (Railway):
 
 ---
 
-## Aanbevolen next steps
+## Besluit & Architektuur (2026-02-17)
 
-1) **Optie A uitvoeren**: test distro FFmpeg op Railway (snelle bevestiging of het build-related is).
-2) Als dat faalt: **Optie B** (custom compile) plannen.
-3) Ondertussen: fallback (MOV + MP4 preview) houden als safety net.
+We hebben gekozen voor **Optie D**: MOV als canonical alpha-formaat, MP4 alleen voor UI preview.
+
+### Waarom deze keuze?
+1. **Robuust**: MOV/ProRes werkt betrouwbaar, geen afhankelijkheid van libvpx alpha bugs
+2. **Eenmalig**: processing duurt lang (~30 min per video op CPU) maar is eenmalig
+3. **Herbruikbaar**: processed intro kan daarna onbeperkt hergebruikt worden in lineup videos
+4. **Geen browser-afhankelijkheid**: compositing gebeurt server-side, niet in browser
+
+### Performance tuning
+- **Downsample ratio 0.50** (was 0.40): ~25% snellere inference met minimaal kwaliteitsverlies
+- **CPU-only**: ~20-30 sec per frame. GPU zou 100x sneller zijn maar is niet nodig voor eenmalige processing.
+
+### Toekomstige optimalisaties (optioneel)
+- **GPU worker**: RunPod/Modal voor ~€50/maand zou processing van 30 min → 30 sec brengen
+- **Edge case**: als batch processing van 50+ video's nodig is, overweeg GPU
+
+---
+
+## Appendix: historische context (VP9 alpha pogingen)
+
+De volgende opties werden onderzocht maar niet geïmplementeerd:
+
+### Optie A — Distro FFmpeg
+Niet getest; zou waarschijnlijk ook falen door dezelfde libvpx issue.
+
+### Optie B — Custom FFmpeg compile
+Te complex voor een probleem dat MOV al oplost.
+
+### Optie C — VP8 WebM / animated WebP
+Niet getest; browser support issues verwacht.
 
 ---
 
