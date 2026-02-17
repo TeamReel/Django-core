@@ -626,7 +626,10 @@ class LineupSegmentBuilder:
             )
 
             # Resolve URLs: prefer per-variant processed → per-variant raw → flat media slot
-            from src.video.services.asset_processing_specs import get_best_url
+            from src.video.services.asset_processing_specs import (
+                get_best_url,
+                get_ffmpeg_best_url,
+            )
 
             images = teamreel_assets.get("images", {})
             videos = teamreel_assets.get("videos", {})
@@ -653,8 +656,9 @@ class LineupSegmentBuilder:
 
             # Intro — check videos.intro.{kit_type}_* first, then "home_*", then bare style keys, then media.intro
             # Priority: arms_crossed > thumbs_up > hand_up (most common first)
+            # Use get_ffmpeg_best_url to prefer processed_source (.mov with alpha) over preview
             intro_variants = videos.get("intro", {}) or {}
-            intro_url = _find_best_intro_url(intro_variants, kit_type, get_best_url)
+            intro_url = _find_best_intro_url(intro_variants, kit_type, get_ffmpeg_best_url)
 
             # Pass 5: legacy media.intro slot
             if not intro_url:
@@ -774,6 +778,7 @@ class LineupSegmentBuilder:
 
                 from src.video.services.asset_processing_specs import (
                     get_best_url as _get_best_url,
+                    get_ffmpeg_best_url as _get_ffmpeg_best_url,
                 )
 
                 supplement_pms = ProjectMembership.objects.filter(
@@ -799,9 +804,9 @@ class LineupSegmentBuilder:
                     if not s_kit_url:
                         s_kit_url = pm_media.get("kit", {}).get("url")
 
-                    # Intro
+                    # Intro - use _get_ffmpeg_best_url to get alpha-enabled .mov
                     s_intro_variants = pm_videos.get("intro", {}) or {}
-                    s_intro_url = _find_best_intro_url(s_intro_variants, pm_kit_type, _get_best_url)
+                    s_intro_url = _find_best_intro_url(s_intro_variants, pm_kit_type, _get_ffmpeg_best_url)
                     if not s_intro_url:
                         s_intro_url = pm_media.get("intro", {}).get("url")
 
@@ -1076,7 +1081,10 @@ class LineupSegmentBuilder:
             images = teamreel_assets.get("images", {})
             videos = teamreel_assets.get("videos", {})
 
-            from src.video.services.asset_processing_specs import get_best_url
+            from src.video.services.asset_processing_specs import (
+                get_best_url,
+                get_ffmpeg_best_url,
+            )
 
             # Get role from metadata (may be empty)
             functional_role = meta.get("functional_role", "") or meta.get("role", "")
@@ -1104,8 +1112,9 @@ class LineupSegmentBuilder:
                 kit_url = media.get("kit", {}).get("url")
 
             # Intro — videos.intro.{kit_type}_* → videos.intro.home_* → bare keys → media.intro
+            # Use get_ffmpeg_best_url to prefer processed_source (.mov with alpha)
             intro_variants = videos.get("intro", {}) or {}
-            intro_url = _find_best_intro_url(intro_variants, kit_type, get_best_url)
+            intro_url = _find_best_intro_url(intro_variants, kit_type, get_ffmpeg_best_url)
             if not intro_url:
                 intro_url = media.get("intro", {}).get("url")
 

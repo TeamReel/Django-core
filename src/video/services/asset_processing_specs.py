@@ -160,6 +160,7 @@ def normalize_variant_value(value: str | dict | None) -> dict | None:
         return {
             "raw": value.get("raw", ""),
             "processed": value.get("processed"),
+            "processed_source": value.get("processed_source"),  # full-quality alpha file
             "processing_state": value.get("processing_state", ProcessingState.RAW.value),
             "specs": value.get("specs"),
             "error": value.get("error"),
@@ -170,11 +171,36 @@ def normalize_variant_value(value: str | dict | None) -> dict | None:
 
 
 def get_best_url(value: str | dict | None) -> str | None:
-    """Get the best available URL (prefers processed, falls back to raw)."""
+    """Get the best available URL (prefers processed, falls back to raw).
+
+    NOTE: For browser playback. Returns preview MP4 when available.
+    For FFmpeg/lineup composition, use get_ffmpeg_best_url() instead.
+    """
     normalized = normalize_variant_value(value)
     if not normalized:
         return None
     return normalized.get("processed") or normalized.get("raw") or None
+
+
+def get_ffmpeg_best_url(value: str | dict | None) -> str | None:
+    """Get the best URL for FFmpeg/lineup composition (prefers alpha source).
+
+    Priority order:
+    1. processed_source - full-quality file with alpha (e.g. ProRes .mov)
+    2. processed - browser-playable version (may be preview MP4 without alpha)
+    3. raw - original uploaded file
+
+    Use this for FFmpeg pipelines that need the alpha channel.
+    """
+    normalized = normalize_variant_value(value)
+    if not normalized:
+        return None
+    return (
+        normalized.get("processed_source")
+        or normalized.get("processed")
+        or normalized.get("raw")
+        or None
+    )
 
 
 def get_lineup_ready_url(value: str | dict | None) -> str | None:
