@@ -378,48 +378,29 @@ class AssetProcessor:
         """
         from src.video.services.rvm_processor import RVMProcessingCancelled, process_video_rvm
 
-        # Prefer WebM VP9+alpha for size/perf, but some FFmpeg builds cannot encode VP9 alpha.
-        # In that case, fall back to MOV ProRes 4444 which reliably carries alpha.
-        output_path = input_path.parent / "output_rvm.webm"
-        output_format = "webm"
+        # Use ProRes .mov directly - VP9 alpha has issues with some libvpx builds
+        # and the preflight check adds overhead. MOV is larger but more reliable.
+        output_path = input_path.parent / "output_rvm.mov"
+        output_format = "mov"
 
         # Portrait mode for intro/celebration (9:16)
         portrait = spec.height > spec.width
 
+        # Higher downsample = faster CPU processing (0.50 vs 0.40)
+        downsample = 0.50
+
         t_proc = time.monotonic()
         try:
-            try:
-                metrics = process_video_rvm(
-                    input_path=input_path,
-                    output_path=output_path,
-                    downsample_ratio=0.40,
-                    portrait=portrait,
-                    output_format=output_format,
-                    target_width=spec.width,
-                    target_height=spec.height,
-                    should_cancel=should_cancel,
-                )
-            except RuntimeError as exc:
-                message = str(exc)
-                if "VP9-alpha preflight failed" not in message:
-                    raise
-
-                logger.warning(
-                    "asset_processing_rvm_vp9_alpha_unsupported fallback=mov reason=%s",
-                    message[:300],
-                )
-                output_format = "mov"
-                output_path = input_path.parent / "output_rvm.mov"
-                metrics = process_video_rvm(
-                    input_path=input_path,
-                    output_path=output_path,
-                    downsample_ratio=0.40,
-                    portrait=portrait,
-                    output_format=output_format,
-                    target_width=spec.width,
-                    target_height=spec.height,
-                    should_cancel=should_cancel,
-                )
+            metrics = process_video_rvm(
+                input_path=input_path,
+                output_path=output_path,
+                downsample_ratio=downsample,
+                portrait=portrait,
+                output_format=output_format,
+                target_width=spec.width,
+                target_height=spec.height,
+                should_cancel=should_cancel,
+            )
         except RVMProcessingCancelled as exc:
             raise AssetProcessingCancelled() from exc
 
