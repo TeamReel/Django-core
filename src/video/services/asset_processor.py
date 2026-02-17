@@ -479,6 +479,7 @@ class AssetProcessor:
                 kit_type=kit_type,
                 variant_suffix=variant_suffix,
                 hash_suffix=hash_suffix,
+                storage_backend=storage_backend,
             )
 
         actual_specs = {
@@ -506,6 +507,7 @@ class AssetProcessor:
         kit_type: str,
         variant_suffix: str,
         hash_suffix: str,
+        storage_backend: Any,
     ) -> str | None:
         """Transcode a ProRes MOV (with alpha) to a browser-playable MP4 preview.
 
@@ -661,8 +663,6 @@ class AssetProcessor:
                 f"{kit_type}{variant_suffix}_{hash_suffix}_preview.mp4"
             )
             t_up = time.monotonic()
-            from django.core.files.storage import default_storage as storage_backend
-
             with open(preview_path, "rb") as f:
                 storage_backend.save(storage_path, f)
             logger.info(
