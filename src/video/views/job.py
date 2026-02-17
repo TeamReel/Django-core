@@ -344,6 +344,22 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                         composite_key = key
                         break
 
+            # Fallback 3: still nothing — try any bare style key (old format
+            # stored "arms_crossed" without kit prefix)
+            if not variant_val and not variant_id:
+                for key, val in asset_variants.items():
+                    if key and not key.startswith(("home", "away", "third", "goalkeeper")):
+                        variant_val = val
+                        variant_id = key  # Store the bare key as variant_id
+                        composite_key = f"{kit_type}_{key}"
+                        logger.info(
+                            "process-asset: found bare style key '%s' for %s, using as %s",
+                            key,
+                            asset_type,
+                            composite_key,
+                        )
+                        break
+
             if isinstance(variant_val, dict):
                 raw_url = variant_val.get("raw") or variant_val.get("processed")
             elif isinstance(variant_val, str):

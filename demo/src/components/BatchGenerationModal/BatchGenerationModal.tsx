@@ -319,7 +319,12 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
       // Check plain kitType first, then any variant key starting with kitType
       if (typeVideos[kitType]) return extractUrl(typeVideos[kitType]);
       const variantKey = Object.keys(typeVideos).find((k) => k.startsWith(kitType));
-      return variantKey ? extractUrl(typeVideos[variantKey]) : null;
+      if (variantKey) return extractUrl(typeVideos[variantKey]);
+      // Fallback: any bare style key (old format like "arms_crossed" without kit prefix)
+      const bareKey = Object.keys(typeVideos).find((k) => 
+        k && !k.startsWith('home') && !k.startsWith('away') && !k.startsWith('third') && !k.startsWith('goalkeeper')
+      );
+      return bareKey ? extractUrl(typeVideos[bareKey]) : null;
     },
     []
   );
@@ -422,13 +427,23 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
               const videoCategory = (tr.videos || {})[category] || {};
               if (params.style_variant) {
                 checkVal = videoCategory[`${kitType}_${params.style_variant}`];
+                // Fallback: try bare style key
+                if (!checkVal) checkVal = videoCategory[params.style_variant];
               } else {
                 // No variant specified — find the first key starting with kitType
                 // that is in a processing/processed/failed state
                 const matchingKey = Object.keys(videoCategory).find((k) =>
                   k === kitType || k.startsWith(`${kitType}_`)
                 );
-                if (matchingKey) checkVal = videoCategory[matchingKey];
+                if (matchingKey) {
+                  checkVal = videoCategory[matchingKey];
+                } else {
+                  // Fallback: any bare style key (old format)
+                  const bareKey = Object.keys(videoCategory).find((k) =>
+                    k && !k.startsWith('home') && !k.startsWith('away') && !k.startsWith('third') && !k.startsWith('goalkeeper')
+                  );
+                  if (bareKey) checkVal = videoCategory[bareKey];
+                }
               }
             } else {
               checkVal = ((tr.images || {})[category] || {})[kitType];
