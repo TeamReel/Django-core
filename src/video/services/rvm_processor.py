@@ -484,8 +484,14 @@ def process_video_rvm(
         downsample_ratio,
     )
 
+    logger.info("rvm_subprocess_start reader_cmd=%s", " ".join(str(c) for c in read_cmd[:5]))
     reader = subprocess.Popen(read_cmd, stdout=subprocess.PIPE)
     writer = subprocess.Popen(write_cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    logger.info(
+        "rvm_subprocess_started reader_pid=%s writer_pid=%s",
+        reader.pid,
+        writer.pid,
+    )
 
     frame_count = 0
     frame_times: list[float] = []
@@ -513,6 +519,7 @@ def process_video_rvm(
                     pass
 
     try:
+        logger.info("rvm_loop_start frame_size_rgb=%d", frame_size_rgb)
         with torch.no_grad():
             while True:
                 if should_cancel and should_cancel():
@@ -520,7 +527,11 @@ def process_video_rvm(
                     raise RVMProcessingCancelled()
 
                 assert reader.stdout is not None
+                if frame_count == 0:
+                    logger.info("rvm_reading_first_frame")
                 raw = reader.stdout.read(frame_size_rgb)
+                if frame_count == 0:
+                    logger.info("rvm_first_frame_read bytes=%d expected=%d", len(raw), frame_size_rgb)
                 if len(raw) < frame_size_rgb:
                     break
 
@@ -564,6 +575,12 @@ def process_video_rvm(
                 writer.stdin.write(rgba.tobytes())
 
                 frame_count += 1
+                if frame_count == 1:
+                    logger.info(
+                        "rvm_first_frame_processed ms=%.1f alpha_mean=%.1f",
+                        (t1 - t0) * 1000,
+                        float(np.mean(alpha_np)),
+                    )
                 if frame_count % 30 == 0:
                     avg_ms = float(np.mean(frame_times[-30:])) * 1000
                     logger.info("RVM frame %d (%.0fms/frame)", frame_count, avg_ms)
