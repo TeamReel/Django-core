@@ -197,6 +197,38 @@ def process_member_asset(
             pass  # On DB error, don't cancel
         return False
 
+    # Create a progress callback that updates metadata with frame progress.
+    # Uses the same throttling pattern as should_cancel (update at most every 5s).
+    _last_progress = {"time": 0.0, "frame": 0}
+
+    def progress_callback(current_frame: int, total_frames: int) -> None:
+        import time as time_module
+
+        now = time_module.time()
+        # Only update DB at most every 5 seconds
+        if now - _last_progress["time"] < 5.0:
+            return
+
+        _last_progress["time"] = now
+        _last_progress["frame"] = current_frame
+        try:
+            membership.refresh_from_db(fields=["metadata"])
+            _update_variant_metadata(
+                membership,
+                asset_type=asset_type,
+                kit_type=kit_type,
+                variant_id=variant_id,
+                variant_value={
+                    "raw": raw_url,
+                    "processed": None,
+                    "processing_state": ProcessingState.PROCESSING.value,
+                    "progress_frames": current_frame,
+                    "total_frames": total_frames,
+                },
+            )
+        except Exception:  # noqa: BLE001
+            pass  # On DB error, continue processing
+
     try:
         processor = AssetProcessor()
         effective_backend = bg_removal_backend
@@ -214,6 +246,7 @@ def process_member_asset(
             else None,
             bg_removal_backend=effective_backend,
             should_cancel=should_cancel,
+            progress_callback=progress_callback,
         )
 
         # Refresh before writing final result (avoid clobber)

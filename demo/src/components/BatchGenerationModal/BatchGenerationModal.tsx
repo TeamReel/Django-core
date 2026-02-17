@@ -57,6 +57,8 @@ interface MemberJobStatus {
   status: 'pending' | 'running' | 'success' | 'error' | 'skipped';
   error?: string;
   resultUrl?: string;
+  progressFrames?: number;
+  totalFrames?: number;
 }
 
 interface BatchGenerationModalProps {
@@ -895,6 +897,17 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                     setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'error', error: checkVal.error || 'Processing failed' } }));
                     break;
                   }
+                  // Update progress if available
+                  if (state === 'processing' && (checkVal.progress_frames || checkVal.total_frames)) {
+                    setJobStatuses((prev) => ({
+                      ...prev,
+                      [member.id]: {
+                        status: 'running',
+                        progressFrames: checkVal.progress_frames,
+                        totalFrames: checkVal.total_frames,
+                      }
+                    }));
+                  }
                 }
                 // continue polling until timeout
               }
@@ -1373,7 +1386,11 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                         <div style={{ fontSize: '11px', color: '#ef4444' }}>{job.error}</div>
                       )}
                       {job?.status === 'running' && (
-                        <div style={{ fontSize: '11px', color: '#60a5fa' }}>Bezig met genereren...</div>
+                        <div style={{ fontSize: '11px', color: '#60a5fa' }}>
+                          {job.totalFrames && job.progressFrames
+                            ? `Frame ${job.progressFrames}/${job.totalFrames} (${Math.round((job.progressFrames / job.totalFrames) * 100)}%)`
+                            : 'Bezig met verwerken...'}
+                        </div>
                       )}
                     </div>
                     <span style={{ fontSize: '16px' }}>{statusIcon}</span>

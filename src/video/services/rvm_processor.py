@@ -41,16 +41,19 @@ def _get_memory_mb() -> float:
     """Get current process memory usage in MB (RSS)."""
     try:
         import resource
+
         # Linux: maxrss is in KB
         return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
     except ImportError:
         pass
     try:
         import psutil
+
         return psutil.Process().memory_info().rss / (1024 * 1024)
     except ImportError:
         pass
     return 0.0
+
 
 # ── Lazy singleton for model + device ──────────────────────────────────────
 _rvm_model: Any | None = None
@@ -309,11 +312,11 @@ def load_rvm_model(model_name: str = "mobilenetv3") -> tuple[Any, Any]:
     return model, device
 
 
-def get_video_info(input_path: Path) -> tuple[int, int, float]:
-    """Get video dimensions and fps using ffprobe.
+def get_video_info(input_path: Path) -> tuple[int, int, float, int]:
+    """Get video dimensions, fps, and frame count using ffprobe.
 
     Returns:
-        (width, height, fps) tuple
+        (width, height, fps, total_frames) tuple
     """
     ffprobe = _get_ffprobe_path()
     cmd = [
@@ -323,6 +326,7 @@ def get_video_info(input_path: Path) -> tuple[int, int, float]:
         "-print_format",
         "json",
         "-show_streams",
+        "-show_format",
         str(input_path),
     ]
     result = subprocess.run(cmd, capture_output=True, text=True, check=False)
@@ -339,7 +343,34 @@ def get_video_info(input_path: Path) -> tuple[int, int, float]:
     else:
         fps = float(fps_str) if fps_str else 30.0
 
-    return width, height, fps
+    # Get total frames - try nb_frames first, then estimate from duration
+    total_frames = 0
+    if "nb_frames" in stream:
+        try:
+            total_frames = int(stream["nb_frames"])
+        except (ValueError, TypeError):
+            pass
+    if total_frames == 0:
+        # Estimate from duration
+        duration = 0.0
+        if "duration" in stream:
+            try:
+                duration = float(stream["duration"])
+            except (ValueError, TypeError):
+                pass
+        if duration == 0 and "format" in info and "duration" in info["format"]:
+            try:
+                duration = float(info["format"]["duration"])
+            except (ValueError, TypeError):
+                pass
+        if duration > 0:
+            total_frames = int(duration * fps)
+
+    return width, height, fps, total_frames
+
+
+# Type alias for progress callback: (current_frame, total_frames) -> None
+ProgressCallback = Any  # Callable[[int, int], None]
 
 
 def process_video_rvm(
@@ -352,6 +383,7 @@ def process_video_rvm(
     target_width: int = 1080,
     target_height: int = 1920,
     should_cancel: Any | None = None,
+    progress_callback: ProgressCallback | None = None,
 ) -> dict[str, Any]:
     """Process a video with RVM background removal.
 
@@ -369,16 +401,25 @@ def process_video_rvm(
         model_name: RVM backbone ("mobilenetv3" or "resnet50")
         target_width: Target output width (when portrait=True)
         target_height: Target output height (when portrait=True)
+        should_cancel: Optional callable that returns True if processing should stop
+        progress_callback: Optional callback(current_frame, total_frames) for progress updates
 
     Returns:
         Dict with processing metrics:
-          - frame_count, total_time_s, avg_ms_per_frame, mask_stability_mean_diff
+          - frame_count, total_frames, total_time_s, avg_ms_per_frame, mask_stability_mean_diff
     """
     import torch
 
     model, device = load_rvm_model(model_name)
 
-    src_width, src_height, fps = get_video_info(input_path)
+    src_width, src_height, fps, total_frames = get_video_info(input_path)
+    logger.info(
+        "rvm_video_info width=%d height=%d fps=%.2f total_frames=%d",
+        src_width,
+        src_height,
+        fps,
+        total_frames,
+    )
 
     # Portrait mode: crop to 9:16 and scale
     if portrait:
@@ -560,7 +601,9 @@ def process_video_rvm(
                     logger.info("rvm_reading_first_frame")
                 raw = reader.stdout.read(frame_size_rgb)
                 if frame_count == 0:
-                    logger.info("rvm_first_frame_read bytes=%d expected=%d", len(raw), frame_size_rgb)
+                    logger.info(
+                        "rvm_first_frame_read bytes=%d expected=%d", len(raw), frame_size_rgb
+                    )
                 if len(raw) < frame_size_rgb:
                     break
 
@@ -627,6 +670,13 @@ def process_video_rvm(
                         mem_mb,
                     )
 
+                # Report progress every 10 frames
+                if progress_callback and frame_count % 10 == 0:
+                    try:
+                        progress_callback(frame_count, total_frames)
+                    except Exception:  # noqa: BLE001
+                        pass  # Don't fail processing if callback fails
+
     finally:
         if writer.stdin and not writer.stdin.closed:
             writer.stdin.close()
@@ -688,6 +738,7 @@ def process_video_rvm(
 
     return {
         "frame_count": frame_count,
+        "total_frames": total_frames,
         "total_time_s": round(total_time, 2),
         "avg_ms_per_frame": round(avg_time * 1000, 1),
         "mask_stability_mean_diff": round(avg_stability, 2),

@@ -71,6 +71,7 @@ class AssetProcessor:
         organisation_id: str | int | None = None,
         bg_removal_backend: str = "rvm",
         should_cancel: Callable[[], bool] | None = None,
+        progress_callback: Callable[[int, int], None] | None = None,
     ) -> dict[str, Any]:
         """Process a raw asset to lineup-ready format.
 
@@ -137,6 +138,7 @@ class AssetProcessor:
                     organisation_id,
                     bg_removal_backend=bg_removal_backend,
                     should_cancel=should_cancel,
+                    progress_callback=progress_callback,
                 )
             else:
                 raise AssetProcessingError(f"Unsupported spec type: {type(spec)}")
@@ -274,6 +276,7 @@ class AssetProcessor:
         organisation_id: str | int | None,
         bg_removal_backend: str = "rembg",
         should_cancel: Callable[[], bool] | None = None,
+        progress_callback: Callable[[int, int], None] | None = None,
     ) -> tuple[str, dict]:
         """Process a video asset: download → bg remove → re-encode → upload.
 
@@ -342,6 +345,7 @@ class AssetProcessor:
                     variant_id,
                     backend,
                     should_cancel=should_cancel,
+                    progress_callback=progress_callback,
                 )
 
             # Fall through to original rembg pipeline
@@ -370,6 +374,7 @@ class AssetProcessor:
         variant_id: str | None,
         storage_backend: Any,
         should_cancel: Callable[[], bool] | None = None,
+        progress_callback: Callable[[int, int], None] | None = None,
     ) -> tuple[str, dict]:
         """Process video using RVM (Robust Video Matting).
 
@@ -400,6 +405,7 @@ class AssetProcessor:
                 target_width=spec.width,
                 target_height=spec.height,
                 should_cancel=should_cancel,
+                progress_callback=progress_callback,
             )
         except RVMProcessingCancelled as exc:
             raise AssetProcessingCancelled() from exc

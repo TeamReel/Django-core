@@ -33,6 +33,7 @@ import CreateTransactionModal, { type WalletOption } from '../../components/tran
 import MobileTabBar from '../../components/MobileTabBar';
 import { WorkflowPanel } from '../../components/Workflows';
 import { BatchGenerationModal, type BatchMember } from '../../components/BatchGenerationModal';
+import { ActiveJobsModal } from '../../components/ActiveJobsModal';
 import { useBrandProfile, getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
 import {
   actionButtonStyle,
@@ -220,6 +221,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   // Batch generation state
   const [batchSelectedMemberIds, setBatchSelectedMemberIds] = useState<Set<string>>(new Set());
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
+  const [isActiveJobsModalOpen, setIsActiveJobsModalOpen] = useState(false);
 
   // Content generation state
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
@@ -2736,11 +2738,18 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         <Badge variant="default">
                           {members.filter((m) => countFilledMediaSlots(m) === MEDIA_SLOTS.length).length} / {members.length} Complete
                         </Badge>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsActiveJobsModalOpen(true)}
+                          style={{ marginLeft: batchSelectedMemberIds.size > 0 ? undefined : 'auto', fontSize: '13px', padding: '6px 14px' }}
+                        >
+                          ⚙️ Actieve Jobs
+                        </Button>
                         {batchSelectedMemberIds.size > 0 && (
                           <Button
                             variant="primary"
                             onClick={() => setIsBatchModalOpen(true)}
-                            style={{ marginLeft: 'auto', fontSize: '13px', padding: '6px 14px' }}
+                            style={{ fontSize: '13px', padding: '6px 14px' }}
                           >
                             🚀 Batch Genereer ({batchSelectedMemberIds.size})
                           </Button>
@@ -3847,6 +3856,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             setMembersReloadToken((t) => t + 1);
             setBatchSelectedMemberIds(new Set());
           }}
+        />
+
+        {/* Active Processing Jobs Modal */}
+        <ActiveJobsModal
+          isOpen={isActiveJobsModalOpen}
+          onClose={() => setIsActiveJobsModalOpen(false)}
+          projectId={String(project?.id || '')}
         />
       </div>
     </>

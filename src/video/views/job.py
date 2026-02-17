@@ -720,6 +720,108 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             status=status.HTTP_202_ACCEPTED,
         )
 
+    @action(detail=False, methods=["get"], url_path="active-processing-jobs")
+    def active_processing_jobs(self, request: Request) -> Response:
+        """Get all memberships with active processing jobs in a project.
+
+        GET /api/v1/video/jobs/active-processing-jobs/?project=<uuid>
+
+        Returns a list of memberships with active processing jobs, including
+        progress information for video processing.
+
+        Response:
+        {
+            "jobs": [
+                {
+                    "membership_id": "uuid",
+                    "member_name": "John Doe",
+                    "asset_type": "intro",
+                    "kit_type": "home",
+                    "variant_id": "thumbs_up",
+                    "processing_state": "processing",
+                    "progress_frames": 150,
+                    "total_frames": 300,
+                    "processing_started_at": "2026-02-17T12:00:00Z"
+                },
+                ...
+            ]
+        }
+        """
+        project_id = self._get_project_id(required=True)
+
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+
+        # Check user has access to the project
+        if not ProjectMembership.objects.filter(project_id=project_id, user=request.user).exists():
+            raise PermissionDenied("You must be a project member.")
+
+        # Find all memberships with processing jobs
+        memberships = ProjectMembership.objects.filter(project_id=project_id).select_related("user")
+
+        jobs = []
+        for membership in memberships:
+            meta = membership.metadata or {}
+            tr = meta.get("teamreel_assets", {})
+
+            # Check videos
+            for asset_type, variants in (tr.get("videos", {}) or {}).items():
+                if not isinstance(variants, dict):
+                    continue
+                for key, val in variants.items():
+                    if not isinstance(val, dict):
+                        continue
+                    state = val.get("processing_state")
+                    if state in ("processing", "cancelling"):
+                        # Parse composite key into kit_type and variant_id
+                        parts = key.split("_", 1)
+                        kit_type = parts[0]
+                        variant_id = parts[1] if len(parts) > 1 else None
+
+                        jobs.append(
+                            {
+                                "membership_id": str(membership.id),
+                                "member_name": membership.user.get_full_name()
+                                if hasattr(membership, "user") and membership.user
+                                else str(membership.id),
+                                "asset_type": asset_type,
+                                "kit_type": kit_type,
+                                "variant_id": variant_id,
+                                "processing_state": state,
+                                "progress_frames": val.get("progress_frames"),
+                                "total_frames": val.get("total_frames"),
+                                "processing_started_at": val.get("processing_started_at"),
+                                "raw_url": val.get("raw"),
+                            }
+                        )
+
+            # Check images
+            for asset_type, variants in (tr.get("images", {}) or {}).items():
+                if not isinstance(variants, dict):
+                    continue
+                for kit_type, val in variants.items():
+                    if not isinstance(val, dict):
+                        continue
+                    state = val.get("processing_state")
+                    if state in ("processing", "cancelling"):
+                        jobs.append(
+                            {
+                                "membership_id": str(membership.id),
+                                "member_name": membership.user.get_full_name()
+                                if hasattr(membership, "user") and membership.user
+                                else str(membership.id),
+                                "asset_type": asset_type,
+                                "kit_type": kit_type,
+                                "variant_id": None,
+                                "processing_state": state,
+                                "progress_frames": None,
+                                "total_frames": None,
+                                "processing_started_at": val.get("processing_started_at"),
+                                "raw_url": val.get("raw"),
+                            }
+                        )
+
+        return Response({"jobs": jobs}, status=status.HTTP_200_OK)
+
     @staticmethod
     def _update_variant_metadata(
         membership: Any,
