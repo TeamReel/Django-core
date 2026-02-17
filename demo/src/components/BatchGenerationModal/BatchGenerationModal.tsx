@@ -1303,6 +1303,21 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
 
           {(step === 'running' || step === 'done') && (
             <>
+              {/* Background processing notice for video types */}
+              {step === 'running' && (batchMode === 'processOnly' ? (processAssetType === 'intro' || processAssetType === 'celebration') : (selectedTemplate?.category === 'intro' || selectedTemplate?.category === 'celebration')) && (
+                <div style={{
+                  padding: '12px',
+                  marginBottom: '16px',
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  color: '#60a5fa',
+                }}>
+                  💡 Video processing draait op de server. Je kunt dit tabblad sluiten - de verwerking gaat door. Refresh de pagina later om de resultaten te zien.
+                </div>
+              )}
+
               {/* Progress overview */}
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
