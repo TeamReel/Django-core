@@ -56,11 +56,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install a known-good FFmpeg bundle.
 # NOTE: Debian apt FFmpeg frequently cannot encode VP9 alpha (yuva420p).
-# We use BtbN's Linux x86_64 builds and keep them in /usr/local/ffmpeg so
+# We use BtbN's Linux x86_64 GPL builds and keep them in /usr/local/ffmpeg so
 # any bundled libs can be resolved via $ORIGIN.
+# GPL (not LGPL) is needed because the LGPL build silently drops VP9 alpha
+# planes — the encode succeeds but outputs yuv420p instead of yuva420p.
 RUN mkdir -p /usr/local/ffmpeg \
     && curl -sSL -o /tmp/ffmpeg.tar.xz \
-        https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linux64-lgpl-7.1.tar.xz \
+        https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linux64-gpl-7.1.tar.xz \
     && tar -xJf /tmp/ffmpeg.tar.xz -C /usr/local/ffmpeg --strip-components=1 \
     && rm -f /tmp/ffmpeg.tar.xz \
     && /usr/local/ffmpeg/bin/ffmpeg -version | head -1 \
