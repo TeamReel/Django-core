@@ -487,6 +487,32 @@ class Command(BaseCommand):
                         }
                     )
 
+            # Lineup Flyer templates (static PNG) - all sport variants
+            lineup_flyer_styles = [("Modern", "modern"), ("Classic", "classic")]
+            for sport_key, sport_label in sport_variants:
+                if sport_key == "11v11":
+                    player_count = 11
+                elif sport_key == "7v7":
+                    player_count = 7
+                else:  # futsal
+                    player_count = 5
+
+                for style_name, style_id in lineup_flyer_styles:
+                    template_definitions.append(
+                        {
+                            "name": f"Lineup Flyer - {style_name} ({sport_label})",
+                            "template_type": TemplateType.PRE_MATCH,
+                            "template_subtype": TemplateSubtype.LINEUP_FLYER,
+                            "style_variant": style_name,
+                            "ai_workflow_id": f"wf_lineup_flyer_{style_id}_{sport_key}",
+                            "sport_variant": sport_key,
+                            "input_requirements": get_lineup_requirements(
+                                player_count, use_formation=True
+                            ),
+                            "description": f"{style_name} static lineup flyer for {sport_label}",
+                        }
+                    )
+
             # Walk-on templates: in_tenue required (all sport variants)
             walkon_styles = [("Dramatic", "dramatic"), ("Epic", "epic")]
             for sport_key, sport_label in sport_variants:
