@@ -64,6 +64,8 @@ CELERY_TASK_ROUTES = {
     "src.video.tasks.transcode.transcode_video": {"queue": "video_slow"},
     "src.video.tasks.compose.compose_video": {"queue": "video_slow"},
     "src.video.tasks.lineup.process_lineup_video": {"queue": "default"},
+    # B56: RVM asset processing - heavy GPU/CPU operation
+    "src.video.tasks.asset_processing.process_member_asset": {"queue": "video_slow"},
 }
 
 # Periodic Task Scheduling (celery-beat)
