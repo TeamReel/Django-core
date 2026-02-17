@@ -116,8 +116,16 @@ TEMPLATE_DEFINITIONS = [
     (
         TemplateType.PRE_MATCH,
         TemplateSubtype.LINEUP,
-        "Lineup Announcement",
-        "Starting XI reveal with player photos and formation",
+        "Lineup Video",
+        "Starting XI reveal video with player photos, formation and animations",
+        OutputType.VIDEO,
+        3,
+    ),
+    (
+        TemplateType.PRE_MATCH,
+        TemplateSubtype.LINEUP_FLYER,
+        "Lineup Flyer",
+        "Static lineup image with player photos and formation",
         OutputType.IMAGE,
         1,
     ),

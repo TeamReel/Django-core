@@ -95,7 +95,8 @@ class TemplateSubtype(models.TextChoices):
 
     # Pre-Match subtypes
     FLYER = "flyer", "Match Flyer"
-    LINEUP = "lineup", "Lineup Announcement"
+    LINEUP = "lineup", "Lineup Video"
+    LINEUP_FLYER = "lineup_flyer", "Lineup Flyer"
     WALKON = "walkon", "Walk-on Video"
     ANTHEM = "anthem", "Anthem Video"
 
