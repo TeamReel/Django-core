@@ -234,7 +234,8 @@ def render_header_pil(  # noqa: PLR0913
     scale = height / 300.0
     fonts = {
         "xl": get_font(int(72 * scale), bold=True),  # STARTING XI
-        "lg": get_font(int(32 * scale), bold=True),  # competition / match title
+        "match": get_font(int(44 * scale), bold=True),  # match title (Home - Away)
+        "lg": get_font(int(32 * scale), bold=True),  # competition name
         "sm": get_font(int(26 * scale), bold=True),  # date/time
         "xs": get_font(int(28 * scale), bold=True),  # venue
     }
@@ -252,7 +253,7 @@ def render_header_pil(  # noqa: PLR0913
     home_name = own_team_name if is_home else opponent_name
     away_name = opponent_name if is_home else own_team_name
     match_title = f"{home_name} - {away_name}"
-    _draw_centered_text(draw, match_title.upper(), cx, int(height * 0.40), fonts["lg"], white)
+    _draw_centered_text(draw, match_title.upper(), cx, int(height * 0.40), fonts["match"], white)
 
     # Competition name
     if competition_name:
@@ -285,6 +286,12 @@ def render_header_pil(  # noqa: PLR0913
     max_logo_h = height - 2 * padding
 
     # Left panel: Home team logo (centered in panel)
+    logger.info(
+        "header_logo_urls home=%s away=%s (is_home=%s)",
+        home_logo_url[:120] if home_logo_url else None,
+        away_logo_url[:120] if away_logo_url else None,
+        is_home,
+    )
     if home_logo_url:
         logo_img = download_image(home_logo_url)
         if logo_img:
@@ -295,7 +302,7 @@ def render_header_pil(  # noqa: PLR0913
             img.paste(logo_img, (logo_x, logo_y), logo_img)
             logger.info("header_logo_left_pasted size=%dx%d", logo_img.width, logo_img.height)
         else:
-            logger.warning("header_logo_left_download_failed url=%s", home_logo_url)
+            logger.warning("header_logo_left_download_failed url=%s", home_logo_url[:200])
     else:
         logger.warning("header_logo_left_url_missing is_home=%s", is_home)
 
@@ -310,7 +317,7 @@ def render_header_pil(  # noqa: PLR0913
             img.paste(logo_img, (logo_x, logo_y), logo_img)
             logger.info("header_logo_right_pasted size=%dx%d", logo_img.width, logo_img.height)
         else:
-            logger.warning("header_logo_right_download_failed url=%s", away_logo_url)
+            logger.warning("header_logo_right_download_failed url=%s", away_logo_url[:200])
     else:
         logger.info("header_logo_right_url_missing (no opponent logo)")
 

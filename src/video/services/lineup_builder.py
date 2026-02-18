@@ -369,23 +369,28 @@ class LineupSegmentBuilder:
                     continue
 
                 logger.info(
-                    "DEBUG: Found asset %s in profile %s (ID: %s)",
+                    "DEBUG: Found asset type=%s in profile %s (ID: %s, asset_type=%s)",
                     asset_types,
                     profile.id,
                     asset.id,
+                    asset.asset_type,
                 )
-                self._debug_trace.append(f"  Profile {profile.id}: Found asset {asset.id}")
+                self._debug_trace.append(
+                    f"  Profile {profile.id}: Found asset {asset.id} (type={asset.asset_type})"
+                )
 
                 # Prefer the API-facing URL if it is persisted (often already presigned).
                 asset_url = getattr(asset, "url", None)
                 if asset_url:
-                    self._debug_trace.append("  Using asset.url")
+                    self._debug_trace.append(f"  Using asset.url: {str(asset_url)[:80]}")
                     return asset_url
 
                 if asset.file:
                     presigned = self._get_presigned_url(asset.file.storage_path)
                     if presigned:
-                        self._debug_trace.append("  Generated presigned URL")
+                        self._debug_trace.append(
+                            f"  Generated presigned URL for {asset.file.storage_path}"
+                        )
                         return presigned
                     self._debug_trace.append(f"  Presign failed for {asset.file.storage_path}")
 
@@ -411,6 +416,13 @@ class LineupSegmentBuilder:
         )
         sponsor_url = _resolve_asset_url(["sponsor_logo", "sponsor_logo_upload"])
         field_background_url = _resolve_asset_url(["stadium_background"])
+
+        logger.info(
+            "DEBUG: Resolved brand assets — logo=%s, sponsor=%s, bg=%s",
+            logo_url[:120] if logo_url else None,
+            sponsor_url[:120] if sponsor_url else None,
+            field_background_url[:120] if field_background_url else None,
+        )
 
         # Resolve opponent logo from opponent_project's brand profile
         opponent_logo_url: str | None = None

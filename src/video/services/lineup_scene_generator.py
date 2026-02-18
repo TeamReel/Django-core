@@ -256,14 +256,27 @@ def _render_closeups(
         return
 
     thumb_h = max(60, int(field_height * _CLOSEUP_SIZE_PCT))
+    thumb_w = int(thumb_h * 0.75)
     name_font = _get_font(22, bold=True)
+
+    # Pre-compute a consistent label width across ALL closeups so name
+    # labels don't "jump" between players.  Use the widest name + padding.
+    pad = 4
+    max_text_w = 0
+    for cu in closeups:
+        n = cu.name.strip()
+        if n:
+            nb = draw.textbbox((0, 0), n, font=name_font)
+            max_text_w = max(max_text_w, nb[2] - nb[0])
+    # Minimum label width = thumbnail width; expand for longer names
+    fixed_label_w = max(thumb_w, max_text_w + 2 * pad)
 
     for cu in closeups:
         img = _download_image(cu.image_url)
         if img is None:
             continue
         img = img.convert("RGBA")
-        img.thumbnail((int(thumb_h * 0.75), thumb_h), Image.Resampling.LANCZOS)
+        img.thumbnail((thumb_w, thumb_h), Image.Resampling.LANCZOS)
 
         x_px = int((cu.x_pct / 100.0) * width)
         y_px = field_top + int((cu.y_pct / 100.0) * field_height)
@@ -285,22 +298,24 @@ def _render_closeups(
 
         canvas.paste(img, (paste_x, paste_y), mask)
 
-        # Small name label below
+        # Name label below (consistent width across all closeups)
         name = cu.name.strip()
         if name:
             nb = draw.textbbox((0, 0), name, font=name_font)
             nw = nb[2] - nb[0]
             nh = nb[3] - nb[1]
-            tx = max(0, min(width - nw, paste_x + (img.width - nw) // 2))
+            # Center the fixed-width label under the thumbnail
+            lx = max(0, min(width - fixed_label_w, paste_x + (img.width - fixed_label_w) // 2))
             ty = min(height - nh - 4, paste_y + img.height + 2)
 
-            pad = 4
-            box = (tx - pad, ty - pad, tx + nw + pad, ty + nh + pad)
+            box = (lx, ty - pad, lx + fixed_label_w, ty + nh + pad)
             overlay = Image.new("RGBA", (width, height), (0, 0, 0, 0))
             od = ImageDraw.Draw(overlay)
             od.rounded_rectangle(box, radius=6, fill=(0, 0, 0, 140))
             canvas.alpha_composite(overlay)
 
+            # Center text within the fixed-width label
+            tx = lx + (fixed_label_w - nw) // 2
             draw.text((tx, ty), name, font=name_font, fill=(255, 255, 255, 255))
 
 
