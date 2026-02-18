@@ -2267,10 +2267,15 @@ export default function ContentGenerationModal({
           {/* Step 4 (lineup only): Squad selection on field visualization */}
           {step === 'lineup_squad' && selectedTemplate && (() => {
             const formationLayout = FORMATION_LAYOUTS[lineupFormation] || FORMATION_LAYOUTS['4-3-3'];
-            // Separate pools: GK dropdown only shows goalkeepers, player slots only show players
+            // Separate pools: GK dropdown only shows goalkeepers
+            // Player slots show ALL non-goalkeeper members (players, coaches, assistants)
+            // because coaches/assistants may have player-type (home/away) assets and should be selectable
             const gkPool = (seasonSquad.goalkeeper || [])
               .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx);
-            const playerPool = (seasonSquad.player || [])
+            const allMembers = Object.values(seasonSquad).flat() as Participation[];
+            const gkIds = new Set(gkPool.map(p => p.id));
+            const playerPool = allMembers
+              .filter(p => !gkIds.has(p.id))
               .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx);
             const playerReq = selectedTemplate.input_requirements?.members?.player;
             const gkReq = selectedTemplate.input_requirements?.members?.goalkeeper;
