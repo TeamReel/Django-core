@@ -242,7 +242,7 @@ function AssetCard({
                       borderRadius: 4,
                     }}
                   >
-                    {url ? '🔄 Vervang' : '🎨 Bewerk'}
+                    🎨 Bewerk
                   </button>
                 )}
                 {url && onImprove && (
