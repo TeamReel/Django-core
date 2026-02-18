@@ -584,7 +584,7 @@ export function AssetsTab({
         {/* AI Generation Button */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
           <button
-            onClick={() => { setAiPreselectedTemplate(undefined); setAiInitialParams({}); setShowAiModal(true); }}
+            onClick={() => { setAiPreselectedTemplate(undefined); setAiInitialParams({}); setAiCustomInputs(baseAiInputAssets); setShowAiModal(true); }}
             style={{
               display: 'flex',
               alignItems: 'center',

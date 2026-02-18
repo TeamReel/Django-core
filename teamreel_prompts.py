@@ -48,16 +48,19 @@ TEMPLATES = {
         "preprocessing": {
             "logo": "square_pad_512",  # Center on 512x512 transparent canvas
         },
-        "prompt_template": """Convert this club logo into a clean, standardized format.
+        "prompt_template": """You are given an uploaded club logo image as input. Your task is to EDIT this exact logo into a clean, standardized brand asset.
 
-OUTPUT SPECIFICATIONS:
-- Format: Perfect square (1:1 aspect ratio).
-- Background: {background_description}.
-- The logo must be CENTERED and fill approximately 80% of the canvas.
-- Style: {style_description}.
-- Preserve ALL original colors, shapes, text, and details of the logo EXACTLY.
-- No added decorations, shadows, or effects unless present in the original.
-- Output should look like a professional brand asset file.
+CRITICAL: Use the PROVIDED IMAGE as the source. Do NOT invent or generate a new logo. Reproduce the EXACT same logo from the input image.
+
+EDIT INSTRUCTIONS:
+1. REMOVE the background completely — output must have a {background_description} background.
+2. KEEP the logo itself pixel-perfect: preserve ALL original colors, shapes, text, emblems, and details EXACTLY as they appear in the input image.
+3. CENTER the logo on the canvas and scale it to fill approximately 80% of the space.
+4. Output format: Perfect square (1:1 aspect ratio).
+5. Style: {style_description}.
+6. Clean up any compression artifacts or rough edges around the logo boundary.
+7. Do NOT add any decorations, shadows, glows, or effects not present in the original.
+8. The result should look like a professional brand asset file ready for print and digital use.
 """,
     },
 
@@ -87,15 +90,18 @@ OUTPUT SPECIFICATIONS:
         "preprocessing": {
             "sponsor": "pad_512_landscape",  # Center on 512x256 or 512x512
         },
-        "prompt_template": """Convert this sponsor logo into a clean, standardized format for printing on sportswear.
+        "prompt_template": """You are given an uploaded sponsor logo image as input. Your task is to EDIT this exact sponsor logo into a clean, standardized brand asset suitable for printing on sportswear.
 
-OUTPUT SPECIFICATIONS:
-- Format: {orientation_description}.
-- Background: {background_description}.
-- The sponsor logo must be CENTERED and fill ~80% of the canvas width.
-- Preserve ALL original colors, text, and graphic elements EXACTLY.
-- Clean edges, no artifacts, no added effects.
-- Must be suitable for heat-press printing on fabric.
+CRITICAL: Use the PROVIDED IMAGE as the source. Do NOT invent or generate a new logo. Reproduce the EXACT same sponsor logo from the input image.
+
+EDIT INSTRUCTIONS:
+1. REMOVE the background completely — output must have a {background_description} background.
+2. KEEP the sponsor logo itself pixel-perfect: preserve ALL original colors, text, and graphic elements EXACTLY as they appear in the input image.
+3. CENTER the sponsor logo on the canvas and fill approximately 80% of the canvas width.
+4. Output format: {orientation_description}.
+5. Clean up any compression artifacts or rough edges around the logo boundary.
+6. Do NOT add any decorations, shadows, glows, or effects not present in the original.
+7. Must be suitable for heat-press printing on fabric.
 """,
     },
 
