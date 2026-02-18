@@ -60,9 +60,27 @@ def _preprocess_sponsor(image_bytes: bytes) -> bytes:
     return buf.getvalue()
 
 
+def _preprocess_location(image_bytes: bytes) -> bytes:
+    """Fit location photo into 1080×1920 portrait canvas."""
+    from PIL import Image
+
+    img = Image.open(BytesIO(image_bytes)).convert("RGB")
+    canvas = Image.new("RGB", (1080, 1920), (34, 34, 34))
+
+    # Scale to fit width, keep aspect ratio
+    img.thumbnail((1080, 1920), Image.Resampling.LANCZOS)
+    offset = ((1080 - img.width) // 2, (1920 - img.height) // 2)
+    canvas.paste(img, offset)
+
+    buf = BytesIO()
+    canvas.save(buf, format="JPEG", quality=90)
+    return buf.getvalue()
+
+
 PREPROCESSORS = {
     "square_pad_512": _preprocess_logo,
     "pad_512_landscape": _preprocess_sponsor,
+    "pad_portrait_1080": _preprocess_location,
 }
 
 

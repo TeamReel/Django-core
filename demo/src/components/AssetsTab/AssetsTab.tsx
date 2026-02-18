@@ -439,6 +439,20 @@ export function AssetsTab({
       }
   };
 
+  // Mapping: upload asset type → AI template to auto-trigger
+  const UPLOAD_TO_AI_TEMPLATE: Record<string, { templateId: string; initialParams?: Record<string, string> }> = {
+    'logo_upload': { templateId: 'logo_standardize' },
+    'sponsor_logo_upload': { templateId: 'sponsor_standardize' },
+    'kit_home_upload': { templateId: 'tenue_generate', initialParams: { kit_type: 'home' } },
+    'kit_away_upload': { templateId: 'tenue_generate', initialParams: { kit_type: 'away' } },
+    'kit_third_upload': { templateId: 'tenue_generate', initialParams: { kit_type: 'third' } },
+    'kit_goalkeeper_upload': { templateId: 'keeper_tenue' },
+    'kit_training_upload': { templateId: 'tracksuit_generate' },
+    'kit_coach_upload': { templateId: 'coach_outfit' },
+    'kit_assistant_upload': { templateId: 'coach_outfit' },
+    'location_photo': { templateId: 'location_standardize' },
+  };
+
   const handleUpload = async (file: File, assetType: string) => {
     setUploading(assetType);
 
@@ -459,8 +473,32 @@ export function AssetsTab({
     const typeFolder = assetType.replace('_upload', '');
     const prefix = `${folder}/${pathId}/${typeFolder}`;
 
-    await uploadAsset(file, assetType, prefix);
+    const result = await uploadAsset(file, assetType, prefix);
     setUploading(null);
+
+    // Auto-trigger AI processing after successful upload
+    if (result) {
+      const autoAi = UPLOAD_TO_AI_TEMPLATE[assetType];
+      if (autoAi) {
+        // Small delay to let state settle after upload
+        setTimeout(() => {
+          const uploadUrl = result.url ? getAssetUrl(result.url) : null;
+          const inputs: Record<string, string | null> = { ...baseAiInputAssets };
+
+          // Map the upload type to the correct input key for the template
+          if (assetType === 'logo_upload' && uploadUrl) inputs['logo'] = uploadUrl;
+          if (assetType === 'sponsor_logo_upload' && uploadUrl) inputs['sponsor'] = uploadUrl;
+          if (assetType.startsWith('kit_') && uploadUrl) inputs['reference'] = uploadUrl;
+          if (assetType === 'location_photo' && uploadUrl) inputs['location'] = uploadUrl;
+
+          setAiPreviousResultUrl(null);
+          setAiPreselectedTemplate(autoAi.templateId);
+          setAiInitialParams(autoAi.initialParams || {});
+          setAiCustomInputs(inputs);
+          setShowAiModal(true);
+        }, 300);
+      }
+    }
   };
 
   const handleDelete = async (assetType: string) => {
@@ -546,6 +584,9 @@ export function AssetsTab({
     } else if (assetType.includes('kit_assistant')) {
         templateId = 'coach_outfit';
         referenceAssetType = 'kit_assistant_upload';
+    } else if (assetType === 'stadium_background') {
+        templateId = 'location_standardize';
+        referenceAssetType = 'location_photo';
     }
 
     if (templateId) {
@@ -567,7 +608,14 @@ export function AssetsTab({
        const inputs: Record<string, string | null> = { ...baseAiInputAssets };
        if (referenceAssetType) {
            const refAsset = getEff(referenceAssetType);
-           if (refAsset) inputs['reference'] = getAssetUrl(refAsset.url);
+           if (refAsset) {
+             // Map the reference asset to the correct input key expected by the template
+             if (referenceAssetType === 'location_photo') {
+               inputs['location'] = getAssetUrl(refAsset.url);
+             } else {
+               inputs['reference'] = getAssetUrl(refAsset.url);
+             }
+           }
        }
        setAiCustomInputs(inputs);
 
@@ -801,10 +849,10 @@ export function AssetsTab({
         </div>
 
         {/* Location */}
-        <Section title="📍 Locatie" description="Stadion/veld foto's en achtergronden.">
+        <Section title="📍 Locatie" description="Upload een voetbalveld foto → AI zet het om naar portrait formaat voor lineup.">
           <AssetGrid>
             <AssetCard
-              label="Locatie foto"
+              label="Veld foto (upload)"
               assetType="location_photo"
               asset={getAsset('location_photo')}
               onUpload={handleUpload}
@@ -812,11 +860,13 @@ export function AssetsTab({
               aspectRatio="16 / 9"
             />
             <AssetCard
-              label="Stadion achtergrond (lineup)"
+              label="Achtergrond (bewerkt)"
               assetType="stadium_background"
               asset={getAsset('stadium_background')}
               onUpload={handleUpload}
               onDelete={handleDelete}
+              onImprove={handleImprove}
+              onReplace={handleReplaceAi}
               aspectRatio="9 / 16"
             />
           </AssetGrid>

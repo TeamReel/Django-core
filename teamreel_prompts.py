@@ -55,12 +55,15 @@ CRITICAL: Use the PROVIDED IMAGE as the source. Do NOT invent or generate a new 
 EDIT INSTRUCTIONS:
 1. REMOVE the background completely — output must have a {background_description} background.
 2. KEEP the logo itself pixel-perfect: preserve ALL original colors, shapes, text, emblems, and details EXACTLY as they appear in the input image.
-3. CENTER the logo on the canvas and scale it to fill approximately 80% of the space.
-4. Output format: Perfect square (1:1 aspect ratio).
-5. Style: {style_description}.
-6. Clean up any compression artifacts or rough edges around the logo boundary.
-7. Do NOT add any decorations, shadows, glows, or effects not present in the original.
-8. The result should look like a professional brand asset file ready for print and digital use.
+3. SCALE THE LOGO UP to fill approximately 85-90% of the canvas. The logo must be LARGE and DOMINANT — it should nearly touch the edges. Do NOT leave excessive empty space around it.
+4. CENTER the logo precisely on the canvas.
+5. Output format: Perfect square (1:1 aspect ratio), high resolution.
+6. Style: {style_description}.
+7. Clean up any compression artifacts or rough edges around the logo boundary.
+8. Do NOT add any decorations, shadows, glows, or effects not present in the original.
+9. The result should look like a professional brand asset file ready for print and digital use.
+
+IMPORTANT: The most common mistake is making the logo too small. The logo MUST be large and fill the canvas.
 """,
     },
 
@@ -102,6 +105,49 @@ EDIT INSTRUCTIONS:
 5. Clean up any compression artifacts or rough edges around the logo boundary.
 6. Do NOT add any decorations, shadows, glows, or effects not present in the original.
 7. Must be suitable for heat-press printing on fabric.
+""",
+    },
+
+    # =========================================================================
+    # 2b. LOCATION / STADIUM BACKGROUND STANDARDIZATION
+    # =========================================================================
+    "location_standardize": {
+        "id": "location_standardize",
+        "name": "Locatie Achtergrond",
+        "category": "location",
+        "description": "Zet een voetbalveld/stadion foto om naar portrait formaat voor lineup video en flyer.",
+        "input_requirements": ["location"],
+        "parameters": {
+            "time_of_day": {
+                "label": "Tijdstip",
+                "type": "select",
+                "options": ["as_is", "golden_hour", "evening_lights", "overcast"],
+                "default": "as_is",
+            },
+            "style": {
+                "label": "Stijl",
+                "type": "select",
+                "options": ["realistic", "vibrant", "cinematic"],
+                "default": "realistic",
+            },
+        },
+        "preprocessing": {
+            "location": "pad_portrait_1080",
+        },
+        "prompt_template": """You are given an uploaded photo of a football field / stadium as input. Your task is to convert this photo into a portrait-oriented background image suitable for a lineup video and matchday flyer.
+
+CRITICAL: Use the PROVIDED IMAGE as the source. Keep the actual field and surroundings recognizable.
+
+EDIT INSTRUCTIONS:
+1. CONVERT to PORTRAIT orientation (9:16 aspect ratio, e.g. 1080x1920).
+2. Show the football pitch from a slightly elevated angle, looking down the length of the field.
+3. The pitch should be the main focus — green grass, white lines clearly visible.
+4. If the original is landscape, intelligently reframe/extend to fill portrait format. You may extend the sky or surroundings, but keep the field authentic.
+5. Time of day / lighting: {time_of_day_description}.
+6. Style: {style_description}.
+7. The image will be used as a BACKGROUND for lineup overlays, so the center area should not have distracting elements.
+8. Clean, high quality, no watermarks.
+9. Make the grass and pitch look pristine and well-maintained.
 """,
     },
 
@@ -678,6 +724,9 @@ PARAM_RESOLVERS = {
         "classic": "Classic relaxed-fit style.",
         "windbreaker": "Lightweight windbreaker style.",
         "hoodie": "Hooded tracksuit style with drawstring hood.",
+        "realistic": "Realistic, true-to-life photographic quality.",
+        "vibrant": "Vibrant, saturated colors for a punchy, eye-catching look.",
+        "cinematic": "Cinematic, dramatic look with rich contrast and depth.",
     },
     "orientation": {
         "landscape": "Landscape rectangle (2:1 aspect ratio, 512x256px).",
@@ -819,6 +868,12 @@ PARAM_RESOLVERS = {
         "fist_pump": "The player pumps one fist into the air with intensity, powerful celebration. Other arm bent at side.",
         "point_to_sky": "The player points to the sky with one index finger, emotional dedication gesture. Other hand on chest.",
         "slide": "The player drops to both knees in a knee slide, arms spread wide. Then stands back up to starting position.",
+    },
+    "time_of_day": {
+        "as_is": "Keep the original lighting and time of day as-is from the photo.",
+        "golden_hour": "Golden hour lighting — warm sunset tones, long shadows, orange/amber sky.",
+        "evening_lights": "Evening with stadium floodlights on — dramatic lighting, darker sky, bright artificial field lights.",
+        "overcast": "Overcast/cloudy day — soft, diffused, even lighting without harsh shadows.",
     },
 }
 

@@ -118,6 +118,40 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     },
   },
   {
+    id: 'location_standardize',
+    name: 'Locatie Achtergrond',
+    icon: '📍',
+    category: 'location',
+    description: 'Zet een voetbalveld/stadion foto om naar portrait formaat voor lineup video en flyer.',
+    inputRequirements: ['location'],
+    requiredAssetTypes: ['location_photo'],
+    outputAssetType: 'stadium_background',
+    creditsCost: 1,
+    parameters: {
+      time_of_day: {
+        label: 'Tijdstip',
+        type: 'select',
+        options: [
+          { value: 'as_is', label: 'Zoals de foto' },
+          { value: 'golden_hour', label: 'Golden Hour' },
+          { value: 'evening_lights', label: 'Avond (verlichting)' },
+          { value: 'overcast', label: 'Bewolkt' },
+        ],
+        default: 'as_is',
+      },
+      style: {
+        label: 'Stijl',
+        type: 'select',
+        options: [
+          { value: 'realistic', label: 'Realistisch' },
+          { value: 'vibrant', label: 'Levendig' },
+          { value: 'cinematic', label: 'Cinematic' },
+        ],
+        default: 'realistic',
+      },
+    },
+  },
+  {
     id: 'tenue_generate',
     name: 'Tenue Genereren',
     icon: '👕',
