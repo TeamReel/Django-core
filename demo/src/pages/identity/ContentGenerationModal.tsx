@@ -503,12 +503,12 @@ export default function ContentGenerationModal({
 
     const fetchSeasonSquad = async () => {
       try {
-        // Fetch season-specific project members (filtered by period_id)
-        // Request up to 100 members to ensure we get the full squad
-        let url = `${getApiBaseUrl()}/api/v1/projects/${projectId}/members/?page_size=100`;
-        if (seasonId) {
-          url += `&period_id=${seasonId}`;
-        }
+        // Fetch project members for lineup selection.
+        // We do NOT filter by period_id because members may be registered
+        // without a period, or on a different season — all project members
+        // should be selectable for lineups.
+        // Use page_size=200 to maximise results (API max = 200 via cursor, 100 via page).
+        const url = `${getApiBaseUrl()}/api/v1/projects/${projectId}/members/?page_size=100`;
 
         console.log('📡 Fetching from URL:', url);
 
@@ -520,9 +520,8 @@ export default function ContentGenerationModal({
         if (response.ok) {
           const data = await response.json();
           console.log('✅ API Response:', data);
-          // Handle paginated response structure from /api/v1/projects/{id}/members/
-          // Response format: { status: 'success', data: { data: [...] }, meta: {...} }
-          let members = [];
+          // Handle envelope response: { status: 'success', data: [...], meta: { pagination: {...} } }
+          let members: any[] = [];
           if (data?.data?.data && Array.isArray(data.data.data)) {
             members = data.data.data;
           } else if (data?.data?.results && Array.isArray(data.data.results)) {
@@ -534,6 +533,29 @@ export default function ContentGenerationModal({
           } else if (Array.isArray(data)) {
             members = data;
           }
+
+          // Handle pagination: fetch remaining pages if there's a `next` link
+          let nextUrl = data?.meta?.pagination?.next;
+          while (nextUrl) {
+            console.log('📡 Fetching next page:', nextUrl);
+            const nextResp = await fetch(nextUrl, {
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+            });
+            if (!nextResp.ok) break;
+            const nextData = await nextResp.json();
+            let nextMembers: any[] = [];
+            if (nextData?.data?.data && Array.isArray(nextData.data.data)) {
+              nextMembers = nextData.data.data;
+            } else if (Array.isArray(nextData?.data)) {
+              nextMembers = nextData.data;
+            } else if (Array.isArray(nextData)) {
+              nextMembers = nextData;
+            }
+            members = [...members, ...nextMembers];
+            nextUrl = nextData?.meta?.pagination?.next;
+          }
+
           console.log('👥 Extracted members:', members.length, members);
           const grouped = groupParticipationsByRole(members);
           console.log('📊 Grouped by role:', grouped);
