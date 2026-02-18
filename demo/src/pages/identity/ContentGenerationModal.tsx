@@ -799,8 +799,8 @@ export default function ContentGenerationModal({
     return null;
   };
 
-  // Helper to get member name
-  const getMemberName = (memberId: string): string => {
+  // Helper to get member name by ID
+  const getMemberNameById = (memberId: string): string => {
     for (const role of ['goalkeeper', 'player', 'coach', 'assistant']) {
       const member = seasonSquad[role]?.find(p => p.id === memberId);
       if (member) {
@@ -945,7 +945,7 @@ export default function ContentGenerationModal({
       // Helper to add segments for a list of members
       const addMemberSegments = (members: string[], assets: string[], role?: string) => {
         for (const memberId of members) {
-          const memberName = getMemberName(memberId);
+          const memberName = getMemberNameById(memberId);
 
           for (const assetType of assets) {
             const url = getMemberAssetUrl(memberId, assetType, role);
