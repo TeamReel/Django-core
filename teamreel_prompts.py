@@ -134,20 +134,22 @@ EDIT INSTRUCTIONS:
         "preprocessing": {
             "location": "pad_portrait_1080",
         },
-        "prompt_template": """You are given an uploaded photo of a football field / stadium as input. Your task is to convert this photo into a portrait-oriented background image suitable for a lineup video and matchday flyer.
+        "prompt_template": """You are given an uploaded photo of a football field / stadium as input. Your task is to create a PORTRAIT background image of a football pitch for a lineup overlay.
 
-CRITICAL: Use the PROVIDED IMAGE as the source. Keep the actual field and surroundings recognizable.
+CRITICAL: Use the PROVIDED IMAGE as style/color reference. The output must show a COMPLETE FOOTBALL PITCH.
 
 EDIT INSTRUCTIONS:
-1. CONVERT to PORTRAIT orientation (9:16 aspect ratio, e.g. 1080x1920).
-2. Show the football pitch from a slightly elevated angle, looking down the length of the field.
-3. The pitch should be the main focus — green grass, white lines clearly visible.
-4. If the original is landscape, intelligently reframe/extend to fill portrait format. You may extend the sky or surroundings, but keep the field authentic.
-5. Time of day / lighting: {time_of_day_description}.
-6. Style: {style_description}.
-7. The image will be used as a BACKGROUND for lineup overlays, so the center area should not have distracting elements.
-8. Clean, high quality, no watermarks.
-9. Make the grass and pitch look pristine and well-maintained.
+1. Output: PORTRAIT orientation (9:16 aspect ratio, 1080x1920).
+2. CAMERA ANGLE: Bird's eye / top-down view looking straight down at the pitch. The viewer sees the ENTIRE football field from above.
+3. The FULL PITCH must be visible: both goals, both penalty areas, center circle, all lines. The pitch fills the ENTIRE frame from top to bottom.
+4. The pitch runs VERTICALLY in the portrait frame (goals at top and bottom).
+5. GREEN GRASS must fill the entire image — no sky, no stands, no surrounding area. Just the pitch itself edge-to-edge.
+6. White pitch markings (lines, circles, penalty areas) must be clearly visible.
+7. Time of day / lighting: {time_of_day_description}.
+8. Style: {style_description}.
+9. The image will be used as a BACKGROUND for a lineup overlay (player names, photos, formation dots). Keep the surface clean and uniform.
+10. Make the grass look pristine, well-maintained, with subtle mowing stripes for realism.
+11. No text, logos, watermarks, or people on the pitch.
 """,
     },
 
@@ -274,19 +276,20 @@ CRITICAL INSTRUCTIONS:
             },
         },
         "preprocessing": {},
-        "prompt_template": """You are given an AI-generated stadium/pitch background image. Your task is to POST-PROCESS it for use as a background in lineup videos and matchday flyers.
+        "prompt_template": """You are given an AI-generated football pitch background image. Your task is to optimize it for use as a lineup overlay background.
 
 CRITICAL INSTRUCTIONS:
-1. Ensure the image is in PORTRAIT orientation (9:16, 1080x1920).
-2. The CENTER area (where player names/photos will overlay) should be clean and uncluttered.
-3. Apply a {blur_center_description} blur to the central area to ensure text readability when overlaid.
-4. Brightness: {brightness_description}.
-5. Enhance the grass color to look vibrant and well-maintained.
-6. Sharpen the overall image quality — no compression artifacts.
-7. The pitch lines should be visible but not overpowering.
-8. Do NOT add text, logos, or watermarks.
-9. The result should work as a clean background layer for compositing.
-10. Colors should be rich and the image should look professional and broadcast-quality.
+1. The image MUST be PORTRAIT (9:16, 1080x1920).
+2. The FULL FOOTBALL PITCH must be visible from a bird's eye / top-down view. Both goals, penalty areas, center circle — the complete field.
+3. The pitch runs VERTICALLY (goals at top and bottom of the frame).
+4. GREEN GRASS fills the ENTIRE image edge-to-edge. No sky, no stands, no surroundings.
+5. Brightness: {brightness_description}.
+6. Apply a {blur_center_description} blur to the central area to ensure text/photo readability when lineup is overlaid.
+7. Enhance grass color — vibrant, well-maintained, with subtle mowing stripes.
+8. White pitch lines must be visible but not overpowering.
+9. Do NOT add text, logos, or watermarks.
+10. The result must work as a clean background for compositing player photos and formation dots on top.
+11. Colors should be rich, professional, broadcast-quality.
 """,
     },
 
