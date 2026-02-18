@@ -480,7 +480,7 @@ export function AssetsTab({
     let referenceAssetType: string | null = null;
     let initialParams: Record<string, string> = {};
 
-    if (assetType === 'logo_light' || assetType === 'logo_dark') {
+    if (assetType === 'logo_light') {
         templateId = 'logo_standardize';
         referenceAssetType = 'logo_upload';
     } else if (assetType === 'sponsor_logo') {
@@ -570,7 +570,6 @@ export function AssetsTab({
               aspectRatio="1 / 1"
             />
             <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-            <AssetCard label="Logo (compleet)" assetType="logo_dark" asset={getAsset('logo_dark')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
           </AssetGrid>
         </Section>
       </div>
@@ -709,11 +708,10 @@ export function AssetsTab({
           {/* Logo */}
           <div style={{ background: '#252526', padding: 16, borderRadius: 8, border: '1px solid #333' }}>
              <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Logo</h3>
-             <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het clublogo → AI bewerkt → AI combined (light + dark).</p>
+             <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het clublogo → AI standaardiseert het.</p>
              <AssetGrid>
                 <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
                 <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} aspectRatio="1 / 1" />
-                <AssetCard label="Logo (compleet)" assetType="logo_dark" asset={getAsset('logo_dark')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} aspectRatio="1 / 1" />
              </AssetGrid>
           </div>
 
@@ -813,9 +811,6 @@ export function AssetsTab({
           <AssetGrid>
             {(() => { const e = getEffectiveAsset('logo_light'); return (
               <AssetCard label="Logo" assetType="logo_light" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
-            ); })()}
-            {(() => { const e = getEffectiveAsset('logo_dark'); return (
-              <AssetCard label="Logo (dark)" assetType="logo_dark" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
             ); })()}
           </AssetGrid>
         </Section>
