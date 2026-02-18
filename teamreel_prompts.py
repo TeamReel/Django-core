@@ -175,19 +175,19 @@ EDIT INSTRUCTIONS:
             },
         },
         "preprocessing": {},
-        "prompt_template": """You are given an AI-generated club logo. Your task is to POST-PROCESS it for production use.
+        "prompt_template": """You are given an AI-generated club logo image. Your ONLY task is to clean it up for production use.
 
-CRITICAL INSTRUCTIONS:
-1. REMOVE the background completely — output MUST have a fully transparent background.
-2. SCALE the logo UP to fill approximately {fill_percentage}% of the canvas. The logo must be LARGE and DOMINANT.
-3. CENTER the logo precisely on a square canvas.
-4. CLEAN UP any artifacts: rough edges, halos, semi-transparent noise around the logo boundary.
-5. SHARPEN edges: the boundary between the logo and transparent background must be crisp and clean.
-6. Preserve ALL original colors, shapes, text, and details EXACTLY.
-7. Output: square {target_size}x{target_size} PNG with transparent background.
-8. The result must be print-ready: suitable for flyers, banners, jerseys, and digital media.
-9. Do NOT add shadows, glows, or decorations.
-10. If the logo is too small in the input, enlarge it to fill the canvas properly.
+STEP-BY-STEP:
+1. FIND the logo within the image. Ignore ALL background areas.
+2. CROP tightly around the logo — remove ALL empty/transparent/colored space around it. Get the tightest possible bounding box.
+3. REMOVE any remaining background — the output MUST have a 100% transparent background (alpha channel). No grey, no white, no checkerboard — FULLY transparent.
+4. ENLARGE the cropped logo to fill {fill_percentage}% of a {target_size}x{target_size} square canvas. The logo must be BIG. If the original has lots of empty space, the logo in the output should be MUCH larger than in the input.
+5. CENTER the enlarged logo on the canvas.
+6. CLEAN edges: remove any halos, fringes, or semi-transparent pixels around the logo boundary. The edge between logo and transparent background must be pixel-sharp.
+7. Preserve the logo's colors, shapes, text, and details EXACTLY.
+8. Output: {target_size}x{target_size} PNG, transparent background.
+
+COMMON MISTAKE TO AVOID: Do NOT just copy the input at the same size. The logo must FILL the canvas. If the input logo is small within a large image, you must crop it out and scale it UP dramatically.
 """,
     },
 
@@ -206,18 +206,19 @@ CRITICAL INSTRUCTIONS:
             },
         },
         "preprocessing": {},
-        "prompt_template": """You are given an AI-generated sponsor logo. Your task is to POST-PROCESS it for production use on sportswear.
+        "prompt_template": """You are given an AI-generated sponsor logo image. Your ONLY task is to clean it up for production use on sportswear.
 
-CRITICAL INSTRUCTIONS:
-1. REMOVE the background completely — output MUST have a fully transparent background.
-2. SCALE the sponsor logo to fill approximately 85% of the canvas width.
-3. CENTER the logo on the canvas.
-4. CLEAN UP all artifacts: rough edges, halos, semi-transparent noise, compression artifacts.
-5. SHARPEN edges for clean cutout suitable for heat-press printing on fabric.
-6. Preserve ALL original colors, text, and graphic elements EXACTLY.
-7. Output format: {orientation_description} with transparent background.
-8. The result must be suitable for direct use on jersey printing templates.
-9. Do NOT add shadows, glows, or decorations.
+STEP-BY-STEP:
+1. FIND the sponsor logo within the image. Ignore ALL background areas.
+2. CROP tightly around the logo — remove ALL empty/transparent/colored space.
+3. REMOVE any remaining background completely — output MUST have a 100% transparent background (alpha channel).
+4. ENLARGE the cropped logo to fill approximately 85% of the canvas width.
+5. CENTER the logo on the canvas.
+6. CLEAN edges: remove halos, fringes, semi-transparent pixels. The cutout must be pixel-sharp and suitable for heat-press printing on fabric.
+7. Preserve ALL original colors, text, and graphic elements EXACTLY.
+8. Output format: {orientation_description} with transparent background.
+
+COMMON MISTAKE TO AVOID: Do NOT just copy the input at the same size. Crop out the logo tightly, then enlarge it to fill the canvas.
 """,
     },
 
