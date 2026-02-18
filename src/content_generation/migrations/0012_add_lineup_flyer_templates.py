@@ -12,11 +12,11 @@ def seed_lineup_flyer_templates(apps, _schema_editor):
             "members": {
                 "goalkeeper": {
                     "count": 1,
-                    "asset_types": ["in_tenue", "closeup", "short_intro"],
+                    "asset_types": ["in_tenue", "closeup"],
                 },
                 "player": {
                     "count": max(player_count - 1, 0),
-                    "asset_types": ["in_tenue", "closeup", "short_intro"],
+                    "asset_types": ["in_tenue", "closeup"],
                 },
             },
             "use_formation": True,

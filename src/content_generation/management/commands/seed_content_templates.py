@@ -143,7 +143,7 @@ FOOTBALL_7V7_FORMATIONS = [
 
 
 def get_lineup_requirements(player_count: int, use_formation: bool = True) -> dict:
-    """Get standard lineup template requirements.
+    """Get standard lineup VIDEO template requirements.
 
     Requires in_tenue, closeup, and short_intro for each member.
     1 goalkeeper + (player_count - 1) players.
@@ -160,6 +160,35 @@ def get_lineup_requirements(player_count: int, use_formation: bool = True) -> di
             },
         },
         "use_formation": use_formation,
+        "assets": [
+            {"type": "team_logo", "required": True},
+            {"type": "background", "required": False},
+        ],
+        "match_data": {
+            "required": ["opponent", "date", "venue"],
+            "optional": ["kickoff_time", "competition"],
+        },
+    }
+
+
+def get_lineup_flyer_requirements(player_count: int) -> dict:
+    """Get lineup FLYER (static PNG) template requirements.
+
+    Only requires in_tenue and closeup — no intro video needed for flyers.
+    1 goalkeeper + (player_count - 1) players.
+    """
+    return {
+        "members": {
+            "goalkeeper": {
+                "count": 1,
+                "asset_types": ["in_tenue", "closeup"],
+            },
+            "player": {
+                "count": player_count - 1,  # -1 for goalkeeper
+                "asset_types": ["in_tenue", "closeup"],
+            },
+        },
+        "use_formation": True,
         "assets": [
             {"type": "team_logo", "required": True},
             {"type": "background", "required": False},
@@ -506,9 +535,7 @@ class Command(BaseCommand):
                             "style_variant": style_name,
                             "ai_workflow_id": f"wf_lineup_flyer_{style_id}_{sport_key}",
                             "sport_variant": sport_key,
-                            "input_requirements": get_lineup_requirements(
-                                player_count, use_formation=True
-                            ),
+                            "input_requirements": get_lineup_flyer_requirements(player_count),
                             "description": f"{style_name} static lineup flyer for {sport_label}",
                         }
                     )
