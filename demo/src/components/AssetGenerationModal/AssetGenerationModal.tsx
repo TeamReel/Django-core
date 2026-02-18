@@ -388,7 +388,7 @@ export default function AssetGenerationModal({
   });
   const [selectedVariantIdx, setSelectedVariantIdx] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
-  const [referenceSource, setReferenceSource] = useState<'upload' | 'previous'>('previous'); // Prefer existing result for iteration
+  const [referenceSource, setReferenceSource] = useState<'upload' | 'previous'>('upload'); // Default: use original upload
 
   const generation = useAssetGeneration();
 
@@ -445,6 +445,18 @@ export default function AssetGenerationModal({
 
   if (!isOpen) return null;
 
+  // Helper: determine which input key is the "primary" for source switching
+  // This is the key that gets swapped when user picks "Vorige AI versie" vs "Upload"
+  const _getPrimaryInputKey = (tmpl: AssetTemplate): string | null => {
+    // Templates with only one relevant input: logo/sponsor/location
+    if (tmpl.id === 'logo_standardize') return 'logo';
+    if (tmpl.id === 'sponsor_standardize') return 'sponsor';
+    if (tmpl.id === 'location_standardize') return 'location';
+    // Kit templates use 'reference' as the primary switchable input
+    if (tmpl.inputRequirements.includes('reference')) return 'reference';
+    return null;
+  };
+
   // Handlers
   const handleSelectTemplate = (id: string) => {
     setSelectedTemplateId(id);
@@ -460,12 +472,13 @@ export default function AssetGenerationModal({
       if (val) validInputs[key] = val;
     });
 
-    // Special handling for 'reference': use Previous Result if selected
-    if (selectedTemplate.inputRequirements.includes('reference')) {
-       if (referenceSource === 'previous' && previousResultUrl) {
-           validInputs['reference'] = previousResultUrl;
-       }
-       // If set to 'upload', it falls back to inputAssets['reference'] which is already set above
+    // Source picker: swap the primary input with previousResultUrl when 'previous' is selected
+    if (referenceSource === 'previous' && previousResultUrl) {
+      // Determine which input key is the "primary" for this template
+      const primaryKey = _getPrimaryInputKey(selectedTemplate);
+      if (primaryKey) {
+        validInputs[primaryKey] = previousResultUrl;
+      }
     }
 
     // Map frontend keys to backend expected keys
@@ -547,11 +560,12 @@ export default function AssetGenerationModal({
       if (val) validInputs[key] = val;
     });
 
-    // Special handling for 'reference': use Previous Result if selected
-    if (selectedTemplate.inputRequirements.includes('reference')) {
-       if (referenceSource === 'previous' && previousResultUrl) {
-           validInputs['reference'] = previousResultUrl;
-       }
+    // Source picker: swap the primary input with previousResultUrl when 'previous' is selected
+    if (referenceSource === 'previous' && previousResultUrl) {
+      const primaryKey = _getPrimaryInputKey(selectedTemplate);
+      if (primaryKey) {
+        validInputs[primaryKey] = previousResultUrl;
+      }
     }
 
     // Map frontend keys to backend expected keys
@@ -733,8 +747,8 @@ export default function AssetGenerationModal({
                 </div>
               </div>
 
-              {/* Source Selection (if applicable) */}
-              {selectedTemplate.inputRequirements.includes('reference') && previousResultUrl && inputAssets.reference && (
+              {/* Source Selection — shown whenever there's a previous AI result to choose from */}
+              {previousResultUrl && _getPrimaryInputKey(selectedTemplate) && (
                 <div style={{ marginBottom: 16 }}>
                   <label
                     style={{
@@ -762,7 +776,7 @@ export default function AssetGenerationModal({
                          textAlign: 'center'
                       }}
                     >
-                       Originele Upload
+                       📤 Originele Upload
                     </button>
                     <button
                       onClick={() => setReferenceSource('previous')}
@@ -778,12 +792,12 @@ export default function AssetGenerationModal({
                          textAlign: 'center'
                       }}
                     >
-                       Vorige AI Content
+                       🎨 Huidige AI Versie
                     </button>
                   </div>
                    <div style={{ fontSize: 11, color: '#888', marginTop: 4}}>
                       {referenceSource === 'upload'
-                        ? 'Gebruikt de origineel geüploade foto als basis.'
+                        ? 'Gebruikt de origineel geüploade afbeelding als basis.'
                         : 'Gebruikt het huidige AI resultaat als basis voor verdere aanpassingen.'}
                    </div>
                 </div>

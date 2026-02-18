@@ -65,10 +65,8 @@ interface AssetCardProps {
   readOnly?: boolean;
   onUpload?: (file: File, assetType: string) => void;
   onDelete?: (assetType: string) => void;
-  onImprove?: (assetType: string) => void;
   onReplace?: (assetType: string) => void;
   onShowHistory?: (assetType: string) => void;
-  improveLabel?: string;
   aspectRatio?: string;
 }
 
@@ -81,10 +79,8 @@ function AssetCard({
   readOnly = false,
   onUpload,
   onDelete,
-  onImprove,
   onReplace,
   onShowHistory,
-  improveLabel = '✏️ Bewerk',
   aspectRatio = '3 / 4',
 }: AssetCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -227,43 +223,24 @@ function AssetCard({
 
         {!readOnly && onUpload && (
           <>
-            {/* AI processed assets with AI action buttons */}
-            {isProcessed && (onReplace || onImprove) ? (
-              <div style={{ display: 'grid', gridTemplateColumns: url && onImprove ? '1fr 1fr' : '1fr', gap: 4 }}>
-                {onReplace && (
-                  <button
-                    onClick={() => onReplace(assetType)}
-                    style={{
-                      width: '100%',
-                      padding: '4px 8px',
-                      fontSize: 11,
-                      cursor: 'pointer',
-                      background: 'var(--vscode-button-background, #0078d4)',
-                      color: 'var(--vscode-button-foreground, #fff)',
-                      border: 'none',
-                      borderRadius: 4,
-                    }}
-                  >
-                    🎨 Genereren
-                  </button>
-                )}
-                {url && onImprove && (
-                  <button
-                    onClick={() => onImprove(assetType)}
-                    style={{
-                      width: '100%',
-                      padding: '4px 8px',
-                      fontSize: 11,
-                      cursor: 'pointer',
-                      background: '#8b5cf6',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 4,
-                    }}
-                  >
-                    {improveLabel}
-                  </button>
-                )}
+            {/* AI processed assets with single Bewerk button */}
+            {isProcessed && onReplace ? (
+              <div>
+                <button
+                  onClick={() => onReplace(assetType)}
+                  style={{
+                    width: '100%',
+                    padding: '4px 8px',
+                    fontSize: 11,
+                    cursor: 'pointer',
+                    background: 'var(--vscode-button-background, #0078d4)',
+                    color: 'var(--vscode-button-foreground, #fff)',
+                    border: 'none',
+                    borderRadius: 4,
+                  }}
+                >
+                  🎨 Bewerk
+                </button>
               </div>
             ) : (
               /* Upload-type assets with file picker */
@@ -540,15 +517,11 @@ export function AssetsTab({
     };
   }, [getAsset, parentBrand, parentProjectId]);
 
-  const handleImprove = (assetType: string) => {
-    openAiForAsset(assetType, 'improve');
-  };
-
   const handleReplaceAi = (assetType: string) => {
-    openAiForAsset(assetType, 'replace');
+    openAiForAsset(assetType);
   };
 
-  const openAiForAsset = (assetType: string, mode: 'replace' | 'improve') => {
+  const openAiForAsset = (assetType: string) => {
     // Map asset type to template
     let templateId: string | undefined;
 
@@ -601,8 +574,8 @@ export function AssetsTab({
        };
 
        const asset = getEff(assetType);
-       // replace = fresh from upload (no previous), improve = use current AI result as base
-       setAiPreviousResultUrl(mode === 'improve' && asset ? getAssetUrl(asset.url) : null);
+       // Always pass the current AI result URL so the modal can offer source choice
+       setAiPreviousResultUrl(asset ? getAssetUrl(asset.url) : null);
        setAiPreselectedTemplate(templateId);
        setAiInitialParams(initialParams);
 
@@ -798,7 +771,7 @@ export function AssetsTab({
              <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het clublogo → AI standaardiseert het.</p>
              <AssetGrid>
                 <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-                <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} onReplace={handleReplaceAi} improveLabel="✨ Verbeter" aspectRatio="1 / 1" />
+                <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} aspectRatio="1 / 1" />
              </AssetGrid>
           </div>
 
@@ -808,7 +781,7 @@ export function AssetsTab({
              <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het sponsor logo. Wordt gestandaardiseerd door AI.</p>
              <AssetGrid>
                 <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-                <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} onReplace={handleReplaceAi} aspectRatio="1 / 1" />
+                <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} aspectRatio="1 / 1" />
              </AssetGrid>
           </div>
         </div>
@@ -840,7 +813,6 @@ export function AssetsTab({
                   asset={getAsset(processedType)}
                   onUpload={handleUpload}
                   onDelete={handleDelete}
-                  onImprove={handleImprove}
                   onReplace={handleReplaceAi}
                   onShowHistory={handleShowHistory}
                 />
@@ -867,7 +839,6 @@ export function AssetsTab({
               asset={getAsset('stadium_background')}
               onUpload={handleUpload}
               onDelete={handleDelete}
-              onImprove={handleImprove}
               onReplace={handleReplaceAi}
               aspectRatio="9 / 16"
             />
@@ -1098,7 +1069,7 @@ export function AssetsTab({
                                     asset={localProcessed}
                                     onUpload={handleUpload}
                                     onDelete={handleDelete}
-                                    onImprove={handleImprove}
+                                    onReplace={handleReplaceAi}
                                   />
                               )}
                           </>
@@ -1108,7 +1079,7 @@ export function AssetsTab({
                       {!readOnly && !isOverridden && (
                            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
                                 <button
-                                    onClick={() => handleImprove(processedType)} // This will use effective assets as base
+                                    onClick={() => handleReplaceAi(processedType)}
                                     style={{
                                         padding: '8px 12px',
                                         fontSize: 12,
