@@ -674,7 +674,9 @@ export default function ContentGenerationModal({
     for (const role of ['goalkeeper', 'player', 'coach', 'assistant'] as const) {
       const req = reqs[role];
       if (req && typeof req !== 'boolean' && req.count > 0) {
-        if (selectedMembers[role].length !== req.count) {
+        // Count only non-empty entries (sparse arrays may contain '' placeholders)
+        const filledCount = selectedMembers[role].filter(Boolean).length;
+        if (filledCount !== req.count) {
           return false;
         }
       }
@@ -2326,12 +2328,15 @@ export default function ContentGenerationModal({
                           onChange={(e) => {
                             const newSelected = [...selected];
                             if (e.target.value) {
+                              // Ensure array is long enough for this index
+                              while (newSelected.length <= idx) newSelected.push('');
                               newSelected[idx] = e.target.value;
                             } else {
-                              // Clear this slot
-                              newSelected[idx] = '';
+                              // Clear this slot (keep position)
+                              if (idx < newSelected.length) newSelected[idx] = '';
                             }
-                            setSelectedMembers({ ...selectedMembers, [role]: newSelected.filter(Boolean) });
+                            // Keep sparse array — positions must stay aligned with formation slots
+                            setSelectedMembers({ ...selectedMembers, [role]: [...newSelected] });
                           }}
                           style={{
                             width: 120,
@@ -2365,7 +2370,8 @@ export default function ContentGenerationModal({
                               {eligibleMembers.map(p => {
                                 const name = getMemberName(p);
                                 const jersey = p.metadata?.shirt_number || p.data?.jersey_number;
-                                const isAlreadyUsed = [...gkSelected, ...playerSelected].includes(p.id) && p.id !== currentId;
+                                const allUsedIds = [...gkSelected, ...playerSelected].filter(Boolean);
+                                const isAlreadyUsed = allUsedIds.includes(p.id) && p.id !== currentId;
                                 return (
                                   <option key={p.id} value={p.id} disabled={isAlreadyUsed} style={{ background: '#1e1e1e', color: isAlreadyUsed ? '#666' : '#ccc' }}>
                                     {jersey ? `#${jersey} ` : ''}{name}{isAlreadyUsed ? ' ✗' : ''}
@@ -2377,7 +2383,8 @@ export default function ContentGenerationModal({
                           {assetTypes.length === 0 && pool.map(p => {
                             const name = getMemberName(p);
                             const jersey = p.metadata?.shirt_number || p.data?.jersey_number;
-                            const isAlreadyUsed = [...gkSelected, ...playerSelected].includes(p.id) && p.id !== currentId;
+                            const allUsedIds = [...gkSelected, ...playerSelected].filter(Boolean);
+                            const isAlreadyUsed = allUsedIds.includes(p.id) && p.id !== currentId;
                             return (
                               <option key={p.id} value={p.id} disabled={isAlreadyUsed} style={{ background: '#1e1e1e', color: isAlreadyUsed ? '#666' : '#ccc' }}>
                                 {jersey ? `#${jersey} ` : ''}{name}{isAlreadyUsed ? ' ✗' : ''}
@@ -2931,7 +2938,15 @@ export default function ContentGenerationModal({
               </Button>
             )}
             {step === 'lineup_squad' && (
-              <Button disabled={!memberSelectionValid} onClick={() => setStep('confirm')}>
+              <Button disabled={!memberSelectionValid} onClick={() => {
+                // Compact sparse arrays before moving to confirm/generate
+                setSelectedMembers(prev => ({
+                  ...prev,
+                  goalkeeper: prev.goalkeeper.filter(Boolean),
+                  player: prev.player.filter(Boolean),
+                }));
+                setStep('confirm');
+              }}>
                 Continue →
               </Button>
             )}
