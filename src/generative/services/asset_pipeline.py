@@ -274,8 +274,32 @@ def generate_asset(
                 ),
             )
 
-            # Extract generated image
+            # Extract generated image — guard against empty/blocked responses
             image_bytes = None
+            if (
+                not response.candidates
+                or not response.candidates[0].content
+                or not response.candidates[0].content.parts
+            ):
+                block_reason = getattr(response, "prompt_feedback", None)
+                logger.warning(
+                    "Empty Gemini response for %s variant %d (block_reason=%s)",
+                    template_id,
+                    i + 1,
+                    block_reason,
+                )
+                results.append(
+                    {
+                        "image_bytes": None,
+                        "image_base64": None,
+                        "mime_type": None,
+                        "filename": None,
+                        "variant_index": i,
+                        "error": f"Gemini returned empty response (possibly content-blocked): {block_reason}",
+                    }
+                )
+                continue
+
             for part in response.candidates[0].content.parts:
                 if hasattr(part, "inline_data") and part.inline_data:
                     image_bytes = part.inline_data.data

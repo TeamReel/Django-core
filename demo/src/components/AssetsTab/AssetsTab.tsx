@@ -68,6 +68,7 @@ interface AssetCardProps {
   onImprove?: (assetType: string) => void;
   onReplace?: (assetType: string) => void;
   onShowHistory?: (assetType: string) => void;
+  improveLabel?: string;
   aspectRatio?: string;
 }
 
@@ -83,6 +84,7 @@ function AssetCard({
   onImprove,
   onReplace,
   onShowHistory,
+  improveLabel = '✏️ Bewerk',
   aspectRatio = '3 / 4',
 }: AssetCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -242,7 +244,7 @@ function AssetCard({
                       borderRadius: 4,
                     }}
                   >
-                    🎨 Bewerk
+                    🎨 Genereren
                   </button>
                 )}
                 {url && onImprove && (
@@ -259,7 +261,7 @@ function AssetCard({
                       borderRadius: 4,
                     }}
                   >
-                    ✨ Verbeter
+                    {improveLabel}
                   </button>
                 )}
               </div>
@@ -796,7 +798,7 @@ export function AssetsTab({
              <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het clublogo → AI standaardiseert het.</p>
              <AssetGrid>
                 <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-                <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} onReplace={handleReplaceAi} aspectRatio="1 / 1" />
+                <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onImprove={handleImprove} onReplace={handleReplaceAi} improveLabel="✨ Verbeter" aspectRatio="1 / 1" />
              </AssetGrid>
           </div>
 
