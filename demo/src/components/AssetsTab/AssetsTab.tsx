@@ -16,7 +16,7 @@
  * - Member: Profile photo + season's combined kit → player card
  */
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   useBrandProfile,
   getAssetUrl,
@@ -25,6 +25,8 @@ import {
   type BrandAsset,
   type BrandProfile,
 } from '../../hooks/useBrandProfile';
+import { useAssetGeneration } from '../../hooks/useAssetGeneration';
+import { getTemplate } from '../../constants/assetTemplates';
 import { AssetGenerationModal } from '../AssetGenerationModal';
 
 // ============================================================================
@@ -69,6 +71,8 @@ interface AssetCardProps {
   onPostProcess?: (assetType: string) => void;
   onShowHistory?: (assetType: string) => void;
   aspectRatio?: string;
+  /** Show a processing spinner overlay */
+  isProcessing?: boolean;
 }
 
 function AssetCard({
@@ -84,6 +88,7 @@ function AssetCard({
   onPostProcess,
   onShowHistory,
   aspectRatio = '3 / 4',
+  isProcessing = false,
 }: AssetCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const url = asset ? getAssetUrl(asset.url) : null;
@@ -201,8 +206,28 @@ function AssetCard({
           </span>
         )}
 
+        {/* Processing overlay */}
+        {isProcessing && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(0,0,0,0.7)',
+              zIndex: 5,
+              gap: 8,
+            }}
+          >
+            <div style={{ width: 24, height: 24, border: '3px solid #8b5cf6', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            <span style={{ color: '#fff', fontSize: 11 }}>Bewerken...</span>
+          </div>
+        )}
+
         {/* Empty state */}
-        {!url && (
+        {!url && !isProcessing && (
           <div
             style={{
               position: 'absolute',
@@ -246,18 +271,20 @@ function AssetCard({
                 {onPostProcess && (
                   <button
                     onClick={() => onPostProcess(assetType)}
+                    disabled={isProcessing}
                     style={{
                       width: '100%',
                       padding: '4px 8px',
                       fontSize: 11,
-                      cursor: 'pointer',
-                      background: '#8b5cf6',
+                      cursor: isProcessing ? 'not-allowed' : 'pointer',
+                      background: isProcessing ? '#555' : '#8b5cf6',
                       color: '#fff',
                       border: 'none',
                       borderRadius: 4,
+                      opacity: isProcessing ? 0.6 : 1,
                     }}
                   >
-                    ✂️ Bewerk
+                    {isProcessing ? '⏳ Bezig...' : '✂️ Bewerk'}
                   </button>
                 )}
               </div>
@@ -409,6 +436,35 @@ export function AssetsTab({
   const [aiCustomInputs, setAiCustomInputs] = useState<Record<string, string | null>>({});
   const [aiInitialParams, setAiInitialParams] = useState<Record<string, string>>({});
 
+  // Postprocess: direct API call without modal
+  const postProcessGen = useAssetGeneration();
+  const [postProcessingAsset, setPostProcessingAsset] = useState<string | null>(null);
+  const [postProcessOutputType, setPostProcessOutputType] = useState<string | null>(null);
+
+  // Auto-accept postprocess result when generation completes
+  useEffect(() => {
+    if (postProcessGen.step === 'completed' && postProcessGen.variants.length > 0 && postProcessingAsset) {
+      (async () => {
+        const result = await postProcessGen.acceptVariant(0);
+        if (result) {
+          console.log('✅ Postprocess auto-saved:', postProcessingAsset, result);
+          await refresh();
+        } else {
+          console.error('❌ Postprocess save failed for', postProcessingAsset);
+        }
+        setPostProcessingAsset(null);
+        setPostProcessOutputType(null);
+        postProcessGen.reset();
+      })();
+    } else if (postProcessGen.step === 'error' && postProcessingAsset) {
+      console.error('❌ Postprocess failed:', postProcessGen.error);
+      alert(`Bewerken mislukt: ${postProcessGen.error || 'Onbekende fout'}`);
+      setPostProcessingAsset(null);
+      setPostProcessOutputType(null);
+      postProcessGen.reset();
+    }
+  }, [postProcessGen.step, postProcessGen.variants.length]);
+
   // History State
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [historyAssetType, setHistoryAssetType] = useState<string | null>(null);
@@ -541,8 +597,9 @@ export function AssetsTab({
   };
 
   const handlePostProcess = (assetType: string) => {
-    // Map asset type to its postprocess template
-    // Postprocessing uses the AI-generated result as input (not the raw upload)
+    // Direct postprocess: no modal, fire API with default params, auto-accept result
+    if (postProcessingAsset) return; // Already processing
+
     const getEff = (type: string) => {
       const own = getAsset(type);
       if (own) return own;
@@ -551,8 +608,6 @@ export function AssetsTab({
     };
 
     let templateId: string | undefined;
-    let inputKey = 'source'; // postprocess templates use 'source' as input key
-
     if (assetType === 'logo_light') templateId = 'logo_postprocess';
     else if (assetType === 'sponsor_logo') templateId = 'sponsor_postprocess';
     else if (assetType.includes('kit_')) templateId = 'kit_postprocess';
@@ -566,11 +621,27 @@ export function AssetsTab({
       return;
     }
 
-    setAiPreviousResultUrl(null); // No source picker for postprocess
-    setAiPreselectedTemplate(templateId);
-    setAiInitialParams({});
-    setAiCustomInputs({ [inputKey]: getAssetUrl(asset.url) });
-    setShowAiModal(true);
+    // Get default parameters from template definition
+    const tmpl = getTemplate(templateId);
+    const defaultParams: Record<string, string> = {};
+    if (tmpl) {
+      Object.entries(tmpl.parameters).forEach(([key, param]) => {
+        defaultParams[key] = param.default;
+      });
+    }
+
+    setPostProcessingAsset(assetType);
+    setPostProcessOutputType(tmpl?.outputAssetType || assetType);
+
+    postProcessGen.submit({
+      templateId,
+      parameters: defaultParams,
+      variantCount: 1,
+      projectId: projectId || '',
+      organisationId,
+      outputAssetType: assetType, // Save back to the same asset type
+      inputImageUrls: { source: getAssetUrl(asset.url) },
+    });
   };
 
   const openAiForAsset = (assetType: string) => {
@@ -801,6 +872,9 @@ export function AssetsTab({
             </div>
         )}
 
+        {/* Spinner animation for postprocess overlay */}
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
         {/* AI Generation Generation Modal */}
         <AssetGenerationModal
           isOpen={showAiModal}
@@ -823,7 +897,7 @@ export function AssetsTab({
              <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het clublogo → AI standaardiseert het.</p>
              <AssetGrid>
                 <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-                <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} aspectRatio="1 / 1" />
+                <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'logo_light'} aspectRatio="1 / 1" />
              </AssetGrid>
           </div>
 
@@ -833,7 +907,7 @@ export function AssetsTab({
              <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het sponsor logo. Wordt gestandaardiseerd door AI.</p>
              <AssetGrid>
                 <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-                <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} aspectRatio="1 / 1" />
+                <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'sponsor_logo'} aspectRatio="1 / 1" />
              </AssetGrid>
           </div>
         </div>
@@ -867,6 +941,7 @@ export function AssetsTab({
                   onDelete={handleDelete}
                   onReplace={handleReplaceAi}
                   onPostProcess={handlePostProcess}
+                  isProcessing={postProcessingAsset === processedType}
                   onShowHistory={handleShowHistory}
                 />
               </AssetGrid>
@@ -894,6 +969,7 @@ export function AssetsTab({
               onDelete={handleDelete}
               onReplace={handleReplaceAi}
               onPostProcess={handlePostProcess}
+              isProcessing={postProcessingAsset === 'stadium_background'}
               aspectRatio="9 / 16"
             />
           </AssetGrid>
@@ -1125,6 +1201,7 @@ export function AssetsTab({
                                     onDelete={handleDelete}
                                     onReplace={handleReplaceAi}
                                     onPostProcess={handlePostProcess}
+                                    isProcessing={postProcessingAsset === processedType}
                                   />
                               )}
                           </>
