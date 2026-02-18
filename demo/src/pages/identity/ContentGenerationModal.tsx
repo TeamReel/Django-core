@@ -1509,8 +1509,8 @@ export default function ContentGenerationModal({
   };
 
   const handleBack = () => {
-    // If we started with a template, just close the modal on first back
-    if (initialTemplate && (step === 'members' || step === 'lineup_squad' || step === 'confirm')) {
+    // If we started with a template, only close on the very first step (members)
+    if (initialTemplate && step === 'members') {
       onClose();
       return;
     }
@@ -2243,14 +2243,20 @@ export default function ContentGenerationModal({
           {/* Step 4 (lineup only): Squad selection on field visualization */}
           {step === 'lineup_squad' && selectedTemplate && (() => {
             const formationLayout = FORMATION_LAYOUTS[lineupFormation] || FORMATION_LAYOUTS['4-3-3'];
-            // Build a flat list of all available members for lineup (merged across roles)
-            const allAvailable = [...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || []), ...(seasonSquad.coach || []), ...(seasonSquad.assistant || [])]
+            // Separate pools: GK dropdown only shows goalkeepers, player slots only show players
+            const gkPool = (seasonSquad.goalkeeper || [])
+              .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx);
+            const playerPool = (seasonSquad.player || [])
               .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx);
             const playerReq = selectedTemplate.input_requirements?.members?.player;
             const gkReq = selectedTemplate.input_requirements?.members?.goalkeeper;
-            const assetTypes = (playerReq && typeof playerReq !== 'boolean' && playerReq.asset_types) || [];
-            const eligibleMembers = allAvailable.filter(p => memberHasRequiredAssets(p, assetTypes, 'player'));
-            const ineligibleMembers = allAvailable.filter(p => !memberHasRequiredAssets(p, assetTypes, 'player'));
+            const playerAssetTypes = (playerReq && typeof playerReq !== 'boolean' && playerReq.asset_types) || [];
+            const gkAssetTypes = (gkReq && typeof gkReq !== 'boolean' && (gkReq as any).asset_types) || playerAssetTypes;
+            // Eligible/ineligible split per role
+            const eligibleGks = gkPool.filter(p => memberHasRequiredAssets(p, gkAssetTypes, 'goalkeeper'));
+            const ineligibleGks = gkPool.filter(p => !memberHasRequiredAssets(p, gkAssetTypes, 'goalkeeper'));
+            const eligiblePlayers = playerPool.filter(p => memberHasRequiredAssets(p, playerAssetTypes, 'player'));
+            const ineligiblePlayers = playerPool.filter(p => !memberHasRequiredAssets(p, playerAssetTypes, 'player'));
             const gkSelected = selectedMembers.goalkeeper || [];
             const playerSelected = selectedMembers.player || [];
 
@@ -2282,7 +2288,11 @@ export default function ContentGenerationModal({
                     const idx = isGk ? 0 : pos.slot - 2; // Players index from 0 at slot 2
                     const selected = isGk ? gkSelected : playerSelected;
                     const currentId = selected[idx] || '';
-                    const currentMember = allAvailable.find(p => p.id === currentId);
+                    const pool = isGk ? gkPool : playerPool;
+                    const assetTypes = isGk ? gkAssetTypes : playerAssetTypes;
+                    const eligibleMembers = isGk ? eligibleGks : eligiblePlayers;
+                    const ineligibleMembers = isGk ? ineligibleGks : ineligiblePlayers;
+                    const currentMember = pool.find(p => p.id === currentId);
                     const jerseyNumber = currentMember?.metadata?.shirt_number || currentMember?.data?.jersey_number;
 
                     return (
@@ -2364,7 +2374,7 @@ export default function ContentGenerationModal({
                               })}
                             </optgroup>
                           )}
-                          {assetTypes.length === 0 && allAvailable.map(p => {
+                          {assetTypes.length === 0 && pool.map(p => {
                             const name = getMemberName(p);
                             const jersey = p.metadata?.shirt_number || p.data?.jersey_number;
                             const isAlreadyUsed = [...gkSelected, ...playerSelected].includes(p.id) && p.id !== currentId;

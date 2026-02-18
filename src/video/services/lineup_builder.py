@@ -336,16 +336,21 @@ class LineupSegmentBuilder:
         def _resolve_asset_url(asset_types: list[str]) -> str | None:
             self._debug_trace.append(f"Resolving {asset_types}...")
             for profile in brand_profiles:
-                asset = (
-                    BrandAsset.objects.filter(
-                        profile=profile,
-                        asset_type__in=asset_types,
-                        is_active=True,
+                # Iterate in priority order so e.g. logo_light (AI-processed)
+                # is preferred over logo_upload (raw upload).
+                asset = None
+                for at in asset_types:
+                    asset = (
+                        BrandAsset.objects.filter(
+                            profile=profile,
+                            asset_type=at,
+                            is_active=True,
+                        )
+                        .select_related("file")
+                        .first()
                     )
-                    .select_related("file")
-                    .order_by("-updated_at")
-                    .first()
-                )
+                    if asset:
+                        break
                 if not asset:
                     self._debug_trace.append(f"  Profile {profile.id}: No asset")
                     logger.info("DEBUG: No asset %s found in profile %s", asset_types, profile.id)
@@ -412,22 +417,28 @@ class LineupSegmentBuilder:
                 ).first()
                 if opp_club_brand and opp_club_brand not in opp_brand_profiles:
                     opp_brand_profiles.append(opp_club_brand)
+            opp_logo_priority = [
+                "logo_light",
+                "logo_dark",
+                "logo_upload",
+                "club_logo",
+                "club_logo_upload",
+                "logo",
+            ]
             for opp_profile in opp_brand_profiles:
-                asset = (
-                    BrandAsset.objects.filter(
-                        profile=opp_profile,
-                        asset_type__in=[
-                            "logo_light",
-                            "logo_dark",
-                            "logo_upload",
-                            "club_logo",
-                            "club_logo_upload",
-                            "logo",
-                        ],
+                asset = None
+                for at in opp_logo_priority:
+                    asset = (
+                        BrandAsset.objects.filter(
+                            profile=opp_profile,
+                            asset_type=at,
+                            is_active=True,
+                        )
+                        .select_related("file")
+                        .first()
                     )
-                    .select_related("file")
-                    .first()
-                )
+                    if asset:
+                        break
                 if asset:
                     asset_url = getattr(asset, "url", None)
                     if asset_url:
