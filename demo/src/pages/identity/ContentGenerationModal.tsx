@@ -1757,71 +1757,119 @@ export default function ContentGenerationModal({
           {step === 'members' && selectedTemplate && (
             <div className="space-y-6">
 
-              {/* Lineup Options - Formation & Player Style */}
+              {/* Lineup Options - Formation & Player Style (styled like AssetGenerationModal) */}
               {(selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
-                <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div style={{
+                  border: '1px solid var(--vscode-widget-border, #333)',
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                  background: 'var(--vscode-editor-background, #1e1e1e)',
+                }}>
                   {/* Section header */}
-                  <div className="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 px-6 py-4">
-                    <h4 className="text-lg font-bold text-white tracking-wide">⚽ Lineup Opties</h4>
+                  <div style={{
+                    padding: '14px 20px',
+                    borderBottom: '1px solid var(--vscode-widget-border, #333)',
+                    background: 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                  }}>
+                    <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--vscode-foreground, #ccc)' }}>
+                      ⚽ Lineup Opties
+                    </h4>
                   </div>
 
-                  <div className="p-6 space-y-8 bg-white dark:bg-gray-900">
+                  <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 24 }}>
+
                   {/* Formation selector */}
                   <div>
-                    <label className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4 block">Formatie</label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <label style={{
+                      display: 'block',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      marginBottom: 10,
+                      color: 'var(--vscode-foreground, #ccc)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>Formatie</label>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+                      gap: 10,
+                    }}>
                       {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
                         const isSelected = lineupFormation === code;
                         return (
                           <button
                             key={code}
                             onClick={() => setLineupFormation(code)}
-                            className={`group relative rounded-xl transition-all duration-200 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                              isSelected
-                                ? 'ring-2 ring-blue-500 shadow-xl shadow-blue-500/20 scale-[1.02]'
-                                : 'hover:scale-[1.02] hover:shadow-lg'
-                            }`}
+                            style={{
+                              position: 'relative',
+                              border: isSelected
+                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                : '1px solid var(--vscode-widget-border, #333)',
+                              borderRadius: 8,
+                              overflow: 'hidden',
+                              cursor: 'pointer',
+                              padding: 0,
+                              background: isSelected
+                                ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                                : 'var(--vscode-editor-background, #1e1e1e)',
+                              transition: 'all 0.15s ease',
+                            }}
                           >
                             {/* Mini field */}
-                            <div className={`relative w-full aspect-[3/4] ${
-                              isSelected
-                                ? 'bg-gradient-to-b from-green-500 to-green-700'
-                                : 'bg-gradient-to-b from-green-600/80 to-green-800/80 group-hover:from-green-500 group-hover:to-green-700'
-                            }`}>
+                            <div style={{
+                              position: 'relative',
+                              width: '100%',
+                              aspectRatio: '3/4',
+                              background: isSelected
+                                ? 'linear-gradient(to bottom, #16a34a, #15803d)'
+                                : 'linear-gradient(to bottom, #166534, #14532d)',
+                            }}>
                               {/* Field markings */}
-                              <div className="absolute inset-x-3 top-[15%] h-px bg-white/30" />
-                              <div className="absolute inset-x-3 top-[50%] h-px bg-white/30" />
-                              <div className="absolute left-1/2 top-[50%] w-6 h-6 -translate-x-1/2 -translate-y-1/2 border border-white/30 rounded-full" />
-                              <div className="absolute inset-x-[22%] bottom-0 h-[16%] border-t border-l border-r border-white/30" />
+                              <div style={{ position: 'absolute', left: 8, right: 8, top: '15%', height: 1, background: 'rgba(255,255,255,0.25)' }} />
+                              <div style={{ position: 'absolute', left: 8, right: 8, top: '50%', height: 1, background: 'rgba(255,255,255,0.25)' }} />
+                              <div style={{
+                                position: 'absolute', left: '50%', top: '50%',
+                                width: 20, height: 20, transform: 'translate(-50%, -50%)',
+                                border: '1px solid rgba(255,255,255,0.25)', borderRadius: '50%',
+                              }} />
 
                               {/* Position dots */}
                               {layout.positions.map(pos => (
                                 <div
                                   key={pos.slot}
-                                  className={`absolute w-3.5 h-3.5 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all ${
-                                    isSelected
-                                      ? 'bg-white shadow-lg shadow-white/40 scale-110'
-                                      : 'bg-white/70 group-hover:bg-white/90'
-                                  }`}
-                                  style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+                                  style={{
+                                    position: 'absolute',
+                                    width: 10, height: 10, borderRadius: '50%',
+                                    background: isSelected ? '#fff' : 'rgba(255,255,255,0.6)',
+                                    left: `${pos.x}%`, top: `${pos.y}%`,
+                                    transform: 'translate(-50%, -50%)',
+                                    boxShadow: isSelected ? '0 0 6px rgba(255,255,255,0.5)' : 'none',
+                                  }}
                                 />
                               ))}
 
-                              {/* Selected check */}
+                              {/* Selected check badge */}
                               {isSelected && (
-                                <div className="absolute top-2 right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </div>
+                                <div style={{
+                                  position: 'absolute', top: 4, right: 4,
+                                  width: 20, height: 20, borderRadius: '50%',
+                                  background: '#10b981', display: 'flex',
+                                  alignItems: 'center', justifyContent: 'center',
+                                  fontSize: 11, color: '#fff', fontWeight: 700,
+                                }}>✓</div>
                               )}
                             </div>
-                            {/* Formation code */}
-                            <div className={`py-3 text-center font-bold text-base transition-colors ${
-                              isSelected
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 group-hover:bg-gray-200 dark:group-hover:bg-gray-700'
-                            }`}>
+                            {/* Formation code label */}
+                            <div style={{
+                              padding: '8px 0',
+                              textAlign: 'center',
+                              fontWeight: 700,
+                              fontSize: 14,
+                              color: isSelected ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                              background: isSelected
+                                ? 'var(--vscode-focusBorder, #007fd4)'
+                                : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                            }}>
                               {code}
                             </div>
                           </button>
@@ -1832,8 +1880,16 @@ export default function ContentGenerationModal({
 
                   {/* Closeup style selector */}
                   <div>
-                    <label className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4 block">Weergave Stijl</label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <label style={{
+                      display: 'block',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      marginBottom: 10,
+                      color: 'var(--vscode-foreground, #ccc)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>Weergave Stijl</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                       {[
                         { value: 'popout' as const, label: 'Popout', desc: 'Speler los van achtergrond', icon: '🧍' },
                         { value: 'badge' as const, label: 'Badge', desc: 'Ronde spelersfoto', icon: '⭕' },
@@ -1843,27 +1899,40 @@ export default function ContentGenerationModal({
                           <button
                             key={opt.value}
                             onClick={() => setLineupCloseupStyle(opt.value)}
-                            className={`group relative rounded-xl p-5 transition-all duration-200 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                              isSelected
-                                ? 'bg-blue-500 text-white shadow-xl shadow-blue-500/20 ring-2 ring-blue-500 scale-[1.02]'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:scale-[1.02] hover:shadow-lg'
-                            }`}
+                            style={{
+                              position: 'relative',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 14,
+                              padding: '16px 18px',
+                              border: isSelected
+                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                : '1px solid var(--vscode-widget-border, #333)',
+                              borderRadius: 8,
+                              background: isSelected
+                                ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                                : 'var(--vscode-editor-background, #1e1e1e)',
+                              color: 'var(--vscode-foreground, #ccc)',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                              textAlign: 'left',
+                            }}
                           >
-                            <div className="flex items-center gap-4">
-                              <span className="text-4xl flex-shrink-0">{opt.icon}</span>
-                              <div>
-                                <div className="text-lg font-bold">{opt.label}</div>
-                                <div className={`text-sm mt-0.5 ${isSelected ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>
-                                  {opt.desc}
-                                </div>
+                            <span style={{ fontSize: 36, flexShrink: 0 }}>{opt.icon}</span>
+                            <div>
+                              <div style={{ fontWeight: 700, fontSize: 15 }}>{opt.label}</div>
+                              <div style={{ fontSize: 12, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 2 }}>
+                                {opt.desc}
                               </div>
                             </div>
                             {isSelected && (
-                              <div className="absolute top-3 right-3 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                              </div>
+                              <div style={{
+                                position: 'absolute', top: 8, right: 8,
+                                width: 22, height: 22, borderRadius: '50%',
+                                background: '#10b981', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center',
+                                fontSize: 12, color: '#fff', fontWeight: 700,
+                              }}>✓</div>
                             )}
                           </button>
                         );
@@ -1874,8 +1943,16 @@ export default function ContentGenerationModal({
                   {/* Animation style selector — only for video, not for static flyer */}
                   {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
                   <div>
-                    <label className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4 block">Animatie Stijl</label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <label style={{
+                      display: 'block',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      marginBottom: 10,
+                      color: 'var(--vscode-foreground, #ccc)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>Animatie Stijl</label>
+                    <div style={{ display: 'flex', gap: 10 }}>
                       {[
                         { value: 'slide_up', label: 'Omhoog', icon: '⬆️' },
                         { value: 'appear', label: 'Direct', icon: '✨' },
@@ -1888,20 +1965,36 @@ export default function ContentGenerationModal({
                           <button
                             key={opt.value}
                             onClick={() => setLineupAnimationStyle(opt.value as typeof lineupAnimationStyle)}
-                            className={`group relative rounded-xl py-4 px-3 transition-all duration-200 flex flex-col items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                              isSelected
-                                ? 'bg-blue-500 text-white shadow-xl shadow-blue-500/20 ring-2 ring-blue-500 scale-[1.04]'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:scale-[1.04] hover:shadow-lg'
-                            }`}
+                            style={{
+                              position: 'relative',
+                              flex: 1,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '14px 8px',
+                              border: isSelected
+                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                : '1px solid var(--vscode-widget-border, #333)',
+                              borderRadius: 8,
+                              background: isSelected
+                                ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                                : 'var(--vscode-editor-background, #1e1e1e)',
+                              color: 'var(--vscode-foreground, #ccc)',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                            }}
                           >
-                            <span className="text-3xl">{opt.icon}</span>
-                            <span className="font-bold text-sm">{opt.label}</span>
+                            <span style={{ fontSize: 24 }}>{opt.icon}</span>
+                            <span style={{ fontSize: 12, fontWeight: 600 }}>{opt.label}</span>
                             {isSelected && (
-                              <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
-                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                              </div>
+                              <div style={{
+                                position: 'absolute', top: 4, right: 4,
+                                width: 18, height: 18, borderRadius: '50%',
+                                background: '#10b981', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center',
+                                fontSize: 10, color: '#fff', fontWeight: 700,
+                              }}>✓</div>
                             )}
                           </button>
                         );
