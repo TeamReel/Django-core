@@ -66,6 +66,7 @@ interface AssetCardProps {
   onUpload?: (file: File, assetType: string) => void;
   onDelete?: (assetType: string) => void;
   onReplace?: (assetType: string) => void;
+  onPostProcess?: (assetType: string) => void;
   onShowHistory?: (assetType: string) => void;
   aspectRatio?: string;
 }
@@ -80,6 +81,7 @@ function AssetCard({
   onUpload,
   onDelete,
   onReplace,
+  onPostProcess,
   onShowHistory,
   aspectRatio = '3 / 4',
 }: AssetCardProps) {
@@ -223,9 +225,9 @@ function AssetCard({
 
         {!readOnly && onUpload && (
           <>
-            {/* AI processed assets with single Bewerk button */}
+            {/* AI processed assets with Genereer + Bewerk buttons */}
             {isProcessed && onReplace ? (
-              <div>
+              <div style={{ display: 'grid', gridTemplateColumns: onPostProcess ? '1fr 1fr' : '1fr', gap: 4 }}>
                 <button
                   onClick={() => onReplace(assetType)}
                   style={{
@@ -239,8 +241,25 @@ function AssetCard({
                     borderRadius: 4,
                   }}
                 >
-                  🎨 Bewerk
+                  🎨 Genereer
                 </button>
+                {onPostProcess && (
+                  <button
+                    onClick={() => onPostProcess(assetType)}
+                    style={{
+                      width: '100%',
+                      padding: '4px 8px',
+                      fontSize: 11,
+                      cursor: 'pointer',
+                      background: '#8b5cf6',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 4,
+                    }}
+                  >
+                    ✂️ Bewerk
+                  </button>
+                )}
               </div>
             ) : (
               /* Upload-type assets with file picker */
@@ -521,6 +540,39 @@ export function AssetsTab({
     openAiForAsset(assetType);
   };
 
+  const handlePostProcess = (assetType: string) => {
+    // Map asset type to its postprocess template
+    // Postprocessing uses the AI-generated result as input (not the raw upload)
+    const getEff = (type: string) => {
+      const own = getAsset(type);
+      if (own) return own;
+      if (parentProjectId && parentBrand.getAsset) return parentBrand.getAsset(type);
+      return undefined;
+    };
+
+    let templateId: string | undefined;
+    let inputKey = 'source'; // postprocess templates use 'source' as input key
+
+    if (assetType === 'logo_light') templateId = 'logo_postprocess';
+    else if (assetType === 'sponsor_logo') templateId = 'sponsor_postprocess';
+    else if (assetType.includes('kit_')) templateId = 'kit_postprocess';
+    else if (assetType === 'stadium_background') templateId = 'location_postprocess';
+
+    if (!templateId) return;
+
+    const asset = getEff(assetType);
+    if (!asset) {
+      alert('Genereer eerst een AI versie voordat je kunt bewerken.');
+      return;
+    }
+
+    setAiPreviousResultUrl(null); // No source picker for postprocess
+    setAiPreselectedTemplate(templateId);
+    setAiInitialParams({});
+    setAiCustomInputs({ [inputKey]: getAssetUrl(asset.url) });
+    setShowAiModal(true);
+  };
+
   const openAiForAsset = (assetType: string) => {
     // Map asset type to template
     let templateId: string | undefined;
@@ -771,7 +823,7 @@ export function AssetsTab({
              <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het clublogo → AI standaardiseert het.</p>
              <AssetGrid>
                 <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-                <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} aspectRatio="1 / 1" />
+                <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} aspectRatio="1 / 1" />
              </AssetGrid>
           </div>
 
@@ -781,7 +833,7 @@ export function AssetsTab({
              <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het sponsor logo. Wordt gestandaardiseerd door AI.</p>
              <AssetGrid>
                 <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-                <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} aspectRatio="1 / 1" />
+                <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} aspectRatio="1 / 1" />
              </AssetGrid>
           </div>
         </div>
@@ -814,6 +866,7 @@ export function AssetsTab({
                   onUpload={handleUpload}
                   onDelete={handleDelete}
                   onReplace={handleReplaceAi}
+                  onPostProcess={handlePostProcess}
                   onShowHistory={handleShowHistory}
                 />
               </AssetGrid>
@@ -840,6 +893,7 @@ export function AssetsTab({
               onUpload={handleUpload}
               onDelete={handleDelete}
               onReplace={handleReplaceAi}
+              onPostProcess={handlePostProcess}
               aspectRatio="9 / 16"
             />
           </AssetGrid>
@@ -1070,6 +1124,7 @@ export function AssetsTab({
                                     onUpload={handleUpload}
                                     onDelete={handleDelete}
                                     onReplace={handleReplaceAi}
+                                    onPostProcess={handlePostProcess}
                                   />
                               )}
                           </>

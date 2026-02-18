@@ -448,6 +448,8 @@ export default function AssetGenerationModal({
   // Helper: determine which input key is the "primary" for source switching
   // This is the key that gets swapped when user picks "Vorige AI versie" vs "Upload"
   const _getPrimaryInputKey = (tmpl: AssetTemplate): string | null => {
+    // Postprocess templates use 'source' as the primary input
+    if (tmpl.inputRequirements.includes('source')) return 'source';
     // Templates with only one relevant input: logo/sponsor/location
     if (tmpl.id === 'logo_standardize') return 'logo';
     if (tmpl.id === 'sponsor_standardize') return 'sponsor';

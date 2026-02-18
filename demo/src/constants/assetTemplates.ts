@@ -618,6 +618,120 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
       },
     },
   },
+  // ============================================================================
+  // Post-Process Templates (optimize AI-generated assets for print/flyers)
+  // ============================================================================
+  {
+    id: 'logo_postprocess',
+    name: 'Logo Bewerken',
+    icon: '✂️',
+    category: 'postprocess',
+    description: 'Achtergrond verwijderen en logo optimaliseren voor print en flyers.',
+    inputRequirements: ['source'],
+    requiredAssetTypes: [],
+    outputAssetType: 'logo_light',
+    creditsCost: 1,
+    parameters: {
+      target_size: {
+        label: 'Formaat',
+        type: 'select',
+        options: [
+          { value: '512', label: '512px' },
+          { value: '1024', label: '1024px' },
+          { value: '2048', label: '2048px' },
+        ],
+        default: '1024',
+      },
+      fill_percentage: {
+        label: 'Vulling',
+        type: 'select',
+        options: [
+          { value: '80', label: '80%' },
+          { value: '85', label: '85%' },
+          { value: '90', label: '90%' },
+          { value: '95', label: '95%' },
+        ],
+        default: '90',
+      },
+    },
+  },
+  {
+    id: 'sponsor_postprocess',
+    name: 'Sponsor Bewerken',
+    icon: '✂️',
+    category: 'postprocess',
+    description: 'Achtergrond verwijderen en sponsor logo optimaliseren voor print.',
+    inputRequirements: ['source'],
+    requiredAssetTypes: [],
+    outputAssetType: 'sponsor_logo',
+    creditsCost: 1,
+    parameters: {
+      orientation: {
+        label: 'Oriëntatie',
+        type: 'select',
+        options: [
+          { value: 'landscape', label: 'Liggend' },
+          { value: 'square', label: 'Vierkant' },
+        ],
+        default: 'landscape',
+      },
+    },
+  },
+  {
+    id: 'kit_postprocess',
+    name: 'Tenue Bewerken',
+    icon: '✂️',
+    category: 'postprocess',
+    description: 'Achtergrond verwijderen van tenue en optimaliseren voor flyers.',
+    inputRequirements: ['source'],
+    requiredAssetTypes: [],
+    outputAssetType: 'kit_home',
+    creditsCost: 1,
+    parameters: {
+      output_format: {
+        label: 'Resultaat',
+        type: 'select',
+        options: [
+          { value: 'cutout', label: 'Uitgeknipte' },
+          { value: 'on_mannequin', label: 'Op mannequin' },
+        ],
+        default: 'cutout',
+      },
+    },
+  },
+  {
+    id: 'location_postprocess',
+    name: 'Locatie Bewerken',
+    icon: '✂️',
+    category: 'postprocess',
+    description: 'Optimaliseer stadion achtergrond voor lineup en flyers.',
+    inputRequirements: ['source'],
+    requiredAssetTypes: [],
+    outputAssetType: 'stadium_background',
+    creditsCost: 1,
+    parameters: {
+      brightness: {
+        label: 'Helderheid',
+        type: 'select',
+        options: [
+          { value: 'darker', label: 'Donkerder' },
+          { value: 'normal', label: 'Normaal' },
+          { value: 'brighter', label: 'Helderder' },
+        ],
+        default: 'normal',
+      },
+      blur_center: {
+        label: 'Centrum blur',
+        type: 'select',
+        options: [
+          { value: 'none', label: 'Geen' },
+          { value: 'subtle', label: 'Subtiel' },
+          { value: 'medium', label: 'Medium' },
+        ],
+        default: 'subtle',
+      },
+    },
+  },
 ];
 
 /** Get template by ID */

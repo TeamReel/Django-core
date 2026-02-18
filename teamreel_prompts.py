@@ -152,6 +152,144 @@ EDIT INSTRUCTIONS:
     },
 
     # =========================================================================
+    # 2c. POST-PROCESSING TEMPLATES (bg removal, resize, optimize)
+    # =========================================================================
+    "logo_postprocess": {
+        "id": "logo_postprocess",
+        "name": "Logo Bewerken",
+        "category": "postprocess",
+        "description": "Achtergrond verwijderen en logo optimaliseren voor print en flyers.",
+        "input_requirements": ["source"],
+        "parameters": {
+            "target_size": {
+                "label": "Formaat",
+                "type": "select",
+                "options": ["512", "1024", "2048"],
+                "default": "1024",
+            },
+            "fill_percentage": {
+                "label": "Vulling",
+                "type": "select",
+                "options": ["80", "85", "90", "95"],
+                "default": "90",
+            },
+        },
+        "preprocessing": {},
+        "prompt_template": """You are given an AI-generated club logo. Your task is to POST-PROCESS it for production use.
+
+CRITICAL INSTRUCTIONS:
+1. REMOVE the background completely — output MUST have a fully transparent background.
+2. SCALE the logo UP to fill approximately {fill_percentage}% of the canvas. The logo must be LARGE and DOMINANT.
+3. CENTER the logo precisely on a square canvas.
+4. CLEAN UP any artifacts: rough edges, halos, semi-transparent noise around the logo boundary.
+5. SHARPEN edges: the boundary between the logo and transparent background must be crisp and clean.
+6. Preserve ALL original colors, shapes, text, and details EXACTLY.
+7. Output: square {target_size}x{target_size} PNG with transparent background.
+8. The result must be print-ready: suitable for flyers, banners, jerseys, and digital media.
+9. Do NOT add shadows, glows, or decorations.
+10. If the logo is too small in the input, enlarge it to fill the canvas properly.
+""",
+    },
+
+    "sponsor_postprocess": {
+        "id": "sponsor_postprocess",
+        "name": "Sponsor Bewerken",
+        "category": "postprocess",
+        "description": "Achtergrond verwijderen en sponsor logo optimaliseren voor print.",
+        "input_requirements": ["source"],
+        "parameters": {
+            "orientation": {
+                "label": "Oriëntatie",
+                "type": "select",
+                "options": ["landscape", "square"],
+                "default": "landscape",
+            },
+        },
+        "preprocessing": {},
+        "prompt_template": """You are given an AI-generated sponsor logo. Your task is to POST-PROCESS it for production use on sportswear.
+
+CRITICAL INSTRUCTIONS:
+1. REMOVE the background completely — output MUST have a fully transparent background.
+2. SCALE the sponsor logo to fill approximately 85% of the canvas width.
+3. CENTER the logo on the canvas.
+4. CLEAN UP all artifacts: rough edges, halos, semi-transparent noise, compression artifacts.
+5. SHARPEN edges for clean cutout suitable for heat-press printing on fabric.
+6. Preserve ALL original colors, text, and graphic elements EXACTLY.
+7. Output format: {orientation_description} with transparent background.
+8. The result must be suitable for direct use on jersey printing templates.
+9. Do NOT add shadows, glows, or decorations.
+""",
+    },
+
+    "kit_postprocess": {
+        "id": "kit_postprocess",
+        "name": "Tenue Bewerken",
+        "category": "postprocess",
+        "description": "Achtergrond verwijderen van tenue en optimaliseren voor flyers.",
+        "input_requirements": ["source"],
+        "parameters": {
+            "output_format": {
+                "label": "Resultaat",
+                "type": "select",
+                "options": ["cutout", "on_mannequin"],
+                "default": "cutout",
+            },
+        },
+        "preprocessing": {},
+        "prompt_template": """You are given an AI-generated football kit image (shirt + shorts + socks). Your task is to POST-PROCESS it for production use in lineup flyers and matchday graphics.
+
+CRITICAL INSTRUCTIONS:
+1. REMOVE the background completely — output MUST have a fully transparent background.
+2. Keep the ENTIRE kit visible: full shirt, shorts, and socks. Do NOT crop any part.
+3. The kit should fill approximately 85-90% of the canvas height.
+4. CENTER the kit vertically on a portrait-oriented canvas.
+5. CLEAN UP all artifacts: rough edges, background remnants, shadows, surface texture noise.
+6. SHARPEN the boundary: the kit cutout must have crisp, clean edges — no halos or fringing.
+7. Preserve all kit details: colors, patterns, logos, sponsor text EXACTLY as in the input.
+8. Output: portrait orientation (9:16) with transparent background.
+9. Result format: {output_format_description}.
+10. The final image should look like a professional product shot suitable for e-commerce or matchday programs.
+""",
+    },
+
+    "location_postprocess": {
+        "id": "location_postprocess",
+        "name": "Locatie Bewerken",
+        "category": "postprocess",
+        "description": "Optimaliseer stadion achtergrond voor lineup en flyers.",
+        "input_requirements": ["source"],
+        "parameters": {
+            "brightness": {
+                "label": "Helderheid",
+                "type": "select",
+                "options": ["darker", "normal", "brighter"],
+                "default": "normal",
+            },
+            "blur_center": {
+                "label": "Centrum blur",
+                "type": "select",
+                "options": ["none", "subtle", "medium"],
+                "default": "subtle",
+            },
+        },
+        "preprocessing": {},
+        "prompt_template": """You are given an AI-generated stadium/pitch background image. Your task is to POST-PROCESS it for use as a background in lineup videos and matchday flyers.
+
+CRITICAL INSTRUCTIONS:
+1. Ensure the image is in PORTRAIT orientation (9:16, 1080x1920).
+2. The CENTER area (where player names/photos will overlay) should be clean and uncluttered.
+3. Apply a {blur_center_description} blur to the central area to ensure text readability when overlaid.
+4. Brightness: {brightness_description}.
+5. Enhance the grass color to look vibrant and well-maintained.
+6. Sharpen the overall image quality — no compression artifacts.
+7. The pitch lines should be visible but not overpowering.
+8. Do NOT add text, logos, or watermarks.
+9. The result should work as a clean background layer for compositing.
+10. Colors should be rich and the image should look professional and broadcast-quality.
+""",
+    },
+
+    # =========================================================================
     # 3. TENUE (KIT) GENERATION
     # =========================================================================
     "tenue_generate": {
@@ -874,6 +1012,32 @@ PARAM_RESOLVERS = {
         "golden_hour": "Golden hour lighting — warm sunset tones, long shadows, orange/amber sky.",
         "evening_lights": "Evening with stadium floodlights on — dramatic lighting, darker sky, bright artificial field lights.",
         "overcast": "Overcast/cloudy day — soft, diffused, even lighting without harsh shadows.",
+    },
+    # Postprocess parameters
+    "target_size": {
+        "512": "512x512 pixels",
+        "1024": "1024x1024 pixels",
+        "2048": "2048x2048 pixels",
+    },
+    "fill_percentage": {
+        "80": "80",
+        "85": "85",
+        "90": "90",
+        "95": "95",
+    },
+    "output_format": {
+        "cutout": "Clean product-style cutout on transparent background.",
+        "on_mannequin": "Displayed on an invisible mannequin / ghost mannequin for a 3D look.",
+    },
+    "brightness": {
+        "darker": "Slightly DARKER — darken the overall image for better text contrast overlay.",
+        "normal": "NORMAL brightness — keep as-is.",
+        "brighter": "Slightly BRIGHTER — lighten the image for a fresh, daytime look.",
+    },
+    "blur_center": {
+        "none": "No blur — keep the center area sharp.",
+        "subtle": "Subtle, gentle depth-of-field blur in the center area for text readability.",
+        "medium": "Medium gaussian blur in the center area — names and stats will overlay here.",
     },
 }
 
