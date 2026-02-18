@@ -443,7 +443,7 @@ export default function ContentGenerationModal({
   contentTypeLabel,
   assetType,
 }: ContentGenerationModalProps) {
-  const [step, setStep] = useState<'type' | 'template' | 'members' | 'confirm' | 'generating' | 'success' | 'error'>('type');
+  const [step, setStep] = useState<'type' | 'template' | 'members' | 'lineup_squad' | 'confirm' | 'generating' | 'success' | 'error'>('type');
   const [selectedType, setSelectedType] = useState<{ type: string; subtype: string; label: string } | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
   const [progress, setProgress] = useState(0);
@@ -1510,7 +1510,7 @@ export default function ContentGenerationModal({
 
   const handleBack = () => {
     // If we started with a template, just close the modal on first back
-    if (initialTemplate && (step === 'members' || step === 'confirm')) {
+    if (initialTemplate && (step === 'members' || step === 'lineup_squad' || step === 'confirm')) {
       onClose();
       return;
     }
@@ -1522,15 +1522,17 @@ export default function ContentGenerationModal({
     } else if (step === 'members') {
       setStep('template');
       setSelectedTemplate(null);
-      // Keep selected members when going back - user can re-select template
-      // and their previous selections will be preserved if roles match
+    } else if (step === 'lineup_squad') {
+      setStep('members');
     } else if (step === 'confirm') {
-      // Check if we need to go back to members or template
       const needsMembers = selectedTemplate?.input_requirements?.members &&
         Object.entries(selectedTemplate.input_requirements.members).some(([key, val]) =>
           key !== 'use_formation' && val && typeof val !== 'boolean' && val.count > 0
         );
-      if (needsMembers) {
+      const isLineup = selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer';
+      if (isLineup && needsMembers) {
+        setStep('lineup_squad');
+      } else if (needsMembers) {
         setStep('members');
       } else {
         setStep('template');
@@ -1550,6 +1552,18 @@ export default function ContentGenerationModal({
     selectedTemplate?.template_subtype === 'lineup_flyer' ||
     initialTemplate?.template_subtype === 'lineup' ||
     initialTemplate?.template_subtype === 'lineup_flyer';
+
+  // Helper to extract member name from participation
+  const getMemberName = (p: Participation): string => {
+    const user = p.user || p.member;
+    if (!user) return 'Unknown';
+    if ('name' in user && user.name) return user.name;
+    if ('user_name' in user && user.user_name) return user.user_name;
+    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    if (fullName) return fullName;
+    if ('email' in user && user.email) return user.email;
+    return 'Unknown';
+  };
 
   return (
     <div
@@ -1592,7 +1606,8 @@ export default function ContentGenerationModal({
             <h2 className="text-xl font-bold m-0">
               {step === 'type' && 'Create Content'}
               {step === 'template' && `Select ${selectedType?.label} Template`}
-              {step === 'members' && `Create ${contentTypeLabel || selectedType?.label || 'Content'}`}
+              {step === 'members' && (isLineupFlow ? 'Lineup Opties' : `Create ${contentTypeLabel || selectedType?.label || 'Content'}`)}
+              {step === 'lineup_squad' && 'Opstelling kiezen'}
               {step === 'generating' && 'Generating...'}
               {step === 'success' && 'Content Ready!'}
             </h2>
@@ -1605,7 +1620,7 @@ export default function ContentGenerationModal({
               )}
             </div>
           </div>
-          {!(isLineupFlow || step === 'generating' || step === 'members') && (
+          {!(isLineupFlow || step === 'generating' || step === 'members' || step === 'lineup_squad') && (
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-2xl"
@@ -1617,10 +1632,10 @@ export default function ContentGenerationModal({
         </div>
 
         {/* Progress indicator - only show for multi-step flow */}
-        {!initialTemplate && (step === 'type' || step === 'template' || step === 'members') && (
+        {!initialTemplate && (step === 'type' || step === 'template' || step === 'members' || step === 'lineup_squad') && (
           <div className="flex items-center gap-2 mb-4 text-sm">
             <span className={`px-3 py-1 rounded-full ${step === 'type' ? 'bg-blue-100 text-blue-700 font-medium' : 'bg-gray-100 text-gray-500'}`}>
-              1. Content Type
+              1. Type
             </span>
             <span className="text-gray-300">→</span>
             <span className={`px-3 py-1 rounded-full ${step === 'template' ? 'bg-blue-100 text-blue-700 font-medium' : selectedType ? 'bg-gray-100 text-gray-500' : 'text-gray-300'}`}>
@@ -1629,9 +1644,17 @@ export default function ContentGenerationModal({
             {totalRequiredMembers > 0 && (
               <>
                 <span className="text-gray-300">→</span>
-                <span className={`px-3 py-1 rounded-full ${step === 'members' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-300'}`}>
-                  3. Members
+                <span className={`px-3 py-1 rounded-full ${step === 'members' ? 'bg-blue-100 text-blue-700 font-medium' : 'bg-gray-100 text-gray-500'}`}>
+                  3. {isLineupFlow ? 'Opties' : 'Members'}
                 </span>
+                {isLineupFlow && (
+                  <>
+                    <span className="text-gray-300">→</span>
+                    <span className={`px-3 py-1 rounded-full ${step === 'lineup_squad' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-300'}`}>
+                      4. Opstelling
+                    </span>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -1776,7 +1799,7 @@ export default function ContentGenerationModal({
                     </h4>
                   </div>
 
-                  <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
 
                   {/* Formation selector */}
                   <div>
@@ -1791,8 +1814,8 @@ export default function ContentGenerationModal({
                     }}>Formatie</label>
                     <div style={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-                      gap: 10,
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
+                      gap: 8,
                     }}>
                       {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
                         const isSelected = lineupFormation === code;
@@ -1839,7 +1862,7 @@ export default function ContentGenerationModal({
                                   key={pos.slot}
                                   style={{
                                     position: 'absolute',
-                                    width: 10, height: 10, borderRadius: '50%',
+                                    width: 7, height: 7, borderRadius: '50%',
                                     background: isSelected ? '#fff' : 'rgba(255,255,255,0.6)',
                                     left: `${pos.x}%`, top: `${pos.y}%`,
                                     transform: 'translate(-50%, -50%)',
@@ -1851,20 +1874,20 @@ export default function ContentGenerationModal({
                               {/* Selected check badge */}
                               {isSelected && (
                                 <div style={{
-                                  position: 'absolute', top: 4, right: 4,
-                                  width: 20, height: 20, borderRadius: '50%',
+                                  position: 'absolute', top: 3, right: 3,
+                                  width: 16, height: 16, borderRadius: '50%',
                                   background: '#10b981', display: 'flex',
                                   alignItems: 'center', justifyContent: 'center',
-                                  fontSize: 11, color: '#fff', fontWeight: 700,
+                                  fontSize: 9, color: '#fff', fontWeight: 700,
                                 }}>✓</div>
                               )}
                             </div>
                             {/* Formation code label */}
                             <div style={{
-                              padding: '8px 0',
+                              padding: '5px 0',
                               textAlign: 'center',
                               fontWeight: 700,
-                              fontSize: 14,
+                              fontSize: 12,
                               color: isSelected ? '#fff' : 'var(--vscode-foreground, #ccc)',
                               background: isSelected
                                 ? 'var(--vscode-focusBorder, #007fd4)'
@@ -1889,7 +1912,7 @@ export default function ContentGenerationModal({
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                     }}>Weergave Stijl</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                       {[
                         { value: 'popout' as const, label: 'Popout', desc: 'Speler los van achtergrond', icon: '🧍' },
                         { value: 'badge' as const, label: 'Badge', desc: 'Ronde spelersfoto', icon: '⭕' },
@@ -1903,8 +1926,8 @@ export default function ContentGenerationModal({
                               position: 'relative',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: 14,
-                              padding: '16px 18px',
+                              gap: 10,
+                              padding: '10px 14px',
                               border: isSelected
                                 ? '2px solid var(--vscode-focusBorder, #007fd4)'
                                 : '1px solid var(--vscode-widget-border, #333)',
@@ -1918,20 +1941,20 @@ export default function ContentGenerationModal({
                               textAlign: 'left',
                             }}
                           >
-                            <span style={{ fontSize: 36, flexShrink: 0 }}>{opt.icon}</span>
+                            <span style={{ fontSize: 26, flexShrink: 0 }}>{opt.icon}</span>
                             <div>
-                              <div style={{ fontWeight: 700, fontSize: 15 }}>{opt.label}</div>
-                              <div style={{ fontSize: 12, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 2 }}>
+                              <div style={{ fontWeight: 700, fontSize: 13 }}>{opt.label}</div>
+                              <div style={{ fontSize: 11, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 1 }}>
                                 {opt.desc}
                               </div>
                             </div>
                             {isSelected && (
                               <div style={{
-                                position: 'absolute', top: 8, right: 8,
-                                width: 22, height: 22, borderRadius: '50%',
+                                position: 'absolute', top: 6, right: 6,
+                                width: 18, height: 18, borderRadius: '50%',
                                 background: '#10b981', display: 'flex',
                                 alignItems: 'center', justifyContent: 'center',
-                                fontSize: 12, color: '#fff', fontWeight: 700,
+                                fontSize: 10, color: '#fff', fontWeight: 700,
                               }}>✓</div>
                             )}
                           </button>
@@ -1952,7 +1975,7 @@ export default function ContentGenerationModal({
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                     }}>Animatie Stijl</label>
-                    <div style={{ display: 'flex', gap: 10 }}>
+                    <div style={{ display: 'flex', gap: 8 }}>
                       {[
                         { value: 'slide_up', label: 'Omhoog', icon: '⬆️' },
                         { value: 'appear', label: 'Direct', icon: '✨' },
@@ -1971,8 +1994,8 @@ export default function ContentGenerationModal({
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
-                              gap: 6,
-                              padding: '14px 8px',
+                              gap: 4,
+                              padding: '10px 6px',
                               border: isSelected
                                 ? '2px solid var(--vscode-focusBorder, #007fd4)'
                                 : '1px solid var(--vscode-widget-border, #333)',
@@ -1985,8 +2008,8 @@ export default function ContentGenerationModal({
                               transition: 'all 0.15s ease',
                             }}
                           >
-                            <span style={{ fontSize: 24 }}>{opt.icon}</span>
-                            <span style={{ fontSize: 12, fontWeight: 600 }}>{opt.label}</span>
+                            <span style={{ fontSize: 20 }}>{opt.icon}</span>
+                            <span style={{ fontSize: 11, fontWeight: 600 }}>{opt.label}</span>
                             {isSelected && (
                               <div style={{
                                 position: 'absolute', top: 4, right: 4,
@@ -2006,8 +2029,8 @@ export default function ContentGenerationModal({
                 </div>
               )}
 
-              {/* Member Selection - Compact Dropdown Layout */}
-              {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map(role => {
+              {/* Member Selection - Compact Dropdown Layout (non-lineup flows only) */}
+              {!isLineupFlow && (['goalkeeper', 'player', 'coach', 'assistant'] as const).map(role => {
                 const req = selectedTemplate.input_requirements?.members?.[role];
                 if (!req || typeof req === 'boolean' || !req.count) return null;
 
@@ -2216,6 +2239,204 @@ export default function ContentGenerationModal({
               })}
             </div>
           )}
+
+          {/* Step 4 (lineup only): Squad selection on field visualization */}
+          {step === 'lineup_squad' && selectedTemplate && (() => {
+            const formationLayout = FORMATION_LAYOUTS[lineupFormation] || FORMATION_LAYOUTS['4-3-3'];
+            // Build a flat list of all available members for lineup (merged across roles)
+            const allAvailable = [...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || []), ...(seasonSquad.coach || []), ...(seasonSquad.assistant || [])]
+              .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx);
+            const playerReq = selectedTemplate.input_requirements?.members?.player;
+            const gkReq = selectedTemplate.input_requirements?.members?.goalkeeper;
+            const assetTypes = (playerReq && typeof playerReq !== 'boolean' && playerReq.asset_types) || [];
+            const eligibleMembers = allAvailable.filter(p => memberHasRequiredAssets(p, assetTypes, 'player'));
+            const ineligibleMembers = allAvailable.filter(p => !memberHasRequiredAssets(p, assetTypes, 'player'));
+            const gkSelected = selectedMembers.goalkeeper || [];
+            const playerSelected = selectedMembers.player || [];
+
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* Field */}
+                <div style={{
+                  position: 'relative',
+                  width: '100%',
+                  aspectRatio: '3 / 4',
+                  maxHeight: 'calc(100vh - 340px)',
+                  margin: '0 auto',
+                  background: 'linear-gradient(to bottom, #16a34a, #15803d)',
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                  border: '1px solid var(--vscode-widget-border, #333)',
+                }}>
+                  {/* Field markings */}
+                  <div style={{ position: 'absolute', left: 16, right: 16, top: '15%', height: 1, background: 'rgba(255,255,255,0.2)' }} />
+                  <div style={{ position: 'absolute', left: 16, right: 16, top: '50%', height: 1, background: 'rgba(255,255,255,0.2)' }} />
+                  <div style={{ position: 'absolute', left: '50%', top: '50%', width: 48, height: 48, transform: 'translate(-50%, -50%)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%' }} />
+                  <div style={{ position: 'absolute', left: '22%', right: '22%', bottom: 0, height: '14%', borderTop: '1px solid rgba(255,255,255,0.2)', borderLeft: '1px solid rgba(255,255,255,0.2)', borderRight: '1px solid rgba(255,255,255,0.2)' }} />
+                  <div style={{ position: 'absolute', left: '22%', right: '22%', top: 0, height: '14%', borderBottom: '1px solid rgba(255,255,255,0.2)', borderLeft: '1px solid rgba(255,255,255,0.2)', borderRight: '1px solid rgba(255,255,255,0.2)' }} />
+
+                  {/* Position nodes */}
+                  {formationLayout.positions.map(pos => {
+                    const isGk = pos.slot === 1;
+                    const role = isGk ? 'goalkeeper' : 'player';
+                    const idx = isGk ? 0 : pos.slot - 2; // Players index from 0 at slot 2
+                    const selected = isGk ? gkSelected : playerSelected;
+                    const currentId = selected[idx] || '';
+                    const currentMember = allAvailable.find(p => p.id === currentId);
+                    const jerseyNumber = currentMember?.metadata?.shirt_number || currentMember?.data?.jersey_number;
+
+                    return (
+                      <div
+                        key={pos.slot}
+                        style={{
+                          position: 'absolute',
+                          left: `${pos.x}%`,
+                          top: `${pos.y}%`,
+                          transform: 'translate(-50%, -50%)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 2,
+                          zIndex: 10,
+                          minWidth: 100,
+                        }}
+                      >
+                        {/* Position label */}
+                        <div style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: 'rgba(255,255,255,0.7)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                        }}>{pos.label}</div>
+
+                        {/* Dropdown */}
+                        <select
+                          value={currentId}
+                          onChange={(e) => {
+                            const newSelected = [...selected];
+                            if (e.target.value) {
+                              newSelected[idx] = e.target.value;
+                            } else {
+                              // Clear this slot
+                              newSelected[idx] = '';
+                            }
+                            setSelectedMembers({ ...selectedMembers, [role]: newSelected.filter(Boolean) });
+                          }}
+                          style={{
+                            width: 120,
+                            padding: '4px 6px',
+                            fontSize: 11,
+                            fontWeight: currentId ? 700 : 400,
+                            background: currentId
+                              ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                              : 'rgba(0,0,0,0.6)',
+                            color: '#fff',
+                            border: currentId
+                              ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                              : '1px solid rgba(255,255,255,0.3)',
+                            borderRadius: 6,
+                            outline: 'none',
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                            appearance: 'none',
+                            WebkitAppearance: 'none',
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E")`,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'right 6px center',
+                            paddingRight: 20,
+                          }}
+                        >
+                          <option value="" style={{ background: '#1e1e1e', color: '#ccc' }}>
+                            — Kies —
+                          </option>
+                          {assetTypes.length > 0 && eligibleMembers.length > 0 && (
+                            <optgroup label="✅ Beschikbaar">
+                              {eligibleMembers.map(p => {
+                                const name = getMemberName(p);
+                                const jersey = p.metadata?.shirt_number || p.data?.jersey_number;
+                                const isAlreadyUsed = [...gkSelected, ...playerSelected].includes(p.id) && p.id !== currentId;
+                                return (
+                                  <option key={p.id} value={p.id} disabled={isAlreadyUsed} style={{ background: '#1e1e1e', color: isAlreadyUsed ? '#666' : '#ccc' }}>
+                                    {jersey ? `#${jersey} ` : ''}{name}{isAlreadyUsed ? ' ✗' : ''}
+                                  </option>
+                                );
+                              })}
+                            </optgroup>
+                          )}
+                          {assetTypes.length === 0 && allAvailable.map(p => {
+                            const name = getMemberName(p);
+                            const jersey = p.metadata?.shirt_number || p.data?.jersey_number;
+                            const isAlreadyUsed = [...gkSelected, ...playerSelected].includes(p.id) && p.id !== currentId;
+                            return (
+                              <option key={p.id} value={p.id} disabled={isAlreadyUsed} style={{ background: '#1e1e1e', color: isAlreadyUsed ? '#666' : '#ccc' }}>
+                                {jersey ? `#${jersey} ` : ''}{name}{isAlreadyUsed ? ' ✗' : ''}
+                              </option>
+                            );
+                          })}
+                          {assetTypes.length > 0 && ineligibleMembers.length > 0 && (
+                            <optgroup label="⚠️ Ontbrekende assets">
+                              {ineligibleMembers.map(p => {
+                                const name = getMemberName(p);
+                                const jersey = p.metadata?.shirt_number || p.data?.jersey_number;
+                                const missingAssets = getMissingAssets(p, assetTypes, role);
+                                const missingLabels = missingAssets.map(a => ASSET_TYPE_LABELS[a] || a).join(', ');
+                                return (
+                                  <option key={p.id} value={p.id} disabled style={{ background: '#1e1e1e', color: '#666' }}>
+                                    {jersey ? `#${jersey} ` : ''}{name} ({missingLabels})
+                                  </option>
+                                );
+                              })}
+                            </optgroup>
+                          )}
+                        </select>
+
+                        {/* Show selected name below */}
+                        {currentMember && (
+                          <div style={{
+                            fontSize: 10,
+                            fontWeight: 600,
+                            color: '#fff',
+                            textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                            maxWidth: 110,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            textAlign: 'center',
+                          }}>
+                            {jerseyNumber ? `#${jerseyNumber} ` : ''}{getMemberName(currentMember)}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Summary bar */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '8px 12px',
+                  background: 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  color: 'var(--vscode-foreground, #ccc)',
+                }}>
+                  <span>Formatie: <strong>{lineupFormation}</strong></span>
+                  <span>
+                    {(() => {
+                      const filled = [...gkSelected, ...playerSelected].filter(Boolean).length;
+                      const total = formationLayout.positions.length;
+                      return filled === total
+                        ? <span style={{ color: '#10b981' }}>✓ Alle {total} posities ingevuld</span>
+                        : <span>{filled} / {total} posities ingevuld</span>;
+                    })()}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Confirm - Review before generation */}
           {step === 'confirm' && (
@@ -2681,7 +2902,7 @@ export default function ContentGenerationModal({
         {/* Footer */}
         <div className="mt-6 pt-4 border-t flex justify-between">
           <div>
-            {(step === 'template' || step === 'members' || step === 'confirm') && (
+            {(step === 'template' || step === 'members' || step === 'lineup_squad' || step === 'confirm') && (
               <Button variant="ghost" onClick={handleBack}>← Back</Button>
             )}
           </div>
@@ -2689,7 +2910,17 @@ export default function ContentGenerationModal({
             {step !== 'generating' && step !== 'success' && step !== 'error' && (
               <Button variant="ghost" onClick={onClose}>Cancel</Button>
             )}
-            {step === 'members' && (
+            {step === 'members' && isLineupFlow && (
+              <Button onClick={() => setStep('lineup_squad')}>
+                Opstelling kiezen →
+              </Button>
+            )}
+            {step === 'members' && !isLineupFlow && (
+              <Button disabled={!memberSelectionValid} onClick={() => setStep('confirm')}>
+                Continue →
+              </Button>
+            )}
+            {step === 'lineup_squad' && (
               <Button disabled={!memberSelectionValid} onClick={() => setStep('confirm')}>
                 Continue →
               </Button>
