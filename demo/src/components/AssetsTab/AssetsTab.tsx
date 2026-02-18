@@ -640,7 +640,7 @@ export function AssetsTab({
       projectId: projectId || '',
       organisationId,
       outputAssetType: assetType, // Save back to the same asset type
-      inputImageUrls: { source: getAssetUrl(asset.url) },
+      inputImageUrls: { source: getAssetUrl(asset.url) || '' },
     });
   };
 
