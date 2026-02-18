@@ -466,17 +466,18 @@ class LineupSegmentBuilder:
             else:
                 logger.info("No logo found for opponent %s", opp_project.name)
 
-        # Get team/club names
+        # Get team/club names — use parent (club) name only to avoid
+        # duplication like "Ajax Ajax 1"
         if project.parent_project:
-            # Team under club
-            own_team_name = f"{project.parent_project.name} {project.name}"
+            own_team_name = project.parent_project.name
         else:
             own_team_name = project.name
 
         # Get match data — prefer opponent_project FK, then metadata, then fallback
         meta = activity.metadata or {}
         if activity.opponent_project:
-            opponent_name = activity.opponent_project.name
+            opp = activity.opponent_project
+            opponent_name = opp.parent_project.name if opp.parent_project else opp.name
         else:
             opponent_name = (
                 meta.get("teamreel", {}).get("vars", {}).get("away_team_name")
@@ -490,7 +491,13 @@ class LineupSegmentBuilder:
         score_meta = meta.get("score", {})
         score_home = score_meta.get("home") if isinstance(score_meta, dict) else None
         score_away = score_meta.get("away") if isinstance(score_meta, dict) else None
-        venue = meta.get("venue") or getattr(activity, "location", None)
+        # Venue: skip generic "Home"/"Away" labels, only use real venue names
+        raw_venue = meta.get("venue") or getattr(activity, "location", None)
+        venue = (
+            None
+            if raw_venue and raw_venue.lower() in ("home", "away", "thuis", "uit")
+            else raw_venue
+        )
 
         # Get season/competition names — period name often IS the competition
         season_name = activity.period.name if activity.period else None
@@ -1019,16 +1026,18 @@ class LineupSegmentBuilder:
 
         width, height, fps = self._get_resolution_settings()
 
-        # Get team/club names
+        # Get team/club names — use parent (club) name only to avoid
+        # duplication like "Ajax Ajax 1"
         if project.parent_project:
-            own_team_name = f"{project.parent_project.name} {project.name}"
+            own_team_name = project.parent_project.name
         else:
             own_team_name = project.name
 
         # Get match data — prefer opponent_project FK, then metadata
         meta = activity.metadata or {}
         if activity.opponent_project:
-            opponent_name = activity.opponent_project.name
+            opp = activity.opponent_project
+            opponent_name = opp.parent_project.name if opp.parent_project else opp.name
         else:
             opponent_name = (
                 meta.get("teamreel", {}).get("vars", {}).get("away_team_name")
@@ -1041,7 +1050,13 @@ class LineupSegmentBuilder:
         score_meta = meta.get("score", {})
         score_home = score_meta.get("home") if isinstance(score_meta, dict) else None
         score_away = score_meta.get("away") if isinstance(score_meta, dict) else None
-        venue = meta.get("venue") or getattr(activity, "location", None)
+        # Venue: skip generic "Home"/"Away" labels, only use real venue names
+        raw_venue = meta.get("venue") or getattr(activity, "location", None)
+        venue = (
+            None
+            if raw_venue and raw_venue.lower() in ("home", "away", "thuis", "uit")
+            else raw_venue
+        )
         season_name = activity.period.name if activity.period else None
         competition_name = meta.get("teamreel", {}).get("vars", {}).get("competition_name")
         if not competition_name and activity.period:

@@ -278,16 +278,20 @@ def render_header_pil(  # noqa: PLR0913
     home_logo_url = logo_url if is_home else opponent_logo_url
     away_logo_url = opponent_logo_url if is_home else logo_url
 
-    # Left panel: Home team logo (top-left)
-    margin = int(10 * scale)
+    # Logo sizing: fill 80% of the 25%-width panel, centered
+    panel_w = x_left_end  # 25% of total width
+    padding = int(panel_w * 0.10)  # 10% padding on each side
+    max_logo_w = panel_w - 2 * padding
+    max_logo_h = height - 2 * padding
+
+    # Left panel: Home team logo (centered in panel)
     if home_logo_url:
         logo_img = download_image(home_logo_url)
         if logo_img:
             logo_img = logo_img.convert("RGBA")
-            logo_size = int(height * 0.55)
-            logo_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
-            logo_x = margin
-            logo_y = margin
+            logo_img.thumbnail((max_logo_w, max_logo_h), Image.Resampling.LANCZOS)
+            logo_x = (panel_w - logo_img.width) // 2
+            logo_y = (height - logo_img.height) // 2
             img.paste(logo_img, (logo_x, logo_y), logo_img)
             logger.info("header_logo_left_pasted size=%dx%d", logo_img.width, logo_img.height)
         else:
@@ -295,15 +299,14 @@ def render_header_pil(  # noqa: PLR0913
     else:
         logger.warning("header_logo_left_url_missing is_home=%s", is_home)
 
-    # Right panel: Away team logo (top-right)
+    # Right panel: Away team logo (centered in panel)
     if away_logo_url:
         logo_img = download_image(away_logo_url)
         if logo_img:
             logo_img = logo_img.convert("RGBA")
-            logo_size = int(height * 0.55)
-            logo_img.thumbnail((logo_size, logo_size), Image.Resampling.LANCZOS)
-            logo_x = width - margin - logo_img.width
-            logo_y = margin
+            logo_img.thumbnail((max_logo_w, max_logo_h), Image.Resampling.LANCZOS)
+            logo_x = x_right_start + (panel_w - logo_img.width) // 2
+            logo_y = (height - logo_img.height) // 2
             img.paste(logo_img, (logo_x, logo_y), logo_img)
             logger.info("header_logo_right_pasted size=%dx%d", logo_img.width, logo_img.height)
         else:

@@ -304,7 +304,7 @@ export default function HierarchyMatchDetailPage() {
         {
           method: 'POST',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
           body: JSON.stringify({
             storage_path: item.storage_path,
             filename: item.title,
