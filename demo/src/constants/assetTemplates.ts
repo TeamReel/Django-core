@@ -149,6 +149,16 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
         ],
         default: 'realistic',
       },
+      pitch_type: {
+        label: 'Veldtype',
+        type: 'select',
+        options: [
+          { value: 'professional', label: 'Professioneel' },
+          { value: 'amateur', label: 'Amateurveld' },
+          { value: 'worn', label: 'Versleten veld' },
+        ],
+        default: 'professional',
+      },
     },
   },
   {
@@ -729,6 +739,16 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
           { value: 'medium', label: 'Medium' },
         ],
         default: 'subtle',
+      },
+      pitch_type: {
+        label: 'Veldtype',
+        type: 'select',
+        options: [
+          { value: 'professional', label: 'Professioneel' },
+          { value: 'amateur', label: 'Amateurveld' },
+          { value: 'worn', label: 'Versleten veld' },
+        ],
+        default: 'professional',
       },
     },
   },

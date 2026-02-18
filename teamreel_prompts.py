@@ -130,6 +130,12 @@ EDIT INSTRUCTIONS:
                 "options": ["realistic", "vibrant", "cinematic"],
                 "default": "realistic",
             },
+            "pitch_type": {
+                "label": "Veldtype",
+                "type": "select",
+                "options": ["professional", "amateur", "worn"],
+                "default": "professional",
+            },
         },
         "preprocessing": {
             "location": "pad_portrait_1080",
@@ -148,7 +154,7 @@ EDIT INSTRUCTIONS:
 7. Time of day / lighting: {time_of_day_description}.
 8. Style: {style_description}.
 9. The image will be used as a BACKGROUND for a lineup overlay (player names, photos, formation dots). Keep the surface clean and uniform.
-10. Make the grass look pristine, well-maintained, with subtle mowing stripes for realism.
+10. Pitch quality: {pitch_type_description}.
 11. No text, logos, watermarks, or people on the pitch.
 """,
     },
@@ -274,6 +280,12 @@ CRITICAL INSTRUCTIONS:
                 "options": ["none", "subtle", "medium"],
                 "default": "subtle",
             },
+            "pitch_type": {
+                "label": "Veldtype",
+                "type": "select",
+                "options": ["professional", "amateur", "worn"],
+                "default": "professional",
+            },
         },
         "preprocessing": {},
         "prompt_template": """You are given an AI-generated football pitch background image. Your task is to optimize it for use as a lineup overlay background.
@@ -285,7 +297,7 @@ CRITICAL INSTRUCTIONS:
 4. GREEN GRASS fills the ENTIRE image edge-to-edge. No sky, no stands, no surroundings.
 5. Brightness: {brightness_description}.
 6. Apply a {blur_center_description} blur to the central area to ensure text/photo readability when lineup is overlaid.
-7. Enhance grass color — vibrant, well-maintained, with subtle mowing stripes.
+7. Pitch quality: {pitch_type_description}.
 8. White pitch lines must be visible but not overpowering.
 9. Do NOT add text, logos, or watermarks.
 10. The result must work as a clean background for compositing player photos and formation dots on top.
@@ -869,6 +881,11 @@ PARAM_RESOLVERS = {
         "realistic": "Realistic, true-to-life photographic quality.",
         "vibrant": "Vibrant, saturated colors for a punchy, eye-catching look.",
         "cinematic": "Cinematic, dramatic look with rich contrast and depth.",
+    },
+    "pitch_type": {
+        "professional": "PROFESSIONAL, pristine pitch — perfectly maintained, even grass, crisp mowing stripes, Eredivisie/Champions League quality surface.",
+        "amateur": "AMATEUR club field — slightly uneven grass, some patches thinner or slightly different shade, a few worn areas near the goals and center circle, realistic recreational-level pitch. NOT a disaster, just clearly not a top-tier stadium.",
+        "worn": "HEAVILY WORN amateur pitch — visible bare/brown patches, uneven surface, muddy goal areas, sparse grass in high-traffic zones. A real Sunday league field after a rainy season.",
     },
     "orientation": {
         "landscape": "Landscape rectangle (2:1 aspect ratio, 512x256px).",
