@@ -719,6 +719,7 @@ def _compose_phase(
     formation: str,
     popout: bool = True,
     animation_style: str = "slide_up",
+    bg_is_landscape: bool = True,
 ) -> list[Path] | None:
     """Generate clips for one phase (e.g. 'defenders')."""
     role = role_from_group(group_name)
@@ -759,7 +760,11 @@ def _compose_phase(
     fc: list[str] = []
     fc.append(f"color=c=white:s={WIDTH}x{HEIGHT}:r={FPS}[base]")
     fc.append(f"[1:v]scale={WIDTH}:-1[header]")
-    fc.append(f"[0:v]transpose=1,scale={WIDTH}:{HEIGHT - HEADER_HEIGHT}[field]")
+    # Only rotate if background is landscape (raw upload); portrait backgrounds are already correct
+    if bg_is_landscape:
+        fc.append(f"[0:v]transpose=1,scale={WIDTH}:{HEIGHT - HEADER_HEIGHT}[field]")
+    else:
+        fc.append(f"[0:v]scale={WIDTH}:{HEIGHT - HEADER_HEIGHT}[field]")
     fc.append("[base][header]overlay=0:0[b1]")
     fc.append(f"[b1][field]overlay=0:{HEADER_HEIGHT}[bg0]")
 
@@ -1108,6 +1113,7 @@ def _compose_hold(
     border_path: Path,
     tmp_dir: Path,
     popout: bool = True,
+    bg_is_landscape: bool = True,
 ) -> Path | None:
     """Generate 3-second hold frame showing all accumulated badges."""
     hold_out = tmp_dir / "phase_hold.mp4"
@@ -1118,7 +1124,11 @@ def _compose_hold(
     fc: list[str] = []
     fc.append(f"color=c=white:s={WIDTH}x{HEIGHT}:r={FPS}[base]")
     fc.append(f"[1:v]scale={WIDTH}:-1[header]")
-    fc.append(f"[0:v]transpose=1,scale={WIDTH}:{HEIGHT - HEADER_HEIGHT}[field]")
+    # Only rotate if background is landscape (raw upload); portrait backgrounds are already correct
+    if bg_is_landscape:
+        fc.append(f"[0:v]transpose=1,scale={WIDTH}:{HEIGHT - HEADER_HEIGHT}[field]")
+    else:
+        fc.append(f"[0:v]scale={WIDTH}:{HEIGHT - HEADER_HEIGHT}[field]")
     fc.append("[base][header]overlay=0:0[b1]")
     fc.append(f"[b1][field]overlay=0:{HEADER_HEIGHT}[bg0]")
 
@@ -1264,6 +1274,12 @@ def compose_lineup_video(
 
     if not _download_file(lineup_data.field_background_url, bg_path):
         raise ValueError("Failed to download field background image.")
+
+    # Check if background is landscape (raw upload) or portrait (AI-generated)
+    # Only apply 90° rotation if landscape — portrait backgrounds are already correct
+    _bg_check = Image.open(bg_path)
+    bg_is_landscape = _bg_check.width > _bg_check.height
+    _bg_check.close()
 
     # Resolve brand primary color for header
     brand_primary_hex = _resolve_brand_color(lineup_data.activity_id)
@@ -1463,6 +1479,7 @@ def compose_lineup_video(
             formation,
             popout,
             animation_style,
+            bg_is_landscape,
         )
         if segs:
             all_segments.extend(segs)
@@ -1519,6 +1536,7 @@ def compose_lineup_video(
         border_path,
         tmp_dir,
         popout,
+        bg_is_landscape,
     )
     if hold:
         all_segments.append(hold)

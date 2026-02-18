@@ -464,6 +464,8 @@ export default function ContentGenerationModal({
   const [lineupFormation, setLineupFormation] = useState<string>(matchData?.metadata?.formation || '4-3-3');
   const [lineupCloseupStyle, setLineupCloseupStyle] = useState<'popout' | 'badge'>('popout');
   const [lineupAnimationStyle, setLineupAnimationStyle] = useState<'slide_up' | 'appear' | 'slide_in' | 'zoom' | 'fade'>('slide_up');
+  const [selectedBackgroundUrl, setSelectedBackgroundUrl] = useState<string | null>(null);
+  const [appBackgrounds, setAppBackgrounds] = useState<Array<{ id: string; url: string; profile_name?: string }>>([]);
 
   // Selected members per role
   const [selectedMembers, setSelectedMembers] = useState<Record<string, string[]>>({
@@ -570,6 +572,36 @@ export default function ContentGenerationModal({
 
     fetchSeasonSquad();
   }, [isOpen, matchData?.project?.id, season?.project_id, season?.id]);
+
+  // Fetch app-level backgrounds (stadium_background assets from all profiles)
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const fetchBackgrounds = async () => {
+      try {
+        const res = await fetch(`${getApiBaseUrl()}/api/v1/branding/assets/app-backgrounds/`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const items = Array.isArray(data) ? data : (data?.data || data?.results || []);
+          const bgs = items
+            .filter((a: any) => a.url)
+            .map((a: any) => ({
+              id: a.id,
+              url: a.url,
+              profile_name: a.profile?.project?.name || a.profile?.organisation?.name || '',
+            }));
+          setAppBackgrounds(bgs);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch app backgrounds:', err);
+      }
+    };
+
+    fetchBackgrounds();
+  }, [isOpen]);
 
   // Track if we've already initialized (to preserve selections on retry)
   const hasInitializedRef = useRef(false);
@@ -882,6 +914,7 @@ export default function ContentGenerationModal({
             goalkeeper: targetGKs,
             player: targetPlayers,
           },
+          ...(selectedBackgroundUrl ? { background_url: selectedBackgroundUrl } : {}),
         }),
       });
 
@@ -1053,6 +1086,7 @@ export default function ContentGenerationModal({
               coach: targetCoach,
               assistant: targetAssistant,
             },
+            ...(selectedBackgroundUrl ? { background_url: selectedBackgroundUrl } : {}),
           }),
         });
 
@@ -2049,6 +2083,133 @@ export default function ContentGenerationModal({
                     </div>
                   </div>
                   )}
+
+                  {/* Background / Location selector */}
+                  {appBackgrounds.length > 0 && (
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      marginBottom: 10,
+                      color: 'var(--vscode-foreground, #ccc)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>Achtergrond / Locatie</label>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                      gap: 8,
+                    }}>
+                      {/* Default option — auto from club brand */}
+                      <button
+                        onClick={() => setSelectedBackgroundUrl(null)}
+                        style={{
+                          position: 'relative',
+                          border: !selectedBackgroundUrl
+                            ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                            : '1px solid var(--vscode-widget-border, #333)',
+                          borderRadius: 8,
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          padding: 0,
+                          background: !selectedBackgroundUrl
+                            ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                            : 'var(--vscode-editor-background, #1e1e1e)',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        <div style={{
+                          width: '100%',
+                          aspectRatio: '9/16',
+                          background: 'linear-gradient(to bottom, #16a34a, #14532d)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                          <span style={{ fontSize: 24 }}>⚽</span>
+                        </div>
+                        <div style={{
+                          padding: '4px 0',
+                          textAlign: 'center',
+                          fontWeight: 600,
+                          fontSize: 10,
+                          color: !selectedBackgroundUrl ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                          background: !selectedBackgroundUrl
+                            ? 'var(--vscode-focusBorder, #007fd4)'
+                            : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                        }}>
+                          Standaard
+                        </div>
+                        {!selectedBackgroundUrl && (
+                          <div style={{
+                            position: 'absolute', top: 3, right: 3,
+                            width: 16, height: 16, borderRadius: '50%',
+                            background: '#10b981', display: 'flex',
+                            alignItems: 'center', justifyContent: 'center',
+                            fontSize: 9, color: '#fff', fontWeight: 700,
+                          }}>✓</div>
+                        )}
+                      </button>
+
+                      {/* App-level backgrounds */}
+                      {appBackgrounds.map((bg) => {
+                        const isSelected = selectedBackgroundUrl === bg.url;
+                        return (
+                          <button
+                            key={bg.id}
+                            onClick={() => setSelectedBackgroundUrl(bg.url)}
+                            style={{
+                              position: 'relative',
+                              border: isSelected
+                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                : '1px solid var(--vscode-widget-border, #333)',
+                              borderRadius: 8,
+                              overflow: 'hidden',
+                              cursor: 'pointer',
+                              padding: 0,
+                              background: isSelected
+                                ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                                : 'var(--vscode-editor-background, #1e1e1e)',
+                              transition: 'all 0.15s ease',
+                            }}
+                          >
+                            <div style={{
+                              width: '100%',
+                              aspectRatio: '9/16',
+                              background: `url(${bg.url}) center/cover`,
+                            }} />
+                            <div style={{
+                              padding: '4px 0',
+                              textAlign: 'center',
+                              fontWeight: 600,
+                              fontSize: 10,
+                              color: isSelected ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                              background: isSelected
+                                ? 'var(--vscode-focusBorder, #007fd4)'
+                                : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}>
+                              {bg.profile_name || 'Locatie'}
+                            </div>
+                            {isSelected && (
+                              <div style={{
+                                position: 'absolute', top: 3, right: 3,
+                                width: 16, height: 16, borderRadius: '50%',
+                                background: '#10b981', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center',
+                                fontSize: 9, color: '#fff', fontWeight: 700,
+                              }}>✓</div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  )}
+
                   </div>
                 </div>
               )}

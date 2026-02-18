@@ -376,6 +376,8 @@ def _compose_flyer(
     bg_img = _download_image(data.field_background_url) if data.field_background_url else None
     if bg_img is None:
         bg_img = Image.new("RGB", (1920, 1080), "#228B22")
+    bg_w, bg_h = bg_img.size
+    bg_is_landscape = bg_w > bg_h  # only rotate if background is landscape
     bg_path = tmp_dir / "background.jpg"
     bg_img.convert("RGB").save(str(bg_path), "JPEG", quality=95)
 
@@ -618,9 +620,12 @@ def _compose_flyer(
     for lp in label_paths:
         cmd += ["-loop", "1", "-i", str(lp)]
 
-    # Filter graph
+    # Filter graph — only rotate if background is landscape (raw upload)
     fc = []
-    fc.append(f"[0:v]transpose=1,scale={WIDTH}:{HEIGHT}[field]")
+    if bg_is_landscape:
+        fc.append(f"[0:v]transpose=1,scale={WIDTH}:{HEIGHT}[field]")
+    else:
+        fc.append(f"[0:v]scale={WIDTH}:{HEIGHT}[field]")
     fc.append(f"[1:v]scale={WIDTH}:-1[header]")
     fc.append("[field][header]overlay=0:0[bg0]")
 
@@ -733,6 +738,7 @@ def build_lineup_flyer(
     brand_primary_hex: str | None = None,
     brand_secondary_hex: str | None = None,
     closeup_style: str = "popout",
+    background_url: str | None = None,
 ) -> str:
     """Build a lineup flyer from activity data.
 
@@ -748,6 +754,7 @@ def build_lineup_flyer(
         selected_member_ids: Optional player IDs from frontend
         brand_primary_hex: Override brand primary color
         brand_secondary_hex: Override brand secondary color
+        background_url: Override field background URL (app-level location)
 
     Returns:
         Presigned URL to the generated flyer PNG
@@ -763,6 +770,10 @@ def build_lineup_flyer(
         formation=formation,
     )
     lineup_data = builder._gather_lineup_data()
+
+    # Override field background if a specific URL was provided
+    if background_url:
+        lineup_data.field_background_url = background_url
 
     # 2. Resolve brand colors (from DB or defaults)
     if not brand_primary_hex:

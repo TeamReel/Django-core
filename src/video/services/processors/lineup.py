@@ -191,6 +191,7 @@ class LineupProcessor(BaseVideoProcessor):
         formation = config.get("formation", "4-3-3")
         closeup_style = config.get("closeup_style", "popout")
         animation_style = config.get("animation_style", "slide_up")
+        background_url = config.get("background_url")
 
         logger.info(
             "Starting lineup composition (new pipeline)",
@@ -219,6 +220,10 @@ class LineupProcessor(BaseVideoProcessor):
             formation=formation,
         )
         lineup_data = builder.gather_lineup_data()
+
+        # Override field background if a specific URL was provided (app-level location)
+        if background_url:
+            lineup_data.field_background_url = background_url
 
         # Store asset resolution diagnostics in job metadata
         meta = self.job.metadata or {}

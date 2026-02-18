@@ -4,6 +4,7 @@ This module implements DRF ViewSets for CRUD operations on brand profiles,
 design tokens, and brand assets, plus the critical token resolution endpoint.
 """
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -237,6 +238,31 @@ class BrandAssetViewSet(viewsets.ModelViewSet):
             "profile__project__parent_project",
             "file",
         )
+
+    @action(detail=False, methods=["get"], url_path="app-backgrounds")
+    def app_backgrounds(self, request):
+        """List ALL stadium_background assets across all profiles (app-level).
+
+        GET /api/v1/branding/assets/app-backgrounds/
+
+        Returns deduplicated list of backgrounds available for any lineup,
+        regardless of which project/club originally generated them.
+        """
+        qs = (
+            BrandAsset.objects.filter(
+                asset_type="stadium_background",
+                is_active=True,
+            )
+            .select_related(
+                "profile",
+                "profile__project",
+                "profile__project__parent_project",
+                "file",
+            )
+            .order_by("-created_at")
+        )
+        serializer = BrandAssetSerializer(qs, many=True, context=self.get_serializer_context())
+        return Response(serializer.data)
 
 
 class TokenResolutionView(APIView):

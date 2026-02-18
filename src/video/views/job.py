@@ -923,6 +923,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         formation = request.data.get("formation", "4-3-3")
         closeup_style = request.data.get("closeup_style", "popout")
         animation_style = request.data.get("animation_style", "slide_up")
+        background_url = request.data.get("background_url")
         allow_frontend_segments = request.query_params.get(
             "allow_frontend_segments"
         ) == "true" or bool(request.data.get("allow_frontend_segments"))
@@ -976,6 +977,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                     "formation": formation,
                     "closeup_style": closeup_style,
                     "animation_style": animation_style,
+                    "background_url": background_url,
                     "allow_frontend_segments": allow_frontend_segments,
                     # Preserve for debugging; backend is strict by default.
                     "frontend_segments": frontend_segments,
@@ -1120,6 +1122,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         brand_primary = request.data.get("brand_primary")
         brand_secondary = request.data.get("brand_secondary")
         closeup_style = request.data.get("closeup_style", "popout")
+        background_url = request.data.get("background_url")
 
         # Validate activity exists and user has access
         Activity = apps.get_model("activities", "Activity")
@@ -1145,6 +1148,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 brand_primary_hex=brand_primary,
                 brand_secondary_hex=brand_secondary,
                 closeup_style=closeup_style,
+                background_url=background_url,
             )
 
             return Response(
