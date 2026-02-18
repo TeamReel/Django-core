@@ -760,6 +760,7 @@ def build_lineup_flyer(
         template_id=template_id,
         output_resolution="vertical_1080p",
         selected_member_ids=selected_member_ids,
+        formation=formation,
     )
     lineup_data = builder._gather_lineup_data()
 

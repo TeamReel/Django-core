@@ -216,6 +216,7 @@ class LineupProcessor(BaseVideoProcessor):
             template_id=template_id,
             output_resolution=output_resolution,
             selected_member_ids=selected_member_ids,
+            formation=formation,
         )
         lineup_data = builder.gather_lineup_data()
 

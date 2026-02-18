@@ -995,6 +995,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 template_id=template_id,
                 output_resolution=output_resolution,
                 selected_member_ids=selected_member_ids,
+                formation=formation,
             )
             if frontend_segments and not allow_frontend_segments:
                 logger.warning(

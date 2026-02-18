@@ -22,6 +22,14 @@ logger = logging.getLogger(__name__)
 # Style priority for intro variants (most common poses first)
 _INTRO_STYLE_PRIORITY = ["arms_crossed", "thumbs_up", "hand_up"]
 
+# Formation split definitions: (defenders, midfielders, attackers)
+# Matches the frontend FORMATION_LAYOUTS slot ordering.
+FORMATION_SPLITS: dict[str, tuple[int, int, int]] = {
+    "4-3-3": (4, 3, 3),
+    "4-4-2": (4, 4, 2),
+    "3-4-3": (3, 4, 3),
+}
+
 
 def _find_best_intro_url(
     intro_variants: dict,
@@ -165,6 +173,7 @@ class LineupSegmentBuilder:
         template_id: str | UUID | None = None,
         output_resolution: str = "vertical_1080p",
         selected_member_ids: list[str] | None = None,
+        formation: str = "4-3-3",
     ):
         """Initialize builder with activity and optional template.
 
@@ -173,10 +182,13 @@ class LineupSegmentBuilder:
             template_id: Optional ContentTemplate ID (uses default 4-3-3 if None)
             output_resolution: Resolution preset (vertical_1080p, 1080p, 720p)
             selected_member_ids: Optional list of member IDs (from frontend selection)
+            formation: Formation string (4-3-3, 4-4-2, 3-4-3) — used to split
+                       frontend-ordered players into defender/midfielder/attacker groups
         """
         self.activity_id = str(activity_id)
         self.template_id = str(template_id) if template_id else None
         self.output_resolution = output_resolution
+        self.formation = formation
         self._render_mode: str = "classic"
         self._debug_trace: list[str] = []
 
@@ -1067,20 +1079,22 @@ class LineupSegmentBuilder:
 
         # Build player segments from ProjectMembership metadata
         keepers: list[PlayerSegment] = []
-        defenders: list[PlayerSegment] = []
-        midfielders: list[PlayerSegment] = []
-        attackers: list[PlayerSegment] = []
+        # Dict to collect field player segments keyed by PM id (preserves lookup)
+        field_player_segments: dict[str, PlayerSegment] = {}
 
         # Default field positions per line (evenly spaced)
         line_y_positions = {"keeper": 90, "verdediger": 70, "middenvelder": 45, "aanvaller": 20}
 
         # Use role-keyed IDs from frontend to know who is GK vs field player
         gk_ids = {str(x) for x in self.selected_member_ids_by_role.get("goalkeeper", [])}
-        player_ids = {str(x) for x in self.selected_member_ids_by_role.get("player", [])}
+        # Ordered list from frontend — the order matches formation slots
+        ordered_player_ids = [str(x) for x in self.selected_member_ids_by_role.get("player", [])]
+        player_ids = set(ordered_player_ids)
 
         # IMPORTANT: Exclude goalkeeper IDs from player_ids to avoid double-counting.
         # The frontend may send a goalkeeper in both 'player' and 'goalkeeper' arrays.
         player_ids = player_ids - gk_ids
+        ordered_player_ids = [pid for pid in ordered_player_ids if pid not in gk_ids]
 
         self._debug_trace.append(
             f"PM fallback: gk_ids={len(gk_ids)}, player_ids={len(player_ids)} (after dedup)"
@@ -1194,80 +1208,50 @@ class LineupSegmentBuilder:
                 y=50,
             )
 
-            # If frontend told us this is a GK, use that
+            # Separate GKs from field players using frontend role assignment
             if pm_id_str in gk_ids:
                 player.y = line_y_positions["keeper"]
                 keepers.append(player)
             elif pm_id_str in player_ids or not gk_ids:
-                # Field player — try metadata.position for sub-grouping
-                fr_lower = (functional_role or "").lower()
-                pos_lower = (position or "").lower()
-                if fr_lower in ("verdediger",) or pos_lower in (
-                    "verdediger",
-                    "lb",
-                    "cb",
-                    "rb",
-                    "lwb",
-                    "rwb",
-                ):
-                    player.y = line_y_positions["verdediger"]
-                    defenders.append(player)
-                elif fr_lower in ("aanvaller", "spits") or pos_lower in (
-                    "aanvaller",
-                    "spits",
-                    "lw",
-                    "rw",
-                    "st",
-                    "cf",
-                ):
-                    player.y = line_y_positions["aanvaller"]
-                    attackers.append(player)
-                elif fr_lower in ("middenvelder",) or pos_lower in (
-                    "middenvelder",
-                    "cdm",
-                    "cm",
-                    "cam",
-                    "lm",
-                    "rm",
-                ):
-                    player.y = line_y_positions["middenvelder"]
-                    midfielders.append(player)
-                else:
-                    # No position info — collect as unassigned (redistributed below)
-                    midfielders.append(player)
+                # Field player — store keyed by PM id for reordering later
+                field_player_segments[pm_id_str] = player
             else:
-                # Fallback
-                midfielders.append(player)
+                # Fallback — treat as field player
+                field_player_segments[pm_id_str] = player
 
-        # Auto-split unpositioned field players using default formation (4-3-3)
-        # If ALL field players ended up in midfield (no def/att), redistribute.
-        if player_ids and len(defenders) == 0 and len(attackers) == 0 and len(midfielders) > 0:
-            field_players = list(midfielders)
-            midfielders.clear()
-            n = len(field_players)
+        # ── Reorder field players to match the frontend's formation-slot order ──
+        # The frontend sends player IDs in slot order (e.g. for 4-3-3:
+        #   slots 2-5 = DEF, slots 6-8 = MID, slots 9-11 = ATT).
+        # We must preserve this ordering so the formation split puts each
+        # player in the correct line (defender/midfielder/attacker).
+        ordered_field_players: list[PlayerSegment] = []
+        for pid in ordered_player_ids:
+            if pid in field_player_segments:
+                ordered_field_players.append(field_player_segments.pop(pid))
+        # Append any remaining field players not in the ordered list (safety net)
+        for seg in field_player_segments.values():
+            ordered_field_players.append(seg)
 
-            # Pick formation split based on number of field players
-            if n <= 6:
-                n_def, n_mid = 2, 2  # rest attackers
-            elif n <= 8:
-                n_def, n_mid = 3, 3
+        # Split field players by formation counts (matching frontend FORMATION_LAYOUTS)
+        n_def, n_mid, _n_att = FORMATION_SPLITS.get(self.formation, (4, 3, 3))
+        defenders: list[PlayerSegment] = []
+        midfielders: list[PlayerSegment] = []
+        attackers: list[PlayerSegment] = []
+
+        for i, p in enumerate(ordered_field_players):
+            if i < n_def:
+                p.y = line_y_positions["verdediger"]
+                defenders.append(p)
+            elif i < n_def + n_mid:
+                p.y = line_y_positions["middenvelder"]
+                midfielders.append(p)
             else:
-                n_def, n_mid = 4, 3  # 4-3-3
+                p.y = line_y_positions["aanvaller"]
+                attackers.append(p)
 
-            for i, p in enumerate(field_players):
-                if i < n_def:
-                    p.y = line_y_positions["verdediger"]
-                    defenders.append(p)
-                elif i < n_def + n_mid:
-                    p.y = line_y_positions["middenvelder"]
-                    midfielders.append(p)
-                else:
-                    p.y = line_y_positions["aanvaller"]
-                    attackers.append(p)
-
-            self._debug_trace.append(
-                f"Auto-split {n} field players: D={len(defenders)} M={len(midfielders)} A={len(attackers)}"
-            )
+        self._debug_trace.append(
+            f"Formation-split ({self.formation}): D={len(defenders)} M={len(midfielders)} A={len(attackers)}"
+        )
 
         # Spread players evenly across x-axis within each line
         for line in [keepers, defenders, midfielders, attackers]:
@@ -2039,6 +2023,7 @@ def build_lineup_video_config(
     template_id: str | UUID | None = None,
     output_resolution: str = "vertical_1080p",
     selected_member_ids: list[str] | None = None,
+    formation: str = "4-3-3",
 ) -> dict:
     """Convenience function to build lineup video config.
 
@@ -2047,6 +2032,7 @@ def build_lineup_video_config(
         template_id: Optional ContentTemplate ID
         output_resolution: Resolution preset
         selected_member_ids: Optional list of member IDs from frontend
+        formation: Formation string (4-3-3, 4-4-2, 3-4-3)
 
     Returns:
         Config dict ready for LineupProcessor
@@ -2056,5 +2042,6 @@ def build_lineup_video_config(
         template_id=template_id,
         output_resolution=output_resolution,
         selected_member_ids=selected_member_ids,
+        formation=formation,
     )
     return builder.build()
