@@ -227,7 +227,7 @@ function AssetCard({
           <>
             {/* AI processed assets with AI action buttons */}
             {isProcessed && (onReplace || onImprove) ? (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: url && onImprove ? '1fr 1fr' : '1fr', gap: 4 }}>
                 {onReplace && (
                   <button
                     onClick={() => onReplace(assetType)}
@@ -242,7 +242,7 @@ function AssetCard({
                       borderRadius: 4,
                     }}
                   >
-                    🔄 Vervang
+                    {url ? '🔄 Vervang' : '🎨 Bewerk'}
                   </button>
                 )}
                 {url && onImprove && (
