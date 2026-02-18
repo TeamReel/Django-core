@@ -85,6 +85,112 @@ PREPROCESSORS = {
 
 
 # =============================================================================
+# Output Postprocessors (Pillow-based, run AFTER Gemini output)
+# =============================================================================
+
+
+def _postprocess_crop_and_center(
+    image_bytes: bytes, target_size: int = 1024, fill_pct: float = 0.90
+) -> bytes:
+    """Tight-crop an RGBA image on its alpha bounding box, then enlarge to fill a square canvas.
+
+    This does what Gemini cannot reliably do: remove all empty space around a logo
+    and scale it up to fill the canvas.
+    """
+    from PIL import Image
+
+    img = Image.open(BytesIO(image_bytes)).convert("RGBA")
+
+    # Get bounding box of non-transparent pixels
+    # getbbox() returns (left, upper, right, lower) of non-zero alpha area
+    bbox = img.getbbox()
+    if not bbox:
+        # Fully transparent — return as-is
+        return image_bytes
+
+    # Crop to tight bounding box
+    cropped = img.crop(bbox)
+    cw, ch = cropped.size
+
+    # Calculate scale to fill fill_pct of target canvas
+    target_inner = int(target_size * fill_pct)
+    scale = min(target_inner / cw, target_inner / ch)
+    new_w = max(1, int(cw * scale))
+    new_h = max(1, int(ch * scale))
+
+    # Only upscale if significantly smaller, otherwise just pad
+    resized = cropped.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+    # Center on transparent canvas
+    canvas = Image.new("RGBA", (target_size, target_size), (0, 0, 0, 0))
+    offset_x = (target_size - new_w) // 2
+    offset_y = (target_size - new_h) // 2
+    canvas.paste(resized, (offset_x, offset_y), resized)
+
+    buf = BytesIO()
+    canvas.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def _postprocess_sponsor_crop(image_bytes: bytes, orientation: str = "landscape") -> bytes:
+    """Tight-crop a sponsor logo on alpha bbox and center on appropriate canvas."""
+    from PIL import Image
+
+    img = Image.open(BytesIO(image_bytes)).convert("RGBA")
+    bbox = img.getbbox()
+    if not bbox:
+        return image_bytes
+
+    cropped = img.crop(bbox)
+    cw, ch = cropped.size
+
+    if orientation == "square":
+        canvas_w, canvas_h = 1024, 1024
+    else:
+        canvas_w, canvas_h = 1024, 512  # landscape
+
+    fill_pct = 0.85
+    target_w = int(canvas_w * fill_pct)
+    target_h = int(canvas_h * fill_pct)
+    scale = min(target_w / cw, target_h / ch)
+    new_w = max(1, int(cw * scale))
+    new_h = max(1, int(ch * scale))
+
+    resized = cropped.resize((new_w, new_h), Image.Resampling.LANCZOS)
+    canvas = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+    offset_x = (canvas_w - new_w) // 2
+    offset_y = (canvas_h - new_h) // 2
+    canvas.paste(resized, (offset_x, offset_y), resized)
+
+    buf = BytesIO()
+    canvas.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+# Map template_id → postprocess function that runs on Gemini's output
+OUTPUT_POSTPROCESSORS: dict[str, Any] = {
+    "logo_postprocess": lambda img_bytes, params: _postprocess_crop_and_center(
+        img_bytes,
+        target_size=int(params.get("target_size", "1024")),
+        fill_pct=int(params.get("fill_percentage", "90")) / 100.0,
+    ),
+    "logo_standardize": lambda img_bytes, params: _postprocess_crop_and_center(
+        img_bytes,
+        target_size=1024,
+        fill_pct=0.90,
+    ),
+    "sponsor_postprocess": lambda img_bytes, params: _postprocess_sponsor_crop(
+        img_bytes,
+        orientation=params.get("orientation", "landscape"),
+    ),
+    "sponsor_standardize": lambda img_bytes, params: _postprocess_sponsor_crop(
+        img_bytes,
+        orientation=params.get("orientation", "landscape"),
+    ),
+}
+
+
+# =============================================================================
 # Template Helpers
 # =============================================================================
 
@@ -306,6 +412,19 @@ def generate_asset(
                     break
 
             if image_bytes:
+                # === Output Postprocessor: tight-crop + center (Pillow-based) ===
+                output_pp = OUTPUT_POSTPROCESSORS.get(template_id)
+                if output_pp:
+                    try:
+                        image_bytes = output_pp(image_bytes, params)
+                        logger.info("Applied output postprocessor for %s", template_id)
+                    except Exception as pp_err:  # noqa: BLE001
+                        logger.warning(
+                            "Output postprocessor failed for %s (using raw Gemini output): %s",
+                            template_id,
+                            pp_err,
+                        )
+
                 # Generate unique filename
                 # Exclude user_instruction to prevent filename explosion (>255 chars)
                 safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
