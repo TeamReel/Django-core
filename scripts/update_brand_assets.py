@@ -165,10 +165,10 @@ def update_brand_assets(results_file: str, dry_run: bool = False):
                 print(f"     Created FileAsset: {storage_path}")
 
             # Create or update BrandAsset for logo
-            # Check if there's an existing logo asset (using logo_light as default)
+            # Check if there's an existing logo asset
             logo_asset = BrandAsset.objects.filter(
                 profile=brand_profile,
-                asset_type="logo_light"
+                asset_type="logo"
             ).first()
 
             if logo_asset:
@@ -182,7 +182,7 @@ def update_brand_assets(results_file: str, dry_run: bool = False):
                 # Create new
                 BrandAsset.objects.create(
                     profile=brand_profile,
-                    asset_type="logo_light",
+                    asset_type="logo",
                     file=file_asset,
                     alt_text=f"{club_name} logo",
                     is_active=True

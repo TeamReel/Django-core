@@ -198,8 +198,7 @@ class BrandAsset(models.Model):
     ASSET_TYPE_CHOICES = [
         # ── Logo ──
         ("logo_upload", "Logo (Raw Upload)"),
-        ("logo_light", "Logo (Light Mode - AI Processed)"),
-        ("logo_dark", "Logo (Dark Mode - AI Processed)"),
+        ("logo", "Logo (AI Processed)"),
         ("watermark", "Watermark"),
         ("favicon", "Favicon"),
         ("font_file", "Font File"),

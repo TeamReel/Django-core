@@ -183,12 +183,12 @@ class TestBrandAsset:
         asset = BrandAsset.objects.create(
             profile=org_brand,
             file=file_asset,
-            asset_type="logo_light",
+            asset_type="logo",
             alt_text="Logo",
         )
 
         assert asset.id is not None
-        assert asset.asset_type == "logo_light"
+        assert asset.asset_type == "logo"
         assert asset.alt_text == "Logo"
         assert asset.is_active is True
         assert asset.file == file_asset
@@ -198,12 +198,12 @@ class TestBrandAsset:
         file1 = file_asset_factory(organization=org_brand.organisation)
         file2 = file_asset_factory(organization=org_brand.organisation)
         BrandAsset.objects.create(
-            profile=org_brand, file=file1, asset_type="logo_light", alt_text="Logo 1"
+            profile=org_brand, file=file1, asset_type="logo", alt_text="Logo 1"
         )
 
         with pytest.raises(IntegrityError):
             BrandAsset.objects.create(
-                profile=org_brand, file=file2, asset_type="logo_light", alt_text="Logo 2"
+                profile=org_brand, file=file2, asset_type="logo", alt_text="Logo 2"
             )
 
     def test_same_asset_type_different_profiles(self, org_brand, project_brand, file_asset_factory):
@@ -211,11 +211,11 @@ class TestBrandAsset:
         file1 = file_asset_factory(organization=org_brand.organisation)
         file2 = file_asset_factory(organization=project_brand.project.organisation)
         asset1 = BrandAsset.objects.create(
-            profile=org_brand, file=file1, asset_type="logo_light", alt_text="Org Logo"
+            profile=org_brand, file=file1, asset_type="logo", alt_text="Org Logo"
         )
 
         asset2 = BrandAsset.objects.create(
-            profile=project_brand, file=file2, asset_type="logo_light", alt_text="Project Logo"
+            profile=project_brand, file=file2, asset_type="logo", alt_text="Project Logo"
         )
 
         assert asset1.id != asset2.id
@@ -224,8 +224,7 @@ class TestBrandAsset:
     def test_asset_type_choices(self, org_brand, file_asset_factory):
         """Test all asset_type choices work."""
         types = [
-            "logo_light",
-            "logo_dark",
+            "logo",
             "watermark",
             "favicon",
             "font_file",
@@ -242,7 +241,7 @@ class TestBrandAsset:
     def test_get_url_with_file(self, org_brand, file_asset_factory):
         """Test get_url returns file storage_path when file exists."""
         file = file_asset_factory(organization=org_brand.organisation)
-        asset = BrandAsset.objects.create(profile=org_brand, file=file, asset_type="logo_light")
+        asset = BrandAsset.objects.create(profile=org_brand, file=file, asset_type="logo")
 
         url = asset.get_url()
         # get_url returns the file's storage_path
@@ -252,13 +251,13 @@ class TestBrandAsset:
         """Test creating inactive asset."""
         file = file_asset_factory(organization=org_brand.organisation)
         asset = BrandAsset.objects.create(
-            profile=org_brand, file=file, asset_type="logo_light", is_active=False
+            profile=org_brand, file=file, asset_type="logo", is_active=False
         )
 
         assert asset.is_active is False
 
     def test_str_representation(self, brand_asset_factory, org_brand):
         """Test string representation."""
-        asset = brand_asset_factory(profile=org_brand, asset_type="logo_light")
+        asset = brand_asset_factory(profile=org_brand, asset_type="logo")
         str_repr = str(asset)
-        assert "logo_light" in str_repr.lower() or org_brand.name in str_repr
+        assert "logo" in str_repr.lower() or org_brand.name in str_repr

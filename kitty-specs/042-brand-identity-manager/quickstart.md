@@ -86,7 +86,7 @@ logo_file = File.objects.get(name="demo-logo.png")
 BrandAsset.objects.create(
     profile=brand,
     file=logo_file,
-    asset_type="logo_light"
+    asset_type="logo"
 )
 ```
 
@@ -193,7 +193,7 @@ logo_file = File.objects.get(name="team-logo.png")
 BrandAsset.objects.create(
     profile=brand,
     file=logo_file,
-    asset_type="logo_light"
+    asset_type="logo"
 )
 ```
 
@@ -207,7 +207,7 @@ curl -X POST http://localhost:8000/api/branding/profiles/{profile_id}/assets/ \
   -H "Content-Type: application/json" \
   -d '{
     "file": "file-uuid",
-    "asset_type": "logo_light"
+    "asset_type": "logo"
   }'
 ```
 

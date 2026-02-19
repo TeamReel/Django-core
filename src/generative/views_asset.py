@@ -126,7 +126,7 @@ class AssetGenerateInputSerializer(serializers.Serializer):
     asset_type = serializers.CharField(
         required=False,
         allow_null=True,
-        help_text="BrandAsset type (e.g. logo_light, kit_home, kit_away_combined)",
+        help_text="BrandAsset type (e.g. logo, kit_home, kit_away_combined)",
     )
 
     # === Storage options ===
@@ -836,7 +836,7 @@ class SaveAssetInputSerializer(serializers.Serializer):
     )
     asset_type = serializers.CharField(
         required=True,
-        help_text="BrandAsset type (e.g. logo_light, sponsor_logo, kit_home, member_intro)",
+        help_text="BrandAsset type (e.g. logo, sponsor_logo, kit_home, member_intro)",
     )
 
 

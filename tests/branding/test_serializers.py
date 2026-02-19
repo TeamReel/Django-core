@@ -92,7 +92,7 @@ class TestBrandProfileDetailSerializer:
     def test_serialize_with_tokens_and_assets(self, org_brand, org_tokens, brand_asset_factory):
         """Test serializing brand with nested tokens and assets."""
         # Create some assets
-        asset1 = brand_asset_factory(profile=org_brand, asset_type="logo_light")
+        asset1 = brand_asset_factory(profile=org_brand, asset_type="logo")
         asset2 = brand_asset_factory(profile=org_brand, asset_type="favicon")
 
         serializer = BrandProfileDetailSerializer(org_brand)
@@ -213,13 +213,13 @@ class TestBrandAssetSerializer:
 
     def test_serialize_asset(self, brand_asset_factory, org_brand):
         """Test serializing brand asset."""
-        asset = brand_asset_factory(profile=org_brand, asset_type="logo_light", alt_text="Logo")
+        asset = brand_asset_factory(profile=org_brand, asset_type="logo", alt_text="Logo")
 
         serializer = BrandAssetSerializer(asset)
         data = serializer.data
 
         assert str(data["id"]) == str(asset.id)
-        assert data["asset_type"] == "logo_light"
+        assert data["asset_type"] == "logo"
         assert data["alt_text"] == "Logo"
         assert data["is_active"] is True
         assert str(data["profile"]) == str(org_brand.id)
@@ -259,14 +259,14 @@ class TestBrandAssetSerializer:
     ):
         """Test unique validation for asset_type per profile."""
         # Create first asset
-        brand_asset_factory(profile=org_brand, asset_type="logo_light")
+        brand_asset_factory(profile=org_brand, asset_type="logo")
 
         # Try to create duplicate
         file2 = file_asset_factory(organization=org_brand.organisation)
         data = {
             "profile": str(org_brand.id),
             "file": str(file2.id),
-            "asset_type": "logo_light",  # Already exists
+            "asset_type": "logo",  # Already exists
             "alt_text": "Duplicate",
         }
 

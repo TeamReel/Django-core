@@ -237,7 +237,7 @@ class TestBrandAssetViewSet:
 
     def test_list_assets_for_profile(self, api_client, org_admin, org_brand, brand_asset_factory):
         """Test listing assets for specific profile."""
-        asset1 = brand_asset_factory(profile=org_brand, asset_type="logo_light")
+        asset1 = brand_asset_factory(profile=org_brand, asset_type="logo")
         asset2 = brand_asset_factory(profile=org_brand, asset_type="favicon")
 
         api_client.force_authenticate(org_admin)
@@ -268,7 +268,7 @@ class TestBrandAssetViewSet:
 
     def test_update_asset(self, api_client, org_admin, org_brand, brand_asset_factory):
         """Test updating asset."""
-        asset = brand_asset_factory(profile=org_brand, asset_type="logo_light")
+        asset = brand_asset_factory(profile=org_brand, asset_type="logo")
         api_client.force_authenticate(org_admin)
 
         payload = {"alt_text": "Updated Alt Text"}
@@ -292,18 +292,18 @@ class TestBrandAssetViewSet:
 
     def test_filter_assets_by_type(self, api_client, org_admin, org_brand, brand_asset_factory):
         """Test filtering assets by asset_type."""
-        brand_asset_factory(profile=org_brand, asset_type="logo_light")
+        brand_asset_factory(profile=org_brand, asset_type="logo")
         brand_asset_factory(profile=org_brand, asset_type="favicon")
 
         api_client.force_authenticate(org_admin)
         response = api_client.get(
-            f"/api/v1/branding/profiles/{org_brand.id}/assets/?asset_type=logo_light"
+            f"/api/v1/branding/profiles/{org_brand.id}/assets/?asset_type=logo"
         )
 
         assert response.status_code == 200
         data = extract_data(response)
         for asset in data["results"]:
-            assert asset["asset_type"] == "logo_light"
+            assert asset["asset_type"] == "logo"
 
 
 @pytest.mark.django_db
@@ -361,7 +361,7 @@ class TestTokenResolutionView:
         self, api_client, org_admin, project, project_brand, brand_asset_factory
     ):
         """Test including assets in resolution."""
-        asset = brand_asset_factory(profile=project_brand, asset_type="logo_light")
+        asset = brand_asset_factory(profile=project_brand, asset_type="logo")
 
         api_client.force_authenticate(org_admin)
         response = api_client.get(
@@ -371,7 +371,7 @@ class TestTokenResolutionView:
         assert response.status_code == 200
         data = extract_data(response)
         assert "assets" in data
-        assert "logo_light" in data["assets"]
+        assert "logo" in data["assets"]
 
     def test_resolve_without_project_param(self, api_client, org_admin):
         """Test error when project param missing."""

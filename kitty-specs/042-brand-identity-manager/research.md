@@ -90,7 +90,7 @@
 
 ### B22 Files
 - BrandAsset has ForeignKey to File
-- Asset types: logo_light, logo_dark, watermark, favicon
+- Asset types: logo, watermark, favicon
 
 ### B34 AI Content Generation (Downstream)
 - B34 consumes token API to apply brand styles

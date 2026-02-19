@@ -206,7 +206,7 @@ class TestBrandAssetPermissions:
         self, api_client, org_admin, org_brand, brand_asset_factory
     ):
         """Test org admin can edit org brand assets."""
-        asset = brand_asset_factory(profile=org_brand, asset_type="logo_light")
+        asset = brand_asset_factory(profile=org_brand, asset_type="logo")
         api_client.force_authenticate(org_admin)
 
         response = api_client.patch(
@@ -234,7 +234,7 @@ class TestBrandAssetPermissions:
         self, api_client, project_admin, project_brand, brand_asset_factory
     ):
         """Test project admin can edit their project assets."""
-        asset = brand_asset_factory(profile=project_brand, asset_type="logo_light")
+        asset = brand_asset_factory(profile=project_brand, asset_type="logo")
         api_client.force_authenticate(project_admin)
 
         response = api_client.patch(

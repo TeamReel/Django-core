@@ -6,7 +6,7 @@ Old structure: logos/clubs/{id}.png (or similar generic paths)
 New structure: clubs/{slug}-{id}/logo/{filename}
 
 This script:
-1. Iterates over all BadgeAssets (type='logo_light' or 'logo_upload')
+1. Iterates over all BadgeAssets (type='logo' or 'logo_upload')
 2. Checks current storage path
 3. Copies object to new location if needed
 4. Updates FileAsset record
@@ -49,7 +49,7 @@ def migrate_logos(dry_run=True):
 
     # Find logo assets hooked to a Project
     assets = BrandAsset.objects.filter(
-        asset_type__in=["logo_light", "logo_upload"],
+        asset_type__in=["logo", "logo_upload"],
         profile__project__isnull=False
     ).select_related("file", "profile", "profile__project", "profile__project__parent_project")
 

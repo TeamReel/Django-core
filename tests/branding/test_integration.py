@@ -59,7 +59,7 @@ class TestUserStory1OrgBrandSetup:
             {
                 "profile": brand_id,
                 "file": str(file_asset.id),
-                "asset_type": "logo_light",
+                "asset_type": "logo",
                 "alt_text": "Acme Corp Logo Light",
             },
         )
@@ -149,7 +149,7 @@ class TestUserStory3ConsumerApp:
 
         # Add assets to both levels
         org_asset = brand_asset_factory(
-            profile=org_brand, asset_type="logo_light", alt_text="Org Logo"
+            profile=org_brand, asset_type="logo", alt_text="Org Logo"
         )
         project_asset = brand_asset_factory(
             profile=project_brand, asset_type="favicon", alt_text="Team Favicon"
@@ -173,7 +173,7 @@ class TestUserStory3ConsumerApp:
 
         # Verify assets included (assets come from project_brand when it exists)
         assert "assets" in data
-        # logo_light is from org_brand, but project_brand takes precedence
+        # logo is from org_brand, but project_brand takes precedence
         # so only project_brand's assets (favicon) are returned
         assert "favicon" in data["assets"]
         assert data["assets"]["favicon"]["alt_text"] == "Team Favicon"
@@ -308,7 +308,7 @@ class TestEdgeCases:
         self, api_client, org_admin, org_brand, brand_asset_factory
     ):
         """Test duplicate asset types are prevented per profile."""
-        brand_asset_factory(profile=org_brand, asset_type="logo_light")
+        brand_asset_factory(profile=org_brand, asset_type="logo")
 
         api_client.force_authenticate(org_admin)
 
@@ -316,7 +316,7 @@ class TestEdgeCases:
             f"/api/branding/profiles/{org_brand.id}/assets/",
             {
                 "profile": str(org_brand.id),
-                "asset_type": "logo_light",  # Already exists
+                "asset_type": "logo",  # Already exists
                 "alt_text": "Duplicate",
             },
         )

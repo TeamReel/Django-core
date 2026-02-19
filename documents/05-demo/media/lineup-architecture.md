@@ -80,10 +80,10 @@ Alleen AI-processed assets worden gebruikt. Geen fallbacks naar raw uploads of l
 
 | Asset | Type | Beschrijving |
 |-------|------|-------------|
-| **Logo** | `logo_light` | AI-processed transparante PNG (verplicht) |
+| **Logo** | `logo` | AI-processed transparante PNG (verplicht) |
 | **Sponsor** | `sponsor_logo` | AI-processed transparante PNG (verplicht) |
 
-> **Belangrijk**: Als het processed logo (`logo_light`) of processed sponsor (`sponsor_logo`) niet beschikbaar is op club/org niveau, moet het eerst gegenereerd worden. Raw uploads (`logo_upload`, `sponsor_logo_upload`) worden niet gebruikt.
+> **Belangrijk**: Als het processed logo (`logo`) of processed sponsor (`sponsor_logo`) niet beschikbaar is op club/org niveau, moet het eerst gegenereerd worden. Raw uploads (`logo_upload`, `sponsor_logo_upload`) worden niet gebruikt.
 
 **Bescherming**: Assets met `file_size == 0` worden automatisch overgeslagen.
 
@@ -407,7 +407,7 @@ Postprocessing (_postprocess_crop_and_center)
   - Centreer op transparant canvas
   │
   ▼
-Opslag als BrandAsset (asset_type="logo_light")
+Opslag als BrandAsset (asset_type="logo")
   - FileAsset → S3
   - Presigned URL voor runtime gebruik
 ```
@@ -427,12 +427,12 @@ AI-modellen (Gemini) renderen soms een zichtbaar schaakbordpatroon in de RGB-pix
 
 ```
                     BrandProfile (Club)
-                    ├── logo_light ──────────┐  (processed, verplicht)
+                    ├── logo ──────────────┐  (processed, verplicht)
                     ├── sponsor_logo ────────┤  (processed, verplicht)
                     └── stadium_background ──┤
                                              │
                     Opponent Club              │
-                    └── logo_light ───────────┤  (processed)
+                    └── logo ───────────────┤  (processed)
                                              │
                     ProjectMembership          │
                     ├── fullbody PNG ──────────┤

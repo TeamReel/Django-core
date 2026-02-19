@@ -89,8 +89,8 @@ An admin uploads, replaces, and removes brand assets (logos, watermarks, fonts) 
 
 **Acceptance Scenarios**:
 
-1. **Given** a brand profile exists, **When** admin uploads a logo with type "logo_light", **Then** the asset is stored and linked to the profile
-2. **Given** a logo_light asset exists, **When** admin uploads a new logo_light, **Then** the old asset is replaced (not duplicated)
+1. **Given** a brand profile exists, **When** admin uploads a logo with type "logo", **Then** the asset is stored and linked to the profile
+2. **Given** a logo asset exists, **When** admin uploads a new logo, **Then** the old asset is replaced (not duplicated)
 3. **Given** brand assets exist, **When** admin deletes an asset, **Then** the asset link is removed (file cleanup follows B22 policy)
 
 ---
@@ -118,7 +118,7 @@ An admin uploads, replaces, and removes brand assets (logos, watermarks, fonts) 
 - **FR-008**: System MUST implement merge inheritance: project tokens override org tokens, unspecified tokens inherit from org
 - **FR-009**: System MUST return complete merged token set via API endpoint
 - **FR-010**: System MUST store BrandAssets linked to BrandProfile and B22 File
-- **FR-011**: System MUST support asset types: logo_light, logo_dark, watermark, favicon, font_file
+- **FR-011**: System MUST support asset types: logo, watermark, favicon, font_file
 - **FR-012**: System MUST enforce one asset per type per profile (replace on re-upload by updating FK reference; old file remains in B22 for cleanup via B22 retention policy)
 - **FR-013**: System MUST support is_active flag on BrandProfile for soft-disable
 - **FR-014**: System MUST provide REST API endpoints for CRUD operations on all entities

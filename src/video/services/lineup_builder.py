@@ -360,7 +360,7 @@ class LineupSegmentBuilder:
                 f"Resolving {asset_types} (skip_team={skip_team}, " f"profiles={len(profiles)})..."
             )
             for profile in profiles:
-                # Iterate in priority order so e.g. logo_light (AI-processed)
+                # Iterate in priority order so e.g. logo (AI-processed)
                 # is preferred over logo_upload (raw upload).
                 asset = None
                 for at in asset_types:
@@ -428,11 +428,11 @@ class LineupSegmentBuilder:
             self._debug_trace.append("Resolution failed")
             return None
 
-        # Logo: always use AI-processed transparent PNG (logo_light).
+        # Logo: always use AI-processed transparent PNG.
         # Never fall back to raw uploads — processed is required.
         # Logo always inherits from club/org — skip team profile.
         logo_url = _resolve_asset_url(
-            ["logo_light"],
+            ["logo"],
             skip_team=True,
         )
         # Sponsor: always use AI-processed transparent PNG (sponsor_logo).
@@ -461,7 +461,7 @@ class LineupSegmentBuilder:
                     opp_brand_profiles.append(opp_club_brand)
             # Opponent logo: only AI-processed transparent PNG.
             opp_logo_priority = [
-                "logo_light",
+                "logo",
             ]
             for opp_profile in opp_brand_profiles:
                 asset = None
@@ -1095,7 +1095,7 @@ class LineupSegmentBuilder:
             BrandAsset = apps.get_model("branding", "BrandAsset")
             opp_project = activity.opponent_project
             opp_club = getattr(opp_project, "parent_project", None)
-            # Logo: only club level, only processed (logo_light)
+            # Logo: only club level, only processed
             for bp_target in [opp_club] if opp_club else [opp_project]:
                 bp = BrandProfile.objects.filter(project=bp_target, is_active=True).first()
                 if not bp:
@@ -1103,7 +1103,7 @@ class LineupSegmentBuilder:
                 asset = (
                     BrandAsset.objects.filter(
                         profile=bp,
-                        asset_type="logo_light",
+                        asset_type="logo",
                         is_active=True,
                     )
                     .select_related("file")
