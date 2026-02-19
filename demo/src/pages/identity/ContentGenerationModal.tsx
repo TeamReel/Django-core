@@ -2843,7 +2843,7 @@ export default function ContentGenerationModal({
                   {generatedVariants[0]?.mime_type?.startsWith('video/') ? (
                     <div
                       style={{
-                        width: '420px',
+                        width: '280px',
                         maxWidth: '92vw',
                         marginBottom: '16px',
                         alignSelf: 'center',
@@ -2876,8 +2876,8 @@ export default function ContentGenerationModal({
                             playsInline
                             style={{
                               width: '100%',
-                              height: '236px',
-                              maxHeight: '236px',
+                              height: '160px',
+                              maxHeight: '160px',
                               objectFit: 'contain',
                               display: 'block',
                               background: '#000',

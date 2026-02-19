@@ -52,7 +52,7 @@ SPONSOR_BOX_H = 100
 # ── Y positions (0-1 fraction of HEIGHT) per role ──────────────────────────
 # Positions account for 300px header at top — all players below header.
 Y_POS = {
-    "keeper": 0.88,
+    "keeper": 0.90,
     "defender": 0.72,
     "midfielder": 0.53,
     "attacker": 0.36,

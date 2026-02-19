@@ -531,26 +531,25 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             flexWrap: 'nowrap',
             height: '100%',
           }} className="desktop-nav">
-            {/* Dashboard link */}
+            {/* TeamReel logo → Dashboard */}
             <Link
               to={dashboardItem.path}
               title={dashboardItem.label}
               aria-label={dashboardItem.label}
               className="nav-icon-button"
               style={{
-                padding: '8px 12px',
+                padding: '4px 8px',
                 textDecoration: 'none',
-                color: isItemActive(dashboardItem.path) ? '#2563eb' : 'var(--app-text)',
-                backgroundColor: isItemActive(dashboardItem.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                fontWeight: isItemActive(dashboardItem.path) ? 600 : 500,
-                fontSize: '14px',
-                whiteSpace: 'nowrap',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
               }}
             >
-              <AppIcon icon={dashboardItem.icon} size={16} />
+              <img
+                src="/teamreel-icon.svg"
+                alt="TeamReel"
+                style={{ height: '28px', width: 'auto' }}
+              />
             </Link>
 
             {/* Breadcrumbs for Hierarchy Context */}
