@@ -238,8 +238,13 @@ def _postprocess_crop_and_center(
 
     img = Image.open(BytesIO(image_bytes)).convert("RGBA")
 
-    # Get bounding box of non-transparent pixels
-    # getbbox() returns (left, upper, right, lower) of non-zero alpha area
+    # Step 1: Strip checkerboard artifacts FIRST — Gemini sometimes renders a
+    # visible checkerboard into the RGB pixels with alpha=255 instead of true
+    # transparency.  If we don't strip these before getbbox(), the bounding box
+    # includes the entire image and the logo never gets zoomed in.
+    img = _strip_checkerboard(img)
+
+    # Step 2: Get bounding box of non-transparent pixels (now only the real logo)
     bbox = img.getbbox()
     if not bbox:
         # Fully transparent — return as-is
@@ -258,10 +263,6 @@ def _postprocess_crop_and_center(
     # Only upscale if significantly smaller, otherwise just pad
     resized = cropped.resize((new_w, new_h), Image.Resampling.LANCZOS)
 
-    # Clean checkerboard artifacts: Gemini sometimes renders a visible
-    # checkerboard into RGB pixels instead of true alpha transparency.
-    resized = _strip_checkerboard(resized)
-
     # Center on transparent canvas
     canvas = Image.new("RGBA", (target_size, target_size), (0, 0, 0, 0))
     offset_x = (target_size - new_w) // 2
@@ -278,6 +279,10 @@ def _postprocess_sponsor_crop(image_bytes: bytes, orientation: str = "landscape"
     from PIL import Image
 
     img = Image.open(BytesIO(image_bytes)).convert("RGBA")
+
+    # Strip checkerboard BEFORE bbox so we crop only the real logo
+    img = _strip_checkerboard(img)
+
     bbox = img.getbbox()
     if not bbox:
         return image_bytes
