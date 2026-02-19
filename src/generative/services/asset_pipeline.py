@@ -421,6 +421,93 @@ Be VERY specific about colors and patterns. Use the format: "Primary: [color]. S
 
 
 # =============================================================================
+# Pillow-Only Postprocessing (no Gemini)
+# =============================================================================
+
+
+def _pillow_only_postprocess(
+    template_id: str,
+    params: dict[str, str],
+    input_images: dict[str, bytes],
+) -> list[dict[str, Any]]:
+    """Run postprocess templates using pure Pillow — no Gemini call.
+
+    Postprocess templates (logo_postprocess, sponsor_postprocess, etc.) only
+    need to crop, center, remove background and resize.  Sending these through
+    Gemini causes quality degradation (colour shifts, darkening, detail loss).
+
+    This function applies the same OUTPUT_POSTPROCESSORS that would run after
+    Gemini, but directly on the source image — skipping Gemini entirely.
+    """
+    # Get the source image bytes (postprocess input key is "source")
+    source_bytes = input_images.get("source")
+    if not source_bytes:
+        return [
+            {
+                "image_bytes": None,
+                "image_base64": None,
+                "mime_type": None,
+                "filename": None,
+                "variant_index": 0,
+                "error": "No source image provided for postprocessing",
+            }
+        ]
+
+    postprocessor = OUTPUT_POSTPROCESSORS.get(template_id)
+    if not postprocessor:
+        return [
+            {
+                "image_bytes": None,
+                "image_base64": None,
+                "mime_type": None,
+                "filename": None,
+                "variant_index": 0,
+                "error": f"No postprocessor defined for {template_id}",
+            }
+        ]
+
+    try:
+        result_bytes = postprocessor(source_bytes, params)
+        safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
+        param_str = "_".join(f"{k}-{v}" for k, v in sorted(safe_params.items()))
+        if len(param_str) > 100:
+            param_str = param_str[:97] + "..."
+        filename = f"{template_id}_{param_str}_v1_{int(time.time())}.png"
+
+        logger.info(
+            "Pillow-only postprocess for %s complete (no Gemini call)",
+            template_id,
+        )
+
+        return [
+            {
+                "image_bytes": result_bytes,
+                "image_base64": base64.b64encode(result_bytes).decode("utf-8"),
+                "mime_type": "image/png",
+                "filename": filename,
+                "variant_index": 0,
+                "metadata": {
+                    "template_id": template_id,
+                    "params": params,
+                    "pillow_only": True,
+                },
+            }
+        ]
+    except Exception as e:  # noqa: BLE001
+        logger.exception("Pillow-only postprocess failed for %s: %s", template_id, e)
+        return [
+            {
+                "image_bytes": None,
+                "image_base64": None,
+                "mime_type": None,
+                "filename": None,
+                "variant_index": 0,
+                "error": f"Postprocess failed: {e}",
+            }
+        ]
+
+
+# =============================================================================
 # Image Generation (nano-banana-pro-preview)
 # =============================================================================
 
@@ -442,6 +529,21 @@ def generate_asset(
     Returns:
         List of dicts with keys: {image_bytes, mime_type, filename, metadata}
     """
+    # =========================================================================
+    # Fast path: postprocess templates are pure Pillow (no Gemini).
+    # These only crop, center and resize — sending through Gemini would
+    # degrade quality (colours shift, details lost, logo gets darker).
+    # =========================================================================
+    PILLOW_ONLY_TEMPLATES = {
+        "logo_postprocess",
+        "sponsor_postprocess",
+        "kit_postprocess",
+        "location_postprocess",
+    }
+
+    if template_id in PILLOW_ONLY_TEMPLATES:
+        return _pillow_only_postprocess(template_id, params, input_images)
+
     # Import the prompts module (root-level)
     import importlib.util
     import os
