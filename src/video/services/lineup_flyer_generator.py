@@ -646,11 +646,11 @@ def _compose_flyer(
     fc.append(f"[1:v]scale={WIDTH}:-1[header]")
     fc.append("[field][header]overlay=0:0[bg0]")
 
-    # Sponsor box
+    # Sponsor box — light green background for visibility
     sponsor_box_w = SPONSOR_W + 2 * SPONSOR_PAD
     fc.append(
         f"[bg0]drawbox=x={SPONSOR_MARGIN}:y=ih-{SPONSOR_BOX_H}-{SPONSOR_MARGIN}"
-        f":w={sponsor_box_w}:h={SPONSOR_BOX_H}:color=white@1:t=fill[bg0b]"
+        f":w={sponsor_box_w}:h={SPONSOR_BOX_H}:color=0x90EE90@0.85:t=fill[bg0b]"
     )
     fc.append(f"[2:v]scale={SPONSOR_W}:-1,format=rgba[sponsor]")
     fc.append(

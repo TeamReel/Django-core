@@ -818,9 +818,21 @@ def _compose_phase(
     last_bg = "bg0"
     if sponsor_path:
         sponsor_w = int(WIDTH * 0.22)
+        sponsor_box_w = sponsor_w + 2 * SPONSOR_PAD
+        # Light green background box behind sponsor for visibility
+        fc.append(
+            f"[{last_bg}]drawbox="
+            f"x={SPONSOR_MARGIN}:y=ih-{SPONSOR_BOX_H}-{SPONSOR_MARGIN}"
+            f":w={sponsor_box_w}:h={SPONSOR_BOX_H}"
+            f":color=0x90EE90@0.85:t=fill[bg0b]"
+        )
         # Ensure we keep alpha when scaling the PNG.
         fc.append(f"[4:v]scale={sponsor_w}:-1,format=rgba[sponsor]")
-        fc.append(f"[{last_bg}][sponsor]overlay=30:main_h-h-30:format=auto[bg_sponsor]")
+        fc.append(
+            f"[bg0b][sponsor]overlay="
+            f"({SPONSOR_MARGIN + SPONSOR_PAD}):(main_h-h-{SPONSOR_MARGIN + SPONSOR_PAD})"
+            f":format=auto[bg_sponsor]"
+        )
         last_bg = "bg_sponsor"
 
     # Persistent badges (pre-rendered body + cheap overlay + label)
@@ -1186,9 +1198,21 @@ def _compose_hold(
     last_bg = "bg0"
     if sponsor_path:
         sponsor_w = int(WIDTH * 0.22)
+        sponsor_box_w = sponsor_w + 2 * SPONSOR_PAD
+        # Light green background box behind sponsor for visibility
+        fc.append(
+            f"[{last_bg}]drawbox="
+            f"x={SPONSOR_MARGIN}:y=ih-{SPONSOR_BOX_H}-{SPONSOR_MARGIN}"
+            f":w={sponsor_box_w}:h={SPONSOR_BOX_H}"
+            f":color=0x90EE90@0.85:t=fill[bg0b]"
+        )
         # Ensure we keep alpha when scaling the PNG.
         fc.append(f"[4:v]scale={sponsor_w}:-1,format=rgba[sponsor]")
-        fc.append(f"[{last_bg}][sponsor]overlay=30:main_h-h-30:format=auto[bg_sponsor]")
+        fc.append(
+            f"[bg0b][sponsor]overlay="
+            f"({SPONSOR_MARGIN + SPONSOR_PAD}):(main_h-h-{SPONSOR_MARGIN + SPONSOR_PAD})"
+            f":format=auto[bg_sponsor]"
+        )
         last_bg = "bg_sponsor"
 
     cmd = [
