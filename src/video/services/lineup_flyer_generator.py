@@ -409,6 +409,14 @@ def _compose_flyer(
     if sponsor_img is None:
         # Create transparent placeholder
         sponsor_img = Image.new("RGBA", (SPONSOR_W, 80), (0, 0, 0, 0))
+    else:
+        # Safety net: ensure any remaining background is transparent
+        from src.generative.services.asset_pipeline import _strip_checkerboard
+
+        sponsor_img = _strip_checkerboard(sponsor_img.convert("RGBA"))
+        bbox = sponsor_img.getchannel("A").getbbox()
+        if bbox:
+            sponsor_img = sponsor_img.crop(bbox)
     sponsor_path = tmp_dir / "sponsor.png"
     sponsor_img.convert("RGBA").save(str(sponsor_path), "PNG")
 

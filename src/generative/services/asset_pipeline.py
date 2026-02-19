@@ -208,7 +208,36 @@ def _strip_checkerboard(img):  # noqa: ANN001, ANN201
             shade_diff,
         )
 
-    logger.debug("checkerboard_cleanup: no alternating pattern found at any block size")
+    # ── Fallback: border-based detection ──
+    # If no alternating grid was found but the image edges are mostly
+    # light achromatic pixels, the background is still fake (solid white/grey
+    # or a pattern we didn't catch).  Logos are always centred, so the
+    # borders should be background, never logo content.
+    border_size = max(4, min(h, w) // 20)  # ~5% of image edge
+    top = is_candidate[:border_size, :].mean()
+    bot = is_candidate[-border_size:, :].mean()
+    lft = is_candidate[:, :border_size].mean()
+    rgt = is_candidate[:, -border_size:].mean()
+    border_avg = (top + bot + lft + rgt) / 4.0
+
+    if border_avg > 0.60 and candidate_ratio > 0.08:
+        data[is_candidate, 3] = 0
+        logger.info(
+            "checkerboard_cleanup fallback: stripped %d bg pixels "
+            "(border_avg=%.0f%%, candidate_ratio=%.0f%%)",
+            total_candidates,
+            border_avg * 100,
+            candidate_ratio * 100,
+        )
+        from PIL import Image as _Img
+
+        return _Img.fromarray(data, "RGBA")
+
+    logger.debug(
+        "checkerboard_cleanup: no pattern found (border_avg=%.0f%%, ratio=%.0f%%)",
+        border_avg * 100,
+        candidate_ratio * 100,
+    )
     return img
 
 
