@@ -1388,7 +1388,7 @@ export default function TeamOrganisationDetailPage() {
         entityType="team"
         entityId={team?.slug || team?.id || ''}
         entityName={team?.name}
-        organisationId={org?.slug || org?.id}
+        organisationId={String(org?.id || '')}
         projectId={team?.slug || team?.id}
         initialEntityData={team ? {
           id: String(team.id),

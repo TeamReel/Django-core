@@ -1996,7 +1996,7 @@ export default function ClubOrganisationDetailPage() {
         entityType="club"
         entityId={club?.slug || club?.id || ''}
         entityName={club?.name}
-        organisationId={org?.slug || org?.id}
+        organisationId={String(org?.id || '')}
         projectId={club?.slug || club?.id}
         initialEntityData={club ? {
           id: String(club.id),

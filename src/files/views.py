@@ -75,6 +75,11 @@ class FileViewSet(viewsets.ModelViewSet):
             raise PermissionDenied(
                 {"detail": "You do not have access to this organization."}
             ) from err
+        except (ValueError, Exception) as err:
+            # Catches django.core.exceptions.ValidationError for invalid UUID strings
+            # and any other unexpected errors during org lookup
+            logger.error(f"Org lookup error (possibly invalid UUID): org_id={org_id}, err={err}")
+            raise PermissionDenied({"detail": "Invalid organization ID."}) from err
 
         file_obj = serializer.validated_data["file"]
         is_public = serializer.validated_data.get("is_public", False)

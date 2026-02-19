@@ -2539,7 +2539,7 @@ export const OrganisationDetailPage: React.FC = () => {
         entityType="organisation"
         entityId={currentOrgSlug || id!}
         entityName={org?.name}
-        organisationId={currentOrgSlug || id!}
+        organisationId={String(org?.id || currentOrgId || '')}
         initialEntityData={org ? {
           id: String(org.id),
           name: org.name,
