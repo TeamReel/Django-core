@@ -445,6 +445,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     return String(mine?.id || '').trim();
   }, [currentUserId, members]);
 
+  // ── Brand profile for club-level assets (needed by guest avatar + batch modal) ──
+  const clubProjectId = isTeamRoute ? (club as any)?.id : project?.id;
+  const clubBrand = useBrandProfile({
+    projectId: clubProjectId ? String(clubProjectId) : undefined,
+    organisationId: String(org?.id || ''),
+    autoFetch: !!clubProjectId,
+  });
+
   // ── Generate guest player avatar ──────────────────────────────────
   const handleGenerateGuestAvatar = useCallback(async () => {
     const projectId = String((project as any)?.id || '').trim();
@@ -806,14 +814,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     void loadBrandProfile();
     return () => { cancelled = true; };
   }, [apiBaseUrl, project?.id]);
-
-  // ── Brand profile for batch generation (club-level assets) ──
-  const clubProjectId = isTeamRoute ? (club as any)?.id : project?.id;
-  const clubBrand = useBrandProfile({
-    projectId: clubProjectId ? String(clubProjectId) : undefined,
-    organisationId: String(org?.id || ''),
-    autoFetch: !!clubProjectId,
-  });
 
   // Build brand assets object for batch modal
   const batchBrandAssets = useMemo(() => {
