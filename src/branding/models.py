@@ -233,6 +233,10 @@ class BrandAsset(models.Model):
         ("kit_training_upload", "Training Kit (Raw Upload)"),
         ("kit_training", "Training Kit (AI Processed)"),
         ("kit_training_combined", "Training Kit (Combined: Kit+Logo+Sponsor)"),
+        # ── Kit: Legacy ──
+        ("kit_legacy_upload", "Legacy Kit (Raw Upload)"),
+        ("kit_legacy", "Legacy Kit (AI Processed)"),
+        ("kit_legacy_combined", "Legacy Kit (Combined: Kit+Logo+Sponsor)"),
         # ── Location & Other ──
         ("stadium_background", "Stadium/Pitch Background"),
         ("location_photo", "Location Photo"),

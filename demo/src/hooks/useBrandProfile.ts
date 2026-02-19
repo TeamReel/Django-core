@@ -69,6 +69,7 @@ export const UPLOAD_ASSET_TYPES = [
   'kit_coach_upload',
   'kit_assistant_upload',
   'kit_training_upload',
+  'kit_legacy_upload',
 ] as const;
 
 /** AI-processed standardized assets */
@@ -82,6 +83,7 @@ export const PROCESSED_ASSET_TYPES = [
   'kit_coach',
   'kit_assistant',
   'kit_training',
+  'kit_legacy',
 ] as const;
 
 /** AI-combined final outputs (kit + logo + sponsor) */
@@ -93,6 +95,7 @@ export const COMBINED_ASSET_TYPES = [
   'kit_coach_combined',
   'kit_assistant_combined',
   'kit_training_combined',
+  'kit_legacy_combined',
 ] as const;
 
 /** Kit role groups for display */
@@ -104,6 +107,7 @@ export const KIT_ROLES = [
   { id: 'coach', label: 'Trainer', icon: '📋' },
   { id: 'assistant', label: 'Assistent', icon: '🤝' },
   { id: 'training', label: 'Training', icon: '🏋️' },
+  { id: 'legacy', label: 'Legacy', icon: '🕰️' },
 ] as const;
 
 /** Asset display labels */
@@ -133,6 +137,9 @@ export const ASSET_TYPE_LABELS: Record<string, string> = {
   kit_training_upload: 'Trainingstenue (upload)',
   kit_training: 'Trainingstenue',
   kit_training_combined: 'Trainingstenue (compleet)',
+  kit_legacy_upload: 'Legacy tenue (upload)',
+  kit_legacy: 'Legacy tenue',
+  kit_legacy_combined: 'Legacy tenue (compleet)',
   watermark: 'Watermerk',
   favicon: 'Favicon',
   font_file: 'Lettertype',

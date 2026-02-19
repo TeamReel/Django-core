@@ -109,6 +109,7 @@ const KIT_TYPES = [
   { id: 'kit_coach', label: 'Coach Kit', description: 'Coaching staff kit' },
   { id: 'kit_assistant', label: 'Assistant Kit', description: 'Assistant staff kit' },
   { id: 'kit_training', label: 'Training Kit', description: 'Training and practice kit' },
+  { id: 'kit_legacy', label: 'Legacy Kit', description: 'Legacy / retro kit' },
 ] as const;
 
 type KitAsset = {

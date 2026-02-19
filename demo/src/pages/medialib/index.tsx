@@ -71,6 +71,7 @@ const KIT_TYPES = [
   { key: 'goalkeeper', label: 'Keeper' },
   { key: 'coach', label: 'Coach' },
   { key: 'training', label: 'Training' },
+  { key: 'legacy', label: 'Legacy' },
 ];
 
 // Sub-tab definitions per hierarchy level
@@ -135,6 +136,7 @@ function friendlyAssetLabel(asset: BrandAsset): string {
   if (t.includes('kit_coach')) return t.includes('combined') ? 'Coach Tenue (Compleet)' : t.includes('upload') ? 'Coach Tenue (Upload)' : 'Coach Tenue';
   if (t.includes('kit_assistant')) return t.includes('combined') ? 'Assistent Tenue (Compleet)' : t.includes('upload') ? 'Assistent Tenue (Upload)' : 'Assistent Tenue';
   if (t.includes('kit_training')) return t.includes('combined') ? 'Training Tenue (Compleet)' : t.includes('upload') ? 'Training Tenue (Upload)' : 'Training Tenue';
+  if (t.includes('kit_legacy')) return t.includes('combined') ? 'Legacy Tenue (Compleet)' : t.includes('upload') ? 'Legacy Tenue (Upload)' : 'Legacy Tenue';
   // Logos
   if (t === 'logo_upload') return 'Logo (Upload)';
   if (t === 'logo') return 'Logo';
@@ -204,6 +206,7 @@ function inferKitTypeFromBrandAssetType(assetType: string): string {
   if (t.includes('kit_coach')) return 'coach';
   if (t.includes('kit_training')) return 'training';
   if (t.includes('kit_assistant')) return 'assistant';
+  if (t.includes('kit_legacy')) return 'legacy';
   return '';
 }
 
