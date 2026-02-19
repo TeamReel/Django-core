@@ -2121,12 +2121,6 @@ def admin_update_avatar(request, user_id):
     try:
         target_user.avatar = file_obj
         target_user.save(update_fields=["avatar"])
-        audit_log.record(
-            "auth.avatar_updated",
-            user=request.user,
-            request=request,
-            metadata={"target_user_id": str(target_user.id)},
-        )
     except Exception:
         import logging
 
@@ -2138,6 +2132,16 @@ def admin_update_avatar(request, user_id):
             {"error": "server_error", "message": "Failed to save avatar."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+    try:
+        audit_log.record(
+            "auth.avatar_updated",
+            user=request.user,
+            request=request,
+            metadata={"target_user_id": str(target_user.id)},
+        )
+    except Exception:
+        pass  # Non-critical — avatar was saved successfully
 
     from accounts.utils import get_avatar_url
 
