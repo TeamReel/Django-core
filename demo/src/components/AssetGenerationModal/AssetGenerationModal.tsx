@@ -527,7 +527,7 @@ export default function AssetGenerationModal({
       const savedInfo: SavedAssetInfo = {
         storagePath,
         assetType: saveResult.asset_type || getEffectiveOutputAssetType(),
-        presignedUrl: selectedVariant?.presigned_url || null,
+        presignedUrl: saveResult.presigned_url || selectedVariant?.presigned_url || null,
       };
       console.log('💾 Saved asset info:', savedInfo);
       onAssetSaved?.(savedInfo);

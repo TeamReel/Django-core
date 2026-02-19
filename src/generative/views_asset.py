@@ -1331,6 +1331,14 @@ def save_asset_view(request: Request) -> Response:
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 
+    # Generate presigned URL for immediate frontend display
+    presigned_url = None
+    if final_storage_path:
+        try:
+            presigned_url = storage.get_url(final_storage_path, signed=True, expiry_seconds=3600)
+        except Exception:
+            logger.warning("Could not generate presigned URL for save response")
+
     return Response(
         {
             "status": "success",
@@ -1340,6 +1348,7 @@ def save_asset_view(request: Request) -> Response:
                 "media_item_id": str(media_item.id) if media_item else None,
                 "brand_asset_id": str(brand_asset.id) if brand_asset else None,
                 "storage_path": final_storage_path,
+                "presigned_url": presigned_url,
                 "asset_type": asset_type,
             },
         },

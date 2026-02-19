@@ -49,6 +49,7 @@ export interface SaveResult {
   file_asset_id?: string;
   brand_asset_id?: string;
   storage_path?: string;
+  presigned_url?: string;
   asset_type?: string;
 }
 
@@ -404,6 +405,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           file_asset_id: saveData?.file_asset_id,
           brand_asset_id: saveData?.brand_asset_id,
           storage_path: saveData?.storage_path,
+          presigned_url: saveData?.presigned_url,
           asset_type: saveData?.asset_type,
         };
 

@@ -161,6 +161,34 @@ export function getAssetUrl(storagePath: string | null | undefined): string | nu
   return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${storagePath}`;
 }
 
+/**
+ * Batch-resolve raw S3 storage paths to presigned URLs via the backend.
+ * Returns a map of { storagePath → presignedUrl }.
+ * Skips paths that are already full URLs.
+ */
+export async function resolvePresignedUrls(
+  paths: string[],
+): Promise<Record<string, string>> {
+  const apiBase = getApiBaseUrl();
+  // Filter to only raw S3 keys (not already full URLs)
+  const rawPaths = paths.filter((p) => p && !p.startsWith('http'));
+  if (rawPaths.length === 0) return {};
+
+  try {
+    const res = await fetch(`${apiBase}/api/v1/files/presigned-urls/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paths: rawPaths }),
+    });
+    if (!res.ok) return {};
+    const data = await res.json();
+    return data.urls || {};
+  } catch {
+    return {};
+  }
+}
+
 // ============================================================================
 // Hook
 // ============================================================================

@@ -23,7 +23,7 @@ import {
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { AssetsTab } from '../../components/AssetsTab';
 import { AssetGenerationModal, type SavedAssetInfo } from '../../components/AssetGenerationModal';
-import { useBrandProfile, getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
+import { useBrandProfile, getAssetUrl, resolvePresignedUrls, KIT_ROLES } from '../../hooks/useBrandProfile';
 import MobileTabBar from '../../components/MobileTabBar';
 import { WorkflowPanel } from '../../components/Workflows';
 
@@ -900,6 +900,9 @@ export default function ProjectSeasonMemberDetailPage() {
   const [form, setForm] = useState<MemberMediaForm>(() => createEmptyMediaForm());
   const [videoVariants, setVideoVariants] = useState<VideoVariantsMap>(() => createEmptyVideoVariants());
 
+  // ── Presigned URL cache: maps raw S3 storage paths → presigned URLs ──
+  const [presignedCache, setPresignedCache] = useState<Record<string, string>>({});
+
   // Processing polling: ensure we never start multiple concurrent pollers for the same asset.
   // Without this, navigating away/back (unmount/remount) or re-clicking can leave old poll loops running,
   // causing hundreds of repeated GET requests.
@@ -1153,6 +1156,53 @@ export default function ProjectSeasonMemberDetailPage() {
     setForm(readAssetsFromMembership(membership));
     setVideoVariants(readVideoVariantsFromMembership(membership));
   }, [membership]);
+
+  // ── Resolve raw S3 storage paths to presigned URLs for display ──
+  useEffect(() => {
+    // Collect all raw S3 keys from videoVariants and form
+    const paths: string[] = [];
+    for (const category of ['fullbody', 'closeup', 'intro', 'celebration'] as const) {
+      const variants = videoVariants[category];
+      if (variants) {
+        for (const val of Object.values(variants)) {
+          const url = getBestUrl(val);
+          if (url && !url.startsWith('http')) paths.push(url);
+        }
+      }
+    }
+    // Also check form slots
+    for (const slot of Object.values(form)) {
+      if (slot && typeof slot === 'object' && 'url' in slot) {
+        const u = (slot as { url?: string }).url;
+        if (u && !u.startsWith('http')) paths.push(u);
+      }
+    }
+    if (paths.length === 0) return;
+
+    // Deduplicate and only resolve paths not already cached
+    const uniquePaths = [...new Set(paths)].filter((p) => !presignedCache[p]);
+    if (uniquePaths.length === 0) return;
+
+    let cancelled = false;
+    resolvePresignedUrls(uniquePaths).then((resolved) => {
+      if (cancelled) return;
+      setPresignedCache((prev) => ({ ...prev, ...resolved }));
+    });
+    return () => { cancelled = true; };
+  }, [videoVariants, form]);
+
+  /**
+   * Resolve a storage path to a displayable URL.
+   * Uses presigned URL cache for S3 keys, falls back to getAssetUrl.
+   */
+  const resolveDisplayUrl = useCallback((storagePath: string | null | undefined): string | null => {
+    if (!storagePath) return null;
+    if (storagePath.startsWith('http')) return storagePath;
+    // Check presigned cache first
+    if (presignedCache[storagePath]) return presignedCache[storagePath];
+    // Fallback to direct S3 URL (may 403 for private buckets, but shows something)
+    return getAssetUrl(storagePath);
+  }, [presignedCache]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2083,7 +2133,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                 const variantRaw = videoVariants.intro[compositeKey];
                                 const variantUrl = getBestUrl(variantRaw) || '';
                                 const hasVideo = Boolean(variantUrl);
-                                const resolvedUrl = hasVideo ? getAssetUrl(variantUrl) : null;
+                                const resolvedUrl = hasVideo ? resolveDisplayUrl(variantUrl) : null;
                                 const variantLineupReady = isLineupReady(variantRaw);
                                 const variantProcessing = isProcessing(variantRaw);
                                 const normalizedVariant = normalizeVariantValue(variantRaw as any);
@@ -2351,7 +2401,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                 const variantRaw = videoVariants.celebration[compositeKey];
                                 const variantUrl = getBestUrl(variantRaw) || '';
                                 const hasVideo = Boolean(variantUrl);
-                                const resolvedUrl = hasVideo ? getAssetUrl(variantUrl) : null;
+                                const resolvedUrl = hasVideo ? resolveDisplayUrl(variantUrl) : null;
                                 const variantLineupReady = isLineupReady(variantRaw);
                                 const variantProcessing = isProcessing(variantRaw);
                                 const normalizedVariant = normalizeVariantValue(variantRaw as any);
@@ -2600,7 +2650,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                   style={{
                                     aspectRatio: '3/4',
                                     background: assetUrl
-                                      ? `url(${getAssetUrl(assetUrl)}) center/contain no-repeat`
+                                      ? `url(${resolveDisplayUrl(assetUrl)}) center/contain no-repeat`
                                       : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                     position: 'relative',
                                     minHeight: '200px',
@@ -2796,7 +2846,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                   style={{
                                     aspectRatio: '1/1',
                                     background: assetUrl
-                                      ? `url(${getAssetUrl(assetUrl)}) center/contain no-repeat`
+                                      ? `url(${resolveDisplayUrl(assetUrl)}) center/contain no-repeat`
                                       : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                     position: 'relative',
                                     minHeight: '150px',
@@ -3105,6 +3155,14 @@ export default function ProjectSeasonMemberDetailPage() {
             const assetType = savedInfo.assetType;
             // Prefer storagePath (permanent S3 key) over presignedUrl (expires after 1h)
             const savedUrl = savedInfo.storagePath || savedInfo.presignedUrl || '';
+
+            // Eagerly cache the presigned URL for immediate display
+            if (savedInfo.storagePath && savedInfo.presignedUrl) {
+              setPresignedCache((prev) => ({
+                ...prev,
+                [savedInfo.storagePath!]: savedInfo.presignedUrl!,
+              }));
+            }
 
             const isFullbody = assetType.startsWith('member_in_tenue');
             const isCloseup = assetType.startsWith('member_closeup');
