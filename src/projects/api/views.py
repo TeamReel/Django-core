@@ -1370,7 +1370,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
                     actor=request.user,
                 )
                 created_count += 1
-            except ValueError as e:
+            except Exception as e:
                 msg = str(e)
                 if (
                     "already" in msg.lower()
@@ -1379,6 +1379,11 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
                 ):
                     skipped_count += 1
                 else:
+                    logger.exception(
+                        "bulk add_member failed for user %s on project %s",
+                        uid,
+                        project.id,
+                    )
                     errors.append({"user_id": uid, "detail": msg})
 
         return Response(

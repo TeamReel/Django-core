@@ -965,9 +965,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         );
 
         // Also fetch organisation members to include them as potential squad members
+        // NOTE: org members endpoint requires slug, not numeric ID
         let orgMembersPromise: Promise<any[]> = Promise.resolve([]);
-        if (orgId) {
-          const orgMembersUrl = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgId)}/members/?page_size=500`;
+        const orgSlugForMembers = String((org as any)?.slug || orgSlugOrId || '').trim();
+        if (orgSlugForMembers) {
+          const orgMembersUrl = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForMembers)}/members/?page_size=500`;
           orgMembersPromise = fetchAllPages<any>(
             orgMembersUrl,
             { credentials: 'include' },

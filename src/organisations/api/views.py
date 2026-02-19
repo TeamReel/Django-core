@@ -535,7 +535,7 @@ class MembershipViewSet(viewsets.ModelViewSet):
 
         # Check rate limit
         key = f"ratelimit:member_invite:{org_id}:{timezone.now().strftime('%Y-%m-%d-%H')}"
-        allowed, remaining, reset = check_rate_limit(key, 20, 3600)  # 1 hour
+        allowed, remaining, reset = check_rate_limit(key, 200, 3600)  # 1 hour
 
         if not allowed:
             # Track rate limit hit in metrics
@@ -546,7 +546,7 @@ class MembershipViewSet(viewsets.ModelViewSet):
         response = super().create(request, *args, **kwargs)
 
         # Add rate limit headers
-        response["X-RateLimit-Limit"] = "20"
+        response["X-RateLimit-Limit"] = "200"
         response["X-RateLimit-Remaining"] = str(remaining)
         response["X-RateLimit-Reset"] = str(int(reset))
 

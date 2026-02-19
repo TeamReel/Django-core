@@ -166,6 +166,23 @@ export default function AddMemberModal({
     email: '',
     password: '',
   });
+  const [emailManuallyEdited, setEmailManuallyEdited] = useState(false);
+
+  /* ── Auto-fill email & password when first/last name change ── */
+  const updateNewUserName = (field: 'first_name' | 'last_name', value: string) => {
+    const updated = { ...newUser, [field]: value };
+    if (!emailManuallyEdited) {
+      const first = (field === 'first_name' ? value : newUser.first_name).trim();
+      const last = (field === 'last_name' ? value : newUser.last_name).trim();
+      if (first && last) {
+        const initial = first.charAt(0).toLowerCase();
+        const surname = last.toLowerCase().replace(/\s+/g, '');
+        updated.email = `${initial}.${surname}@teamreel.com`;
+        updated.password = 'Basis123.';
+      }
+    }
+    setNewUser(updated);
+  };
 
   /* ── Reset on open ── */
   useEffect(() => {
@@ -177,6 +194,7 @@ export default function AddMemberModal({
       setSearchResults([]);
       setSelectedRole('member');
       setNewUser({ first_name: '', last_name: '', email: '', password: '' });
+      setEmailManuallyEdited(false);
     }
   }, [isOpen]);
 
@@ -489,7 +507,7 @@ export default function AddMemberModal({
                 <label style={labelStyle}>First Name</label>
                 <Input
                   value={newUser.first_name}
-                  onChange={(e) => setNewUser({ ...newUser, first_name: e.target.value })}
+                  onChange={(e) => updateNewUserName('first_name', e.target.value)}
                   placeholder="John"
                 />
               </div>
@@ -497,7 +515,7 @@ export default function AddMemberModal({
                 <label style={labelStyle}>Last Name</label>
                 <Input
                   value={newUser.last_name}
-                  onChange={(e) => setNewUser({ ...newUser, last_name: e.target.value })}
+                  onChange={(e) => updateNewUserName('last_name', e.target.value)}
                   placeholder="Doe"
                 />
               </div>
@@ -507,7 +525,10 @@ export default function AddMemberModal({
               <label style={labelStyle}>Email Address *</label>
               <Input
                 value={newUser.email}
-                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                onChange={(e) => {
+                  setEmailManuallyEdited(true);
+                  setNewUser({ ...newUser, email: e.target.value });
+                }}
                 placeholder="user@example.com"
                 required
                 type="email"
