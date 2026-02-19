@@ -1892,8 +1892,19 @@ def update_avatar(request):
         pass
 
     # Save avatar with defensive error handling (storage backends can raise).
+    # Upload to S3 via the files storage backend instead of relying on
+    # Django's default FileSystemStorage (which fails on ephemeral Railway FS).
     try:
-        user.avatar = file_obj
+        import uuid
+
+        from files.utils import get_storage_backend
+
+        backend = get_storage_backend()
+        avatar_uuid = uuid.uuid4()
+        storage_path = f"avatars/{user.id}/{avatar_uuid}/{file_obj.name}"
+        saved_path = backend.save(storage_path, file_obj)
+
+        user.avatar.name = saved_path
         user.save(update_fields=["avatar"])
         audit_log.record("auth.avatar_updated", user=user, request=request)
     except Exception:
@@ -2112,24 +2123,50 @@ def admin_update_avatar(request, user_id):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    import logging
     import os
+    import uuid
+
+    logger = logging.getLogger(__name__)
 
     original_name = str(getattr(file_obj, "name", "") or "").strip()
     safe_name = os.path.basename(original_name.replace("\\", "/")) or "avatar"
     file_obj.name = safe_name
 
+    # Upload to S3 via the files storage backend instead of relying on
+    # Django's default FileSystemStorage (which fails on ephemeral Railway FS).
     try:
-        target_user.avatar = file_obj
-        target_user.save(update_fields=["avatar"])
-    except Exception:
-        import logging
+        from files.utils import get_storage_backend
 
-        logging.getLogger(__name__).exception(
+        backend = get_storage_backend()
+        avatar_uuid = uuid.uuid4()
+        storage_path = f"avatars/{target_user.id}/{avatar_uuid}/{safe_name}"
+        saved_path = backend.save(storage_path, file_obj)
+        logger.info(
+            "Avatar uploaded to storage backend: %s -> %s",
+            storage_path,
+            saved_path,
+        )
+
+        # Set path directly on the ImageField (bypasses local disk write)
+        target_user.avatar.name = saved_path
+        target_user.save(update_fields=["avatar"])
+    except Exception as exc:
+        import traceback
+
+        logger.exception(
             "Admin avatar upload failed",
             extra={"user_id": user_id, "admin_id": request.user.id},
         )
         return Response(
-            {"error": "server_error", "message": "Failed to save avatar."},
+            {
+                "error": "server_error",
+                "message": "Failed to save avatar.",
+                "debug": {
+                    "exception": f"{type(exc).__name__}: {exc}",
+                    "traceback": traceback.format_exc(),
+                },
+            },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 

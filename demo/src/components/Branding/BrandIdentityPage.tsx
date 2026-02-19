@@ -23,6 +23,7 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
+  Wand2,
 } from 'lucide-react';
 
 // ============================================================================
@@ -460,7 +461,7 @@ function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
 }
 
 // Profile header with stats and logo preview
-function ProfileHeader({ profile, entityName, onEdit }: { profile: BrandProfile; entityName: string; onEdit?: () => void }) {
+function ProfileHeader({ profile, entityName, onEdit, onGenerateTokens, generatingTokens }: { profile: BrandProfile; entityName: string; onEdit?: () => void; onGenerateTokens?: () => void; generatingTokens?: boolean }) {
   // Find logo asset
   const logoAsset = profile.assets?.find((a) =>
     a.asset_type === 'logo' || a.asset_type.includes('logo')
@@ -544,11 +545,27 @@ function ProfileHeader({ profile, entityName, onEdit }: { profile: BrandProfile;
         </div>
 
         {/* Edit button - enabled based on permissions */}
-        {profile.can_edit && onEdit && (
-          <Button variant="outline" size="sm" onClick={onEdit}>
-            <Edit size={14} />
-            Edit Profile
-          </Button>
+        {profile.can_edit && (
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {onGenerateTokens && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onGenerateTokens}
+                disabled={generatingTokens}
+                title="Analyseer logo & tenue kleuren en genereer automatisch tokens"
+              >
+                {generatingTokens ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
+                {generatingTokens ? 'Analyseren...' : 'Genereer tokens'}
+              </Button>
+            )}
+            {onEdit && (
+              <Button variant="outline" size="sm" onClick={onEdit}>
+                <Edit size={14} />
+                Edit Profile
+              </Button>
+            )}
+          </div>
         )}
       </div>
 
@@ -674,8 +691,39 @@ export default function BrandIdentityPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [generatingTokens, setGeneratingTokens] = useState(false);
 
   const apiBaseUrl = getApiBaseUrl();
+
+  // Generate tokens from logo/kit colors
+  const handleGenerateTokens = async () => {
+    if (!profile?.id) return;
+    setGeneratingTokens(true);
+    try {
+      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1] || '';
+      const res = await fetch(
+        `${apiBaseUrl}/api/v1/branding/profiles/${profile.id}/generate-tokens/`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+          },
+        }
+      );
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || `Failed (${res.status})`);
+      }
+      // Refresh profile to show new tokens
+      await fetchProfile();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate tokens');
+    } finally {
+      setGeneratingTokens(false);
+    }
+  };
 
   // Determine entity type and display name
   const entityType = seasonId ? 'season' : projectId ? 'project' : 'organisation';
@@ -807,6 +855,8 @@ export default function BrandIdentityPage({
         profile={profile}
         entityName={entityName}
         onEdit={() => setIsEditModalOpen(true)}
+        onGenerateTokens={handleGenerateTokens}
+        generatingTokens={generatingTokens}
       />
 
       {/* Color Palette */}

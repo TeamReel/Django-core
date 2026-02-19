@@ -43,12 +43,119 @@ def log_project_saved(sender, instance, created, **kwargs):
             instance.organisation_id,
             instance.creator_id,
         )
+        # Auto-create child team + brand identity for new clubs
+        if instance.parent_project is None:
+            _auto_create_club_children(instance)
     else:
         logger.info(
             "Project updated: id=%s, name=%s, active=%s",
             instance.id,
             instance.name,
             instance.is_active,
+        )
+
+
+def _auto_create_club_children(club):
+    """Auto-create 'Heren 1' team and BrandProfile with default tokens for a new club.
+
+    Best-effort: failures are logged but never block club creation.
+    """
+    # ── 1. Auto-create "Heren 1" team ──
+    try:
+        team, team_created = Project.objects.get_or_create(
+            organisation=club.organisation,
+            parent_project=club,
+            name="Heren 1",
+            defaults={
+                "creator": club.creator,
+                "is_active": True,
+            },
+        )
+        if team_created:
+            logger.info(
+                "Auto-created team 'Heren 1' (id=%s) for club %s (id=%s)",
+                team.id,
+                club.name,
+                club.id,
+            )
+    except Exception:
+        logger.warning(
+            "Failed to auto-create 'Heren 1' team for club %s (id=%s)",
+            club.name,
+            club.id,
+            exc_info=True,
+        )
+
+    # ── 2. Auto-create BrandProfile + default tokens ──
+    try:
+        from branding.models import BrandProfile, DesignToken
+
+        profile, profile_created = BrandProfile.objects.get_or_create(
+            project=club,
+            defaults={
+                "name": f"{club.name} Brand",
+                "is_active": True,
+                "created_by": club.creator,
+            },
+        )
+        if profile_created:
+            default_tokens = [
+                DesignToken(
+                    profile=profile,
+                    key="primary_color",
+                    value="#1a1a2e",
+                    type="color",
+                    description="Primary brand color",
+                ),
+                DesignToken(
+                    profile=profile,
+                    key="secondary_color",
+                    value="#e94560",
+                    type="color",
+                    description="Secondary brand color",
+                ),
+                DesignToken(
+                    profile=profile,
+                    key="accent_color",
+                    value="#0f3460",
+                    type="color",
+                    description="Accent brand color",
+                ),
+                DesignToken(
+                    profile=profile,
+                    key="font_heading",
+                    value="Inter",
+                    type="font",
+                    description="Heading font family",
+                ),
+                DesignToken(
+                    profile=profile,
+                    key="font_body",
+                    value="Inter",
+                    type="font",
+                    description="Body font family",
+                ),
+                DesignToken(
+                    profile=profile,
+                    key="border_radius",
+                    value="8px",
+                    type="spacing",
+                    description="Default border radius",
+                ),
+            ]
+            DesignToken.objects.bulk_create(default_tokens)
+            logger.info(
+                "Auto-created BrandProfile (id=%s) with %d default tokens for club %s",
+                profile.id,
+                len(default_tokens),
+                club.name,
+            )
+    except Exception:
+        logger.warning(
+            "Failed to auto-create BrandProfile for club %s (id=%s)",
+            club.name,
+            club.id,
+            exc_info=True,
         )
 
 

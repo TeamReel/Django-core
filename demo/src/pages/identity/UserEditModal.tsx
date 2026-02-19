@@ -131,7 +131,11 @@ export default function UserEditModal({
         headers: { 'X-CSRFToken': getCsrfToken() },
         body: fd,
       });
-      if (!res.ok) throw new Error('Upload failed');
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => '');
+        console.error('Avatar upload response:', res.status, errBody);
+        throw new Error(`Upload failed: ${res.status} ${errBody.slice(0, 300)}`);
+      }
       onSaved?.();
     } catch (err) {
       console.error('Avatar upload error:', err);
