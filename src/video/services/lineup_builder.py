@@ -402,15 +402,15 @@ class LineupSegmentBuilder:
             self._debug_trace.append("Resolution failed")
             return None
 
-        # Header/flyer logo panels are white; prefer a dark logo variant so it
-        # remains visible. If none exists, we fall back to light/raw variants.
+        # Prefer the AI-processed logos (transparent PNG) over raw uploads.
+        # logo_light = AI-postprocessed (transparent background),
+        # logo_dark  = AI dark variant (rarely present),
+        # logo_upload = raw user upload (often JPG with opaque background).
         logo_url = _resolve_asset_url(
             [
-                # Prefer for light backgrounds
-                "logo_dark",
-                # Fallbacks
-                "logo_upload",
                 "logo_light",
+                "logo_dark",
+                "logo_upload",
                 # Legacy / alternate naming used in some environments
                 "club_logo",
                 "club_logo_upload",
@@ -444,11 +444,11 @@ class LineupSegmentBuilder:
                 ).first()
                 if opp_club_brand and opp_club_brand not in opp_brand_profiles:
                     opp_brand_profiles.append(opp_club_brand)
-            # Opponent logo also sits on a white panel.
+            # Opponent logo — same priority: AI-processed first.
             opp_logo_priority = [
+                "logo_light",
                 "logo_dark",
                 "logo_upload",
-                "logo_light",
                 "club_logo",
                 "club_logo_upload",
                 "logo",
