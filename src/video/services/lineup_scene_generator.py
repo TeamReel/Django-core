@@ -257,19 +257,12 @@ def _render_closeups(
 
     thumb_h = max(60, int(field_height * _CLOSEUP_SIZE_PCT))
     thumb_w = int(thumb_h * 0.75)
-    name_font = _get_font(22, bold=True)
 
-    # Pre-compute a consistent label width across ALL closeups so name
-    # labels don't "jump" between players.  Use the widest name + padding.
     pad = 4
-    max_text_w = 0
-    for cu in closeups:
-        n = cu.name.strip()
-        if n:
-            nb = draw.textbbox((0, 0), n, font=name_font)
-            max_text_w = max(max_text_w, nb[2] - nb[0])
-    # Minimum label width = thumbnail width; expand for longer names
-    fixed_label_w = max(thumb_w, max_text_w + 2 * pad)
+    # Fixed label width (constant) so labels don't jump as names change.
+    # Keep it proportional to the thumbnail to avoid overlap.
+    fixed_label_w = int(thumb_w * 1.45)
+    name_font_base = 22
 
     for cu in closeups:
         img = _download_image(cu.image_url)
@@ -298,12 +291,22 @@ def _render_closeups(
 
         canvas.paste(img, (paste_x, paste_y), mask)
 
-        # Name label below (consistent width across all closeups)
+        # Name label below (fixed width)
         name = cu.name.strip()
         if name:
+            # Fit font size so the name stays inside the fixed label width.
+            fs = name_font_base
+            name_font = _get_font(fs, bold=True)
             nb = draw.textbbox((0, 0), name, font=name_font)
             nw = nb[2] - nb[0]
             nh = nb[3] - nb[1]
+            max_w = max(1, fixed_label_w - 2 * pad)
+            while nw > max_w and fs > 16:
+                fs -= 1
+                name_font = _get_font(fs, bold=True)
+                nb = draw.textbbox((0, 0), name, font=name_font)
+                nw = nb[2] - nb[0]
+                nh = nb[3] - nb[1]
             # Center the fixed-width label under the thumbnail
             lx = max(0, min(width - fixed_label_w, paste_x + (img.width - fixed_label_w) // 2))
             ty = min(height - nh - 4, paste_y + img.height + 2)
@@ -345,18 +348,30 @@ def _render_featured_player(
 
     canvas.paste(kit_img, (paste_x, paste_y), kit_img)
 
-    # Name label below full body
+    # Name label below full body (fixed width so it doesn't jump between players)
     name = player.name.strip()
     if name:
-        name_font = _get_font(38, bold=True)
+        pad = 10
+        fixed_label_w = int(width * 0.70)
+        fixed_label_w = min(fixed_label_w, width - 2 * 40)
+        lx = (width - fixed_label_w) // 2
+        ty = paste_y + kit_img.height + 10
+
+        fs = 38
+        name_font = _get_font(fs, bold=True)
         nb = draw.textbbox((0, 0), name, font=name_font)
         nw = nb[2] - nb[0]
         nh = nb[3] - nb[1]
-        tx = (width - nw) // 2
-        ty = paste_y + kit_img.height + 10
+        max_w = max(1, fixed_label_w - 2 * pad)
+        while nw > max_w and fs > 24:
+            fs -= 1
+            name_font = _get_font(fs, bold=True)
+            nb = draw.textbbox((0, 0), name, font=name_font)
+            nw = nb[2] - nb[0]
+            nh = nb[3] - nb[1]
 
-        pad = 10
-        box = (tx - pad, ty - pad, tx + nw + pad, ty + nh + pad)
+        tx = lx + (fixed_label_w - nw) // 2
+        box = (lx, ty - pad, lx + fixed_label_w, ty + nh + pad)
         overlay = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         od = ImageDraw.Draw(overlay)
         od.rounded_rectangle(box, radius=12, fill=(0, 0, 0, 160))

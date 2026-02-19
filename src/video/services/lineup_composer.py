@@ -771,8 +771,9 @@ def _compose_phase(
     last_bg = "bg0"
     if sponsor_path:
         sponsor_w = int(WIDTH * 0.22)
-        fc.append(f"[4:v]scale={sponsor_w}:-1[sponsor]")
-        fc.append(f"[{last_bg}][sponsor]overlay=30:main_h-h-30[bg_sponsor]")
+        # Ensure we keep alpha when scaling the PNG.
+        fc.append(f"[4:v]scale={sponsor_w}:-1,format=rgba[sponsor]")
+        fc.append(f"[{last_bg}][sponsor]overlay=30:main_h-h-30:format=auto[bg_sponsor]")
         last_bg = "bg_sponsor"
 
     # Persistent badges (pre-rendered body + cheap overlay + label)
@@ -1135,8 +1136,9 @@ def _compose_hold(
     last_bg = "bg0"
     if sponsor_path:
         sponsor_w = int(WIDTH * 0.22)
-        fc.append(f"[4:v]scale={sponsor_w}:-1[sponsor]")
-        fc.append(f"[{last_bg}][sponsor]overlay=30:main_h-h-30[bg_sponsor]")
+        # Ensure we keep alpha when scaling the PNG.
+        fc.append(f"[4:v]scale={sponsor_w}:-1,format=rgba[sponsor]")
+        fc.append(f"[{last_bg}][sponsor]overlay=30:main_h-h-30:format=auto[bg_sponsor]")
         last_bg = "bg_sponsor"
 
     cmd = [
