@@ -48,7 +48,7 @@ const ASSET_ROWS: AssetRow[] = [
     label: 'Logo',
     icon: '🖼️',
     uploadType: 'logo_upload',
-    processedType: 'logo_light',
+    processedType: 'logo',
   },
   {
     label: 'Sponsor',

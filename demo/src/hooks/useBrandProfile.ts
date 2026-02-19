@@ -73,8 +73,7 @@ export const UPLOAD_ASSET_TYPES = [
 
 /** AI-processed standardized assets */
 export const PROCESSED_ASSET_TYPES = [
-  'logo_light',
-  'logo_dark',
+  'logo',
   'sponsor_logo',
   'kit_home',
   'kit_away',
@@ -110,8 +109,7 @@ export const KIT_ROLES = [
 /** Asset display labels */
 export const ASSET_TYPE_LABELS: Record<string, string> = {
   logo_upload: 'Logo (upload)',
-  logo_light: 'Logo',
-  logo_dark: 'Logo (dark)',
+  logo: 'Logo',
   sponsor_logo_upload: 'Sponsor (upload)',
   sponsor_logo: 'Sponsor',
   kit_home_upload: 'Thuistenue (upload)',

@@ -608,7 +608,7 @@ export function AssetsTab({
     };
 
     let templateId: string | undefined;
-    if (assetType === 'logo_light') templateId = 'logo_postprocess';
+    if (assetType === 'logo') templateId = 'logo_postprocess';
     else if (assetType === 'sponsor_logo') templateId = 'sponsor_postprocess';
     else if (assetType.includes('kit_')) templateId = 'kit_postprocess';
     else if (assetType === 'stadium_background') templateId = 'location_postprocess';
@@ -652,7 +652,7 @@ export function AssetsTab({
     let referenceAssetType: string | null = null;
     let initialParams: Record<string, string> = {};
 
-    if (assetType === 'logo_light') {
+    if (assetType === 'logo') {
         templateId = 'logo_standardize';
         referenceAssetType = 'logo_upload';
     } else if (assetType === 'sponsor_logo') {
@@ -752,7 +752,7 @@ export function AssetsTab({
               readOnly={readOnly}
               aspectRatio="1 / 1"
             />
-            <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
+            <AssetCard label="Logo (bewerkt)" assetType="logo" asset={getAsset('logo')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
           </AssetGrid>
         </Section>
       </div>
@@ -897,7 +897,7 @@ export function AssetsTab({
              <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het clublogo → AI standaardiseert het.</p>
              <AssetGrid>
                 <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-                <AssetCard label="Logo (bewerkt)" assetType="logo_light" asset={getAsset('logo_light')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'logo_light'} aspectRatio="1 / 1" />
+                <AssetCard label="Logo (bewerkt)" assetType="logo" asset={getAsset('logo')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'logo'} aspectRatio="1 / 1" />
              </AssetGrid>
           </div>
 
@@ -1000,8 +1000,8 @@ export function AssetsTab({
         {/* Inherited logo */}
         <Section title="Logo" description="Geërfd van de club. Kan niet worden overschreven op teamniveau.">
           <AssetGrid>
-            {(() => { const e = getEffectiveAsset('logo_light'); return (
-              <AssetCard label="Logo" assetType="logo_light" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
+            {(() => { const e = getEffectiveAsset('logo'); return (
+              <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
             ); })()}
           </AssetGrid>
         </Section>
@@ -1098,13 +1098,13 @@ export function AssetsTab({
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Logo</div>
             <AssetGrid>
-              {(() => { const e = getEffectiveAsset('logo_light'); return (
-                <AssetCard label="Logo" assetType="logo_light" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
+              {(() => { const e = getEffectiveAsset('logo'); return (
+                <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
               ); })()}
             </AssetGrid>
           </div>
 
-          {/* Sponsor - can override */}
+          {/* Sponsor - can override */
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Sponsor</div>
             <AssetGrid>
@@ -1248,8 +1248,8 @@ export function AssetsTab({
       <div style={{ padding: 16 }}>
         <Section title="Wedstrijd Assets" description="Visuele assets voor deze wedstrijd (read-only, geërfd van het seizoen).">
           <AssetGrid>
-            {(() => { const e = getEffectiveAsset('logo_light'); return (
-              <AssetCard label="Logo" assetType="logo_light" asset={e.asset} inherited readOnly aspectRatio="1 / 1" />
+            {(() => { const e = getEffectiveAsset('logo'); return (
+              <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited readOnly aspectRatio="1 / 1" />
             ); })()}
             {(() => { const e = getEffectiveAsset('kit_home_combined'); return (
               <AssetCard label="🏠 Thuistenue" assetType="kit_home_combined" asset={e.asset} inherited readOnly />
@@ -1272,8 +1272,8 @@ export function AssetsTab({
       <div style={{ padding: 16 }}>
         <Section title="Speler Assets" description="Tenue en logo geërfd van het team/seizoen.">
           <AssetGrid>
-            {(() => { const e = getEffectiveAsset('logo_light'); return (
-              <AssetCard label="Logo" assetType="logo_light" asset={e.asset} inherited inheritedFrom="Team" readOnly aspectRatio="1 / 1" />
+            {(() => { const e = getEffectiveAsset('logo'); return (
+              <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited inheritedFrom="Team" readOnly aspectRatio="1 / 1" />
             ); })()}
             {(() => { const e = getEffectiveAsset('kit_home_combined'); return (
               <AssetCard label="🏠 Tenue (compleet)" assetType="kit_home_combined" asset={e.asset} inherited inheritedFrom="Seizoen" readOnly />

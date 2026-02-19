@@ -935,8 +935,6 @@ export default function ClubOrganisationDetailPage() {
         // Find logo asset
         const logoAsset = assetList.find((a: any) =>
           a.asset_type === 'logo' ||
-          a.asset_type === 'logo_light' ||
-          a.asset_type === 'logo_dark' ||
           String(a.asset_type || '').includes('logo')
         );
 

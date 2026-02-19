@@ -137,8 +137,7 @@ function friendlyAssetLabel(asset: BrandAsset): string {
   if (t.includes('kit_training')) return t.includes('combined') ? 'Training Tenue (Compleet)' : t.includes('upload') ? 'Training Tenue (Upload)' : 'Training Tenue';
   // Logos
   if (t === 'logo_upload') return 'Logo (Upload)';
-  if (t === 'logo_light') return 'Logo (Licht)';
-  if (t === 'logo_dark') return 'Logo (Donker)';
+  if (t === 'logo') return 'Logo';
   if (t === 'watermark') return 'Watermerk';
   if (t === 'favicon') return 'Favicon';
   // Sponsors

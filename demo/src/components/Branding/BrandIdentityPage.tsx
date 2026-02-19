@@ -90,8 +90,6 @@ const TOKEN_TYPE_LABELS: Record<string, string> = {
 
 const ASSET_TYPE_LABELS: Record<string, string> = {
   logo: 'Logo',
-  logo_dark: 'Logo (Dark)',
-  logo_light: 'Logo (Light)',
   icon: 'Icon',
   favicon: 'Favicon',
   banner: 'Banner',
@@ -463,9 +461,9 @@ function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
 
 // Profile header with stats and logo preview
 function ProfileHeader({ profile, entityName, onEdit }: { profile: BrandProfile; entityName: string; onEdit?: () => void }) {
-  // Find logo asset (prefer logo_light, fallback to logo_dark or any logo)
+  // Find logo asset
   const logoAsset = profile.assets?.find((a) =>
-    a.asset_type === 'logo_light' || a.asset_type === 'logo_dark' || a.asset_type.includes('logo')
+    a.asset_type === 'logo' || a.asset_type.includes('logo')
   );
   const logoUrl = logoAsset?.url ? resolveAssetUrl(logoAsset.url) : null;
 

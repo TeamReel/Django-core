@@ -341,8 +341,7 @@ export function IdentityTab({
               readOnly={readOnly}
               aspectRatio="1 / 1"
             />
-            <AssetCard label="Logo" assetType="logo_light" asset={getAsset('logo_light')} readOnly aspectRatio="1 / 1" />
-            <AssetCard label="Logo (dark)" assetType="logo_dark" asset={getAsset('logo_dark')} readOnly aspectRatio="1 / 1" />
+            <AssetCard label="Logo" assetType="logo" asset={getAsset('logo')} readOnly aspectRatio="1 / 1" />
           </AssetGrid>
         </Section>
       </div>
@@ -357,8 +356,7 @@ export function IdentityTab({
         <Section title="Logo" description="Upload het clublogo. De AI maakt er een gestandaardiseerde versie van.">
           <AssetGrid>
             <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} aspectRatio="1 / 1" />
-            <AssetCard label="Logo" assetType="logo_light" asset={getAsset('logo_light')} readOnly aspectRatio="1 / 1" />
-            <AssetCard label="Logo (dark)" assetType="logo_dark" asset={getAsset('logo_dark')} readOnly aspectRatio="1 / 1" />
+            <AssetCard label="Logo" assetType="logo" asset={getAsset('logo')} readOnly aspectRatio="1 / 1" />
           </AssetGrid>
         </Section>
 
@@ -444,11 +442,8 @@ export function IdentityTab({
         {/* Inherited logo */}
         <Section title="Logo" description="Geërfd van de club. Kan niet worden overschreven op teamniveau.">
           <AssetGrid>
-            {(() => { const e = getEffectiveAsset('logo_light'); return (
-              <AssetCard label="Logo" assetType="logo_light" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
-            ); })()}
-            {(() => { const e = getEffectiveAsset('logo_dark'); return (
-              <AssetCard label="Logo (dark)" assetType="logo_dark" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
+            {(() => { const e = getEffectiveAsset('logo'); return (
+              <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
             ); })()}
           </AssetGrid>
         </Section>
@@ -545,8 +540,8 @@ export function IdentityTab({
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Logo</div>
             <AssetGrid>
-              {(() => { const e = getEffectiveAsset('logo_light'); return (
-                <AssetCard label="Logo" assetType="logo_light" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
+              {(() => { const e = getEffectiveAsset('logo'); return (
+                <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
               ); })()}
             </AssetGrid>
           </div>
@@ -610,8 +605,8 @@ export function IdentityTab({
       <div style={{ padding: 16 }}>
         <Section title="Wedstrijd Identiteit" description="Visuele identiteit voor deze wedstrijd (read-only, geërfd van het seizoen).">
           <AssetGrid>
-            {(() => { const e = getEffectiveAsset('logo_light'); return (
-              <AssetCard label="Logo" assetType="logo_light" asset={e.asset} inherited readOnly aspectRatio="1 / 1" />
+            {(() => { const e = getEffectiveAsset('logo'); return (
+              <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited readOnly aspectRatio="1 / 1" />
             ); })()}
             {(() => { const e = getEffectiveAsset('kit_home_combined'); return (
               <AssetCard label="🏠 Thuistenue" assetType="kit_home_combined" asset={e.asset} inherited readOnly />
@@ -634,8 +629,8 @@ export function IdentityTab({
       <div style={{ padding: 16 }}>
         <Section title="Speler Identiteit" description="Tenue en logo geërfd van het team/seizoen. Profielfoto van de gebruiker.">
           <AssetGrid>
-            {(() => { const e = getEffectiveAsset('logo_light'); return (
-              <AssetCard label="Logo" assetType="logo_light" asset={e.asset} inherited inheritedFrom="Team" readOnly aspectRatio="1 / 1" />
+            {(() => { const e = getEffectiveAsset('logo'); return (
+              <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited inheritedFrom="Team" readOnly aspectRatio="1 / 1" />
             ); })()}
             {(() => { const e = getEffectiveAsset('kit_home_combined'); return (
               <AssetCard label="🏠 Tenue (compleet)" assetType="kit_home_combined" asset={e.asset} inherited inheritedFrom="Seizoen" readOnly />

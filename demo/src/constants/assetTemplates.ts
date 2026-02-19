@@ -61,7 +61,7 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     description: 'Zet een clublogo om naar vierkant formaat met transparante achtergrond.',
     inputRequirements: ['logo'],
     requiredAssetTypes: ['logo_upload'],
-    outputAssetType: 'logo_light',
+    outputAssetType: 'logo',
     creditsCost: 1,
     parameters: {
       background: {
@@ -639,7 +639,7 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     description: 'Achtergrond verwijderen en logo optimaliseren voor print en flyers.',
     inputRequirements: ['source'],
     requiredAssetTypes: [],
-    outputAssetType: 'logo_light',
+    outputAssetType: 'logo',
     creditsCost: 1,
     parameters: {
       target_size: {

@@ -226,7 +226,7 @@ interface ContentGenerationModalProps {
   template?: ContentTemplate | null;
   /** Content type label for header */
   contentTypeLabel?: string;
-  /** Asset type for BrandAsset linking (e.g. logo_light, kit_home) */
+  /** Asset type for BrandAsset linking (e.g. logo, kit_home) */
   assetType?: string | null;
 }
 
@@ -1463,7 +1463,7 @@ export default function ContentGenerationModal({
 
       // Map template subtype to BrandAsset type
       if (templateSubtype.includes('logo')) {
-        brandAssetType = 'logo_light'; // AI-processed logo
+        brandAssetType = 'logo'; // AI-processed logo
       } else if (templateSubtype.includes('sponsor')) {
         brandAssetType = 'sponsor_logo'; // AI-processed sponsor
       } else if (templateSubtype.includes('kit') || templateSubtype.includes('tenue')) {

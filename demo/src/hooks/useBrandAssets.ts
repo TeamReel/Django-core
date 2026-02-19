@@ -64,8 +64,7 @@ export function getAssetCategory(assetType: string): AssetCategory {
 /** Human-readable label for asset_type */
 const ASSET_TYPE_LABELS: Record<string, string> = {
   logo_upload: 'Logo (Upload)',
-  logo_light: 'Logo (Light)',
-  logo_dark: 'Logo (Dark)',
+  logo: 'Logo',
   watermark: 'Watermark',
   favicon: 'Favicon',
   font_file: 'Font File',
