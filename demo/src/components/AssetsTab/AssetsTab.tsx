@@ -430,7 +430,6 @@ export function AssetsTab({
   });
 
   const [uploading, setUploading] = useState<string | null>(null);
-  const [legacyEraStyle, setLegacyEraStyle] = useState<string>('default');
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiPreselectedTemplate, setAiPreselectedTemplate] = useState<string | undefined>();
   const [aiPreviousResultUrl, setAiPreviousResultUrl] = useState<string | null>(null);
@@ -685,9 +684,8 @@ export function AssetsTab({
         templateId = 'coach_outfit';
         referenceAssetType = 'kit_assistant_upload';
     } else if (assetType.includes('kit_legacy')) {
-        templateId = 'legacy_tenue_generate';
-        referenceAssetType = 'kit_legacy_upload';
-        if (legacyEraStyle && legacyEraStyle !== 'default') initialParams['era_style'] = legacyEraStyle;
+      templateId = 'legacy_tenue_generate';
+      referenceAssetType = 'kit_legacy_upload';
     } else if (assetType === 'stadium_background') {
         templateId = 'location_standardize';
         referenceAssetType = 'location_photo';
@@ -931,28 +929,7 @@ export function AssetsTab({
                     <span style={{ fontSize: 18 }}>{role.icon}</span>
                     <span style={{ fontWeight: 600, fontSize: 13 }}>{role.label}</span>
                 </div>
-              {role.id === 'legacy' && (
-                <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 11, color: '#888', alignSelf: 'center', marginRight: 2 }}>Stijl:</span>
-                  {([{ key: 'default', label: 'Standaard' }, { key: 'jaren80', label: "Jaren '80" }, { key: 'jaren90', label: "Jaren '90" }, { key: 'jaren00', label: "Jaren '00" }] as const).map((era) => (
-                    <button
-                      key={era.key}
-                      onClick={() => setLegacyEraStyle(era.key)}
-                      style={{
-                        padding: '3px 10px',
-                        fontSize: 11,
-                        borderRadius: 4,
-                        border: `1px solid ${legacyEraStyle === era.key ? '#6366f1' : '#444'}`,
-                        background: legacyEraStyle === era.key ? 'rgba(99,102,241,0.18)' : 'transparent',
-                        color: legacyEraStyle === era.key ? '#a5b4fc' : '#aaa',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {era.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {/* Legacy era selection moved into the AI modal (template parameters) */}
               <AssetGrid>
                 <AssetCard
                   label={`${role.label} (upload)`}
