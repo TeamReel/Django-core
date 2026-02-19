@@ -103,14 +103,26 @@ CRITICAL MISTAKES TO AVOID:
 
 CRITICAL: Use the PROVIDED IMAGE as the source. Do NOT invent or generate a new logo. Reproduce the EXACT same sponsor logo from the input image.
 
-EDIT INSTRUCTIONS:
-1. REMOVE the background completely — output must have a {background_description} background.
-2. KEEP the sponsor logo itself pixel-perfect: preserve ALL original colors, text, and graphic elements EXACTLY as they appear in the input image.
+STEP 1 — ANALYZE THE SPONSOR LOGO TYPE:
+Before editing, identify the sponsor logo structure:
+- TEXT-ONLY: The logo is purely text/typography (e.g. "JUMBO", "NIKE"). These are often white, black, or coloured letters with no graphic frame around them.
+- GRAPHIC + TEXT: A combination of a graphic symbol/icon with text.
+- GRAPHIC ONLY: A pure graphic mark (icon, symbol, shape).
+
+STEP 2 — EDIT INSTRUCTIONS:
+1. REMOVE the background OUTSIDE the logo — output must have a {background_description} background.
+2. PRESERVE ALL CONTENT INSIDE THE LOGO:
+   - For TEXT-ONLY logos: keep every letter fully opaque in its original colour. White text must stay solid white. Do NOT make any part of the text transparent.
+   - For GRAPHIC + TEXT logos: keep both the graphic and text fully opaque. If there are white elements inside a shape (e.g. white text inside a coloured badge), those white areas must remain solid white.
+   - For GRAPHIC ONLY logos: keep the graphic fully opaque. White fills or stripes inside the shape must remain.
 3. CENTER the sponsor logo on the canvas and fill approximately 80% of the canvas width.
 4. Output format: {orientation_description}.
 5. Clean up any compression artifacts or rough edges around the logo boundary.
 6. Do NOT add any decorations, shadows, glows, or effects not present in the original.
 7. Must be suitable for heat-press printing on fabric.
+
+CRITICAL MISTAKE TO AVOID:
+- Making white/light parts of the logo transparent. If the sponsor's brand colour IS white (white text, white icon), those pixels must remain opaque white, not transparent.
 """,
     },
 

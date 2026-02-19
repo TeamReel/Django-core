@@ -176,7 +176,7 @@ def _check_alternating_grid(is_candidate, brightness, block, h, w):  # noqa: ANN
     return ratio >= 0.45, ratio, shade_diff
 
 
-def _strip_checkerboard(img):  # noqa: ANN001, ANN201
+def _strip_checkerboard(img, logo_type: str = "logo"):  # noqa: ANN001, ANN201
     """Remove checkerboard artifacts from AI-generated RGBA images.
 
     Gemini sometimes renders a visible grey/white checkerboard grid into the
@@ -185,6 +185,10 @@ def _strip_checkerboard(img):  # noqa: ANN001, ANN201
 
     Uses block-level pattern detection at multiple scales (4, 8, 16, 32 px)
     so it catches checkerboards of varying coarseness.
+
+    For sponsors (logo_type='sponsor'): if the logo is mostly text (i.e. the
+    non-candidate content area is very small), skip cleanup entirely — the
+    'background' IS the logo.
     """
     import numpy as np
 
@@ -207,6 +211,25 @@ def _strip_checkerboard(img):  # noqa: ANN001, ANN201
     if candidate_ratio < 0.03:
         logger.debug("checkerboard_cleanup: only %.1f%% candidates, skip", candidate_ratio * 100)
         return img
+
+    # ── Text-logo safety check (sponsors) ─────────────────────────────
+    # Text-only sponsor logos (e.g. "JUMBO", "NIKE") are almost entirely
+    # white/light text on a transparent bg.  After Gemini processes them the
+    # 'candidate' pixels ARE the logo content.  Detect this by checking how
+    # much non-candidate opaque content exists — if very little, the logo is
+    # text-only and should not be stripped.
+    if logo_type == "sponsor":
+        opaque = a > 0
+        non_candidate_opaque = opaque & ~is_candidate
+        non_cand_ratio = int(non_candidate_opaque.sum()) / (h * w)
+        if non_cand_ratio < 0.05:
+            # Almost no coloured/dark content → text-only logo, skip cleanup
+            logger.info(
+                "checkerboard_cleanup: sponsor text-only logo detected "
+                "(non_cand=%.1f%%), skipping",
+                non_cand_ratio * 100,
+            )
+            return img
 
     # Try multiple block sizes — Gemini can produce different-sized checkerboard grids
     for block_size in (4, 8, 16, 32):
@@ -295,7 +318,7 @@ def _postprocess_crop_and_center(
     # visible checkerboard into the RGB pixels with alpha=255 instead of true
     # transparency.  If we don't strip these before getbbox(), the bounding box
     # includes the entire image and the logo never gets zoomed in.
-    img = _strip_checkerboard(img)
+    img = _strip_checkerboard(img, logo_type="logo")
 
     # Step 2: Get bounding box of non-transparent pixels (now only the real logo)
     bbox = img.getbbox()
@@ -333,8 +356,9 @@ def _postprocess_sponsor_crop(image_bytes: bytes, orientation: str = "landscape"
 
     img = Image.open(BytesIO(image_bytes)).convert("RGBA")
 
-    # Strip checkerboard BEFORE bbox so we crop only the real logo
-    img = _strip_checkerboard(img)
+    # Strip checkerboard BEFORE bbox so we crop only the real logo.
+    # Pass logo_type='sponsor' so text-only logos are not destroyed.
+    img = _strip_checkerboard(img, logo_type="sponsor")
 
     bbox = img.getbbox()
     if not bbox:
