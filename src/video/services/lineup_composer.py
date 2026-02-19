@@ -648,8 +648,13 @@ def _download_player_assets(
 # ─────────────────────────────────────────────────────────────────
 
 
-def _get_animation_expr(animation_style: str, ty: str, tx: str, active_x: float) -> tuple[str, str]:
-    """Generate FFmpeg y-expression and x-expression for player animation.
+def _get_animation_expr(
+    animation_style: str,
+    ty: str,
+    tx: str,
+    active_x: float,
+) -> tuple[str, str, str]:
+    """Generate FFmpeg expressions for player animation.
 
     Args:
         animation_style: One of 'slide_up', 'appear', 'slide_in', 'zoom', 'fade'
@@ -658,35 +663,71 @@ def _get_animation_expr(animation_style: str, ty: str, tx: str, active_x: float)
         active_x: The x-position ratio (0-1) used to determine slide direction
 
     Returns:
-        Tuple of (y_expression, x_expression) for FFmpeg overlay.
+        Tuple of (y_expression, x_expression, extra_filter).
+        extra_filter is appended after the scale filter (e.g. fade for 'fade' style).
     """
-    anim_dur = 2.2  # seconds (slower than the initial 1.5s)
+    anim_dur = 2.2  # seconds
 
     if animation_style == "appear":
-        # Instant appear - no animation
-        return (f"'{ty}'", tx)
+        return (f"'{ty}'", tx, "")
     elif animation_style == "slide_in":
-        # Slide horizontally from left/right edge towards center
-        # Players on left half slide from left, players on right half slide from right
-        if active_x < 0.5:
-            # Slide from left edge
+        # Slide from edges; centre players (x ≈ 0.5) slide from bottom instead
+        is_center = abs(active_x - 0.5) < 0.01
+        if is_center:
+            ye = f"'{ty} + (main_h - {ty}) * (1 - min(t/{anim_dur}, 1))'"
+            return (ye, tx, "")
+        elif active_x < 0.5:
             xe = f"'-w + ({tx} + w) * min(t/{anim_dur}, 1)'"
         else:
-            # Slide from right edge
             xe = f"'W + ({tx} - W) * min(t/{anim_dur}, 1)'"
-        return (f"'{ty}'", xe)
-    elif animation_style == "zoom":
-        # Zoom effect - scale from small to full (handled via scale filter, y stays fixed)
-        # This requires more complex filter changes; for now, just appear
-        return (f"'{ty}'", tx)
+        return (f"'{ty}'", xe, "")
     elif animation_style == "fade":
-        # Fade in - opacity transition (handled via overlay alpha, y stays fixed)
-        # This requires alpha overlay; for now, just appear
-        return (f"'{ty}'", tx)
+        # Actual fade-in via alpha channel
+        return (f"'{ty}'", tx, f",fade=in:st=0:d={anim_dur}:alpha=1")
     else:
         # Default: slide_up - slide from bottom
         ye = f"'{ty} + (main_h - {ty}) * (1 - min(t/{anim_dur}, 1))'"
-        return (ye, tx)
+        return (ye, tx, "")
+
+
+def _get_label_animation_expr(
+    animation_style: str,
+    active_x: float,
+    x_pct: float,
+    ty_t: str,
+    fh: int,
+) -> tuple[str, str, str]:
+    """Generate FFmpeg expressions for label animation matching player motion.
+
+    Returns:
+        Tuple of (txt_x, txt_y, txt_alpha) for drawtext.
+    """
+    anim_dur = 2.2
+    target_y = f"({ty_t}) + {fh} + 10"
+    target_x = text_x_expr(x_pct)
+
+    if animation_style == "appear":
+        return (target_x, f"'{target_y}'", "1")
+    elif animation_style == "slide_in":
+        is_center = abs(active_x - 0.5) < 0.01
+        if is_center:
+            # Centre player slides from bottom
+            ys = f"{ty_t} + (h - {ty_t}) * (1 - min(t/{anim_dur}, 1))"
+            return (target_x, f"'({ys}) + {fh} + 10'", "1")
+        elif active_x < 0.5:
+            # Label slides from left edge
+            txt_xe = f"'-text_w + (w*{x_pct} - text_w/2 + text_w) * min(t/{anim_dur}, 1)'"
+            return (txt_xe, f"'{target_y}'", "1")
+        else:
+            # Label slides from right edge
+            txt_xe = f"'w + (w*{x_pct} - text_w/2 - w) * min(t/{anim_dur}, 1)'"
+            return (txt_xe, f"'{target_y}'", "1")
+    elif animation_style == "fade":
+        return (target_x, f"'{target_y}'", f"'min(t/{anim_dur},1)'")
+    else:
+        # Default: slide_up — label slides up with the player
+        ys = f"{ty_t} + (h - {ty_t}) * (1 - min(t/{anim_dur}, 1))"
+        return (target_x, f"'({ys}) + {fh} + 10'", "1")
 
 
 def _run_ffmpeg(cmd: list[str], desc: str) -> None:
@@ -842,24 +883,23 @@ def _compose_phase(
         fh = int(HEIGHT * scale_full)
         ty = f"(main_h*{active_ys[i]}-{fh})"
         tx = f"(W*{active_xs[i]}-w/2)"
-        ye, xe = _get_animation_expr(animation_style, ty, tx, active_xs[i])
-        f1 += f"[{inp}:v]scale=-1:{fh}[act{i}];"
+        ye, xe, extra_filt = _get_animation_expr(animation_style, ty, tx, active_xs[i])
+        f1 += f"[{inp}:v]scale=-1:{fh}{extra_filt}[act{i}];"
         f1 += f"[bg][act{i}]overlay={xe}:{ye}[bg_tmp{i}];"
         lbl = fullbody_label(p.name, role, len(active_players))
         ty_t = f"(h*{active_ys[i]}-{fh})"
-        # Text animation follows the same pattern
-        if animation_style == "appear":
-            txt_y = f"'({ty_t}) + {fh} + 10'"
-        elif animation_style == "slide_in":
-            txt_y = f"'({ty_t}) + {fh} + 10'"  # Text doesn't move, only players slide
-        else:
-            # Default slide_up: text also slides up with the player
-            ys = f"{ty_t} + (h - {ty_t}) * (1 - min(t/2.2, 1))"
-            txt_y = f"'({ys}) + {fh} + 10'"
+        txt_x, txt_y, txt_alpha = _get_label_animation_expr(
+            animation_style,
+            active_xs[i],
+            active_xs[i],
+            ty_t,
+            fh,
+        )
         fs = fullbody_fontsize(role, len(active_players), lbl)
         f1 += (
             f"[bg_tmp{i}]drawtext=fontfile='{FONT_PATH}':text='{lbl}':"
-            f"fontcolor=black:fontsize={fs}:x={text_x_expr(active_xs[i])}:y={txt_y}:"
+            f"fontcolor=black:fontsize={fs}:x={txt_x}:y={txt_y}:"
+            f"alpha={txt_alpha}:"
             f"box=1:boxcolor=white@1:boxborderw=10[bg];"
         )
 
@@ -1332,18 +1372,6 @@ def compose_lineup_video(
 
     if lineup_data.sponsor_url:
         _download_file(lineup_data.sponsor_url, sponsor_path)
-        # Clean checkerboard artefacts from AI-generated sponsor logos
-        try:
-            from src.generative.services.asset_pipeline import _strip_checkerboard
-
-            sp_img = Image.open(sponsor_path).convert("RGBA")
-            sp_img = _strip_checkerboard(sp_img)
-            bbox = sp_img.getchannel("A").getbbox()
-            if bbox:
-                sp_img = sp_img.crop(bbox)
-            sp_img.save(str(sponsor_path), "PNG")
-        except Exception:  # noqa: BLE001
-            logger.warning("sponsor_checkerboard_cleanup failed, using raw file")
     else:
         sponsor_path = None
 
