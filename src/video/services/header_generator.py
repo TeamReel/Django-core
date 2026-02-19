@@ -340,15 +340,15 @@ def render_header_pil(  # noqa: PLR0913
     match_title = f"{home_name} - {away_name}"
     _draw_centered_text(draw, match_title.upper(), cx, int(height * 0.38), fonts["match"], white)
 
-    # Competition name
+    # Competition name (larger font)
     if competition_name:
         comp_text = competition_name.upper()
-        _draw_centered_text(draw, comp_text, cx, int(height * 0.56), fonts["sm"], white)
+        _draw_centered_text(draw, comp_text, cx, int(height * 0.56), fonts["lg"], white)
 
-    # Venue (home club location)
+    # Venue (home club location) — prefixed with "LOCATIE:"
     if venue:
-        venue_text = venue.upper()
-        _draw_centered_text(draw, venue_text, cx, int(height * 0.70), fonts["xs"], white)
+        venue_text = f"LOCATIE: {venue.upper()}"
+        _draw_centered_text(draw, venue_text, cx, int(height * 0.70), fonts["sm"], white)
 
     # Date + kickoff time
     date_str = match_date or ""

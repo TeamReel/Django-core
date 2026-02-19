@@ -1523,6 +1523,11 @@ export default function ContentGenerationModal({
 
       setSaveSuccess(true);
 
+      // Auto-close modal after a short delay so user sees the success state
+      setTimeout(() => {
+        onClose();
+      }, 1200);
+
       // Update the variant's storage_info with the new IDs
       const updatedVariants = [...generatedVariants];
       if (result.data?.brand_asset_id || result.brand_asset_id || result.data?.media_item_id || result.media_item_id) {
@@ -3043,10 +3048,10 @@ export default function ContentGenerationModal({
                         className="max-w-md max-h-64 rounded-lg border shadow-lg"
                       />
                     </div>
-                  ) : generatedOutput?.presigned_url ? (
+                  ) : (generatedOutput?.presigned_url || generatedVariants[0]?.presigned_url) ? (
                     <div className="mb-4">
                       <img
-                        src={generatedOutput.presigned_url}
+                        src={generatedOutput?.presigned_url || generatedVariants[0]?.presigned_url || ''}
                         alt="Generated content"
                         className="max-w-md max-h-64 rounded-lg border shadow-lg"
                       />
