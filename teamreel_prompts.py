@@ -412,6 +412,72 @@ STYLE:
     },
 
     # =========================================================================
+    # 3b. LEGACY TENUE (Retro / Historical Kit)
+    # =========================================================================
+    "legacy_tenue_generate": {
+        "id": "legacy_tenue_generate",
+        "name": "Legacy Tenue Genereren",
+        "category": "tenue",
+        "description": "Genereer een retro/legacy tenue gebaseerd op een historisch shirt. Kies een tijdperk voor de stijl.",
+        "input_requirements": ["logo", "sponsor", "reference_photo"],
+        "parameters": {
+            "era_style": {
+                "label": "Tijdperk",
+                "type": "select",
+                "options": ["default", "jaren80", "jaren90", "jaren00"],
+                "default": "default",
+            },
+            "sleeves": {
+                "label": "Mouwen",
+                "type": "select",
+                "options": ["short", "long"],
+                "default": "short",
+            },
+            "neck": {
+                "label": "Hals",
+                "type": "select",
+                "options": ["round", "collar", "v_neck"],
+                "default": "collar",
+            },
+        },
+        "preprocessing": {
+            "logo": "square_pad_512",
+            "sponsor": "pad_512_landscape",
+        },
+        "prompt_template": """Create a REALISTIC RETRO / LEGACY football kit layout (Flat Lay Photography) based on the reference shirt.
+
+ERA STYLE: {era_style_description}
+
+KIT FROM REFERENCE (use for colors, badge, sponsor, graphic design ONLY):
+- Faithfully reproduce the EXACT color scheme, pattern, stripes, and graphic style of the reference kit.
+- Use the reference as the PRIMARY design source — do not modernise or redesign it.
+- SAME logo placement as reference (typically left chest).
+- SAME sponsor placement as reference.
+
+ERA-SPECIFIC DESIGN RULES:
+{era_style_details}
+
+SLEEVES: {sleeves_label}.
+NECKLINE: {neck_label}.
+
+COMPOSITION & FRAMING (CRITICAL):
+- FULL BODY SHOT: Show ENTIRE shirt, ENTIRE shorts, and complete pair of socks.
+- DO NOT CROP: Do not cut off the bottom of the socks or the top of the collar.
+- Orientation: Vertical Portrait (9:16 Aspect Ratio).
+
+INTEGRATION:
+- LOGO: Use provided Club Logo on LEFT CHEST. Retro embroidery / woven badge style.
+- SPONSOR: Use provided Sponsor image on chest. Retro heat-press or embroidery depending on era.
+
+STYLE:
+- Vintage sportswear photography aesthetic appropriate for the era.
+- Slightly muted color palette (less saturated than modern kits).
+- Subtle fabric texture — cotton or nylon weave visible.
+- Neutral light background.
+""",
+    },
+
+    # =========================================================================
     # 4. KEEPER TENUE
     # =========================================================================
     "keeper_tenue": {
@@ -1185,6 +1251,10 @@ def resolve_prompt(template_id: str, params: dict, kit_analysis: str = "", extra
     # Outfit style details (for coach_outfit)
     outfit_style = params.get("outfit_style", "net_pak")
     replacements["outfit_style_details"] = OUTFIT_STYLE_DETAILS.get(outfit_style, "")
+
+    # Era style details (for legacy_tenue_generate)
+    era_style = params.get("era_style", "default")
+    replacements["era_style_details"] = ERA_STYLE_DETAILS.get(era_style, "")
 
     # Extra context
     if extra_context:
