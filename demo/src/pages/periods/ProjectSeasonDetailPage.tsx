@@ -944,11 +944,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   // Fetch full team roster (all memberships on the team, any period) so we can show
   // "team members not in squad" for quick assignment.
-  // Also fetch organisation members as they can be assigned to the season too.
+  // Only fetch org members on the squad tab (orgs can have thousands of members).
   useEffect(() => {
     if (activeTab !== 'squad' && activeTab !== 'team') return;
     const projectIdForMembers = String((project as any)?.id || '').trim();
-    const orgId = String((org as any)?.id || '').trim();
     if (!projectIdForMembers) return;
 
     let cancelled = false;
@@ -958,36 +957,40 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       try {
         // Fetch team-level memberships (project memberships without period filter)
         const rosterUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/?page_size=500`;
-        const rosterPromise = fetchAllPages<any>(
+        const roster = await fetchAllPages<any>(
           rosterUrl,
           { credentials: 'include' },
           { bypass: true, maxItems: 5000 }
         );
 
-        // Also fetch organisation members to include them as potential squad members
-        // NOTE: org members endpoint requires slug, not numeric ID
-        let orgMembersPromise: Promise<any[]> = Promise.resolve([]);
-        const orgSlugForMembers = String((org as any)?.slug || orgSlugOrId || '').trim();
-        if (orgSlugForMembers) {
-          const orgMembersUrl = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForMembers)}/members/?page_size=500`;
-          orgMembersPromise = fetchAllPages<any>(
-            orgMembersUrl,
-            { credentials: 'include' },
-            { bypass: true, maxItems: 5000 }
-          ).catch(() => []); // Silently fail if no access
-        }
-
-        const [roster, orgMembers] = await Promise.all([rosterPromise, orgMembersPromise]);
-
-        // Merge: team roster takes priority, then add org members not already in roster
+        // Only merge org members on the squad tab — the team tab should only show
+        // actual team members. Org-wide members are only relevant when assigning
+        // new people to a season squad. This avoids loading 2500+ org members on
+        // the team tab.
         const byUserId = new Map<string, any>();
         for (const m of Array.isArray(roster) ? roster : []) {
           const uid = String(m?.user?.id || m?.user_id || '').trim();
           if (uid && !byUserId.has(uid)) byUserId.set(uid, m);
         }
-        for (const m of Array.isArray(orgMembers) ? orgMembers : []) {
-          const uid = String(m?.user?.id || m?.user_id || '').trim();
-          if (uid && !byUserId.has(uid)) byUserId.set(uid, m);
+
+        if (activeTab === 'squad') {
+          const orgSlugForMembers = String((org as any)?.slug || orgSlugOrId || '').trim();
+          if (orgSlugForMembers) {
+            try {
+              const orgMembersUrl = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForMembers)}/members/?page_size=500`;
+              const orgMembers = await fetchAllPages<any>(
+                orgMembersUrl,
+                { credentials: 'include' },
+                { bypass: true, maxItems: 5000 }
+              );
+              for (const m of Array.isArray(orgMembers) ? orgMembers : []) {
+                const uid = String(m?.user?.id || m?.user_id || '').trim();
+                if (uid && !byUserId.has(uid)) byUserId.set(uid, m);
+              }
+            } catch {
+              // Silently fail if no access to org members
+            }
+          }
         }
 
         if (!cancelled) setTeamRoster(Array.from(byUserId.values()));
@@ -2719,7 +2722,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           <Badge variant="default">{eligibleTeamMembers.length} Available</Badge>
                         </div>
                         <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
-                          Team and organisation members not yet assigned to this season. Select members to add them to the squad.
+                          Team members not yet assigned to this season. Select members to add them to the squad.
                         </div>
                       </div>
 
