@@ -223,6 +223,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [isActiveJobsModalOpen, setIsActiveJobsModalOpen] = useState(false);
 
+  // Guest player state
+  const [guestPlayer, setGuestPlayer] = useState<{ has_avatar: boolean; guest_player: any } | null>(null);
+  const [guestPlayerLoading, setGuestPlayerLoading] = useState(false);
+  const [guestPlayerGenerating, setGuestPlayerGenerating] = useState(false);
+
   // Content generation state
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
   const [templatesLoading, setTemplatesLoading] = useState(false);
@@ -440,6 +445,133 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     return String(mine?.id || '').trim();
   }, [currentUserId, members]);
 
+  // ── Generate guest player avatar ──────────────────────────────────
+  const handleGenerateGuestAvatar = useCallback(async () => {
+    const projectId = String((project as any)?.id || '').trim();
+    if (!projectId) return;
+
+    // Get team kit (tenue) and brand assets
+    const tenueUrl = (club as any)?.metadata?.teamreel_assets?.tenue?.url;
+    const logoUrl = (club as any)?.metadata?.teamreel_assets?.logo?.url;
+    const sponsorUrl = (season as any)?.metadata?.teamreel_assets?.sponsor?.url
+      || (club as any)?.metadata?.teamreel_assets?.sponsor?.url;
+
+    if (!tenueUrl) {
+      alert('Club tenue ontbreekt. Upload eerst het kit-afbeelding via de Assets tab.');
+      return;
+    }
+
+    setGuestPlayerGenerating(true);
+    try {
+      // Step 1: Generate faceless player in tenue via AI
+      const inputImageUrls: Record<string, string> = {
+        reference_photo: tenueUrl,
+      };
+      if (logoUrl) inputImageUrls.logo = logoUrl;
+      if (sponsorUrl) inputImageUrls.sponsor = sponsorUrl;
+
+      const genRes = await fetch(`${apiBaseUrl}/api/v1/generative/assets/generate/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({
+          template_id: 'fullbody_in_tenue',
+          params: {
+            sleeves: 'short',
+            pose: 'standing_front',
+            role: 'player',
+            guest_player: true,  // Signal to use a generic/anonymous face
+          },
+          variant_count: 1,
+          input_images: {},
+          input_image_urls: inputImageUrls,
+          project_id: projectId,
+        }),
+      });
+
+      if (!genRes.ok) {
+        const err = await genRes.json().catch(() => ({}));
+        throw new Error(err?.error || err?.detail || `Generation failed: ${genRes.status}`);
+      }
+
+      const genData = await genRes.json();
+      const variant = (genData?.data?.variants || genData?.variants || [])?.[0];
+      if (!variant) throw new Error('No variant returned from generation');
+
+      // Step 2: Save generated asset to storage
+      const saveRes = await fetch(`${apiBaseUrl}/api/v1/generative/assets/save/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({
+          storage_path: variant.storage_info?.storage_path,
+          presigned_url: variant.presigned_url,
+          image_base64: variant.image_base64,
+          filename: variant.filename || 'guest_player_fullbody.png',
+          mime_type: variant.mime_type || 'image/png',
+          file_size_bytes: variant.storage_info?.file_size_bytes || 0,
+          project_id: projectId,
+          asset_type: 'guest_player',
+        }),
+      });
+
+      if (!saveRes.ok) {
+        throw new Error('Failed to save guest player asset');
+      }
+
+      const saveData = await saveRes.json();
+      const savedUrl = saveData?.data?.presigned_url || saveData?.presigned_url
+        || saveData?.data?.url || saveData?.url;
+
+      // Step 3: Save asset URL to project metadata via guest-player endpoint
+      const storagePath = saveData?.data?.storage_path || saveData?.storage_path
+        || variant.storage_info?.storage_path;
+
+      await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/guest-player/`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({
+          guest_player: {
+            images: {
+              fullbody: {
+                home: {
+                  url: storagePath || savedUrl,
+                  presigned_url: savedUrl,
+                  generated_at: new Date().toISOString(),
+                },
+              },
+            },
+          },
+        }),
+      });
+
+      // Refresh guest player state
+      const refreshRes = await fetch(
+        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/guest-player/`,
+        { credentials: 'include' }
+      );
+      if (refreshRes.ok) {
+        const raw = await refreshRes.json();
+        setGuestPlayer(raw?.data || raw);
+      }
+
+    } catch (err) {
+      console.error('Guest player generation failed:', err);
+      alert(`Fout bij genereren gast speler: ${err instanceof Error ? err.message : 'Onbekende fout'}`);
+    } finally {
+      setGuestPlayerGenerating(false);
+    }
+  }, [project, club, season, apiBaseUrl]);
 
   const savePeriodEdits = async (periodToEdit: any, patch: any) => {
     const periodId = String(periodToEdit?.id || '').trim();
@@ -780,6 +912,35 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       cancelled = true;
     };
   }, [apiBaseUrl, project, resolvedSeasonId, membersReloadToken]);
+
+  // ── Fetch guest player data for the project ──────────────────────────
+  useEffect(() => {
+    if (activeTab !== 'media') return;
+    const projectId = String((project as any)?.id || '').trim();
+    if (!projectId) return;
+
+    let cancelled = false;
+    const run = async () => {
+      setGuestPlayerLoading(true);
+      try {
+        const res = await fetch(
+          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/guest-player/`,
+          { credentials: 'include' }
+        );
+        if (res.ok) {
+          const raw = await res.json();
+          const data = raw?.data || raw;
+          if (!cancelled) setGuestPlayer(data);
+        }
+      } catch {
+        // silent — guest player is optional
+      } finally {
+        if (!cancelled) setGuestPlayerLoading(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [apiBaseUrl, project, activeTab]);
 
   // Fetch full team roster (all memberships on the team, any period) so we can show
   // "team members not in squad" for quick assignment.
@@ -2731,6 +2892,58 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     </div>
                   </Card>
 
+                  {/* Guest Player Card */}
+                  <Card>
+                    <div style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                        <span style={{ fontSize: '24px' }}>🏃</span>
+                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Gast Speler</h3>
+                        <Badge variant={guestPlayer?.has_avatar ? 'success' : 'default'}>
+                          {guestPlayer?.has_avatar ? 'Avatar beschikbaar' : 'Geen avatar'}
+                        </Badge>
+                      </div>
+                      <div style={{ color: 'var(--app-muted-text)', fontSize: '13px', marginBottom: '12px' }}>
+                        Anonieme speler in teamtenue voor onvolledige line-ups. Kan meerdere keren in dezelfde opstelling worden gebruikt.
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                        {guestPlayer?.has_avatar && (() => {
+                          const gp = guestPlayer?.guest_player || {};
+                          const previewUrl = gp?.images?.fullbody?.home?.presigned_url || gp?.images?.fullbody?.home?.url;
+                          return previewUrl ? (
+                            <img
+                              src={previewUrl}
+                              alt="Gast speler avatar"
+                              style={{
+                                width: 60,
+                                height: 100,
+                                objectFit: 'cover',
+                                borderRadius: 8,
+                                border: '1px solid var(--app-border)',
+                                background: 'var(--app-muted)',
+                              }}
+                            />
+                          ) : null;
+                        })()}
+                        <Button
+                          variant={guestPlayer?.has_avatar ? 'outline' : 'primary'}
+                          onClick={handleGenerateGuestAvatar}
+                          disabled={guestPlayerGenerating || !(club as any)?.metadata?.teamreel_assets?.tenue?.url}
+                        >
+                          {guestPlayerGenerating
+                            ? '⏳ Genereren...'
+                            : guestPlayer?.has_avatar
+                              ? '🔄 Opnieuw genereren'
+                              : '🤖 Genereer Gast Avatar'}
+                        </Button>
+                        {!(club as any)?.metadata?.teamreel_assets?.tenue?.url && (
+                          <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                            Upload eerst een club tenue
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+
                   <Card>
                     <div style={{ padding: '16px 16px 0 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
@@ -2796,6 +3009,43 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               </tr>
                             </thead>
                             <tbody>
+                              {/* Guest Player row — always shown at top of matrix */}
+                              <tr style={{ background: 'rgba(167, 139, 250, 0.06)' }}>
+                                <td style={{ ...compactTdStyle, textAlign: 'center' }}>
+                                  {/* No batch checkbox for guest */}
+                                </td>
+                                <td style={{ ...compactTextTdStyle, position: 'sticky', left: 0, background: 'rgba(167, 139, 250, 0.06)', zIndex: 1 }}>
+                                  <span style={{ color: '#a78bfa', fontWeight: 600 }}>🏃 Gast Speler</span>
+                                </td>
+                                {MEDIA_SLOTS.map((slot) => {
+                                  // Guest only needs 'kit' (fullbody in tenue) — other slots are N/A
+                                  if (slot.id === 'kit') {
+                                    const hasKit = guestPlayer?.has_avatar;
+                                    return (
+                                      <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
+                                        <span
+                                          style={{ fontSize: '14px', cursor: !hasKit ? 'pointer' : undefined }}
+                                          title={hasKit ? 'In Tenue: Beschikbaar' : 'In Tenue: Klik om te genereren'}
+                                          onClick={!hasKit ? handleGenerateGuestAvatar : undefined}
+                                        >
+                                          {guestPlayerGenerating ? '⏳' : hasKit ? '✅' : '⬜'}
+                                        </span>
+                                      </td>
+                                    );
+                                  }
+                                  // Other slots: dash (not applicable for guest)
+                                  return (
+                                    <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
+                                      <span style={{ fontSize: '14px', opacity: 0.3 }} title={`${slot.label}: N.v.t. voor gast`}>—</span>
+                                    </td>
+                                  );
+                                })}
+                                <td style={{ ...compactTdStyle, textAlign: 'center' }}>
+                                  <Badge variant={guestPlayer?.has_avatar ? 'success' : 'default'}>
+                                    {guestPlayer?.has_avatar ? '1/1' : '0/1'}
+                                  </Badge>
+                                </td>
+                              </tr>
                               {members.map((m: any) => {
                                 const memberUser = m.user || m;
                                 const name =

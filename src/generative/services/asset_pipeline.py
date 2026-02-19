@@ -682,8 +682,35 @@ def generate_asset(
             kit_analysis = analyze_kit(ref_img)
             logger.info("Kit analysis complete: %d chars", len(kit_analysis))
 
+    # Step 2b: Guest player — generate a silhouette as person_photo if not provided
+    is_guest_player = params.get("guest_player", False)
+    if is_guest_player and "person_photo" not in processed_images:
+        from src.video.services.header_generator import generate_guest_silhouette
+        import io
+
+        silhouette_img = generate_guest_silhouette(width=1080, height=1920)
+        buf = io.BytesIO()
+        silhouette_img.save(buf, format="PNG")
+        processed_images["person_photo"] = buf.getvalue()
+        logger.info("Guest player mode: injected silhouette as person_photo")
+
     # Step 3: Resolve prompt
     final_prompt = resolve_prompt(template_id, params, kit_analysis)
+
+    # Append guest-specific instructions to prompt
+    if is_guest_player:
+        guest_hint = (
+            "\n\nIMPORTANT OVERRIDE — GUEST PLAYER MODE:\n"
+            "The person in the reference is a GREY SILHOUETTE placeholder. "
+            "Generate a GENERIC, ANONYMOUS football player figure (NO recognisable face). "
+            "The face MUST be a featureless, smooth oval (like a mannequin) — "
+            "do NOT add eyes, nose, mouth or any facial features. "
+            "The body should be athletic and realistic, wearing the specified kit. "
+            "Keep the same pose and proportions as instructed."
+        )
+        final_prompt = final_prompt + guest_hint
+        logger.info("Guest player mode: appended anonymous face instructions")
+
     logger.info("Resolved prompt for %s: %d chars", template_id, len(final_prompt))
 
     # Step 4: Generate variants

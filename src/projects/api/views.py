@@ -659,6 +659,76 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         return Response(data)
 
+    # ── Guest Player Avatar ─────────────────────────────────────────
+    @action(detail=True, methods=["get", "patch", "delete"], url_path="guest-player")
+    def guest_player(self, request, pk=None, organisation_slug=None, slug=None):
+        """Manage the guest player avatar for this team/project.
+
+        GET  → returns current guest player data
+        PATCH → set/update guest player metadata (asset URLs etc.)
+        DELETE → remove guest player data
+        """
+        project = self.get_object()
+
+        if request.method == "GET":
+            guest_data = (project.metadata or {}).get("teamreel_assets", {}).get("guest_player", {})
+            return Response(
+                {
+                    "project_id": str(project.id),
+                    "guest_player": guest_data,
+                    "has_avatar": bool(
+                        guest_data.get("images", {}).get("fullbody", {}).get("home")
+                    ),
+                }
+            )
+
+        if request.method == "DELETE":
+            meta = dict(project.metadata or {})
+            ta = dict(meta.get("teamreel_assets", {}))
+            ta.pop("guest_player", None)
+            meta["teamreel_assets"] = ta
+            project.metadata = meta
+            project.save(update_fields=["metadata", "updated_at"])
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        # PATCH — update guest player assets
+        guest_patch = request.data.get("guest_player", {})
+        if not guest_patch or not isinstance(guest_patch, dict):
+            return Response(
+                {"error": "Provide 'guest_player' object with asset data."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        meta = dict(project.metadata or {})
+        ta = dict(meta.get("teamreel_assets", {}))
+        existing = dict(ta.get("guest_player", {}))
+
+        # Deep-merge images/media sub-keys
+        for top_key in ("images", "media", "videos"):
+            if top_key in guest_patch:
+                existing_sub = dict(existing.get(top_key, {}))
+                for sub_key, sub_val in guest_patch[top_key].items():
+                    existing_sub[sub_key] = sub_val
+                existing[top_key] = existing_sub
+
+        # Copy any other top-level keys
+        for key, val in guest_patch.items():
+            if key not in ("images", "media", "videos"):
+                existing[key] = val
+
+        ta["guest_player"] = existing
+        meta["teamreel_assets"] = ta
+        project.metadata = meta
+        project.save(update_fields=["metadata", "updated_at"])
+
+        return Response(
+            {
+                "project_id": str(project.id),
+                "guest_player": existing,
+                "has_avatar": bool(existing.get("images", {}).get("fullbody", {}).get("home")),
+            }
+        )
+
 
 class ProjectMembershipReadThrottle(UserRateThrottle):
     """Rate limiting for read operations on project memberships: 100/min"""

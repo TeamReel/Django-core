@@ -168,6 +168,9 @@ class LineupSegmentBuilder:
     CLOSEUP_DURATION = 2.5
     LINE_TRANSITION_DURATION = 1.0
 
+    # Sentinel ID for guest players (not real members).
+    GUEST_PLAYER_ID = "__guest__"
+
     def __init__(
         self,
         activity_id: str | UUID,
@@ -182,7 +185,8 @@ class LineupSegmentBuilder:
             activity_id: The match/activity ID
             template_id: Optional ContentTemplate ID (uses default 4-3-3 if None)
             output_resolution: Resolution preset (vertical_1080p, 1080p, 720p)
-            selected_member_ids: Optional list of member IDs (from frontend selection)
+            selected_member_ids: Optional list of member IDs (from frontend selection).
+                Can include ``__guest__`` entries for guest players (anonymous avatars).
             formation: Formation string (4-3-3, 4-4-2, 3-4-3) — used to split
                        frontend-ordered players into defender/midfielder/attacker groups
         """
@@ -216,6 +220,17 @@ class LineupSegmentBuilder:
         else:
             self.selected_member_ids = None
             self.selected_member_ids_by_role = {}
+
+        # Count guest entries per role (before filtering them out of real IDs).
+        self._guest_count_by_role: dict[str, int] = {}
+        if self.selected_member_ids:
+            guest_count = sum(1 for x in self.selected_member_ids if str(x) == self.GUEST_PLAYER_ID)
+            if guest_count:
+                self._debug_trace.append(f"Guest entries in selection: {guest_count}")
+            # Remove guest entries from the real member IDs list (they're not DB objects)
+            self.selected_member_ids = [
+                x for x in self.selected_member_ids if str(x) != self.GUEST_PLAYER_ID
+            ] or None
 
     def _load_render_mode(self) -> None:
         """Determine how to render lineup based on the selected ContentTemplate.
@@ -588,15 +603,25 @@ class LineupSegmentBuilder:
         #   2) The PM path already handles role assignment and formation splitting
         #   3) The Participation member_id (OrganisationMember) != PM id, which breaks
         #      supplementation logic that tries to compare the two
-        if self.selected_member_ids and self.selected_member_ids_by_role:
+        # Also enter this path when the selection consists entirely of guest players
+        # (self.selected_member_ids may be empty after stripping __guest__ entries).
+        has_role_selection = bool(self.selected_member_ids_by_role) and any(
+            v for v in self.selected_member_ids_by_role.values()
+        )
+        if has_role_selection:
+            real_count = len(self.selected_member_ids or [])
+            total_count = sum(
+                len(v) for v in self.selected_member_ids_by_role.values() if isinstance(v, list)
+            )
             logger.info(
-                "Using ProjectMembership path — frontend provided %d members with roles "
+                "Using ProjectMembership path — frontend provided %d real + %d total members with roles "
                 "(participations found: %d, but PM path is preferred)",
-                len(self.selected_member_ids),
+                real_count,
+                total_count,
                 participations.count(),
             )
             self._debug_trace.append(
-                f"Using PM path: {len(self.selected_member_ids)} members with roles "
+                f"Using PM path: {real_count} real + {total_count} total members with roles "
                 f"(skipping {participations.count()} participations)"
             )
             return self._gather_lineup_from_memberships(
@@ -1053,9 +1078,41 @@ class LineupSegmentBuilder:
 
         ProjectMembership = apps.get_model("projects", "ProjectMembership")
 
+        # Filter out guest IDs before querying real memberships.
+        real_member_ids = [
+            x for x in (self.selected_member_ids or []) if str(x) != self.GUEST_PLAYER_ID
+        ]
         memberships = ProjectMembership.objects.filter(
-            id__in=self.selected_member_ids,
+            id__in=real_member_ids,
         ).select_related("user")
+
+        # ── Resolve guest player avatar from project metadata ─────────────
+        guest_assets = (project.metadata or {}).get("teamreel_assets", {}).get("guest_player", {})
+        guest_images = guest_assets.get("images", {})
+        guest_kit_url = None
+        guest_closeup_url = None
+        # Try fullbody.home → media.kit
+        fullbody = guest_images.get("fullbody", {})
+        if fullbody.get("home"):
+            from src.video.services.asset_processing_specs import get_best_url
+
+            guest_kit_url = get_best_url(fullbody["home"])
+        if not guest_kit_url:
+            guest_kit_url = guest_assets.get("media", {}).get("kit", {}).get("url")
+        # Try closeup.home
+        closeup_d = guest_images.get("closeup", {})
+        if closeup_d.get("home"):
+            from src.video.services.asset_processing_specs import get_best_url
+
+            guest_closeup_url = get_best_url(closeup_d["home"])
+        # Convert relative paths to presigned URLs
+        if guest_kit_url and not guest_kit_url.startswith("http"):
+            guest_kit_url = self._get_presigned_url(guest_kit_url)
+        if guest_closeup_url and not guest_closeup_url.startswith("http"):
+            guest_closeup_url = self._get_presigned_url(guest_closeup_url)
+        self._debug_trace.append(
+            f"Guest avatar: kit={bool(guest_kit_url)} closeup={bool(guest_closeup_url)}"
+        )
 
         width, height, fps = self._get_resolution_settings()
 
@@ -1142,19 +1199,32 @@ class LineupSegmentBuilder:
         # Default field positions per line (evenly spaced)
         line_y_positions = {"keeper": 90, "verdediger": 70, "middenvelder": 45, "aanvaller": 20}
 
-        # Use role-keyed IDs from frontend to know who is GK vs field player
-        gk_ids = {str(x) for x in self.selected_member_ids_by_role.get("goalkeeper", [])}
+        # Use role-keyed IDs from frontend to know who is GK vs field player.
+        # Guest entries (``__guest__``) are preserved in the ordered lists but
+        # excluded from the set-based lookups so they don't collide with real IDs.
+        GUEST = self.GUEST_PLAYER_ID
+        raw_gk_ids = [str(x) for x in self.selected_member_ids_by_role.get("goalkeeper", [])]
+        gk_ids = {x for x in raw_gk_ids if x != GUEST}
         # Ordered list from frontend — the order matches formation slots
-        ordered_player_ids = [str(x) for x in self.selected_member_ids_by_role.get("player", [])]
-        player_ids = set(ordered_player_ids)
+        ordered_player_ids_raw = [
+            str(x) for x in self.selected_member_ids_by_role.get("player", [])
+        ]
+        player_ids = {x for x in ordered_player_ids_raw if x != GUEST}
 
         # IMPORTANT: Exclude goalkeeper IDs from player_ids to avoid double-counting.
         # The frontend may send a goalkeeper in both 'player' and 'goalkeeper' arrays.
         player_ids = player_ids - gk_ids
-        ordered_player_ids = [pid for pid in ordered_player_ids if pid not in gk_ids]
+        ordered_player_ids = [
+            pid for pid in ordered_player_ids_raw if pid == GUEST or pid not in gk_ids
+        ]
+
+        # Count guests per role for debug trace
+        gk_guest_count = sum(1 for x in raw_gk_ids if x == GUEST)
+        player_guest_count = sum(1 for x in ordered_player_ids_raw if x == GUEST)
 
         self._debug_trace.append(
             f"PM fallback: gk_ids={len(gk_ids)}, player_ids={len(player_ids)} (after dedup)"
+            f" | guests: gk={gk_guest_count}, player={player_guest_count}"
         )
 
         for idx, pm in enumerate(memberships):
@@ -1284,13 +1354,50 @@ class LineupSegmentBuilder:
         #   slots 2-5 = DEF, slots 6-8 = MID, slots 9-11 = ATT).
         # We must preserve this ordering so the formation split puts each
         # player in the correct line (defender/midfielder/attacker).
+        # Guest entries (``__guest__``) are inserted as anonymous PlayerSegments.
         ordered_field_players: list[PlayerSegment] = []
+        _guest_seq = 0  # sequential counter across all guest slots
         for pid in ordered_player_ids:
-            if pid in field_player_segments:
+            if pid == GUEST:
+                guest = PlayerSegment(
+                    slot=0,
+                    position="",
+                    functional_role="",
+                    member_id=f"__guest__{_guest_seq}",
+                    member_name="Gast",
+                    jersey_number=None,
+                    kit_url=guest_kit_url,
+                    intro_url=None,
+                    closeup_url=guest_closeup_url,
+                    x=50,
+                    y=50,
+                    is_guest_player=True,
+                )
+                ordered_field_players.append(guest)
+                _guest_seq += 1
+            elif pid in field_player_segments:
                 ordered_field_players.append(field_player_segments.pop(pid))
         # Append any remaining field players not in the ordered list (safety net)
         for seg in field_player_segments.values():
             ordered_field_players.append(seg)
+
+        # ── Also handle guest goalkeepers ──
+        for _i in range(gk_guest_count):
+            guest_gk = PlayerSegment(
+                slot=0,
+                position="GK",
+                functional_role="keeper",
+                member_id=f"__guest_gk_{_i}",
+                member_name="Gast",
+                jersey_number=None,
+                kit_url=guest_kit_url,
+                intro_url=None,
+                closeup_url=guest_closeup_url,
+                x=50,
+                y=line_y_positions["keeper"],
+                is_guest_player=True,
+            )
+            keepers.append(guest_gk)
 
         # Split field players by formation counts (matching frontend FORMATION_LAYOUTS)
         n_def, n_mid, _n_att = FORMATION_SPLITS.get(self.formation, (4, 3, 3))

@@ -2487,7 +2487,8 @@ export default function ContentGenerationModal({
                     const assetTypes = isGk ? gkAssetTypes : playerAssetTypes;
                     const eligibleMembers = isGk ? eligibleGks : eligiblePlayers;
                     const ineligibleMembers = isGk ? ineligibleGks : ineligiblePlayers;
-                    const currentMember = pool.find(p => p.id === currentId);
+                    const currentMember = currentId === '__guest__' ? null : pool.find(p => p.id === currentId);
+                    const isGuestSelected = currentId === '__guest__';
                     const jerseyNumber = currentMember?.metadata?.shirt_number || currentMember?.data?.jersey_number;
 
                     return (
@@ -2558,12 +2559,16 @@ export default function ContentGenerationModal({
                           <option value="" style={{ background: '#1e1e1e', color: '#ccc' }}>
                             — Kies —
                           </option>
+                          {/* Guest player option — always available, can be used multiple times */}
+                          <option value="__guest__" style={{ background: '#1e1e1e', color: '#a78bfa' }}>
+                            🏃 Gast Speler
+                          </option>
                           {assetTypes.length > 0 && eligibleMembers.length > 0 && (
                             <optgroup label="✅ Beschikbaar">
                               {eligibleMembers.map(p => {
                                 const name = getMemberName(p);
                                 const jersey = p.metadata?.shirt_number || p.data?.jersey_number;
-                                const allUsedIds = [...gkSelected, ...playerSelected].filter(Boolean);
+                                const allUsedIds = [...gkSelected, ...playerSelected].filter(id => id && id !== '__guest__');
                                 const isAlreadyUsed = allUsedIds.includes(p.id) && p.id !== currentId;
                                 return (
                                   <option key={p.id} value={p.id} disabled={isAlreadyUsed} style={{ background: '#1e1e1e', color: isAlreadyUsed ? '#666' : '#ccc' }}>
@@ -2576,7 +2581,7 @@ export default function ContentGenerationModal({
                           {assetTypes.length === 0 && pool.map(p => {
                             const name = getMemberName(p);
                             const jersey = p.metadata?.shirt_number || p.data?.jersey_number;
-                            const allUsedIds = [...gkSelected, ...playerSelected].filter(Boolean);
+                            const allUsedIds = [...gkSelected, ...playerSelected].filter(id => id && id !== '__guest__');
                             const isAlreadyUsed = allUsedIds.includes(p.id) && p.id !== currentId;
                             return (
                               <option key={p.id} value={p.id} disabled={isAlreadyUsed} style={{ background: '#1e1e1e', color: isAlreadyUsed ? '#666' : '#ccc' }}>
@@ -2602,11 +2607,11 @@ export default function ContentGenerationModal({
                         </select>
 
                         {/* Show selected name below */}
-                        {currentMember && (
+                        {(currentMember || isGuestSelected) && (
                           <div style={{
                             fontSize: 10,
                             fontWeight: 600,
-                            color: '#fff',
+                            color: isGuestSelected ? '#a78bfa' : '#fff',
                             textShadow: '0 1px 3px rgba(0,0,0,0.8)',
                             maxWidth: 110,
                             overflow: 'hidden',
@@ -2614,7 +2619,7 @@ export default function ContentGenerationModal({
                             whiteSpace: 'nowrap',
                             textAlign: 'center',
                           }}>
-                            {jerseyNumber ? `#${jerseyNumber} ` : ''}{getMemberName(currentMember)}
+                            {isGuestSelected ? '🏃 Gast' : `${jerseyNumber ? `#${jerseyNumber} ` : ''}${getMemberName(currentMember)}`}
                           </div>
                         )}
                       </div>
