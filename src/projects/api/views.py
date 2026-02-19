@@ -3,6 +3,7 @@
 import logging
 import uuid
 
+from django.db import IntegrityError
 from django.db.models import OuterRef, Q, Subquery
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
@@ -1077,7 +1078,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
             )
             # Set the instance on the serializer so response data is correct
             serializer.instance = membership
-        except ValueError as e:
+        except (ValueError, IntegrityError) as e:
             raise ValidationError({"detail": str(e)}) from e
 
     def update(self, request, *args, **kwargs):

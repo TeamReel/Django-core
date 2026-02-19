@@ -97,8 +97,8 @@ class Migration(migrations.Migration):
             "accounts",
             "0006_rename_accounts_us_user_id_0f095c_idx_accounts_us_user_id_42c51f_idx_and_more",
         ),
-        ("projects", "__latest__"),  # Ensure ProjectMembership is available
-        ("search", "__latest__"),  # Ensure SearchEntry is available
+        ("projects", "0015_project_sport"),  # ProjectMembership available
+        ("search", "0001_enable_pg_trgm"),  # SearchEntry available
     ]
 
     operations = [

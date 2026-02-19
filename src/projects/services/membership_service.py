@@ -68,7 +68,7 @@ class MembershipService:
             period=period,
             deleted_at__isnull=True,
         ).exists():
-            raise ValueError("User is already a member of this project for this season.")
+            raise ValueError("User is already a member of this project for this period.")
 
         membership = ProjectMembership.objects.create(
             project=project,

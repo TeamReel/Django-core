@@ -11,7 +11,7 @@ light/dark mode variant that doesn't exist.  This migration:
   3. Updates the choices on the model field
 """
 
-from django.db import migrations
+from django.db import migrations, models
 
 
 def rename_logo_types(apps, schema_editor):
@@ -59,7 +59,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="brandasset",
             name="asset_type",
-            field=migrations.models.CharField(
+            field=models.CharField(
                 max_length=50,
                 choices=[
                     ("logo_upload", "Logo (Raw Upload)"),
