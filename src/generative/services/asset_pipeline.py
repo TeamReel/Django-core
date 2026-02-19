@@ -92,29 +92,45 @@ PREPROCESSORS = {
 def _border_connected_mask(is_candidate, h, w):  # noqa: ANN001, ANN201
     """Return a mask of candidate pixels that are connected to the image border.
 
-    Uses connected-component labelling to find groups of candidate pixels.
-    Only groups that touch any edge of the image are considered background.
-    Interior groups (e.g. white text/fill inside a badge) are preserved.
+    Uses a BFS flood-fill from every border candidate pixel to find all
+    connected candidate pixels reachable from the edges.  Interior groups
+    (e.g. white text/fill inside a badge) that don't touch any edge are
+    preserved.
+
+    Pure numpy + collections.deque — no scipy dependency.
     """
     import numpy as np
-    from scipy.ndimage import label
+    from collections import deque
 
-    labeled, num_features = label(is_candidate)
-    if num_features == 0:
-        return np.zeros_like(is_candidate, dtype=bool)
+    result = np.zeros((h, w), dtype=bool)
 
-    # Collect labels that touch any border row/column
-    border_labels: set[int] = set()
-    border_labels.update(labeled[0, :].flat)  # top
-    border_labels.update(labeled[-1, :].flat)  # bottom
-    border_labels.update(labeled[:, 0].flat)  # left
-    border_labels.update(labeled[:, -1].flat)  # right
-    border_labels.discard(0)  # 0 = non-candidate background
+    # Seed queue with every candidate pixel on any border
+    queue: deque[tuple[int, int]] = deque()
+    for x in range(w):
+        if is_candidate[0, x]:
+            queue.append((0, x))
+            result[0, x] = True
+        if is_candidate[h - 1, x]:
+            queue.append((h - 1, x))
+            result[h - 1, x] = True
+    for y in range(1, h - 1):
+        if is_candidate[y, 0]:
+            queue.append((y, 0))
+            result[y, 0] = True
+        if is_candidate[y, w - 1]:
+            queue.append((y, w - 1))
+            result[y, w - 1] = True
 
-    if not border_labels:
-        return np.zeros_like(is_candidate, dtype=bool)
+    # BFS: expand from border seeds through adjacent candidate pixels
+    while queue:
+        cy, cx = queue.popleft()
+        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            ny, nx = cy + dy, cx + dx
+            if 0 <= ny < h and 0 <= nx < w and is_candidate[ny, nx] and not result[ny, nx]:
+                result[ny, nx] = True
+                queue.append((ny, nx))
 
-    return np.isin(labeled, list(border_labels))
+    return result
 
 
 def _check_alternating_grid(is_candidate, brightness, block, h, w):  # noqa: ANN001, ANN201
