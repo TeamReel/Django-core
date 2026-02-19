@@ -644,10 +644,11 @@ def _compose_flyer(
         f"[bg0]drawbox=x={SPONSOR_MARGIN}:y=ih-{SPONSOR_BOX_H}-{SPONSOR_MARGIN}"
         f":w={sponsor_box_w}:h={SPONSOR_BOX_H}:color=white@1:t=fill[bg0b]"
     )
-    fc.append(f"[2:v]scale={SPONSOR_W}:-1[sponsor]")
+    fc.append(f"[2:v]scale={SPONSOR_W}:-1,format=rgba[sponsor]")
     fc.append(
         f"[bg0b][sponsor]overlay="
-        f"({SPONSOR_MARGIN + SPONSOR_PAD}):(H-h-{SPONSOR_MARGIN + SPONSOR_PAD})[bg0s]"
+        f"({SPONSOR_MARGIN + SPONSOR_PAD}):(H-h-{SPONSOR_MARGIN + SPONSOR_PAD})"
+        f":format=auto[bg0s]"
     )
 
     last_bg = "bg0s"

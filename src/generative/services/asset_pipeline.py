@@ -89,6 +89,65 @@ PREPROCESSORS = {
 # =============================================================================
 
 
+def _check_alternating_grid(is_candidate, brightness, block, h, w):  # noqa: ANN001, ANN201
+    """Check whether candidate pixels form an alternating grid at the given block size.
+
+    Returns (is_checkerboard: bool, alternating_ratio: float, shade_diff: float).
+    """
+    import numpy as np
+
+    bh, bw = h // block, w // block
+    if bh < 3 or bw < 3:
+        return False, 0.0, 0.0
+
+    block_brightness = np.full((bh, bw), np.nan)
+    for by in range(bh):
+        for bx in range(bw):
+            y0, y1 = by * block, (by + 1) * block
+            x0, x1 = bx * block, (bx + 1) * block
+            mask = is_candidate[y0:y1, x0:x1]
+            pct = mask.sum() / (block * block)
+            if pct > 0.4:
+                block_brightness[by, bx] = brightness[y0:y1, x0:x1][mask].mean()
+
+    valid_blocks = block_brightness[~np.isnan(block_brightness)]
+    if len(valid_blocks) < 4:
+        return False, 0.0, 0.0
+
+    bmin, bmax = float(valid_blocks.min()), float(valid_blocks.max())
+    shade_diff = bmax - bmin
+    if shade_diff < 5:
+        return False, 0.0, shade_diff
+
+    mid = (bmin + bmax) / 2.0
+    block_class = np.full((bh, bw), -1, dtype=np.int8)
+    for by in range(bh):
+        for bx in range(bw):
+            if not np.isnan(block_brightness[by, bx]):
+                block_class[by, bx] = 1 if block_brightness[by, bx] >= mid else 0
+
+    alternating = 0
+    total_pairs = 0
+    for by in range(bh):
+        for bx in range(bw):
+            if block_class[by, bx] < 0:
+                continue
+            if bx + 1 < bw and block_class[by, bx + 1] >= 0:
+                total_pairs += 1
+                if block_class[by, bx] != block_class[by, bx + 1]:
+                    alternating += 1
+            if by + 1 < bh and block_class[by + 1, bx] >= 0:
+                total_pairs += 1
+                if block_class[by, bx] != block_class[by + 1, bx]:
+                    alternating += 1
+
+    if total_pairs == 0:
+        return False, 0.0, shade_diff
+
+    ratio = alternating / total_pairs
+    return ratio >= 0.45, ratio, shade_diff
+
+
 def _strip_checkerboard(img):  # noqa: ANN001, ANN201
     """Remove checkerboard artifacts from AI-generated RGBA images.
 
@@ -96,23 +155,8 @@ def _strip_checkerboard(img):  # noqa: ANN001, ANN201
     RGB pixels (with alpha=255) instead of making the background truly
     transparent.
 
-    This uses *block-level pattern detection* so it only removes pixels when
-    the image contains a large contiguous region of two alternating achromatic
-    shades arranged in a grid — the classic "transparency checkerboard".
-
-    Solid white, light-grey or any coloured parts of the logo are preserved.
-
-    Algorithm:
-    1. Build a candidate mask: achromatic (spread < 25), light (> 170), opaque.
-    2. If candidates cover < 5% of the image → no checkerboard, return early.
-    3. Divide image into NxN blocks (8px). For each block compute average
-       brightness of candidate pixels.
-    4. Classify blocks as "light" (>= mid) or "dark" (< mid) where mid is
-       halfway between the two dominant block brightness values.
-    5. Check if the block grid forms an alternating pattern.  If ≥ 60% of
-       blocks alternate with their neighbours, it's a checkerboard.
-    6. Erase ALL candidate pixels in the checkerboard region (they are the
-       fake background, not part of the logo).
+    Uses block-level pattern detection at multiple scales (4, 8, 16, 32 px)
+    so it catches checkerboards of varying coarseness.
     """
     import numpy as np
 
@@ -124,106 +168,48 @@ def _strip_checkerboard(img):  # noqa: ANN001, ANN201
     spread = rgb_stack.max(axis=-1) - rgb_stack.min(axis=-1)
     brightness = rgb_stack.mean(axis=-1)
 
-    # Step 1 — candidate mask: achromatic, light, opaque
-    is_candidate = (spread < 25) & (brightness > 170) & (a > 0)
+    # Candidate mask: achromatic, light, opaque
+    is_candidate = (spread < 30) & (brightness > 160) & (a > 0)
     total_candidates = int(is_candidate.sum())
 
     if total_candidates == 0:
         return img
 
-    # Step 2 — need a meaningful fraction to be "checkerboard-like"
     candidate_ratio = total_candidates / (h * w)
-    if candidate_ratio < 0.05:
+    if candidate_ratio < 0.03:
         logger.debug("checkerboard_cleanup: only %.1f%% candidates, skip", candidate_ratio * 100)
         return img
 
-    # Step 3 — block-level analysis
-    block = 8
-    bh, bw = h // block, w // block
-    if bh < 3 or bw < 3:
-        return img  # Image too small for meaningful block analysis
-
-    # Compute per-block average brightness (only among candidates)
-    block_brightness = np.full((bh, bw), np.nan)
-    block_candidate_pct = np.zeros((bh, bw))
-
-    for by in range(bh):
-        for bx in range(bw):
-            y0, y1 = by * block, (by + 1) * block
-            x0, x1 = bx * block, (bx + 1) * block
-            mask = is_candidate[y0:y1, x0:x1]
-            pct = mask.sum() / (block * block)
-            block_candidate_pct[by, bx] = pct
-            if pct > 0.5:  # Block is mostly candidate pixels
-                block_brightness[by, bx] = brightness[y0:y1, x0:x1][mask].mean()
-
-    # Step 4 — find two dominant brightness levels
-    valid_blocks = block_brightness[~np.isnan(block_brightness)]
-    if len(valid_blocks) < 4:
-        return img
-
-    bmin, bmax = valid_blocks.min(), valid_blocks.max()
-    shade_diff = bmax - bmin
-
-    if shade_diff < 10:
-        # All blocks roughly same brightness → solid colour, not checkerboard
-        logger.debug("checkerboard_cleanup: shade_diff=%.1f too small, skip", shade_diff)
-        return img
-
-    mid = (bmin + bmax) / 2.0
-
-    # Step 5 — check alternating pattern
-    # Classify each valid block as 0 (dark shade) or 1 (light shade)
-    block_class = np.full((bh, bw), -1, dtype=np.int8)  # -1 = not classified
-    for by in range(bh):
-        for bx in range(bw):
-            if not np.isnan(block_brightness[by, bx]):
-                block_class[by, bx] = 1 if block_brightness[by, bx] >= mid else 0
-
-    # Count alternating neighbours
-    alternating = 0
-    total_pairs = 0
-    for by in range(bh):
-        for bx in range(bw):
-            if block_class[by, bx] < 0:
-                continue
-            # Check right neighbour
-            if bx + 1 < bw and block_class[by, bx + 1] >= 0:
-                total_pairs += 1
-                if block_class[by, bx] != block_class[by, bx + 1]:
-                    alternating += 1
-            # Check bottom neighbour
-            if by + 1 < bh and block_class[by + 1, bx] >= 0:
-                total_pairs += 1
-                if block_class[by, bx] != block_class[by + 1, bx]:
-                    alternating += 1
-
-    if total_pairs == 0:
-        return img
-
-    alternating_ratio = alternating / total_pairs
-
-    if alternating_ratio < 0.55:
-        # Not a checkerboard pattern — probably legitimate image content
-        logger.debug(
-            "checkerboard_cleanup: alternating_ratio=%.2f < 0.55, not a checkerboard",
-            alternating_ratio,
+    # Try multiple block sizes — Gemini can produce different-sized checkerboard grids
+    for block_size in (4, 8, 16, 32):
+        is_cb, ratio, shade_diff = _check_alternating_grid(
+            is_candidate,
+            brightness,
+            block_size,
+            h,
+            w,
         )
-        return img
+        if is_cb:
+            data[is_candidate, 3] = 0
+            logger.info(
+                "checkerboard_cleanup stripped %d pixels (block=%d, %.0f%% alt, shade_diff=%.0f)",
+                total_candidates,
+                block_size,
+                ratio * 100,
+                shade_diff,
+            )
+            from PIL import Image as _Img
 
-    # Step 6 — it IS a checkerboard: erase all candidate pixels
-    n = total_candidates
-    data[is_candidate, 3] = 0
-    logger.info(
-        "checkerboard_cleanup stripped %d checkerboard pixels (%.0f%% alternating, shade_diff=%.0f)",
-        n,
-        alternating_ratio * 100,
-        shade_diff,
-    )
+            return _Img.fromarray(data, "RGBA")
+        logger.debug(
+            "checkerboard_cleanup: block=%d ratio=%.2f shade=%.0f — no match",
+            block_size,
+            ratio,
+            shade_diff,
+        )
 
-    from PIL import Image as _Img
-
-    return _Img.fromarray(data, "RGBA")
+    logger.debug("checkerboard_cleanup: no alternating pattern found at any block size")
+    return img
 
 
 def _postprocess_crop_and_center(
