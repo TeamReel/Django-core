@@ -14,6 +14,7 @@ import PeriodEditModal from '../identity/PeriodEditModal';
 import MatchCreateModal from '../identity/MatchCreateModal';
 import MatchEditModal from '../identity/MatchEditModal';
 import MatchDetailModal from '../identity/MatchDetailModal';
+import AddMemberModal from '../identity/AddMemberModal';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import ProjectSeasonMemberDetailPage from './ProjectSeasonMemberDetailPage';
 import MobileTabBar from '../../components/MobileTabBar';
@@ -950,7 +951,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const [isMembershipEditModalOpen, setIsMembershipEditModalOpen] = useState(false);
   const [selectedMembershipEdit, setSelectedMembershipEdit] = useState<any | null>(null);
 
-  const [isCreateUserHelpModalOpen, setIsCreateUserHelpModalOpen] = useState(false);
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
   // Load active context on mount
   useEffect(() => {
@@ -2078,7 +2079,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold">Users</h3>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        <Button onClick={() => setIsCreateUserHelpModalOpen(true)}>Create User</Button>
+                        <Button onClick={() => setIsAddMemberOpen(true)}>Add Member</Button>
                         <Button variant="secondary" onClick={() => navigate(projectDetailPath)}>
                           Manage Users
                         </Button>
@@ -2270,10 +2271,23 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 }}
               />
 
-              <CreateUserHelpModal
-                opened={isCreateUserHelpModalOpen}
-                onClose={() => setIsCreateUserHelpModalOpen(false)}
-                onManageUsers={() => navigate(projectDetailPath)}
+              <AddMemberModal
+                isOpen={isAddMemberOpen}
+                onClose={() => setIsAddMemberOpen(false)}
+                onSuccess={() => {
+                  setIsAddMemberOpen(false);
+                  // Refresh members
+                  setMembersLoading(true);
+                  const fetchUrl = `${apiBaseUrl}/api/v1/projects/${project?.id || projectSlugOrId}/members/?page_size=250`;
+                  fetchAllPages(fetchUrl, { credentials: 'include' })
+                    .then((all: any[]) => setMembers(all))
+                    .catch(() => {})
+                    .finally(() => setMembersLoading(false));
+                }}
+                contextLevel={isTeamRoute ? 'team' : 'club'}
+                orgSlug={orgSlugOrId}
+                clubProjectId={isTeamRoute ? (club?.id || clubSlugOrId) : (project?.id || projectSlugOrId)}
+                teamProjectId={isTeamRoute ? (project?.id || projectSlugOrId) : undefined}
               />
             </>
           )}

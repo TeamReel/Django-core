@@ -25,7 +25,7 @@ import ProjectEditModal from './ProjectEditModal';
 import ProjectCreateModal from './ProjectCreateModal';
 import PeriodCreateModal from './PeriodCreateModal';
 import MatchCreateModal from './MatchCreateModal';
-import InviteMemberModal from './InviteMemberModal';
+import AddMemberModal from './AddMemberModal';
 import UserDetailModal from './UserDetailModal';
 import {
   canEditOrganisation,
@@ -106,7 +106,7 @@ export const OrganisationDetailPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateClubModalOpen, setIsCreateClubModalOpen] = useState(false);
   const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
-  const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isCreateSeasonModalOpen, setIsCreateSeasonModalOpen] = useState(false);
   const [isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen] = useState(false);
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
@@ -2183,13 +2183,14 @@ export const OrganisationDetailPage: React.FC = () => {
         }}
       />
 
-      <InviteMemberModal
-        opened={isInviteMemberModalOpen}
-        onClose={() => setIsInviteMemberModalOpen(false)}
-        orgSlug={String(currentOrgSlug || '')}
-        onInviteSuccess={() => {
+      <AddMemberModal
+        isOpen={isAddMemberModalOpen}
+        onClose={() => setIsAddMemberModalOpen(false)}
+        onSuccess={() => {
           fetchMembers(true);
         }}
+        contextLevel="organisation"
+        orgSlug={String(currentOrgSlug || '')}
       />
 
       <PeriodCreateModal
