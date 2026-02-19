@@ -25,6 +25,10 @@ from django.utils import timezone
 # Base types are safe to import (no external dependencies)
 from src.generative.executors.base import ErrorCategory as ExecutorErrorCategory
 
+# ── AI asset generation tasks (Celery auto-discovery) ──
+# This import ensures Celery registers tasks from tasks_asset.py
+from src.generative.tasks_asset import generate_asset_task  # noqa: F401
+
 # ExecutorFactory is imported inside task functions to avoid loading openai at Celery startup
 if TYPE_CHECKING:
     pass

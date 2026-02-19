@@ -620,6 +620,12 @@ def generate_asset(
 
     results = []
     for i in range(variant_count):
+        # Inter-request delay to prevent Gemini rate limiting (skip first)
+        if i > 0:
+            delay = 1.5  # 1.5s between variants
+            logger.info("Waiting %.1fs before variant %d (rate-limit protection)", delay, i + 1)
+            time.sleep(delay)
+
         try:
             # Build content parts: prompt text + all input images
             content_parts = [final_prompt]
@@ -782,7 +788,7 @@ def generate_video(
     - Else if GOOGLE_API_KEY is set → use Google Veo 3.1 (legacy, often content-blocked)
     - Else → error
 
-    Videos are 6 seconds, 9:16 vertical, with chroma-key background for compositing.
+    Videos are 4 seconds, 9:16 vertical, with chroma-key background for compositing.
     Input: player in tenue image as first_frame_image for image-to-video generation.
 
     Args:
@@ -1085,7 +1091,9 @@ def _generate_video_veo(
     client = genai.Client(api_key=api_key)
 
     video_config = template.get("video_config", {})
-    duration = video_config.get("duration_seconds", 6)
+    duration = video_config.get(
+        "duration_seconds", 4
+    )  # 4s default (reduced from 6s for cost/speed)
     aspect_ratio = video_config.get("aspect_ratio", "9:16")
     resolution = video_config.get("resolution", "720p")
     loop_video = video_config.get("loop", False)

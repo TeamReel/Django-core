@@ -3,8 +3,8 @@
  *
  * Manages the AI asset generation flow:
  * 1. Submit generation request (template + params + input image URLs)
- * 2. For images: wait for synchronous response (30-90s per variant)
- *    For videos: receive task_id (202) then poll /status/ until complete
+ * 2. All requests (images + videos) go through the Celery ai_generation queue
+ *    → Backend returns 202 + task_id, frontend polls /status/ until complete
  * 3. Display variants for selection
  *
  * Integrates with backend: POST /api/v1/generative/assets/generate/
@@ -225,7 +225,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
       setContext(saveContext);
 
-      // Simulate progress while waiting (images take 30-90s)
+      // Simulate progress while waiting (all requests are queued now)
       const progressTimer = setInterval(() => {
         setProgress((prev) => Math.min(prev + 1, 90));
       }, 3000);

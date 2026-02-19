@@ -287,7 +287,7 @@ def generate_asset_view(request: Request) -> Response:
 
     # Run the appropriate pipeline based on output type
     if output_type == "video":
-        # Video generation is async: start in background thread, return task_id.
+        # Video generation is async via Celery queue (ai_generation).
         # Frontend polls GET .../generate/<task_id>/status/ for result.
         try:
             task_id = str(uuid_mod.uuid4())
@@ -310,37 +310,64 @@ def generate_asset_view(request: Request) -> Response:
             _set_task(
                 task_id,
                 {
-                    "status": "processing",
-                    "progress": 5,
-                    "message": "Video generation started…",
+                    "status": "queued",
+                    "progress": 2,
+                    "message": "Video generation queued…",
                 },
             )
 
-            # Launch generation in a background thread so the HTTP response
-            # returns immediately (Railway proxy has a ~300 s timeout).
-            thread = threading.Thread(
-                target=_run_video_generation,
-                kwargs={
-                    "task_id": task_id,
-                    "template_id": template_id,
-                    "params": params,
-                    "input_images": input_images,
-                    "user_id": user_id,
-                    "organisation_id": str(organisation_id) if organisation_id else None,
-                    "storage_context": storage_context,
-                    "variant_count": variant_count,
-                },
-                daemon=True,
-            )
-            thread.start()
+            # Encode images to base64 for Celery serialization (JSON-safe)
+            input_images_b64_for_celery: dict[str, str] = {}
+            for key, img_bytes in input_images.items():
+                input_images_b64_for_celery[key] = base64.b64encode(img_bytes).decode("utf-8")
 
-            logger.info("Video generation task %s started in background thread", task_id)
+            # Dispatch to Celery ai_generation queue (rate-limited, sequential)
+            from .tasks_asset import generate_asset_task
+
+            try:
+                generate_asset_task.apply_async(
+                    kwargs={
+                        "job_id": task_id,
+                        "template_id": template_id,
+                        "params": params,
+                        "input_images_b64": input_images_b64_for_celery,
+                        "variant_count": variant_count,
+                        "output_type": "video",
+                        "user_id": user_id,
+                        "organisation_id": str(organisation_id) if organisation_id else None,
+                        "storage_context": storage_context,
+                    },
+                    queue="ai_generation",
+                )
+                logger.info("Video generation task %s dispatched to ai_generation queue", task_id)
+            except Exception as celery_err:
+                # Celery broker unavailable — fallback to old threading approach
+                logger.warning(
+                    "Celery dispatch failed (%s), falling back to thread for task %s",
+                    celery_err,
+                    task_id,
+                )
+                thread = threading.Thread(
+                    target=_run_video_generation,
+                    kwargs={
+                        "task_id": task_id,
+                        "template_id": template_id,
+                        "params": params,
+                        "input_images": input_images,
+                        "user_id": user_id,
+                        "organisation_id": str(organisation_id) if organisation_id else None,
+                        "storage_context": storage_context,
+                        "variant_count": variant_count,
+                    },
+                    daemon=True,
+                )
+                thread.start()
 
             return Response(
                 {
-                    "status": "processing",
+                    "status": "queued",
                     "task_id": task_id,
-                    "message": "Video generation started. Poll /status/ for result.",
+                    "message": "Video generation queued. Poll /status/ for result.",
                 },
                 status=status.HTTP_202_ACCEPTED,
             )
@@ -357,15 +384,104 @@ def generate_asset_view(request: Request) -> Response:
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    # Image generation (default)
+    # Image generation — also async via Celery queue (ai_generation).
+    # All AI calls are rate-limited and tracked through the workflow queue.
     try:
-        from .services.asset_pipeline import generate_asset
+        task_id = str(uuid_mod.uuid4())
 
-        results = generate_asset(
-            template_id=template_id,
-            params=params,
-            input_images=input_images,
-            variant_count=variant_count,
+        user_id = request.user.id if request.user and request.user.is_authenticated else None
+
+        storage_context = {
+            "project_id": str(project_id) if project_id else None,
+            "membership_id": str(membership_id) if membership_id else None,
+            "activity_id": str(activity_id) if activity_id else None,
+            "asset_type": asset_type,
+            "save_to_brand": save_to_brand,
+            "save_to_media_library": save_to_media_library,
+        }
+
+        _set_task(
+            task_id,
+            {
+                "status": "queued",
+                "progress": 2,
+                "message": "Image generation queued…",
+            },
+        )
+
+        # Encode images to base64 for Celery serialization
+        input_images_b64_for_celery: dict[str, str] = {}
+        for key, img_bytes in input_images.items():
+            input_images_b64_for_celery[key] = base64.b64encode(img_bytes).decode("utf-8")
+
+        from .tasks_asset import generate_asset_task
+
+        try:
+            generate_asset_task.apply_async(
+                kwargs={
+                    "job_id": task_id,
+                    "template_id": template_id,
+                    "params": params,
+                    "input_images_b64": input_images_b64_for_celery,
+                    "variant_count": variant_count,
+                    "output_type": "image",
+                    "user_id": user_id,
+                    "organisation_id": str(organisation_id) if organisation_id else None,
+                    "storage_context": storage_context,
+                },
+                queue="ai_generation",
+            )
+            logger.info("Image generation task %s dispatched to ai_generation queue", task_id)
+        except Exception as celery_err:
+            # Celery broker unavailable — fallback to synchronous generation
+            logger.warning(
+                "Celery dispatch failed (%s), falling back to sync for task %s",
+                celery_err,
+                task_id,
+            )
+            try:
+                from .services.asset_pipeline import generate_asset
+
+                results = generate_asset(
+                    template_id=template_id,
+                    params=params,
+                    input_images=input_images,
+                    variant_count=variant_count,
+                )
+                variants = []
+                for r in results:
+                    variants.append(
+                        {
+                            "variant_index": r.get("variant_index", 0),
+                            "image_base64": r.get("image_base64"),
+                            "mime_type": r.get("mime_type"),
+                            "filename": r.get("filename"),
+                            "error": r.get("error"),
+                            "metadata": r.get("metadata"),
+                        }
+                    )
+                _set_task(
+                    task_id,
+                    {
+                        "status": "completed",
+                        "progress": 100,
+                        "data": {
+                            "template_id": template_id,
+                            "variant_count": len(variants),
+                            "variants": variants,
+                        },
+                    },
+                )
+            except Exception as gen_err:
+                _set_task(task_id, {"status": "failed", "error": str(gen_err)})
+
+        return Response(
+            {
+                "status": "queued",
+                "task_id": task_id,
+                "message": "Image generation queued. Poll /status/ for result.",
+            },
+            status=status.HTTP_202_ACCEPTED,
         )
     except ValueError as e:
         return Response(
@@ -373,7 +489,7 @@ def generate_asset_view(request: Request) -> Response:
             status=status.HTTP_400_BAD_REQUEST,
         )
     except Exception as e:  # noqa: BLE001
-        logger.exception("Asset generation failed: %s", e)
+        logger.exception("Image generation dispatch failed: %s", e)
         return Response(
             {"error": f"Generation failed: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -1373,6 +1489,127 @@ def restore_asset_version_view(request: Request) -> Response:
 # =============================================================================
 
 
+def _run_video_upload(
+    *,
+    task_id: str,
+    template_id: str,
+    params: dict[str, str],
+    result: dict[str, Any],
+    organisation_id: str | None,
+    storage_context: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Upload video variants to S3 and return variant dicts with presigned URLs.
+
+    Extracted from _run_video_generation to be reusable by Celery tasks.
+    """
+    from files.utils import get_storage_backend as _get_sb
+
+    v_storage = _get_sb()
+    v_org = None
+    if organisation_id:
+        try:
+            from organisations.models import Organisation as Org
+
+            v_org = Org.objects.get(id=organisation_id)
+        except Exception:
+            pass
+
+    variants: list[dict[str, Any]] = []
+    all_variants = result.get("variants") or []
+    if not all_variants:
+        all_variants = [result]
+
+    membership_id = storage_context.get("membership_id")
+
+    for i, v_result in enumerate(all_variants):
+        variant: dict[str, Any] = {
+            "variant_index": i,
+            "mime_type": v_result.get("mime_type") or "video/mp4",
+            "filename": v_result.get("filename"),
+        }
+
+        v_bytes = v_result.get("video_bytes")
+        v_url = v_result.get("video_url")
+        v_spath = v_result.get("storage_path")
+        v_faid = v_result.get("file_asset_id")
+
+        if v_url:
+            variant["video_url"] = v_url
+            variant["file_asset_id"] = v_faid
+            variant["storage_path"] = v_spath
+        elif v_spath and v_faid:
+            variant["file_asset_id"] = v_faid
+            variant["storage_path"] = v_spath
+            try:
+                purl = v_storage.get_url(v_spath, signed=True)
+                variant["video_url"] = purl
+                variant["presigned_url"] = purl
+            except Exception as url_err:
+                logger.warning("Presigned URL failed for %s: %s", v_spath, url_err)
+        elif v_bytes and v_org:
+            try:
+                from django.core.files.base import ContentFile
+                from django.utils import timezone
+
+                fname = v_result.get("filename") or f"video_{i}.mp4"
+                ts = timezone.now().strftime("%Y%m%d")
+                sfx = str(uuid_mod.uuid4())[:8]
+
+                ctx_type = params.get("template_type", "output")
+                ctx_sub = params.get("template_subtype", "")
+                folder = f"{ctx_type}/{ctx_sub}" if ctx_sub else ctx_type
+
+                name_parts = fname.rsplit(".", 1)
+                uf = (
+                    f"{name_parts[0]}_{ts}_{sfx}.{name_parts[1]}"
+                    if len(name_parts) == 2
+                    else f"{fname}_{ts}_{sfx}"
+                )
+
+                if membership_id:
+                    sp = f"members/{membership_id}/generated/{folder}/{uf}"
+                elif v_org:
+                    sp = f"orgs/{v_org.id}/generated/{folder}/{uf}"
+                else:
+                    sp = f"generated/{folder}/{uf}"
+
+                fo = ContentFile(v_bytes, name=fname)
+                final_sp = v_storage.save(sp, fo)
+
+                from files.models import FileAsset
+
+                fa = FileAsset.objects.create(
+                    organization=v_org,
+                    original_name=fname,
+                    storage_path=final_sp,
+                    file_size=len(v_bytes),
+                    mime_type="video/mp4",
+                    is_public=False,
+                    metadata={"source": "ai_generation", "template_id": template_id},
+                )
+
+                try:
+                    purl = v_storage.get_url(final_sp, signed=True)
+                except Exception:
+                    purl = None
+
+                variant["video_url"] = purl
+                variant["storage_path"] = final_sp
+                variant["file_asset_id"] = str(fa.id)
+                logger.info("Video upload variant %d stored: %s", i, final_sp)
+            except Exception as store_err:
+                logger.exception("Video upload variant %d S3 failed: %s", i, store_err)
+                variant["video_base64"] = base64.b64encode(v_bytes).decode("utf-8")
+        elif v_bytes:
+            variant["video_base64"] = base64.b64encode(v_bytes).decode("utf-8")
+        elif v_result.get("video_base64"):
+            variant["video_base64"] = v_result["video_base64"]
+
+        variants.append(variant)
+
+    return variants
+
+
 def _run_video_generation(
     *,
     task_id: str,
@@ -1438,112 +1675,14 @@ def _run_video_generation(
             },
         )
 
-        from files.utils import get_storage_backend as _get_sb
-
-        v_storage = _get_sb()
-        v_org = None
-        if organisation_id:
-            try:
-                from organisations.models import Organisation as Org
-
-                v_org = Org.objects.get(id=organisation_id)
-            except Exception:
-                pass
-
-        variants: list[dict[str, Any]] = []
-        all_variants = result.get("variants") or []
-        if not all_variants:
-            all_variants = [result]
-
-        membership_id = storage_context.get("membership_id")
-
-        for i, v_result in enumerate(all_variants):
-            variant: dict[str, Any] = {
-                "variant_index": i,
-                "mime_type": v_result.get("mime_type") or "video/mp4",
-                "filename": v_result.get("filename"),
-            }
-
-            v_bytes = v_result.get("video_bytes")
-            v_url = v_result.get("video_url")
-            v_spath = v_result.get("storage_path")
-            v_faid = v_result.get("file_asset_id")
-
-            if v_url:
-                variant["video_url"] = v_url
-                variant["file_asset_id"] = v_faid
-                variant["storage_path"] = v_spath
-            elif v_spath and v_faid:
-                variant["file_asset_id"] = v_faid
-                variant["storage_path"] = v_spath
-                try:
-                    purl = v_storage.get_url(v_spath, signed=True)
-                    variant["video_url"] = purl
-                    variant["presigned_url"] = purl
-                except Exception as url_err:
-                    logger.warning("Presigned URL failed for %s: %s", v_spath, url_err)
-            elif v_bytes and v_org:
-                try:
-                    from django.core.files.base import ContentFile
-                    from django.utils import timezone
-
-                    fname = v_result.get("filename") or f"video_{i}.mp4"
-                    ts = timezone.now().strftime("%Y%m%d")
-                    sfx = str(uuid_mod.uuid4())[:8]
-
-                    ctx_type = params.get("template_type", "output")
-                    ctx_sub = params.get("template_subtype", "")
-                    folder = f"{ctx_type}/{ctx_sub}" if ctx_sub else ctx_type
-
-                    name_parts = fname.rsplit(".", 1)
-                    uf = (
-                        f"{name_parts[0]}_{ts}_{sfx}.{name_parts[1]}"
-                        if len(name_parts) == 2
-                        else f"{fname}_{ts}_{sfx}"
-                    )
-
-                    if membership_id:
-                        sp = f"members/{membership_id}/generated/{folder}/{uf}"
-                    elif v_org:
-                        sp = f"orgs/{v_org.id}/generated/{folder}/{uf}"
-                    else:
-                        sp = f"generated/{folder}/{uf}"
-
-                    fo = ContentFile(v_bytes, name=fname)
-                    final_sp = v_storage.save(sp, fo)
-
-                    from files.models import FileAsset
-
-                    fa = FileAsset.objects.create(
-                        organization=v_org,
-                        original_name=fname,
-                        storage_path=final_sp,
-                        file_size=len(v_bytes),
-                        mime_type="video/mp4",
-                        is_public=False,
-                        metadata={"source": "ai_generation", "template_id": template_id},
-                    )
-
-                    try:
-                        purl = v_storage.get_url(final_sp, signed=True)
-                    except Exception:
-                        purl = None
-
-                    variant["video_url"] = purl
-                    variant["storage_path"] = final_sp
-                    variant["file_asset_id"] = str(fa.id)
-                    logger.info("Video task %s variant %d stored: %s", task_id, i, final_sp)
-                except Exception as store_err:
-                    logger.exception(
-                        "Video task %s variant %d S3 failed: %s", task_id, i, store_err
-                    )
-                    variant["video_base64"] = base64.b64encode(v_bytes).decode("utf-8")
-            elif v_bytes:
-                variant["video_base64"] = base64.b64encode(v_bytes).decode("utf-8")
-            elif v_result.get("video_base64"):
-                variant["video_base64"] = v_result["video_base64"]
-
-            variants.append(variant)
+        variants = _run_video_upload(
+            task_id=task_id,
+            template_id=template_id,
+            params=params,
+            result=result,
+            organisation_id=organisation_id,
+            storage_context=storage_context,
+        )
 
         # ── Store completed result ──────────────────────────────────────
         _set_task(
@@ -1578,10 +1717,13 @@ def _run_video_generation(
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def generation_task_status_view(request: Request, task_id: str) -> Response:
-    """Poll for async video generation status.
+    """Poll for async generation status (images + videos).
+
+    All AI generation now goes through the Celery ai_generation queue.
+    Frontend polls this endpoint for both image and video tasks.
 
     Returns:
-        - 200 with status "processing" / "completed" / "failed"
+        - 200 with status "queued" / "waiting" / "processing" / "completed" / "failed"
         - 404 if task_id is unknown (expired or never existed)
     """
     task = _get_task(task_id)

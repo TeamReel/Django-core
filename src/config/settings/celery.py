@@ -53,10 +53,14 @@ CELERY_WORKER_HIJACK_ROOT_LOGGER = False  # Use Django logging
 # B55: Video Processing Pipeline - Tiered Queue Configuration
 # video_fast: Quick operations (thumbnails, metadata extraction) - concurrency=2
 # video_slow: Heavy operations (transcoding, composition) - concurrency=1
+# ai_generation: AI API calls (Gemini/MiniMax/Veo) - concurrency=1, rate-limited
+#   → Sequential processing prevents API overload and reduces costs
+#   → Run worker: celery -A src.config worker -Q ai_generation -c 1
 CELERY_TASK_QUEUES = (
     Queue("default", routing_key="default"),
     Queue("video_fast", routing_key="video.fast"),
     Queue("video_slow", routing_key="video.slow"),
+    Queue("ai_generation", routing_key="ai.generation"),
 )
 
 CELERY_TASK_ROUTES = {
@@ -66,6 +70,8 @@ CELERY_TASK_ROUTES = {
     "src.video.tasks.lineup.process_lineup_video": {"queue": "default"},
     # B56: RVM asset processing - heavy GPU/CPU operation
     "src.video.tasks.asset_processing.process_member_asset": {"queue": "video_slow"},
+    # AI generation: rate-limited queue for all Gemini/MiniMax/Veo calls
+    "generative.tasks.generate_asset_task": {"queue": "ai_generation"},
 }
 
 # Periodic Task Scheduling (celery-beat)
