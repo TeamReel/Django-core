@@ -1104,7 +1104,7 @@ export function AssetsTab({
             </AssetGrid>
           </div>
 
-          {/* Sponsor - can override */
+          {/* Sponsor - can override */}
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Sponsor</div>
             <AssetGrid>
