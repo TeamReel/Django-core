@@ -338,26 +338,27 @@ def render_header_pil(  # noqa: PLR0913
     home_name = own_team_name if is_home else opponent_name
     away_name = opponent_name if is_home else own_team_name
     match_title = f"{home_name} - {away_name}"
-    _draw_centered_text(draw, match_title.upper(), cx, int(height * 0.42), fonts["match"], white)
+    _draw_centered_text(draw, match_title.upper(), cx, int(height * 0.38), fonts["match"], white)
 
-    # Competition + date on one line
-    comp_text = competition_name.upper() if competition_name else ""
+    # Competition name
+    if competition_name:
+        comp_text = competition_name.upper()
+        _draw_centered_text(draw, comp_text, cx, int(height * 0.56), fonts["sm"], white)
+
+    # Venue (home club location)
+    if venue:
+        venue_text = venue.upper()
+        _draw_centered_text(draw, venue_text, cx, int(height * 0.70), fonts["xs"], white)
+
+    # Date + kickoff time
     date_str = match_date or ""
     time_str = kickoff_time or ""
     if time_str:
         dt_text = f"{date_str}  \u2022  {time_str}"
     else:
         dt_text = date_str
-    # Build combined line: "EREDIVISIE  •  15-02-2026  •  14:30"
-    parts = [p for p in [comp_text, dt_text.strip().upper()] if p]
-    info_line = "  \u2022  ".join(parts)
-    if info_line:
-        _draw_centered_text(draw, info_line, cx, int(height * 0.62), fonts["sm"], white)
-
-    # Venue
-    if venue:
-        venue_text = venue.upper()
-        _draw_centered_text(draw, venue_text, cx, int(height * 0.80), fonts["xs"], white)
+    if dt_text.strip():
+        _draw_centered_text(draw, dt_text.upper(), cx, int(height * 0.84), fonts["sm"], white)
 
     # Determine home/away logos based on is_home
     home_logo_url = logo_url if is_home else opponent_logo_url
