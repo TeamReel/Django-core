@@ -450,11 +450,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     const projectId = String((project as any)?.id || '').trim();
     if (!projectId) return;
 
-    // Get team kit (tenue) and brand assets
-    const tenueUrl = (club as any)?.metadata?.teamreel_assets?.tenue?.url;
-    const logoUrl = (club as any)?.metadata?.teamreel_assets?.logo?.url;
-    const sponsorUrl = (season as any)?.metadata?.teamreel_assets?.sponsor?.url
-      || (club as any)?.metadata?.teamreel_assets?.sponsor?.url;
+    // Get team kit (tenue) and brand assets from BrandProfile (not project.metadata)
+    const kitAsset = clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home');
+    const tenueUrl = kitAsset ? getAssetUrl(kitAsset.url) : null;
+    const logoAsset = clubBrand.getAsset?.('logo') || clubBrand.getAsset?.('logo_upload');
+    const logoUrl = logoAsset ? getAssetUrl(logoAsset.url) : null;
+    const sponsorAsset = clubBrand.getAsset?.('sponsor_logo') || clubBrand.getAsset?.('sponsor_logo_upload');
+    const sponsorUrl = sponsorAsset ? getAssetUrl(sponsorAsset.url) : null;
 
     if (!tenueUrl) {
       alert('Club tenue ontbreekt. Upload eerst het kit-afbeelding via de Assets tab.');
@@ -571,7 +573,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     } finally {
       setGuestPlayerGenerating(false);
     }
-  }, [project, club, season, apiBaseUrl]);
+  }, [project, clubBrand, apiBaseUrl]);
 
   const savePeriodEdits = async (periodToEdit: any, patch: any) => {
     const periodId = String(periodToEdit?.id || '').trim();

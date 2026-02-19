@@ -2016,6 +2016,142 @@ def set_avatar_from_path(request):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def admin_update_avatar(request, user_id):
+    """Upload/update a user's avatar image (admin only).
+
+    Accepts multipart/form-data with an 'avatar' file field.
+    Requires the requestor to be a global admin or to have profile.edit_team
+    permission on a project where the target user has a membership.
+    """
+    try:
+        target_user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "not_found", "message": "User not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Permission check: global admin or profile.edit_team scoped admin
+    is_global_admin = request.user.is_superuser or request.user.groups.filter(name="admin").exists()
+    is_self = user_id == request.user.id
+
+    if not is_global_admin and not is_self:
+        from permissions.models import RoleAssignment, ScopeChoices
+        from projects.models import Project, ProjectMembership
+
+        org_scope_ids = set(
+            RoleAssignment.objects.filter(
+                user=request.user,
+                scope=ScopeChoices.ORGANIZATION,
+                role__permissions__permission="profile.edit_team",
+            ).values_list("target_organization_id", flat=True)
+        )
+        project_scope_ids = set(
+            RoleAssignment.objects.filter(
+                user=request.user,
+                scope=ScopeChoices.PROJECT,
+                role__permissions__permission="profile.edit_team",
+            ).values_list("target_project_id", flat=True)
+        )
+
+        allowed_project_ids: set[str] = set()
+        if org_scope_ids:
+            allowed_project_ids.update(
+                Project.all_objects.filter(organisation_id__in=org_scope_ids).values_list(
+                    "id", flat=True
+                )
+            )
+        if project_scope_ids:
+            allowed_project_ids.update(
+                Project.all_objects.filter(id__in=project_scope_ids).values_list("id", flat=True)
+            )
+            allowed_project_ids.update(
+                Project.all_objects.filter(parent_project_id__in=project_scope_ids).values_list(
+                    "id", flat=True
+                )
+            )
+
+        has_access = False
+        if allowed_project_ids:
+            has_access = ProjectMembership.objects.filter(
+                user=target_user,
+                project_id__in=allowed_project_ids,
+                deleted_at__isnull=True,
+            ).exists()
+
+        if not has_access:
+            # Fallback: org admin via legacy membership
+            from organisations.models import Membership
+
+            requestor_org_ids = set(
+                Membership.objects.filter(
+                    user=request.user, role="admin", is_active=True
+                ).values_list("organisation_id", flat=True)
+            )
+            target_org_ids = set(
+                target_user.organisation_memberships.values_list("organisation_id", flat=True)
+            )
+            if not requestor_org_ids.intersection(target_org_ids):
+                return Response(
+                    {"detail": "You do not have permission to update this user's avatar."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+    file_obj = (request.FILES or {}).get("avatar")
+    if not file_obj:
+        return Response(
+            {"error": "validation_error", "message": "avatar file is required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    content_type = getattr(file_obj, "content_type", "") or ""
+    if not content_type.startswith("image/"):
+        return Response(
+            {"error": "validation_error", "message": "Avatar must be an image."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    import os
+
+    original_name = str(getattr(file_obj, "name", "") or "").strip()
+    safe_name = os.path.basename(original_name.replace("\\", "/")) or "avatar"
+    file_obj.name = safe_name
+
+    try:
+        target_user.avatar = file_obj
+        target_user.save(update_fields=["avatar"])
+        audit_log.record(
+            "auth.avatar_updated",
+            user=request.user,
+            request=request,
+            metadata={"target_user_id": str(target_user.id)},
+        )
+    except Exception:
+        import logging
+
+        logging.getLogger(__name__).exception(
+            "Admin avatar upload failed",
+            extra={"user_id": user_id, "admin_id": request.user.id},
+        )
+        return Response(
+            {"error": "server_error", "message": "Failed to save avatar."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    from accounts.utils import get_avatar_url
+
+    return Response(
+        {
+            "status": "success",
+            "data": {"avatar_url": get_avatar_url(target_user.avatar)},
+            "meta": {"timestamp": timezone.now().isoformat()},
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def password_reset_request_api(request):
     """API endpoint for password reset request with no email enumeration."""

@@ -55,4 +55,9 @@ urlpatterns = [
         views.admin_change_role,
         name="api_admin_change_role",
     ),
+    path(
+        "admin/users/<int:user_id>/avatar/",
+        views.admin_update_avatar,
+        name="api_admin_update_avatar",
+    ),
 ]

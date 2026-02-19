@@ -51,6 +51,11 @@ export default function UserEditModal({
   const [saving, setSaving] = useState(false);
   const [extraError, setExtraError] = useState<string | null>(null);
 
+  // Avatar upload state
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
   const [orgRole, setOrgRole] = useState<'member' | 'admin'>('member');
   const [orgMembershipId, setOrgMembershipId] = useState<string | null>(null);
 
@@ -106,6 +111,35 @@ export default function UserEditModal({
   };
 
   const getCsrfToken = () => getCookie('csrftoken') || '';
+
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarPreview(URL.createObjectURL(file));
+    uploadAvatar(file);
+  };
+
+  const uploadAvatar = async (file: File) => {
+    if (!user?.id) return;
+    setAvatarUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('avatar', file);
+      const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${user.id}/avatar/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'X-CSRFToken': getCsrfToken() },
+        body: fd,
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      onSaved?.();
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      setExtraError('Avatar upload mislukt.');
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
 
   const availableProjects = useMemo<ProjectChoice[]>(() => {
     const list = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
@@ -182,6 +216,7 @@ export default function UserEditModal({
         // Reset selections
         setSelectedClubKey('');
         setSelectedTeamKey('');
+        setAvatarPreview(null);
 
         // Attempt to apply scope
         const forced = String(scopeProjectKey || '').trim();
@@ -682,6 +717,63 @@ export default function UserEditModal({
             {activeTab === 'personal' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div style={{ fontWeight: 800, marginBottom: '2px' }}>Personal settings</div>
+
+                {/* Profile photo */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div
+                    style={{
+                      width: '72px',
+                      height: '72px',
+                      borderRadius: '50%',
+                      overflow: 'hidden',
+                      border: '2px solid var(--app-border)',
+                      flexShrink: 0,
+                      background: 'var(--app-surface-2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {avatarPreview || (user as any)?.avatar_url ? (
+                      <img
+                        src={avatarPreview || (user as any)?.avatar_url}
+                        alt="Avatar"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: '28px', color: 'var(--app-muted-text)' }}>
+                        {(user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={avatarUploading}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--app-border)',
+                        background: 'var(--app-surface-2)',
+                        color: 'var(--app-text)',
+                        cursor: avatarUploading ? 'wait' : 'pointer',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {avatarUploading ? 'Uploading...' : 'Change photo'}
+                    </button>
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={handleAvatarSelect}
+                    />
+                    <span style={{ fontSize: '11px', color: 'var(--app-muted-text)' }}>JPG, PNG — max 5 MB</span>
+                  </div>
+                </div>
 
                 <div style={{ display: 'flex', gap: '16px' }}>
                   <div style={{ flex: 1 }}>
