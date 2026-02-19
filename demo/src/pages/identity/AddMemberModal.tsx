@@ -193,8 +193,10 @@ export default function AddMemberModal({
           credentials: 'include',
         });
         if (!res.ok) throw new Error('Search failed');
-        const data = await res.json();
-        setSearchResults(data.results ?? data ?? []);
+        const json = await res.json();
+        // API uses envelope: { status, data: { results: [...] }, meta }
+        const payload = json.data ?? json;
+        setSearchResults(payload.results ?? payload ?? []);
       } catch {
         setSearchResults([]);
       } finally {
@@ -239,7 +241,8 @@ export default function AddMemberModal({
       });
       if (!orgRes.ok) {
         const d = await orgRes.json().catch(() => ({}));
-        const msg = d.email?.[0] || d.detail || d.non_field_errors?.[0] || '';
+        const details = d.error?.details || d;
+        const msg = details.email?.[0] || d.error?.message || d.detail || details.non_field_errors?.[0] || '';
         // "already exists" is fine — we still want to add to club/team
         if (!msg.toLowerCase().includes('already') && !msg.toLowerCase().includes('exists')) {
           throw new Error(msg || 'Failed to add member to federation');
@@ -254,7 +257,8 @@ export default function AddMemberModal({
         });
         if (!clubRes.ok) {
           const d = await clubRes.json().catch(() => ({}));
-          const msg = d.user_id?.[0] || d.detail || d.non_field_errors?.[0] || '';
+          const details = d.error?.details || d;
+          const msg = details.user_id?.[0] || d.error?.message || d.detail || details.non_field_errors?.[0] || '';
           if (!msg.toLowerCase().includes('already') && !msg.toLowerCase().includes('exists')) {
             throw new Error(msg || 'Failed to add member to club');
           }
@@ -269,7 +273,8 @@ export default function AddMemberModal({
         });
         if (!teamRes.ok) {
           const d = await teamRes.json().catch(() => ({}));
-          const msg = d.user_id?.[0] || d.detail || d.non_field_errors?.[0] || '';
+          const details = d.error?.details || d;
+          const msg = details.user_id?.[0] || d.error?.message || d.detail || details.non_field_errors?.[0] || '';
           if (!msg.toLowerCase().includes('already') && !msg.toLowerCase().includes('exists')) {
             throw new Error(msg || 'Failed to add member to team');
           }
@@ -317,12 +322,15 @@ export default function AddMemberModal({
 
       if (!createRes.ok) {
         const d = await createRes.json().catch(() => ({}));
+        const err = d.error?.details || d;
         throw new Error(
-          d.email?.[0] || d.password?.[0] || d.detail || 'Failed to create user',
+          err.email?.[0] || err.password?.[0] || d.error?.message || d.detail || 'Failed to create user',
         );
       }
 
-      const createdUser: UserResult = await createRes.json();
+      const json = await createRes.json();
+      // API uses envelope: { status, data: { id, email, ... }, meta }
+      const createdUser: UserResult = json.data ?? json;
 
       // 2) Add to hierarchy using the same logic as existing user
       await addExistingUser(createdUser);
