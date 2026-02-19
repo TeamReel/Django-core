@@ -2619,7 +2619,7 @@ export default function ContentGenerationModal({
                             whiteSpace: 'nowrap',
                             textAlign: 'center',
                           }}>
-                            {isGuestSelected ? '🏃 Gast' : `${jerseyNumber ? `#${jerseyNumber} ` : ''}${getMemberName(currentMember)}`}
+                            {isGuestSelected ? '🏃 Gast' : `${jerseyNumber ? `#${jerseyNumber} ` : ''}${currentMember ? getMemberName(currentMember) : ''}`}
                           </div>
                         )}
                       </div>
