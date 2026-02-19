@@ -52,18 +52,24 @@ TEMPLATES = {
 
 CRITICAL: Use the PROVIDED IMAGE as the source. Do NOT invent or generate a new logo. Reproduce the EXACT same logo from the input image.
 
-EDIT INSTRUCTIONS:
-1. REMOVE the background completely — output must have a {background_description} background.
-2. KEEP the logo itself pixel-perfect: preserve ALL original colors, shapes, text, emblems, and details EXACTLY as they appear in the input image.
-3. SCALE THE LOGO UP to fill approximately 85-90% of the canvas. The logo must be LARGE and DOMINANT — it should nearly touch the edges. Do NOT leave excessive empty space around it.
-4. CENTER the logo precisely on the canvas.
-5. Output format: Perfect square (1:1 aspect ratio), high resolution.
-6. Style: {style_description}.
-7. Clean up any compression artifacts or rough edges around the logo boundary.
-8. Do NOT add any decorations, shadows, glows, or effects not present in the original.
-9. The result should look like a professional brand asset file ready for print and digital use.
+STEP 1 — ANALYZE THE LOGO TYPE:
+Before editing, identify the logo structure: Is it a shield/badge, circle/oval, rectangle, freeform shape, or text-only? Note which areas are INSIDE the logo boundary and which are OUTSIDE (background).
 
-IMPORTANT: The most common mistake is making the logo too small. The logo MUST be large and fill the canvas.
+STEP 2 — EDIT INSTRUCTIONS:
+1. REMOVE the background OUTSIDE the logo boundary — output must have a {background_description} background.
+2. PRESERVE WHITE/LIGHT AREAS INSIDE THE LOGO: Many club logos contain white text (e.g. club name), white fills, or white sections as part of their design. These MUST remain white and fully opaque. For example: a shield with white letters "ASC" inside it — the white text and any white fill area within the badge must stay solid white. Only the area OUTSIDE the logo shape should become transparent.
+3. KEEP the logo itself pixel-perfect: preserve ALL original colors, shapes, text, emblems, and details EXACTLY as they appear in the input image.
+4. SCALE THE LOGO UP to fill approximately 85-90% of the canvas. The logo must be LARGE and DOMINANT — it should nearly touch the edges. Do NOT leave excessive empty space around it.
+5. CENTER the logo precisely on the canvas.
+6. Output format: Perfect square (1:1 aspect ratio), high resolution.
+7. Style: {style_description}.
+8. Clean up any compression artifacts or rough edges around the logo boundary.
+9. Do NOT add any decorations, shadows, glows, or effects not present in the original.
+10. The result should look like a professional brand asset file ready for print and digital use.
+
+CRITICAL MISTAKES TO AVOID:
+- Making the logo too small. The logo MUST be large and fill the canvas.
+- Making white parts inside the logo transparent. White text, white badge fills, and white stripes INSIDE the logo shape must remain opaque white.
 """,
     },
 

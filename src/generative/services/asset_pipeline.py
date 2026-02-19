@@ -89,6 +89,34 @@ PREPROCESSORS = {
 # =============================================================================
 
 
+def _border_connected_mask(is_candidate, h, w):  # noqa: ANN001, ANN201
+    """Return a mask of candidate pixels that are connected to the image border.
+
+    Uses connected-component labelling to find groups of candidate pixels.
+    Only groups that touch any edge of the image are considered background.
+    Interior groups (e.g. white text/fill inside a badge) are preserved.
+    """
+    import numpy as np
+    from scipy.ndimage import label
+
+    labeled, num_features = label(is_candidate)
+    if num_features == 0:
+        return np.zeros_like(is_candidate, dtype=bool)
+
+    # Collect labels that touch any border row/column
+    border_labels: set[int] = set()
+    border_labels.update(labeled[0, :].flat)  # top
+    border_labels.update(labeled[-1, :].flat)  # bottom
+    border_labels.update(labeled[:, 0].flat)  # left
+    border_labels.update(labeled[:, -1].flat)  # right
+    border_labels.discard(0)  # 0 = non-candidate background
+
+    if not border_labels:
+        return np.zeros_like(is_candidate, dtype=bool)
+
+    return np.isin(labeled, list(border_labels))
+
+
 def _check_alternating_grid(is_candidate, brightness, block, h, w):  # noqa: ANN001, ANN201
     """Check whether candidate pixels form an alternating grid at the given block size.
 
@@ -190,9 +218,14 @@ def _strip_checkerboard(img):  # noqa: ANN001, ANN201
             w,
         )
         if is_cb:
-            data[is_candidate, 3] = 0
+            # Only strip candidate pixels connected to the image border.
+            # Interior white areas (text, fills inside a badge) are preserved.
+            bg_mask = _border_connected_mask(is_candidate, h, w)
+            stripped = int(bg_mask.sum())
+            data[bg_mask, 3] = 0
             logger.info(
-                "checkerboard_cleanup stripped %d pixels (block=%d, %.0f%% alt, shade_diff=%.0f)",
+                "checkerboard_cleanup stripped %d/%d pixels (block=%d, %.0f%% alt, shade_diff=%.0f)",
+                stripped,
                 total_candidates,
                 block_size,
                 ratio * 100,
@@ -221,10 +254,15 @@ def _strip_checkerboard(img):  # noqa: ANN001, ANN201
     border_avg = (top + bot + lft + rgt) / 4.0
 
     if border_avg > 0.60 and candidate_ratio > 0.08:
-        data[is_candidate, 3] = 0
+        # Only strip candidate pixels connected to the image border.
+        # Interior white areas (text, fills inside a badge) are preserved.
+        bg_mask = _border_connected_mask(is_candidate, h, w)
+        stripped = int(bg_mask.sum())
+        data[bg_mask, 3] = 0
         logger.info(
-            "checkerboard_cleanup fallback: stripped %d bg pixels "
+            "checkerboard_cleanup fallback: stripped %d/%d bg pixels "
             "(border_avg=%.0f%%, candidate_ratio=%.0f%%)",
+            stripped,
             total_candidates,
             border_avg * 100,
             candidate_ratio * 100,
