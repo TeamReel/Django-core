@@ -89,6 +89,36 @@ PREPROCESSORS = {
 # =============================================================================
 
 
+def _strip_checkerboard(img):  # noqa: ANN001, ANN201
+    """Remove checkerboard artifacts from AI-generated RGBA images.
+
+    Gemini sometimes renders a visible grey/white checkerboard grid into the
+    RGB pixels (with alpha=255) instead of making the background truly
+    transparent.  This detects achromatic light pixels and forces them to
+    alpha=0.
+    """
+    import numpy as np
+
+    data = np.array(img)
+    r, g, b, a = data[:, :, 0], data[:, :, 1], data[:, :, 2], data[:, :, 3]
+
+    rgb_stack = np.stack([r, g, b], axis=-1)
+    spread = rgb_stack.max(axis=-1).astype(int) - rgb_stack.min(axis=-1).astype(int)
+    brightness = rgb_stack.mean(axis=-1)
+
+    # Achromatic (spread < 30), light (brightness > 180), opaque (alpha > 0)
+    is_bg = (spread < 30) & (brightness > 180) & (a > 0)
+    data[is_bg, 3] = 0
+
+    from PIL import Image as _Img
+
+    cleaned = _Img.fromarray(data, "RGBA")
+    n = int(is_bg.sum())
+    if n > 0:
+        logger.info("checkerboard_cleanup stripped %d background pixels", n)
+    return cleaned
+
+
 def _postprocess_crop_and_center(
     image_bytes: bytes, target_size: int = 1024, fill_pct: float = 0.90
 ) -> bytes:
@@ -120,6 +150,10 @@ def _postprocess_crop_and_center(
 
     # Only upscale if significantly smaller, otherwise just pad
     resized = cropped.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+    # Clean checkerboard artifacts: Gemini sometimes renders a visible
+    # checkerboard into RGB pixels instead of true alpha transparency.
+    resized = _strip_checkerboard(resized)
 
     # Center on transparent canvas
     canvas = Image.new("RGBA", (target_size, target_size), (0, 0, 0, 0))

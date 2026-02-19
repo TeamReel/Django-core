@@ -80,6 +80,47 @@ def download_image(url: str) -> Image.Image | None:
         return None
 
 
+def _clean_logo_alpha(img: Image.Image) -> Image.Image:
+    """Remove checkerboard artifacts from AI-generated logo PNGs.
+
+    Gemini sometimes bakes a visible checkerboard grid into the RGB pixels
+    instead of making the background truly transparent.  This function
+    detects near-white and near-grey pixels that form the typical
+    checkerboard pattern and forces them to fully transparent.
+
+    Heuristic: any pixel whose alpha > 0 and whose RGB values are ALL
+    close to a grey/white tone (R≈G≈B, brightness > 180) is assumed to
+    be background noise and gets alpha = 0.
+    """
+    import numpy as np
+
+    img = img.convert("RGBA")
+    data = np.array(img)
+
+    r, g, b, a = data[:, :, 0], data[:, :, 1], data[:, :, 2], data[:, :, 3]
+
+    # Detect grey/white background pixels:
+    # - all channels close together (max spread < 30) → achromatic
+    # - average brightness > 180 → light grey / white
+    # - alpha > 0 → not already transparent
+    rgb_stack = np.stack([r, g, b], axis=-1)
+    rgb_max = rgb_stack.max(axis=-1)
+    rgb_min = rgb_stack.min(axis=-1)
+    spread = rgb_max.astype(int) - rgb_min.astype(int)
+    brightness = rgb_stack.mean(axis=-1)
+
+    is_background = (spread < 30) & (brightness > 180) & (a > 0)
+
+    # Zero-out alpha for detected background
+    data[is_background, 3] = 0
+
+    cleaned = Image.fromarray(data, "RGBA")
+    n_cleaned = int(is_background.sum())
+    if n_cleaned > 0:
+        logger.info("logo_alpha_cleanup removed %d background pixels", n_cleaned)
+    return cleaned
+
+
 def get_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
     """Get a font, falling back to default if custom fonts not available."""
     # Try common system fonts
@@ -298,7 +339,7 @@ def render_header_pil(  # noqa: PLR0913
     if home_logo_url:
         logo_img = download_image(home_logo_url)
         if logo_img:
-            logo_img = logo_img.convert("RGBA")
+            logo_img = _clean_logo_alpha(logo_img)
             logo_img.thumbnail((max_logo_w, max_logo_h), Image.Resampling.LANCZOS)
             logo_x = (panel_w - logo_img.width) // 2
             logo_y = (height - logo_img.height) // 2
@@ -313,7 +354,7 @@ def render_header_pil(  # noqa: PLR0913
     if away_logo_url:
         logo_img = download_image(away_logo_url)
         if logo_img:
-            logo_img = logo_img.convert("RGBA")
+            logo_img = _clean_logo_alpha(logo_img)
             logo_img.thumbnail((max_logo_w, max_logo_h), Image.Resampling.LANCZOS)
             logo_x = x_right_start + (panel_w - logo_img.width) // 2
             logo_y = (height - logo_img.height) // 2
