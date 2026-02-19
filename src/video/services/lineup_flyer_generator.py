@@ -400,7 +400,8 @@ def _compose_flyer(
         background_color=brand_primary_hex,
     )
     header_path = tmp_dir / "header.png"
-    header_img.save(str(header_path), "PNG")
+    # Flatten RGBA → RGB so no alpha artifacts appear.
+    header_img.convert("RGB").save(str(header_path), "PNG")
 
     # ── 3. Download sponsor logo ───────────────────────────────────────────
     sponsor_img = _download_image(data.sponsor_url) if data.sponsor_url else None

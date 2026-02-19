@@ -345,9 +345,20 @@ class LineupSegmentBuilder:
             self._debug_trace.append(msg)
             logger.info("DEBUG: %s", msg)
 
-        def _resolve_asset_url(asset_types: list[str]) -> str | None:
-            self._debug_trace.append(f"Resolving {asset_types}...")
-            for profile in brand_profiles:
+        # Club+org profiles only (skip team) — used for logo resolution.
+        # Logo always inherits from club level; never from team profile.
+        club_org_profiles = [p for p in brand_profiles if p != team_brand]
+
+        def _resolve_asset_url(
+            asset_types: list[str],
+            *,
+            skip_team: bool = False,
+        ) -> str | None:
+            profiles = club_org_profiles if skip_team else brand_profiles
+            self._debug_trace.append(
+                f"Resolving {asset_types} (skip_team={skip_team}, " f"profiles={len(profiles)})..."
+            )
+            for profile in profiles:
                 # Iterate in priority order so e.g. logo_light (AI-processed)
                 # is preferred over logo_upload (raw upload).
                 asset = None
@@ -420,6 +431,7 @@ class LineupSegmentBuilder:
         # logo_light = AI-postprocessed (transparent background),
         # logo_dark  = AI dark variant (rarely present),
         # logo_upload = raw user upload (often JPG with opaque background).
+        # Logo always inherits from club/org — skip team profile.
         logo_url = _resolve_asset_url(
             [
                 "logo_light",
@@ -429,7 +441,8 @@ class LineupSegmentBuilder:
                 "club_logo",
                 "club_logo_upload",
                 "logo",
-            ]
+            ],
+            skip_team=True,
         )
         sponsor_url = _resolve_asset_url(["sponsor_logo", "sponsor_logo_upload"])
         field_background_url = _resolve_asset_url(["stadium_background"])
@@ -447,16 +460,12 @@ class LineupSegmentBuilder:
             opp_project = activity.opponent_project
             opp_club = opp_project.parent_project
             opp_brand_profiles = []
-            opp_team_brand = BrandProfile.objects.filter(
-                project=opp_project, is_active=True
-            ).first()
-            if opp_team_brand:
-                opp_brand_profiles.append(opp_team_brand)
+            # Logo inherits from club — skip opponent team profile.
             if opp_club:
                 opp_club_brand = BrandProfile.objects.filter(
                     project=opp_club, is_active=True
                 ).first()
-                if opp_club_brand and opp_club_brand not in opp_brand_profiles:
+                if opp_club_brand:
                     opp_brand_profiles.append(opp_club_brand)
             # Opponent logo — same priority: AI-processed first.
             opp_logo_priority = [

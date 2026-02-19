@@ -185,6 +185,9 @@ def generate_header_image(  # noqa: PLR0913
         venue=venue,
         background_color=background_color,
     )
+    # Flatten RGBA → RGB so FFmpeg never renders alpha as a checkerboard.
+    # All compositing is done on a white base, so this is lossless.
+    img = img.convert("RGB")
     return _upload_and_get_url(img, "header")
 
 
