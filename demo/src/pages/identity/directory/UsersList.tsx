@@ -7,7 +7,7 @@ import { Table } from '@/shims/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
 import UserDetailModal from '../UserDetailModal';
-import InviteMemberModal from '../InviteMemberModal';
+import AddMemberModal from '../AddMemberModal';
 import {
     compactTableStyle,
     compactThStyle,
@@ -132,7 +132,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
     const [detailUser, setDetailUser] = useState<User | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-    const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+    const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
     const userRole = String((user as any)?.role || '').toLowerCase();
     const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
@@ -1043,22 +1043,25 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                          variant="primary"
                          onClick={() => {
                              if (!selectedOrgId) {
-                                 alert('Select a federation first to create a user.');
+                                 alert('Select a federation first to add a member.');
                                  return;
                              }
-                             setIsInviteModalOpen(true);
+                             setIsAddMemberOpen(true);
                          }}
                      >
-                         Create User
+                         Add Member
                      </Button>
                  </div>
             </div>
 
-            <InviteMemberModal
-              opened={isInviteModalOpen}
-              onClose={() => setIsInviteModalOpen(false)}
+            <AddMemberModal
+              isOpen={isAddMemberOpen}
+              onClose={() => setIsAddMemberOpen(false)}
+              onSuccess={() => setRefreshKey((k) => k + 1)}
+              contextLevel={teamLocked ? 'team' : clubLocked ? 'club' : 'organisation'}
               orgSlug={organisations.find(o => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)?.slug || selectedOrgId}
-              onInviteSuccess={() => setRefreshKey((k) => k + 1)}
+              clubProjectId={preselectedClubId}
+              teamProjectId={preselectedTeamId}
             />
 
             {isLoading && <LoadingState message="Loading users..." />}

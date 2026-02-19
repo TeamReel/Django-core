@@ -9,6 +9,7 @@ import UserEditModal from './UserEditModal';
 import UserDetailModal from './UserDetailModal';
 import InviteMemberModal from './InviteMemberModal';
 import CreateUserModal from './CreateUserModal';
+import AddMemberModal from './AddMemberModal';
 import AssignUserToOrgModal from './AssignUserToOrgModal';
 import LinkUserModal from './LinkUserModal';
 import LoadingState from '../../components/LoadingState';
@@ -95,8 +96,8 @@ export default function UsersPage() {
   // Invite Modal
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
-  // Create User Modal
-  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+  // Add Member Modal
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
   // Assign User Modal
   const [assignUser, setAssignUser] = useState<User | null>(null);
@@ -772,21 +773,16 @@ export default function UsersPage() {
                 )}
 
                 {isSuperAdmin && (
-                    <Button onClick={() => setIsCreateUserModalOpen(true)}>
-                        Create User
+                    <Button onClick={() => setIsAddMemberOpen(true)}>
+                        Add Member
                     </Button>
                 )}
 
                 {/* Add Member Button - Only show if we have a specific organisation context AND permission */}
                 {(orgIdParam || context.organisation) && !isSuperAdmin && canManageUsers && (
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <Button variant="secondary" onClick={() => setIsCreateUserModalOpen(true)}>
-                            Create User
-                        </Button>
-                        <Button onClick={() => setIsInviteModalOpen(true)}>
-                            Add Member
-                        </Button>
-                    </div>
+                    <Button onClick={() => setIsAddMemberOpen(true)}>
+                        Add Member
+                    </Button>
                 )}
             </div>
         }
@@ -1229,13 +1225,17 @@ export default function UsersPage() {
         onInviteSuccess={fetchUsers}
       />
 
-      <CreateUserModal
-        opened={isCreateUserModalOpen}
-        onClose={() => setIsCreateUserModalOpen(false)}
+      <AddMemberModal
+        isOpen={isAddMemberOpen}
+        onClose={() => setIsAddMemberOpen(false)}
         onSuccess={() => {
             fetchUsers();
-            setIsCreateUserModalOpen(false);
+            setIsAddMemberOpen(false);
         }}
+        contextLevel={selectedTeamKey ? 'team' : selectedClubKey ? 'club' : 'organisation'}
+        orgSlug={orgIdParam || context.organisation?.slug || ''}
+        clubProjectId={selectedClubKey || undefined}
+        teamProjectId={selectedTeamKey || undefined}
       />
 
       <AssignUserToOrgModal
