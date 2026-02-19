@@ -117,9 +117,9 @@ CLOSEUP_ROW4_STAGGER_PCT = 0.02
 # ── Formation Y positions (%) ──
 Y_POS = {
     "coach": 70,
-    "keeper": 90,
-    "defender": 75,
-    "midfielder": 54,
+    "keeper": 95,
+    "defender": 80,
+    "midfielder": 57,
     "attacker": 40,
 }
 

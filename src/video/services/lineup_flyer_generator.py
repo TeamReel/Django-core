@@ -38,10 +38,10 @@ BADGE_SIZE = 160  # diameter for badge/circle closeup style
 LABEL_TEXT_COLOR = "#FFFFFF"
 LABEL_STROKE_COLOR = "#000000"
 LABEL_STROKE_WIDTH = 3
-LABEL_FONTSIZE = 32
-LABEL_HEIGHT = 38
-LABEL_GAP = 8  # px between player bottom and label  top
-LABEL_EXTRA_W = 60  # extra width around text
+LABEL_FONTSIZE = 36
+LABEL_HEIGHT = 44
+LABEL_GAP = 10  # px between player bottom and label top
+LABEL_EXTRA_W = 70  # extra width around text
 
 # ── Sponsor sizing ─────────────────────────────────────────────────────────
 SPONSOR_W = 220
@@ -52,9 +52,9 @@ SPONSOR_BOX_H = 100
 # ── Y positions (0-1 fraction of HEIGHT) per role ──────────────────────────
 # Positions account for 300px header at top — all players below header.
 Y_POS = {
-    "keeper": 0.82,
-    "defender": 0.66,
-    "midfielder": 0.50,
+    "keeper": 0.88,
+    "defender": 0.72,
+    "midfielder": 0.53,
     "attacker": 0.36,
 }
 

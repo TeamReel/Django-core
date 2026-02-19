@@ -3045,7 +3045,7 @@ export default function ContentGenerationModal({
                       <img
                         src={`data:${getSecureMimeType(generatedOutput.image_base64, generatedOutput.storage_info?.mime_type || 'image/png')};base64,${generatedOutput.image_base64}`}
                         alt="Generated content"
-                        className="max-w-md max-h-64 rounded-lg border shadow-lg"
+                        className="max-w-48 max-h-48 rounded-lg border shadow-lg"
                       />
                     </div>
                   ) : (generatedOutput?.presigned_url || generatedVariants[0]?.presigned_url) ? (
@@ -3053,7 +3053,7 @@ export default function ContentGenerationModal({
                       <img
                         src={generatedOutput?.presigned_url || generatedVariants[0]?.presigned_url || ''}
                         alt="Generated content"
-                        className="max-w-md max-h-64 rounded-lg border shadow-lg"
+                        className="max-w-48 max-h-48 rounded-lg border shadow-lg"
                       />
                     </div>
                   ) : (
