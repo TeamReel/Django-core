@@ -1153,6 +1153,12 @@ PARAM_RESOLVERS = {
         "subtle": "Subtle, gentle depth-of-field blur in the center area for text readability.",
         "medium": "Medium gaussian blur in the center area — names and stats will overlay here.",
     },
+    "era_style": {
+        "jaren80": "1980s retro era — thick cotton, boxy fit, bold chest stripe, early sponsor iron-on",
+        "jaren90": "1990s retro era — nylon/polyester, bold geometric prints, oversized cut, large sponsor",
+        "jaren00": "2000s retro era — lightweight mesh, subtle tonal pattern, slim raglan sleeves, V-neck",
+        "default": "Classic retro football kit, era unspecified",
+    },
 }
 
 ROLE_EQUIPMENT = {
@@ -1197,6 +1203,34 @@ OUTFIT_STYLE_DETAILS = {
 - UNDERSHIRT: Team training shirt visible at collar.
 - TROUSERS: Matching waterproof training trousers.
 - SHOES: Modern training shoes.""",
+}
+
+# Era-style design rules injected into legacy_tenue_generate prompt
+ERA_STYLE_DETAILS: dict[str, str] = {
+    "jaren80": """- FABRIC: Thick heavy cotton or early synthetic.
+  - FIT: Boxy, loose fit (NOT slim or tapered).
+  - SLEEVES: Wide-cut, set-in sleeves.
+  - PATTERNS: Bold single or double horizontal chest stripe, or plain block color.
+  - SPONSOR: Large iron-on or screen-printed block text. No fine detail.
+  - COLLAR: Round crew neck or wide spread polo collar. No modern V-cuts.
+  - SOCKS: Long over-the-knee socks, ribbed finish.
+  - SHORTS: High-waisted, shorter inseam, straight cut.""",
+    "jaren90": """- FABRIC: Lightweight nylon or early wicking polyester with visible weave texture.
+  - FIT: Slightly oversized through body and sleeves.
+  - PATTERNS: Bold geometric prints, zig-zags, diagonal blocks, abstract multi-color.
+  - SPONSOR: Large high-contrast screen print across chest.
+  - COLLAR: Varying — polo collar, mandarin/band collar, or ribbed crew neck. Often with tonal stripe.
+  - SOCKS: Mid-calf to over-the-knee, ribbed with color-band at top.
+  - SHORTS: Knee-length or just above, slightly baggy, elasticated waist.""",
+    "jaren00": """- FABRIC: Lightweight mesh or micro-polyester, slightly shiny finish.
+  - FIT: Slim through body, shorter sleeves.
+  - PATTERNS: Subtle tonal all-over print, pinstripes, or shadow patterns.
+  - SLEEVES: Tight-set raglan sleeves with tonal piping.
+  - SPONSOR: Embroidered or heat-pressed with detail. Often smaller and cleaner than 90s.
+  - COLLAR: V-neck standard, some with small trim collar.
+  - SOCKS: Standard mid-calf length, thin ribbing.
+  - SHORTS: Slim mid-length, small side vents.""",
+    "default": "",
 }
 
 
