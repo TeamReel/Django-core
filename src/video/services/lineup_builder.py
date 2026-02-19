@@ -517,11 +517,18 @@ class LineupSegmentBuilder:
         score_meta = meta.get("score", {})
         score_home = score_meta.get("home") if isinstance(score_meta, dict) else None
         score_away = score_meta.get("away") if isinstance(score_meta, dict) else None
-        # Venue: skip generic "Home"/"Away" labels, only use real venue names
-        raw_venue = meta.get("venue") or getattr(activity, "location", None)
+        # Venue: prefer the actual location field or teamreel match_location
+        # over metadata.venue which is just a generic "Home"/"Away" label.
+        raw_venue = (
+            getattr(activity, "location", None)
+            or meta.get("teamreel", {}).get("vars", {}).get("match_location")
+            or meta.get("teamreel", {}).get("match_context", {}).get("location")
+            or meta.get("teamreel", {}).get("match_context", {}).get("home_club_default_location")
+            or meta.get("venue")
+        )
         venue = (
             None
-            if raw_venue and raw_venue.lower() in ("home", "away", "thuis", "uit")
+            if raw_venue and raw_venue.strip().lower() in ("home", "away", "thuis", "uit", "")
             else raw_venue
         )
 
@@ -1076,11 +1083,18 @@ class LineupSegmentBuilder:
         score_meta = meta.get("score", {})
         score_home = score_meta.get("home") if isinstance(score_meta, dict) else None
         score_away = score_meta.get("away") if isinstance(score_meta, dict) else None
-        # Venue: skip generic "Home"/"Away" labels, only use real venue names
-        raw_venue = meta.get("venue") or getattr(activity, "location", None)
+        # Venue: prefer the actual location field or teamreel match_location
+        # over metadata.venue which is just a generic "Home"/"Away" label.
+        raw_venue = (
+            getattr(activity, "location", None)
+            or meta.get("teamreel", {}).get("vars", {}).get("match_location")
+            or meta.get("teamreel", {}).get("match_context", {}).get("location")
+            or meta.get("teamreel", {}).get("match_context", {}).get("home_club_default_location")
+            or meta.get("venue")
+        )
         venue = (
             None
-            if raw_venue and raw_venue.lower() in ("home", "away", "thuis", "uit")
+            if raw_venue and raw_venue.strip().lower() in ("home", "away", "thuis", "uit", "")
             else raw_venue
         )
         season_name = activity.period.name if activity.period else None
