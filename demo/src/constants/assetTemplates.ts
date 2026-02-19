@@ -266,6 +266,49 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     },
   },
   {
+    id: 'legacy_tenue_generate',
+    name: 'Legacy Tenue',
+    icon: '🕰️',
+    category: 'tenue',
+    description: 'Genereer een retro/legacy tenue gebaseerd op een historisch shirt. Kies een tijdperk voor de stijl.',
+    inputRequirements: ['logo', 'sponsor', 'reference'],
+    requiredAssetTypes: ['logo_upload', 'sponsor_logo_upload', 'kit_legacy_upload'],
+    outputAssetType: 'kit_legacy',
+    creditsCost: 1,
+    parameters: {
+      era_style: {
+        label: 'Tijdperk',
+        type: 'select',
+        options: [
+          { value: 'default', label: 'Standaard' },
+          { value: 'jaren80', label: 'Jaren \'80' },
+          { value: 'jaren90', label: 'Jaren \'90' },
+          { value: 'jaren00', label: 'Jaren \'00' },
+        ],
+        default: 'default',
+      },
+      sleeves: {
+        label: 'Mouwen',
+        type: 'select',
+        options: [
+          { value: 'short', label: 'Kort' },
+          { value: 'long', label: 'Lang' },
+        ],
+        default: 'short',
+      },
+      neck: {
+        label: 'Hals',
+        type: 'select',
+        options: [
+          { value: 'round', label: 'Ronde kraag' },
+          { value: 'collar', label: 'Polo kraag' },
+          { value: 'v_neck', label: 'V-hals' },
+        ],
+        default: 'collar',
+      },
+    },
+  },
+  {
     id: 'keeper_tenue',
     name: 'Keeperstenue',
     icon: '🧤',

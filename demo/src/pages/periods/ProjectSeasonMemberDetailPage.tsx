@@ -941,6 +941,112 @@ export default function ProjectSeasonMemberDetailPage() {
     };
   }, []);
 
+  // Profile Photo Upload State
+  const profileInputRef = useRef<HTMLInputElement>(null);
+  const [profileUploading, setProfileUploading] = useState(false);
+  const [profilePreview, setProfilePreview] = useState<string | null>(null);
+
+  const handleProfilePhotoUpload = async (file: File) => {
+    const userId = membership?.user?.id || (membership as any)?.user_id;
+    if (!userId) { alert('Geen user ID gevonden.'); return; }
+    setProfileUploading(true);
+    setProfilePreview(URL.createObjectURL(file));
+    try {
+      const fd = new FormData();
+      fd.append('avatar', file);
+      const csrfToken = getCsrfToken();
+      const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${userId}/avatar/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'X-CSRFToken': csrfToken },
+        body: fd,
+      });
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => '');
+        throw new Error(`Upload mislukt: ${res.status} ${errBody.slice(0, 200)}`);
+      }
+      // Refresh membership data to pick up new avatar_url
+      const memberRes = await fetch(
+        `${apiBaseUrl}/api/v1/projects/${project?.id}/members/${membershipId}/`,
+        { credentials: 'include' }
+      );
+      if (memberRes.ok) {
+        const json = await memberRes.json();
+        setMembership(json?.data || json);
+      }
+    } catch (err) {
+      console.error('Profile photo upload error:', err);
+      alert(err instanceof Error ? err.message : 'Upload mislukt');
+    } finally {
+      setProfileUploading(false);
+    }
+  };
+
+  // Closeup from fullbody crop
+  const [croppingCloseup, setCroppingCloseup] = useState(false);
+
+  const cropCloseupFromFullbody = async (fullbodyUrl: string, kitType: string) => {
+    setCroppingCloseup(true);
+    try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Kon fullbody afbeelding niet laden'));
+        img.src = fullbodyUrl;
+      });
+
+      // Crop top 45% of the image (head + shoulders)
+      const cropRatio = 0.45;
+      const cropH = Math.round(img.naturalHeight * cropRatio);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = cropH;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, img.naturalWidth, cropH, 0, 0, img.naturalWidth, cropH);
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Canvas toBlob mislukt')), 'image/png');
+      });
+
+      // Upload as brand asset via the generic file upload
+      const fd = new FormData();
+      fd.append('file', blob, `closeup_crop_${kitType}.png`);
+      const csrfToken = getCsrfToken();
+
+      // Save the cropped closeup URL in membership metadata
+      const croppedUrl = URL.createObjectURL(blob);
+
+      // Store it via the same metadata pathway as AI results
+      const category = 'closeup';
+      const effectiveKitType = kitType || 'home';
+
+      const newVariants: AssetVariantsMap = {
+        ...videoVariants,
+        [category]: {
+          ...videoVariants[category],
+          [effectiveKitType]: croppedUrl,
+        },
+      };
+      setVideoVariants(newVariants);
+
+      const slotId: keyof MemberMediaForm = 'closeup';
+      const newForm = effectiveKitType === 'home'
+        ? { ...form, [slotId]: { url: croppedUrl, caption: '' } }
+        : form;
+      if (effectiveKitType === 'home') setForm(newForm);
+
+      const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVariants);
+      await handleMetadataUpdate(updatedMeta);
+
+    } catch (err) {
+      console.error('Closeup crop error:', err);
+      alert(err instanceof Error ? err.message : 'Crop mislukt');
+    } finally {
+      setCroppingCloseup(false);
+    }
+  };
+
   // AI Generation Modal State
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiPreselectedTemplate, setAiPreselectedTemplate] = useState<string | undefined>();
@@ -1470,11 +1576,11 @@ export default function ProjectSeasonMemberDetailPage() {
                               alignItems: 'center',
                               justifyContent: 'center',
                             }}>
-                              {(form.profile?.url || membership?.user?.avatar_url) ? (
+                              {(profilePreview || form.profile?.url || membership?.user?.avatar_url) ? (
                                 <img
-                                  src={form.profile?.url || membership?.user?.avatar_url}
+                                  src={profilePreview || form.profile?.url || membership?.user?.avatar_url}
                                   alt={getUserDisplayName(membership)}
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: profileUploading ? 0.5 : 1 }}
                                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                 />
                               ) : (
@@ -1482,8 +1588,8 @@ export default function ProjectSeasonMemberDetailPage() {
                               )}
                             </div>
                             <div style={{ flex: 1, minWidth: '200px' }}>
-                              {(form.profile?.url || membership?.user?.avatar_url) ? (
-                                <span style={{ fontSize: 13, color: '#28a745', fontWeight: 600 }}>✓ Profile photo set</span>
+                              {(profilePreview || form.profile?.url || membership?.user?.avatar_url) ? (
+                                <span style={{ fontSize: 13, color: '#28a745', fontWeight: 600 }}>✓ Profielfoto ingesteld</span>
                               ) : (
                                 <div style={{ fontSize: 13, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
                                   No profile photo set
@@ -1494,21 +1600,51 @@ export default function ProjectSeasonMemberDetailPage() {
                         </div>
 
                         {/* Upload area */}
-                        <div style={{
-                          padding: '24px',
-                          border: '2px dashed var(--app-border)',
-                          borderRadius: '8px',
-                          textAlign: 'center',
-                          opacity: userCanEditProject ? 1 : 0.5,
-                        }}>
-                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>📤</div>
-                          <div style={{ fontSize: '14px', fontWeight: 600 }}>Upload Profile Photo</div>
-                          <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>
-                            Drag & drop or click to upload
-                          </div>
-                          <div style={{ fontSize: '11px', opacity: 0.5, marginTop: '8px' }}>
-                            (File upload coming soon)
-                          </div>
+                        <div
+                          onClick={() => userCanEditProject && !profileUploading && profileInputRef.current?.click()}
+                          style={{
+                            padding: '24px',
+                            border: '2px dashed var(--app-border)',
+                            borderRadius: '8px',
+                            textAlign: 'center',
+                            opacity: userCanEditProject ? 1 : 0.5,
+                            cursor: userCanEditProject && !profileUploading ? 'pointer' : 'default',
+                            transition: 'border-color 0.2s',
+                          }}
+                          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (!userCanEditProject || profileUploading) return;
+                            const file = e.dataTransfer.files?.[0];
+                            if (file && file.type.startsWith('image/')) handleProfilePhotoUpload(file);
+                          }}
+                        >
+                          <input
+                            ref={profileInputRef}
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleProfilePhotoUpload(file);
+                              e.target.value = '';
+                            }}
+                          />
+                          {profileUploading ? (
+                            <>
+                              <div style={{ fontSize: '32px', marginBottom: '8px' }}>⏳</div>
+                              <div style={{ fontSize: '14px', fontWeight: 600 }}>Uploaden...</div>
+                            </>
+                          ) : (
+                            <>
+                              <div style={{ fontSize: '32px', marginBottom: '8px' }}>📤</div>
+                              <div style={{ fontSize: '14px', fontWeight: 600 }}>Upload Profielfoto</div>
+                              <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>
+                                Klik of sleep een afbeelding hierheen
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -1822,18 +1958,36 @@ export default function ProjectSeasonMemberDetailPage() {
                           </div>
                         </div>
 
+                        {/* Crop from Fullbody */}
+                        {userCanEditProject && getBestUrl(videoVariants.fullbody[aiSelectedKitType]) && (
+                          <div style={{ marginTop: '20px', padding: '20px', background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1))', borderRadius: '8px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '32px', marginBottom: '8px' }}>✂️</div>
+                            <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>Crop uit Fullbody</div>
+                            <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '16px' }}>
+                              Automatisch bijsnijden van hoofd + schouders uit de fullbody afbeelding.
+                            </div>
+                            <Button
+                              onClick={() => cropCloseupFromFullbody(getBestUrl(videoVariants.fullbody[aiSelectedKitType])!, aiSelectedKitType)}
+                              disabled={croppingCloseup}
+                            >
+                              {croppingCloseup ? '⏳ Bijsnijden...' : '✂️ Crop Close-up'}
+                            </Button>
+                          </div>
+                        )}
+
                         {/* AI Generation CTA */}
                         {userCanEditProject && effectiveKits.some(k => k.url) && (
-                          <div style={{ marginTop: '20px', padding: '20px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))', borderRadius: '8px', textAlign: 'center' }}>
+                          <div style={{ marginTop: '16px', padding: '20px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))', borderRadius: '8px', textAlign: 'center' }}>
                             <div style={{ fontSize: '32px', marginBottom: '8px' }}>✨</div>
-                            <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>Genereer met AI</div>
+                            <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>Of genereer met AI</div>
                             <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '16px' }}>
                               {!getBestUrl(videoVariants.fullbody[aiSelectedKitType])
-                                ? '⚠️ Je moet eerst een "Player in Tenue (Fullbody)" genereren voor dit tenue om een close-up te maken.'
-                                : 'Gebruik de fullbody generatie om een consistente close-up te maken.'
+                                ? '⚠️ Je moet eerst een "Player in Tenue (Fullbody)" genereren om een close-up te maken.'
+                                : 'Gebruik AI om een close-up te genereren (kost credits).'
                               }
                             </div>
                             <Button
+                              variant="secondary"
                               onClick={() => openAiModal('closeup_in_tenue', aiSelectedKitType, getBestUrl(videoVariants.fullbody[aiSelectedKitType]))}
                               disabled={!getBestUrl(videoVariants.fullbody[aiSelectedKitType])}
                             >

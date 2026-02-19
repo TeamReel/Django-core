@@ -120,6 +120,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
     projectId: string | number;
     organisationId: string;
     outputAssetType?: string;
+    membershipId?: string;
     workflowContentType?: ContentTypeName;
     workflowObjectId?: number;
     workflowTemplateId?: number;
@@ -217,6 +218,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         projectId: params.projectId,
         organisationId: params.organisationId,
         outputAssetType: params.outputAssetType,
+        membershipId: params.membershipId,
         workflowContentType: params.workflowContentType,
         workflowObjectId: params.workflowObjectId,
         workflowTemplateId: params.workflowTemplateId,
@@ -335,6 +337,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
       const orgId = context?.organisationId;
       const projId = context?.projectId;
       const assetType = context?.outputAssetType;
+      const memberId = context?.membershipId;
 
       console.log('💾 Accepting variant:', {
         variantIndex,
@@ -374,6 +377,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             organisation_id: orgId,
             project_id: projId,
             asset_type: assetType,
+            ...(memberId ? { membership_id: memberId } : {}),
           }),
         });
 

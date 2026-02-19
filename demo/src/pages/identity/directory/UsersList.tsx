@@ -7,6 +7,7 @@ import { Table } from '@/shims/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { fetchAllPages } from '../../../utils/fetchAllPages';
 import UserDetailModal from '../UserDetailModal';
+import UserEditModal from '../UserEditModal';
 import AddMemberModal from '../AddMemberModal';
 import {
     compactTableStyle,
@@ -132,6 +133,9 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
     const [detailUser, setDetailUser] = useState<User | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
+    const [editUser, setEditUser] = useState<User | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
     const userRole = String((user as any)?.role || '').toLowerCase();
@@ -157,6 +161,32 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
             : null;
         // Only use context org when no explicit selection was made
         return selectedOrg?.slug || (!selectedOrgId ? context.organisation?.slug : '') || selectedOrgId;
+    };
+
+    const handleEditClick = (u: any) => {
+        const userData = u.user || u;
+        setEditUser(userData);
+        setIsEditModalOpen(true);
+    };
+
+    const handleSaveUser = async (updatedData: Partial<User>) => {
+        if (!editUser) return;
+        const apiBaseUrl = getApiBaseUrl();
+        const csrfToken = getCsrfToken();
+        const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${editUser.id}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify(updatedData),
+            credentials: 'include',
+        });
+        if (!res.ok) {
+            const text = await res.text().catch(() => '');
+            throw new Error(text || `Failed to update user (${res.status})`);
+        }
     };
 
     const isUuid = (value: unknown) =>
@@ -1260,14 +1290,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
 
                                                 {isDirectMembership && (
                                                     <button
-                                                        onClick={() => {
-                                                            const orgSlug = getSelectedOrgSlug();
-                                                            if (!orgSlug) {
-                                                                alert('Select a federation first.');
-                                                                return;
-                                                            }
-                                                            navigate(`/organisations/${orgSlug}/members/${membershipId}?action=edit`);
-                                                        }}
+                                                        onClick={() => handleEditClick(u)}
                                                         style={actionButtonStyle('warning')}
                                                     >
                                                         Edit
@@ -1387,6 +1410,15 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                 user={detailUser}
                 opened={isDetailModalOpen}
                 onClose={() => setIsDetailModalOpen(false)}
+            />
+
+            <UserEditModal
+                opened={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                user={editUser}
+                onSave={handleSaveUser}
+                onSaved={() => setRefreshKey((k) => k + 1)}
+                organisationSlug={String(getSelectedOrgSlug() || '')}
             />
         </div>
     );

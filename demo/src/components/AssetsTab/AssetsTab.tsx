@@ -505,7 +505,7 @@ export function AssetsTab({
     'kit_training_upload': { templateId: 'tracksuit_generate' },
     'kit_coach_upload': { templateId: 'coach_outfit' },
     'kit_assistant_upload': { templateId: 'coach_outfit' },
-    'kit_legacy_upload': { templateId: 'tenue_generate', initialParams: { kit_type: 'legacy' } },
+    'kit_legacy_upload': { templateId: 'legacy_tenue_generate' },
     'location_photo': { templateId: 'location_standardize' },
   };
 
@@ -685,9 +685,8 @@ export function AssetsTab({
         templateId = 'coach_outfit';
         referenceAssetType = 'kit_assistant_upload';
     } else if (assetType.includes('kit_legacy')) {
-        templateId = 'tenue_generate';
+        templateId = 'legacy_tenue_generate';
         referenceAssetType = 'kit_legacy_upload';
-        initialParams['kit_type'] = 'legacy';
         if (legacyEraStyle && legacyEraStyle !== 'default') initialParams['era_style'] = legacyEraStyle;
     } else if (assetType === 'stadium_background') {
         templateId = 'location_standardize';

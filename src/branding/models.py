@@ -274,15 +274,27 @@ class BrandAsset(models.Model):
         ]
 
     def get_url(self):
-        """Return file URL via B22 FileAsset model.
+        """Return presigned URL via storage backend.
 
-        FileAsset stores the storage_path which can be used to construct a URL.
-        For actual URL construction, refer to B22 file serving implementation.
+        Uses the same pattern as avatar URLs to generate time-limited
+        presigned S3 URLs, avoiding 403 errors from Block Public Access.
         """
-        if self.file:
-            # Use storage_path from FileAsset - actual URL generation depends on B22 implementation
-            return self.file.storage_path
-        return None
+        if not self.file or not self.file.storage_path:
+            return None
+        try:
+            from files.utils import get_storage_backend
+
+            backend = get_storage_backend()
+            return backend.get_url(self.file.storage_path, signed=True, expiry_seconds=3600)
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "Failed to generate presigned URL for BrandAsset %s",
+                self.pk,
+                exc_info=True,
+            )
+            return None
 
     def __str__(self):
         return f"{self.profile.name} - {self.get_asset_type_display()}"
