@@ -104,6 +104,11 @@ SPONSOR_MARGIN = 36
 SPONSOR_PAD = 16
 SPONSOR_BOX_H = 120
 
+# ── Watermark ──
+WATERMARK_PATH = Path(__file__).resolve().parent.parent / "assets" / "watermark.png"
+WATERMARK_OPACITY = 0.25  # 25% opacity
+WATERMARK_MARGIN = 30  # px from edge
+
 # ── Closeup vertical shifts (per role) ──
 CLOSEUP_SHIFT_DEFENDER_PCT = 0.03
 CLOSEUP_SHIFT_MIDFIELDER_PCT = 0.04
@@ -1663,6 +1668,43 @@ def compose_lineup_video(
         ],
         "Final Concat",
     )
+
+    # ── 7. Watermark overlay ──
+    if WATERMARK_PATH.exists():
+        logger.info("Adding watermark overlay...")
+        watermarked = output_dir / "lineup_video_wm.mp4"
+        _run_ffmpeg(
+            [
+                _get_ffmpeg_path(),
+                "-y",
+                "-threads",
+                "1",
+                "-i",
+                str(output_file),
+                "-i",
+                str(WATERMARK_PATH),
+                "-filter_complex",
+                f"[1:v]format=rgba,colorchannelmixer=aa={WATERMARK_OPACITY}[wm];"
+                f"[0:v][wm]overlay=W-w-{WATERMARK_MARGIN}:H-h-{WATERMARK_MARGIN}[out]",
+                "-map",
+                "[out]",
+                "-c:v",
+                "libx264",
+                "-preset",
+                "fast",
+                "-crf",
+                "23",
+                "-pix_fmt",
+                "yuv420p",
+                "-an",
+                str(watermarked),
+            ],
+            "Watermark Overlay",
+        )
+        # Replace original with watermarked version
+        import os
+
+        os.replace(str(watermarked), str(output_file))
 
     if progress_callback:
         progress_callback(95)

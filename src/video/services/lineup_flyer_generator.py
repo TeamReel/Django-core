@@ -49,6 +49,11 @@ SPONSOR_PAD = 15
 SPONSOR_MARGIN = 20
 SPONSOR_BOX_H = 100
 
+# ── Watermark ──────────────────────────────────────────────────────────────
+WATERMARK_PATH = Path(__file__).resolve().parent.parent / "assets" / "watermark.png"
+WATERMARK_OPACITY = 0.25  # 25% opacity
+WATERMARK_MARGIN = 30  # px from edge
+
 # ── Y positions (0-1 fraction of HEIGHT) per role ──────────────────────────
 # Positions account for 300px header at top — all players below header.
 Y_POS = {
@@ -693,6 +698,16 @@ def _compose_flyer(
             f"[{name_bg}]"
         )
         last_bg = name_bg
+
+    # ── Watermark overlay (bottom-right, semi-transparent) ─────────────────
+    wm_idx = label_base_idx + len(render_players)
+    if WATERMARK_PATH.exists():
+        cmd += ["-loop", "1", "-i", str(WATERMARK_PATH)]
+        fc.append(f"[{wm_idx}:v]format=rgba," f"colorchannelmixer=aa={WATERMARK_OPACITY}[wm]")
+        fc.append(
+            f"[{last_bg}][wm]overlay=" f"W-w-{WATERMARK_MARGIN}:H-h-{WATERMARK_MARGIN}" f"[bg_wm]"
+        )
+        last_bg = "bg_wm"
 
     fc.append(f"[{last_bg}]format=rgb24[out]")
 
