@@ -362,6 +362,20 @@ class LineupSegmentBuilder:
                         .first()
                     )
                     if asset:
+                        # Skip zero-byte / missing files (broken seed data).
+                        if asset.file and getattr(asset.file, "file_size", 0) in (None, 0):
+                            logger.warning(
+                                "DEBUG: Skipping 0-byte asset %s (type=%s, path=%s)",
+                                asset.id,
+                                at,
+                                asset.file.storage_path,
+                            )
+                            self._debug_trace.append(
+                                f"  Profile {profile.id}: Skipped 0-byte {at} "
+                                f"({asset.file.storage_path})"
+                            )
+                            asset = None
+                            continue
                         break
                 if not asset:
                     self._debug_trace.append(f"  Profile {profile.id}: No asset")
