@@ -30,7 +30,7 @@ WIDTH = 1080
 HEIGHT = 1920
 
 # ── Player sizing ───────────────────────────────────────────────────────────
-FLYER_SCALE = 0.20  # fullbody height as fraction of HEIGHT
+FLYER_SCALE = 0.16  # fullbody height as fraction of HEIGHT
 CLOSEUP_SCALE = 0.11  # for label sizing reference
 BADGE_SIZE = 160  # diameter for badge/circle closeup style
 
@@ -50,19 +50,20 @@ SPONSOR_MARGIN = 20
 SPONSOR_BOX_H = 100
 
 # ── Y positions (0-1 fraction of HEIGHT) per role ──────────────────────────
+# Positions account for 300px header at top — all players below header.
 Y_POS = {
-    "keeper": 0.88,
-    "defender": 0.68,
-    "midfielder": 0.48,
-    "attacker": 0.28,
+    "keeper": 0.82,
+    "defender": 0.66,
+    "midfielder": 0.50,
+    "attacker": 0.36,
 }
 
-# ── Flyer Y adjustment (shift down under header) ──────────────────────────
+# ── Flyer Y adjustment (fine-tuning within field area) ──────────────────────
 FLYER_Y_ADJUST = {
-    "keeper": 0.03,
-    "defender": 0.03,
-    "midfielder": 0.03,
-    "attacker": -0.02,
+    "keeper": 0.0,
+    "defender": 0.0,
+    "midfielder": 0.0,
+    "attacker": 0.0,
 }
 
 # ── Header dimensions ─────────────────────────────────────────────────────
@@ -455,14 +456,21 @@ def _compose_flyer(
                 img_url = player.closeup_url or player.kit_url
             else:
                 img_url = player.kit_url or player.closeup_url
-            if not img_url:
-                logger.warning("No image URL for player %s, skipping", player.member_name)
-                continue
 
-            player_img = _download_image(img_url)
+            player_img = None
+            if img_url:
+                player_img = _download_image(img_url)
+
+            # Guest player: generate silhouette placeholder
             if player_img is None:
-                logger.warning("Failed to download image for %s", player.member_name)
-                continue
+                from src.video.services.header_generator import generate_guest_silhouette
+
+                logger.info(
+                    "Using guest silhouette for %s (is_guest=%s)",
+                    player.member_name,
+                    getattr(player, "is_guest_player", False),
+                )
+                player_img = generate_guest_silhouette()
 
             # Badge mode: crop to circle
             if is_badge:

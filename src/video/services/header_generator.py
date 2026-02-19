@@ -22,6 +22,64 @@ from PIL import Image, ImageDraw, ImageFont
 logger = logging.getLogger(__name__)
 
 
+def generate_guest_silhouette(
+    width: int = 1080,
+    height: int = 1920,
+    fill_color: tuple[int, int, int, int] = (180, 180, 180, 200),
+) -> Image.Image:
+    """Generate a generic player silhouette for guest players without assets.
+
+    Creates a simple head + body silhouette on a transparent canvas.
+    Used when a player is in the lineup but has no photos/videos uploaded.
+
+    Args:
+        width: Canvas width (should match fullbody spec)
+        height: Canvas height (should match fullbody spec)
+        fill_color: RGBA fill for the silhouette
+
+    Returns:
+        PIL Image (RGBA) with silhouette.
+    """
+    canvas = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(canvas)
+
+    cx = width // 2
+    # Head: circle at ~25% from top
+    head_r = int(width * 0.12)
+    head_cy = int(height * 0.18)
+    draw.ellipse(
+        (cx - head_r, head_cy - head_r, cx + head_r, head_cy + head_r),
+        fill=fill_color,
+    )
+
+    # Body: trapezoid from neck to ~70% height
+    neck_y = head_cy + head_r
+    body_top_w = int(width * 0.22)
+    body_bot_w = int(width * 0.35)
+    body_bot_y = int(height * 0.70)
+    draw.polygon(
+        [
+            (cx - body_top_w, neck_y),
+            (cx + body_top_w, neck_y),
+            (cx + body_bot_w, body_bot_y),
+            (cx - body_bot_w, body_bot_y),
+        ],
+        fill=fill_color,
+    )
+
+    # Legs: two rectangles
+    leg_w = int(width * 0.08)
+    leg_gap = int(width * 0.04)
+    leg_bot_y = int(height * 0.95)
+    for lx in [cx - leg_gap - leg_w, cx + leg_gap]:
+        draw.rectangle(
+            (lx, body_bot_y, lx + leg_w, leg_bot_y),
+            fill=fill_color,
+        )
+
+    return canvas
+
+
 def _upload_and_get_url(img: Image.Image, prefix: str = "lineup") -> str:
     """Upload image to storage and return presigned URL.
 

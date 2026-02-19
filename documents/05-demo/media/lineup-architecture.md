@@ -74,16 +74,16 @@ Organisation (top-level)           ← org_brand
 | **Opponent logo** | opponent club | Ja — skip opponent team |
 | **Merk kleur** | team → club (design_tokens) | Nee |
 
-### 3.2 Logo Asset Type Prioriteit
+### 3.2 Logo & Sponsor Asset Types
 
-Bij het zoeken naar een logo worden deze types in volgorde geprobeerd:
+Alleen AI-processed assets worden gebruikt. Geen fallbacks naar raw uploads of legacy types.
 
-1. `logo_light` — AI-processed transparante PNG (voorkeur)
-2. `logo_dark` — AI dark variant (zelden aanwezig)
-3. `logo_upload` — raw user upload (vaak JPG met ondoorzichtige achtergrond)
-4. `club_logo` — legacy naamgeving
-5. `club_logo_upload` — legacy naamgeving
-6. `logo` — fallback
+| Asset | Type | Beschrijving |
+|-------|------|-------------|
+| **Logo** | `logo_light` | AI-processed transparante PNG (verplicht) |
+| **Sponsor** | `sponsor_logo` | AI-processed transparante PNG (verplicht) |
+
+> **Belangrijk**: Als het processed logo (`logo_light`) of processed sponsor (`sponsor_logo`) niet beschikbaar is op club/org niveau, moet het eerst gegenereerd worden. Raw uploads (`logo_upload`, `sponsor_logo_upload`) worden niet gebruikt.
 
 **Bescherming**: Assets met `file_size == 0` worden automatisch overgeslagen.
 
@@ -100,7 +100,16 @@ Per speler worden 3 visuele assets opgehaald uit `ProjectMembership.metadata.tea
 **Intro stijl prioriteit**: `arms_crossed` → `thumbs_up` → `hand_up`
 **Intro formaat**: voorkeur voor `processed_source` (.mov ProRes met alpha) boven `preview`
 
-### 3.4 LineupData Structuur
+### 3.4 Gastspeler (Guest Player)
+
+Als een speler geen assets heeft (geen fullbody, geen closeup), wordt automatisch een **silhouet-placeholder** gegenereerd. Hierdoor kan de video/flyer altijd gemaakt worden, ook als niet alle spelers foto's hebben.
+
+- Silhouet: grijs figuur (hoofd + romp + benen) op transparant canvas
+- Gegenereerd door `generate_guest_silhouette()` in `header_generator.py`
+- `PlayerSegment.is_guest_player = True` markering in data
+- Naam en rugnummer worden normaal weergegeven
+
+### 3.5 LineupData Structuur
 
 ```python
 @dataclass
@@ -160,10 +169,12 @@ class LineupData:
 
 | Linie | Y-positie |
 |-------|-----------|
-| Keeper | 88% (+3% offset) |
-| Verdediging | 68% (+3% offset) |
-| Middenveld | 48% (+3% offset) |
-| Aanval | 28% (-2% offset) |
+| Keeper | 82% |
+| Verdediging | 66% |
+| Middenveld | 50% |
+| Aanval | 36% |
+
+> Speler-hoogte = 16% van canvas (307px). Alle spelers vallen volledig onder de 300px header.
 
 ### 4.3 X-posities
 
@@ -416,20 +427,18 @@ AI-modellen (Gemini) renderen soms een zichtbaar schaakbordpatroon in de RGB-pix
 
 ```
                     BrandProfile (Club)
-                    ├── logo_light ──────────┐
-                    ├── sponsor_logo ────────┤
+                    ├── logo_light ──────────┐  (processed, verplicht)
+                    ├── sponsor_logo ────────┤  (processed, verplicht)
                     └── stadium_background ──┤
                                              │
-                    BrandProfile (Team)       │
-                    └── sponsor_logo_upload ──┤ (kan sponsor overriden)
-                                             │
                     Opponent Club              │
-                    └── logo_light ───────────┤
+                    └── logo_light ───────────┤  (processed)
                                              │
                     ProjectMembership          │
                     ├── fullbody PNG ──────────┤
                     ├── closeup PNG ───────────┤
-                    └── intro video (.mov) ────┤
+                    ├── intro video (.mov) ────┤
+                    └── (of gastspeler silhouet) ┤  (auto-gegenereerd)
                                              │
                                              ▼
                                       LineupData

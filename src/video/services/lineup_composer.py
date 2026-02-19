@@ -618,12 +618,18 @@ def _download_player_assets(
                 )
 
         if not fullbody and not closeup:
-            raise ValueError(
-                f"Player {p.member_name} ({role}) has NO downloadable visual assets. "
-                f"kit_url={bool(p.kit_url)}, closeup_url={bool(p.closeup_url)}, "
-                f"intro_url={bool(p.intro_url)}. "
-                f"Cannot proceed — all players must have at least a fullbody or closeup image."
+            # Guest player: generate silhouette placeholder
+            from src.video.services.header_generator import generate_guest_silhouette
+
+            logger.info(
+                "Generating guest silhouette for %s (%s) — no visual assets available",
+                p.member_name,
+                role,
             )
+            dest = asset_dir / f"{prefix}_fullbody.png"
+            silhouette = generate_guest_silhouette()
+            silhouette.save(str(dest), "PNG")
+            fullbody = dest
 
         result.append(
             _LocalPlayer(
@@ -1344,8 +1350,8 @@ def compose_lineup_video(
     if progress_callback:
         progress_callback(10)
 
-    # ── 2. Pre-validate player assets (fail fast) ──
-    missing: list[str] = []
+    # ── 2. Pre-validate player assets (log guests, no longer fail) ──
+    guest_count = 0
     for phase_name, segment_list in [
         ("keeper", lineup_data.keepers),
         ("defender", lineup_data.defenders),
@@ -1354,15 +1360,16 @@ def compose_lineup_video(
     ]:
         for seg in segment_list:
             if not seg.kit_url and not seg.closeup_url:
-                missing.append(
-                    f"  • {seg.member_name} ({phase_name}): no fullbody or closeup image"
+                guest_count += 1
+                logger.info(
+                    "Guest player: %s (%s) — will use silhouette placeholder",
+                    seg.member_name,
+                    phase_name,
                 )
-    if missing:
-        detail = "\n".join(missing)
-        raise ValueError(
-            f"Cannot generate lineup video — {len(missing)} player(s) missing required assets:\n"
-            f"{detail}\n"
-            f"Generate fullbody + closeup images for these players first."
+    if guest_count:
+        logger.info(
+            "%d guest player(s) will use silhouette placeholders",
+            guest_count,
         )
 
     # ── 3. Download player assets ──

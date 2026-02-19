@@ -114,6 +114,7 @@ class PlayerSegment:
     closeup_url: str | None  # closeup image
     x: int  # position on field (percentage)
     y: int  # position on field (percentage)
+    is_guest_player: bool = False  # True if no assets, using placeholder silhouette
 
 
 @dataclass
@@ -427,24 +428,15 @@ class LineupSegmentBuilder:
             self._debug_trace.append("Resolution failed")
             return None
 
-        # Prefer the AI-processed logos (transparent PNG) over raw uploads.
-        # logo_light = AI-postprocessed (transparent background),
-        # logo_dark  = AI dark variant (rarely present),
-        # logo_upload = raw user upload (often JPG with opaque background).
+        # Logo: always use AI-processed transparent PNG (logo_light).
+        # Never fall back to raw uploads — processed is required.
         # Logo always inherits from club/org — skip team profile.
         logo_url = _resolve_asset_url(
-            [
-                "logo_light",
-                "logo_dark",
-                "logo_upload",
-                # Legacy / alternate naming used in some environments
-                "club_logo",
-                "club_logo_upload",
-                "logo",
-            ],
+            ["logo_light"],
             skip_team=True,
         )
-        sponsor_url = _resolve_asset_url(["sponsor_logo", "sponsor_logo_upload"])
+        # Sponsor: always use AI-processed transparent PNG (sponsor_logo).
+        sponsor_url = _resolve_asset_url(["sponsor_logo"])
         field_background_url = _resolve_asset_url(["stadium_background"])
 
         logger.info(
@@ -467,14 +459,9 @@ class LineupSegmentBuilder:
                 ).first()
                 if opp_club_brand:
                     opp_brand_profiles.append(opp_club_brand)
-            # Opponent logo — same priority: AI-processed first.
+            # Opponent logo: only AI-processed transparent PNG.
             opp_logo_priority = [
                 "logo_light",
-                "logo_dark",
-                "logo_upload",
-                "club_logo",
-                "club_logo_upload",
-                "logo",
             ]
             for opp_profile in opp_brand_profiles:
                 asset = None
@@ -1108,14 +1095,16 @@ class LineupSegmentBuilder:
             BrandAsset = apps.get_model("branding", "BrandAsset")
             opp_project = activity.opponent_project
             opp_club = getattr(opp_project, "parent_project", None)
-            for bp_target in [opp_project, opp_club] if opp_club else [opp_project]:
+            # Logo: only club level, only processed (logo_light)
+            for bp_target in [opp_club] if opp_club else [opp_project]:
                 bp = BrandProfile.objects.filter(project=bp_target, is_active=True).first()
                 if not bp:
                     continue
                 asset = (
                     BrandAsset.objects.filter(
                         profile=bp,
-                        asset_type__in=["logo_light", "logo_dark", "logo_upload"],
+                        asset_type="logo_light",
+                        is_active=True,
                     )
                     .select_related("file")
                     .first()
@@ -1237,13 +1226,15 @@ class LineupSegmentBuilder:
             name = user.get_full_name() if user else "Unknown"
 
             # Diagnostic logging for asset resolution
+            is_guest = not kit_url and not closeup_url
             self._debug_trace.append(
                 f"PM {pm.id} ({name}): kit_type={kit_type} "
                 f"kit={bool(kit_url)} intro={bool(intro_url)} closeup={bool(closeup_url)}"
+                f"{' [GUEST]' if is_guest else ''}"
             )
-            if not kit_url and not closeup_url:
-                logger.warning(
-                    "Player %s (PM %s) has NO fullbody/closeup assets in teamreel_assets metadata",
+            if is_guest:
+                logger.info(
+                    "Player %s (PM %s) marked as guest player — no assets available",
                     name,
                     pm.id,
                 )
@@ -1260,6 +1251,7 @@ class LineupSegmentBuilder:
                 closeup_url=closeup_url,
                 x=50,  # Default center, will be spread per line
                 y=50,
+                is_guest_player=is_guest,
             )
 
             # Separate GKs from field players using frontend role assignment
