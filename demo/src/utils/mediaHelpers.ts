@@ -8,8 +8,14 @@ import { MEDIA_SLOTS, MediaSlotId, MemberMediaForm } from '../constants/mediaSlo
 
 /**
  * Check if a membership has media for a specific slot
+ * For the 'profile' slot, also considers user.avatar_url as a valid photo source.
  */
 export function memberHasMedia(membership: any, slotId: MediaSlotId): boolean {
+  // Profile slot: also count user.avatar_url as a valid profile photo
+  if (slotId === 'profile') {
+    const avatarUrl = membership?.user?.avatar_url;
+    if (avatarUrl) return true;
+  }
   const media = membership?.metadata?.teamreel_assets?.media;
   if (!media) return false;
   const slot = media[slotId];
@@ -142,6 +148,11 @@ export function getMediaProcessingState(
   const mapping = SLOT_TO_VARIANT_CATEGORY[slotId];
   if (!mapping) {
     // Non-processable slot (profile, legacy_photo, legacy) — binary check
+    // For 'profile': also count user.avatar_url as a valid source
+    if (slotId === 'profile') {
+      const avatarUrl = membership?.user?.avatar_url;
+      return (flatUrl || avatarUrl) ? 'processed' : 'empty';
+    }
     return flatUrl ? 'processed' : 'empty';
   }
 

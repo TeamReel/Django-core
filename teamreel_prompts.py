@@ -661,7 +661,15 @@ KIT FROM REFERENCE (use for colors, patterns, logos, sponsor ONLY):
 - DO NOT modify, reinterpret, or "improve" the color scheme or pattern design
 - The person should look like they are WEARING this team's kit
 
-PERSON: Use the provided person photo. Preserve their face, hair, skin tone, and body proportions EXACTLY.
+PERSON — FACIAL IDENTITY (HIGHEST PRIORITY):
+The face in the output MUST be the SAME PERSON as in the input photo. This is the most critical requirement.
+- REPRODUCE the exact facial structure: bone structure, jawline, cheekbones, forehead shape
+- REPRODUCE the exact facial features: eyes (shape, color, spacing), nose, mouth, eyebrows EXACTLY
+- PRESERVE skin tone, complexion, and any distinguishing features (beard, wrinkles, dimples)
+- PRESERVE hair color, hairline, and hairstyle EXACTLY as shown in the input photo
+- PRESERVE body build and proportions from the input photo
+- DO NOT generate a generic/stock athlete face. The resulting face must be RECOGNISABLE as the specific person in the input photo.
+- If in doubt: MATCH THE FACE MORE PRECISELY rather than improve or idealise it.
 
 EQUIPMENT:
 - Football boots (modern style, matching the kit colors from reference).
@@ -680,6 +688,7 @@ STYLE:
 - The person must be FULLY SEPARATED from the background (no blending).
 
 FINAL CHECK:
+- Is the face RECOGNISABLE as the specific person from the input photo? ✓ (HIGHEST PRIORITY)
 - Does the kit match the reference colors/patterns/logos? ✓
 - Are the sleeves {sleeves_label}? ✓ (THIS IS MANDATORY)
 - Is the player in this pose: {pose_label}? ✓ (THIS IS MANDATORY)
