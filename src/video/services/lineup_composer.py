@@ -1332,6 +1332,18 @@ def compose_lineup_video(
 
     if lineup_data.sponsor_url:
         _download_file(lineup_data.sponsor_url, sponsor_path)
+        # Clean checkerboard artefacts from AI-generated sponsor logos
+        try:
+            from src.generative.services.asset_pipeline import _strip_checkerboard
+
+            sp_img = Image.open(sponsor_path).convert("RGBA")
+            sp_img = _strip_checkerboard(sp_img)
+            bbox = sp_img.getchannel("A").getbbox()
+            if bbox:
+                sp_img = sp_img.crop(bbox)
+            sp_img.save(str(sponsor_path), "PNG")
+        except Exception:  # noqa: BLE001
+            logger.warning("sponsor_checkerboard_cleanup failed, using raw file")
     else:
         sponsor_path = None
 
