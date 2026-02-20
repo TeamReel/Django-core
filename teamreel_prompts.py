@@ -876,6 +876,15 @@ FINAL CHECK:
 The provided image is the FIRST FRAME. Keep the player EXACTLY as shown — same face, hair, skin tone, body, clothing, and kit.
 Kit type: {kit_type_label}.
 
+OUTFIT CONSISTENCY (CRITICAL — applies to EVERY SINGLE FRAME):
+- The kit must be IDENTICAL in every frame from start to finish. No exceptions.
+- SLEEVE LENGTH: The sleeve length visible in the input image is FIXED. If the input shows short sleeves, every frame must have short sleeves. If the input shows long sleeves, every frame must have long sleeves. The sleeve length MUST NOT change at any point in the video.
+- SHIRT COLORS AND PATTERNS: The shirt colors, stripes, badges, and sponsor logos must remain 100% consistent across all frames.
+- SHORTS: Same color and length in every frame.
+- SOCKS: Same color and height in every frame.
+- BOOTS: Same color and style in every frame.
+- Any deviation in clothing between frames is FORBIDDEN.
+
 MOVEMENT:
 - The player starts in the EXACT pose from the input image.
 - Subtle, natural motion only: breathing, slight weight shift, small head turn toward camera.
@@ -933,6 +942,15 @@ RULES:
 
 The provided image is the FIRST FRAME. Keep the player EXACTLY as shown — same face, hair, skin tone, body, clothing, and kit.
 Kit type: {kit_type_label}.
+
+OUTFIT CONSISTENCY (CRITICAL — applies to EVERY SINGLE FRAME):
+- The kit must be IDENTICAL in every frame from start to finish. No exceptions.
+- SLEEVE LENGTH: The sleeve length visible in the input image is FIXED. If the input shows short sleeves, every frame must have short sleeves. If the input shows long sleeves, every frame must have long sleeves. The sleeve length MUST NOT change at any point in the video.
+- SHIRT COLORS AND PATTERNS: The shirt colors, stripes, badges, and sponsor logos must remain 100% consistent across all frames.
+- SHORTS: Same color and length in every frame.
+- SOCKS: Same color and height in every frame.
+- BOOTS: Same color and style in every frame.
+- Any deviation in clothing between frames is FORBIDDEN.
 
 MOVEMENT:
 - The player starts in the EXACT pose from the input image.
