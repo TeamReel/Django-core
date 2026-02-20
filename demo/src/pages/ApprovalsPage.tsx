@@ -1,14 +1,16 @@
 /**
- * ApprovalsPage — Global approval inbox showing all workflow instances
- * that require action, prioritized by state (review > active > draft).
- * Also contains the AI Generation Queue tab with full review workflow.
+ * QueuePage — Unified queue dashboard combining three data sources:
+ * 1. Workflow instances (content approval state machines)
+ * 2. AI generation jobs (image/video/text AI output)
+ * 3. Video processing jobs (transcode, compose, lineup, thumbnail)
  *
- * Route: /approvals
- * Sidebar: CONTENT section
+ * Route: /approvals (also handles redirects from /studio/videos)
+ * Sidebar: CONTENT section → "Queue"
  */
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { PageContent, PageHeader } from '@django-core/page-templates';
+import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   useWorkflowInstances,
   type WorkflowInstance,
@@ -23,8 +25,15 @@ import {
   type GenerationJob,
   type GenJobStatus,
 } from '../hooks/useGenerationJobs';
+import {
+  useVideoJobs,
+  getJobStatusDisplay,
+  getJobTypeDisplay,
+  type VideoJob,
+  type VideoJobStatus,
+} from '../hooks/useVideoJobs';
 
-type FilterState = 'all' | 'review' | 'active' | 'completed' | 'rejected' | 'ai_queue';
+type FilterState = 'all' | 'review' | 'active' | 'completed' | 'rejected' | 'ai_queue' | 'video';
 
 /** Filter AI jobs by the active sidebar tab */
 function filterAiJobsByTab(jobs: GenerationJob[], tab: FilterState): GenerationJob[] {
@@ -39,10 +48,43 @@ function filterAiJobsByTab(jobs: GenerationJob[], tab: FilterState): GenerationJ
       return jobs.filter(j => j.approval_status === 'rejected');
     case 'ai_queue':
       return jobs; // all AI jobs
+    case 'video':
+      return []; // video tab shows only video jobs
     case 'all':
     default:
       return jobs;
   }
+}
+
+/** Filter video jobs by the active sidebar tab */
+function filterVideoJobsByTab(jobs: VideoJob[], tab: FilterState): VideoJob[] {
+  switch (tab) {
+    case 'video':
+      return jobs; // all video jobs
+    case 'active':
+      return jobs.filter(j => j.status === 'queued' || j.status === 'processing');
+    case 'completed':
+      return jobs.filter(j => j.status === 'completed');
+    case 'rejected':
+      return jobs.filter(j => j.status === 'failed' || j.status === 'cancelled');
+    case 'review':
+    case 'ai_queue':
+      return []; // these tabs don't show video jobs
+    case 'all':
+    default:
+      return jobs;
+  }
+}
+
+/** Format duration for video jobs */
+function formatVideoDuration(start: string | null | undefined, end: string | null | undefined): string {
+  if (!start) return '—';
+  const s = new Date(start).getTime();
+  const e = end ? new Date(end).getTime() : Date.now();
+  const sec = Math.round((e - s) / 1000);
+  if (sec < 60) return `${sec}s`;
+  const min = Math.floor(sec / 60);
+  return `${min}m ${sec % 60}s`;
 }
 
 /** Map filter to state categories */
@@ -274,9 +316,11 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ApprovalsPage() {
+  const { context } = useContextSwitcher();
+  const projectId = context.project?.id;
   const location = useLocation();
   const rawTab = new URLSearchParams(location.search).get('tab') || 'all';
-  const filter: FilterState = (['all', 'review', 'active', 'completed', 'rejected', 'ai_queue'] as const).includes(rawTab as FilterState)
+  const filter: FilterState = (['all', 'review', 'active', 'completed', 'rejected', 'ai_queue', 'video'] as const).includes(rawTab as FilterState)
     ? (rawTab as FilterState)
     : 'all';
   const [actionError, setActionError] = useState<string | null>(null);
@@ -332,6 +376,16 @@ export default function ApprovalsPage() {
   );
 
   const { instances, loading, error, refresh } = useWorkflowInstances({ page_size: 100 });
+
+  // ── Video Processing Jobs ────────────────────────────────────────
+  const {
+    jobs: videoJobs,
+    loading: videoLoading,
+    error: videoError,
+    refresh: refreshVideoJobs,
+    cancelJob: cancelVideoJob,
+    retryJob: retryVideoJob,
+  } = useVideoJobs({ projectId: projectId || null });
 
   const handleTransitionComplete = useCallback(
     (_entry: TransitionHistoryEntry) => {
@@ -394,14 +448,16 @@ export default function ApprovalsPage() {
   }, [modalJob, needsReviewJobs, pushToast]);
 
   const visibleAiJobs = filterAiJobsByTab(mergedJobs, filter);
+  const visibleVideoJobs = useMemo(() => filterVideoJobsByTab(videoJobs, filter), [videoJobs, filter]);
 
   const tabTitles: Record<FilterState, { title: string; subtitle: string }> = {
-    all: { title: 'Approvals', subtitle: 'Alle items — workflows en AI-generatie jobs.' },
+    all: { title: 'Queue', subtitle: 'Alle items — workflows, AI-generatie en video processing.' },
     review: { title: 'Needs Review', subtitle: 'Items die wachten op beoordeling.' },
-    active: { title: 'In Progress', subtitle: 'Actieve workflows en AI-jobs die worden verwerkt.' },
-    completed: { title: 'Approved', subtitle: 'Goedgekeurde workflows en AI-generatie jobs.' },
-    rejected: { title: 'Rejected', subtitle: 'Afgewezen workflows en AI-generatie jobs.' },
+    active: { title: 'In Progress', subtitle: 'Actieve workflows, AI-jobs en video processing.' },
+    completed: { title: 'Approved', subtitle: 'Goedgekeurde en afgeronde items.' },
+    rejected: { title: 'Rejected', subtitle: 'Afgewezen en mislukte items.' },
     ai_queue: { title: 'AI Queue', subtitle: 'Alle AI-generatie jobs.' },
+    video: { title: 'Video Processing', subtitle: 'Transcode, compose en lineup jobs.' },
   };
 
   const statusIcon: Record<GenJobStatus, string> = {
@@ -445,7 +501,7 @@ export default function ApprovalsPage() {
                 Begin beoordelen ({needsReviewJobs.length})
               </button>
             )}
-            <button onClick={() => { refresh(); refreshAiJobs(); }} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 6, border: '1px solid var(--app-border, #e5e7eb)', backgroundColor: 'transparent', color: 'var(--app-text, #111)', cursor: 'pointer' }}>
+            <button onClick={() => { refresh(); refreshAiJobs(); refreshVideoJobs(); }} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 6, border: '1px solid var(--app-border, #e5e7eb)', backgroundColor: 'transparent', color: 'var(--app-text, #111)', cursor: 'pointer' }}>
               ↻ Refresh
             </button>
           </div>
@@ -454,21 +510,21 @@ export default function ApprovalsPage() {
 
       <PageContent>
         {/* ── Errors ── */}
-        {(error || actionError || aiError) && (
+        {(error || actionError || aiError || videoError) && (
           <div style={{ padding: '10px 14px', backgroundColor: '#fee2e2', color: '#dc2626', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
-            {actionError || error || aiError}
+            {actionError || error || aiError || videoError}
           </div>
         )}
 
         {/* ── Loading ── */}
-        {(loading || aiLoading) && (
+        {(loading || aiLoading || videoLoading) && (
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--app-text-secondary, #6b7280)', fontSize: 13 }}>
             Loading...
           </div>
         )}
 
         {/* ── Empty state ── */}
-        {!loading && !aiLoading && filtered.length === 0 && visibleAiJobs.length === 0 && (
+        {!loading && !aiLoading && !videoLoading && filtered.length === 0 && visibleAiJobs.length === 0 && visibleVideoJobs.length === 0 && (
           <div style={{ padding: 48, textAlign: 'center', color: 'var(--app-text-secondary, #9ca3af)', backgroundColor: 'var(--app-surface-2, #f9fafb)', borderRadius: 12, border: '1px dashed var(--app-border, #e5e7eb)' }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Geen items</div>
@@ -478,7 +534,7 @@ export default function ApprovalsPage() {
 
         {/* ── AI Jobs for this tab ── */}
         {!aiLoading && visibleAiJobs.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: filtered.length > 0 ? 24 : 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: (filtered.length > 0 || visibleVideoJobs.length > 0) ? 24 : 0 }}>
             {visibleAiJobs.map(job => {
               const isActive = job.status === 'processing' || job.status === 'queued' || job.status === 'waiting';
               const isReviewable = job.status === 'completed' && (job.approval_status === 'pending_review' || !job.approval_status);
@@ -535,8 +591,101 @@ export default function ApprovalsPage() {
           </div>
         )}
 
-        {/* ── Workflow instances (hidden on ai_queue tab) ── */}
-        {filter !== 'ai_queue' && !loading && filtered.length > 0 && (
+        {/* ── Video Processing Jobs ── */}
+        {!videoLoading && visibleVideoJobs.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: filtered.length > 0 ? 24 : 0 }}>
+            {visibleVideoJobs.map(vJob => {
+              const statusDisplay = getJobStatusDisplay(vJob.status);
+              const typeDisplay = getJobTypeDisplay(vJob.job_type);
+              const isActive = vJob.status === 'queued' || vJob.status === 'processing';
+
+              return (
+                <div
+                  key={vJob.id}
+                  style={{
+                    padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10,
+                    border: `1px solid ${vJob.status === 'failed' ? '#fca5a5' : 'var(--app-border, #e5e7eb)'}`,
+                    display: 'flex', flexDirection: 'column', gap: 10,
+                  }}
+                >
+                  {/* Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 18 }}>{typeDisplay.icon}</span>
+                      <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--app-text)' }}>{typeDisplay.label}</span>
+                      <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--app-text-secondary, #6b7280)' }}>{vJob.id.slice(0, 8)}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: '#0891b2', backgroundColor: '#0891b218', borderRadius: 99, padding: '2px 8px', letterSpacing: '0.04em' }}>
+                        VIDEO
+                      </span>
+                      <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 12, color: statusDisplay.color, backgroundColor: statusDisplay.bgColor }}>
+                        {statusDisplay.icon} {statusDisplay.label}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Progress */}
+                  {isActive && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: 'var(--app-border, #e5e7eb)', overflow: 'hidden' }}>
+                        <div style={{ width: `${Math.min(vJob.progress_percent, 100)}%`, height: '100%', borderRadius: 3, backgroundColor: vJob.progress_percent >= 100 ? '#059669' : '#2563eb', transition: 'width 0.5s ease-out' }} />
+                      </div>
+                      <span style={{ fontSize: 11, color: 'var(--app-text-secondary, #6b7280)', minWidth: 32 }}>{vJob.progress_percent}%</span>
+                    </div>
+                  )}
+
+                  {/* Meta */}
+                  <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', flexWrap: 'wrap' }}>
+                    <span>{new Date(vJob.created_at).toLocaleString('nl-NL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                    {vJob.started_at && <span>Duur: {formatVideoDuration(vJob.started_at, vJob.completed_at)}</span>}
+                    {vJob.preset_name && <span>Preset: {vJob.preset_name}</span>}
+                    {vJob.retry_count > 0 && <span>Retries: {vJob.retry_count}</span>}
+                  </div>
+
+                  {/* Error */}
+                  {vJob.error_message && (
+                    <div style={{ fontSize: 12, color: '#dc2626', backgroundColor: '#fef2f2', padding: '8px 12px', borderRadius: 6, borderLeft: '3px solid #dc2626' }}>
+                      {vJob.error_message}
+                    </div>
+                  )}
+
+                  {/* Workflow info */}
+                  {vJob.workflow_instance && (
+                    <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #6b7280)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      🔄 Workflow: {vJob.workflow_instance.template_name} — {vJob.workflow_instance.current_state}
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  {(isActive || vJob.status === 'failed') && (
+                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                      {isActive && (
+                        <button
+                          onClick={() => cancelVideoJob(vJob.id)}
+                          style={{ fontSize: 12, padding: '5px 12px', borderRadius: 6, border: '1px solid #dc2626', backgroundColor: 'transparent', color: '#dc2626', cursor: 'pointer' }}
+                        >
+                          Cancel
+                        </button>
+                      )}
+                      {vJob.status === 'failed' && (
+                        <button
+                          onClick={() => retryVideoJob(vJob.id)}
+                          style={{ fontSize: 12, padding: '5px 12px', borderRadius: 6, border: '1px solid #2563eb', backgroundColor: '#2563eb', color: '#fff', cursor: 'pointer' }}
+                        >
+                          Retry
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── Workflow instances (hidden on ai_queue and video tabs) ── */}
+        {filter !== 'ai_queue' && filter !== 'video' && !loading && filtered.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {filtered.map(instance => (
               <div

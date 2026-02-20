@@ -61,8 +61,7 @@ const NAV_CONFIG: NavSection[] = [
     items: [
       { path: '/studio', label: 'Gallery', icon: Sparkles, visibility: 'everyone' },
       { path: '/medialib', label: 'Media Library', icon: Library, visibility: 'everyone' },
-      { path: '/studio/videos', label: 'Video Queue', icon: Video, visibility: 'everyone' },
-      { path: '/approvals', label: 'Approvals', icon: ClipboardCheck, visibility: 'everyone' },
+      { path: '/approvals', label: 'Queue', icon: ClipboardCheck, visibility: 'everyone' },
     ]
   },
   {
@@ -842,15 +841,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Member', path: '/studio?category=member', icon: UserCircle },
                 ];
             } else if (path === '/studio/videos' || path.startsWith('/studio/videos')) {
-                title = 'Video Queue';
-                items = [
-                    { label: 'All Jobs', path: '/studio/videos?tab=all', icon: Video },
-                    { label: 'Processing', path: '/studio/videos?tab=processing', icon: Activity },
-                    { label: 'Completed', path: '/studio/videos?tab=completed', icon: ClipboardCheck },
-                    { label: 'Failed', path: '/studio/videos?tab=failed', icon: Flag },
-                ];
-            } else if (path === '/approvals' || path.startsWith('/approvals')) {
-                title = 'Approvals';
+                // Redirect old video queue links to unified queue
+                title = 'Queue';
                 items = [
                     { label: 'All', path: '/approvals?tab=all', icon: ClipboardCheck },
                     { label: 'Needs Review', path: '/approvals?tab=review', icon: Flag },
@@ -858,6 +850,18 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Approved', path: '/approvals?tab=completed', icon: ClipboardCheck },
                     { label: 'Rejected', path: '/approvals?tab=rejected', icon: Shield },
                     { label: 'AI Queue', path: '/approvals?tab=ai_queue', icon: Sparkles },
+                    { label: 'Video Processing', path: '/approvals?tab=video', icon: Video },
+                ];
+            } else if (path === '/approvals' || path.startsWith('/approvals')) {
+                title = 'Queue';
+                items = [
+                    { label: 'All', path: '/approvals?tab=all', icon: ClipboardCheck },
+                    { label: 'Needs Review', path: '/approvals?tab=review', icon: Flag },
+                    { label: 'In Progress', path: '/approvals?tab=active', icon: Activity },
+                    { label: 'Approved', path: '/approvals?tab=completed', icon: ClipboardCheck },
+                    { label: 'Rejected', path: '/approvals?tab=rejected', icon: Shield },
+                    { label: 'AI Queue', path: '/approvals?tab=ai_queue', icon: Sparkles },
+                    { label: 'Video Processing', path: '/approvals?tab=video', icon: Video },
                 ];
             } else {
                 // Fallback for other content pages
@@ -865,8 +869,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 items = [
                     { label: 'Gallery', path: '/studio', icon: Sparkles },
                     { label: 'Media Library', path: '/medialib', icon: Library },
-                    { label: 'Video Queue', path: '/studio/videos', icon: Video },
-                    { label: 'Approvals', path: '/approvals', icon: ClipboardCheck },
+                    { label: 'Queue', path: '/approvals', icon: ClipboardCheck },
                 ];
             }
             break;

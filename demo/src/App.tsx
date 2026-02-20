@@ -108,7 +108,6 @@ import ProjectHierarchySeasonRedirectPage from './pages/activities/ProjectHierar
 import ProjectHierarchyCompetitionRedirectPage from './pages/activities/ProjectHierarchyCompetitionRedirectPage';
 import LegacyMatchRedirectPage from './pages/activities/LegacyMatchRedirectPage';
 import AIStudioPage from './pages/aistudio/AIStudioPage';
-import VideoQueuePage from './pages/studio/VideoQueuePage';
 
 // Period (Season/Competition) pages
 import ProjectSeasonsPage from './pages/periods/ProjectSeasonsPage';
@@ -949,11 +948,7 @@ export default function App() {
       />
       <Route
         path="/studio/videos"
-        element={
-          <ProtectedRoute>
-            <VideoQueuePage />
-          </ProtectedRoute>
-        }
+        element={<Navigate to="/approvals?tab=video" replace />}
       />
       {/* Search route */}
       <Route
