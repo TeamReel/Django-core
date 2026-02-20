@@ -2101,8 +2101,6 @@ def list_generation_jobs_view(request: Request) -> Response:
 # =============================================================================
 
 
-@api_view(["POST"])
-@permission_classes([AllowAny])
 def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
     """Write an approved generated video into ProjectMembership.metadata.teamreel_assets.videos.
 
@@ -2158,11 +2156,13 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
 
         # Parse kit_type and style_variant from filename
         # Pattern: member_intro_kit_type-{kit}_style_variant-{style}_{hash}_{idx}.mp4
-        kit_match = re.search(r"kit_type-([a-z0-9_]+)", filename)
-        style_match = re.search(r"style_variant-([a-z0-9_]+)", filename)
+        # Use lazy match for kit_type to stop before the _style_variant suffix,
+        # and [a-z_]+ for style to stop at the numeric hash that follows.
+        kit_match = re.search(r"kit_type-(\w+?)_style_variant", filename)
+        style_match = re.search(r"style_variant-([a-z][a-z_]*)", filename)
 
-        kit_type = kit_match.group(1) if kit_match else "home"
-        style_variant = style_match.group(1) if style_match else None
+        kit_type = kit_match.group(1).strip("_") if kit_match else "home"
+        style_variant = style_match.group(1).strip("_") if style_match else None
 
         composite_key = f"{kit_type}_{style_variant}" if style_variant else kit_type
 
@@ -2195,6 +2195,8 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
             )
 
 
+@api_view(["POST"])
+@permission_classes([AllowAny])
 def review_generation_job_view(request: Request, task_id: str) -> Response:
     """Approve or reject a completed AI generation job (or a specific variant).
 

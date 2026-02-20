@@ -39,8 +39,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        from generative.models import GenerationJob
-        from generative.views_asset import _propagate_approved_video_to_membership
+        from src.generative.models import GenerationJob
+        from src.generative.views_asset import _propagate_approved_video_to_membership
 
         dry = options["dry_run"]
         job_id = options["job_id"]
@@ -89,7 +89,7 @@ class Command(BaseCommand):
             )
             for v in approved_variants:
                 self.stdout.write(
-                    f"    → {v.get('storage_path', '(no path)')} [{v.get('filename', '')}]"
+                    f"    -> {v.get('storage_path', '(no path)')} [{v.get('filename', '')}]"
                 )
 
             if not dry:
