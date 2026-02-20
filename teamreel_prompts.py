@@ -976,6 +976,111 @@ RULES:
 - 9:16 vertical aspect ratio.
 """,
     },
+
+    # =========================================================================
+    # 10. THEN VS NOW — SIDE BY SIDE (6-second video)
+    # =========================================================================
+    "then_vs_now_sidebyside": {
+        "id": "then_vs_now_sidebyside",
+        "name": "Then vs Now (Naast Elkaar)",
+        "category": "then_vs_now",
+        "output_type": "video",
+        "description": "6 seconden portretvideo: legacyfoto (links) en huidige speler (rechts) naast elkaar. Ze kijken naar elkaar en lachen.",
+        "input_requirements": ["person_photo", "reference_photo"],
+        "parameters": {},
+        "video_config": {
+            "duration_seconds": 6,
+            "fps": 30,
+            "resolution": "1080p",
+            "aspect_ratio": "9:16",
+            "loop": True,
+            "minimax_model": "video-01",
+            "composite_mode": "side_by_side",  # Pipeline preprocessing flag
+        },
+        "prompt_template": """6-second side-by-side "Then vs Now" portrait video. Two versions of the SAME person standing next to each other.
+
+The provided image is the FIRST FRAME showing TWO people side by side:
+- LEFT person: the younger / legacy version (old photo)
+- RIGHT person: the current / present-day version
+
+IDENTITY (CRITICAL):
+- Both people are the SAME person at different ages. Keep their facial features consistent.
+- LEFT person clothing stays EXACTLY as shown in the input image throughout the entire video.
+- RIGHT person clothing stays EXACTLY as shown in the input image throughout the entire video.
+- NO clothing changes. NO appearance changes. What they wear in frame 1 is what they wear in the last frame.
+
+MOVEMENT SEQUENCE (must be precise):
+1. FRAMES 0-1s: Both stand facing the camera, looking straight ahead. Neutral expression. Minimal movement (natural breathing only).
+2. FRAMES 1-2.5s: They slowly turn their heads to look at EACH OTHER. Left person turns head RIGHT. Right person turns head LEFT. Their eyes meet.
+3. FRAMES 2.5-4s: They begin to smile, then laugh together. Natural, genuine laughter. Their bodies can shift slightly toward each other. Keep it subtle and warm.
+4. FRAMES 4-5.5s: Still laughing/smiling, they slowly turn their heads back to face the camera.
+5. FRAMES 5.5-6s: Both face forward again with a warm smile. Return to near-starting pose for seamless loop.
+
+BACKGROUND:
+- Plain solid color background (bright green #00FF00 or bright blue #0000FF chroma-key).
+- NO stadium, NO environment, NO scenery of any kind.
+- Both people must be completely isolated against the flat color.
+
+RULES:
+- NO visual effects, NO particles, NO lens flares, NO glow, NO transitions.
+- NO text overlays, NO graphics, NO logos added.
+- NO camera movement. Static locked-off camera.
+- Photorealistic quality. Natural lighting. Professional studio setup.
+- Both people must remain fully visible at all times (head to at least mid-thigh, no cropping).
+- 9:16 vertical aspect ratio.
+- Movement is slow, natural, and controlled. No sudden jerks.
+""",
+    },
+
+    # =========================================================================
+    # 11. THEN VS NOW — TRANSFORMATION (4-second video)
+    # =========================================================================
+    "then_vs_now_transformation": {
+        "id": "then_vs_now_transformation",
+        "name": "Then vs Now (Transformatie)",
+        "category": "then_vs_now",
+        "output_type": "video",
+        "description": "4 seconden portretvideo: de speler transformeert van legacy-look naar huidige look in tenue.",
+        "input_requirements": ["person_photo", "reference_photo"],
+        "parameters": {},
+        "video_config": {
+            "duration_seconds": 4,
+            "fps": 30,
+            "resolution": "1080p",
+            "aspect_ratio": "9:16",
+            "loop": False,
+            "minimax_model": "video-01",
+            "composite_mode": "first_last_frame",  # Pipeline preprocessing flag
+        },
+        "prompt_template": """4-second realistic transformation video. One person morphs from their old appearance to their current appearance.
+
+The provided image is the FIRST FRAME showing the person in their OLD / legacy appearance.
+
+TRANSFORMATION SEQUENCE (must be precise):
+1. FRAMES 0-0.5s: The person stands still, looking at the camera. Old appearance exactly as shown in the input image.
+2. FRAMES 0.5-1.5s: The person raises both hands and places them on their head (like a surprised/amazed gesture). Expression shifts to excitement/wonder.
+3. FRAMES 1.5-3s: While hands are on head, a smooth realistic transformation happens:
+   - Clothing morphs and changes color to modern football kit
+   - The person visibly ages/matures slightly (if the legacy photo shows a younger version)
+   - Hair may update to current style
+   - The transformation should feel magical but REALISTIC — like a time-lapse, NOT like a cartoon or glitch effect
+4. FRAMES 3-4s: The person lowers their hands, now in their CURRENT / modern appearance. They look at themselves briefly (looking down at their new kit), then look up at the camera with a big proud smile.
+
+BACKGROUND:
+- Plain solid color background (bright green #00FF00 or bright blue #0000FF chroma-key).
+- NO stadium, NO environment, NO scenery of any kind.
+- The person must be completely isolated against the flat color.
+
+RULES:
+- NO visual effects like sparkles, fire, lightning, lens flares. The transformation should be SMOOTH and REALISTIC, like morphing.
+- NO text overlays, NO graphics, NO logos added.
+- NO camera movement. Static locked-off camera. The person moves, not the camera.
+- Photorealistic quality. Natural lighting. Professional studio setup.
+- Full body must remain visible at all times (head to toe, no cropping).
+- 9:16 vertical aspect ratio.
+- The transformation is the ONLY "magical" element — everything else must look real.
+""",
+    },
 }
 
 

@@ -107,13 +107,15 @@ type AssetVariantsMap = {
   // Per-style-variant videos
   intro: AssetVariants;
   celebration: AssetVariants;
+  // Then vs Now videos
+  then_vs_now: AssetVariants; // { sidebyside: "s3://...", transformation: "..." }
 };
 
 // Keep old name as alias for backwards compatibility within file
 type VideoVariantsMap = AssetVariantsMap;
 
 function createEmptyVideoVariants(): AssetVariantsMap {
-  return { fullbody: {}, closeup: {}, intro: {}, celebration: {} };
+  return { fullbody: {}, closeup: {}, intro: {}, celebration: {}, then_vs_now: {} };
 }
 
 function readAssetsFromMembership(membership: any): MemberMediaForm {
@@ -189,6 +191,7 @@ function readVideoVariantsFromMembership(membership: any): AssetVariantsMap {
     closeup: safeObj(images?.closeup),
     intro: migrateVideoKeys(safeObj(videos?.intro)),
     celebration: migrateVideoKeys(safeObj(videos?.celebration)),
+    then_vs_now: safeObj(videos?.then_vs_now),
   };
 
   // Migrate: if form.kit has a URL but fullbody.home is empty, seed it
@@ -247,6 +250,7 @@ function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm, v
     next.videos = {
       intro: videoVariants.intro || {},
       celebration: videoVariants.celebration || {},
+      then_vs_now: videoVariants.then_vs_now || {},
     };
   } else {
     if (existingTeamReel.images) next.images = existingTeamReel.images;
@@ -1184,13 +1188,13 @@ export default function ProjectSeasonMemberDetailPage() {
   }, [clubBrand]);
 
   // Handler to open AI modal for a specific template
-  const openAiModal = (templateId: string, defaultKitType?: string, playerInTenueUrl?: string | null, styleVariant?: string | null) => {
+  const openAiModal = (templateId: string, defaultKitType?: string, playerInTenueUrl?: string | null, styleVariant?: string | null, referenceOverride?: string | null) => {
     setAiPreselectedTemplate(templateId);
     const kitType = defaultKitType || 'home';
     setAiSelectedKitType(kitType);
     // Find the kit URL for the selected type
     const kit = effectiveKits.find(k => k.id === kitType);
-    setAiSelectedKitUrl(kit?.url || null);
+    setAiSelectedKitUrl(referenceOverride || kit?.url || null);
     // For intro/celebration: use the player in tenue as input
     setAiInputPersonUrl(playerInTenueUrl || null);
     // For intro/celebration: set the style variant
@@ -1619,6 +1623,7 @@ export default function ProjectSeasonMemberDetailPage() {
           { id: 'closeup', label: 'Close-up' },
           { id: 'intro', label: 'Short Intro' },
           { id: 'celebration', label: 'Celebration' },
+          { id: 'then_vs_now', label: 'Then vs Now' },
           { id: 'legacy', label: 'Legacy in Tenue' },
           { id: 'assets', label: 'Assets' },
           { id: 'workflow', label: 'Workflow' },
@@ -2864,6 +2869,211 @@ export default function ProjectSeasonMemberDetailPage() {
                   </Card>
                 )}
 
+                {/* Then vs Now Tab - Legacy vs Current side by side & transformation */}
+                {activeTab === 'then_vs_now' && (() => {
+                  // Resolve legacy fullbody URL (from legacy_photo or fullbody.legacy)
+                  const legacyFullbodyUrl =
+                    resolveDisplayUrl(form.legacy_photo?.url)
+                    || resolveDisplayUrl(getBestUrl(videoVariants.fullbody.legacy))
+                    || null;
+                  // Resolve current fullbody URL (home kit fullbody)
+                  const currentFullbodyUrl =
+                    resolveDisplayUrl(getBestUrl(videoVariants.fullbody.home))
+                    || resolveDisplayUrl(form.kit?.url)
+                    || null;
+                  const hasBothInputs = Boolean(legacyFullbodyUrl) && Boolean(currentFullbodyUrl);
+
+                  const thenVsNowDefs = [
+                    { id: 'sidebyside', templateId: 'then_vs_now_sidebyside', icon: '👫', label: 'Naast Elkaar', desc: '6 sec — kijken naar elkaar en lachen' },
+                    { id: 'transformation', templateId: 'then_vs_now_transformation', icon: '🔄', label: 'Transformatie', desc: '4 sec — legacy verandert in huidige speler' },
+                  ];
+
+                  return (
+                    <Card>
+                      <div style={{ padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '24px' }}>⏳</span>
+                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Then vs Now</div>
+                          </div>
+                          <Badge variant={userCanEditProject ? 'default' : 'info'}>
+                            {userCanEditProject ? 'Editable' : 'Read-only'}
+                          </Badge>
+                        </div>
+
+                        <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                          Vergelijk de speler vroeger en nu. Vereist zowel een legacy foto als een huidige &quot;Player in Tenue&quot; afbeelding.
+                        </div>
+
+                        {/* Prerequisites check */}
+                        <div style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                          <div style={{
+                            flex: '1 1 200px',
+                            border: legacyFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
+                            borderRadius: '8px',
+                            padding: '12px',
+                            textAlign: 'center',
+                          }}>
+                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>📸 Legacy Foto</div>
+                            {legacyFullbodyUrl ? (
+                              <img
+                                src={legacyFullbodyUrl}
+                                alt="Legacy"
+                                style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : (
+                              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Upload eerst een legacy foto</div>
+                            )}
+                          </div>
+                          <div style={{
+                            flex: '1 1 200px',
+                            border: currentFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
+                            borderRadius: '8px',
+                            padding: '12px',
+                            textAlign: 'center',
+                          }}>
+                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>👕 Huidige Fullbody</div>
+                            {currentFullbodyUrl ? (
+                              <img
+                                src={currentFullbodyUrl}
+                                alt="Current"
+                                style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : (
+                              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Player in Tenue</div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Video variants */}
+                        <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', opacity: hasBothInputs ? 1 : 0.5 }}>
+                          {thenVsNowDefs.map((variant) => {
+                            const variantRaw = videoVariants.then_vs_now[variant.id];
+                            const variantUrl = getBestUrl(variantRaw) || '';
+                            const hasVideo = Boolean(variantUrl);
+                            const resolvedUrl = hasVideo ? resolveDisplayUrl(variantUrl) : null;
+
+                            return (
+                              <div key={variant.id} style={{
+                                border: hasVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                background: 'var(--app-surface)',
+                              }}>
+                                <div
+                                  onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
+                                  style={{
+                                    aspectRatio: '9/16',
+                                    background: hasVideo
+                                      ? '#000'
+                                      : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    minHeight: '200px',
+                                    position: 'relative',
+                                    cursor: hasVideo ? 'pointer' : 'default',
+                                  }}>
+                                  {hasVideo && resolvedUrl ? (
+                                    <>
+                                      <video
+                                        key={resolvedUrl}
+                                        src={resolvedUrl}
+                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                        muted
+                                        loop
+                                        playsInline
+                                        autoPlay
+                                        onError={(e) => {
+                                          (e.target as HTMLVideoElement).style.display = 'none';
+                                        }}
+                                      />
+                                      <div style={{
+                                        position: 'absolute',
+                                        top: '6px',
+                                        right: '6px',
+                                        background: 'rgba(99, 102, 241, 0.85)',
+                                        color: '#fff',
+                                        fontSize: '9px',
+                                        fontWeight: 700,
+                                        padding: '2px 5px',
+                                        borderRadius: '4px',
+                                      }}>
+                                        AI
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                      {variant.icon}<br />Niet gegenereerd
+                                    </div>
+                                  )}
+                                </div>
+                                <div style={{ padding: '12px' }}>
+                                  <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>
+                                    {variant.icon} {variant.label}
+                                  </div>
+                                  <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '10px' }}>
+                                    {variant.desc}
+                                  </div>
+                                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                    {hasVideo ? (
+                                      <>
+                                        <Button
+                                          size="sm"
+                                          onClick={() => openAiModal(variant.templateId, 'home', legacyFullbodyUrl, null, currentFullbodyUrl)}
+                                          disabled={!hasBothInputs}
+                                          style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
+                                        >
+                                          Opnieuw
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={async () => {
+                                            if (!confirm('Weet je zeker dat je deze video wilt verwijderen?')) return;
+                                            const newVV: VideoVariantsMap = {
+                                              ...videoVariants,
+                                              then_vs_now: { ...videoVariants.then_vs_now },
+                                            };
+                                            delete newVV.then_vs_now[variant.id];
+                                            setVideoVariants(newVV);
+                                            const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
+                                            await handleMetadataUpdate(updatedMeta);
+                                          }}
+                                          style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}
+                                        >
+                                          🗑️
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <Button
+                                        size="sm"
+                                        onClick={() => openAiModal(variant.templateId, 'home', legacyFullbodyUrl, null, currentFullbodyUrl)}
+                                        disabled={!hasBothInputs}
+                                        style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                      >
+                                        ✨ Genereer
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {!userCanEditProject && (
+                          <div style={{ marginTop: '16px' }}>
+                            <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })()}
+
                 {/* Assets Tab - Member-specific generated assets */}
                 {activeTab === 'assets' && (
                   <Card>
@@ -3412,7 +3622,11 @@ export default function ProjectSeasonMemberDetailPage() {
                 ? getBestUrl(videoVariants.intro[`${aiSelectedKitType}_${aiSelectedStyleVariant}`]) || null
                 : aiPreselectedTemplate === 'member_goal_celebration' && aiSelectedStyleVariant
                   ? getBestUrl(videoVariants.celebration[`${aiSelectedKitType}_${aiSelectedStyleVariant}`]) || null
-                  : null
+                  : aiPreselectedTemplate === 'then_vs_now_sidebyside'
+                    ? getBestUrl(videoVariants.then_vs_now.sidebyside) || null
+                    : aiPreselectedTemplate === 'then_vs_now_transformation'
+                      ? getBestUrl(videoVariants.then_vs_now.transformation) || null
+                      : null
         }
         onAssetSaved={async (savedInfo) => {
           // Capture membershipId from URL params at call time — never rely on
@@ -3448,6 +3662,7 @@ export default function ProjectSeasonMemberDetailPage() {
             const isCloseup = assetType.startsWith('member_closeup');
             const isIntroVideo = assetType.startsWith('member_intro');
             const isCelebrationVideo = assetType.startsWith('member_goal_celebration');
+            const isThenVsNow = assetType.startsWith('then_vs_now');
 
             // Extract kit type from assetType suffix (e.g. member_in_tenue_away → away)
             const kitTypeFromAsset =
@@ -3500,6 +3715,24 @@ export default function ProjectSeasonMemberDetailPage() {
               setForm(newForm);
 
               const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVariants);
+              await handleMetadataUpdate(updatedMeta, saveMembershipId);
+            } else if (isThenVsNow) {
+              // Then vs Now video storage: then_vs_now.sidebyside or then_vs_now.transformation
+              const variantKey = assetType === 'then_vs_now_sidebyside' ? 'sidebyside'
+                : assetType === 'then_vs_now_transformation' ? 'transformation'
+                : assetType.replace('then_vs_now_', '');
+              console.log(`🎯 Saving then_vs_now variant: ${variantKey} = ${savedUrl}`);
+
+              const newVariants: AssetVariantsMap = {
+                ...videoVariants,
+                then_vs_now: {
+                  ...videoVariants.then_vs_now,
+                  [variantKey]: savedUrl,
+                },
+              };
+              setVideoVariants(newVariants);
+
+              const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVariants);
               await handleMetadataUpdate(updatedMeta, saveMembershipId);
             }
           }

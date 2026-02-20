@@ -84,6 +84,46 @@ PREPROCESSORS = {
 }
 
 
+def _composite_side_by_side(left_bytes: bytes, right_bytes: bytes) -> bytes:
+    """Composite two images side by side on a chroma-key background for Then vs Now.
+
+    Creates a 1080×1920 (9:16 portrait) canvas with:
+    - Left half: legacy/old fullbody image
+    - Right half: current fullbody image
+    - Bright green (#00FF00) chroma-key background
+    Both images are scaled to fit their half while maintaining aspect ratio.
+    """
+    from PIL import Image
+
+    CANVAS_W, CANVAS_H = 1080, 1920
+    HALF_W = CANVAS_W // 2
+    BG_COLOR = (0, 255, 0)  # Chroma-key green
+
+    canvas = Image.new("RGB", (CANVAS_W, CANVAS_H), BG_COLOR)
+
+    for i, img_bytes in enumerate([left_bytes, right_bytes]):
+        img = Image.open(BytesIO(img_bytes))
+        # Convert to RGBA to handle transparency, then composite onto green
+        if img.mode != "RGBA":
+            img = img.convert("RGBA")
+
+        # Scale to fit within half-width × full-height with padding
+        max_w = HALF_W - 20  # 10px margin on each side
+        max_h = CANVAS_H - 40  # 20px margin top/bottom
+        img.thumbnail((max_w, max_h), Image.Resampling.LANCZOS)
+
+        # Center in the half
+        x_offset = (i * HALF_W) + (HALF_W - img.width) // 2
+        y_offset = (CANVAS_H - img.height) // 2
+
+        # Paste with alpha mask for transparency
+        canvas.paste(img, (x_offset, y_offset), img)
+
+    buf = BytesIO()
+    canvas.save(buf, format="PNG")
+    return buf.getvalue()
+
+
 # =============================================================================
 # Output Postprocessors (Pillow-based, run AFTER Gemini output)
 # =============================================================================
@@ -925,6 +965,33 @@ def generate_video(
     # Resolve prompt
     final_prompt = resolve_prompt(template_id, params)
     logger.info("Resolved video prompt for %s: %d chars", template_id, len(final_prompt))
+
+    # Template-specific preprocessing: composite modes for Then vs Now
+    composite_mode = (
+        video_config.get("composite_mode")
+        if (video_config := template.get("video_config", {}))
+        else None
+    )
+    if composite_mode == "side_by_side":
+        # Composite legacy (person_photo) + current (reference_photo) into one image
+        person_img = input_images.get("person_photo")
+        reference_img = input_images.get("reference_photo")
+        if person_img and reference_img:
+            composite = _composite_side_by_side(person_img, reference_img)
+            input_images = {**input_images, "person_photo": composite}
+            logger.info(
+                "Composited side-by-side image for %s (%d bytes)", template_id, len(composite)
+            )
+        else:
+            logger.warning(
+                "Side-by-side composite requested but missing images (person=%s, reference=%s)",
+                bool(person_img),
+                bool(reference_img),
+            )
+    elif composite_mode == "first_last_frame":
+        # For transformation: person_photo is the first frame (legacy), reference_photo is the target (current)
+        # MiniMax only uses person_photo as first frame; the prompt describes the transformation
+        logger.info("Transformation mode: using person_photo as first frame for %s", template_id)
 
     # Provider selection
     minimax_key = getattr(settings, "MINIMAX_API_KEY", None)

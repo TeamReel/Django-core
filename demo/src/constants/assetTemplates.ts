@@ -674,6 +674,45 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     },
   },
   // ============================================================================
+  // Then vs Now Templates (VIDEO - requires legacy fullbody + current fullbody)
+  // ============================================================================
+  {
+    id: 'then_vs_now_sidebyside',
+    name: 'Then vs Now (Naast Elkaar)',
+    icon: '👫',
+    category: 'then_vs_now',
+    description: 'Portretvideo (6 sec): legacy-versie (links) en huidige speler (rechts) naast elkaar. Ze kijken naar elkaar en lachen.',
+    inputRequirements: ['person', 'reference'], // person = legacy fullbody, reference = current fullbody
+    requiredAssetTypes: [],
+    outputAssetType: 'then_vs_now_sidebyside',
+    creditsCost: 5,
+    outputType: 'video',
+    videoConfig: {
+      durationSeconds: 6,
+      aspectRatio: '9:16',
+      resolution: '720p',
+    },
+    parameters: {},
+  },
+  {
+    id: 'then_vs_now_transformation',
+    name: 'Then vs Now (Transformatie)',
+    icon: '🔄',
+    category: 'then_vs_now',
+    description: 'Portretvideo (4 sec): de speler transformeert van legacy-look naar huidige look in tenue. Magisch maar realistisch.',
+    inputRequirements: ['person', 'reference'], // person = legacy fullbody, reference = current fullbody
+    requiredAssetTypes: [],
+    outputAssetType: 'then_vs_now_transformation',
+    creditsCost: 5,
+    outputType: 'video',
+    videoConfig: {
+      durationSeconds: 4,
+      aspectRatio: '9:16',
+      resolution: '720p',
+    },
+    parameters: {},
+  },
+  // ============================================================================
   // Post-Process Templates (optimize AI-generated assets for print/flyers)
   // ============================================================================
   {
@@ -807,7 +846,7 @@ export function getTemplate(id: string): AssetTemplate | undefined {
 /** Get templates suitable for a specific context */
 export function getTemplatesForContext(context: 'club' | 'member'): AssetTemplate[] {
   if (context === 'member') {
-    return ASSET_TEMPLATES.filter((t) => ['fullbody', 'closeup', 'intro', 'celebration'].includes(t.category));
+    return ASSET_TEMPLATES.filter((t) => ['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now'].includes(t.category));
   }
-  return ASSET_TEMPLATES.filter((t) => !['fullbody', 'closeup', 'intro', 'celebration'].includes(t.category));
+  return ASSET_TEMPLATES.filter((t) => !['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now'].includes(t.category));
 }
