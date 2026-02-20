@@ -1057,7 +1057,13 @@ export default function ProjectSeasonMemberDetailPage() {
         throw new Error(`Metadata update failed: ${patchRes.status}`);
       }
 
-      // Step 3: Refresh membership data
+      // Step 3: Add to presigned cache for immediate display
+      const uploadedPresignedUrl = uploadData?.data?.presigned_url || uploadData?.presigned_url;
+      if (uploadedPresignedUrl) {
+        setPresignedCache((prev) => ({ ...prev, [storagePath]: uploadedPresignedUrl }));
+      }
+
+      // Step 4: Refresh membership data
       const memberRes = await fetch(
         `${apiBaseUrl}/api/v1/projects/${project?.id}/members/${membershipId}/`,
         { credentials: 'include' }
@@ -1067,6 +1073,8 @@ export default function ProjectSeasonMemberDetailPage() {
         setMembership(json?.data || json);
       }
 
+      // Clear preview to show resolved URL from metadata
+      setLegacyPhotoPreview(null);
       alert('Legacy foto succesvol geüpload!');
     } catch (err) {
       console.error('Legacy photo upload error:', err);
@@ -1874,7 +1882,7 @@ export default function ProjectSeasonMemberDetailPage() {
                             }}>
                               {(legacyPhotoPreview || form.legacy_photo?.url) ? (
                                 <img
-                                  src={legacyPhotoPreview || form.legacy_photo?.url}
+                                  src={legacyPhotoPreview || resolveDisplayUrl(form.legacy_photo?.url)}
                                   alt="Legacy Photo"
                                   style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: legacyPhotoUploading ? 0.5 : 1 }}
                                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -3384,8 +3392,8 @@ export default function ProjectSeasonMemberDetailPage() {
           person: aiInputPersonUrl
             ? getAssetUrl(aiInputPersonUrl)
             : aiSelectedKitType === 'legacy'
-              ? form.legacy_photo?.url || form.profile?.url || membership?.user?.avatar_url || null
-              : form.profile?.url || membership?.user?.avatar_url || null,
+              ? resolveDisplayUrl(form.legacy_photo?.url) || resolveDisplayUrl(form.profile?.url) || membership?.user?.avatar_url || null
+              : resolveDisplayUrl(form.profile?.url) || membership?.user?.avatar_url || null,
         }}
         initialParams={{
           kit_type: aiSelectedKitType,
