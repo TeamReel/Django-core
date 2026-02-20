@@ -1967,8 +1967,8 @@ export default function ProjectSeasonMemberDetailPage() {
                 )}
 
                 {/* Other media slot tabs — preview + upload only (no URL/caption inputs) */}
-                {/* AI-generative slots (kit, closeup) and dedicated tabs (profile, legacy_photo) are handled separately */}
-                {MEDIA_SLOTS.filter((s) => s.id !== 'profile' && s.id !== 'legacy_photo' && s.id !== 'kit' && s.id !== 'closeup').map((slot) => activeTab === slot.id && (
+                {/* AI-generative slots and dedicated tabs are handled separately */}
+                {(MEDIA_SLOTS as readonly { id: string; label: string; icon: string; description: string; isInput: boolean }[]).filter((s) => !['profile', 'legacy_photo', 'kit', 'closeup', 'intro', 'celebration', 'then_vs_now', 'legacy'].includes(s.id)).map((slot) => activeTab === slot.id && (
                   <Card key={slot.id}>
                     <div style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
@@ -1986,7 +1986,7 @@ export default function ProjectSeasonMemberDetailPage() {
                       </div>
 
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginTop: '20px' }}>
-                        {form[slot.id]?.url && (
+                        {(form as any)[slot.id]?.url && (
                           <div>
                             <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Preview</div>
                             <div style={{
@@ -1996,15 +1996,15 @@ export default function ProjectSeasonMemberDetailPage() {
                               background: '#f3f4f6',
                               maxWidth: '400px',
                             }}>
-                              {(slot.id === 'intro' || slot.id === 'celebration') && form[slot.id]?.url?.includes('.mp4') ? (
+                              {(slot.id === 'intro' || slot.id === 'celebration') && (form as any)[slot.id]?.url?.includes('.mp4') ? (
                                 <video
-                                  src={form[slot.id].url}
+                                  src={(form as any)[slot.id].url}
                                   controls
                                   style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
                                 />
                               ) : (
                                 <img
-                                  src={form[slot.id].url}
+                                  src={(form as any)[slot.id].url}
                                   alt={slot.label}
                                   style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
                                   onError={(e) => {
@@ -2871,10 +2871,9 @@ export default function ProjectSeasonMemberDetailPage() {
 
                 {/* Then vs Now Tab - Legacy vs Current side by side & transformation */}
                 {activeTab === 'then_vs_now' && (() => {
-                  // Resolve legacy fullbody URL (from legacy_photo or fullbody.legacy)
+                  // Resolve legacy in tenue URL (AI-generated legacy fullbody, NOT raw legacy photo)
                   const legacyFullbodyUrl =
-                    resolveDisplayUrl(form.legacy_photo?.url)
-                    || resolveDisplayUrl(getBestUrl(videoVariants.fullbody.legacy))
+                    resolveDisplayUrl(getBestUrl(videoVariants.fullbody.legacy))
                     || null;
                   // Resolve current fullbody URL (home kit fullbody)
                   const currentFullbodyUrl =
@@ -2902,7 +2901,7 @@ export default function ProjectSeasonMemberDetailPage() {
                         </div>
 
                         <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                          Vergelijk de speler vroeger en nu. Vereist zowel een legacy foto als een huidige &quot;Player in Tenue&quot; afbeelding.
+                          Vergelijk de speler vroeger en nu. Vereist zowel een &quot;Legacy in Tenue&quot; als een huidige &quot;Player in Tenue&quot; afbeelding.
                         </div>
 
                         {/* Prerequisites check */}
@@ -2914,16 +2913,16 @@ export default function ProjectSeasonMemberDetailPage() {
                             padding: '12px',
                             textAlign: 'center',
                           }}>
-                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>📸 Legacy Foto</div>
+                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>🏆 Legacy in Tenue</div>
                             {legacyFullbodyUrl ? (
                               <img
                                 src={legacyFullbodyUrl}
-                                alt="Legacy"
+                                alt="Legacy in Tenue"
                                 style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }}
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                               />
                             ) : (
-                              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Upload eerst een legacy foto</div>
+                              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst een Legacy in Tenue</div>
                             )}
                           </div>
                           <div style={{
