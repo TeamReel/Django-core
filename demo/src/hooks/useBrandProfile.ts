@@ -185,7 +185,8 @@ export async function resolvePresignedUrls(
     });
     if (!res.ok) return {};
     const data = await res.json();
-    return data.urls || {};
+    // EnvelopeJSONRenderer wraps ALL responses: { status, data: { urls }, meta }
+    return data.data?.urls || data.urls || {};
   } catch {
     return {};
   }

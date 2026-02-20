@@ -1007,20 +1007,22 @@ export default function ProjectSeasonMemberDetailPage() {
         body: JSON.stringify({ membership_id: membershipId, kit_type: kitType }),
       });
 
-      const data = await res.json();
+      const raw = await res.json();
+      const inner = (raw.data ?? raw) as Record<string, string>;
 
       if (!res.ok) {
-        throw new Error(data?.error || `Server error ${res.status}`);
+        throw new Error(inner?.error || raw?.error || `Server error ${res.status}`);
       }
 
-      const presignedUrl: string = data.presigned_url || data.storage_path || '';
+      const storagePath: string = inner.storage_path || '';
+      if (!storagePath) throw new Error('Geen storage pad ontvangen van de server');
 
-      // Update local state so the image shows up immediately
+      // Set as proper variant object so the presigning useEffect picks it up
       setVideoVariants((prev) => ({
         ...prev,
         closeup: {
           ...prev.closeup,
-          [kitType]: presignedUrl,
+          [kitType]: { raw: storagePath, processed: storagePath, processing_state: 'processed' as const },
         },
       }));
 
@@ -2688,13 +2690,18 @@ export default function ProjectSeasonMemberDetailPage() {
                               >
                                 {/* Preview */}
                                 <div
+                                  onClick={() => {
+                                    const url = resolveDisplayUrl(assetUrl);
+                                    if (url) window.open(url, '_blank');
+                                  }}
                                   style={{
                                     aspectRatio: '3/4',
                                     background: assetUrl
-                                      ? `url(${resolveDisplayUrl(assetUrl)}) center/contain no-repeat`
+                                      ? `url(${resolveDisplayUrl(assetUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
                                       : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                     position: 'relative',
                                     minHeight: '200px',
+                                    cursor: assetUrl ? 'zoom-in' : 'default',
                                   }}
                                 >
                                   {!assetUrl && (
@@ -2884,13 +2891,18 @@ export default function ProjectSeasonMemberDetailPage() {
                               >
                                 {/* Preview */}
                                 <div
+                                  onClick={() => {
+                                    const url = resolveDisplayUrl(assetUrl);
+                                    if (url) window.open(url, '_blank');
+                                  }}
                                   style={{
                                     aspectRatio: '1/1',
                                     background: assetUrl
-                                      ? `url(${resolveDisplayUrl(assetUrl)}) center/contain no-repeat`
+                                      ? `url(${resolveDisplayUrl(assetUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
                                       : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                     position: 'relative',
                                     minHeight: '150px',
+                                    cursor: assetUrl ? 'zoom-in' : 'default',
                                   }}
                                 >
                                   {!assetUrl && (
