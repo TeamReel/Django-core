@@ -261,6 +261,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             ...(params.organisationId ? { organisation_id: params.organisationId } : {}),
             ...(params.projectId ? { project_id: params.projectId } : {}),
             ...(params.membershipId ? { membership_id: params.membershipId } : {}),
+            ...(params.outputAssetType ? { asset_type: params.outputAssetType } : {}),
           }),
         });
 

@@ -2363,6 +2363,133 @@ def crop_closeup_from_fullbody_view(request: Request) -> Response:
 # =============================================================================
 
 
+# Map of template_id → brand asset_type for brand-level image assets.
+# When a job with one of these templates is approved from the queue,
+# create/update a BrandAsset record so it appears on the Assets page.
+BRAND_TEMPLATE_MAP: dict[str, str] = {
+    "tenue_generate": "kit_home",  # default; overridden by params.kit_type
+    "keeper_tenue": "kit_goalkeeper",
+    "legacy_tenue_generate": "kit_legacy",
+    "tracksuit_generate": "kit_training",
+    "coach_outfit": "kit_coach",
+    "logo_postprocess": "logo",
+    "sponsor_standardize": "sponsor_logo",
+    "location_standardize": "stadium_background",
+}
+
+
+def _propagate_approved_image_to_brand(job) -> None:  # noqa: ANN001
+    """Create/update a BrandAsset when a brand-level image job is approved.
+
+    Called after marking a job as approved so the Assets page immediately
+    shows the generated asset.  For keeper_tenue the asset_type is
+    "kit_goalkeeper".
+    """
+    from django.apps import apps
+
+    # Resolve asset_type: prefer explicit output_asset_type, fall back to template map.
+    asset_type = job.output_asset_type or BRAND_TEMPLATE_MAP.get(job.template_id)
+
+    # For tenue_generate the kit_type differentiates home/away/third.
+    # The job's output_variants filename encodes it.
+    if job.template_id == "tenue_generate" and job.output_variants:
+        import re
+
+        fn = (job.output_variants[0] or {}).get("filename", "")
+        kit_match = re.search(r"kit_type-(\w+?)(?:_|\.)", fn)
+        if kit_match:
+            asset_type = f"kit_{kit_match.group(1)}"
+
+    if not asset_type:
+        return
+
+    # Skip member-scoped assets — those are handled by the membership propagation.
+    if asset_type.startswith("member_") or asset_type.startswith("fullbody"):
+        return
+
+    approved_variants = [v for v in (job.output_variants or []) if v.get("approved") is True]
+    if not approved_variants:
+        return
+
+    first = approved_variants[0]
+    storage_path = first.get("storage_path", "")
+    file_asset_id = first.get("file_asset_id")
+    if not storage_path:
+        return
+
+    # Resolve the project from the job's project_id.
+    Project = apps.get_model("projects", "Project")
+    project = None
+    project_id_raw = job.project_id or ""
+    try:
+        # Canonical format: "00000000-0000-0000-0000-000000000386" → last segment is the int PK.
+        if project_id_raw.startswith("00000000-0000-0000-0000-"):
+            _pk = int(project_id_raw.rsplit("-", 1)[-1])
+            project = Project.objects.select_related("organisation").get(pk=_pk)
+        elif project_id_raw.isdigit():
+            project = Project.objects.select_related("organisation").get(pk=int(project_id_raw))
+        else:
+            project = Project.objects.select_related("organisation").get(slug=project_id_raw)
+    except Exception:  # noqa: BLE001
+        logger.warning("propagate_to_brand: cannot resolve project_id=%s", project_id_raw)
+        return
+
+    organisation = project.organisation if project else None
+    if not organisation:
+        return
+
+    # Reuse existing FileAsset or create a slim reference.
+    FileAsset = apps.get_model("files", "FileAsset")
+    file_asset = None
+    if file_asset_id:
+        file_asset = FileAsset.objects.filter(id=file_asset_id).first()
+    if not file_asset:
+        file_asset = FileAsset.objects.filter(storage_path=storage_path).first()
+    if not file_asset:
+        file_asset = FileAsset.objects.create(
+            organization=organisation,
+            original_name=first.get("filename", "generated.png"),
+            storage_path=storage_path,
+            file_size=0,
+            mime_type=first.get("mime_type", "image/png"),
+            is_public=False,
+            metadata={"source": "ai_generation_approved", "asset_type": asset_type},
+        )
+
+    # Create / update BrandAsset.
+    BrandProfile = apps.get_model("branding", "BrandProfile")
+    BrandAsset = apps.get_model("branding", "BrandAsset")
+
+    brand_profile = BrandProfile.get_effective_brand(
+        organisation=organisation,
+        project=project,
+    )
+    if not brand_profile:
+        brand_profile = BrandProfile.objects.create(
+            organisation=organisation,
+            name=f"{organisation.name} Brand",
+            is_active=True,
+        )
+
+    brand_asset, created = BrandAsset.objects.update_or_create(
+        profile=brand_profile,
+        asset_type=asset_type,
+        defaults={
+            "file": file_asset,
+            "alt_text": f"AI-processed {asset_type.replace('_', ' ')}",
+            "is_active": True,
+        },
+    )
+    action = "created" if created else "updated"
+    logger.info(
+        "propagate_to_brand: BrandAsset %s %s (type=%s, job=%s)",
+        action,
+        brand_asset.id,
+        asset_type,
+        job.task_id,
+    )
+
+
 def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
     """Write an approved generated image into ProjectMembership.metadata.teamreel_assets.images.
 
@@ -2680,6 +2807,17 @@ def review_generation_job_view(request: Request, task_id: str) -> Response:
         except Exception as propagate_exc:  # noqa: BLE001
             logger.warning(
                 "review_generation_job_view: image propagation failed for job %s: %s",
+                task_id,
+                propagate_exc,
+            )
+
+    # Propagate approved image to BrandAsset (kits, logos, etc.) so the Assets page reflects it
+    if action == "approve" and job.output_type == "image":
+        try:
+            _propagate_approved_image_to_brand(job)
+        except Exception as propagate_exc:  # noqa: BLE001
+            logger.warning(
+                "review_generation_job_view: brand propagation failed for job %s: %s",
                 task_id,
                 propagate_exc,
             )
