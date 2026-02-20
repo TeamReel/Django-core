@@ -1,5 +1,5 @@
-﻿/**
- * ApprovalsPage â€” Global approval inbox showing all workflow instances
+/**
+ * ApprovalsPage — Global approval inbox showing all workflow instances
  * that require action, prioritized by state (review > active > draft).
  * Also contains the AI Generation Queue tab with full review workflow.
  *
@@ -29,12 +29,12 @@ type FilterState = 'all' | 'review' | 'active' | 'completed' | 'rejected' | 'ai_
 type AiSubTab = 'needs_review' | 'in_progress' | 'approved' | 'rejected' | 'all';
 
 const FILTER_OPTIONS: { value: FilterState; label: string; icon: string }[] = [
-  { value: 'all', label: 'All', icon: 'ðŸ“‹' },
-  { value: 'review', label: 'Needs Review', icon: 'ðŸ‘€' },
-  { value: 'active', label: 'In Progress', icon: 'ðŸ”„' },
-  { value: 'completed', label: 'Approved', icon: 'âœ…' },
+  { value: 'all', label: 'All', icon: '' },
+  { value: 'review', label: 'Needs Review', icon: '' },
+  { value: 'active', label: 'In Progress', icon: '' },
+  { value: 'completed', label: 'Approved', icon: '✅' },
   { value: 'rejected', label: 'Rejected', icon: 'âŒ' },
-  { value: 'ai_queue', label: 'AI Queue', icon: 'ðŸ¤–' },
+  { value: 'ai_queue', label: 'AI Queue', icon: '' },
 ];
 
 const AI_SUB_TABS: { value: AiSubTab; label: string }[] = [
@@ -102,7 +102,7 @@ function sortPriority(a: WorkflowInstance, b: WorkflowInstance): number {
   return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
 }
 
-// â”€â”€â”€ Review Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Review Modal ─────────────────────────────────────────────────────────────
 
 interface ReviewModalProps {
   job: GenerationJob;
@@ -197,8 +197,8 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text, #111)' }}>{job.label || job.template_id}</div>
             <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
-              {job.output_type} Â· {new Date(job.created_at).toLocaleString()}
-              {reviewList.length > 0 && ` Â· ${currentIdx + 1} van ${reviewList.length}`}
+              {job.output_type} · {new Date(job.created_at).toLocaleString()}
+              {reviewList.length > 0 && ` · ${currentIdx + 1} van ${reviewList.length}`}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
@@ -207,27 +207,27 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
               onClick={() => onReviewed('__prev__', 'approve')}
               style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasPrev ? 'pointer' : 'default', opacity: hasPrev ? 1 : 0.3, fontSize: 14 }}
               title="Vorige"
-            >â€¹</button>
+            >‹</button>
             <button
               disabled={!hasNext}
               onClick={() => onReviewed('__next__', 'reject')}
               style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasNext ? 'pointer' : 'default', opacity: hasNext ? 1 : 0.3, fontSize: 14 }}
               title="Volgende"
-            >â€º</button>
+            >›</button>
           </div>
-          <button onClick={onClose} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: 'pointer', fontSize: 16, color: '#6b7280' }}>âœ•</button>
+          <button onClick={onClose} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: 'pointer', fontSize: 16, color: '#6b7280' }}>✕</button>
         </div>
 
         {/* Preview */}
         <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 280, maxHeight: 460 }}>
           {previewLoading && (
-            <div style={{ color: '#9ca3af', fontSize: 13 }}>Preview ladenâ€¦</div>
+            <div style={{ color: '#9ca3af', fontSize: 13 }}>Preview laden…</div>
           )}
           {!previewLoading && !previewUrl && (
             <div style={{ color: '#6b7280', fontSize: 13, textAlign: 'center', padding: 24 }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>ðŸ–¼ï¸</div>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>ï¸</div>
               <div>Preview niet beschikbaar</div>
-              <div style={{ fontSize: 11, marginTop: 4, color: '#4b5563' }}>Cache verlopen Â· output opgeslagen in spelersmeta</div>
+              <div style={{ fontSize: 11, marginTop: 4, color: '#4b5563' }}>Cache verlopen · output opgeslagen in spelersmeta</div>
             </div>
           )}
           {!previewLoading && previewUrl && job.output_type === 'video' && (
@@ -243,7 +243,7 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
           {reviewError && <div style={{ flex: 1, fontSize: 12, color: '#dc2626' }}>{reviewError}</div>}
           {!isCanReview && !reviewError && (
             <div style={{ flex: 1, fontSize: 12, color: '#6b7280' }}>
-              {job.approval_status === 'approved' ? 'âœ… Goedgekeurd' : 'âŒ Afgewezen'}
+              {job.approval_status === 'approved' ? '✅ Goedgekeurd' : 'âŒ Afgewezen'}
             </div>
           )}
           {isCanReview && !reviewError && <div style={{ flex: 1 }} />}
@@ -254,14 +254,14 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
                 disabled={!!reviewing}
                 style={{ padding: '9px 20px', borderRadius: 8, border: '1px solid #fca5a5', background: reviewing === 'reject' ? '#fee2e2' : '#fff5f5', color: '#dc2626', fontWeight: 600, fontSize: 13, cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'reject' ? 0.5 : 1 }}
               >
-                {reviewing === 'reject' ? 'â€¦' : 'âŒ Afwijzen'}
+                {reviewing === 'reject' ? '…' : 'âŒ Afwijzen'}
               </button>
               <button
                 onClick={() => handleReview('approve')}
                 disabled={!!reviewing}
                 style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: reviewing === 'approve' ? '#15803d' : '#16a34a', color: '#fff', fontWeight: 600, fontSize: 13, cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'approve' ? 0.5 : 1 }}
               >
-                {reviewing === 'approve' ? 'â€¦' : 'âœ… Goedkeuren'}
+                {reviewing === 'approve' ? '…' : '✅ Goedkeuren'}
               </button>
             </>
           )}
@@ -271,7 +271,7 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
   );
 }
 
-// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ApprovalsPage() {
   const navigate = useNavigate();
@@ -289,10 +289,10 @@ export default function ApprovalsPage() {
   // Review modal
   const [modalJob, setModalJob] = useState<GenerationJob | null>(null);
 
-  // Optimistic approval overrides (task_id â†’ approval_status string)
+  // Optimistic approval overrides (task_id → approval_status string)
   const [optimisticApprovals, setOptimisticApprovals] = useState<Record<string, string>>({});
 
-  // â”€â”€ Toast notifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Toast notifications ──────────────────────────────────────────
   const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'error' }[]>([]);
   const pushToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
     const id = String(Date.now());
@@ -308,13 +308,13 @@ export default function ApprovalsPage() {
     }
   }, [filter]);
 
-  // â”€â”€ AI Generation Jobs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── AI Generation Jobs ───────────────────────────────────────────
   const handleJobStatusChange = useCallback((job: GenerationJob, _prev: GenJobStatus) => {
     const label = job.label || job.template_id;
     if (job.status === 'completed') {
-      pushToast(`âœ… AI job voltooid: ${label} â€” open AI Queue om te beoordelen`, 'success');
+      pushToast(`✅ AI job voltooid: ${label} — open AI Queue om te beoordelen`, 'success');
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('AI Generatie voltooid', { body: `${label} â€” klaar voor beoordeling`, icon: '/favicon.ico' });
+        new Notification('AI Generatie voltooid', { body: `${label} — klaar voor beoordeling`, icon: '/favicon.ico' });
       }
     } else if (job.status === 'failed') {
       pushToast(`âŒ AI job mislukt: ${label}`, 'error');
@@ -407,7 +407,7 @@ export default function ApprovalsPage() {
     // API call
     try {
       await reviewJob(taskId, action);
-      pushToast(action === 'approve' ? 'âœ… Goedgekeurd!' : 'âŒ Afgewezen', 'success');
+      pushToast(action === 'approve' ? '✅ Goedgekeurd!' : 'âŒ Afgewezen', 'success');
     } catch (e) {
       pushToast(e instanceof Error ? e.message : 'Review mislukt', 'error');
       // Revert
@@ -418,7 +418,7 @@ export default function ApprovalsPage() {
   const visibleAiJobs = filterAiJobs(mergedJobs, aiSubTab);
 
   const statusIcon: Record<GenJobStatus, string> = {
-    queued: 'â³', waiting: 'â³', processing: 'ðŸ”„', completed: 'âœ…', failed: 'âŒ', cancelled: 'ðŸš«',
+    queued: 'â³', waiting: 'â³', processing: '', completed: '✅', failed: 'âŒ', cancelled: '',
   };
   const statusColor: Record<GenJobStatus, string> = {
     queued: '#6b7280', waiting: '#6b7280', processing: '#2563eb', completed: '#16a34a', failed: '#dc2626', cancelled: '#9ca3af',
@@ -447,10 +447,10 @@ export default function ApprovalsPage() {
 
       <PageHeader
         title="Approvals"
-        subtitle="Content review queue â€” approve, reject, and track AI generation jobs."
+        subtitle="Content review queue — approve, reject, and track AI generation jobs."
         actions={
           <button onClick={() => { refresh(); refreshAiJobs(); }} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 6, border: '1px solid var(--app-border, #e5e7eb)', backgroundColor: 'transparent', color: 'var(--app-text, #111)', cursor: 'pointer' }}>
-            â†» Refresh
+            ↻ Refresh
           </button>
         }
       />
@@ -486,7 +486,7 @@ export default function ApprovalsPage() {
           })}
         </div>
 
-        {/* â”€â”€ AI Queue panel â”€â”€ */}
+        {/* ── AI Queue panel ── */}
         {filter === 'ai_queue' && (
           <div>
             {/* Sub-tab bar */}
@@ -522,7 +522,7 @@ export default function ApprovalsPage() {
                   onClick={() => { setAiSubTab('needs_review'); openModal(needsReviewJobs[0]); }}
                   style={{ padding: '5px 12px', borderRadius: 6, border: '1px solid #d97706', background: '#fffbeb', color: '#d97706', fontSize: 11, fontWeight: 600, cursor: 'pointer', marginBottom: 3 }}
                 >
-                  â–¶ Begin beoordelen ({needsReviewJobs.length})
+                  ▶ Begin beoordelen ({needsReviewJobs.length})
                 </button>
               )}
             </div>
@@ -532,7 +532,7 @@ export default function ApprovalsPage() {
 
             {!aiLoading && visibleAiJobs.length === 0 && (
               <div style={{ padding: 48, textAlign: 'center', color: 'var(--app-text-secondary, #9ca3af)', backgroundColor: 'var(--app-surface-2, #f9fafb)', borderRadius: 12, border: '1px dashed var(--app-border, #e5e7eb)' }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>{aiSubTab === 'needs_review' ? 'ðŸŽ‰' : 'ðŸ¤–'}</div>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>{aiSubTab === 'needs_review' ? '' : ''}</div>
                 <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
                   {aiSubTab === 'needs_review' ? 'Alles beoordeeld!' : 'Geen items'}
                 </div>
@@ -570,7 +570,7 @@ export default function ApprovalsPage() {
                       <span style={{ fontSize: 20, flexShrink: 0 }}>{statusIcon[job.status]}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)', marginBottom: 2 }}>{job.label || job.template_id}</div>
-                        <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>{job.output_type} Â· {new Date(job.created_at).toLocaleString()}</div>
+                        <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>{job.output_type} · {new Date(job.created_at).toLocaleString()}</div>
                         {isActive && (
                           <div style={{ height: 3, backgroundColor: '#e5e7eb', borderRadius: 99, overflow: 'hidden', marginTop: 6 }}>
                             <div style={{ height: '100%', width: `${job.progress || 0}%`, backgroundColor: '#2563eb', borderRadius: 99, transition: 'width 0.4s ease', minWidth: job.progress ? 0 : '8%' }} />
@@ -590,7 +590,7 @@ export default function ApprovalsPage() {
                           </span>
                         )}
                       </div>
-                      {job.status === 'completed' && <span style={{ color: '#d1d5db', fontSize: 16, flexShrink: 0 }}>â€º</span>}
+                      {job.status === 'completed' && <span style={{ color: '#d1d5db', fontSize: 16, flexShrink: 0 }}>›</span>}
                     </div>
                   );
                 })}
@@ -599,7 +599,7 @@ export default function ApprovalsPage() {
           </div>
         )}
 
-        {/* â”€â”€ Workflow panel (all other tabs) â”€â”€ */}
+        {/* ── Workflow panel (all other tabs) ── */}
         {filter !== 'ai_queue' && (
           <>
             {(error || actionError) && (
@@ -614,7 +614,7 @@ export default function ApprovalsPage() {
             )}
             {!loading && filtered.length === 0 && (
               <div style={{ padding: 48, textAlign: 'center', color: 'var(--app-text-secondary, #9ca3af)', backgroundColor: 'var(--app-surface-2, #f9fafb)', borderRadius: 12, border: '1px dashed var(--app-border, #e5e7eb)' }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>{filter === 'review' ? 'ðŸŽ‰' : 'ðŸ“­'}</div>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>{filter === 'review' ? '' : 'ðŸ“­'}</div>
                 <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>{filter === 'review' ? 'All caught up!' : 'No items found'}</div>
                 <div style={{ fontSize: 12 }}>{filter === 'review' ? 'There are no items waiting for review.' : `No workflow items match the "${filter}" filter.`}</div>
               </div>
@@ -639,8 +639,8 @@ export default function ApprovalsPage() {
                           </span>
                         </div>
                         <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
-                          {instance.workflow_name} Â· Updated {new Date(instance.updated_at).toLocaleDateString()}
-                          {instance.created_by_username && ` Â· by ${instance.created_by_username}`}
+                          {instance.workflow_name} · Updated {new Date(instance.updated_at).toLocaleDateString()}
+                          {instance.created_by_username && ` · by ${instance.created_by_username}`}
                         </div>
                       </div>
                       <WorkflowStatusBadge state={instance.current_state} />
