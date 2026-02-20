@@ -950,6 +950,11 @@ export default function ProjectSeasonMemberDetailPage() {
   const [profileUploading, setProfileUploading] = useState(false);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
 
+  // Legacy Photo Upload State
+  const legacyPhotoInputRef = useRef<HTMLInputElement>(null);
+  const [legacyPhotoUploading, setLegacyPhotoUploading] = useState(false);
+  const [legacyPhotoPreview, setLegacyPhotoPreview] = useState<string | null>(null);
+
   const handleProfilePhotoUpload = async (file: File) => {
     const userId = membership?.user?.id || (membership as any)?.user_id;
     if (!userId) { alert('Geen user ID gevonden.'); return; }
@@ -983,6 +988,86 @@ export default function ProjectSeasonMemberDetailPage() {
       alert(err instanceof Error ? err.message : 'Upload mislukt');
     } finally {
       setProfileUploading(false);
+    }
+  };
+
+  // Legacy Photo Upload Handler
+  const handleLegacyPhotoUpload = async (file: File) => {
+    if (!membershipId) { alert('Membership ID ontbreekt.'); return; }
+    setLegacyPhotoUploading(true);
+    setLegacyPhotoPreview(URL.createObjectURL(file));
+    try {
+      const csrfToken = getCsrfToken();
+
+      // Step 1: Upload file to storage via files API
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('path_prefix', `members/${membershipId}/media/legacy_photo`);
+
+      const uploadRes = await fetch(`${apiBaseUrl}/api/v1/files/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'X-CSRFToken': csrfToken },
+        body: fd,
+      });
+
+      if (!uploadRes.ok) {
+        const errBody = await uploadRes.text().catch(() => '');
+        throw new Error(`Upload mislukt: ${uploadRes.status} ${errBody.slice(0, 200)}`);
+      }
+
+      const uploadData = await uploadRes.json();
+      const storagePath = uploadData?.data?.storage_path || uploadData?.storage_path;
+      if (!storagePath) throw new Error('Geen storage path ontvangen');
+
+      // Step 2: Update membership metadata with storage path
+      const patchRes = await fetch(
+        `${apiBaseUrl}/api/v1/projects/${project?.id}/members/${membershipId}/`,
+        {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+          },
+          body: JSON.stringify({
+            metadata: {
+              ...(membership?.metadata || {}),
+              teamreel_assets: {
+                ...((membership?.metadata as any)?.teamreel_assets || {}),
+                media: {
+                  ...((membership?.metadata as any)?.teamreel_assets?.media || {}),
+                  legacy_photo: {
+                    url: storagePath,
+                    caption: '',
+                  },
+                },
+              },
+            },
+          }),
+        }
+      );
+
+      if (!patchRes.ok) {
+        throw new Error(`Metadata update failed: ${patchRes.status}`);
+      }
+
+      // Step 3: Refresh membership data
+      const memberRes = await fetch(
+        `${apiBaseUrl}/api/v1/projects/${project?.id}/members/${membershipId}/`,
+        { credentials: 'include' }
+      );
+      if (memberRes.ok) {
+        const json = await memberRes.json();
+        setMembership(json?.data || json);
+      }
+
+      alert('Legacy foto succesvol geüpload!');
+    } catch (err) {
+      console.error('Legacy photo upload error:', err);
+      alert(err instanceof Error ? err.message : 'Upload mislukt');
+    } finally {
+      setLegacyPhotoUploading(false);
     }
   };
 
@@ -1748,9 +1833,124 @@ export default function ProjectSeasonMemberDetailPage() {
                   </Card>
                 )}
 
+                {/* Legacy Photo tab - dedicated upload like profile */}
+                {activeTab === 'legacy_photo' && (
+                  <Card>
+                    <div style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '24px' }}>📸</span>
+                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Legacy Photo</div>
+                        </div>
+                        <Badge variant={userCanEditProject ? 'default' : 'info'}>
+                          {userCanEditProject ? 'Editable' : 'Read-only'}
+                        </Badge>
+                      </div>
+
+                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                        Upload een historische foto van de speler. Deze foto wordt gebruikt als input voor "Legacy in Tenue" generatie (samen met het legacy tenue van het team).
+                      </div>
+
+                      <div style={{ marginTop: '20px' }}>
+                        {/* Current legacy photo */}
+                        <div style={{ marginBottom: '24px' }}>
+                          <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Huidige Foto</div>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
+                            <div style={{
+                              width: '240px',
+                              height: '240px',
+                              borderRadius: '12px',
+                              overflow: 'hidden',
+                              backgroundColor: 'var(--app-surface-secondary)',
+                              border: '2px solid var(--app-border)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                              {(legacyPhotoPreview || form.legacy_photo?.url) ? (
+                                <img
+                                  src={legacyPhotoPreview || form.legacy_photo?.url}
+                                  alt="Legacy Photo"
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: legacyPhotoUploading ? 0.5 : 1 }}
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                />
+                              ) : (
+                                <div style={{ fontSize: '64px', opacity: 0.3 }}>📸</div>
+                              )}
+                            </div>
+                            <div style={{ flex: 1, minWidth: '200px' }}>
+                              {(legacyPhotoPreview || form.legacy_photo?.url) ? (
+                                <span style={{ fontSize: 13, color: '#28a745', fontWeight: 600 }}>✓ Legacy foto ingesteld</span>
+                              ) : (
+                                <div style={{ fontSize: 13, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
+                                  Nog geen legacy foto geüpload
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Upload area */}
+                        <div
+                          onClick={() => userCanEditProject && !legacyPhotoUploading && legacyPhotoInputRef.current?.click()}
+                          style={{
+                            padding: '24px',
+                            border: '2px dashed var(--app-border)',
+                            borderRadius: '8px',
+                            textAlign: 'center',
+                            opacity: userCanEditProject ? 1 : 0.5,
+                            cursor: userCanEditProject && !legacyPhotoUploading ? 'pointer' : 'default',
+                            transition: 'border-color 0.2s',
+                          }}
+                          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (!userCanEditProject || legacyPhotoUploading) return;
+                            const file = e.dataTransfer.files?.[0];
+                            if (file && file.type.startsWith('image/')) handleLegacyPhotoUpload(file);
+                          }}
+                        >
+                          <input
+                            ref={legacyPhotoInputRef}
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleLegacyPhotoUpload(file);
+                              e.target.value = '';
+                            }}
+                          />
+                          {legacyPhotoUploading ? (
+                            <>
+                              <div style={{ fontSize: '32px', marginBottom: '8px' }}>⏳</div>
+                              <div style={{ fontSize: '14px', fontWeight: 600 }}>Uploaden...</div>
+                            </>
+                          ) : (
+                            <>
+                              <div style={{ fontSize: '32px', marginBottom: '8px' }}>📤</div>
+                              <div style={{ fontSize: '14px', fontWeight: 600 }}>Upload Legacy Foto</div>
+                              <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>
+                                Klik of sleep een afbeelding hierheen
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {!userCanEditProject && (
+                        <div style={{ marginTop: '16px' }}>
+                          <Alert variant="info">You don't have permission to edit this member's media.</Alert>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                )}
+
                 {/* Other media slot tabs — preview + upload only (no URL/caption inputs) */}
-                {/* AI-generative slots (kit, closeup) are handled separately below */}
-                {MEDIA_SLOTS.filter((s) => s.id !== 'profile' && s.id !== 'kit' && s.id !== 'closeup').map((slot) => activeTab === slot.id && (
+                {/* AI-generative slots (kit, closeup) and dedicated tabs (profile, legacy_photo) are handled separately */}
+                {MEDIA_SLOTS.filter((s) => s.id !== 'profile' && s.id !== 'legacy_photo' && s.id !== 'kit' && s.id !== 'closeup').map((slot) => activeTab === slot.id && (
                   <Card key={slot.id}>
                     <div style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
