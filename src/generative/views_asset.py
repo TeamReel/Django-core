@@ -274,6 +274,24 @@ def generate_asset_view(request: Request) -> Response:
     save_to_brand = serializer.validated_data.get("save_to_brand", True)
     save_to_media_library = serializer.validated_data.get("save_to_media_library", True)
 
+    # Resolve project slug → canonical project ID early so all downstream
+    # references (GenerationJob record, storage_context, Celery kwargs) use
+    # a consistent identifier that matches existing jobs.
+    if project_id and not str(project_id).isdigit():
+        try:
+            from projects.models import Project
+
+            _proj = Project.objects.only("id").get(slug=project_id)
+            # Use zero-padded UUID string like "00000000-0000-0000-0000-000000000182"
+            project_id = f"00000000-0000-0000-0000-{_proj.id:012d}"
+            logger.debug(
+                "Resolved project slug %r → %s",
+                serializer.validated_data.get("project_id"),
+                project_id,
+            )
+        except Exception:  # noqa: BLE001
+            logger.debug("Could not resolve project slug %r, using as-is", project_id)
+
     # Decode base64 images
     input_images: dict[str, bytes] = {}
     for key, b64_str in input_images_b64.items():
