@@ -177,12 +177,12 @@ class AssetGenerateInputSerializer(serializers.Serializer):
 
     # === Provider selection ===
     provider = serializers.ChoiceField(
-        choices=["minimax", "runway", "veo"],
+        choices=["minimax", "runway", "pika", "veo"],
         required=False,
         allow_null=True,
         allow_blank=True,
         default=None,
-        help_text="Explicit video provider (minimax, runway, veo). If omitted, auto-selects.",
+        help_text="Explicit video provider (minimax, runway, pika, veo). If omitted, auto-selects.",
     )
 
 

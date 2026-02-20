@@ -941,6 +941,7 @@ export default function AssetGenerationModal({
                       { value: '', label: '🔄 Auto', desc: 'Automatisch kiezen' },
                       { value: 'minimax', label: '🎬 MiniMax', desc: 'Hailuo video-01' },
                       { value: 'runway', label: '✈️ Runway', desc: 'Gen4 Turbo' },
+                      { value: 'pika', label: '🎨 Pika', desc: 'Pika 2.2 (fal.ai)' },
                     ].map((opt) => (
                       <button
                         key={opt.value}
@@ -988,7 +989,9 @@ export default function AssetGenerationModal({
                       ? 'Runway Gen4 Turbo — snelle I2V generatie, 5 credits/sec.'
                       : videoProvider === 'minimax'
                         ? 'MiniMax Hailuo — standaard video model.'
-                        : 'De backend kiest het beste beschikbare model.'}
+                        : videoProvider === 'pika'
+                          ? 'Pika 2.2 via fal.ai — T2V & I2V, tot 1080p, 5-10s clips.'
+                          : 'De backend kiest het beste beschikbare model.'}
                   </div>
                 </div>
               )}

@@ -262,3 +262,6 @@ MINIMAX_GROUP_ID = env("MINIMAX_GROUP_ID", default=None)
 
 # Runway Gen Video Generation
 RUNWAYML_API_SECRET = env("RUNWAYML_API_SECRET", default=None)
+
+# Pika 2.2 Video Generation (via fal.ai)
+FAL_KEY = env("FAL_KEY", default=None)

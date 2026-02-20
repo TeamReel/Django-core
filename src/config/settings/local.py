@@ -75,3 +75,6 @@ MINIMAX_GROUP_ID = os.environ.get("MINIMAX_GROUP_ID", None)
 
 # Runway Gen Video Generation
 RUNWAYML_API_SECRET = os.environ.get("RUNWAYML_API_SECRET", None)
+
+# Pika 2.2 Video Generation (via fal.ai)
+FAL_KEY = os.environ.get("FAL_KEY", None)

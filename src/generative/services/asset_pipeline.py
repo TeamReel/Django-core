@@ -927,11 +927,12 @@ def generate_video(
     variant_count: int = 1,
     provider: str | None = None,
 ) -> dict[str, Any]:
-    """Generate a short video using MiniMax, Runway, or Google Veo.
+    """Generate a short video using MiniMax, Runway, Pika, or Google Veo.
 
     Provider selection (if ``provider`` is not explicitly set):
     - If MINIMAX_API_KEY is set → use MiniMax (Hailuo) video-01
     - Else if RUNWAYML_API_SECRET is set → use Runway Gen (gen4_turbo)
+    - Else if FAL_KEY is set → use Pika 2.2 via fal.ai
     - Else if GOOGLE_API_KEY is set → use Google Veo 3.1 (legacy, often content-blocked)
     - Else → error
 
@@ -947,7 +948,7 @@ def generate_video(
         poll_interval: Seconds between status checks (default 10)
         max_wait_seconds: Maximum wait time before timeout (default 300 = 5 min)
         variant_count: Number of variants to generate (default 1)
-        provider: Explicit provider choice (``"minimax"``, ``"runway"``, ``"veo"``).
+        provider: Explicit provider choice (``"minimax"``, ``"runway"``, ``"pika"``, ``"veo"``).
                   If None, auto-selects based on available API keys.
 
     Returns:
@@ -1008,6 +1009,7 @@ def generate_video(
     minimax_key = getattr(settings, "MINIMAX_API_KEY", None)
     minimax_group = getattr(settings, "MINIMAX_GROUP_ID", None)
     runway_key = getattr(settings, "RUNWAYML_API_SECRET", None)
+    pika_key = getattr(settings, "FAL_KEY", None)
     google_key = getattr(settings, "GOOGLE_API_KEY", None)
 
     # Explicit provider override (from frontend selector)
@@ -1042,6 +1044,22 @@ def generate_video(
             context=context,
             api_key=minimax_key,
             group_id=minimax_group,
+            variant_count=variant_count,
+        )
+    elif provider == "pika":
+        if not pika_key:
+            raise ValueError("Pika provider selected but FAL_KEY is not configured.")
+        logger.info("Using Pika 2.2 provider (explicit) for video generation")
+        return _generate_video_pika(
+            template_id=template_id,
+            template=template,
+            final_prompt=final_prompt,
+            params=params,
+            input_images=input_images,
+            user_id=user_id,
+            organisation_id=organisation_id,
+            context=context,
+            api_key=pika_key,
             variant_count=variant_count,
         )
     elif provider == "veo":
@@ -1093,9 +1111,23 @@ def generate_video(
             api_key=runway_key,
             variant_count=variant_count,
         )
+    elif pika_key:
+        logger.info("Using Pika 2.2 provider (auto-fallback) for video generation")
+        return _generate_video_pika(
+            template_id=template_id,
+            template=template,
+            final_prompt=final_prompt,
+            params=params,
+            input_images=input_images,
+            user_id=user_id,
+            organisation_id=organisation_id,
+            context=context,
+            api_key=pika_key,
+            variant_count=variant_count,
+        )
     elif google_key:
         logger.warning(
-            "MiniMax/Runway not configured. Falling back to Google Veo (may be content-blocked)."
+            "MiniMax/Runway/Pika not configured. Falling back to Google Veo (may be content-blocked)."
         )
         return _generate_video_veo(
             template_id=template_id,
@@ -1114,7 +1146,7 @@ def generate_video(
     else:
         raise ValueError(
             "No video generation provider configured. "
-            "Set MINIMAX_API_KEY, RUNWAYML_API_SECRET, or GOOGLE_API_KEY in environment."
+            "Set MINIMAX_API_KEY, RUNWAYML_API_SECRET, FAL_KEY, or GOOGLE_API_KEY in environment."
         )
 
 
@@ -1513,6 +1545,206 @@ def _generate_video_runway(
             "duration_seconds": duration,
             "aspect_ratio": video_config_out.get("aspect_ratio", "9:16"),
             "resolution": runway_ratio,
+            "variant_count": len(results),
+        },
+    }
+
+
+# -----------------------------------------------------------------------------
+# Pika 2.2 Provider (via fal.ai)
+# -----------------------------------------------------------------------------
+
+
+def _generate_video_pika(
+    *,
+    template_id: str,
+    template: dict,
+    final_prompt: str,
+    params: dict[str, str],
+    input_images: dict[str, bytes],
+    user_id: int | None,
+    organisation_id: int | None,
+    context: dict | None,
+    api_key: str,
+    variant_count: int = 1,
+) -> dict[str, Any]:
+    """Generate video using Pika 2.2 via fal.ai.
+
+    Supports:
+    - Text-to-video (prompt only)
+    - Image-to-video (person_photo as first frame + prompt)
+
+    Pika generates 1 video per request. For multiple variants, we make
+    sequential requests. Output URLs from fal.ai are temporary so we
+    download and upload to S3 immediately.
+    """
+    from .pika_client import PikaClient
+
+    video_config = template.get("video_config", {})
+    duration = video_config.get("duration_seconds", 5)
+    aspect_ratio = video_config.get("aspect_ratio", "9:16")
+    resolution = video_config.get("pika_resolution", "720p")
+
+    # Pika duration: 5 or 10 seconds
+    if duration not in (5, 10):
+        duration = 5 if duration <= 7 else 10
+
+    # Pika resolution: "720p" or "1080p"
+    if resolution not in ("720p", "1080p"):
+        resolution = "720p"
+
+    # Pika aspect ratio: must be one of supported values
+    SUPPORTED_RATIOS = {"16:9", "9:16", "1:1", "4:5", "5:4", "3:2", "2:3"}
+    if aspect_ratio not in SUPPORTED_RATIOS:
+        aspect_ratio = "9:16"  # default for vertical content
+
+    # Check for input image (person_photo for image-to-video)
+    person_img = input_images.get("person_photo")
+
+    results = []
+    effective_count = min(variant_count, 4)  # Reasonable limit
+
+    for i in range(effective_count):
+        try:
+            client = PikaClient(
+                api_key=api_key,
+                timeout=120.0,
+                poll_timeout=600.0,
+            )
+
+            logger.info(
+                "Pika: generating variant %d/%d (%s, duration=%ds, resolution=%s, ratio=%s)",
+                i + 1,
+                effective_count,
+                "I2V" if person_img else "T2V",
+                duration,
+                resolution,
+                aspect_ratio,
+            )
+
+            # Generate video (handles submit → poll → download internally)
+            gen_result = client.generate_video(
+                prompt=final_prompt,
+                image=person_img if person_img else None,
+                duration=duration,
+                resolution=resolution,
+                aspect_ratio=aspect_ratio,
+            )
+
+            v_bytes = gen_result["video_bytes"]
+
+            logger.info(
+                "Pika: variant %d completed. %d bytes",
+                i + 1,
+                len(v_bytes),
+            )
+
+            if not v_bytes or len(v_bytes) < 1000:
+                raise ValueError(
+                    f"Downloaded video is too small ({len(v_bytes) if v_bytes else 0} bytes)"
+                )
+
+            # Generate filename
+            safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
+            param_str = "_".join(f"{k}-{v}" for k, v in sorted(safe_params.items()))
+            if len(param_str) > 60:
+                param_str = param_str[:57] + "..."
+            fname = f"{template_id}_{param_str}_{int(time.time())}_{i}.mp4"
+
+            # Upload to S3 if organisation_id provided
+            v_url = None
+            f_asset_id = None
+            storage_path = None
+
+            if organisation_id:
+                try:
+                    from .file_storage import GenerationFileService
+
+                    file_asset_uuid = GenerationFileService.store_output_file(
+                        content=v_bytes,
+                        filename=fname,
+                        mime_type="video/mp4",
+                        user_id=user_id,
+                        organisation_id=organisation_id,
+                        context=context or {},
+                    )
+                    f_asset_id = str(file_asset_uuid)
+
+                    from files.models import FileAsset
+                    from files.utils import get_storage_backend
+
+                    file_asset = FileAsset.objects.get(id=file_asset_uuid)
+                    storage = get_storage_backend()
+                    v_url = storage.get_url(file_asset.storage_path, signed=True)
+                    storage_path = file_asset.storage_path
+
+                    logger.info("Pika video variant %d uploaded to S3: %s", i, fname)
+                except Exception as e:
+                    logger.exception("Failed to upload Pika video variant %d to S3: %s", i, e)
+
+            results.append(
+                {
+                    "video_bytes": v_bytes,
+                    "video_url": v_url,
+                    "storage_path": storage_path,
+                    "filename": fname,
+                    "file_asset_id": f_asset_id,
+                    "mime_type": "video/mp4",
+                }
+            )
+
+            logger.info(
+                "Pika: variant %d/%d complete (%d bytes)", i + 1, effective_count, len(v_bytes)
+            )
+
+            client.close()
+
+        except Exception as e:
+            logger.exception("Pika: error generating variant %d: %s", i + 1, e)
+            if not results:
+                # If first variant fails, bail out
+                return {
+                    "video_bytes": None,
+                    "video_base64": None,
+                    "mime_type": None,
+                    "filename": None,
+                    "error": f"Pika video generation failed: {e}",
+                }
+            # For subsequent variants, just log and continue
+            break
+
+    if not results:
+        return {
+            "video_bytes": None,
+            "video_base64": None,
+            "mime_type": None,
+            "filename": None,
+            "error": "No video variants generated",
+        }
+
+    # Build response (backward compatible: first variant as main)
+    main = results[0]
+
+    return {
+        "video_bytes": main["video_bytes"] if not main["video_url"] else None,
+        "video_base64": (
+            base64.b64encode(main["video_bytes"]).decode("utf-8")
+            if main["video_bytes"] and not main["video_url"]
+            else None
+        ),
+        "video_url": main["video_url"],
+        "mime_type": "video/mp4",
+        "filename": main["filename"],
+        "file_asset_id": main["file_asset_id"],
+        "variants": results,
+        "metadata": {
+            "template_id": template_id,
+            "params": params,
+            "provider": "pika",
+            "model": "pika-2.2",
+            "duration_seconds": duration,
+            "aspect_ratio": aspect_ratio,
+            "resolution": resolution,
             "variant_count": len(results),
         },
     }

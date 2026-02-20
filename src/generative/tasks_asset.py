@@ -88,6 +88,7 @@ PROVIDER_CONCURRENCY = {
     "gemini": 2,  # max 2 concurrent Gemini (image) calls
     "minimax": 2,  # max 2 concurrent MiniMax (video) calls
     "runway": 2,  # max 2 concurrent Runway Gen (video) calls
+    "pika": 2,  # max 2 concurrent Pika 2.2 (video) calls via fal.ai
     "veo": 1,  # max 1 concurrent Veo (video) call
 }
 
@@ -96,6 +97,7 @@ PROVIDER_DELAY = {
     "gemini": 1.0,  # 1s between Gemini image variants
     "minimax": 2.0,  # 2s between MiniMax calls
     "runway": 2.0,  # 2s between Runway calls
+    "pika": 2.0,  # 2s between Pika calls
     "veo": 2.0,  # 2s between Veo calls
 }
 
