@@ -1999,7 +1999,20 @@ def list_generation_jobs_view(request: Request) -> Response:
     # Filter by project
     project_id_param = request.query_params.get("project_id", "")
     if project_id_param:
-        qs = qs.filter(project_id=project_id_param)
+        # Resolve slug → canonical UUID so filtering matches stored records
+        resolved_project_id = project_id_param
+        if not str(project_id_param).isdigit():
+            try:
+                from projects.models import Project
+
+                _proj = Project.objects.only("id").get(slug=project_id_param)
+                resolved_project_id = f"00000000-0000-0000-0000-{_proj.id:012d}"
+            except Exception:  # noqa: BLE001
+                pass
+        # Match both the resolved canonical ID and the raw slug (legacy records)
+        from django.db.models import Q
+
+        qs = qs.filter(Q(project_id=resolved_project_id) | Q(project_id=project_id_param))
 
     # Filter by membership
     membership_id_param = request.query_params.get("membership_id", "")
