@@ -994,6 +994,8 @@ export default function ProjectSeasonMemberDetailPage() {
   // Legacy Photo Upload Handler
   const handleLegacyPhotoUpload = async (file: File) => {
     if (!membershipId) { alert('Membership ID ontbreekt.'); return; }
+    const organizationId = org?.id || (project as any)?.organisation?.id;
+    if (!organizationId) { alert('Organization ID ontbreekt.'); return; }
     setLegacyPhotoUploading(true);
     setLegacyPhotoPreview(URL.createObjectURL(file));
     try {
@@ -1007,7 +1009,10 @@ export default function ProjectSeasonMemberDetailPage() {
       const uploadRes = await fetch(`${apiBaseUrl}/api/v1/files/`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'X-CSRFToken': csrfToken },
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'X-Organization-ID': organizationId,
+        },
         body: fd,
       });
 
