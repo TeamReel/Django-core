@@ -176,10 +176,10 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
         label: 'Mouwen',
         type: 'select',
         options: [
-          { value: 'short', label: 'Kort' },
           { value: 'long', label: 'Lang' },
+          { value: 'short', label: 'Kort' },
         ],
-        default: 'short',
+        default: 'long',
       },
       neck: {
         label: 'Hals',
@@ -291,10 +291,10 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
         label: 'Mouwen',
         type: 'select',
         options: [
-          { value: 'short', label: 'Kort' },
           { value: 'long', label: 'Lang' },
+          { value: 'short', label: 'Kort' },
         ],
-        default: 'short',
+        default: 'long',
       },
       neck: {
         label: 'Hals',
@@ -509,10 +509,10 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
         label: 'Mouwen',
         type: 'select',
         options: [
-          { value: 'short', label: 'Kort' },
           { value: 'long', label: 'Lang' },
+          { value: 'short', label: 'Kort' },
         ],
-        default: 'short',
+        default: 'long',
       },
       pose: {
         label: 'Pose',

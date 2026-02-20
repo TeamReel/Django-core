@@ -336,8 +336,8 @@ CRITICAL INSTRUCTIONS:
             "sleeves": {
                 "label": "Mouwen",
                 "type": "select",
-                "options": ["short", "long"],
-                "default": "short",
+                "options": ["long", "short"],
+                "default": "long",
             },
             "neck": {
                 "label": "Hals",
@@ -430,8 +430,8 @@ STYLE:
             "sleeves": {
                 "label": "Mouwen",
                 "type": "select",
-                "options": ["short", "long"],
-                "default": "short",
+                "options": ["long", "short"],
+                "default": "long",
             },
             "neck": {
                 "label": "Hals",
@@ -690,8 +690,8 @@ STYLE:
             "sleeves": {
                 "label": "Mouwen",
                 "type": "select",
-                "options": ["short", "long"],
-                "default": "short",
+                "options": ["long", "short"],
+                "default": "long",
             },
             "pose": {
                 "label": "Pose",

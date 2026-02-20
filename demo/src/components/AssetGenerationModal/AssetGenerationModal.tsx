@@ -403,6 +403,9 @@ export default function AssetGenerationModal({
     [templates, selectedTemplateId]
   );
 
+  // Stabilize initialParams reference to prevent resetting params on every render
+  const initialParamsKey = JSON.stringify(initialParams ?? {});
+
   // Initialize params when template changes
   useEffect(() => {
     if (selectedTemplate) {
@@ -412,14 +415,14 @@ export default function AssetGenerationModal({
       });
 
       // Apply initialParams overrides if any
-      if (initialParams) {
-         Object.entries(initialParams).forEach(([key, val]) => {
-             defaults[key] = val;
-         });
-      }
+      const overrides = JSON.parse(initialParamsKey) as Record<string, string>;
+      Object.entries(overrides).forEach(([key, val]) => {
+        defaults[key] = val;
+      });
       setParams(defaults);
     }
-  }, [selectedTemplate, initialParams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTemplate, initialParamsKey]);
 
   // Auto-select first variant when generation completes with exactly 1 variant
   useEffect(() => {
