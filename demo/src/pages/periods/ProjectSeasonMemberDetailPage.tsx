@@ -1882,7 +1882,7 @@ export default function ProjectSeasonMemberDetailPage() {
                             }}>
                               {(legacyPhotoPreview || form.legacy_photo?.url) ? (
                                 <img
-                                  src={legacyPhotoPreview || resolveDisplayUrl(form.legacy_photo?.url)}
+                                  src={legacyPhotoPreview || resolveDisplayUrl(form.legacy_photo?.url) || undefined}
                                   alt="Legacy Photo"
                                   style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: legacyPhotoUploading ? 0.5 : 1 }}
                                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
