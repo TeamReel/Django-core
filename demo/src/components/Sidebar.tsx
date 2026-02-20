@@ -850,27 +850,15 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Failed', path: '/studio/videos?tab=failed', icon: Flag },
                 ];
             } else if (path === '/approvals' || path.startsWith('/approvals')) {
-                const _approvalsTab = new URLSearchParams(location.search).get('tab');
-                if (_approvalsTab === 'ai_queue') {
-                    title = 'AI Queue';
-                    items = [
-                        { label: 'Te Beoordelen', path: '/approvals?tab=ai_queue&sub=needs_review', icon: Flag },
-                        { label: 'Bezig', path: '/approvals?tab=ai_queue&sub=in_progress', icon: Activity },
-                        { label: 'Goedgekeurd', path: '/approvals?tab=ai_queue&sub=approved', icon: ClipboardCheck },
-                        { label: 'Afgewezen', path: '/approvals?tab=ai_queue&sub=rejected', icon: Shield },
-                        { label: 'Alles', path: '/approvals?tab=ai_queue&sub=all', icon: Sparkles },
-                    ];
-                } else {
-                    title = 'Approvals';
-                    items = [
-                        { label: 'All', path: '/approvals?tab=all', icon: ClipboardCheck },
-                        { label: 'Needs Review', path: '/approvals?tab=review', icon: Flag },
-                        { label: 'In Progress', path: '/approvals?tab=active', icon: Activity },
-                        { label: 'Approved', path: '/approvals?tab=completed', icon: ClipboardCheck },
-                        { label: 'Rejected', path: '/approvals?tab=rejected', icon: Shield },
-                        { label: 'AI Queue', path: '/approvals?tab=ai_queue', icon: Sparkles },
-                    ];
-                }
+                title = 'Approvals';
+                items = [
+                    { label: 'All', path: '/approvals?tab=all', icon: ClipboardCheck },
+                    { label: 'Needs Review', path: '/approvals?tab=review', icon: Flag },
+                    { label: 'In Progress', path: '/approvals?tab=active', icon: Activity },
+                    { label: 'Approved', path: '/approvals?tab=completed', icon: ClipboardCheck },
+                    { label: 'Rejected', path: '/approvals?tab=rejected', icon: Shield },
+                    { label: 'AI Queue', path: '/approvals?tab=ai_queue', icon: Sparkles },
+                ];
             } else {
                 // Fallback for other content pages
                 title = 'Content';

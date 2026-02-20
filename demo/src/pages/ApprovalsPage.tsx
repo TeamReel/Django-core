@@ -25,22 +25,6 @@ import {
 } from '../hooks/useGenerationJobs';
 
 type FilterState = 'all' | 'review' | 'active' | 'completed' | 'rejected' | 'ai_queue';
-type AiSubTab = 'needs_review' | 'in_progress' | 'approved' | 'rejected' | 'all';
-
-function filterAiJobs(jobs: GenerationJob[], sub: AiSubTab): GenerationJob[] {
-  switch (sub) {
-    case 'needs_review':
-      return jobs.filter(j => j.status === 'completed' && (j.approval_status === 'pending_review' || !j.approval_status));
-    case 'in_progress':
-      return jobs.filter(j => j.status === 'queued' || j.status === 'waiting' || j.status === 'processing');
-    case 'approved':
-      return jobs.filter(j => j.approval_status === 'approved');
-    case 'rejected':
-      return jobs.filter(j => j.approval_status === 'rejected');
-    default:
-      return jobs;
-  }
-}
 
 /** Map filter to state categories */
 function matchesFilter(instance: WorkflowInstance, filter: FilterState): boolean {
@@ -276,10 +260,6 @@ export default function ApprovalsPage() {
   const filter: FilterState = (['all', 'review', 'active', 'completed', 'rejected', 'ai_queue'] as const).includes(rawTab as FilterState)
     ? (rawTab as FilterState)
     : 'all';
-  const rawSub = new URLSearchParams(location.search).get('sub') || 'needs_review';
-  const aiSubTab: AiSubTab = (['needs_review', 'in_progress', 'approved', 'rejected', 'all'] as const).includes(rawSub as AiSubTab)
-    ? (rawSub as AiSubTab)
-    : 'needs_review';
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Review modal
@@ -344,7 +324,7 @@ export default function ApprovalsPage() {
 
   const filtered = instances.filter(i => matchesFilter(i, filter)).sort(sortPriority);
 
-  const needsReviewJobs = filterAiJobs(mergedJobs, 'needs_review');
+  const needsReviewJobs = mergedJobs.filter(j => j.status === 'completed' && (j.approval_status === 'pending_review' || !j.approval_status));
 
   // Resolved modal job (reflects optimistic approvals)
   const resolvedModalJob = modalJob
@@ -394,7 +374,7 @@ export default function ApprovalsPage() {
     }
   }, [modalJob, needsReviewJobs, pushToast]);
 
-  const visibleAiJobs = filterAiJobs(mergedJobs, aiSubTab);
+  const visibleAiJobs = mergedJobs;
 
   const statusIcon: Record<GenJobStatus, string> = {
     queued: '⏳', waiting: '⏳', processing: '', completed: '✅', failed: '❌', cancelled: '',
@@ -453,12 +433,12 @@ export default function ApprovalsPage() {
 
             {!aiLoading && visibleAiJobs.length === 0 && (
               <div style={{ padding: 48, textAlign: 'center', color: 'var(--app-text-secondary, #9ca3af)', backgroundColor: 'var(--app-surface-2, #f9fafb)', borderRadius: 12, border: '1px dashed var(--app-border, #e5e7eb)' }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>{aiSubTab === 'needs_review' ? '' : ''}</div>
+                <div style={{ fontSize: 32, marginBottom: 8 }}></div>
                 <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
-                  {aiSubTab === 'needs_review' ? 'Alles beoordeeld!' : 'Geen items'}
+                  Geen AI jobs
                 </div>
                 <div style={{ fontSize: 12 }}>
-                  {aiSubTab === 'needs_review' ? 'Er zijn geen AI-resultaten die nog beoordeeld moeten worden.' : 'Geen AI-jobs gevonden voor dit filter.'}
+                  Er zijn momenteel geen AI-generatie jobs.
                 </div>
               </div>
             )}
