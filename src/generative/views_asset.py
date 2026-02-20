@@ -136,10 +136,11 @@ class AssetGenerateInputSerializer(serializers.Serializer):
     )
 
     # === Context for S3 folder structure (media-architecture.md) ===
-    project_id = serializers.UUIDField(
+    project_id = serializers.CharField(
         required=False,
         allow_null=True,
-        help_text="Project ID for scoping storage and brand lookup",
+        allow_blank=True,
+        help_text="Project ID or slug for scoping storage and brand lookup",
     )
     organisation_id = serializers.UUIDField(
         required=False,
@@ -591,7 +592,11 @@ def generate_asset_view(request: Request) -> Response:
         try:
             from projects.models import Project
 
-            project = Project.objects.select_related("organisation").get(id=project_id)
+            # project_id can be a numeric ID or a slug string
+            if str(project_id).isdigit():
+                project = Project.objects.select_related("organisation").get(id=project_id)
+            else:
+                project = Project.objects.select_related("organisation").get(slug=project_id)
             organisation = project.organisation
         except Project.DoesNotExist:
             logger.warning(f"Project {project_id} not found")
