@@ -249,9 +249,10 @@ function VariantCard({
             alt={`Variant ${variant.variant_index + 1}`}
             style={{
               width: '100%',
-              aspectRatio: '3 / 4',
-              objectFit: 'cover',
+              height: 'auto',
               display: 'block',
+              objectFit: 'contain',
+              background: '#1a1a1a',
             }}
           />
         )
@@ -645,9 +646,9 @@ export default function AssetGenerationModal({
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '90vw',
-          maxWidth: 640,
-          maxHeight: '85vh',
+          width: '94vw',
+          maxWidth: 800,
+          maxHeight: '92vh',
           background: 'var(--vscode-editor-background, #1e1e1e)',
           border: '1px solid var(--vscode-widget-border, #333)',
           borderRadius: 12,
@@ -925,13 +926,19 @@ export default function AssetGenerationModal({
               {/* Submitting (sending request) */}
               {generation.step === 'submitting' && (
                 <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                  <div style={{ fontSize: 48, marginBottom: 16 }}>🍌</div>
+                  <div style={{ fontSize: 48, marginBottom: 16 }}>
+                    {selectedTemplate?.outputType === 'video' ? '🎬' : '🎨'}
+                  </div>
                   <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
-                    Verzoek indienen...
+                    {selectedTemplate?.outputType === 'video'
+                      ? 'Video aanmelden...'
+                      : 'Afbeelding genereren...'}
                   </div>
                   <ProgressBar progress={generation.progress} />
                   <div style={{ fontSize: 12, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 8 }}>
-                    Dit kan 15-30 seconden duren per variant
+                    {selectedTemplate?.outputType === 'video'
+                      ? 'Video wordt naar de queue gestuurd...'
+                      : 'Dit kan 15–30 seconden duren per variant'}
                   </div>
                 </div>
               )}
@@ -1008,19 +1015,44 @@ export default function AssetGenerationModal({
                     <div
                       style={{
                         display: 'grid',
-                        gridTemplateColumns: `repeat(${Math.min(generation.variants.length, 4)}, 1fr)`,
+                        gridTemplateColumns: generation.variants.length === 1
+                          ? '1fr'
+                          : `repeat(${Math.min(generation.variants.length, 2)}, 1fr)`,
                         gap: 12,
+                        alignItems: 'start',
                       }}
                     >
-                      {generation.variants.map((v) => (
-                        <VariantCard
-                          key={v.variant_index}
-                          variant={v}
-                          selected={selectedVariantIdx === v.variant_index}
-                          onClick={() => setSelectedVariantIdx(v.variant_index)}
-                          isVideo={selectedTemplate?.outputType === 'video'}
-                        />
-                      ))}
+                      {generation.variants.map((v) => {
+                        const fullSrc = v.presigned_url || (v.image_base64 ? `data:${v.mime_type || 'image/png'};base64,${v.image_base64}` : null);
+                        return (
+                          <div key={v.variant_index}>
+                            <VariantCard
+                              variant={v}
+                              selected={selectedVariantIdx === v.variant_index}
+                              onClick={() => setSelectedVariantIdx(v.variant_index)}
+                              isVideo={selectedTemplate?.outputType === 'video'}
+                            />
+                            {fullSrc && selectedTemplate?.outputType !== 'video' && (
+                              <a
+                                href={fullSrc}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{
+                                  display: 'block',
+                                  marginTop: 4,
+                                  textAlign: 'center',
+                                  fontSize: 11,
+                                  color: 'var(--vscode-textLink-foreground, #60a5fa)',
+                                  textDecoration: 'none',
+                                  opacity: 0.8,
+                                }}
+                              >
+                                🔍 Volledig bekijken
+                              </a>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
 
                     {/* Feedback / Refine - only for images, not videos */}
