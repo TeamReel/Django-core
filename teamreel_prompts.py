@@ -748,6 +748,7 @@ EQUIPMENT:
 {role_equipment}
 
 COMPOSITION:
+- IMAGE FORMAT: PORTRAIT ORIENTATION — the output image MUST be significantly taller than it is wide (9:16 aspect ratio). Think of a vertical smartphone photo, not a landscape/square one.
 - FULL BODY: Head to toe must be visible. No cropping.
 - The person should be standing upright on a flat surface.
 - Professional sports photography lighting.
@@ -760,6 +761,7 @@ STYLE:
 - The person must be FULLY SEPARATED from the background (no blending).
 
 FINAL CHECK:
+- Is the image in PORTRAIT orientation (taller than wide, 9:16)? ✓ (MANDATORY)
 - Is the face RECOGNISABLE as the specific person from the input photo? ✓ (HIGHEST PRIORITY)
 - Does the kit match the reference colors/patterns/logos? ✓
 - Are the sleeves {sleeves_label}? ✓ (THIS IS MANDATORY)
