@@ -1572,6 +1572,108 @@ def restore_asset_version_view(request: Request) -> Response:
 
 
 # =============================================================================
+# Shared image upload helper — usable from both sync view and Celery tasks
+# =============================================================================
+
+
+def _upload_image_bytes_to_storage(
+    *,
+    image_bytes: bytes,
+    filename: str,
+    mime_type: str,
+    variant_index: int = 0,
+    template_id: str = "",
+    template_type: str = "output",
+    template_subtype: str = "",
+    membership_id: str | None = None,
+    organisation_id: str | None = None,
+    project_id: str | None = None,
+) -> dict:
+    """Upload raw image bytes to the configured storage backend.
+
+    Returns a dict:
+        {storage_path, presigned_url, file_asset_id, mime_type, filename, error?}
+
+    This is the Celery-safe version of the image upload block in generate_asset_view.
+    No BrandAsset / MediaItem creation — that is reserved for the approval→link step.
+    """
+    try:
+        from files.utils import get_storage_backend
+        from django.core.files.base import ContentFile
+        from django.utils import timezone
+        import uuid as _uuid
+
+        storage = get_storage_backend()
+
+        asset_folder = f"{template_type}/{template_subtype}" if template_subtype else template_type
+        timestamp = timezone.now().strftime("%Y%m%d")
+        unique_suffix = str(_uuid.uuid4())[:8]
+
+        name_parts = filename.rsplit(".", 1)
+        if len(name_parts) == 2:
+            unique_filename = f"{name_parts[0]}_{timestamp}_{unique_suffix}.{name_parts[1]}"
+        else:
+            unique_filename = f"{filename}_{timestamp}_{unique_suffix}"
+
+        if membership_id:
+            path_prefix = f"members/{membership_id}/generated/{asset_folder}/{unique_filename}"
+        elif project_id:
+            path_prefix = f"projects/{project_id}/generated/{asset_folder}/{unique_filename}"
+        elif organisation_id:
+            path_prefix = f"orgs/{organisation_id}/generated/{asset_folder}/{unique_filename}"
+        else:
+            path_prefix = f"generated/{asset_folder}/{unique_filename}"
+
+        file_obj = ContentFile(image_bytes, name=filename)
+        storage_path = storage.save(path_prefix, file_obj)
+
+        try:
+            presigned_url = storage.get_url(storage_path, signed=True)
+        except Exception:
+            presigned_url = storage.url(storage_path) if hasattr(storage, "url") else ""
+
+        # Create FileAsset record if we have an organisation
+        file_asset_id = None
+        if organisation_id:
+            try:
+                from organisations.models import Organisation as _Org
+                from files.models import FileAsset as _FA
+
+                org = _Org.objects.get(id=organisation_id)
+                fa = _FA.objects.create(
+                    organization=org,
+                    original_name=filename,
+                    storage_path=storage_path,
+                    file_size=len(image_bytes),
+                    mime_type=mime_type,
+                    is_public=False,
+                    metadata={
+                        "source": "ai_generation",
+                        "template_id": template_id,
+                        "template_type": template_type,
+                        "template_subtype": template_subtype,
+                        "variant_index": variant_index,
+                    },
+                )
+                file_asset_id = str(fa.id)
+            except Exception as fa_err:
+                logger.warning("FileAsset creation failed for image upload: %s", fa_err)
+
+        return {
+            "variant_index": variant_index,
+            "storage_path": storage_path,
+            "presigned_url": presigned_url,
+            "file_asset_id": file_asset_id,
+            "mime_type": mime_type,
+            "filename": filename,
+        }
+
+    except Exception as exc:
+        logger.warning("_upload_image_bytes_to_storage failed: %s", exc)
+        return {"variant_index": variant_index, "error": str(exc), "mime_type": mime_type}
+
+
+# =============================================================================
 # Async video generation – background thread + status endpoint
 # =============================================================================
 
@@ -1886,10 +1988,38 @@ def list_generation_jobs_view(request: Request) -> Response:
 
     # Enrich active jobs with live cache progress
     results = []
+    # Storage backend — reused across all jobs to avoid repeated instantiation
+    _storage_backend = None
+
+    def _get_fresh_url(storage_path: str) -> str:
+        """Generate a fresh presigned/permanent URL from a stored storage path."""
+        nonlocal _storage_backend
+        if not storage_path:
+            return ""
+        try:
+            if _storage_backend is None:
+                from files.utils import get_storage_backend
+
+                _storage_backend = get_storage_backend()
+            try:
+                return _storage_backend.get_url(storage_path, signed=True)
+            except Exception:
+                return (
+                    _storage_backend.url(storage_path) if hasattr(_storage_backend, "url") else ""
+                )
+        except Exception:
+            return ""
+
     for job in jobs:
         live = _get_task(str(job.task_id)) if job.is_active else None
-        # For completed jobs, also try cache to backfill output_url
-        if not live and job.status == "completed" and not job.output_url:
+
+        # For completed jobs, also try cache to backfill output_url (legacy path)
+        if (
+            not live
+            and job.status == "completed"
+            and not job.output_url
+            and not job.output_variants
+        ):
             live_completed = _get_task(str(job.task_id))
             if live_completed and live_completed.get("status") == "completed":
                 variants = live_completed.get("data", {}).get("variants", [])
@@ -1908,6 +2038,32 @@ def list_generation_jobs_view(request: Request) -> Response:
                     except Exception:
                         pass
 
+        # Build output_variants list with fresh presigned URLs
+        fresh_variants: list[dict] = []
+        for v in job.output_variants or []:
+            fresh_url = _get_fresh_url(v.get("storage_path", ""))
+            fresh_variants.append(
+                {
+                    "variant_index": v.get("variant_index", 0),
+                    "storage_path": v.get("storage_path", ""),
+                    "presigned_url": fresh_url,
+                    "file_asset_id": v.get("file_asset_id"),
+                    "mime_type": v.get("mime_type", ""),
+                    "filename": v.get("filename", ""),
+                    "approved": v.get("approved"),  # None/True/False per-variant
+                }
+            )
+
+        # Primary output_url: prefer first approved or first available variant's fresh URL
+        primary_url = job.output_url or ""
+        if fresh_variants:
+            first_fresh = next(
+                (fv["presigned_url"] for fv in fresh_variants if fv["presigned_url"]),
+                "",
+            )
+            if first_fresh:
+                primary_url = first_fresh
+
         results.append(
             {
                 "task_id": str(job.task_id),
@@ -1924,7 +2080,8 @@ def list_generation_jobs_view(request: Request) -> Response:
                 if live
                 else job.error_message,
                 "approval_status": job.approval_status,
-                "output_url": job.output_url or "",
+                "output_url": primary_url,
+                "output_variants": fresh_variants,
                 "created_at": job.created_at.isoformat(),
                 "updated_at": job.updated_at.isoformat(),
                 "completed_at": job.completed_at.isoformat() if job.completed_at else None,
@@ -1947,10 +2104,13 @@ def list_generation_jobs_view(request: Request) -> Response:
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def review_generation_job_view(request: Request, task_id: str) -> Response:
-    """Approve or reject a completed AI generation job.
+    """Approve or reject a completed AI generation job (or a specific variant).
 
     POST /api/v1/generative/jobs/<task_id>/review/
-    Body: {"action": "approve" | "reject"}
+    Body:
+        {"action": "approve" | "reject"}                    — whole job
+        {"action": "approve", "variant_index": 0}           — approve specific variant
+        {"action": "approve", "variant_indices": [0, 2]}    — approve multiple variants
     """
     from .models import GenerationJob
     from django.utils import timezone
@@ -1973,20 +2133,69 @@ def review_generation_job_view(request: Request, task_id: str) -> Response:
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    job.approval_status = (
-        GenerationJob.ApprovalStatus.APPROVED
-        if action == "approve"
-        else GenerationJob.ApprovalStatus.REJECTED
-    )
+    # Determine if this is a per-variant review
+    body = request.data or {}
+    variant_index = body.get("variant_index")
+    variant_indices = body.get("variant_indices")
+
+    # Build set of targeted variant indices (None = whole job)
+    targeted_indices: set[int] | None = None
+    if variant_indices is not None:
+        targeted_indices = {int(vi) for vi in variant_indices}
+    elif variant_index is not None:
+        targeted_indices = {int(variant_index)}
+
+    update_fields = ["reviewed_at", "reviewed_by_id", "updated_at"]
     job.reviewed_at = timezone.now()
     if request.user and request.user.is_authenticated:
         job.reviewed_by_id = request.user.id
-    job.save(update_fields=["approval_status", "reviewed_at", "reviewed_by_id", "updated_at"])
+
+    if targeted_indices is not None and job.output_variants:
+        # Per-variant approval — update individual variant's `approved` flag
+        updated = []
+        for v in job.output_variants:
+            vi = v.get("variant_index", 0)
+            if vi in targeted_indices:
+                v = dict(v)  # copy
+                v["approved"] = action == "approve"
+            updated.append(v)
+        job.output_variants = updated
+        update_fields.append("output_variants")
+
+        # Also roll up job approval_status:
+        # approved if any variant approved, rejected if all rejected or no approved
+        any_approved = any(v.get("approved") is True for v in updated)
+        all_rejected = all(
+            v.get("approved") is False for v in updated if v.get("approved") is not None
+        )
+        if any_approved:
+            job.approval_status = GenerationJob.ApprovalStatus.APPROVED
+        elif all_rejected:
+            job.approval_status = GenerationJob.ApprovalStatus.REJECTED
+        # else remains pending_review if mixed
+        update_fields.append("approval_status")
+    else:
+        # Whole-job approval
+        job.approval_status = (
+            GenerationJob.ApprovalStatus.APPROVED
+            if action == "approve"
+            else GenerationJob.ApprovalStatus.REJECTED
+        )
+        # Mark all variants as approved/rejected too
+        if job.output_variants:
+            job.output_variants = [
+                {**v, "approved": action == "approve"} for v in job.output_variants
+            ]
+            update_fields.append("output_variants")
+        update_fields.append("approval_status")
+
+    job.save(update_fields=list(set(update_fields)))
 
     return Response(
         {
             "task_id": str(job.task_id),
             "approval_status": job.approval_status,
+            "output_variants": job.output_variants or [],
             "reviewed_at": job.reviewed_at.isoformat() if job.reviewed_at else None,
         }
     )

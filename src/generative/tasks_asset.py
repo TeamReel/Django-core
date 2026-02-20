@@ -36,6 +36,7 @@ def _sync_job_status(
     progress: int = 0,
     error: str = "",
     output_url: str = "",
+    output_variants: list | None = None,
 ) -> None:
     """Update GenerationJob DB record to match cache status.
 
@@ -70,6 +71,10 @@ def _sync_job_status(
         if output_url and not job.output_url:
             job.output_url = output_url
             update_fields.append("output_url")
+
+        if output_variants is not None:
+            job.output_variants = output_variants
+            update_fields.append("output_variants")
 
         job.save(update_fields=update_fields)
     except Exception as e:  # noqa: BLE001
@@ -310,7 +315,7 @@ def _process_images(
     storage_context: dict[str, Any],
     provider: str,
 ) -> dict[str, Any]:
-    """Generate images via Gemini with inter-variant delay."""
+    """Generate images via Gemini, upload all variants to storage, store in DB."""
     from .services.asset_pipeline import generate_asset
 
     set_job(
@@ -331,19 +336,71 @@ def _process_images(
     )
     elapsed = time.time() - t0
 
-    # Build variants in the format the status endpoint expects
+    # Upload each variant to persistent storage (S3 / Django default storage)
+    from .views_asset import _upload_image_bytes_to_storage
+
+    membership_id = storage_context.get("membership_id")
+    project_id = storage_context.get("project_id")
+
     variants = []
+    db_variants: list[dict] = []
     for r in results:
+        image_b64: str | None = r.get("image_base64")
+        mime_type: str = r.get("mime_type") or "image/png"
+        filename: str = r.get("filename") or f"generated_{r.get('variant_index', 0)}.png"
+        variant_index: int = r.get("variant_index", 0)
+
+        # Decode and upload to persistent storage
+        storage_info: dict = {}
+        if image_b64:
+            try:
+                img_bytes = base64.b64decode(image_b64)
+                storage_info = _upload_image_bytes_to_storage(
+                    image_bytes=img_bytes,
+                    filename=filename,
+                    mime_type=mime_type,
+                    variant_index=variant_index,
+                    template_id=template_id,
+                    template_type=params.get("template_type", "output"),
+                    template_subtype=params.get("template_subtype", ""),
+                    membership_id=membership_id,
+                    organisation_id=organisation_id,
+                    project_id=project_id,
+                )
+                logger.info(
+                    "Image variant %d uploaded → %s",
+                    variant_index,
+                    storage_info.get("storage_path", "?"),
+                )
+            except Exception as upload_err:
+                logger.warning("Failed to upload image variant %d: %s", variant_index, upload_err)
+
         variants.append(
             {
-                "variant_index": r.get("variant_index", 0),
-                "image_base64": r.get("image_base64"),
-                "mime_type": r.get("mime_type"),
-                "filename": r.get("filename"),
+                "variant_index": variant_index,
+                "image_base64": image_b64,  # keep in cache for immediate display
+                "mime_type": mime_type,
+                "filename": filename,
                 "error": r.get("error"),
                 "metadata": r.get("metadata"),
+                "presigned_url": storage_info.get("presigned_url"),
+                "storage_path": storage_info.get("storage_path"),
+                "file_asset_id": storage_info.get("file_asset_id"),
             }
         )
+
+        # Build lean DB variant record (no base64, storage_path is permanent)
+        if not r.get("error"):
+            db_variants.append(
+                {
+                    "variant_index": variant_index,
+                    "storage_path": storage_info.get("storage_path", ""),
+                    "file_asset_id": storage_info.get("file_asset_id"),
+                    "mime_type": mime_type,
+                    "filename": filename,
+                    "approved": None,  # None = not yet reviewed
+                }
+            )
 
     # Store in the SAME format as _run_video_generation uses
     set_job(
@@ -358,14 +415,19 @@ def _process_images(
             },
         },
     )
-    # Pick first non-error variant's URL (images: presigned_url if any; otherwise empty)
-    _primary_url = next(
-        (v.get("presigned_url", "") or "" for v in variants if not v.get("error")), ""
+
+    # Pick first non-error variant's presigned URL as primary output_url
+    _primary_url = next((v.get("presigned_url") or "" for v in variants if not v.get("error")), "")
+    _sync_job_status(
+        job_id,
+        "completed",
+        progress=100,
+        output_url=_primary_url,
+        output_variants=db_variants,
     )
-    _sync_job_status(job_id, "completed", progress=100, output_url=_primary_url)
 
     logger.info(
-        "Image generation job %s completed: %d variants in %.1fs",
+        "Image generation job %s completed: %d variants in %.1fs (uploaded to storage)",
         job_id,
         len(results),
         elapsed,
@@ -474,7 +536,26 @@ def _process_video(
         ),
         "",
     )
-    _sync_job_status(job_id, "completed", progress=100, output_url=_primary_url)
+    # Build lean DB variant records (storage_path is permanent; presigned URLs re-generated)
+    db_variants = [
+        {
+            "variant_index": v.get("variant_index", i),
+            "storage_path": v.get("storage_path", ""),
+            "file_asset_id": v.get("file_asset_id"),
+            "mime_type": v.get("mime_type", "video/mp4"),
+            "filename": v.get("filename"),
+            "approved": None,
+        }
+        for i, v in enumerate(variants)
+        if not v.get("error")
+    ]
+    _sync_job_status(
+        job_id,
+        "completed",
+        progress=100,
+        output_url=_primary_url,
+        output_variants=db_variants,
+    )
 
     logger.info("Video generation job %s completed in %.1fs", job_id, elapsed)
 

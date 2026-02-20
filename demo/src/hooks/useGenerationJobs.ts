@@ -14,6 +14,17 @@ import { getApiBaseUrl } from '../utils/apiBase';
 export type GenJobStatus = 'queued' | 'waiting' | 'processing' | 'completed' | 'failed' | 'cancelled';
 export type GenJobApprovalStatus = 'pending_review' | 'approved' | 'rejected';
 
+/** One generated output variant (image or video). */
+export interface OutputVariant {
+  variant_index: number;
+  storage_path: string;
+  presigned_url: string;   // fresh URL generated server-side on every list request
+  file_asset_id: string | null;
+  mime_type: string;
+  filename: string;
+  approved: boolean | null; // null = not yet reviewed, true = approved, false = rejected
+}
+
 export interface GenerationJob {
   task_id: string;
   template_id: string;
@@ -28,6 +39,7 @@ export interface GenerationJob {
   error_message: string;
   approval_status: GenJobApprovalStatus | null;
   output_url: string;
+  output_variants: OutputVariant[];
   created_at: string;
   updated_at: string;
   completed_at: string | null;
@@ -133,17 +145,20 @@ export function useGenerationJobsBadge() {
   return { activeCount, refresh };
 }
 
-/** Call the review endpoint to approve or reject a completed job. */
+/** Call the review endpoint to approve or reject a completed job (or specific variants). */
 export async function reviewJob(
   taskId: string,
   action: 'approve' | 'reject',
-): Promise<{ approval_status: GenJobApprovalStatus }> {
+  variantIndices?: number[],   // omit to review whole job
+): Promise<{ approval_status: GenJobApprovalStatus; output_variants: OutputVariant[] }> {
   const { getApiBaseUrl } = await import('../utils/apiBase');
+  const body: Record<string, unknown> = { action };
+  if (variantIndices !== undefined) body.variant_indices = variantIndices;
   const res = await fetch(`${getApiBaseUrl()}/api/v1/generative/jobs/${taskId}/review/`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

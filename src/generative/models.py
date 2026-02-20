@@ -754,6 +754,17 @@ class GenerationJob(models.Model):
         help_text="URL of the primary generated output (image/video), persisted for review UI",
     )
 
+    # All output variants — list of dicts with storage_path, file_asset_id, mime_type, etc.
+    # Storage paths are permanent; presigned URLs are re-generated on each request.
+    output_variants = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=(
+            "All generated output variants. Each entry: "
+            "{variant_index, storage_path, file_asset_id, mime_type, filename, approved}"
+        ),
+    )
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -783,7 +794,7 @@ class GenerationJob(models.Model):
         self.progress = progress
         self.save(update_fields=["status", "progress", "updated_at"])
 
-    def mark_completed(self, output_url: str = "") -> None:
+    def mark_completed(self, output_url: str = "", output_variants: list | None = None) -> None:
         """Transition to completed, ready for human review."""
         self.status = self.Status.COMPLETED
         self.progress = 100
@@ -791,6 +802,8 @@ class GenerationJob(models.Model):
         self.approval_status = self.ApprovalStatus.PENDING_REVIEW
         if output_url:
             self.output_url = output_url
+        if output_variants is not None:
+            self.output_variants = output_variants
         self.save(
             update_fields=[
                 "status",
@@ -798,6 +811,7 @@ class GenerationJob(models.Model):
                 "completed_at",
                 "approval_status",
                 "output_url",
+                "output_variants",
                 "updated_at",
             ]
         )

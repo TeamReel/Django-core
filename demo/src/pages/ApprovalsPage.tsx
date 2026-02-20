@@ -23,7 +23,6 @@ import {
   type GenerationJob,
   type GenJobStatus,
 } from '../hooks/useGenerationJobs';
-import { getApiBaseUrl } from '../utils/apiBase';
 
 type FilterState = 'all' | 'review' | 'active' | 'completed' | 'rejected' | 'ai_queue';
 type AiSubTab = 'needs_review' | 'in_progress' | 'approved' | 'rejected' | 'all';
@@ -85,166 +84,181 @@ function sortPriority(a: WorkflowInstance, b: WorkflowInstance): number {
   return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
 }
 
-// ─── Review Modal ─────────────────────────────────────────────────────────────
+// ─── Review Modal ─────────────────────────────────────────────
 
 interface ReviewModalProps {
   job: GenerationJob;
   reviewList: GenerationJob[];
   onClose: () => void;
-  /** Called with the reviewed task_id + action, or '__prev__' / '__next__' for navigation */
   onReviewed: (taskId: string, action: 'approve' | 'reject') => void;
 }
 
 function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps) {
-  const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [previewLoading, setPreviewLoading] = useState(true);
   const [reviewing, setReviewing] = useState<'approve' | 'reject' | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
+
+  // Per-variant selection: variant_index → true (approve) | false (reject) | null (pending)
+  const initSelections = () => {
+    const m: Record<number, boolean | null> = {};
+    if (job.output_variants?.length) {
+      for (const v of job.output_variants) {
+        m[v.variant_index] = v.approved ?? null;
+      }
+    }
+    return m;
+  };
+  const [selections, setSelections] = useState<Record<number, boolean | null>>(initSelections);
+
+  // Reset selections when job changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { setSelections(initSelections()); setReviewError(null); }, [job.task_id]);
 
   const currentIdx = reviewList.findIndex(j => j.task_id === job.task_id);
   const hasPrev = currentIdx > 0;
   const hasNext = currentIdx < reviewList.length - 1;
+  const isCanReview = job.approval_status === 'pending_review' || !job.approval_status;
 
-  // Load preview on job change
-  useEffect(() => {
-    setPreviewUrl('');
-    setPreviewLoading(true);
-    setReviewError(null);
+  // Build display variants: prefer output_variants, fall back to output_url
+  const variants = job.output_variants?.length
+    ? job.output_variants
+    : job.output_url
+    ? [{ variant_index: 0, presigned_url: job.output_url, storage_path: '', file_asset_id: null as null, mime_type: job.output_type === 'video' ? 'video/mp4' : 'image/jpeg', filename: '', approved: null as null }]
+    : [];
 
-    if (job.output_url) {
-      setPreviewUrl(job.output_url);
-      setPreviewLoading(false);
-      return;
-    }
+  const toggleVariant = (idx: number, val: boolean) =>
+    setSelections(prev => ({ ...prev, [idx]: prev[idx] === val ? null : val }));
 
-    // Try status-endpoint cache (image base64 or presigned URL)
-    const apiBase = getApiBaseUrl();
-    fetch(`${apiBase}/api/v1/generative/assets/generate/${job.task_id}/status/`, { credentials: 'include' })
-      .then(r => r.json())
-      .then(resp => {
-        const payload = resp.data ?? resp;
-        const variants: any[] = payload?.data?.variants ?? payload?.variants ?? [];
-        const v = variants.find((x: any) => !x.error) ?? variants[0];
-        if (!v) return;
-        if (v.image_base64) setPreviewUrl(`data:${v.mime_type || 'image/jpeg'};base64,${v.image_base64}`);
-        else if (v.presigned_url) setPreviewUrl(v.presigned_url);
-        else if (v.video_url) setPreviewUrl(v.video_url);
-      })
-      .catch(() => {})
-      .finally(() => setPreviewLoading(false));
-  }, [job.task_id, job.output_url]);
-
-  const handleReview = async (action: 'approve' | 'reject') => {
-    setReviewing(action);
-    setReviewError(null);
-    try {
-      onReviewed(job.task_id, action);
-    } catch {
-      // onReviewed handles errors externally
-    } finally {
-      setReviewing(null);
-    }
+  const selectAll = (val: boolean) => {
+    const next: Record<number, boolean | null> = {};
+    for (const v of variants) next[v.variant_index] = val;
+    setSelections(next);
   };
 
-  const isCanReview = job.approval_status === 'pending_review' || !job.approval_status;
+  const handleSubmit = async (action: 'approve' | 'reject') => {
+    setReviewing(action);
+    setReviewError(null);
+    try { onReviewed(job.task_id, action); } catch { /* handled externally */ } finally { setReviewing(null); }
+  };
+
+  const isVideo = (v: { mime_type: string; filename: string }) =>
+    v.mime_type?.startsWith('video/') || v.filename?.endsWith('.mp4') || v.filename?.endsWith('.webm') || job.output_type === 'video';
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 10000,
-        backgroundColor: 'rgba(0,0,0,0.72)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 24,
-      }}
+      style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div
-        style={{
-          width: '100%',
-          maxWidth: 740,
-          backgroundColor: 'var(--app-surface, #fff)',
-          borderRadius: 16,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          maxHeight: '90vh',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.36)',
-        }}
-      >
+      <div style={{ width: '100%', maxWidth: variants.length > 1 ? 980 : 740, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '92vh', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
+
         {/* Header */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text, #111)' }}>{job.label || job.template_id}</div>
             <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
               {job.output_type} · {new Date(job.created_at).toLocaleString()}
               {reviewList.length > 0 && ` · ${currentIdx + 1} van ${reviewList.length}`}
+              {variants.length > 1 && ` · ${variants.length} varianten`}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              disabled={!hasPrev}
-              onClick={() => onReviewed('__prev__', 'approve')}
-              style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasPrev ? 'pointer' : 'default', opacity: hasPrev ? 1 : 0.3, fontSize: 14 }}
-              title="Vorige"
-            >‹</button>
-            <button
-              disabled={!hasNext}
-              onClick={() => onReviewed('__next__', 'reject')}
-              style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasNext ? 'pointer' : 'default', opacity: hasNext ? 1 : 0.3, fontSize: 14 }}
-              title="Volgende"
-            >›</button>
+            <button disabled={!hasPrev} onClick={() => onReviewed('__prev__', 'approve')} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasPrev ? 'pointer' : 'default', opacity: hasPrev ? 1 : 0.3, fontSize: 16 }}>&#8249;</button>
+            <button disabled={!hasNext} onClick={() => onReviewed('__next__', 'reject')} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasNext ? 'pointer' : 'default', opacity: hasNext ? 1 : 0.3, fontSize: 16 }}>&#8250;</button>
           </div>
-          <button onClick={onClose} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: 'pointer', fontSize: 16, color: '#6b7280' }}>✕</button>
+          <button onClick={onClose} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#6b7280' }}>&times;</button>
         </div>
 
-        {/* Preview */}
-        <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 280, maxHeight: 460 }}>
-          {previewLoading && (
-            <div style={{ color: '#9ca3af', fontSize: 13 }}>Preview laden…</div>
-          )}
-          {!previewLoading && !previewUrl && (
-            <div style={{ color: '#6b7280', fontSize: 13, textAlign: 'center', padding: 24 }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>ï¸</div>
+        {/* Variants gallery */}
+        <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#0f172a', padding: variants.length > 1 ? 12 : 0 }}>
+          {variants.length === 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 280, padding: 24, color: '#6b7280', fontSize: 13, textAlign: 'center', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontSize: 32 }}>&#128679;</div>
               <div>Preview niet beschikbaar</div>
-              <div style={{ fontSize: 11, marginTop: 4, color: '#4b5563' }}>Cache verlopen · output opgeslagen in spelersmeta</div>
+              <div style={{ fontSize: 11, color: '#4b5563' }}>Bestand nog niet opgeslagen — genereer opnieuw om op te slaan</div>
             </div>
           )}
-          {!previewLoading && previewUrl && job.output_type === 'video' && (
-            <video src={previewUrl} controls autoPlay loop style={{ maxWidth: '100%', maxHeight: 450, borderRadius: 4 }} />
-          )}
-          {!previewLoading && previewUrl && job.output_type !== 'video' && (
-            <img src={previewUrl} alt="Generated output" style={{ maxWidth: '100%', maxHeight: 450, objectFit: 'contain', borderRadius: 4 }} />
+          {variants.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+              {variants.map(v => {
+                const url = v.presigned_url || '';
+                const sel = selections[v.variant_index];
+                const borderColor = sel === true ? '#16a34a' : sel === false ? '#dc2626' : '#334155';
+                return (
+                  <div key={v.variant_index} style={{ display: 'flex', flexDirection: 'column', width: variants.length === 1 ? '100%' : 'calc(50% - 8px)', minWidth: 260, maxWidth: 460 }}>
+                    {/* Media */}
+                    <div style={{ position: 'relative', backgroundColor: '#1e293b', borderRadius: 8, overflow: 'hidden', border: `2px solid ${borderColor}`, transition: 'border-color 0.15s' }}>
+                      {url ? (
+                        isVideo(v) ? (
+                          <video src={url} controls autoPlay={variants.length === 1} loop style={{ width: '100%', maxHeight: variants.length === 1 ? 450 : 260, display: 'block' }} />
+                        ) : (
+                          <img src={url} alt={`Variant ${v.variant_index + 1}`} style={{ width: '100%', maxHeight: variants.length === 1 ? 450 : 260, objectFit: 'contain', display: 'block' }} />
+                        )
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: variants.length === 1 ? 280 : 160, color: '#475569', fontSize: 12, flexDirection: 'column', gap: 6 }}>
+                          <div style={{ fontSize: 28 }}>&#128679;</div>
+                          <div>Geen preview</div>
+                          {v.storage_path && <div style={{ fontSize: 10, color: '#334155', wordBreak: 'break-all', padding: '0 8px' }}>{v.storage_path}</div>}
+                        </div>
+                      )}
+                      {variants.length > 1 && (
+                        <div style={{ position: 'absolute', top: 6, left: 8, fontSize: 11, fontWeight: 700, color: '#e2e8f0', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 4, padding: '2px 6px' }}>
+                          Variant {v.variant_index + 1}
+                        </div>
+                      )}
+                    </div>
+                    {/* Per-variant approve/reject */}
+                    {isCanReview && (
+                      <div style={{ display: 'flex', gap: 6, padding: '8px 2px' }}>
+                        <button
+                          onClick={() => toggleVariant(v.variant_index, true)}
+                          style={{ flex: 1, padding: '7px 0', borderRadius: 7, border: `1.5px solid ${sel === true ? '#16a34a' : '#c6f0d4'}`, background: sel === true ? '#16a34a' : '#f0fdf4', color: sel === true ? '#fff' : '#15803d', fontWeight: 600, fontSize: 12, cursor: 'pointer', transition: 'all 0.12s' }}
+                        >
+                          {sel === true ? '✔ Geselecteerd' : '✔ Kies'}
+                        </button>
+                        <button
+                          onClick={() => toggleVariant(v.variant_index, false)}
+                          style={{ flex: 1, padding: '7px 0', borderRadius: 7, border: `1.5px solid ${sel === false ? '#dc2626' : '#fca5a5'}`, background: sel === false ? '#dc2626' : '#fff5f5', color: sel === false ? '#fff' : '#dc2626', fontWeight: 600, fontSize: 12, cursor: 'pointer', transition: 'all 0.12s' }}
+                        >
+                          {sel === false ? '✘ Afgewezen' : '✘ Afwijzen'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
           {reviewError && <div style={{ flex: 1, fontSize: 12, color: '#dc2626' }}>{reviewError}</div>}
           {!isCanReview && !reviewError && (
             <div style={{ flex: 1, fontSize: 12, color: '#6b7280' }}>
-              {job.approval_status === 'approved' ? '✅ Goedgekeurd' : '❌ Afgewezen'}
+              {job.approval_status === 'approved' ? '✔ Goedgekeurd' : '✘ Afgewezen'}
             </div>
           )}
-          {isCanReview && !reviewError && <div style={{ flex: 1 }} />}
+          {isCanReview && <div style={{ flex: 1 }} />}
+          {isCanReview && variants.length > 1 && (
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button onClick={() => selectAll(true)} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #c6f0d4', background: '#f0fdf4', color: '#15803d', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Alles ✔</button>
+              <button onClick={() => selectAll(false)} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff5f5', color: '#dc2626', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Alles ✘</button>
+            </div>
+          )}
           {isCanReview && (
             <>
               <button
-                onClick={() => handleReview('reject')}
+                onClick={() => handleSubmit('reject')}
                 disabled={!!reviewing}
                 style={{ padding: '9px 20px', borderRadius: 8, border: '1px solid #fca5a5', background: reviewing === 'reject' ? '#fee2e2' : '#fff5f5', color: '#dc2626', fontWeight: 600, fontSize: 13, cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'reject' ? 0.5 : 1 }}
               >
-                {reviewing === 'reject' ? '…' : '❌ Afwijzen'}
+                {reviewing === 'reject' ? '...' : '✘ Alles afwijzen'}
               </button>
               <button
-                onClick={() => handleReview('approve')}
+                onClick={() => handleSubmit('approve')}
                 disabled={!!reviewing}
                 style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: reviewing === 'approve' ? '#15803d' : '#16a34a', color: '#fff', fontWeight: 600, fontSize: 13, cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'approve' ? 0.5 : 1 }}
               >
-                {reviewing === 'approve' ? '…' : '✅ Goedkeuren'}
+                {reviewing === 'approve' ? '...' : '✔ Goedkeuren'}
               </button>
             </>
           )}
