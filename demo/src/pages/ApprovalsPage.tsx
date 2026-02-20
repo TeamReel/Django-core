@@ -7,7 +7,7 @@
  * Sidebar: CONTENT section
  */
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import {
   useWorkflowInstances,
@@ -27,23 +27,6 @@ import { getApiBaseUrl } from '../utils/apiBase';
 
 type FilterState = 'all' | 'review' | 'active' | 'completed' | 'rejected' | 'ai_queue';
 type AiSubTab = 'needs_review' | 'in_progress' | 'approved' | 'rejected' | 'all';
-
-const FILTER_OPTIONS: { value: FilterState; label: string; icon: string }[] = [
-  { value: 'all', label: 'All', icon: '' },
-  { value: 'review', label: 'Needs Review', icon: '' },
-  { value: 'active', label: 'In Progress', icon: '' },
-  { value: 'completed', label: 'Approved', icon: '✅' },
-  { value: 'rejected', label: 'Rejected', icon: '❌' },
-  { value: 'ai_queue', label: 'AI Queue', icon: '' },
-];
-
-const AI_SUB_TABS: { value: AiSubTab; label: string }[] = [
-  { value: 'needs_review', label: 'Te Beoordelen' },
-  { value: 'in_progress', label: 'Bezig' },
-  { value: 'approved', label: 'Goedgekeurd' },
-  { value: 'rejected', label: 'Afgewezen' },
-  { value: 'all', label: 'Alles' },
-];
 
 function filterAiJobs(jobs: GenerationJob[], sub: AiSubTab): GenerationJob[] {
   switch (sub) {
@@ -243,7 +226,7 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
           {reviewError && <div style={{ flex: 1, fontSize: 12, color: '#dc2626' }}>{reviewError}</div>}
           {!isCanReview && !reviewError && (
             <div style={{ flex: 1, fontSize: 12, color: '#6b7280' }}>
-              {job.approval_status === 'approved' ? '✅ Goedgekeurd' : 'âŒ Afgewezen'}
+              {job.approval_status === 'approved' ? '✅ Goedgekeurd' : '❌ Afgewezen'}
             </div>
           )}
           {isCanReview && !reviewError && <div style={{ flex: 1 }} />}
@@ -254,7 +237,7 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
                 disabled={!!reviewing}
                 style={{ padding: '9px 20px', borderRadius: 8, border: '1px solid #fca5a5', background: reviewing === 'reject' ? '#fee2e2' : '#fff5f5', color: '#dc2626', fontWeight: 600, fontSize: 13, cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'reject' ? 0.5 : 1 }}
               >
-                {reviewing === 'reject' ? '…' : 'âŒ Afwijzen'}
+                {reviewing === 'reject' ? '…' : '❌ Afwijzen'}
               </button>
               <button
                 onClick={() => handleReview('approve')}
@@ -274,17 +257,16 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ApprovalsPage() {
-  const navigate = useNavigate();
   const location = useLocation();
   const rawTab = new URLSearchParams(location.search).get('tab') || 'all';
   const filter: FilterState = (['all', 'review', 'active', 'completed', 'rejected', 'ai_queue'] as const).includes(rawTab as FilterState)
     ? (rawTab as FilterState)
     : 'all';
-  const setFilter = (f: FilterState) => navigate(`/approvals?tab=${f}`, { replace: true });
+  const rawSub = new URLSearchParams(location.search).get('sub') || 'needs_review';
+  const aiSubTab: AiSubTab = (['needs_review', 'in_progress', 'approved', 'rejected', 'all'] as const).includes(rawSub as AiSubTab)
+    ? (rawSub as AiSubTab)
+    : 'needs_review';
   const [actionError, setActionError] = useState<string | null>(null);
-
-  // AI sub-tab state
-  const [aiSubTab, setAiSubTab] = useState<AiSubTab>('needs_review');
 
   // Review modal
   const [modalJob, setModalJob] = useState<GenerationJob | null>(null);
@@ -317,7 +299,7 @@ export default function ApprovalsPage() {
         new Notification('AI Generatie voltooid', { body: `${label} — klaar voor beoordeling`, icon: '/favicon.ico' });
       }
     } else if (job.status === 'failed') {
-      pushToast(`âŒ AI job mislukt: ${label}`, 'error');
+      pushToast(`❌ AI job mislukt: ${label}`, 'error');
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('AI Generatie mislukt', { body: label, icon: '/favicon.ico' });
       }
@@ -348,24 +330,7 @@ export default function ApprovalsPage() {
 
   const filtered = instances.filter(i => matchesFilter(i, filter)).sort(sortPriority);
 
-  // AI sub-tab counts
   const needsReviewJobs = filterAiJobs(mergedJobs, 'needs_review');
-  const aiSubCounts: Record<AiSubTab, number> = {
-    needs_review: needsReviewJobs.length,
-    in_progress: filterAiJobs(mergedJobs, 'in_progress').length,
-    approved: filterAiJobs(mergedJobs, 'approved').length,
-    rejected: filterAiJobs(mergedJobs, 'rejected').length,
-    all: mergedJobs.length,
-  };
-
-  const counts = {
-    all: instances.length,
-    review: instances.filter(i => classifyState(i.current_state) === 'review').length,
-    active: instances.filter(i => ['active', 'initial'].includes(classifyState(i.current_state))).length,
-    completed: instances.filter(i => classifyState(i.current_state) === 'terminal_success').length,
-    rejected: instances.filter(i => classifyState(i.current_state) === 'terminal_failure').length,
-    ai_queue: needsReviewJobs.length, // badge = items awaiting review
-  };
 
   // Resolved modal job (reflects optimistic approvals)
   const resolvedModalJob = modalJob
@@ -407,7 +372,7 @@ export default function ApprovalsPage() {
     // API call
     try {
       await reviewJob(taskId, action);
-      pushToast(action === 'approve' ? '✅ Goedgekeurd!' : 'âŒ Afgewezen', 'success');
+      pushToast(action === 'approve' ? '✅ Goedgekeurd!' : '❌ Afgewezen', 'success');
     } catch (e) {
       pushToast(e instanceof Error ? e.message : 'Review mislukt', 'error');
       // Revert
@@ -418,7 +383,7 @@ export default function ApprovalsPage() {
   const visibleAiJobs = filterAiJobs(mergedJobs, aiSubTab);
 
   const statusIcon: Record<GenJobStatus, string> = {
-    queued: 'â³', waiting: 'â³', processing: '', completed: '✅', failed: 'âŒ', cancelled: '',
+    queued: '⏳', waiting: '⏳', processing: '', completed: '✅', failed: '❌', cancelled: '',
   };
   const statusColor: Record<GenJobStatus, string> = {
     queued: '#6b7280', waiting: '#6b7280', processing: '#2563eb', completed: '#16a34a', failed: '#dc2626', cancelled: '#9ca3af',
@@ -449,9 +414,19 @@ export default function ApprovalsPage() {
         title="Approvals"
         subtitle="Content review queue — approve, reject, and track AI generation jobs."
         actions={
-          <button onClick={() => { refresh(); refreshAiJobs(); }} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 6, border: '1px solid var(--app-border, #e5e7eb)', backgroundColor: 'transparent', color: 'var(--app-text, #111)', cursor: 'pointer' }}>
-            ↻ Refresh
-          </button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {filter === 'ai_queue' && needsReviewJobs.length > 0 && (
+              <button
+                onClick={() => openModal(needsReviewJobs[0])}
+                style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #d97706', background: '#fffbeb', color: '#d97706', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+              >
+                Begin beoordelen ({needsReviewJobs.length})
+              </button>
+            )}
+            <button onClick={() => { refresh(); refreshAiJobs(); }} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 6, border: '1px solid var(--app-border, #e5e7eb)', backgroundColor: 'transparent', color: 'var(--app-text, #111)', cursor: 'pointer' }}>
+              ↻ Refresh
+            </button>
+          </div>
         }
       />
 
@@ -459,44 +434,6 @@ export default function ApprovalsPage() {
         {/* ── AI Queue panel ── */}
         {filter === 'ai_queue' && (
           <div>
-            {/* Sub-tab bar */}
-            <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid var(--app-border, #e5e7eb)', alignItems: 'center' }}>
-              {AI_SUB_TABS.map(sub => {
-                const cnt = aiSubCounts[sub.value];
-                const isActive = aiSubTab === sub.value;
-                return (
-                  <button
-                    key={sub.value}
-                    onClick={() => setAiSubTab(sub.value)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px',
-                      fontSize: 11, fontWeight: isActive ? 600 : 400,
-                      color: isActive ? 'var(--app-primary, #2563eb)' : 'var(--app-text-secondary, #6b7280)',
-                      backgroundColor: 'transparent', border: 'none',
-                      borderBottom: isActive ? '2px solid var(--app-primary, #2563eb)' : '2px solid transparent',
-                      borderRadius: 0, cursor: 'pointer', whiteSpace: 'nowrap', marginBottom: -1,
-                    }}
-                  >
-                    {sub.label}
-                    {cnt > 0 && (
-                      <span style={{ fontSize: 10, fontWeight: 700, color: isActive ? '#fff' : '#6b7280', backgroundColor: isActive ? (sub.value === 'needs_review' ? '#d97706' : 'var(--app-primary, #2563eb)') : '#e5e7eb', borderRadius: 99, padding: '1px 6px', minWidth: 16, textAlign: 'center' }}>
-                        {cnt}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-              <div style={{ flex: 1 }} />
-              {needsReviewJobs.length > 0 && (
-                <button
-                  onClick={() => { setAiSubTab('needs_review'); openModal(needsReviewJobs[0]); }}
-                  style={{ padding: '5px 12px', borderRadius: 6, border: '1px solid #d97706', background: '#fffbeb', color: '#d97706', fontSize: 11, fontWeight: 600, cursor: 'pointer', marginBottom: 3 }}
-                >
-                  ▶ Begin beoordelen ({needsReviewJobs.length})
-                </button>
-              )}
-            </div>
-
             {aiLoading && <div style={{ padding: 40, textAlign: 'center', color: 'var(--app-text-secondary, #6b7280)', fontSize: 13 }}>Loading AI jobs...</div>}
             {aiError && <div style={{ padding: '10px 14px', backgroundColor: '#fee2e2', color: '#dc2626', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>{aiError}</div>}
 

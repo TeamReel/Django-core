@@ -849,15 +849,27 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Failed', path: '/studio/videos?tab=failed', icon: Flag },
                 ];
             } else if (path === '/approvals' || path.startsWith('/approvals')) {
-                title = 'Approvals';
-                items = [
-                    { label: 'All', path: '/approvals?tab=all', icon: ClipboardCheck },
-                    { label: 'Needs Review', path: '/approvals?tab=review', icon: Flag },
-                    { label: 'In Progress', path: '/approvals?tab=active', icon: Activity },
-                    { label: 'Approved', path: '/approvals?tab=completed', icon: ClipboardCheck },
-                    { label: 'Rejected', path: '/approvals?tab=rejected', icon: Shield },
-                    { label: 'AI Queue', path: '/approvals?tab=ai_queue', icon: Sparkles },
-                ];
+                const _approvalsTab = new URLSearchParams(location.search).get('tab');
+                if (_approvalsTab === 'ai_queue') {
+                    title = 'AI Queue';
+                    items = [
+                        { label: 'Te Beoordelen', path: '/approvals?tab=ai_queue&sub=needs_review', icon: Flag },
+                        { label: 'Bezig', path: '/approvals?tab=ai_queue&sub=in_progress', icon: Activity },
+                        { label: 'Goedgekeurd', path: '/approvals?tab=ai_queue&sub=approved', icon: ClipboardCheck },
+                        { label: 'Afgewezen', path: '/approvals?tab=ai_queue&sub=rejected', icon: Shield },
+                        { label: 'Alles', path: '/approvals?tab=ai_queue&sub=all', icon: Sparkles },
+                    ];
+                } else {
+                    title = 'Approvals';
+                    items = [
+                        { label: 'All', path: '/approvals?tab=all', icon: ClipboardCheck },
+                        { label: 'Needs Review', path: '/approvals?tab=review', icon: Flag },
+                        { label: 'In Progress', path: '/approvals?tab=active', icon: Activity },
+                        { label: 'Approved', path: '/approvals?tab=completed', icon: ClipboardCheck },
+                        { label: 'Rejected', path: '/approvals?tab=rejected', icon: Shield },
+                        { label: 'AI Queue', path: '/approvals?tab=ai_queue', icon: Sparkles },
+                    ];
+                }
             } else {
                 // Fallback for other content pages
                 title = 'Content';
@@ -1407,8 +1419,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 const itemSearch = itemQuery ? `?${itemQuery}` : '';
                 const locationTab = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
                                 const locationCategory = String(new URLSearchParams(location.search).get('category') || '').trim().toLowerCase();
+                                const locationSub = String(new URLSearchParams(location.search).get('sub') || '').trim().toLowerCase();
                                 const itemTab = String(new URLSearchParams(itemSearch).get('tab') || '').trim().toLowerCase();
                                 const itemCategory = String(new URLSearchParams(itemSearch).get('category') || '').trim().toLowerCase();
+                                const itemSub = String(new URLSearchParams(itemSearch).get('sub') || '').trim().toLowerCase();
                                 const effectiveLocationTab = locationTab || locationCategory || (
                                     location.pathname === '/directory' ? 'federations' :
                                     location.pathname === '/medialib' ? 'organisation' :
@@ -1418,7 +1432,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     'overview'
                                 );
                                 const effectiveItemTab = itemTab || itemCategory || 'overview';
-                                const isActive = location.pathname === itemPathname && effectiveLocationTab === effectiveItemTab;
+                                const isActive = location.pathname === itemPathname &&
+                                    effectiveLocationTab === effectiveItemTab &&
+                                    (!itemSub || locationSub === itemSub);
 
                                 return (
                                     <Link
