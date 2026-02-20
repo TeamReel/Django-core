@@ -33,7 +33,7 @@ const FILTER_OPTIONS: { value: FilterState; label: string; icon: string }[] = [
   { value: 'review', label: 'Needs Review', icon: '' },
   { value: 'active', label: 'In Progress', icon: '' },
   { value: 'completed', label: 'Approved', icon: '✅' },
-  { value: 'rejected', label: 'Rejected', icon: 'âŒ' },
+  { value: 'rejected', label: 'Rejected', icon: '❌' },
   { value: 'ai_queue', label: 'AI Queue', icon: '' },
 ];
 
@@ -456,36 +456,6 @@ export default function ApprovalsPage() {
       />
 
       <PageContent>
-        {/* Main filter tab bar */}
-        <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--app-border, #e5e7eb)', overflowX: 'auto' }}>
-          {FILTER_OPTIONS.map(opt => {
-            const count = counts[opt.value];
-            const isActive = filter === opt.value;
-            return (
-              <button
-                key={opt.value}
-                onClick={() => setFilter(opt.value)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px',
-                  fontSize: 12, fontWeight: isActive ? 600 : 400,
-                  color: isActive ? 'var(--app-primary, #2563eb)' : 'var(--app-text-secondary, #6b7280)',
-                  backgroundColor: 'transparent', border: 'none',
-                  borderBottom: isActive ? '2px solid var(--app-primary, #2563eb)' : '2px solid transparent',
-                  borderRadius: 0, cursor: 'pointer', whiteSpace: 'nowrap', marginBottom: -1,
-                }}
-              >
-                <span>{opt.icon}</span>
-                <span>{opt.label}</span>
-                {count > 0 && (
-                  <span style={{ fontSize: 10, fontWeight: 700, color: isActive ? '#fff' : '#6b7280', backgroundColor: isActive ? 'var(--app-primary, #2563eb)' : '#e5e7eb', borderRadius: 99, padding: '1px 6px', minWidth: 18, textAlign: 'center' }}>
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
         {/* ── AI Queue panel ── */}
         {filter === 'ai_queue' && (
           <div>
