@@ -856,6 +856,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'In Progress', path: '/approvals?tab=active', icon: Activity },
                     { label: 'Approved', path: '/approvals?tab=completed', icon: ClipboardCheck },
                     { label: 'Rejected', path: '/approvals?tab=rejected', icon: Shield },
+                    { label: 'AI Queue', path: '/approvals?tab=ai_queue', icon: Sparkles },
                 ];
             } else {
                 // Fallback for other content pages

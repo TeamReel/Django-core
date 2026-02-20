@@ -60,6 +60,41 @@ def _cleanup_old_tasks() -> None:
     pass
 
 
+def _create_generation_job(
+    task_id: str,
+    template_id: str,
+    output_type: str,
+    *,
+    user_id: int | None = None,
+    project_id: str | None = None,
+    membership_id: str | None = None,
+    output_asset_type: str | None = None,
+    label: str = "",
+) -> None:
+    """Persist a GenerationJob record for the Workflow Queue UI.
+
+    Silently ignores DB errors to avoid blocking the generation response.
+    """
+    try:
+        from .models import GenerationJob
+        import uuid
+
+        GenerationJob.objects.create(
+            task_id=uuid.UUID(task_id),
+            template_id=template_id,
+            label=label or template_id,
+            output_type=output_type,
+            output_asset_type=output_asset_type or "",
+            project_id=project_id,
+            membership_id=membership_id,
+            created_by_id=user_id,
+            status="queued",
+            progress=0,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Failed to create GenerationJob record for %s: %s", task_id, e)
+
+
 # =============================================================================
 # Serializers
 # =============================================================================
@@ -316,6 +351,17 @@ def generate_asset_view(request: Request) -> Response:
                 },
             )
 
+            # Persist job to DB for Workflow Queue UI
+            _create_generation_job(
+                task_id,
+                template_id,
+                "video",
+                user_id=user_id,
+                project_id=str(project_id) if project_id else None,
+                membership_id=str(membership_id) if membership_id else None,
+                output_asset_type=asset_type or "",
+            )
+
             # Encode images to base64 for Celery serialization (JSON-safe)
             input_images_b64_for_celery: dict[str, str] = {}
             for key, img_bytes in input_images.items():
@@ -407,6 +453,17 @@ def generate_asset_view(request: Request) -> Response:
                 "progress": 2,
                 "message": "Image generation queued…",
             },
+        )
+
+        # Persist job to DB for Workflow Queue UI
+        _create_generation_job(
+            task_id,
+            template_id,
+            "image",
+            user_id=user_id,
+            project_id=str(project_id) if project_id else None,
+            membership_id=str(membership_id) if membership_id else None,
+            output_asset_type=asset_type or "",
         )
 
         # Encode images to base64 for Celery serialization
@@ -1778,3 +1835,78 @@ def generation_task_status_view(request: Request, task_id: str) -> Response:
         clean["message"] = task["message"]
 
     return Response(clean)
+
+
+# =============================================================================
+# Generation Job List — Workflow Queue UI
+# =============================================================================
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def list_generation_jobs_view(request: Request) -> Response:
+    """List AI generation jobs for the Workflow Queue UI.
+
+    GET /api/v1/generative/jobs/
+
+    Query params:
+      - status: comma-separated statuses to filter (e.g. queued,processing,completed)
+      - project_id: filter to a specific project
+      - limit: max results (default 50)
+
+    Returns newest-first list of GenerationJob records, enriched with
+    live cache status when available (for real-time progress).
+    """
+    from .models import GenerationJob
+
+    qs = GenerationJob.objects.all().order_by("-created_at")
+
+    # Filter by user when authenticated (non-admin sees only own jobs)
+    if request.user and request.user.is_authenticated and not request.user.is_staff:
+        qs = qs.filter(created_by_id=request.user.id)
+
+    # Filter by status
+    status_param = request.query_params.get("status", "")
+    if status_param:
+        statuses = [s.strip() for s in status_param.split(",") if s.strip()]
+        qs = qs.filter(status__in=statuses)
+
+    # Filter by project
+    project_id_param = request.query_params.get("project_id", "")
+    if project_id_param:
+        qs = qs.filter(project_id=project_id_param)
+
+    limit = min(int(request.query_params.get("limit", 50)), 200)
+    jobs = list(qs[:limit])
+
+    # Enrich active jobs with live cache progress
+    results = []
+    for job in jobs:
+        live = _get_task(str(job.task_id)) if job.is_active else None
+        results.append(
+            {
+                "task_id": str(job.task_id),
+                "template_id": job.template_id,
+                "label": job.label,
+                "output_type": job.output_type,
+                "output_asset_type": job.output_asset_type,
+                "project_id": job.project_id,
+                "membership_id": job.membership_id,
+                "status": live.get("status", job.status) if live else job.status,
+                "progress": live.get("progress", job.progress) if live else job.progress,
+                "message": live.get("message", "") if live else "",
+                "error_message": live.get("error", job.error_message)
+                if live
+                else job.error_message,
+                "created_at": job.created_at.isoformat(),
+                "updated_at": job.updated_at.isoformat(),
+                "completed_at": job.completed_at.isoformat() if job.completed_at else None,
+            }
+        )
+
+    return Response(
+        {
+            "count": len(results),
+            "results": results,
+        }
+    )

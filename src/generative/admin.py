@@ -7,8 +7,31 @@ from src.generative.models import (
     GenerationTemplate,
     GenerationRequest,
     GenerationOutput,
+    GenerationJob,
     RequestStatus,
 )
+
+
+@admin.register(GenerationJob)
+class GenerationJobAdmin(admin.ModelAdmin):
+    """Admin for AI generation job queue."""
+
+    list_display = [
+        "task_id",
+        "template_id",
+        "status",
+        "output_type",
+        "project_id",
+        "membership_id",
+        "created_by_id",
+        "progress",
+        "created_at",
+        "completed_at",
+    ]
+    list_filter = ["status", "output_type"]
+    search_fields = ["task_id", "template_id", "label", "project_id", "membership_id"]
+    readonly_fields = ["task_id", "created_at", "updated_at", "completed_at"]
+    ordering = ["-created_at"]
 
 
 @admin.register(GenerationTemplate)

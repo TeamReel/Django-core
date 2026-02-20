@@ -28,6 +28,40 @@ logger = logging.getLogger("generative.tasks.asset")
 TASK_CACHE_PREFIX = "video_task:"
 TASK_TTL = 1800  # 30 min (same as views_asset.py _TASK_MAX_AGE)
 SEMAPHORE_KEY = "gen_semaphore:{provider}"
+
+
+def _sync_job_status(job_id: str, status: str, progress: int = 0, error: str = "") -> None:
+    """Update GenerationJob DB record to match cache status.
+
+    Silently ignores DB errors — cache remains the live source of truth.
+    """
+    try:
+        import uuid
+        from .models import GenerationJob
+        from django.utils import timezone
+
+        try:
+            job = GenerationJob.objects.get(task_id=uuid.UUID(job_id))
+        except GenerationJob.DoesNotExist:
+            return  # Job may have been created before this feature was deployed
+
+        job.status = status
+        job.progress = progress
+        update_fields = ["status", "progress", "updated_at"]
+
+        if status in ("completed", "failed", "cancelled"):
+            job.completed_at = timezone.now()
+            update_fields.append("completed_at")
+
+        if error:
+            job.error_message = error[:2000]
+            update_fields.append("error_message")
+
+        job.save(update_fields=update_fields)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Failed to sync GenerationJob %s to status %s: %s", job_id, status, e)
+
+
 SEMAPHORE_TTL = 600  # 10 min max hold
 
 # ─── Provider concurrency limits ─────────────────────────────────────
@@ -190,6 +224,7 @@ def generate_asset_task(
                 "provider": provider,
             },
         )
+        _sync_job_status(job_id, "failed", error="Queue timeout after 5 minutes")
         return {"status": "failed", "error": "Queue timeout"}
 
     try:
@@ -239,6 +274,7 @@ def generate_asset_task(
                 "provider": provider,
             },
         )
+        _sync_job_status(job_id, "failed", error=str(exc))
         # Retry transient errors
         if self.request.retries < self.max_retries:
             raise self.retry(exc=exc, countdown=30 * (self.request.retries + 1))
@@ -308,6 +344,7 @@ def _process_images(
             },
         },
     )
+    _sync_job_status(job_id, "completed", progress=100)
 
     logger.info(
         "Image generation job %s completed: %d variants in %.1fs",
@@ -372,6 +409,7 @@ def _process_video(
                 "error": result["error"],
             },
         )
+        _sync_job_status(job_id, "failed", error=result["error"])
         return {"status": "failed", "error": result["error"]}
 
     set_job(
@@ -409,6 +447,7 @@ def _process_video(
             },
         },
     )
+    _sync_job_status(job_id, "completed", progress=100)
 
     logger.info("Video generation job %s completed in %.1fs", job_id, elapsed)
 

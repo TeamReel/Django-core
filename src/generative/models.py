@@ -666,3 +666,107 @@ class GenerationOutput(models.Model):
         # Validate before save
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+# ==============================================================================
+# GenerationJob — Lightweight AI job tracker for the Workflow Queue UI
+# ==============================================================================
+
+
+class GenerationJob(models.Model):
+    """Tracks every AI generation job dispatched via generate_asset_view.
+
+    This model is the single source of truth for the "AI Queue" tab in the
+    Approvals / Workflow page. It mirrors the Redis cache job status so that:
+      - Jobs survive Redis eviction (30-min TTL)
+      - Jobs can be listed/filtered across users and projects
+      - Frontend can poll a proper REST endpoint instead of task-id polling
+      - Status-change notifications can be derived from polling diffs
+
+    Lifecycle:  queued → waiting → processing → completed | failed | cancelled
+    """
+
+    class Status(models.TextChoices):
+        QUEUED = "queued", "In wachtrij"
+        WAITING = "waiting", "Wachten"
+        PROCESSING = "processing", "Wordt verwerkt"
+        COMPLETED = "completed", "Voltooid"
+        FAILED = "failed", "Mislukt"
+        CANCELLED = "cancelled", "Geannuleerd"
+
+    # Unique identifier that matches the Redis cache task_id
+    task_id = models.UUIDField(unique=True, db_index=True, help_text="Matches Redis cache task key")
+
+    # Template / content context
+    template_id = models.CharField(
+        max_length=100, db_index=True, help_text="e.g. fullbody_in_tenue"
+    )
+    label = models.CharField(max_length=255, blank=True, help_text="Human-readable job description")
+    output_type = models.CharField(max_length=20, default="image", help_text="image | video")
+    output_asset_type = models.CharField(
+        max_length=100, blank=True, help_text="e.g. kit, closeup, intro"
+    )
+
+    # Scoping
+    project_id = models.CharField(
+        max_length=100, null=True, blank=True, db_index=True, help_text="Project slug or UUID"
+    )
+    membership_id = models.CharField(
+        max_length=100, null=True, blank=True, db_index=True, help_text="ProjectMembership UUID"
+    )
+    created_by_id = models.IntegerField(
+        null=True, blank=True, db_index=True, help_text="User.id who triggered the job"
+    )
+
+    # Status tracking
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.QUEUED,
+        db_index=True,
+    )
+    progress = models.PositiveSmallIntegerField(default=0, help_text="0-100 percentage")
+    error_message = models.TextField(blank=True, default="")
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "generative_job"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["created_by_id", "status"], name="gen_job_user_status_idx"),
+            models.Index(fields=["project_id", "created_at"], name="gen_job_proj_created_idx"),
+            models.Index(fields=["status", "created_at"], name="gen_job_status_created_idx"),
+        ]
+        verbose_name = "Generation Job"
+        verbose_name_plural = "Generation Jobs"
+
+    def __str__(self) -> str:
+        return f"Job {self.task_id} [{self.status}] — {self.label or self.template_id}"
+
+    @property
+    def is_active(self) -> bool:
+        return self.status in (self.Status.QUEUED, self.Status.WAITING, self.Status.PROCESSING)
+
+    def mark_processing(self, progress: int = 10) -> None:
+        """Transition to processing."""
+        self.status = self.Status.PROCESSING
+        self.progress = progress
+        self.save(update_fields=["status", "progress", "updated_at"])
+
+    def mark_completed(self) -> None:
+        """Transition to completed."""
+        self.status = self.Status.COMPLETED
+        self.progress = 100
+        self.completed_at = timezone.now()
+        self.save(update_fields=["status", "progress", "completed_at", "updated_at"])
+
+    def mark_failed(self, error: str = "") -> None:
+        """Transition to failed."""
+        self.status = self.Status.FAILED
+        self.error_message = error[:2000]
+        self.completed_at = timezone.now()
+        self.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
