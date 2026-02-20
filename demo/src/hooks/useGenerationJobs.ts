@@ -69,7 +69,9 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const newJobs: GenerationJob[] = data.results || [];
+      // Backend uses EnvelopeJSONRenderer → actual payload is under data.data
+      const payload = data.data ?? data;
+      const newJobs: GenerationJob[] = payload.results ?? (Array.isArray(payload) ? payload : []);
 
       // Detect status changes and fire callback
       if (onStatusChange) {
