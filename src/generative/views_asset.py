@@ -2327,6 +2327,116 @@ def crop_closeup_from_fullbody_view(request: Request) -> Response:
 # =============================================================================
 
 
+def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
+    """Write an approved generated image into ProjectMembership.metadata.teamreel_assets.images.
+
+    Called after marking an image job as approved so the member page immediately
+    reflects the new fullbody / closeup without any manual step.
+
+    Supported template_ids:
+      - "fullbody_in_tenue" → images.fullbody.{kit_type}
+
+    After writing the raw path, queues a Celery process_member_asset task so
+    background removal + resize run automatically.
+    """
+    import re
+    from django.apps import apps
+
+    IMAGE_TEMPLATE_MAP = {
+        "fullbody_in_tenue": ("fullbody", "images"),
+        # Future: "closeup_in_tenue": ("closeup", "images"),
+    }
+    mapping = IMAGE_TEMPLATE_MAP.get(job.template_id)
+    if not mapping or not job.membership_id:
+        return
+
+    asset_type, asset_group = mapping  # e.g. "fullbody", "images"
+
+    approved_variants = [v for v in (job.output_variants or []) if v.get("approved") is True]
+    if not approved_variants:
+        return
+
+    ProjectMembership = apps.get_model("projects", "ProjectMembership")
+    try:
+        membership = ProjectMembership.objects.get(id=job.membership_id)
+    except Exception:  # noqa: BLE001
+        return
+
+    meta = membership.metadata or {}
+    ta = meta.setdefault("teamreel_assets", {})
+    if not isinstance(ta, dict):
+        return
+    asset_group_dict = ta.setdefault(asset_group, {})
+    if not isinstance(asset_group_dict, dict):
+        return
+    asset_type_dict = asset_group_dict.setdefault(asset_type, {})
+    if not isinstance(asset_type_dict, dict):
+        return
+
+    changed = False
+
+    # Use the first approved variant as the canonical version (best pick)
+    first_variant = approved_variants[0]
+    storage_path = first_variant.get("storage_path", "")
+    filename = first_variant.get("filename", "")
+
+    # Parse kit_type from filename: fullbody_in_tenue_kit_type-home_... → "home"
+    kit_match = re.search(r"kit_type-(\w+?)(?:_pose|_role|_shoe|_sleeve|_v\d|$)", filename)
+    kit_type = kit_match.group(1).strip("_") if kit_match else "home"
+
+    if storage_path:
+        asset_type_dict[kit_type] = {
+            "raw": storage_path,
+            "processed": None,
+            "processing_state": "pending",
+            "specs": {},
+            "source": "ai_generated",
+        }
+        changed = True
+        logger.info(
+            "propagate_approved_image: membership=%s, %s.%s → %s (queuing bg-removal)",
+            job.membership_id,
+            asset_type,
+            kit_type,
+            storage_path,
+        )
+
+    if changed:
+        membership.metadata = meta
+        try:
+            membership.save(update_fields=["metadata"])
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "propagate_approved_image: failed to save membership %s: %s",
+                job.membership_id,
+                exc,
+            )
+            return
+
+        # Queue background removal + resize via existing Celery task
+        try:
+            from src.video.tasks.asset_processing import process_member_asset
+
+            process_member_asset.delay(
+                membership_id=str(job.membership_id),
+                asset_type=asset_type,
+                kit_type=kit_type,
+                raw_url=storage_path,
+                bg_removal_backend="rembg",
+            )
+            logger.info(
+                "propagate_approved_image: queued process_member_asset for membership=%s kit=%s",
+                job.membership_id,
+                kit_type,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "propagate_approved_image: failed to queue processing for membership %s: %s",
+                job.membership_id,
+                exc,
+            )
+
+
 def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
     """Write an approved generated video into ProjectMembership.metadata.teamreel_assets.videos.
 
@@ -2518,6 +2628,17 @@ def review_generation_job_view(request: Request, task_id: str) -> Response:
         except Exception as propagate_exc:  # noqa: BLE001
             logger.warning(
                 "review_generation_job_view: propagation failed for job %s: %s",
+                task_id,
+                propagate_exc,
+            )
+
+    # Propagate approved image (fullbody_in_tenue, etc.) to membership metadata
+    if action == "approve" and job.output_type == "image":
+        try:
+            _propagate_approved_image_to_membership(job)
+        except Exception as propagate_exc:  # noqa: BLE001
+            logger.warning(
+                "review_generation_job_view: image propagation failed for job %s: %s",
                 task_id,
                 propagate_exc,
             )
