@@ -152,12 +152,16 @@ export async function reviewJob(
   variantIndices?: number[],   // omit to review whole job
 ): Promise<{ approval_status: GenJobApprovalStatus; output_variants: OutputVariant[] }> {
   const { getApiBaseUrl } = await import('../utils/apiBase');
+  const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
   const body: Record<string, unknown> = { action };
   if (variantIndices !== undefined) body.variant_indices = variantIndices;
   const res = await fetch(`${getApiBaseUrl()}/api/v1/generative/jobs/${taskId}/review/`, {
     method: 'POST',
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken,
+    },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
