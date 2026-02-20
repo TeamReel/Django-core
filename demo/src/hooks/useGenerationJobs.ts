@@ -12,6 +12,7 @@ import { getApiBaseUrl } from '../utils/apiBase';
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export type GenJobStatus = 'queued' | 'waiting' | 'processing' | 'completed' | 'failed' | 'cancelled';
+export type GenJobApprovalStatus = 'pending_review' | 'approved' | 'rejected';
 
 export interface GenerationJob {
   task_id: string;
@@ -25,6 +26,8 @@ export interface GenerationJob {
   progress: number;
   message: string;
   error_message: string;
+  approval_status: GenJobApprovalStatus | null;
+  output_url: string;
   created_at: string;
   updated_at: string;
   completed_at: string | null;
@@ -128,4 +131,24 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
 export function useGenerationJobsBadge() {
   const { activeCount, refresh } = useGenerationJobs({ pollInterval: 10000 });
   return { activeCount, refresh };
+}
+
+/** Call the review endpoint to approve or reject a completed job. */
+export async function reviewJob(
+  taskId: string,
+  action: 'approve' | 'reject',
+): Promise<{ approval_status: GenJobApprovalStatus }> {
+  const { getApiBaseUrl } = await import('../utils/apiBase');
+  const res = await fetch(`${getApiBaseUrl()}/api/v1/generative/jobs/${taskId}/review/`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.data?.error || err?.error || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  return data.data ?? data;
 }

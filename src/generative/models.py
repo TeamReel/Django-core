@@ -694,6 +694,11 @@ class GenerationJob(models.Model):
         FAILED = "failed", "Mislukt"
         CANCELLED = "cancelled", "Geannuleerd"
 
+    class ApprovalStatus(models.TextChoices):
+        PENDING_REVIEW = "pending_review", "Te beoordelen"
+        APPROVED = "approved", "Goedgekeurd"
+        REJECTED = "rejected", "Afgewezen"
+
     # Unique identifier that matches the Redis cache task_id
     task_id = models.UUIDField(unique=True, db_index=True, help_text="Matches Redis cache task key")
 
@@ -728,6 +733,27 @@ class GenerationJob(models.Model):
     progress = models.PositiveSmallIntegerField(default=0, help_text="0-100 percentage")
     error_message = models.TextField(blank=True, default="")
 
+    # Review / approval
+    approval_status = models.CharField(
+        max_length=20,
+        choices=ApprovalStatus.choices,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Set to pending_review when completed; approved/rejected after human review",
+    )
+    reviewed_by_id = models.IntegerField(
+        null=True, blank=True, help_text="User.id who reviewed this job"
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    # Persisted output URL (first variant) for review UI after Redis TTL expires
+    output_url = models.TextField(
+        blank=True,
+        default="",
+        help_text="URL of the primary generated output (image/video), persisted for review UI",
+    )
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -757,12 +783,24 @@ class GenerationJob(models.Model):
         self.progress = progress
         self.save(update_fields=["status", "progress", "updated_at"])
 
-    def mark_completed(self) -> None:
-        """Transition to completed."""
+    def mark_completed(self, output_url: str = "") -> None:
+        """Transition to completed, ready for human review."""
         self.status = self.Status.COMPLETED
         self.progress = 100
         self.completed_at = timezone.now()
-        self.save(update_fields=["status", "progress", "completed_at", "updated_at"])
+        self.approval_status = self.ApprovalStatus.PENDING_REVIEW
+        if output_url:
+            self.output_url = output_url
+        self.save(
+            update_fields=[
+                "status",
+                "progress",
+                "completed_at",
+                "approval_status",
+                "output_url",
+                "updated_at",
+            ]
+        )
 
     def mark_failed(self, error: str = "") -> None:
         """Transition to failed."""

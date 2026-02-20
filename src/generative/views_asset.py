@@ -1888,6 +1888,26 @@ def list_generation_jobs_view(request: Request) -> Response:
     results = []
     for job in jobs:
         live = _get_task(str(job.task_id)) if job.is_active else None
+        # For completed jobs, also try cache to backfill output_url
+        if not live and job.status == "completed" and not job.output_url:
+            live_completed = _get_task(str(job.task_id))
+            if live_completed and live_completed.get("status") == "completed":
+                variants = live_completed.get("data", {}).get("variants", [])
+                url = next(
+                    (
+                        v.get("presigned_url", "") or v.get("video_url", "") or ""
+                        for v in variants
+                        if not v.get("error")
+                    ),
+                    "",
+                )
+                if url:
+                    try:
+                        job.output_url = url
+                        job.save(update_fields=["output_url"])
+                    except Exception:
+                        pass
+
         results.append(
             {
                 "task_id": str(job.task_id),
@@ -1903,6 +1923,8 @@ def list_generation_jobs_view(request: Request) -> Response:
                 "error_message": live.get("error", job.error_message)
                 if live
                 else job.error_message,
+                "approval_status": job.approval_status,
+                "output_url": job.output_url or "",
                 "created_at": job.created_at.isoformat(),
                 "updated_at": job.updated_at.isoformat(),
                 "completed_at": job.completed_at.isoformat() if job.completed_at else None,
@@ -1913,5 +1935,58 @@ def list_generation_jobs_view(request: Request) -> Response:
         {
             "count": len(results),
             "results": results,
+        }
+    )
+
+
+# =============================================================================
+# Review Generation Job — Approve / Reject
+# =============================================================================
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def review_generation_job_view(request: Request, task_id: str) -> Response:
+    """Approve or reject a completed AI generation job.
+
+    POST /api/v1/generative/jobs/<task_id>/review/
+    Body: {"action": "approve" | "reject"}
+    """
+    from .models import GenerationJob
+    from django.utils import timezone
+
+    try:
+        job = GenerationJob.objects.get(task_id=task_id)
+    except GenerationJob.DoesNotExist:
+        return Response({"error": "Job not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    action = (request.data or {}).get("action", "")
+    if action not in ("approve", "reject"):
+        return Response(
+            {"error": "action must be 'approve' or 'reject'"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if job.status != GenerationJob.Status.COMPLETED:
+        return Response(
+            {"error": f"Cannot review a job with status '{job.status}'"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    job.approval_status = (
+        GenerationJob.ApprovalStatus.APPROVED
+        if action == "approve"
+        else GenerationJob.ApprovalStatus.REJECTED
+    )
+    job.reviewed_at = timezone.now()
+    if request.user and request.user.is_authenticated:
+        job.reviewed_by_id = request.user.id
+    job.save(update_fields=["approval_status", "reviewed_at", "reviewed_by_id", "updated_at"])
+
+    return Response(
+        {
+            "task_id": str(job.task_id),
+            "approval_status": job.approval_status,
+            "reviewed_at": job.reviewed_at.isoformat() if job.reviewed_at else None,
         }
     )

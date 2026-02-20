@@ -30,7 +30,13 @@ TASK_TTL = 1800  # 30 min (same as views_asset.py _TASK_MAX_AGE)
 SEMAPHORE_KEY = "gen_semaphore:{provider}"
 
 
-def _sync_job_status(job_id: str, status: str, progress: int = 0, error: str = "") -> None:
+def _sync_job_status(
+    job_id: str,
+    status: str,
+    progress: int = 0,
+    error: str = "",
+    output_url: str = "",
+) -> None:
     """Update GenerationJob DB record to match cache status.
 
     Silently ignores DB errors — cache remains the live source of truth.
@@ -53,9 +59,17 @@ def _sync_job_status(job_id: str, status: str, progress: int = 0, error: str = "
             job.completed_at = timezone.now()
             update_fields.append("completed_at")
 
+        if status == "completed":
+            job.approval_status = GenerationJob.ApprovalStatus.PENDING_REVIEW
+            update_fields.append("approval_status")
+
         if error:
             job.error_message = error[:2000]
             update_fields.append("error_message")
+
+        if output_url and not job.output_url:
+            job.output_url = output_url
+            update_fields.append("output_url")
 
         job.save(update_fields=update_fields)
     except Exception as e:  # noqa: BLE001
@@ -344,7 +358,11 @@ def _process_images(
             },
         },
     )
-    _sync_job_status(job_id, "completed", progress=100)
+    # Pick first non-error variant's URL (images: presigned_url if any; otherwise empty)
+    _primary_url = next(
+        (v.get("presigned_url", "") or "" for v in variants if not v.get("error")), ""
+    )
+    _sync_job_status(job_id, "completed", progress=100, output_url=_primary_url)
 
     logger.info(
         "Image generation job %s completed: %d variants in %.1fs",
@@ -447,7 +465,16 @@ def _process_video(
             },
         },
     )
-    _sync_job_status(job_id, "completed", progress=100)
+    # Persist the first variant's URL for review modal (survives Redis TTL)
+    _primary_url = next(
+        (
+            v.get("presigned_url", "") or v.get("video_url", "") or ""
+            for v in variants
+            if not v.get("error")
+        ),
+        "",
+    )
+    _sync_job_status(job_id, "completed", progress=100, output_url=_primary_url)
 
     logger.info("Video generation job %s completed in %.1fs", job_id, elapsed)
 

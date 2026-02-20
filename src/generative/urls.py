@@ -24,6 +24,7 @@ from .views_asset import (
     list_asset_templates_view,
     list_generation_jobs_view,
     restore_asset_version_view,
+    review_generation_job_view,
     save_asset_view,
 )
 
@@ -49,6 +50,7 @@ urlpatterns = [
     path("assets/restore/", restore_asset_version_view, name="asset-restore"),
     # Generation job queue (Workflow UI)
     path("jobs/", list_generation_jobs_view, name="generation-jobs-list"),
+    path("jobs/<str:task_id>/review/", review_generation_job_view, name="generation-job-review"),
     # Standard CRUD
     path("", include(router.urls)),
 ]
