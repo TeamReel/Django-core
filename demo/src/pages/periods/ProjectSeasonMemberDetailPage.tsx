@@ -987,67 +987,48 @@ export default function ProjectSeasonMemberDetailPage() {
   };
 
   // Closeup from fullbody crop
-  const [croppingCloseup, setCroppingCloseup] = useState(false);
+  const [croppingCloseup, setCroppingCloseup] = useState<Record<string, boolean>>({});
 
-  const cropCloseupFromFullbody = async (fullbodyUrl: string, kitType: string) => {
-    setCroppingCloseup(true);
+  const cropCloseupFromFullbody = async (kitType: string) => {
+    if (!membershipId) {
+      alert('Membership ID ontbreekt.');
+      return;
+    }
+    setCroppingCloseup((prev) => ({ ...prev, [kitType]: true }));
     try {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = () => reject(new Error('Kon fullbody afbeelding niet laden'));
-        img.src = fullbodyUrl;
-      });
-
-      // Crop top 45% of the image (head + shoulders)
-      const cropRatio = 0.45;
-      const cropH = Math.round(img.naturalHeight * cropRatio);
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth;
-      canvas.height = cropH;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0, img.naturalWidth, cropH, 0, 0, img.naturalWidth, cropH);
-
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Canvas toBlob mislukt')), 'image/png');
-      });
-
-      // Upload as brand asset via the generic file upload
-      const fd = new FormData();
-      fd.append('file', blob, `closeup_crop_${kitType}.png`);
       const csrfToken = getCsrfToken();
-
-      // Save the cropped closeup URL in membership metadata
-      const croppedUrl = URL.createObjectURL(blob);
-
-      // Store it via the same metadata pathway as AI results
-      const category = 'closeup';
-      const effectiveKitType = kitType || 'home';
-
-      const newVariants: AssetVariantsMap = {
-        ...videoVariants,
-        [category]: {
-          ...videoVariants[category],
-          [effectiveKitType]: croppedUrl,
+      const res = await fetch(`${apiBaseUrl}/api/v1/generative/assets/crop-closeup/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
         },
-      };
-      setVideoVariants(newVariants);
+        body: JSON.stringify({ membership_id: membershipId, kit_type: kitType }),
+      });
 
-      const slotId: keyof MemberMediaForm = 'closeup';
-      const newForm = effectiveKitType === 'home'
-        ? { ...form, [slotId]: { url: croppedUrl, caption: '' } }
-        : form;
-      if (effectiveKitType === 'home') setForm(newForm);
+      const data = await res.json();
 
-      const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVariants);
-      await handleMetadataUpdate(updatedMeta);
+      if (!res.ok) {
+        throw new Error(data?.error || `Server error ${res.status}`);
+      }
+
+      const presignedUrl: string = data.presigned_url || data.storage_path || '';
+
+      // Update local state so the image shows up immediately
+      setVideoVariants((prev) => ({
+        ...prev,
+        closeup: {
+          ...prev.closeup,
+          [kitType]: presignedUrl,
+        },
+      }));
 
     } catch (err) {
       console.error('Closeup crop error:', err);
       alert(err instanceof Error ? err.message : 'Crop mislukt');
     } finally {
-      setCroppingCloseup(false);
+      setCroppingCloseup((prev) => ({ ...prev, [kitType]: false }));
     }
   };
 
@@ -2075,10 +2056,10 @@ export default function ProjectSeasonMemberDetailPage() {
                               Automatisch bijsnijden van hoofd + schouders uit de fullbody afbeelding.
                             </div>
                             <Button
-                              onClick={() => cropCloseupFromFullbody(getBestUrl(videoVariants.fullbody[aiSelectedKitType])!, aiSelectedKitType)}
-                              disabled={croppingCloseup}
+                              onClick={() => cropCloseupFromFullbody(aiSelectedKitType)}
+                              disabled={croppingCloseup[aiSelectedKitType]}
                             >
-                              {croppingCloseup ? '⏳ Bijsnijden...' : '✂️ Crop Close-up'}
+                              {croppingCloseup[aiSelectedKitType] ? '⏳ Bijsnijden...' : '✂️ Crop Close-up'}
                             </Button>
                           </div>
                         )}
@@ -2973,10 +2954,12 @@ export default function ProjectSeasonMemberDetailPage() {
                                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                     <Button
                                       size="sm"
-                                      onClick={() => openAiModal('closeup_in_tenue', kit.id, fullbodyRef)}
+                                      onClick={() => cropCloseupFromFullbody(kit.id)}
+                                      disabled={croppingCloseup[kit.id] || !fullbodyRef}
                                       style={{ fontSize: '11px', padding: '4px 8px' }}
+                                      title={!fullbodyRef ? 'Genereer eerst een fullbody' : ''}
                                     >
-                                      {assetUrl ? '🔄 Opnieuw' : '✨ Genereer'}
+                                      {croppingCloseup[kit.id] ? '⏳...' : assetUrl ? '🔄 Opnieuw' : '✂️ Crop'}
                                     </Button>
                                     {assetUrl && !currentlyProcessing && (
                                       <Button

@@ -18,6 +18,7 @@ from .views import (
     health_check,
 )
 from .views_asset import (
+    crop_closeup_from_fullbody_view,
     generate_asset_view,
     generation_task_status_view,
     list_asset_history_view,
@@ -48,6 +49,7 @@ urlpatterns = [
     path("assets/templates/", list_asset_templates_view, name="asset-templates-list"),
     path("assets/history/", list_asset_history_view, name="asset-history"),
     path("assets/restore/", restore_asset_version_view, name="asset-restore"),
+    path("assets/crop-closeup/", crop_closeup_from_fullbody_view, name="asset-crop-closeup"),
     # Generation job queue (Workflow UI)
     path("jobs/", list_generation_jobs_view, name="generation-jobs-list"),
     path("jobs/<str:task_id>/review/", review_generation_job_view, name="generation-job-review"),
