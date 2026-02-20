@@ -2103,6 +2103,98 @@ def list_generation_jobs_view(request: Request) -> Response:
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
+    """Write an approved generated video into ProjectMembership.metadata.teamreel_assets.videos.
+
+    Called after marking a video job as approved so the member page immediately
+    reflects the new intro without any manual step.
+
+    Supported template_ids:
+      - "member_intro" → videos.intro.{kit_type}_{style_variant}
+
+    Key format mirrors the rest of the codebase: "{kit_type}_{style_variant}",
+    e.g. "home_hand_up".  Filename pattern:
+      member_intro_kit_type-{kit_type}_style_variant-{style_variant}_{hash}_{idx}...mp4
+    """
+    import re
+    from django.apps import apps
+    from django.utils import timezone
+
+    VIDEO_TEMPLATE_MAP = {
+        "member_intro": "intro",
+        # Future: "member_celebration": "celebration",
+    }
+    asset_type = VIDEO_TEMPLATE_MAP.get(job.template_id)
+    if not asset_type or not job.membership_id:
+        return
+
+    approved_variants = [v for v in (job.output_variants or []) if v.get("approved") is True]
+    if not approved_variants:
+        return
+
+    ProjectMembership = apps.get_model("projects", "ProjectMembership")
+    try:
+        membership = ProjectMembership.objects.get(id=job.membership_id)
+    except Exception:  # noqa: BLE001
+        return
+
+    meta = membership.metadata or {}
+    ta = meta.setdefault("teamreel_assets", {})
+    if not isinstance(ta, dict):
+        return
+    videos = ta.setdefault("videos", {})
+    if not isinstance(videos, dict):
+        return
+    asset_dict = videos.setdefault(asset_type, {})
+    if not isinstance(asset_dict, dict):
+        return
+
+    now_iso = timezone.now().isoformat()
+    changed = False
+
+    for variant in approved_variants:
+        storage_path = variant.get("storage_path", "")
+        filename = variant.get("filename", "")
+
+        # Parse kit_type and style_variant from filename
+        # Pattern: member_intro_kit_type-{kit}_style_variant-{style}_{hash}_{idx}.mp4
+        kit_match = re.search(r"kit_type-([a-z0-9_]+)", filename)
+        style_match = re.search(r"style_variant-([a-z0-9_]+)", filename)
+
+        kit_type = kit_match.group(1) if kit_match else "home"
+        style_variant = style_match.group(1) if style_match else None
+
+        composite_key = f"{kit_type}_{style_variant}" if style_variant else kit_type
+
+        asset_dict[composite_key] = {
+            "raw": storage_path,
+            "processing_state": "processed",
+            "processed": storage_path,
+            "processed_at": now_iso,
+            "specs": {},
+            "source": "ai_generated",
+        }
+        changed = True
+        logger.info(
+            "propagate_approved_video: membership=%s, %s.%s → %s",
+            job.membership_id,
+            asset_type,
+            composite_key,
+            storage_path,
+        )
+
+    if changed:
+        membership.metadata = meta
+        try:
+            membership.save(update_fields=["metadata"])
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "propagate_approved_video: failed to save membership %s: %s",
+                job.membership_id,
+                exc,
+            )
+
+
 def review_generation_job_view(request: Request, task_id: str) -> Response:
     """Approve or reject a completed AI generation job (or a specific variant).
 
@@ -2190,6 +2282,17 @@ def review_generation_job_view(request: Request, task_id: str) -> Response:
         update_fields.append("approval_status")
 
     job.save(update_fields=list(set(update_fields)))
+
+    # Propagate approved video to membership metadata so the member page reflects it
+    if action == "approve" and job.output_type == "video":
+        try:
+            _propagate_approved_video_to_membership(job)
+        except Exception as propagate_exc:  # noqa: BLE001
+            logger.warning(
+                "review_generation_job_view: propagation failed for job %s: %s",
+                task_id,
+                propagate_exc,
+            )
 
     return Response(
         {
