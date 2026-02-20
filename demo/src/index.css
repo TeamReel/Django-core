@@ -1053,19 +1053,13 @@ header [role="alert"] {
   }
 }
 
-/* Mobile Tab Bar */
+/* Tab Bar — visible on all screen sizes */
 .mobile-tab-bar {
-  display: none;
+  display: flex;
 }
 
 .mobile-tab-bar::-webkit-scrollbar {
   display: none;
-}
-
-@media (max-width: 639px) {
-  .mobile-tab-bar {
-    display: flex !important;
-  }
 }
 
   }
