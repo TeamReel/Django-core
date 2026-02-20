@@ -1876,6 +1876,11 @@ def list_generation_jobs_view(request: Request) -> Response:
     if project_id_param:
         qs = qs.filter(project_id=project_id_param)
 
+    # Filter by membership
+    membership_id_param = request.query_params.get("membership_id", "")
+    if membership_id_param:
+        qs = qs.filter(membership_id=membership_id_param)
+
     limit = min(int(request.query_params.get("limit", 50)), 200)
     jobs = list(qs[:limit])
 

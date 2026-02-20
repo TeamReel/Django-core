@@ -24,6 +24,7 @@ import { getApiBaseUrl } from '../../utils/apiBase';
 import { AssetsTab } from '../../components/AssetsTab';
 import { AssetGenerationModal, type SavedAssetInfo } from '../../components/AssetGenerationModal';
 import { useBrandProfile, getAssetUrl, resolvePresignedUrls, KIT_ROLES } from '../../hooks/useBrandProfile';
+import { useGenerationJobs } from '../../hooks/useGenerationJobs';
 import MobileTabBar from '../../components/MobileTabBar';
 import { WorkflowPanel } from '../../components/Workflows';
 
@@ -1071,6 +1072,12 @@ export default function ProjectSeasonMemberDetailPage() {
   // Video Preview Modal State (click-to-enlarge)
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
 
+  // Active AI generation jobs for this member (shows badge on page)
+  const { activeJobs: memberActiveJobs } = useGenerationJobs({
+    membership_id: membershipId,
+    pollInterval: 8000,
+  });
+
   // Fetch parent brand assets (from club) for tenue inheritance
   const clubId = club?.id || project?.id;
   const clubBrand = useBrandProfile({
@@ -1549,6 +1556,34 @@ export default function ProjectSeasonMemberDetailPage() {
               <div className="lg:col-span-2 space-y-6">
                 {saveError && (
                   <Alert variant="error">{saveError}</Alert>
+                )}
+
+                {/* Active AI generation jobs banner */}
+                {memberActiveJobs.length > 0 && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '10px 14px',
+                    background: '#1d4ed820',
+                    border: '1px solid #3b82f6',
+                    borderRadius: 8,
+                    fontSize: 13,
+                  }}>
+                    <span style={{ fontSize: 18 }}>⏳</span>
+                    <div style={{ flex: 1 }}>
+                      <strong>AI generatie bezig</strong>
+                      {' — '}
+                      {memberActiveJobs.map(j => j.label || j.template_id).join(', ')}
+                      {'. Je krijgt een melding zodra het klaar is.'}
+                    </div>
+                    <a
+                      href="/approvals?tab=ai_queue"
+                      style={{ color: '#3b82f6', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap', fontSize: 12 }}
+                    >
+                      Bekijk queue →
+                    </a>
+                  </div>
                 )}
 
                 {/* Overview Tab - Media completion matrix */}

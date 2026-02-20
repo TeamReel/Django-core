@@ -259,6 +259,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             input_images: params.inputImages || {},
             input_image_urls: params.inputImageUrls || {},
             ...(params.organisationId ? { organisation_id: params.organisationId } : {}),
+            ...(params.projectId ? { project_id: params.projectId } : {}),
             ...(params.membershipId ? { membership_id: params.membershipId } : {}),
           }),
         });

@@ -35,6 +35,8 @@ export interface UseGenerationJobsOptions {
   status?: string;
   /** Filter to specific project */
   project_id?: string;
+  /** Filter to specific membership */
+  membership_id?: string;
   /** Poll interval in ms. Default 8000 (8s). Set 0 to disable polling. */
   pollInterval?: number;
   /** Called when a job transitions to completed or failed */
@@ -44,7 +46,7 @@ export interface UseGenerationJobsOptions {
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
-  const { status, project_id, pollInterval = 8000, onStatusChange } = options;
+  const { status, project_id, membership_id, pollInterval = 8000, onStatusChange } = options;
 
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,6 +60,7 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
     const params = new URLSearchParams();
     if (status) params.set('status', status);
     if (project_id) params.set('project_id', project_id);
+    if (membership_id) params.set('membership_id', membership_id);
     params.set('limit', '100');
 
     try {
@@ -90,7 +93,7 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
     } finally {
       setLoading(false);
     }
-  }, [status, project_id, onStatusChange]);
+  }, [status, project_id, membership_id, onStatusChange]);
 
   // Initial fetch
   useEffect(() => {
