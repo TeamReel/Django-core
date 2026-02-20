@@ -1111,8 +1111,23 @@ export default function ProjectSeasonMemberDetailPage() {
   };
 
   // Handler to update membership metadata (e.g., for deleting assets)
-  const handleMetadataUpdate = async (newMetadata: any) => {
-    if (!project || !membership) return;
+  // Pass `targetMembershipId` explicitly to avoid stale-closure bugs when navigating
+  // between member pages (membership state lags behind URL param by one render cycle).
+  const handleMetadataUpdate = async (newMetadata: any, targetMembershipId?: string) => {
+    if (!project) return;
+
+    // Always prefer the explicitly-passed ID; fall back to URL param, then state.
+    const idToUse = targetMembershipId || membershipId || membership?.id;
+    if (!idToUse) {
+      console.error('handleMetadataUpdate: no membership ID available — aborting to avoid cross-member pollution');
+      return;
+    }
+    if (membership?.id && idToUse !== String(membership.id)) {
+      console.warn(
+        `⚠️ handleMetadataUpdate: using targetId=${idToUse} but membership.id=${membership.id}. ` +
+        'State may be stale — proceeding with URL-derived ID.',
+      );
+    }
 
     setSaving(true);
     setSaveError(null);
@@ -1124,7 +1139,7 @@ export default function ProjectSeasonMemberDetailPage() {
         ?.split('=')[1] || '';
 
       const res = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${project.id}/members/${membership.id}/`,
+        `${apiBaseUrl}/api/v1/projects/${project.id}/members/${idToUse}/`,
         {
           method: 'PATCH',
           credentials: 'include',
@@ -1203,6 +1218,14 @@ export default function ProjectSeasonMemberDetailPage() {
     // Fallback to direct S3 URL (may 403 for private buckets, but shows something)
     return getAssetUrl(storagePath);
   }, [presignedCache]);
+
+  // ── Reset membership state immediately when navigating to a different member ──
+  // Without this, `membership` still holds the previous member's data during the
+  // async fetch, creating a window where the AI modal callback writes to the
+  // wrong member's metadata (stale-closure bug).
+  useEffect(() => {
+    setMembership(null);
+  }, [membershipId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -3144,11 +3167,20 @@ export default function ProjectSeasonMemberDetailPage() {
                   : null
         }
         onAssetSaved={async (savedInfo) => {
+          // Capture membershipId from URL params at call time — never rely on
+          // `membership` state which may still hold the previous member's data
+          // when the user navigated between member pages (stale closure risk).
+          const saveMembershipId = membershipId;
           console.log('🎯 onAssetSaved called:', {
             savedInfo,
+            saveMembershipId,
             aiSelectedKitType,
             aiSelectedStyleVariant,
           });
+          if (!saveMembershipId) {
+            console.error('❌ onAssetSaved: no membershipId from URL — cannot save metadata safely');
+            return;
+          }
           setShowAiModal(false);
 
           if (savedInfo?.storagePath || savedInfo?.presignedUrl) {
@@ -3198,7 +3230,7 @@ export default function ProjectSeasonMemberDetailPage() {
               if (effectiveKitType === 'home') setForm(newForm);
 
               const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVariants);
-              await handleMetadataUpdate(updatedMeta);
+              await handleMetadataUpdate(updatedMeta, saveMembershipId);
 
             } else if ((isIntroVideo || isCelebrationVideo) && aiSelectedStyleVariant) {
               // Per-kit + per-variant video storage (composite key: kitType_styleVariant)
@@ -3220,7 +3252,7 @@ export default function ProjectSeasonMemberDetailPage() {
               setForm(newForm);
 
               const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVariants);
-              await handleMetadataUpdate(updatedMeta);
+              await handleMetadataUpdate(updatedMeta, saveMembershipId);
             }
           }
         }}
