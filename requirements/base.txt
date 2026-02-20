@@ -53,6 +53,7 @@ openai>=1.0.0
 langgraph-sdk>=0.1.0
 google-genai>=1.0.0  # Google Gemini / Imagen (asset generation)
 minimax-python>=0.2.0  # MiniMax / Hailuo video generation
+runwayml>=1.0.0  # Runway Gen video generation (gen4_turbo, gen4.5)
 
 # AWS S3 Storage (B35 File Storage)
 boto3>=1.34.0,<2.0

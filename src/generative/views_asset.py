@@ -175,6 +175,16 @@ class AssetGenerateInputSerializer(serializers.Serializer):
         help_text="Create MediaItem record for rich media features",
     )
 
+    # === Provider selection ===
+    provider = serializers.ChoiceField(
+        choices=["minimax", "runway", "veo"],
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+        default=None,
+        help_text="Explicit video provider (minimax, runway, veo). If omitted, auto-selects.",
+    )
+
 
 class StorageInfoSerializer(serializers.Serializer):
     """Storage info for saved files."""
@@ -273,6 +283,7 @@ def generate_asset_view(request: Request) -> Response:
     asset_type = serializer.validated_data.get("asset_type")
     save_to_brand = serializer.validated_data.get("save_to_brand", True)
     save_to_media_library = serializer.validated_data.get("save_to_media_library", True)
+    provider = serializer.validated_data.get("provider") or None
 
     # Resolve project slug → canonical project ID early so all downstream
     # references (GenerationJob record, storage_context, Celery kwargs) use
@@ -401,6 +412,7 @@ def generate_asset_view(request: Request) -> Response:
                         "user_id": user_id,
                         "organisation_id": str(organisation_id) if organisation_id else None,
                         "storage_context": storage_context,
+                        "provider": provider,
                     },
                     queue="ai_generation",
                 )

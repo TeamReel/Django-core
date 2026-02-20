@@ -87,6 +87,7 @@ SEMAPHORE_TTL = 600  # 10 min max hold
 PROVIDER_CONCURRENCY = {
     "gemini": 2,  # max 2 concurrent Gemini (image) calls
     "minimax": 2,  # max 2 concurrent MiniMax (video) calls
+    "runway": 2,  # max 2 concurrent Runway Gen (video) calls
     "veo": 1,  # max 1 concurrent Veo (video) call
 }
 
@@ -94,6 +95,7 @@ PROVIDER_CONCURRENCY = {
 PROVIDER_DELAY = {
     "gemini": 1.0,  # 1s between Gemini image variants
     "minimax": 2.0,  # 2s between MiniMax calls
+    "runway": 2.0,  # 2s between Runway calls
     "veo": 2.0,  # 2s between Veo calls
 }
 
@@ -187,11 +189,12 @@ def generate_asset_task(
     user_id: int | None = None,
     organisation_id: str | None = None,
     storage_context: dict[str, Any] | None = None,
+    provider: str | None = None,
 ) -> dict[str, Any]:
     """Process an AI asset generation job through the rate-limited queue.
 
     Images: calls Gemini sequentially per variant with delay.
-    Videos: calls MiniMax/Veo with provider semaphore.
+    Videos: calls MiniMax/Runway/Veo with provider semaphore.
 
     All status updates are written to cache for frontend polling.
     """
@@ -199,15 +202,21 @@ def generate_asset_task(
 
     close_old_connections()
 
-    provider = "minimax" if output_type == "video" else "gemini"
+    # Determine provider for queue management
+    if provider and output_type == "video":
+        effective_provider = provider
+    elif output_type == "video":
+        effective_provider = "minimax"  # default video provider
+    else:
+        effective_provider = "gemini"
 
     set_job(
         job_id,
         {
             "status": "queued",
             "progress": 5,
-            "message": f"Job queued for {provider}...",
-            "provider": provider,
+            "message": f"Job queued for {effective_provider}...",
+            "provider": effective_provider,
             "output_type": output_type,
             "template_id": template_id,
             "variant_count": variant_count,
@@ -218,7 +227,7 @@ def generate_asset_task(
     acquired = False
     wait_start = time.time()
     while time.time() - wait_start < 540:
-        if _acquire_semaphore(provider, job_id):
+        if _acquire_semaphore(effective_provider, job_id):
             acquired = True
             break
         set_job(
@@ -226,8 +235,8 @@ def generate_asset_task(
             {
                 "status": "waiting",
                 "progress": 5,
-                "message": f"Waiting for {provider} slot (queue)...",
-                "provider": provider,
+                "message": f"Waiting for {effective_provider} slot (queue)...",
+                "provider": effective_provider,
                 "output_type": output_type,
                 "template_id": template_id,
             },
@@ -239,8 +248,8 @@ def generate_asset_task(
             job_id,
             {
                 "status": "failed",
-                "error": f"Timed out waiting for {provider} slot after 9 minutes",
-                "provider": provider,
+                "error": f"Timed out waiting for {effective_provider} slot after 9 minutes",
+                "provider": effective_provider,
             },
         )
         _sync_job_status(job_id, "failed", error="Queue timeout after 9 minutes")
@@ -268,7 +277,8 @@ def generate_asset_task(
                 user_id=user_id,
                 organisation_id=organisation_id,
                 storage_context=storage_context or {},
-                provider=provider,
+                provider=effective_provider,
+                explicit_provider=provider,
             )
         else:
             return _process_images(
@@ -281,7 +291,7 @@ def generate_asset_task(
                 user_id=user_id,
                 organisation_id=organisation_id,
                 storage_context=storage_context or {},
-                provider=provider,
+                provider=effective_provider,
             )
     except Exception as exc:
         logger.exception("Asset generation failed for job %s: %s", job_id, exc)
@@ -290,7 +300,7 @@ def generate_asset_task(
             {
                 "status": "failed",
                 "error": str(exc),
-                "provider": provider,
+                "provider": effective_provider,
             },
         )
         _sync_job_status(job_id, "failed", error=str(exc))
@@ -299,7 +309,7 @@ def generate_asset_task(
             raise self.retry(exc=exc, countdown=30 * (self.request.retries + 1))
         return {"status": "failed", "error": str(exc)}
     finally:
-        _release_semaphore(provider, job_id)
+        _release_semaphore(effective_provider, job_id)
 
 
 def _process_images(
@@ -453,8 +463,9 @@ def _process_video(
     organisation_id: str | None,
     storage_context: dict[str, Any],
     provider: str,
+    explicit_provider: str | None = None,
 ) -> dict[str, Any]:
-    """Generate video via MiniMax/Veo with status tracking.
+    """Generate video via MiniMax/Runway/Veo with status tracking.
 
     Re-uses the full S3 upload logic from _run_video_generation in views_asset.py.
     """
@@ -478,6 +489,7 @@ def _process_video(
         organisation_id=organisation_id,
         context=storage_context,
         variant_count=variant_count,
+        provider=explicit_provider,
     )
     elapsed = time.time() - t0
 

@@ -72,3 +72,6 @@ GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", None)
 # MiniMax / Hailuo Video Generation
 MINIMAX_API_KEY = os.environ.get("MINIMAX_API_KEY", None)
 MINIMAX_GROUP_ID = os.environ.get("MINIMAX_GROUP_ID", None)
+
+# Runway Gen Video Generation
+RUNWAYML_API_SECRET = os.environ.get("RUNWAYML_API_SECRET", None)

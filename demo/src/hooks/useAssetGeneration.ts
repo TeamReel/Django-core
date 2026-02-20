@@ -88,6 +88,8 @@ export interface SubmitParams {
   inputImages?: Record<string, string>;
   /** Optional user instruction text */
   userPrompt?: string;
+  /** Explicit video provider (minimax, runway, veo). If omitted, auto-selects. */
+  provider?: string;
   /** Workflow: content type model name for auto-creating workflow instance */
   workflowContentType?: ContentTypeName;
   /** Workflow: the object ID that the workflow attaches to (e.g. match ID) */
@@ -262,6 +264,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             ...(params.projectId ? { project_id: params.projectId } : {}),
             ...(params.membershipId ? { membership_id: params.membershipId } : {}),
             ...(params.outputAssetType ? { asset_type: params.outputAssetType } : {}),
+            ...(params.provider ? { provider: params.provider } : {}),
           }),
         });
 

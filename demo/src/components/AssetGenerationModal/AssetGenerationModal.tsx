@@ -391,6 +391,7 @@ export default function AssetGenerationModal({
   const [saving, setSaving] = useState(false);
   const [referenceSource, setReferenceSource] = useState<'upload' | 'previous'>('upload'); // Default: use original upload
   const [shoeColor, setShoeColor] = useState<string>('zwart'); // For fullbody_in_tenue template
+  const [videoProvider, setVideoProvider] = useState<string>(''); // '' = auto-select
 
   const generation = useAssetGeneration();
 
@@ -445,6 +446,7 @@ export default function AssetGenerationModal({
       setExtraInstructions('');
       setFeedbackFields({ colors: '', pattern: '', logo: '', collar: '', other: '' });
       setShoeColor('zwart');
+      setVideoProvider('');
       generation.reset();
     }
   }, [isOpen, preSelectedTemplate]);
@@ -516,6 +518,7 @@ export default function AssetGenerationModal({
       outputAssetType: getEffectiveOutputAssetType(),
       inputImageUrls: mappedInputs,
       userPrompt: extraInstructions,
+      ...(videoProvider ? { provider: videoProvider } : {}),
     });
     setModalStep('results');
   };
@@ -918,6 +921,78 @@ export default function AssetGenerationModal({
 
               {/* Extra Instructions */}
               <div style={{ marginBottom: 16 }}>
+
+              {/* Video Provider Selector — only for video templates */}
+              {selectedTemplate.outputType === 'video' && (
+                <div style={{ marginBottom: 16 }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      marginBottom: 6,
+                      color: 'var(--vscode-foreground, #ccc)',
+                    }}
+                  >
+                    Video Provider
+                  </label>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {[
+                      { value: '', label: '🔄 Auto', desc: 'Automatisch kiezen' },
+                      { value: 'minimax', label: '🎬 MiniMax', desc: 'Hailuo video-01' },
+                      { value: 'runway', label: '✈️ Runway', desc: 'Gen4 Turbo' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setVideoProvider(opt.value)}
+                        style={{
+                          flex: 1,
+                          minWidth: 90,
+                          padding: '8px 10px',
+                          border:
+                            videoProvider === opt.value
+                              ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                              : '1px solid var(--vscode-widget-border, #333)',
+                          background:
+                            videoProvider === opt.value
+                              ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                              : 'transparent',
+                          color: 'var(--vscode-foreground, #ccc)',
+                          borderRadius: 6,
+                          cursor: 'pointer',
+                          fontSize: 12,
+                          textAlign: 'center',
+                        }}
+                      >
+                        <div style={{ fontWeight: 600 }}>{opt.label}</div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            color: 'var(--vscode-descriptionForeground, #888)',
+                            marginTop: 2,
+                          }}
+                        >
+                          {opt.desc}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: 'var(--vscode-descriptionForeground, #888)',
+                      marginTop: 4,
+                    }}
+                  >
+                    {videoProvider === 'runway'
+                      ? 'Runway Gen4 Turbo — snelle I2V generatie, 5 credits/sec.'
+                      : videoProvider === 'minimax'
+                        ? 'MiniMax Hailuo — standaard video model.'
+                        : 'De backend kiest het beste beschikbare model.'}
+                  </div>
+                </div>
+              )}
+
                 <label
                   style={{
                     display: 'block',

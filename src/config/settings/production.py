@@ -259,3 +259,6 @@ GOOGLE_API_KEY = env("GOOGLE_API_KEY", default=None)
 # MiniMax / Hailuo Video Generation
 MINIMAX_API_KEY = env("MINIMAX_API_KEY", default=None)
 MINIMAX_GROUP_ID = env("MINIMAX_GROUP_ID", default=None)
+
+# Runway Gen Video Generation
+RUNWAYML_API_SECRET = env("RUNWAYML_API_SECRET", default=None)
