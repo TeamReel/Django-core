@@ -622,7 +622,7 @@ export default function AssetGenerationModal({
   const stepTitles: Record<ModalStep, string> = {
     template: 'Stap 1 — Kies type',
     configure: 'Stap 2 — Instellingen',
-    results: 'Stap 3 — Resultaten',
+    results: generation.step === 'queued' ? 'In de wachtrij gezet ✅' : 'Stap 3 — Resultaten',
   };
 
   return (
@@ -922,32 +922,52 @@ export default function AssetGenerationModal({
           {/* ── STEP 3: Results ── */}
           {modalStep === 'results' && (
             <div>
-              {/* Processing state */}
-              {(generation.step === 'submitting' || generation.step === 'polling') && (
+              {/* Submitting (sending request) */}
+              {generation.step === 'submitting' && (
                 <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                  <div style={{ fontSize: 48, marginBottom: 16 }}>{generation.step === 'polling' ? '🎬' : '🍌'}</div>
-                  <div
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 600,
-                      marginBottom: 8,
-                    }}
-                  >
-                    {generation.step === 'polling'
-                      ? 'Video wordt gegenereerd…'
-                      : 'Verzoek indienen...'}
+                  <div style={{ fontSize: 48, marginBottom: 16 }}>🍌</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
+                    Verzoek indienen...
                   </div>
                   <ProgressBar progress={generation.progress} />
+                  <div style={{ fontSize: 12, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 8 }}>
+                    Dit kan 15-30 seconden duren per variant
+                  </div>
+                </div>
+              )}
+
+              {/* Queued — video job accepted, processing on background */}
+              {generation.step === 'queued' && (
+                <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                  <div style={{ fontSize: 64, marginBottom: 16 }}>🟢</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>
+                    Toegevoegd aan de AI Queue!
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 24, maxWidth: 320, margin: '0 auto 24px' }}>
+                    De video wordt op de achtergrond gegenereerd (2–5 min).
+                    Je krijgt een melding zodra hij klaar is.
+                  </div>
                   <div
                     style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '8px 16px',
+                      background: 'var(--vscode-editorWidget-background, #252526)',
+                      border: '1px solid var(--vscode-widget-border, #333)',
+                      borderRadius: 8,
                       fontSize: 12,
                       color: 'var(--vscode-descriptionForeground, #888)',
-                      marginTop: 8,
                     }}
                   >
-                    {generation.step === 'polling'
-                      ? 'Video generatie duurt 2-5 minuten. Je kunt wachten of later terugkomen.'
-                      : 'Dit kan 15-30 seconden duren per variant'}
+                    <span>📥</span>
+                    <span>Volg de voortgang in</span>
+                    <a
+                      href="/approvals?tab=ai_queue"
+                      style={{ color: '#60a5fa', textDecoration: 'none', fontWeight: 600 }}
+                    >
+                      Workflow → AI Queue
+                    </a>
                   </div>
                 </div>
               )}
@@ -1072,7 +1092,7 @@ export default function AssetGenerationModal({
           }}
         >
           <div>
-            {modalStep !== 'template' && generation.step !== 'submitting' && generation.step !== 'polling' && (
+            {modalStep !== 'template' && generation.step !== 'submitting' && generation.step !== 'polling' && generation.step !== 'queued' && (
               <button
                 onClick={() => {
                   if (modalStep === 'configure') setModalStep('template');
@@ -1099,14 +1119,15 @@ export default function AssetGenerationModal({
               style={{
                 padding: '6px 14px',
                 fontSize: 12,
-                background: 'transparent',
-                color: 'var(--vscode-foreground, #ccc)',
-                border: '1px solid var(--vscode-widget-border, #333)',
+                background: generation.step === 'queued' ? 'var(--vscode-button-background, #0078d4)' : 'transparent',
+                color: generation.step === 'queued' ? 'var(--vscode-button-foreground, #fff)' : 'var(--vscode-foreground, #ccc)',
+                border: generation.step === 'queued' ? 'none' : '1px solid var(--vscode-widget-border, #333)',
                 borderRadius: 4,
                 cursor: 'pointer',
+                fontWeight: generation.step === 'queued' ? 600 : 400,
               }}
             >
-              Annuleren
+              {generation.step === 'queued' ? '✓ Sluiten' : 'Annuleren'}
             </button>
 
             {modalStep === 'configure' && (

@@ -42,7 +42,7 @@ export interface GenerationVariant {
   } | null;
 }
 
-type GenerationStep = 'idle' | 'submitting' | 'polling' | 'completed' | 'error';
+type GenerationStep = 'idle' | 'submitting' | 'polling' | 'queued' | 'completed' | 'error';
 
 /** Data returned from the /save/ endpoint after accepting a variant */
 export interface SaveResult {
@@ -68,6 +68,8 @@ interface UseAssetGenerationReturn {
   reset: () => void;
   /** Progress percentage (0-100) for display */
   progress: number;
+  /** task_id for async (video) jobs in queued state */
+  queuedTaskId: string | null;
 }
 
 export interface SubmitParams {
@@ -115,6 +117,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
   const [variants, setVariants] = useState<GenerationVariant[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [queuedTaskId, setQueuedTaskId] = useState<string | null>(null);
 
   // Store context for saving
   const [context, setContext] = useState<{
@@ -140,6 +143,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
     setError(null);
     setProgress(0);
     setContext(null);
+    setQueuedTaskId(null);
   }, []);
 
   // ── Poll for async video generation result ─────────────────────────
@@ -269,14 +273,11 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           const taskId = asyncData.task_id;
           if (!taskId) throw new Error('Backend returned 202 but no task_id');
 
-          console.log(`🎬 Video generation started async. task_id=${taskId}`);
-          setStep('polling');
-          setProgress(15);
-
-          const polledVariants = await pollForResult(taskId, controller.signal);
-          console.log(`🎬 Video generation complete: ${polledVariants.length} variant(s)`);
-          setVariants(polledVariants);
-          setStep('completed');
+          console.log(`🎬 Video generation queued. task_id=${taskId}`);
+          // Don't poll in-modal — the GenerationJob queue + useGenerationJobs hook
+          // handles status tracking and sends a notification when done.
+          setQueuedTaskId(taskId);
+          setStep('queued');
           setProgress(100);
           return;
         }
@@ -454,6 +455,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
     acceptVariant,
     reset,
     progress,
+    queuedTaskId,
   };
 }
 
