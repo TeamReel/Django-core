@@ -2097,11 +2097,72 @@ def list_generation_jobs_view(request: Request) -> Response:
 
 
 # =============================================================================
-# Crop Closeup From Fullbody — deterministic, no AI
+# Crop Closeup From Fullbody — smart alpha-channel detection, no AI
 # =============================================================================
 
-CLOSEUP_CROP_RATIO = 0.38  # fraction of fullbody height to keep (top → face + shoulders)
+# Fraction of the *person's* actual height (from bounding box) to keep.
+# 0.28 → head + shoulders only (stops around mid-chest).
+CLOSEUP_PERSON_RATIO = 0.28
 CLOSEUP_OUTPUT_SIZE = (512, 512)  # target CLOSEUP_SPEC
+CLOSEUP_ALPHA_THRESHOLD = 10  # pixels below this alpha are treated as background
+
+
+def _smart_crop_closeup(img):  # type: ignore[return]  # PIL.Image
+    """Return a square 512×512 closeup of head + shoulders from a transparent fullbody PNG.
+
+    Strategy:
+    1. Find the tight bounding box of the non-transparent person pixels via the
+       alpha channel (``getbbox``).
+    2. Take the top ``CLOSEUP_PERSON_RATIO`` fraction of the person's height,
+       plus a small breathing-room pad at the top.
+    3. Crop horizontally centred on the person bounding box.
+    4. Resize to CLOSEUP_OUTPUT_SIZE.
+
+    Falls back to a plain top-25%-of-frame crop if bounding box detection fails.
+    """
+    from PIL import Image as PilImage
+
+    img = img.convert("RGBA")
+    w, h = img.size
+
+    # ── Detect person bounding box via alpha ──────────────────────────────────
+    alpha = img.split()[3]  # A channel
+    # Binarise: pixels brighter than threshold → white (person), rest → black
+    binary = alpha.point(lambda v: 255 if v > CLOSEUP_ALPHA_THRESHOLD else 0)
+    bbox = binary.getbbox()  # (left, top, right, bottom) or None
+
+    if bbox:
+        bx_min, by_min, bx_max, by_max = bbox
+        person_h = by_max - by_min
+
+        # How many px of person height to keep
+        keep_h = max(1, int(person_h * CLOSEUP_PERSON_RATIO))
+
+        # Add a small padding above the head so it's not cut off
+        top_pad = max(0, by_min - int(person_h * 0.02))
+
+        crop_top = top_pad
+        crop_bottom = by_min + keep_h
+
+        # Centre the crop horizontally on the person, square aspect ratio
+        square_side = crop_bottom - crop_top
+        cx = (bx_min + bx_max) // 2
+        crop_left = max(0, cx - square_side // 2)
+        crop_right = min(w, crop_left + square_side)
+        # Adjust if we hit the right edge
+        if crop_right == w:
+            crop_left = max(0, w - square_side)
+    else:
+        # Fallback: top 25% of whole frame, full width (square crop from centre)
+        crop_top = 0
+        crop_bottom = max(1, int(h * 0.25))
+        square_side = crop_bottom
+        cx = w // 2
+        crop_left = max(0, cx - square_side // 2)
+        crop_right = min(w, crop_left + square_side)
+
+    cropped = img.crop((crop_left, crop_top, crop_right, crop_bottom))
+    return cropped.resize(CLOSEUP_OUTPUT_SIZE, PilImage.LANCZOS)
 
 
 @api_view(["POST"])
@@ -2176,15 +2237,12 @@ def crop_closeup_from_fullbody_view(request: Request) -> Response:
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    # ── Pillow crop + resize ──────────────────────────────────────────────────
+    # ── Pillow smart crop + resize ────────────────────────────────────────────
     try:
         from PIL import Image as PilImage
 
         img = PilImage.open(io.BytesIO(raw_bytes)).convert("RGBA")
-        w, h = img.size
-        crop_h = max(1, int(h * CLOSEUP_CROP_RATIO))
-        cropped = img.crop((0, 0, w, crop_h))
-        resized = cropped.resize(CLOSEUP_OUTPUT_SIZE, PilImage.LANCZOS)
+        resized = _smart_crop_closeup(img)
 
         out_buf = io.BytesIO()
         resized.save(out_buf, format="PNG", optimize=True)
