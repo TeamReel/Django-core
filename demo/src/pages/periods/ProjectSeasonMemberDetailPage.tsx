@@ -3510,6 +3510,46 @@ export default function ProjectSeasonMemberDetailPage() {
               </div>
 
               <div className="space-y-6">
+                {/* Desktop Tab Navigation */}
+                <Card>
+                  <div style={{ padding: '12px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', padding: '0 4px' }}>Navigation</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      {[
+                        { id: 'overview', label: 'Overview', icon: '📋' },
+                        ...MEDIA_SLOTS.map((s) => ({ id: s.id, label: s.label, icon: s.icon })),
+                        { id: 'assets', label: 'Assets', icon: '📦' },
+                        { id: 'workflow', label: 'Workflow', icon: '🔄' },
+                        { id: 'identity', label: 'Identity', icon: '🪪' },
+                      ].map((tab) => (
+                        <button
+                          key={tab.id}
+                          onClick={() => navigateToTab(tab.id)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '7px 10px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: activeTab === tab.id ? 'var(--app-accent, #3b82f6)' : 'transparent',
+                            color: activeTab === tab.id ? '#fff' : 'var(--app-text)',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            fontWeight: activeTab === tab.id ? 600 : 400,
+                            textAlign: 'left',
+                            width: '100%',
+                            transition: 'background 0.1s',
+                          }}
+                        >
+                          <span style={{ fontSize: '14px', width: '20px', textAlign: 'center' }}>{tab.icon}</span>
+                          <span>{tab.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+
                 <Card>
                   <div style={{ padding: '16px' }}>
                     <div style={{ fontSize: '14px', fontWeight: 800, marginBottom: '8px' }}>Member</div>
