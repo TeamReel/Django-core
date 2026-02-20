@@ -705,6 +705,12 @@ STYLE:
                 "options": ["player", "goalkeeper", "coach", "assistant"],
                 "default": "player",
             },
+            "shoe_color": {
+                "label": "Voetbalschoenen kleur",
+                "type": "select",
+                "options": ["zwart", "wit", "rood", "blauw", "geel", "oranje", "groen", "roze"],
+                "default": "zwart",
+            },
         },
         "preprocessing": {
             "logo": "square_pad_512",
@@ -738,7 +744,7 @@ The face in the output MUST be the SAME PERSON as in the input photo. This is th
 - If in doubt: MATCH THE FACE MORE PRECISELY rather than improve or idealise it.
 
 EQUIPMENT:
-- Football boots (modern style, matching the kit colors from reference).
+- Football boots ({shoe_color_label} colored, modern style).
 {role_equipment}
 
 COMPOSITION:
@@ -1158,6 +1164,16 @@ PARAM_RESOLVERS = {
         "jaren90": "1990s retro era — nylon/polyester, bold geometric prints, oversized cut, large sponsor",
         "jaren00": "2000s retro era — lightweight mesh, subtle tonal pattern, slim raglan sleeves, V-neck",
         "default": "Classic retro football kit, era unspecified",
+    },
+    "shoe_color": {
+        "zwart": "BLACK",
+        "wit": "WHITE",
+        "rood": "RED",
+        "blauw": "BLUE",
+        "geel": "YELLOW",
+        "oranje": "ORANGE",
+        "groen": "GREEN",
+        "roze": "PINK",
     },
 }
 

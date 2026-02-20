@@ -390,6 +390,7 @@ export default function AssetGenerationModal({
   const [selectedVariantIdx, setSelectedVariantIdx] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [referenceSource, setReferenceSource] = useState<'upload' | 'previous'>('upload'); // Default: use original upload
+  const [shoeColor, setShoeColor] = useState<string>('zwart'); // For fullbody_in_tenue template
 
   const generation = useAssetGeneration();
 
@@ -440,6 +441,7 @@ export default function AssetGenerationModal({
       setSelectedVariantIdx(null);
       setExtraInstructions('');
       setFeedbackFields({ colors: '', pattern: '', logo: '', collar: '', other: '' });
+      setShoeColor('zwart');
       generation.reset();
     }
   }, [isOpen, preSelectedTemplate]);
@@ -500,7 +502,10 @@ export default function AssetGenerationModal({
 
     generation.submit({
       templateId: selectedTemplate.id,
-      parameters: params,
+      parameters: {
+        ...params,
+        ...(selectedTemplate.id === 'fullbody_in_tenue' ? { shoe_color: shoeColor } : {}),
+      },
       variantCount,
       projectId,
       organisationId,
@@ -603,7 +608,10 @@ export default function AssetGenerationModal({
     setSelectedVariantIdx(null);
     generation.submit({
       templateId: selectedTemplate.id,
-      parameters: params,
+      parameters: {
+        ...params,
+        ...(selectedTemplate.id === 'fullbody_in_tenue' ? { shoe_color: shoeColor } : {}),
+      },
       variantCount,
       projectId,
       organisationId,
@@ -835,6 +843,25 @@ export default function AssetGenerationModal({
                 );
               })}
 
+              {/* Shoe color — only for fullbody_in_tenue */}
+              {selectedTemplate.id === 'fullbody_in_tenue' && (
+                <ParameterSelect
+                  label="Voetbalschoenen kleur"
+                  value={shoeColor}
+                  options={[
+                    { value: 'zwart', label: '⚫ Zwart' },
+                    { value: 'wit', label: '⚪ Wit' },
+                    { value: 'rood', label: '🔴 Rood' },
+                    { value: 'blauw', label: '🔵 Blauw' },
+                    { value: 'geel', label: '🟡 Geel' },
+                    { value: 'oranje', label: '🟠 Oranje' },
+                    { value: 'groen', label: '🟢 Groen' },
+                    { value: 'roze', label: '🩷 Roze' },
+                  ]}
+                  onChange={setShoeColor}
+                />
+              )}
+
               {/* Variant count */}
               <div style={{ marginBottom: 12 }}>
                 <label
@@ -932,13 +959,11 @@ export default function AssetGenerationModal({
                   <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
                     {selectedTemplate?.outputType === 'video'
                       ? 'Video aanmelden...'
-                      : 'Afbeelding genereren...'}
+                      : 'Afbeelding aanmelden...'}
                   </div>
                   <ProgressBar progress={generation.progress} />
                   <div style={{ fontSize: 12, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 8 }}>
-                    {selectedTemplate?.outputType === 'video'
-                      ? 'Video wordt naar de queue gestuurd...'
-                      : 'Dit kan 15–30 seconden duren per variant'}
+                    Wordt toegevoegd aan de AI wachtrij...
                   </div>
                 </div>
               )}
@@ -951,8 +976,9 @@ export default function AssetGenerationModal({
                     Toegevoegd aan de AI Queue!
                   </div>
                   <div style={{ fontSize: 13, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 24, maxWidth: 320, margin: '0 auto 24px' }}>
-                    De video wordt op de achtergrond gegenereerd (2–5 min).
-                    Je krijgt een melding zodra hij klaar is.
+                    {selectedTemplate?.outputType === 'video'
+                      ? 'De video wordt op de achtergrond gegenereerd (2–5 min). Je krijgt een melding zodra hij klaar is.'
+                      : 'De afbeelding wordt op de achtergrond gegenereerd. Je krijgt een melding zodra hij klaar is.'}
                   </div>
                   <div
                     style={{
