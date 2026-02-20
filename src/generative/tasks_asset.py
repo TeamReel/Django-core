@@ -86,7 +86,7 @@ SEMAPHORE_TTL = 600  # 10 min max hold
 # ─── Provider concurrency limits ─────────────────────────────────────
 PROVIDER_CONCURRENCY = {
     "gemini": 2,  # max 2 concurrent Gemini (image) calls
-    "minimax": 1,  # max 1 concurrent MiniMax (video) call
+    "minimax": 2,  # max 2 concurrent MiniMax (video) calls
     "veo": 1,  # max 1 concurrent Veo (video) call
 }
 
@@ -170,8 +170,8 @@ def _release_semaphore(provider: str, job_id: str) -> None:
     bind=True,
     name="generative.tasks.generate_asset_task",
     max_retries=2,
-    soft_time_limit=600,  # 10 min soft limit
-    time_limit=660,  # 11 min hard limit
+    soft_time_limit=900,  # 15 min soft limit
+    time_limit=960,  # 16 min hard limit
     rate_limit="6/m",  # max 6 tasks per minute from this queue
     acks_late=True,
 )
@@ -214,10 +214,10 @@ def generate_asset_task(
         },
     )
 
-    # ── Wait for semaphore (up to 5 min) ──
+    # ── Wait for semaphore (up to 9 min) ──
     acquired = False
     wait_start = time.time()
-    while time.time() - wait_start < 300:
+    while time.time() - wait_start < 540:
         if _acquire_semaphore(provider, job_id):
             acquired = True
             break
@@ -239,11 +239,11 @@ def generate_asset_task(
             job_id,
             {
                 "status": "failed",
-                "error": f"Timed out waiting for {provider} slot after 5 minutes",
+                "error": f"Timed out waiting for {provider} slot after 9 minutes",
                 "provider": provider,
             },
         )
-        _sync_job_status(job_id, "failed", error="Queue timeout after 5 minutes")
+        _sync_job_status(job_id, "failed", error="Queue timeout after 9 minutes")
         return {"status": "failed", "error": "Queue timeout"}
 
     try:
