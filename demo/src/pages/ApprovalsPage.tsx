@@ -26,6 +26,25 @@ import {
 
 type FilterState = 'all' | 'review' | 'active' | 'completed' | 'rejected' | 'ai_queue';
 
+/** Filter AI jobs by the active sidebar tab */
+function filterAiJobsByTab(jobs: GenerationJob[], tab: FilterState): GenerationJob[] {
+  switch (tab) {
+    case 'review':
+      return jobs.filter(j => j.status === 'completed' && (j.approval_status === 'pending_review' || !j.approval_status));
+    case 'active':
+      return jobs.filter(j => j.status === 'queued' || j.status === 'waiting' || j.status === 'processing');
+    case 'completed':
+      return jobs.filter(j => j.approval_status === 'approved');
+    case 'rejected':
+      return jobs.filter(j => j.approval_status === 'rejected');
+    case 'ai_queue':
+      return jobs; // all AI jobs
+    case 'all':
+    default:
+      return jobs;
+  }
+}
+
 /** Map filter to state categories */
 function matchesFilter(instance: WorkflowInstance, filter: FilterState): boolean {
   if (filter === 'all') return true;
@@ -374,7 +393,16 @@ export default function ApprovalsPage() {
     }
   }, [modalJob, needsReviewJobs, pushToast]);
 
-  const visibleAiJobs = mergedJobs;
+  const visibleAiJobs = filterAiJobsByTab(mergedJobs, filter);
+
+  const tabTitles: Record<FilterState, { title: string; subtitle: string }> = {
+    all: { title: 'Approvals', subtitle: 'Alle items — workflows en AI-generatie jobs.' },
+    review: { title: 'Needs Review', subtitle: 'Items die wachten op beoordeling.' },
+    active: { title: 'In Progress', subtitle: 'Actieve workflows en AI-jobs die worden verwerkt.' },
+    completed: { title: 'Approved', subtitle: 'Goedgekeurde workflows en AI-generatie jobs.' },
+    rejected: { title: 'Rejected', subtitle: 'Afgewezen workflows en AI-generatie jobs.' },
+    ai_queue: { title: 'AI Queue', subtitle: 'Alle AI-generatie jobs.' },
+  };
 
   const statusIcon: Record<GenJobStatus, string> = {
     queued: '⏳', waiting: '⏳', processing: '', completed: '✅', failed: '❌', cancelled: '',
@@ -405,11 +433,11 @@ export default function ApprovalsPage() {
       )}
 
       <PageHeader
-        title="Approvals"
-        subtitle="Content review queue — approve, reject, and track AI generation jobs."
+        title={tabTitles[filter].title}
+        subtitle={tabTitles[filter].subtitle}
         actions={
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {filter === 'ai_queue' && needsReviewJobs.length > 0 && (
+            {needsReviewJobs.length > 0 && (filter === 'ai_queue' || filter === 'review' || filter === 'all') && (
               <button
                 onClick={() => openModal(needsReviewJobs[0])}
                 style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #d97706', background: '#fffbeb', color: '#d97706', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
@@ -425,143 +453,130 @@ export default function ApprovalsPage() {
       />
 
       <PageContent>
-        {/* ── AI Queue panel ── */}
-        {filter === 'ai_queue' && (
-          <div>
-            {aiLoading && <div style={{ padding: 40, textAlign: 'center', color: 'var(--app-text-secondary, #6b7280)', fontSize: 13 }}>Loading AI jobs...</div>}
-            {aiError && <div style={{ padding: '10px 14px', backgroundColor: '#fee2e2', color: '#dc2626', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>{aiError}</div>}
-
-            {!aiLoading && visibleAiJobs.length === 0 && (
-              <div style={{ padding: 48, textAlign: 'center', color: 'var(--app-text-secondary, #9ca3af)', backgroundColor: 'var(--app-surface-2, #f9fafb)', borderRadius: 12, border: '1px dashed var(--app-border, #e5e7eb)' }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}></div>
-                <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>
-                  Geen AI jobs
-                </div>
-                <div style={{ fontSize: 12 }}>
-                  Er zijn momenteel geen AI-generatie jobs.
-                </div>
-              </div>
-            )}
-
-            {!aiLoading && visibleAiJobs.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {visibleAiJobs.map(job => {
-                  const isActive = job.status === 'processing' || job.status === 'queued' || job.status === 'waiting';
-                  const isReviewable = job.status === 'completed' && (job.approval_status === 'pending_review' || !job.approval_status);
-                  const approvalBadge = job.approval_status === 'approved'
-                    ? { label: 'Goedgekeurd', color: '#16a34a' }
-                    : job.approval_status === 'rejected'
-                    ? { label: 'Afgewezen', color: '#dc2626' }
-                    : job.status === 'completed' ? { label: 'Te beoordelen', color: '#d97706' }
-                    : null;
-
-                  return (
-                    <div
-                      key={job.task_id}
-                      onClick={() => job.status === 'completed' && openModal(job)}
-                      style={{
-                        padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10,
-                        border: `1px solid ${job.status === 'failed' ? '#fca5a5' : isReviewable ? '#fde68a' : 'var(--app-border, #e5e7eb)'}`,
-                        transition: 'box-shadow 0.15s', cursor: job.status === 'completed' ? 'pointer' : 'default',
-                        display: 'flex', alignItems: 'center', gap: 14,
-                      }}
-                      onMouseEnter={e => { if (job.status === 'completed') e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.09)'; }}
-                      onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
-                    >
-                      <span style={{ fontSize: 20, flexShrink: 0 }}>{statusIcon[job.status]}</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)', marginBottom: 2 }}>{job.label || job.template_id}</div>
-                        <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>{job.output_type} · {new Date(job.created_at).toLocaleString()}</div>
-                        {isActive && (
-                          <div style={{ height: 3, backgroundColor: '#e5e7eb', borderRadius: 99, overflow: 'hidden', marginTop: 6 }}>
-                            <div style={{ height: '100%', width: `${job.progress || 0}%`, backgroundColor: '#2563eb', borderRadius: 99, transition: 'width 0.4s ease', minWidth: job.progress ? 0 : '8%' }} />
-                          </div>
-                        )}
-                        {job.status === 'failed' && job.error_message && (
-                          <div style={{ fontSize: 11, color: '#dc2626', backgroundColor: '#fee2e2', borderRadius: 6, padding: '3px 8px', marginTop: 4 }}>{job.error_message}</div>
-                        )}
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: statusColor[job.status], backgroundColor: `${statusColor[job.status]}18`, borderRadius: 99, padding: '2px 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                          {job.status}
-                        </span>
-                        {approvalBadge && (
-                          <span style={{ fontSize: 10, fontWeight: 700, color: approvalBadge.color, backgroundColor: `${approvalBadge.color}18`, borderRadius: 99, padding: '2px 8px' }}>
-                            {approvalBadge.label}
-                          </span>
-                        )}
-                      </div>
-                      {job.status === 'completed' && <span style={{ color: '#d1d5db', fontSize: 16, flexShrink: 0 }}>›</span>}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+        {/* ── Errors ── */}
+        {(error || actionError || aiError) && (
+          <div style={{ padding: '10px 14px', backgroundColor: '#fee2e2', color: '#dc2626', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+            {actionError || error || aiError}
           </div>
         )}
 
-        {/* ── Workflow panel (all other tabs) ── */}
-        {filter !== 'ai_queue' && (
-          <>
-            {(error || actionError) && (
-              <div style={{ padding: '10px 14px', backgroundColor: '#fee2e2', color: '#dc2626', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
-                {actionError || error}
-              </div>
-            )}
-            {loading && (
-              <div style={{ padding: 40, textAlign: 'center', color: 'var(--app-text-secondary, #6b7280)', fontSize: 13 }}>
-                Loading approval queue...
-              </div>
-            )}
-            {!loading && filtered.length === 0 && (
-              <div style={{ padding: 48, textAlign: 'center', color: 'var(--app-text-secondary, #9ca3af)', backgroundColor: 'var(--app-surface-2, #f9fafb)', borderRadius: 12, border: '1px dashed var(--app-border, #e5e7eb)' }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>{filter === 'review' ? '' : 'ðŸ“­'}</div>
-                <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>{filter === 'review' ? 'All caught up!' : 'No items found'}</div>
-                <div style={{ fontSize: 12 }}>{filter === 'review' ? 'There are no items waiting for review.' : `No workflow items match the "${filter}" filter.`}</div>
-              </div>
-            )}
-            {!loading && filtered.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {filtered.map(instance => (
-                  <div
-                    key={instance.id}
-                    style={{ padding: 16, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10, border: '1px solid var(--app-border, #e5e7eb)', transition: 'box-shadow 0.15s' }}
-                    onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)')}
-                    onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: '#6b7280', backgroundColor: '#f3f4f6', borderRadius: 4, padding: '2px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            {getEntityLabel(instance.content_type_name)}
-                          </span>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)' }}>
-                            {instance.context?.title || instance.context?.name || `#${instance.object_id}`}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
-                          {instance.workflow_name} · Updated {new Date(instance.updated_at).toLocaleDateString()}
-                          {instance.created_by_username && ` · by ${instance.created_by_username}`}
-                        </div>
+        {/* ── Loading ── */}
+        {(loading || aiLoading) && (
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--app-text-secondary, #6b7280)', fontSize: 13 }}>
+            Loading...
+          </div>
+        )}
+
+        {/* ── Empty state ── */}
+        {!loading && !aiLoading && filtered.length === 0 && visibleAiJobs.length === 0 && (
+          <div style={{ padding: 48, textAlign: 'center', color: 'var(--app-text-secondary, #9ca3af)', backgroundColor: 'var(--app-surface-2, #f9fafb)', borderRadius: 12, border: '1px dashed var(--app-border, #e5e7eb)' }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
+            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Geen items</div>
+            <div style={{ fontSize: 12 }}>Er zijn geen items voor dit filter.</div>
+          </div>
+        )}
+
+        {/* ── AI Jobs for this tab ── */}
+        {!aiLoading && visibleAiJobs.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: filtered.length > 0 ? 24 : 0 }}>
+            {visibleAiJobs.map(job => {
+              const isActive = job.status === 'processing' || job.status === 'queued' || job.status === 'waiting';
+              const isReviewable = job.status === 'completed' && (job.approval_status === 'pending_review' || !job.approval_status);
+              const approvalBadge = job.approval_status === 'approved'
+                ? { label: 'Goedgekeurd', color: '#16a34a' }
+                : job.approval_status === 'rejected'
+                ? { label: 'Afgewezen', color: '#dc2626' }
+                : job.status === 'completed' ? { label: 'Te beoordelen', color: '#d97706' }
+                : null;
+
+              return (
+                <div
+                  key={job.task_id}
+                  onClick={() => job.status === 'completed' && openModal(job)}
+                  style={{
+                    padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10,
+                    border: `1px solid ${job.status === 'failed' ? '#fca5a5' : isReviewable ? '#fde68a' : 'var(--app-border, #e5e7eb)'}`,
+                    transition: 'box-shadow 0.15s', cursor: job.status === 'completed' ? 'pointer' : 'default',
+                    display: 'flex', alignItems: 'center', gap: 14,
+                  }}
+                  onMouseEnter={e => { if (job.status === 'completed') e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.09)'; }}
+                  onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+                >
+                  <span style={{ fontSize: 20, flexShrink: 0 }}>{statusIcon[job.status]}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)', marginBottom: 2 }}>{job.label || job.template_id}</div>
+                    <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>{job.output_type} · {new Date(job.created_at).toLocaleString()}</div>
+                    {isActive && (
+                      <div style={{ height: 3, backgroundColor: '#e5e7eb', borderRadius: 99, overflow: 'hidden', marginTop: 6 }}>
+                        <div style={{ height: '100%', width: `${job.progress || 0}%`, backgroundColor: '#2563eb', borderRadius: 99, transition: 'width 0.4s ease', minWidth: job.progress ? 0 : '8%' }} />
                       </div>
-                      <WorkflowStatusBadge state={instance.current_state} />
-                    </div>
-                    {instance.available_actions.length > 0 && (
-                      <WorkflowActionButtons
-                        instanceId={instance.id}
-                        availableActions={instance.available_actions}
-                        onTransitionComplete={handleTransitionComplete}
-                        onError={setActionError}
-                        size="sm"
-                      />
+                    )}
+                    {job.status === 'failed' && job.error_message && (
+                      <div style={{ fontSize: 11, color: '#dc2626', backgroundColor: '#fee2e2', borderRadius: 6, padding: '3px 8px', marginTop: 4 }}>{job.error_message}</div>
                     )}
                   </div>
-                ))}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#8b5cf6', backgroundColor: '#8b5cf618', borderRadius: 99, padding: '2px 8px', letterSpacing: '0.04em' }}>
+                      AI
+                    </span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: statusColor[job.status], backgroundColor: `${statusColor[job.status]}18`, borderRadius: 99, padding: '2px 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      {job.status}
+                    </span>
+                    {approvalBadge && (
+                      <span style={{ fontSize: 10, fontWeight: 700, color: approvalBadge.color, backgroundColor: `${approvalBadge.color}18`, borderRadius: 99, padding: '2px 8px' }}>
+                        {approvalBadge.label}
+                      </span>
+                    )}
+                  </div>
+                  {job.status === 'completed' && <span style={{ color: '#d1d5db', fontSize: 16, flexShrink: 0 }}>›</span>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── Workflow instances (hidden on ai_queue tab) ── */}
+        {filter !== 'ai_queue' && !loading && filtered.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {filtered.map(instance => (
+              <div
+                key={instance.id}
+                style={{ padding: 16, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10, border: '1px solid var(--app-border, #e5e7eb)', transition: 'box-shadow 0.15s' }}
+                onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)')}
+                onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: '#6b7280', backgroundColor: '#f3f4f6', borderRadius: 4, padding: '2px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        {getEntityLabel(instance.content_type_name)}
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)' }}>
+                        {instance.context?.title || instance.context?.name || `#${instance.object_id}`}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
+                      {instance.workflow_name} · Updated {new Date(instance.updated_at).toLocaleDateString()}
+                      {instance.created_by_username && ` · by ${instance.created_by_username}`}
+                    </div>
+                  </div>
+                  <WorkflowStatusBadge state={instance.current_state} />
+                </div>
+                {instance.available_actions.length > 0 && (
+                  <WorkflowActionButtons
+                    instanceId={instance.id}
+                    availableActions={instance.available_actions}
+                    onTransitionComplete={handleTransitionComplete}
+                    onError={setActionError}
+                    size="sm"
+                  />
+                )}
               </div>
-            )}
-          </>
+            ))}
+          </div>
         )}
       </PageContent>
+
     </>
   );
 }
