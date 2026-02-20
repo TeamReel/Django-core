@@ -989,9 +989,17 @@ def generate_video(
                 bool(reference_img),
             )
     elif composite_mode == "first_last_frame":
-        # For transformation: person_photo is the first frame (legacy), reference_photo is the target (current)
-        # MiniMax only uses person_photo as first frame; the prompt describes the transformation
-        logger.info("Transformation mode: using person_photo as first frame for %s", template_id)
+        # For transformation: person_photo is the first frame (legacy), reference_photo is the last frame (current)
+        # MiniMax uses person_photo as first_frame_image and reference_photo as last_frame_image
+        reference_img = input_images.get("reference_photo")
+        if reference_img:
+            input_images = {**input_images, "_last_frame": reference_img}
+            logger.info(
+                "Transformation mode: person_photo=first_frame, reference_photo=last_frame for %s",
+                template_id,
+            )
+        else:
+            logger.warning("Transformation mode: reference_photo missing for %s", template_id)
 
     # Provider selection
     minimax_key = getattr(settings, "MINIMAX_API_KEY", None)
@@ -1080,6 +1088,7 @@ def _generate_video_minimax(
 
     # Check for input image (person_photo for image-to-video)
     person_img = input_images.get("person_photo")
+    last_frame_img = input_images.get("_last_frame")  # Set by first_last_frame composite mode
 
     results = []
     effective_count = min(variant_count, 4)  # Reasonable limit
@@ -1095,18 +1104,20 @@ def _generate_video_minimax(
             )
 
             logger.info(
-                "MiniMax: generating variant %d/%d (%s, model=%s, has_image=%s)",
+                "MiniMax: generating variant %d/%d (%s, model=%s, has_image=%s, has_last_frame=%s)",
                 i + 1,
                 effective_count,
                 "I2V" if person_img else "T2V",
                 model,
                 bool(person_img),
+                bool(last_frame_img),
             )
 
             # Generate video (handles create → poll → download internally)
             gen_result = client.generate_video(
                 prompt=final_prompt,
                 image=person_img if person_img else None,
+                last_frame=last_frame_img if last_frame_img else None,
                 model=model,
             )
 

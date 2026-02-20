@@ -2456,6 +2456,8 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
 
     VIDEO_TEMPLATE_MAP = {
         "member_intro": "intro",
+        "then_vs_now_sidebyside": "then_vs_now",
+        "then_vs_now_transformation": "then_vs_now",
         # Future: "member_celebration": "celebration",
     }
     asset_type = VIDEO_TEMPLATE_MAP.get(job.template_id)
@@ -2490,17 +2492,20 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
         storage_path = variant.get("storage_path", "")
         filename = variant.get("filename", "")
 
-        # Parse kit_type and style_variant from filename
-        # Pattern: member_intro_kit_type-{kit}_style_variant-{style}_{hash}_{idx}.mp4
-        # Use lazy match for kit_type to stop before the _style_variant suffix,
-        # and [a-z_]+ for style to stop at the numeric hash that follows.
-        kit_match = re.search(r"kit_type-(\w+?)_style_variant", filename)
-        style_match = re.search(r"style_variant-([a-z][a-z_]*)", filename)
+        # Derive the composite key based on template type
+        if asset_type == "then_vs_now":
+            # then_vs_now_sidebyside → "sidebyside", then_vs_now_transformation → "transformation"
+            composite_key = job.template_id.replace("then_vs_now_", "")
+        else:
+            # Parse kit_type and style_variant from filename
+            # Pattern: member_intro_kit_type-{kit}_style_variant-{style}_{hash}_{idx}.mp4
+            kit_match = re.search(r"kit_type-(\w+?)_style_variant", filename)
+            style_match = re.search(r"style_variant-([a-z][a-z_]*)", filename)
 
-        kit_type = kit_match.group(1).strip("_") if kit_match else "home"
-        style_variant = style_match.group(1).strip("_") if style_match else None
+            kit_type = kit_match.group(1).strip("_") if kit_match else "home"
+            style_variant = style_match.group(1).strip("_") if style_match else None
 
-        composite_key = f"{kit_type}_{style_variant}" if style_variant else kit_type
+            composite_key = f"{kit_type}_{style_variant}" if style_variant else kit_type
 
         asset_dict[composite_key] = {
             "raw": storage_path,

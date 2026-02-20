@@ -90,6 +90,7 @@ class MiniMaxClient:
         self,
         prompt: str,
         image: Union[str, Path, bytes, None] = None,
+        last_frame: Union[str, Path, bytes, None] = None,
         model: str = "video-01",
         prompt_optimizer: bool = True,
     ) -> str:
@@ -98,6 +99,7 @@ class MiniMaxClient:
         Args:
             prompt: Text description (max 2000 chars)
             image: Optional image for image-to-video (path, bytes, or base64)
+            last_frame: Optional image for last frame (path, bytes, or base64)
             model: Model ID (video-01, T2V-01, I2V-01, etc.)
             prompt_optimizer: Let MiniMax optimize the prompt
         """
@@ -111,6 +113,10 @@ class MiniMaxClient:
 
         if image is not None:
             payload["first_frame_image"] = self._encode_image(image)
+
+        if last_frame is not None:
+            payload["last_frame_image"] = self._encode_image(last_frame)
+            logger.info("MiniMax: last_frame_image provided for end-frame guidance")
 
         mode = "I2V" if image else "T2V"
         logger.info(
@@ -259,6 +265,7 @@ class MiniMaxClient:
         self,
         prompt: str,
         image: Union[str, Path, bytes, None] = None,
+        last_frame: Union[str, Path, bytes, None] = None,
         output_path: str | None = None,
         model: str = "video-01",
     ) -> dict[str, Any]:
@@ -266,7 +273,7 @@ class MiniMaxClient:
 
         Returns dict with: task_id, file_id, video_bytes, video_width, video_height
         """
-        task_id = self.create_video(prompt=prompt, image=image, model=model)
+        task_id = self.create_video(prompt=prompt, image=image, last_frame=last_frame, model=model)
         result = self.wait_for_video(task_id)
 
         file_id = result.get("file_id", "")
