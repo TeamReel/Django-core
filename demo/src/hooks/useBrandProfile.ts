@@ -174,11 +174,13 @@ export async function resolvePresignedUrls(
   const rawPaths = paths.filter((p) => p && !p.startsWith('http'));
   if (rawPaths.length === 0) return {};
 
+  const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
+
   try {
     const res = await fetch(`${apiBase}/api/v1/files/presigned-urls/`, {
       method: 'POST',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
       body: JSON.stringify({ paths: rawPaths }),
     });
     if (!res.ok) return {};

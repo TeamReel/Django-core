@@ -2223,6 +2223,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                       {hasVideo && resolvedUrl ? (
                                         <>
                                           <video
+                                            key={resolvedUrl}
                                             src={resolvedUrl}
                                             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                             muted
@@ -2491,6 +2492,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                       {hasVideo && resolvedUrl ? (
                                         <>
                                           <video
+                                            key={resolvedUrl}
                                             src={resolvedUrl}
                                             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                             muted
