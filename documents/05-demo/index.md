@@ -20,6 +20,7 @@ This documentation provides everything needed to integrate new backend modules w
 |----------|---------|
 | [README.md](README.md) | **Start here** - Quick integration guide |
 | [glossary.md](glossary.md) | Domain concepts, naming conventions, canonical data |
+| [generation-queue.md](generation-queue.md) | AI Generation Queue — hoe werkt het in de praktijk (GenerationJob, workflow tab, toasts) |
 | [media/media-architecture.md](media/media-architecture.md) | 4-laags media opslag (FileAsset → MediaItem → BrandAsset → VideoJob) |
 | [media/media-templates.md](media/media-templates.md) | Content generation: lineup, match updates, multi-sport templates |
 | [media/lineup-architecture.md](media/lineup-architecture.md) | Lineup video & flyer: modulaire opbouw, assets, pipeline |
