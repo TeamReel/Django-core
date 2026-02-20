@@ -1,7 +1,7 @@
 /**
  * Media Slots Configuration
  *
- * Defines the 7 standard media slots for TeamReel member profiles.
+ * Defines the 8 standard media slots for TeamReel member profiles.
  * Used across member detail pages, media galleries, and completion tracking.
  */
 
@@ -14,6 +14,7 @@ export const MEDIA_SLOTS = [
   { id: 'closeup', label: 'Close-up', icon: '🔍', description: 'In Tenue → Generated image', isInput: false },
   { id: 'intro', label: 'Short Intro', icon: '🎬', description: 'In Tenue → Generated video', isInput: false },
   { id: 'celebration', label: 'Celebration', icon: '🎉', description: 'In Tenue → Generated video', isInput: false },
+  { id: 'then_vs_now', label: 'Then vs Now', icon: '⏳', description: 'Legacy + Current → Generated video', isInput: false },
   { id: 'legacy', label: 'Legacy in Tenue', icon: '🏆', description: 'Legacy Photo + Legacy Tenue → Generated', isInput: false },
 ] as const;
 
