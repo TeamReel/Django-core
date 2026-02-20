@@ -3380,9 +3380,12 @@ export default function ProjectSeasonMemberDetailPage() {
             : null,
           reference: aiSelectedKitUrl,
           // For intro/celebration: use player in tenue as input, otherwise use profile photo
+          // For legacy kit: use legacy_photo instead of profile photo
           person: aiInputPersonUrl
             ? getAssetUrl(aiInputPersonUrl)
-            : form.profile?.url || membership?.user?.avatar_url || null,
+            : aiSelectedKitType === 'legacy'
+              ? form.legacy_photo?.url || form.profile?.url || membership?.user?.avatar_url || null
+              : form.profile?.url || membership?.user?.avatar_url || null,
         }}
         initialParams={{
           kit_type: aiSelectedKitType,
