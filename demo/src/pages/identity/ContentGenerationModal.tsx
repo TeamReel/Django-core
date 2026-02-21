@@ -465,6 +465,7 @@ export default function ContentGenerationModal({
   const [lineupFormation, setLineupFormation] = useState<string>(matchData?.metadata?.formation || '4-3-3');
   const [lineupCloseupStyle, setLineupCloseupStyle] = useState<'popout' | 'badge'>('popout');
   const [lineupAnimationStyle, setLineupAnimationStyle] = useState<'slide_up' | 'appear' | 'slide_in' | 'zoom' | 'fade'>('slide_up');
+  const [lineupIntroStyle, setLineupIntroStyle] = useState<'per_line' | 'per_player'>('per_line');
   const [selectedBackgroundUrl, setSelectedBackgroundUrl] = useState<string | null>(null);
   const [appBackgrounds, setAppBackgrounds] = useState<Array<{ id: string; url: string; profile_name?: string }>>([]);
 
@@ -1161,6 +1162,7 @@ export default function ContentGenerationModal({
             formation: lineupFormation || '4-3-3',
             closeup_style: lineupCloseupStyle || 'popout',
             animation_style: lineupAnimationStyle || 'slide_up',
+            intro_style: lineupIntroStyle || 'per_line',
             selected_member_ids: {
               goalkeeper: targetGKs,
               player: targetPlayers,
@@ -2512,6 +2514,67 @@ export default function ContentGenerationModal({
                           >
                             <span style={{ fontSize: 20 }}>{opt.icon}</span>
                             <span style={{ fontSize: 11, fontWeight: 600 }}>{opt.label}</span>
+                            {isSelected && (
+                              <div style={{
+                                position: 'absolute', top: 4, right: 4,
+                                width: 18, height: 18, borderRadius: '50%',
+                                background: '#10b981', display: 'flex',
+                                alignItems: 'center', justifyContent: 'center',
+                                fontSize: 10, color: '#fff', fontWeight: 700,
+                              }}>✓</div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  )}
+
+                  {/* Intro style selector — per line vs per player — only for video */}
+                  {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      marginBottom: 10,
+                      color: 'var(--vscode-foreground, #ccc)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>Introductie Stijl</label>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {[
+                        { value: 'per_line', label: 'Per linie', icon: '👥', desc: 'Hele linie tegelijk' },
+                        { value: 'per_player', label: 'Per speler', icon: '👤', desc: 'Eén voor één, groot in beeld' },
+                      ].map(opt => {
+                        const isSelected = lineupIntroStyle === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => setLineupIntroStyle(opt.value as typeof lineupIntroStyle)}
+                            style={{
+                              position: 'relative',
+                              flex: 1,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: 4,
+                              padding: '10px 6px',
+                              border: isSelected
+                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                : '1px solid var(--vscode-widget-border, #333)',
+                              borderRadius: 8,
+                              background: isSelected
+                                ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                                : 'var(--vscode-editor-background, #1e1e1e)',
+                              color: 'var(--vscode-foreground, #ccc)',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                            }}
+                          >
+                            <span style={{ fontSize: 20 }}>{opt.icon}</span>
+                            <span style={{ fontSize: 11, fontWeight: 600 }}>{opt.label}</span>
+                            <span style={{ fontSize: 9, color: '#999' }}>{opt.desc}</span>
                             {isSelected && (
                               <div style={{
                                 position: 'absolute', top: 4, right: 4,

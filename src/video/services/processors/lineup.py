@@ -191,6 +191,7 @@ class LineupProcessor(BaseVideoProcessor):
         formation = config.get("formation", "4-3-3")
         closeup_style = config.get("closeup_style", "popout")
         animation_style = config.get("animation_style", "slide_up")
+        intro_style = config.get("intro_style", "per_line")
         background_url = config.get("background_url")
 
         logger.info(
@@ -201,6 +202,7 @@ class LineupProcessor(BaseVideoProcessor):
                 "formation": formation,
                 "closeup_style": closeup_style,
                 "animation_style": animation_style,
+                "intro_style": intro_style,
             },
         )
 
@@ -260,6 +262,7 @@ class LineupProcessor(BaseVideoProcessor):
             formation=formation,
             closeup_style=closeup_style,
             animation_style=animation_style,
+            intro_style=intro_style,
             output_dir=self.temp_dir,
             progress_callback=_progress,
         )

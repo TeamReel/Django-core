@@ -79,6 +79,7 @@ HEADER_HEIGHT = 300  # px reserved for header band
 # ── Player sizing ──
 PLAYER_SCALE_FULLBODY = 0.28  # fraction of HEIGHT
 PLAYER_SCALE_CLOSEUP = 0.11  # 11% of HEIGHT
+PLAYER_SCALE_SOLO = 0.45  # fraction of HEIGHT — solo "per player" mode
 
 # ── Badge style ──
 BADGE_CUT_FRACTION = 0.25
@@ -772,13 +773,23 @@ def _compose_phase(
     popout: bool = True,
     animation_style: str = "slide_up",
     bg_is_landscape: bool = True,
+    solo_mode: bool = False,
 ) -> list[Path] | None:
-    """Generate clips for one phase (e.g. 'defenders')."""
+    """Generate clips for one phase (e.g. 'defenders').
+
+    Args:
+        solo_mode: If True, render a single player centered and larger on screen.
+    """
     role = role_from_group(group_name)
     active_y = Y_POS.get(role, 50) / 100.0
     active_xs = get_x_positions_for_group(len(active_players), role, formation)
     y_offsets = get_y_stagger_offsets(len(active_players))
     active_ys = [clamp01(active_y + off) for off in y_offsets]
+
+    # Solo mode: centre single player and scale up
+    if solo_mode:
+        active_xs = [0.5]
+        active_ys = [0.60]
 
     closeup_base = closeup_y_for_role(role, active_y)
     cu_offsets = get_y_stagger_offsets(len(active_players), CLOSEUP_ROW4_STAGGER_PCT)
@@ -870,7 +881,7 @@ def _compose_phase(
     base_filter = ";".join(fc) + ";"
     base_cnt = persist_start + len(persistent_players)
     is_coach = role == "coach"
-    scale_full = fullbody_scale_for_role(role)
+    scale_full = PLAYER_SCALE_SOLO if solo_mode else fullbody_scale_for_role(role)
 
     # ── Part 1: Fullbody slide-up (3 s) ──
     part1 = tmp_dir / f"phase_{phase_idx}_1_full.mp4"
@@ -1311,6 +1322,7 @@ def compose_lineup_video(
     formation: str = "4-3-3",
     closeup_style: str = "popout",
     animation_style: str = "slide_up",
+    intro_style: str = "per_line",
     output_dir: Path | None = None,
     progress_callback=None,
 ) -> Path:
@@ -1321,6 +1333,7 @@ def compose_lineup_video(
         formation: Formation string (4-3-3, 4-4-2, 3-4-3)
         closeup_style: Badge style (popout / inside)
         animation_style: Player reveal animation (slide_up, appear, slide_in, zoom, fade)
+        intro_style: Intro mode — 'per_line' (group by line) or 'per_player' (one by one)
         output_dir: Where to write the final MP4. Uses tempfile if None.
         progress_callback: Optional fn(percent: int) for progress updates.
 
@@ -1534,71 +1547,64 @@ def compose_lineup_video(
     persistent_players: list[dict] = []
     all_segments: list[Path] = []
 
-    for idx, (name, group) in enumerate(phases):
-        if not group:
-            raise ValueError(
-                f"Cannot generate lineup video — phase '{name}' has 0 players. "
-                "Fix the lineup selection / participation data so all formation lines are populated."
+    if intro_style == "per_player":
+        # ── Per-player mode: introduce each player solo, centred & large ──
+        solo_items: list[tuple[str, _LocalPlayer, int]] = []
+        for group_name, group in phases:
+            for gi, p in enumerate(group):
+                solo_items.append((group_name, p, gi))
+
+        total_solo = len(solo_items)
+        for solo_idx, (group_name, player, group_offset) in enumerate(solo_items):
+            logger.info(
+                "Composing solo phase %d/%d: %s (%s)",
+                solo_idx + 1,
+                total_solo,
+                player.name,
+                group_name,
             )
-
-        logger.info("Composing phase %d: %s (%d players)", idx, name, len(group))
-
-        # Log asset availability for diagnostics
-        for pi, p in enumerate(group):
-            has_fb = bool(p.fullbody)
-            has_cu = bool(p.closeup)
-            has_in = bool(p.intro)
-            if not (has_fb or has_cu):
+            if not (player.fullbody or player.closeup):
                 logger.warning(
-                    "Phase %d player %d (%s) has NO visual assets (fullbody=%s, closeup=%s, intro=%s)",
-                    idx,
-                    pi,
-                    p.name,
-                    has_fb,
-                    has_cu,
-                    has_in,
+                    "Solo phase %d player %s has NO visual assets", solo_idx, player.name
                 )
 
-        segs = _compose_phase(
-            idx,
-            name,
-            group,
-            persistent_players,
-            bg_path,
-            header_path,
-            sponsor_path,
-            mask_path,
-            border_path,
-            tmp_dir,
-            formation,
-            popout,
-            animation_style,
-            bg_is_landscape,
-        )
-        if segs:
-            all_segments.extend(segs)
-        else:
-            raise ValueError(
-                f"Cannot generate lineup video — phase '{name}' produced no output. "
-                "This indicates missing input assets or an FFmpeg composition failure for that phase."
+            segs = _compose_phase(
+                solo_idx,
+                group_name,
+                [player],
+                persistent_players,
+                bg_path,
+                header_path,
+                sponsor_path,
+                mask_path,
+                border_path,
+                tmp_dir,
+                formation,
+                popout,
+                animation_style,
+                bg_is_landscape,
+                solo_mode=True,
             )
+            if segs:
+                all_segments.extend(segs)
+            else:
+                raise ValueError(
+                    f"Cannot generate lineup video — solo phase for '{player.name}' produced no output."
+                )
 
-        # Add to persistent (skip coach)
-        if name == "coach":
-            continue
+            # Badge at correct formation position (not centre)
+            if group_name != "coach" and player.closeup:
+                role = role_from_group(group_name)
+                ay = Y_POS.get(role, 50) / 100.0
+                full_group = [p for gn, g in phases if gn == group_name for p in g]
+                axs = get_x_positions_for_group(len(full_group), role, formation)
+                cu_base = closeup_y_for_role(role, ay)
+                cu_offsets = get_y_stagger_offsets(len(full_group), CLOSEUP_ROW4_STAGGER_PCT)
+                cu_ys = [clamp01(cu_base + off) for off in cu_offsets]
 
-        role = role_from_group(name)
-        ay = Y_POS.get(role, 50) / 100.0
-        axs = get_x_positions_for_group(len(group), role, formation)
-        cu_base = closeup_y_for_role(role, ay)
-        cu_offsets = get_y_stagger_offsets(len(group), CLOSEUP_ROW4_STAGGER_PCT)
-        cu_ys = [clamp01(cu_base + off) for off in cu_offsets]
-
-        for i, p in enumerate(group):
-            if p.closeup:
                 badge_out = badge_body_dir / f"badge_{len(persistent_players):02d}.png"
                 _render_badge_body_png(
-                    src_path=p.closeup,
+                    src_path=player.closeup,
                     mask_path=mask_path,
                     border_path=border_path,
                     out_path=badge_out,
@@ -1607,17 +1613,104 @@ def compose_lineup_video(
                 )
                 persistent_players.append(
                     {
-                        "path": p.closeup,
+                        "path": player.closeup,
                         "badge_body": badge_out,
-                        "x": axs[i],
-                        "y": cu_ys[i],
-                        "name": p.name,
+                        "x": axs[group_offset],
+                        "y": cu_ys[group_offset],
+                        "name": player.name,
                     }
                 )
 
-        if progress_callback:
-            pct = 20 + int((idx + 1) / len(phases) * 60)
-            progress_callback(pct)
+            if progress_callback:
+                pct = 20 + int((solo_idx + 1) / total_solo * 60)
+                progress_callback(pct)
+
+    else:
+        # ── Per-line mode (default): introduce players per positional group ──
+        for idx, (name, group) in enumerate(phases):
+            if not group:
+                raise ValueError(
+                    f"Cannot generate lineup video — phase '{name}' has 0 players. "
+                    "Fix the lineup selection / participation data so all formation lines are populated."
+                )
+
+            logger.info("Composing phase %d: %s (%d players)", idx, name, len(group))
+
+            # Log asset availability for diagnostics
+            for pi, p in enumerate(group):
+                has_fb = bool(p.fullbody)
+                has_cu = bool(p.closeup)
+                has_in = bool(p.intro)
+                if not (has_fb or has_cu):
+                    logger.warning(
+                        "Phase %d player %d (%s) has NO visual assets (fullbody=%s, closeup=%s, intro=%s)",
+                        idx,
+                        pi,
+                        p.name,
+                        has_fb,
+                        has_cu,
+                        has_in,
+                    )
+
+            segs = _compose_phase(
+                idx,
+                name,
+                group,
+                persistent_players,
+                bg_path,
+                header_path,
+                sponsor_path,
+                mask_path,
+                border_path,
+                tmp_dir,
+                formation,
+                popout,
+                animation_style,
+                bg_is_landscape,
+            )
+            if segs:
+                all_segments.extend(segs)
+            else:
+                raise ValueError(
+                    f"Cannot generate lineup video — phase '{name}' produced no output. "
+                    "This indicates missing input assets or an FFmpeg composition failure for that phase."
+                )
+
+            # Add to persistent (skip coach)
+            if name == "coach":
+                continue
+
+            role = role_from_group(name)
+            ay = Y_POS.get(role, 50) / 100.0
+            axs = get_x_positions_for_group(len(group), role, formation)
+            cu_base = closeup_y_for_role(role, ay)
+            cu_offsets = get_y_stagger_offsets(len(group), CLOSEUP_ROW4_STAGGER_PCT)
+            cu_ys = [clamp01(cu_base + off) for off in cu_offsets]
+
+            for i, p in enumerate(group):
+                if p.closeup:
+                    badge_out = badge_body_dir / f"badge_{len(persistent_players):02d}.png"
+                    _render_badge_body_png(
+                        src_path=p.closeup,
+                        mask_path=mask_path,
+                        border_path=border_path,
+                        out_path=badge_out,
+                        circle_size=circle_size,
+                        popout=popout,
+                    )
+                    persistent_players.append(
+                        {
+                            "path": p.closeup,
+                            "badge_body": badge_out,
+                            "x": axs[i],
+                            "y": cu_ys[i],
+                            "name": p.name,
+                        }
+                    )
+
+            if progress_callback:
+                pct = 20 + int((idx + 1) / len(phases) * 60)
+                progress_callback(pct)
 
     # ── 5. Final hold ──
     logger.info("Composing final hold frame...")
