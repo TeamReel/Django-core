@@ -427,9 +427,14 @@ export default function MatchCreateModal({
     const home = venue === 'Home' ? our : opp;
     const away = venue === 'Home' ? opp : our;
 
-    const titleDefault = home.name && away.name ? `${home.name} vs ${away.name}` : '';
-
     const homeClub = venue === 'Home' ? ourClub : oppClub;
+    const awayClub = venue === 'Home' ? oppClub : ourClub;
+
+    // Use club names for the auto-generated title (e.g. "ASC'62 vs FC Groningen")
+    const homeDisplayName = homeClub.name || home.name;
+    const awayDisplayName = awayClub.name || away.name;
+    const titleDefault = homeDisplayName && awayDisplayName ? `${homeDisplayName} vs ${awayDisplayName}` : '';
+
     const locationDefault = (homeClub.defaultLocation || home.defaultLocation || '').trim();
 
     const season = (seasonOptions || []).find((s: any) => String(s?.id) === String(selectedSeasonId));
@@ -464,13 +469,19 @@ export default function MatchCreateModal({
 
           home_team_name: home.name || null,
           away_team_name: away.name || null,
+          home_club_name: homeDisplayName || null,
+          away_club_name: awayDisplayName || null,
           home_club_default_location: homeClub.defaultLocation || null,
+          title: titleDefault || null,
         },
         vars: {
           season_name: season?.name ? String(season.name) : null,
           competition_name: competition?.name ? String(competition.name) : null,
           home_team_name: home.name || null,
           away_team_name: away.name || null,
+          home_club_name: homeDisplayName || null,
+          away_club_name: awayDisplayName || null,
+          match_title: titleDefault || null,
         },
       },
     };
@@ -481,8 +492,8 @@ export default function MatchCreateModal({
       const seas = metadataBase.identity.season_name || '';
       descriptionLines.push([comp, seas].filter(Boolean).join(' — '));
     }
-    if (home.name && away.name) {
-      descriptionLines.push(`${home.name} vs ${away.name}`);
+    if (homeDisplayName && awayDisplayName) {
+      descriptionLines.push(`${homeDisplayName} vs ${awayDisplayName}`);
     }
     if (matchDate || matchTime) {
       const dt = [matchDate, matchTime].filter(Boolean).join(' ');
