@@ -251,9 +251,9 @@ class GoalCelebrationBuilder:
         # ── Match info ──
         match_date = ""
         kickoff_time = None
-        if activity.start_datetime:
-            match_date = activity.start_datetime.strftime("%d-%m-%Y")
-            kickoff_time = activity.start_datetime.strftime("%H:%M")
+        if activity.start_time:
+            match_date = activity.start_time.strftime("%d-%m-%Y")
+            kickoff_time = activity.start_time.strftime("%H:%M")
 
         own_team_name = project.name or ""
         opponent_name = activity.opponent_project.name if activity.opponent_project else ""

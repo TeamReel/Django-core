@@ -2997,24 +2997,23 @@ export default function ContentGenerationModal({
                               `${user.first_name || ''} ${user.last_name || ''}`.trim()
                             ) : 'Unknown';
 
-                            // Check if member has celebration or intro video
+                            // Check if member has celebration video (required for goal celebration)
                             const tr = (member.metadata as any)?.teamreel_assets || {};
                             const videos = tr?.videos || {};
                             const hasCelebration = videos?.celebration && Object.keys(videos.celebration).length > 0;
-                            const hasIntro = videos?.intro && Object.keys(videos.intro).length > 0;
-                            const hasVideoAsset = hasCelebration || hasIntro;
 
                             return (
                               <option
                                 key={member.id}
                                 value={member.id}
-                                disabled={!hasVideoAsset}
+                                disabled={!hasCelebration}
                                 style={{
-                                  color: hasVideoAsset ? 'inherit' : '#999',
-                                  fontWeight: hasVideoAsset ? 500 : 400,
+                                  color: hasCelebration ? 'inherit' : '#999',
+                                  fontWeight: hasCelebration ? 500 : 400,
                                 }}
                               >
-                                {name}{hasCelebration ? ' 🎉' : hasIntro ? ' 🎬' : ' (geen video)'}
+                                {name}{hasCelebration ? ' 🎉' : ' (geen celebration video)'}
+                              </option>
                               </option>
                             );
                           })}
