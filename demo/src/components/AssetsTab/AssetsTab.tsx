@@ -440,21 +440,35 @@ export function AssetsTab({
   const postProcessGen = useAssetGeneration();
   const [postProcessingAsset, setPostProcessingAsset] = useState<string | null>(null);
   const [postProcessOutputType, setPostProcessOutputType] = useState<string | null>(null);
+  const postProcessSavingRef = useRef(false);
 
   // Auto-accept postprocess result when generation completes
   useEffect(() => {
     if (postProcessGen.step === 'completed' && postProcessGen.variants.length > 0 && postProcessingAsset) {
+      // Guard against double-fire (React 18 StrictMode)
+      if (postProcessSavingRef.current) return;
+      postProcessSavingRef.current = true;
+
       (async () => {
-        const result = await postProcessGen.acceptVariant(0);
-        if (result) {
-          console.log('✅ Postprocess auto-saved:', postProcessingAsset, result);
-          await refresh();
-        } else {
-          console.error('❌ Postprocess save failed for', postProcessingAsset);
+        try {
+          console.log('📝 Postprocess auto-accept starting for', postProcessingAsset);
+          const result = await postProcessGen.acceptVariant(0);
+          if (result) {
+            console.log('✅ Postprocess auto-saved:', postProcessingAsset, result);
+            // Force fresh profile fetch (cache: no-store prevents stale data)
+            await refresh();
+            console.log('🔄 Profile refreshed after postprocess save');
+          } else {
+            console.error('❌ Postprocess save failed for', postProcessingAsset);
+          }
+        } catch (err) {
+          console.error('❌ Postprocess auto-accept error:', err);
+        } finally {
+          setPostProcessingAsset(null);
+          setPostProcessOutputType(null);
+          postProcessGen.reset();
+          postProcessSavingRef.current = false;
         }
-        setPostProcessingAsset(null);
-        setPostProcessOutputType(null);
-        postProcessGen.reset();
       })();
     } else if (postProcessGen.step === 'error' && postProcessingAsset) {
       console.error('❌ Postprocess failed:', postProcessGen.error);
@@ -462,6 +476,7 @@ export function AssetsTab({
       setPostProcessingAsset(null);
       setPostProcessOutputType(null);
       postProcessGen.reset();
+      postProcessSavingRef.current = false;
     }
   }, [postProcessGen.step, postProcessGen.variants.length]);
 

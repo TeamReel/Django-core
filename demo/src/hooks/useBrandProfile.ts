@@ -257,7 +257,7 @@ export function useBrandProfile({
 
       const listRes = await fetch(
         `${apiBase}/api/v1/branding/profiles/?${params}`,
-        { credentials: 'include' }
+        { credentials: 'include', cache: 'no-store' }
       );
 
       if (!listRes.ok) throw new Error(`Failed to fetch profiles: ${listRes.status}`);
@@ -279,7 +279,7 @@ export function useBrandProfile({
       // Step 2: Fetch detail with nested assets + tokens
       const detailRes = await fetch(
         `${apiBase}/api/v1/branding/profiles/${brandProfile.id}/`,
-        { credentials: 'include' }
+        { credentials: 'include', cache: 'no-store' }
       );
 
       if (!detailRes.ok) throw new Error(`Failed to fetch profile detail: ${detailRes.status}`);
