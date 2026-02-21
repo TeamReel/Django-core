@@ -414,7 +414,14 @@ function ProcessingBadge({ value }: { value: AssetVariantRaw | null | undefined 
   const normalized = normalizeVariantValue(value as any);
   if (!normalized) return null;
 
-  const { label, color, icon } = getProcessingStateLabel(normalized.processing_state);
+  // Detect false 'processed' state: if processed URL equals raw URL,
+  // no actual background removal happened — show as 'raw' instead.
+  let effectiveState = normalized.processing_state;
+  if (effectiveState === 'processed' && normalized.processed && normalized.processed === normalized.raw) {
+    effectiveState = 'raw';
+  }
+
+  const { label, color, icon } = getProcessingStateLabel(effectiveState);
   return (
     <span style={{
       display: 'inline-flex',

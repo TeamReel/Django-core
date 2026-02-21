@@ -195,11 +195,16 @@ export function getLineupReadyUrl(value: string | AssetVariantValue | null | und
 
 /**
  * Check if an asset variant is lineup-ready.
+ * A variant is only truly lineup-ready if 'processed' differs from 'raw'
+ * (meaning actual background removal / processing happened).
  */
 export function isLineupReady(value: string | AssetVariantValue | null | undefined): boolean {
   const normalized = normalizeVariantValue(value);
   if (!normalized) return false;
-  return normalized.processing_state === 'processed' && !!normalized.processed;
+  if (normalized.processing_state !== 'processed' || !normalized.processed) return false;
+  // If processed URL is identical to raw URL, no actual processing happened
+  if (normalized.processed === normalized.raw) return false;
+  return true;
 }
 
 /**

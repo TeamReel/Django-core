@@ -510,8 +510,18 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
             # Skip if already processed or currently processing
             if state == "processed":
-                skipped.append({"key": key, "reason": "already_processed"})
-                continue
+                # Check for false "processed" state: if processed URL == raw URL,
+                # no actual background removal happened (e.g. AI-generated video
+                # saved as processed without RVM). Allow re-processing.
+                processed_url = val.get("processed") if isinstance(val, dict) else None
+                if processed_url and processed_url != raw_url:
+                    skipped.append({"key": key, "reason": "already_processed"})
+                    continue
+                logger.info(
+                    "process_all_variants: variant key=%s has processed==raw, "
+                    "treating as unprocessed",
+                    key,
+                )
 
             # For "cancelling" state: allow reprocessing if stuck > 5 min
             if state == "cancelling":

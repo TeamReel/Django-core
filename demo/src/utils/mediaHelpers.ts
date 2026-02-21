@@ -198,7 +198,12 @@ export function getMediaProcessingState(
       const v = val as Record<string, any>;
       const state = v.processing_state;
       if (state === 'processed' && v.processed) {
-        hasProcessed = true;
+        // If processed URL equals raw URL, no actual processing happened
+        if (v.processed === v.raw) {
+          hasRaw = true;
+        } else {
+          hasProcessed = true;
+        }
       } else if (state === 'processing') {
         hasProcessing = true;
       } else if (v.raw || v.processed) {
