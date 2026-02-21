@@ -653,6 +653,8 @@ export default function HierarchyMatchDetailPage() {
   const [lineupSquadLoading, setLineupSquadLoading] = useState(false);
   const [lineupSaving, setLineupSaving] = useState(false);
   const [lineupSaveSuccess, setLineupSaveSuccess] = useState(false);
+  // Bench status: memberId -> 'wissel' | 'afwezig'
+  const [lineupBenchStatus, setLineupBenchStatus] = useState<Record<string, string>>({});
 
   const isTeamRoute = Boolean(clubId);
   const orgSlugOrId = String(orgId || '').trim();
@@ -1213,6 +1215,9 @@ export default function HierarchyMatchDetailPage() {
           player: saved.player || [],
         });
       }
+      if (saved.bench) {
+        setLineupBenchStatus(saved.bench);
+      }
     } else if (match?.metadata?.formation) {
       setLineupFormation(match.metadata.formation);
     }
@@ -1249,6 +1254,7 @@ export default function HierarchyMatchDetailPage() {
         formation: lineupFormation,
         goalkeeper: lineupSlots.goalkeeper || [],
         player: lineupSlots.player || [],
+        bench: lineupBenchStatus,
       };
       await saveMatchEdits(match, {
         metadata: {
@@ -2989,13 +2995,19 @@ export default function HierarchyMatchDetailPage() {
                     </div>
                   ) : (() => {
                     const formationLayout = FORMATION_LAYOUTS[lineupFormation] || FORMATION_LAYOUTS['4-3-3'];
+                    // Dedup helper: use underlying user id to avoid duplicate names
+                    const getUserKey = (p: any): string => {
+                      const user = p.user || p.member;
+                      if (user?.id) return String(user.id);
+                      return String(p.id);
+                    };
                     const gkPool = (lineupSquad.goalkeeper || [])
-                      .filter((p: any, idx: number, arr: any[]) => arr.findIndex((x: any) => x.id === p.id) === idx);
+                      .filter((p: any, idx: number, arr: any[]) => arr.findIndex((x: any) => getUserKey(x) === getUserKey(p)) === idx);
                     const allMembers = Object.values(lineupSquad).flat() as any[];
-                    const gkIds = new Set(gkPool.map((p: any) => p.id));
+                    const gkUserKeys = new Set(gkPool.map((p: any) => getUserKey(p)));
                     const playerPool = allMembers
-                      .filter((p: any) => !gkIds.has(p.id))
-                      .filter((p: any, idx: number, arr: any[]) => arr.findIndex((x: any) => x.id === p.id) === idx);
+                      .filter((p: any) => !gkUserKeys.has(getUserKey(p)))
+                      .filter((p: any, idx: number, arr: any[]) => arr.findIndex((x: any) => getUserKey(x) === getUserKey(p)) === idx);
 
                     const gkSelected = lineupSlots.goalkeeper || [];
                     const playerSelected = lineupSlots.player || [];
@@ -3187,25 +3199,103 @@ export default function HierarchyMatchDetailPage() {
                             </button>
                           </div>
                         </div>
+
+                        {/* Bench: squad members not in lineup */}
+                        {(() => {
+                          const allPool = [...gkPool, ...playerPool];
+                          const usedIds = new Set([...gkSelected, ...playerSelected].filter(Boolean));
+                          const benchMembers = allPool.filter((p: any) => !usedIds.has(p.id));
+
+                          if (benchMembers.length === 0) return null;
+
+                          return (
+                            <div style={{
+                              maxWidth: 500,
+                              margin: '0 auto',
+                              width: '100%',
+                            }}>
+                              <div style={{
+                                fontSize: 14,
+                                fontWeight: 700,
+                                color: 'var(--app-text, #ccc)',
+                                marginBottom: 8,
+                              }}>Overige selectie ({benchMembers.length})</div>
+                              <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 4,
+                                background: 'var(--app-surface-secondary, #2a2a2a)',
+                                borderRadius: 8,
+                                padding: '8px 0',
+                              }}>
+                                {benchMembers.map((p: any) => {
+                                  const name = getSquadMemberName(p);
+                                  const jersey = p.metadata?.shirt_number || p.data?.jersey_number;
+                                  const status = lineupBenchStatus[p.id] || '';
+                                  return (
+                                    <div
+                                      key={p.id}
+                                      style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '6px 14px',
+                                        gap: 8,
+                                      }}
+                                    >
+                                      <span style={{
+                                        fontSize: 13,
+                                        color: 'var(--app-text, #ccc)',
+                                        fontWeight: 500,
+                                      }}>
+                                        {jersey ? `#${jersey} ` : ''}{name}
+                                      </span>
+                                      <div style={{ display: 'flex', gap: 4 }}>
+                                        <button
+                                          onClick={() => setLineupBenchStatus(prev => {
+                                            const next = { ...prev };
+                                            if (next[p.id] === 'wissel') { delete next[p.id]; } else { next[p.id] = 'wissel'; }
+                                            return next;
+                                          })}
+                                          style={{
+                                            padding: '3px 10px',
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            borderRadius: 4,
+                                            border: status === 'wissel' ? '2px solid #f59e0b' : '1px solid var(--app-border, #444)',
+                                            background: status === 'wissel' ? 'rgba(245,158,11,0.15)' : 'transparent',
+                                            color: status === 'wissel' ? '#f59e0b' : 'var(--app-text-secondary, #999)',
+                                            cursor: 'pointer',
+                                          }}
+                                        >Wissel</button>
+                                        <button
+                                          onClick={() => setLineupBenchStatus(prev => {
+                                            const next = { ...prev };
+                                            if (next[p.id] === 'afwezig') { delete next[p.id]; } else { next[p.id] = 'afwezig'; }
+                                            return next;
+                                          })}
+                                          style={{
+                                            padding: '3px 10px',
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            borderRadius: 4,
+                                            border: status === 'afwezig' ? '2px solid #ef4444' : '1px solid var(--app-border, #444)',
+                                            background: status === 'afwezig' ? 'rgba(239,68,68,0.15)' : 'transparent',
+                                            color: status === 'afwezig' ? '#ef4444' : 'var(--app-text-secondary, #999)',
+                                            cursor: 'pointer',
+                                          }}
+                                        >Afwezig</button>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   })()}
-                </div>
-              </Card>
-
-              {/* Existing roster assignment tables below */}
-              <Card title="📋 Spelersselectie">
-                <div style={{ padding: '16px' }}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {renderLineupEditor('home')}
-                    {match.opponent_project ? (
-                      renderLineupEditor('away')
-                    ) : (
-                      <Card title="Lineup: Opponent">
-                        <Alert variant="info">No opponent team configured for this match.</Alert>
-                      </Card>
-                    )}
-                  </div>
                 </div>
               </Card>
             </div>
