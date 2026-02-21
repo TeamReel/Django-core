@@ -1540,14 +1540,22 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
   // Show club name (parent project) instead of team name (child project) in match titles
   const matchDisplayTitle = (m: any, fallback?: string) => {
+    // Prefer a clean title built from metadata club names
+    const ctx = m.metadata?.teamreel?.match_context;
+    const homeClubName = ctx?.home_club_name || '';
+    const awayClubName = ctx?.away_club_name || '';
+    const oppClubId = String(ctx?.opponent_club_id || '').trim();
+    const resolvedAwayClub = oppClubId ? opponentClubNames[oppClubId] : '';
+    const homeName = homeClubName || club?.name || project?.name || '';
+    const awayName = resolvedAwayClub || awayClubName || m.opponent_project?.name || '';
+    if (homeName && awayName) return `${homeName} vs ${awayName}`;
+
+    // Fallback: string replacement on stored title
     let raw = m.title || m.name || fallback || `Match ${m.id}`;
-    // Replace home team name with club name
     if (project?.name && club?.name && project.name !== club.name) {
       raw = raw.replace(project.name, club.name);
     }
-    // Replace opponent team name with opponent club name
-    const oppClubId = String(m.metadata?.teamreel?.match_context?.opponent_club_id || '').trim();
-    const oppTeamName = m.opponent_project?.name || m.metadata?.teamreel?.match_context?.away_team_name || '';
+    const oppTeamName = m.opponent_project?.name || ctx?.away_team_name || '';
     const oppClubName = oppClubId ? opponentClubNames[oppClubId] : '';
     if (oppTeamName && oppClubName && oppTeamName !== oppClubName) {
       raw = raw.replace(oppTeamName, oppClubName);
