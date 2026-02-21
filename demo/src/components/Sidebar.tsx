@@ -1317,10 +1317,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 <AppIcon icon={item.icon} size={18} />
                             </span>
                             {isOpen && <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 500 }}>{item.label}</span>}
-                            {isOpen && item.path === '/approvals' && queueCounts.review > 0 && (
+                            {isOpen && item.path === '/approvals' && (queueCounts.review > 0 || queueCounts.active > 0) && (
                               <span style={{
                                 marginLeft: 'auto',
-                                backgroundColor: '#dc3545',
+                                backgroundColor: queueCounts.review > 0 ? '#dc3545' : '#f59e0b',
                                 color: '#fff',
                                 borderRadius: 10,
                                 padding: '1px 6px',
@@ -1330,15 +1330,15 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 textAlign: 'center',
                                 lineHeight: '16px',
                               }}>
-                                {queueCounts.review}
+                                {queueCounts.review > 0 ? queueCounts.review : queueCounts.active}
                               </span>
                             )}
-                            {!isOpen && item.path === '/approvals' && queueCounts.review > 0 && (
+                            {!isOpen && item.path === '/approvals' && (queueCounts.review > 0 || queueCounts.active > 0) && (
                               <span style={{
                                 position: 'absolute',
                                 top: 4,
                                 right: 4,
-                                backgroundColor: '#dc3545',
+                                backgroundColor: queueCounts.review > 0 ? '#dc3545' : '#f59e0b',
                                 color: '#fff',
                                 borderRadius: 10,
                                 padding: '1px 5px',
@@ -1348,7 +1348,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 textAlign: 'center',
                                 lineHeight: '14px',
                               }}>
-                                {queueCounts.review}
+                                {queueCounts.review > 0 ? queueCounts.review : queueCounts.active}
                               </span>
                             )}
                         </NavLink>

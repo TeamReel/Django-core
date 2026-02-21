@@ -28,7 +28,7 @@ import { useTheme } from '@django-core/theme-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Home, Menu, X, ChevronDown, ChevronUp, Sun, Moon,
-  Globe, Bell, Coins, LucideIcon, PanelLeftOpen, PanelLeftClose, Command, Plus
+  Globe, Bell, Coins, LucideIcon, PanelLeftOpen, PanelLeftClose, Command, Plus, ListChecks
 } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 import { useUserRole } from './PermissionGuards';
@@ -37,6 +37,7 @@ import { SearchBar } from './SearchBar';
 import Breadcrumbs from './Breadcrumbs';
 import CommandPalette from './CommandPalette';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { useQueueCounts } from '../hooks/useQueueCounts';
 
 interface NavGroup {
   id: string;
@@ -76,6 +77,9 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   const { signOut, loading: signOutLoading } = useSignOut();
   const { mode, setTheme } = useTheme();
   const { context } = useContextSwitcher();
+  const queueCounts = useQueueCounts(30000);
+  const queueBadgeCount = queueCounts.review > 0 ? queueCounts.review : queueCounts.active;
+  const queueBadgeColor = queueCounts.review > 0 ? '#dc3545' : '#f59e0b';
   const debugLog = (...args: unknown[]) => {
     if (import.meta.env.DEV) console.log(...args);
   };
@@ -924,6 +928,40 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               )}
             </div>
             )}
+
+            {/* Queue Icon - shows active/review count */}
+            <button
+              onClick={() => navigate('/approvals')}
+              className="nav-right-fixed nav-icon-button"
+              aria-label="Queue"
+              style={{
+                position: 'relative',
+                padding: '8px',
+                backgroundColor: 'transparent',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '20px',
+                flexShrink: 0,
+              }}
+              title="Queue"
+            >
+              <AppIcon icon={ListChecks} size={20} />
+              {(queueBadgeCount > 0) && (
+                <span style={{
+                  position: 'absolute',
+                  top: '4px',
+                  right: '4px',
+                  backgroundColor: queueBadgeColor,
+                  color: 'white',
+                  borderRadius: '10px',
+                  padding: '2px 6px',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                }}>
+                  {queueBadgeCount}
+                </span>
+              )}
+            </button>
 
             {/* Notification Icon - always visible */}
             <button
