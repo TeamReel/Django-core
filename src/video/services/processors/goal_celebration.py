@@ -175,3 +175,7 @@ class GoalCelebrationProcessor(BaseVideoProcessor):
         )
 
         return file_asset
+
+    def build_command(self, input_path: str, output_path: str) -> list[str]:
+        """Not used for goal celebration processor (custom execute flow)."""
+        return []

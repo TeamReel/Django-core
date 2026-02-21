@@ -2961,7 +2961,7 @@ export default function ContentGenerationModal({
                       </div>
                     </div>
 
-                    {/* Goal scorer selector */}
+                    {/* Goal scorer dropdown selector */}
                     <div>
                       <label style={{
                         display: 'block',
@@ -2972,14 +2972,21 @@ export default function ContentGenerationModal({
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                       }}>Doelpuntenmaker</label>
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                        gap: 8,
-                        maxHeight: 300,
-                        overflowY: 'auto',
-                      }}>
-                        {/* Show all players (goalkeeper + player roles) who have celebration or intro video */}
+                      <select
+                        value={goalScorerId || ''}
+                        onChange={(e) => setGoalScorerId(e.target.value || null)}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          fontSize: 14,
+                          border: '1px solid var(--vscode-widget-border, #ccc)',
+                          borderRadius: 8,
+                          background: 'var(--vscode-input-background, #fff)',
+                          color: 'var(--vscode-foreground, #333)',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <option value="">-- Selecteer speler --</option>
                         {[...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || [])]
                           .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx) // dedupe
                           .map((member) => {
@@ -2997,84 +3004,21 @@ export default function ContentGenerationModal({
                             const hasIntro = videos?.intro && Object.keys(videos.intro).length > 0;
                             const hasVideoAsset = hasCelebration || hasIntro;
 
-                            // Get profile photo for thumbnail
-                            const images = tr?.images || {};
-                            const profileUrl = images?.closeup?.home?.url || images?.closeup?.goalkeeper?.url || images?.fullbody?.home?.url || images?.fullbody?.goalkeeper?.url || null;
-
-                            const isSelected = goalScorerId === member.id;
-
                             return (
-                              <button
+                              <option
                                 key={member.id}
-                                onClick={() => setGoalScorerId(member.id)}
+                                value={member.id}
+                                disabled={!hasVideoAsset}
                                 style={{
-                                  position: 'relative',
-                                  border: isSelected
-                                    ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                                    : '1px solid var(--vscode-widget-border, #ddd)',
-                                  borderRadius: 8,
-                                  overflow: 'hidden',
-                                  cursor: 'pointer',
-                                  padding: 0,
-                                  background: isSelected
-                                    ? 'var(--vscode-list-activeSelectionBackground, #e0f0ff)'
-                                    : 'var(--vscode-editor-background, #fff)',
-                                  opacity: hasVideoAsset ? 1 : 0.5,
-                                  transition: 'all 0.15s ease',
+                                  color: hasVideoAsset ? 'inherit' : '#999',
+                                  fontWeight: hasVideoAsset ? 500 : 400,
                                 }}
-                                title={!hasVideoAsset ? 'Geen celebration/intro video beschikbaar' : name}
                               >
-                                {/* Photo or placeholder */}
-                                <div style={{
-                                  width: '100%',
-                                  aspectRatio: '1/1',
-                                  background: profileUrl
-                                    ? `url(${profileUrl}) center/cover`
-                                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                }}>
-                                  {!profileUrl && (
-                                    <span style={{ fontSize: 24, color: '#fff' }}>👤</span>
-                                  )}
-                                  {hasCelebration && (
-                                    <div style={{
-                                      position: 'absolute', bottom: 4, left: 4,
-                                      background: '#10b981',
-                                      borderRadius: 4,
-                                      padding: '1px 4px',
-                                      fontSize: 9,
-                                      fontWeight: 700,
-                                      color: '#fff',
-                                    }}>🎉</div>
-                                  )}
-                                </div>
-                                <div style={{
-                                  padding: '4px 2px',
-                                  textAlign: 'center',
-                                  fontWeight: 600,
-                                  fontSize: 10,
-                                  color: isSelected ? 'var(--vscode-focusBorder, #007fd4)' : 'var(--vscode-foreground, #555)',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                }}>
-                                  {name.split(' ').slice(-1)[0]}
-                                </div>
-                                {isSelected && (
-                                  <div style={{
-                                    position: 'absolute', top: 3, right: 3,
-                                    width: 16, height: 16, borderRadius: '50%',
-                                    background: '#10b981', display: 'flex',
-                                    alignItems: 'center', justifyContent: 'center',
-                                    fontSize: 9, color: '#fff', fontWeight: 700,
-                                  }}>✓</div>
-                                )}
-                              </button>
+                                {name}{hasCelebration ? ' 🎉' : hasIntro ? ' 🎬' : ' (geen video)'}
+                              </option>
                             );
                           })}
-                      </div>
+                      </select>
                       {!goalScorerId && (
                         <div style={{ fontSize: 11, color: '#e11d48', marginTop: 6 }}>
                           Selecteer een doelpuntenmaker
