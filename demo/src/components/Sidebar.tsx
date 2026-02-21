@@ -576,8 +576,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
-                    { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
-                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                     { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
                 ];
                 break;
@@ -628,9 +626,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
-                    { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
                     { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
-                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
             }
@@ -674,8 +670,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
                                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
                                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
-                                    { label: 'Users', path: makeTabUrl(baseUrl, 'users'), icon: Users },
-                                    { label: 'Audit', path: makeTabUrl(baseUrl, 'audit'), icon: Scroll },
+                                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                                 ];
                                 break;
                         }
@@ -698,9 +693,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
                     { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
-                    { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
                     { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
-                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                 ];
                 break;
             }

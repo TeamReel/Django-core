@@ -1,8 +1,6 @@
 ﻿import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
-import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 import { AssetsTab } from '../../components/AssetsTab';
-import { KitsTab } from '../../components/KitsTab';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
@@ -424,7 +422,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'assets', 'identity', 'kits', 'workflow']);
+    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'assets', 'workflow']);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
 
@@ -1547,9 +1545,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             { id: 'content', label: 'Content' },
             { id: 'transactions', label: 'Transactions' },
             { id: 'assets', label: 'Assets' },
-            { id: 'kits', label: 'Kits' },
             { id: 'workflow', label: 'Workflow' },
-            { id: 'identity', label: 'Identity' },
           ]}
           activeTab={activeTab}
         />
@@ -2291,7 +2287,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                                 onClick={() => navigate(matchPath)}
                                                 style={{ textAlign: 'left', fontWeight: 700, fontSize: 13, color: '#60a5fa' }}
                                               >
-                                                {match.title || match.name}
+                                                {(() => {
+                                                  const raw = match.title || match.name || '';
+                                                  if (project?.name && club?.name && project.name !== club.name) {
+                                                    return raw.replace(project.name, club.name);
+                                                  }
+                                                  return raw;
+                                                })()}
                                               </button>
                                               <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
                                                 {match.start_time ? new Date(match.start_time).toLocaleString() : '"”'}
@@ -3341,7 +3343,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   className="hover:underline"
                                   style={{ textDecoration: 'none', color: '#60a5fa' }}
                                 >
-                                  {match.title || match.name}
+                                  {(() => {
+                                    const raw = match.title || match.name || '';
+                                    if (project?.name && club?.name && project.name !== club.name) {
+                                      return raw.replace(project.name, club.name);
+                                    }
+                                    return raw;
+                                  })()}
                                 </Link>
                                   );
                                 })()}
@@ -3527,24 +3535,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 }}
               />
             </div>
-          )}
-
-          {activeTab === 'kits' && season && project && (
-            <KitsTab
-              projectSlug={project.slug || String(project.id)}
-              projectName={project.name}
-              brandProfileId={brandProfileId}
-              orgId={String(org?.id || '')}
-            />
-          )}
-
-          {activeTab === 'identity' && season && project && (
-            <BrandIdentityPage
-              projectId={String(project.id)}
-              projectName={project.name}
-              seasonId={String(season.id)}
-              seasonName={season.name}
-            />
           )}
 
           {activeTab === 'workflow' && season && project && (

@@ -16,7 +16,6 @@ import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySett
 import MobileTabBar from '../../components/MobileTabBar';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
-import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 import { AssetsTab } from '../../components/AssetsTab';
 import { KitsTab } from '../../components/KitsTab';
 import { MemberMediaMatrix } from '../../components/MemberMediaMatrix';
@@ -235,7 +234,6 @@ export default function TeamOrganisationDetailPage() {
       'balance',
       'transactions',
       'assets',
-      'identity',
       'kits',
     ]);
     return allowed.has(normalized) ? normalized : 'overview';
@@ -886,7 +884,6 @@ export default function TeamOrganisationDetailPage() {
             { id: 'balance', label: 'Balance' },
             { id: 'transactions', label: 'Transactions' },
             { id: 'assets', label: 'Assets' },
-            { id: 'identity', label: 'Identity' },
             { id: 'kits', label: 'Kits' },
           ]}
           activeTab={activeTabFromUrl}
@@ -1354,13 +1351,6 @@ export default function TeamOrganisationDetailPage() {
                   setTeam((prev) => ({ ...(prev as any), ...(updated as any) }));
                 }
               }}
-            />
-          )}
-
-          {activeTabFromUrl === 'identity' && team && org && (
-            <BrandIdentityPage
-              projectId={String(team.id)}
-              projectName={team.name}
             />
           )}
 

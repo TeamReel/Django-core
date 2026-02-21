@@ -2888,9 +2888,9 @@ export default function HierarchyMatchDetailPage() {
                     };
                     const gkPool = (lineupSquad.goalkeeper || [])
                       .filter((p: any, idx: number, arr: any[]) => arr.findIndex((x: any) => getUserKey(x) === getUserKey(p)) === idx);
-                    const allMembers = Object.values(lineupSquad).flat() as any[];
+                    const playersOnly = [...(lineupSquad.goalkeeper || []), ...(lineupSquad.player || [])];
                     const gkUserKeys = new Set(gkPool.map((p: any) => getUserKey(p)));
-                    const playerPool = allMembers
+                    const playerPool = playersOnly
                       .filter((p: any) => !gkUserKeys.has(getUserKey(p)))
                       .filter((p: any, idx: number, arr: any[]) => arr.findIndex((x: any) => getUserKey(x) === getUserKey(p)) === idx);
 

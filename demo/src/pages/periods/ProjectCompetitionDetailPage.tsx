@@ -18,6 +18,7 @@ import AddMemberModal from '../identity/AddMemberModal';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import ProjectSeasonMemberDetailPage from './ProjectSeasonMemberDetailPage';
 import MobileTabBar from '../../components/MobileTabBar';
+import { CONTENT_TYPES } from '../identity/ContentGenerationModal';
 import {
   actionButtonStyle,
   ActionTone,
@@ -927,6 +928,8 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const [members, setMembers] = useState<any[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [membersLoading, setMembersLoading] = useState(false);
+  const [matchMediaMap, setMatchMediaMap] = useState<Record<string, any[]>>({});
+  const [matchMediaLoading, setMatchMediaLoading] = useState(false);
   const [hierarchySearch, setHierarchySearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -991,7 +994,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'hierarchy', 'matches', 'users', 'audit']);
+    const allowed = new Set(['overview', 'hierarchy', 'matches', 'content']);
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
 
@@ -1179,8 +1182,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     { id: 'overview', label: 'Overview' },
     { id: 'hierarchy', label: 'Hierarchy' },
     { id: 'matches', label: 'Matches' },
-    { id: 'users', label: 'Users' },
-    { id: 'audit', label: 'Audit' },
+    { id: 'content', label: 'Content' },
   ];
 
   const competitionMatchesCount = useMemo(() => {
@@ -1383,7 +1385,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
   // Fetch matches only on tabs that need them.
   useEffect(() => {
-    const needsMatches = activeTab === 'hierarchy' || activeTab === 'matches' || activeTab === 'overview';
+    const needsMatches = activeTab === 'hierarchy' || activeTab === 'matches' || activeTab === 'overview' || activeTab === 'content';
     if (!needsMatches) return;
 
     const projectNumericId = String((project as any)?.id || '').trim();
@@ -1420,6 +1422,41 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
       cancelled = true;
     };
   }, [activeTab, apiBaseUrl, competition, project, resolvedCompetitionId]);
+
+  // Fetch media items for all matches (for content matrix)
+  useEffect(() => {
+    if (activeTab !== 'content') return;
+    if (!matches.length) return;
+
+    let cancelled = false;
+    const run = async () => {
+      setMatchMediaLoading(true);
+      try {
+        const mediaMap: Record<string, any[]> = {};
+        await Promise.all(
+          matches.map(async (match) => {
+            try {
+              const res = await fetch(
+                `${apiBaseUrl}/api/v1/media/items/?activity=${match.id}`,
+                { credentials: 'include' }
+              );
+              if (!res.ok) return;
+              const raw = await res.json();
+              const items = Array.isArray(raw) ? raw : (raw?.results || raw?.data?.results || raw?.data || []);
+              mediaMap[String(match.id)] = Array.isArray(items) ? items : [];
+            } catch {
+              mediaMap[String(match.id)] = [];
+            }
+          })
+        );
+        if (!cancelled) setMatchMediaMap(mediaMap);
+      } finally {
+        if (!cancelled) setMatchMediaLoading(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [activeTab, apiBaseUrl, matches]);
 
   // Fetch competition users only when needed.
   useEffect(() => {
@@ -1761,7 +1798,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             { id: 'overview', label: 'Overview' },
             { id: 'hierarchy', label: 'Hierarchy' },
             { id: 'matches', label: 'Matches' },
-            { id: 'users', label: 'Users' },
+            { id: 'content', label: 'Content' },
           ]}
           activeTab={activeTab}
         />
@@ -2073,7 +2110,126 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 </Card>
               )}
 
-              {activeTab === 'users' && (
+              {activeTab === 'content' && (() => {
+                const matchContentTypes = [
+                  ...CONTENT_TYPES.pre_match.items,
+                  ...CONTENT_TYPES.during_match.items,
+                  ...CONTENT_TYPES.post_match.items,
+                ];
+                // Sort matches by date (earliest first)
+                const sortedMatches = [...matches].sort((a, b) => {
+                  const da = a.start_time ? new Date(a.start_time).getTime() : 0;
+                  const db = b.start_time ? new Date(b.start_time).getTime() : 0;
+                  return da - db;
+                });
+
+                const getMediaForMatch = (matchId: string, subtype: string) => {
+                  const items = matchMediaMap[matchId] || [];
+                  return items.find((m: any) => String(m.subtype || m.media_subtype || '').toLowerCase() === subtype.toLowerCase());
+                };
+
+                return (
+                  <Card title="📊 Content Matrix">
+                    <div style={{ padding: '16px' }}>
+                      {matchMediaLoading ? (
+                        <Alert variant="info">Media laden…</Alert>
+                      ) : sortedMatches.length === 0 ? (
+                        <Alert variant="info">Geen wedstrijden gevonden.</Alert>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                            <thead>
+                              <tr>
+                                <th style={{
+                                  textAlign: 'left', padding: '8px 10px', borderBottom: '2px solid var(--app-border, #333)',
+                                  fontWeight: 700, color: 'var(--app-text-secondary, #999)', fontSize: 11,
+                                  position: 'sticky', left: 0, background: 'var(--app-surface, #1a1a1a)', zIndex: 1,
+                                  minWidth: 160,
+                                }}>Wedstrijd</th>
+                                <th style={{
+                                  textAlign: 'left', padding: '8px 6px', borderBottom: '2px solid var(--app-border, #333)',
+                                  fontWeight: 600, color: 'var(--app-text-secondary, #999)', fontSize: 11,
+                                  minWidth: 80,
+                                }}>Datum</th>
+                                {matchContentTypes.map(ct => (
+                                  <th key={ct.id} style={{
+                                    textAlign: 'center', padding: '8px 4px',
+                                    borderBottom: '2px solid var(--app-border, #333)',
+                                    fontWeight: 600, color: 'var(--app-text-secondary, #999)', fontSize: 10,
+                                    minWidth: 36, maxWidth: 50,
+                                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                                  }} title={ct.label}>
+                                    {ct.icon}
+                                  </th>
+                                ))}
+                                <th style={{
+                                  textAlign: 'center', padding: '8px 6px',
+                                  borderBottom: '2px solid var(--app-border, #333)',
+                                  fontWeight: 600, color: 'var(--app-text-secondary, #999)', fontSize: 11,
+                                }}>Score</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {sortedMatches.map((match) => {
+                                const matchId = String(match.id);
+                                const done = matchContentTypes.filter(ct => getMediaForMatch(matchId, ct.subtype)).length;
+                                return (
+                                  <tr key={matchId} style={{ borderBottom: '1px solid var(--app-border, #222)' }}>
+                                    <td style={{
+                                      padding: '6px 10px', fontWeight: 600, fontSize: 12,
+                                      position: 'sticky', left: 0, background: 'var(--app-surface, #1a1a1a)', zIndex: 1,
+                                      maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                    }}>
+                                      {(() => {
+                                        const compId = String((match as any).period_id || match.period?.id || '').trim();
+                                        const compKey = periodPathKey((match as any).period || null) || compId;
+                                        const matchKey = (match as any).slug || match.id;
+                                        const seasonKeyOrId2 = periodPathKey(season as any) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
+                                        const matchPath = isTeamRoute
+                                          ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonKeyOrId2}/${compKey}/${String(matchKey)}`
+                                          : `/matches/${String(matchKey)}`;
+                                        return (
+                                          <Link to={matchPath} style={{ textDecoration: 'none', color: '#60a5fa' }} className="hover:underline">
+                                            {match.title || match.name}
+                                          </Link>
+                                        );
+                                      })()}
+                                    </td>
+                                    <td style={{ padding: '6px 6px', fontSize: 11, color: 'var(--app-text-secondary, #999)', whiteSpace: 'nowrap' }}>
+                                      {match.start_time ? new Date(match.start_time).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit' }) : '—'}
+                                    </td>
+                                    {matchContentTypes.map(ct => {
+                                      const media = getMediaForMatch(matchId, ct.subtype);
+                                      return (
+                                        <td key={ct.id} style={{ textAlign: 'center', padding: '6px 4px' }}>
+                                          <span title={media ? 'Gereed' : 'Niet gemaakt'} style={{ cursor: 'default', fontSize: 14 }}>
+                                            {media ? '✅' : '⬜'}
+                                          </span>
+                                        </td>
+                                      );
+                                    })}
+                                    <td style={{ textAlign: 'center', padding: '6px 6px', fontSize: 11, fontWeight: 600, color: done > 0 ? '#10b981' : 'var(--app-text-secondary, #999)' }}>
+                                      {done}/{matchContentTypes.length}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                          {/* Legend */}
+                          <div style={{ marginTop: 12, display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 11, color: 'var(--app-text-secondary, #999)' }}>
+                            <span>✅ = Gereed</span>
+                            <span>⬜ = Niet gemaakt</span>
+                            {matchContentTypes.map(ct => (
+                              <span key={ct.id} title={ct.label}>{ct.icon} {ct.label}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })()}
                 <Card>
                   <div style={{ padding: '16px' }}>
                     <div className="flex justify-between items-center mb-4">
