@@ -456,7 +456,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   // ── Generate guest player avatar ──────────────────────────────────
   const handleGenerateGuestAvatar = useCallback(async () => {
     const projectId = String((project as any)?.id || '').trim();
-    if (!projectId) return;
+    const organisationId = String(org?.id || '').trim();
+    if (!projectId || !organisationId) return;
 
     // Get team kit (tenue) and brand assets from BrandProfile (not project.metadata)
     const kitAsset = clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home');
@@ -473,7 +474,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
     setGuestPlayerGenerating(true);
     try {
-      // Step 1: Generate faceless player in tenue via AI
+      // Queue generation job (goes through approval workflow like other AI generations)
       const inputImageUrls: Record<string, string> = {
         reference_photo: tenueUrl,
       };
@@ -493,12 +494,17 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             sleeves: 'short',
             pose: 'standing_front',
             role: 'player',
-            guest_player: 'true',  // Must be string for DRF validation
+            guest_player: 'true',
           },
           variant_count: 1,
           input_images: {},
           input_image_urls: inputImageUrls,
           project_id: projectId,
+          organisation_id: organisationId,
+          asset_type: 'guest_player',
+          // Don't auto-save — let it go through approval queue
+          save_to_brand: false,
+          save_to_media_library: false,
         }),
       });
 
@@ -508,109 +514,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       }
 
       const genData = await genRes.json();
-
-      // Check if this is an async job (queued)
       const responseData = genData?.data || genData;
       const taskId = responseData?.task_id;
 
-      let variants: any[] = responseData?.variants || [];
-
-      // If no variants but we have a task_id, poll for result
-      if (!variants.length && taskId) {
-        // Poll status endpoint until completed
-        for (let i = 0; i < 60; i++) { // max 5 minutes (60 * 5s)
-          await new Promise(r => setTimeout(r, 5000)); // wait 5s
-
-          const statusRes = await fetch(
-            `${apiBaseUrl}/api/v1/generative/assets/generate/${taskId}/status/`,
-            { credentials: 'include' }
-          );
-
-          if (!statusRes.ok) {
-            throw new Error(`Status check failed: HTTP ${statusRes.status}`);
-          }
-
-          const statusJson = await statusRes.json();
-          const statusData = statusJson?.data || statusJson;
-
-          if (statusData.status === 'completed') {
-            variants = (statusData?.data?.variants || statusData?.variants || []);
-            break;
-          }
-
-          if (statusData.status === 'failed') {
-            throw new Error(statusData.error || 'Generation failed');
-          }
-
-          // Still processing, continue polling
-        }
-      }
-
-      const variant = variants?.[0];
-      if (!variant) throw new Error('No variant returned from generation');
-
-      // Step 2: Save generated asset to storage
-      const saveRes = await fetch(`${apiBaseUrl}/api/v1/generative/assets/save/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        body: JSON.stringify({
-          storage_path: variant.storage_info?.storage_path,
-          presigned_url: variant.presigned_url,
-          image_base64: variant.image_base64,
-          filename: variant.filename || 'guest_player_fullbody.png',
-          mime_type: variant.mime_type || 'image/png',
-          file_size_bytes: variant.storage_info?.file_size_bytes || 0,
-          project_id: projectId,
-          asset_type: 'guest_player',
-        }),
-      });
-
-      if (!saveRes.ok) {
-        throw new Error('Failed to save guest player asset');
-      }
-
-      const saveData = await saveRes.json();
-      const savedUrl = saveData?.data?.presigned_url || saveData?.presigned_url
-        || saveData?.data?.url || saveData?.url;
-
-      // Step 3: Save asset URL to project metadata via guest-player endpoint
-      const storagePath = saveData?.data?.storage_path || saveData?.storage_path
-        || variant.storage_info?.storage_path;
-
-      await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/guest-player/`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        body: JSON.stringify({
-          guest_player: {
-            images: {
-              fullbody: {
-                home: {
-                  url: storagePath || savedUrl,
-                  presigned_url: savedUrl,
-                  generated_at: new Date().toISOString(),
-                },
-              },
-            },
-          },
-        }),
-      });
-
-      // Refresh guest player state
-      const refreshRes = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/guest-player/`,
-        { credentials: 'include' }
-      );
-      if (refreshRes.ok) {
-        const raw = await refreshRes.json();
-        setGuestPlayer(raw?.data || raw);
+      if (taskId) {
+        alert('✅ Gast avatar generatie gestart! Check de Approvals pagina om het resultaat goed te keuren.');
+      } else {
+        alert('✅ Gast avatar generatie gestart!');
       }
 
     } catch (err) {
@@ -619,7 +529,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     } finally {
       setGuestPlayerGenerating(false);
     }
-  }, [project, clubBrand, apiBaseUrl]);
+  }, [project, org, clubBrand, apiBaseUrl]);
 
   const savePeriodEdits = async (periodToEdit: any, patch: any) => {
     const periodId = String(periodToEdit?.id || '').trim();
