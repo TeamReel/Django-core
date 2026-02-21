@@ -640,22 +640,27 @@ export default function ContentGenerationModal({
         setSelectedMembers({ goalkeeper: [], player: [], coach: [], assistant: [] });
         setTemplates([]);
 
-        // If template is provided, skip to members step
+        // If template is provided, skip to appropriate step
         if (initialTemplate) {
           setSelectedTemplate(initialTemplate);
           setSelectedType({ type: initialTemplate.template_type, subtype: initialTemplate.template_subtype || '', label: contentTypeLabel || initialTemplate.name });
 
-          // Check if template requires member selection
-          const needsMembers = initialTemplate.input_requirements?.members &&
-            Object.entries(initialTemplate.input_requirements.members).some(([key, val]) =>
-              key !== 'use_formation' && val && typeof val !== 'boolean' && val.count > 0
-            );
-
-          if (needsMembers) {
-            setStep('members');
-          } else {
-            // No members needed, go to confirm step
+          // Goal celebration always skips to confirm (has its own form)
+          if (initialTemplate.template_subtype === 'goal') {
             setStep('confirm');
+          } else {
+            // Check if template requires member selection
+            const needsMembers = initialTemplate.input_requirements?.members &&
+              Object.entries(initialTemplate.input_requirements.members).some(([key, val]) =>
+                key !== 'use_formation' && val && typeof val !== 'boolean' && val.count > 0
+              );
+
+            if (needsMembers) {
+              setStep('members');
+            } else {
+              // No members needed, go to confirm step
+              setStep('confirm');
+            }
           }
         } else {
           setStep('type');
