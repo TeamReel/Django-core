@@ -282,9 +282,12 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
       const kitType = params.kit_type || 'home';
       const kitUrl = brandAssets.kits[kitType] || brandAssets.kits['home'] || null;
 
-      // For intro/celebration templates, use the fullbody in tenue as person input
-      const isVideoTemplate = selectedTemplate?.outputType === 'video';
-      const personUrl = isVideoTemplate
+      // For intro/celebration templates AND closeup, use the fullbody in tenue as person input.
+      // Closeup needs the fullbody because its prompt says "DRESS this person in the kit"
+      // — the fullbody already has the correct kit, so the closeup crops from that.
+      const needsFullbodyAsInput = selectedTemplate?.outputType === 'video'
+        || selectedTemplate?.category === 'closeup';
+      const personUrl = needsFullbodyAsInput
         ? member.fullbodyUrls[kitType] || member.fullbodyUrls['home'] || member.profilePhotoUrl
         : member.profilePhotoUrl;
 
@@ -694,9 +697,13 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
 
       // Check if required inputs are available
       if (!inputAssets.person) {
+        const needsFullbody = selectedTemplate?.category === 'closeup' || selectedTemplate?.outputType === 'video';
         setJobStatuses((prev) => ({
           ...prev,
-          [member.id]: { status: 'skipped', error: 'Geen profielfoto' },
+          [member.id]: {
+            status: 'skipped',
+            error: needsFullbody ? 'Geen fullbody in tenue gevonden' : 'Geen profielfoto',
+          },
         }));
         continue;
       }
@@ -731,12 +738,19 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
             input_images: {},
             input_image_urls: inputImageUrls,
             organisation_id: organisationId,
+            project_id: projectId,
             membership_id: member.id,
+            asset_type: selectedTemplate.outputAssetType,
+            // Route image generations through approval queue (same as member detail page)
+            ...(selectedTemplate.outputType !== 'video' ? { save_to_brand: false, save_to_media_library: false } : {}),
           }),
         });
 
-        // ── Async path: video generation returns 202 + task_id ───────
+        // ── Async path: all generations now return 202 + task_id ─────
         let responseData: Record<string, unknown>;
+        const isImageTemplate = selectedTemplate?.outputType !== 'video';
+        // Images with save_to_brand=false go through approval queue — no need to poll/save
+        const routedToApproval = isImageTemplate;
 
         if (res.status === 202) {
           const asyncJson = await res.json();
@@ -744,6 +758,16 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
           const asyncData = asyncJson.data || asyncJson;
           const taskId = asyncData.task_id;
           if (!taskId) throw new Error('Backend returned 202 but no task_id');
+
+          if (routedToApproval) {
+            // Image routed to approval queue — mark as queued, don't poll
+            console.log(`📋 Batch: image task ${taskId} for ${member.name} → approval queue`);
+            setJobStatuses((prev) => ({
+              ...prev,
+              [member.id]: { status: 'success', error: '→ Approvals wachtrij' },
+            }));
+            continue; // Skip polling and auto-save, approval handles propagation
+          }
 
           console.log(`🎬 Batch: async video task ${taskId} for ${member.name}`);
           setJobStatuses((prev) => ({
