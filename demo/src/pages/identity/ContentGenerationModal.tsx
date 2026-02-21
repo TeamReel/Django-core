@@ -1661,6 +1661,9 @@ export default function ContentGenerationModal({
       } else if (templateSubtype === 'lineup_flyer') {
         const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
         brandAssetType = `lineup_flyer_${matchSuffix}`;
+      } else if (templateSubtype === 'goal' || templateSubtype === 'goal_celebration') {
+        const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
+        brandAssetType = `goal_celebration_${matchSuffix}`;
       } else if (templateSubtype === 'lineup' || isVideo) {
         // Lineup videos need a non-empty asset_type. Use a per-match unique value to avoid
         // overwriting due to unique(profile, asset_type).

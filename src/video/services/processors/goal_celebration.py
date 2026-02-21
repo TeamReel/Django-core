@@ -151,30 +151,37 @@ class GoalCelebrationProcessor(BaseVideoProcessor):
         return str(output_path)
 
     def _upload_output(self, output_path: str) -> FileAsset:
-        """Upload the composed video to storage and create a FileAsset."""
-        import uuid
-        from pathlib import Path
+        """Upload output to S3 under match/goal_celebration/ path when match context is available."""
+        import os
 
-        storage = get_storage_backend()
-        filename = f"goal_celebration_{uuid.uuid4().hex}.mp4"
-        storage_path = f"video/outputs/{self.job.project.id}/{filename}"
+        config = self.job.config or {}
+        match_id = config.get("match_id") or config.get("activity_id")
 
-        with open(output_path, "rb") as f:
-            storage.save(storage_path, f)
+        backend = get_storage_backend()
+        file_name = os.path.basename(output_path)
+        org_id = self.job.project.organisation_id
 
-        file_size = Path(output_path).stat().st_size
+        if match_id:
+            # Save under match/goal_celebration/ hierarchy (like lineup)
+            storage_path = f"matches/{org_id}/{match_id}/goal_celebration/{self.job.id}/{file_name}"
+        else:
+            # Fallback to standard video_outputs path
+            storage_path = f"video_outputs/{org_id}/{self.job.id}/{file_name}"
 
-        file_asset = FileAsset.objects.create(
-            project=self.job.project,
+        with open(output_path, "rb") as file_obj:
+            saved_path = backend.save(storage_path, file_obj)
+
+        file_size = os.path.getsize(output_path)
+
+        return FileAsset.objects.create(
+            organization_id=org_id,
             uploaded_by=self.job.created_by,
-            original_filename=filename,
-            storage_path=storage_path,
+            original_name=file_name,
+            storage_path=saved_path,
             file_size=file_size,
             mime_type="video/mp4",
-            storage_backend=storage.backend_name,
+            is_public=False,
         )
-
-        return file_asset
 
     def build_command(self, input_path: str, output_path: str) -> list[str]:
         """Not used for goal celebration processor (custom execute flow)."""
