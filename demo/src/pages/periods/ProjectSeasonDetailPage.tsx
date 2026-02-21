@@ -493,7 +493,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             sleeves: 'short',
             pose: 'standing_front',
             role: 'player',
-            guest_player: true,  // Signal to use a generic/anonymous face
+            guest_player: 'true',  // Must be string for DRF validation
           },
           variant_count: 1,
           input_images: {},
