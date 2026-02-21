@@ -115,6 +115,7 @@ export const CONTENT_TYPES = {
       { id: 'lineup', label: 'Lineup Video', icon: '🎬', subtype: 'lineup' },
       { id: 'lineup_flyer', label: 'Lineup Flyer', icon: '📋', subtype: 'lineup_flyer' },
       { id: 'match_intro', label: 'Match Intro', icon: '🎥', subtype: 'match_intro' },
+      { id: 'poster', label: 'Elftalfoto', icon: '📸', subtype: 'poster' },
       { id: 'walkon', label: 'Walk-on Video', icon: '🚶', subtype: 'walkon' },
       { id: 'anthem', label: 'Anthem Video', icon: '🎵', subtype: 'anthem' },
     ],
@@ -970,6 +971,83 @@ export default function ContentGenerationModal({
     }
   };
 
+  // Generate team poster (AI elftalfoto) — synchronous PNG generation
+  const handleGenerateTeamPoster = async () => {
+    setProgress(10);
+
+    try {
+      const projectId = matchData?.project?.id || season?.project_id;
+      if (!projectId) {
+        throw new Error('No project ID available');
+      }
+
+      if (!matchData?.id) {
+        throw new Error('No match/activity data available for poster generation');
+      }
+
+      // Build selected member IDs (1 GK + 10 players)
+      const targetGKs = selectedMembers.goalkeeper?.slice(0, 1) || [];
+      const targetPlayers = selectedMembers.player?.slice(0, 10) || [];
+
+      const formation = lineupFormation || matchData?.metadata?.formation || '4-3-3';
+
+      setProgress(20);
+
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/team-poster/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+          'X-Project-ID': String(projectId),
+        },
+        body: JSON.stringify({
+          activity_id: matchData.id,
+          template_id: selectedTemplate?.id || null,
+          formation: formation,
+          selected_member_ids: {
+            goalkeeper: targetGKs,
+            player: targetPlayers,
+          },
+        }),
+      });
+
+      setProgress(80);
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData?.error || errData?.detail || `Failed to generate team poster: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('📸 Team poster generated:', data);
+
+      const posterUrl = data.poster_url;
+      if (!posterUrl) {
+        throw new Error('Poster generated but no URL returned');
+      }
+
+      setGeneratedVariants([{
+        variant_index: 0,
+        image_base64: null,
+        presigned_url: posterUrl,
+        mime_type: 'image/png',
+        filename: `team_poster_${matchData.id}.png`,
+        error: null,
+        storage_info: null,
+        metadata: { type: 'poster', formation, activity_id: matchData.id },
+      }]);
+
+      setProgress(100);
+      setTimeout(() => setStep('success'), 300);
+
+    } catch (err) {
+      console.error('❌ Team poster generation failed:', err);
+      setGenerationError(err instanceof Error ? err.message : 'Poster generation failed');
+      setStep('error');
+    }
+  };
+
   // Generate match flyer (static PNG) in a single chosen design variant
   const handleGenerateMatchFlyer = async () => {
     setProgress(10);
@@ -1669,6 +1747,26 @@ export default function ContentGenerationModal({
       return;
     }
 
+    // Poster (elftalfoto) skips template — needs lineup squad selection
+    if (subtype === 'poster') {
+      // Set a synthetic template so lineup_squad step can read member requirements
+      setSelectedTemplate({
+        id: 'poster-synthetic',
+        name: 'Elftalfoto',
+        template_type: 'pre_match',
+        template_subtype: 'poster',
+        is_active: true,
+        input_requirements: {
+          members: {
+            goalkeeper: { count: 1, asset_types: ['home', 'away'] },
+            player: { count: 10, asset_types: ['home', 'away'] },
+          },
+        },
+      } as ContentTemplate);
+      setStep('members');
+      return;
+    }
+
     setStep('template');
     fetchTemplates(type, subtype);
   };
@@ -1733,6 +1831,13 @@ export default function ContentGenerationModal({
       if (templateSubtype === 'lineup_flyer') {
         clearInterval(progressInterval);
         await handleGenerateLineupFlyer();
+        return;
+      }
+
+      // Check if this is a team poster (elftalfoto) generation
+      if (templateSubtype === 'poster') {
+        clearInterval(progressInterval);
+        await handleGenerateTeamPoster();
         return;
       }
 
@@ -1908,6 +2013,9 @@ export default function ContentGenerationModal({
       } else if (templateSubtype === 'match_intro') {
         const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
         brandAssetType = `match_intro_${matchSuffix}`;
+      } else if (templateSubtype === 'poster') {
+        const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
+        brandAssetType = `poster_${matchSuffix}`;
       } else if (templateSubtype === 'lineup' || isVideo) {
         // Lineup videos need a non-empty asset_type. Use a per-match unique value to avoid
         // overwriting due to unique(profile, asset_type).
@@ -2019,8 +2127,15 @@ export default function ContentGenerationModal({
       setSelectedType(null);
       setTemplates([]);
     } else if (step === 'members') {
-      setStep('template');
-      setSelectedTemplate(null);
+      // Poster skipped template selection, go back to type
+      if (selectedType?.subtype === 'poster') {
+        setStep('type');
+        setSelectedType(null);
+        setSelectedTemplate(null);
+      } else {
+        setStep('template');
+        setSelectedTemplate(null);
+      }
     } else if (step === 'lineup_squad') {
       setStep('members');
     } else if (step === 'confirm') {
@@ -2028,7 +2143,7 @@ export default function ContentGenerationModal({
         Object.entries(selectedTemplate.input_requirements.members).some(([key, val]) =>
           key !== 'use_formation' && val && typeof val !== 'boolean' && val.count > 0
         );
-      const isLineup = selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer';
+      const isLineup = selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'poster';
       const isGoal = selectedType?.subtype === 'goal';
       if (isGoal) {
         // Goal celebration skips template step, go back to type selection
@@ -2052,10 +2167,13 @@ export default function ContentGenerationModal({
   const isLineupFlow =
     selectedType?.subtype === 'lineup' ||
     selectedType?.subtype === 'lineup_flyer' ||
+    selectedType?.subtype === 'poster' ||
     selectedTemplate?.template_subtype === 'lineup' ||
     selectedTemplate?.template_subtype === 'lineup_flyer' ||
+    selectedTemplate?.template_subtype === 'poster' ||
     initialTemplate?.template_subtype === 'lineup' ||
-    initialTemplate?.template_subtype === 'lineup_flyer';
+    initialTemplate?.template_subtype === 'lineup_flyer' ||
+    initialTemplate?.template_subtype === 'poster';
 
   // Helper to extract member name from participation
   const getMemberName = (p: Participation): string => {
@@ -2405,7 +2523,8 @@ export default function ContentGenerationModal({
                     </div>
                   </div>
 
-                  {/* Closeup style selector */}
+                  {/* Closeup style selector — not for poster */}
+                  {!(selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
                   <div>
                     <label style={{
                       display: 'block',
@@ -2466,9 +2585,10 @@ export default function ContentGenerationModal({
                       })}
                     </div>
                   </div>
+                  )}
 
-                  {/* Animation style selector — only for video, not for static flyer */}
-                  {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
+                  {/* Animation style selector — only for video, not for static flyer or poster */}
+                  {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
                   <div>
                     <label style={{
                       display: 'block',
@@ -2531,7 +2651,7 @@ export default function ContentGenerationModal({
                   )}
 
                   {/* Intro style selector — per line vs per player — only for video */}
-                  {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
+                  {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
                   <div>
                     <label style={{
                       display: 'block',

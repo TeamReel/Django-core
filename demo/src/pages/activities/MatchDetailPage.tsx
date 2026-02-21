@@ -2516,6 +2516,8 @@ export default function HierarchyMatchDetailPage() {
                           }
 
                           const hasTemplate = !!matchedTemplate;
+                          // Some subtypes skip template selection entirely (they go straight to confirm)
+                          const templateNotRequired = ['match_intro', 'goal', 'poster'].includes(item.subtype);
 
                           // Check generation status from contentItems
                           const existingItem = getContentItemForSubtype(item.subtype);
@@ -2556,7 +2558,7 @@ export default function HierarchyMatchDetailPage() {
                                   });
                                 }
                               }}
-                              onReplace={hasTemplate ? () => openContentModal(matchedTemplate, item.label) : undefined}
+                              onReplace={(hasTemplate || templateNotRequired) ? () => openContentModal(matchedTemplate, item.label) : undefined}
                               onDelete={(mi) => handleDeleteMediaItem(mi)}
                               onRestore={(mi) => handleRestoreMediaItem(mi)}
                             />

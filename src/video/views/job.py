@@ -1429,3 +1429,81 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         data = dict(output.data)
         data["sync_mode"] = False
         return Response(data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=["post"], url_path="team-poster")
+    def team_poster(self, request: Request) -> Response:
+        """Generate a team poster (AI elftalfoto) from lineup data.
+
+        POST /api/v1/video/jobs/team-poster/
+
+        Request body:
+        {
+            "activity_id": "uuid",           # Required: match/activity ID
+            "formation": "4-3-3",            # Optional: formation (default 4-3-3)
+            "selected_member_ids": {...}      # Optional: member selection
+        }
+
+        Returns:
+        {
+            "poster_url": "https://...",
+            "formation": "4-3-3",
+            "activity_id": "uuid"
+        }
+        """
+        from src.video.services.team_poster_generator import build_team_poster
+
+        activity_id = request.data.get("activity_id")
+        if not activity_id:
+            return Response(
+                {"error": "activity_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        formation = request.data.get("formation", "4-3-3")
+        selected_member_ids = request.data.get("selected_member_ids")
+        template_id = request.data.get("template_id")
+
+        # Validate activity exists and user has access
+        Activity = apps.get_model("activities", "Activity")
+        try:
+            activity = Activity.objects.select_related("project").get(id=activity_id)
+        except Activity.DoesNotExist:
+            return Response(
+                {"error": f"Activity {activity_id} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        project = activity.project
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+        if not ProjectMembership.objects.filter(project=project, user=request.user).exists():
+            raise PermissionDenied("You must be a project member to generate team posters.")
+
+        try:
+            poster_url = build_team_poster(
+                activity_id=str(activity_id),
+                template_id=str(template_id) if template_id else None,
+                formation=formation,
+                selected_member_ids=selected_member_ids,
+            )
+
+            return Response(
+                {
+                    "poster_url": poster_url,
+                    "formation": formation,
+                    "activity_id": str(activity_id),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            import traceback
+
+            logger.error(
+                "Failed to generate team poster: %s\n%s",
+                e,
+                traceback.format_exc(),
+            )
+            return Response(
+                {"error": f"Failed to generate team poster: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
