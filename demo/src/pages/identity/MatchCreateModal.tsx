@@ -535,11 +535,13 @@ export default function MatchCreateModal({
     if (!opened) return;
     if (titleTouched) return;
     if (!derived.titleDefault) return;
-    if (!title.trim() || title === titleAutoValue) {
+    // Always sync title from derived when user hasn't manually typed
+    // This ensures club names replace team names when club details load
+    if (title !== derived.titleDefault) {
       setTitle(derived.titleDefault);
       setTitleAutoValue(derived.titleDefault);
     }
-  }, [opened, titleTouched, title, titleAutoValue, derived.titleDefault]);
+  }, [opened, titleTouched, title, derived.titleDefault]);
 
   useEffect(() => {
     if (!opened) return;
@@ -1028,7 +1030,7 @@ export default function MatchCreateModal({
       // Football match default duration: 2 hours (includes warm-up/overrun)
       const end = addHoursToIsoLike(start, 2);
 
-      const finalTitle = title.trim() || derived.titleDefault || '';
+      const finalTitle = (titleTouched ? title.trim() : '') || derived.titleDefault || title.trim() || '';
       if (!finalTitle) throw new Error('Enter a title.');
 
       const finalLocation = (location || derived.locationDefault || '').trim() || undefined;
