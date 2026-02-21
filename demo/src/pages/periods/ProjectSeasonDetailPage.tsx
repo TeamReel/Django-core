@@ -34,6 +34,7 @@ import MobileTabBar from '../../components/MobileTabBar';
 import { WorkflowPanel } from '../../components/Workflows';
 import { BatchGenerationModal, type BatchMember } from '../../components/BatchGenerationModal';
 import { ActiveJobsModal } from '../../components/ActiveJobsModal';
+import { AssetGenerationModal, type SavedAssetInfo } from '../../components/AssetGenerationModal';
 import { useBrandProfile, getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
 import {
   actionButtonStyle,
@@ -227,6 +228,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [guestPlayer, setGuestPlayer] = useState<{ has_avatar: boolean; guest_player: any } | null>(null);
   const [guestPlayerLoading, setGuestPlayerLoading] = useState(false);
   const [guestPlayerGenerating, setGuestPlayerGenerating] = useState(false);
+
+  // Guest AI generation modal state
+  const [showGuestAiModal, setShowGuestAiModal] = useState(false);
+  const [guestAiPreselectedTemplate, setGuestAiPreselectedTemplate] = useState<string | undefined>();
+  const [guestAiSelectedKitType, setGuestAiSelectedKitType] = useState<string>('home');
 
   // Content generation state
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
@@ -453,88 +459,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     autoFetch: !!clubProjectId,
   });
 
-  // ── Generate guest player avatar ──────────────────────────────────
-  const handleGenerateGuestAvatar = useCallback(async () => {
-    const projectId = String((project as any)?.id || '').trim();
-    const organisationId = String(org?.id || '').trim();
-    if (!projectId || !organisationId) return;
-
-    // Get team kit (tenue) and brand assets from BrandProfile (not project.metadata)
-    const kitAsset = clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home');
-    const tenueUrl = kitAsset ? getAssetUrl(kitAsset.url) : null;
-    const logoAsset = clubBrand.getAsset?.('logo') || clubBrand.getAsset?.('logo_upload');
-    const logoUrl = logoAsset ? getAssetUrl(logoAsset.url) : null;
-    const sponsorAsset = clubBrand.getAsset?.('sponsor_logo') || clubBrand.getAsset?.('sponsor_logo_upload');
-    const sponsorUrl = sponsorAsset ? getAssetUrl(sponsorAsset.url) : null;
-
-    if (!tenueUrl) {
-      alert('Club tenue ontbreekt. Upload eerst het kit-afbeelding via de Assets tab.');
-      return;
-    }
-
-    setGuestPlayerGenerating(true);
-    try {
-      // Queue generation job (goes through approval workflow like other AI generations)
-      const inputImageUrls: Record<string, string> = {
-        reference_photo: tenueUrl,
-      };
-      if (logoUrl) inputImageUrls.logo = logoUrl;
-      if (sponsorUrl) inputImageUrls.sponsor = sponsorUrl;
-
-      const genRes = await fetch(`${apiBaseUrl}/api/v1/generative/assets/generate/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        body: JSON.stringify({
-          template_id: 'fullbody_in_tenue',
-          params: {
-            sleeves: 'short',
-            pose: 'standing_front',
-            role: 'player',
-            guest_player: 'true',
-          },
-          variant_count: 1,
-          input_images: {},
-          input_image_urls: inputImageUrls,
-          project_id: projectId,
-          organisation_id: organisationId,
-          asset_type: 'guest_player',
-          // Don't auto-save — let it go through approval queue
-          save_to_brand: false,
-          save_to_media_library: false,
-        }),
-      });
-
-      if (!genRes.ok) {
-        const err = await genRes.json().catch(() => ({}));
-        throw new Error(err?.error || err?.detail || `Generation failed: ${genRes.status}`);
-      }
-
-      const genData = await genRes.json();
-      const responseData = genData?.data || genData;
-      const taskId = responseData?.task_id;
-
-      if (taskId) {
-        alert('✅ Gast avatar generatie gestart! Keur deze goed via de Approvals pagina, daarna verschijnt deze automatisch op deze pagina.');
-      } else {
-        alert('✅ Gast avatar generatie gestart!');
-      }
-
-      // Refresh the page after a short delay to check if guest player was approved
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
-
-    } catch (err) {
-      console.error('Guest player generation failed:', err);
-      alert(`Fout bij genereren gast speler: ${err instanceof Error ? err.message : 'Onbekende fout'}`);
-    } finally {
-      setGuestPlayerGenerating(false);
-    }
-  }, [project, org, clubBrand, apiBaseUrl]);
+  // ── Open guest player AI generation modal ──────────────────────────
+  const openGuestAiModal = useCallback((templateId: string, kitType?: string) => {
+    setGuestAiPreselectedTemplate(templateId);
+    setGuestAiSelectedKitType(kitType || 'home');
+    setShowGuestAiModal(true);
+  }, []);
 
   const savePeriodEdits = async (periodToEdit: any, patch: any) => {
     const periodId = String(periodToEdit?.id || '').trim();
@@ -873,11 +803,20 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     if (activeTab !== 'media') return;
     const guestPlayerData = (project as any)?.metadata?.guest_player;
     if (guestPlayerData) {
-      // Check if guest player has a fullbody image
+      // Check if guest player has any assets
       const fullbodyHome = guestPlayerData?.images?.fullbody?.home;
+      const closeupHome = guestPlayerData?.images?.closeup?.home;
+      const introHome = guestPlayerData?.videos?.intro?.home;
+      const celebrationHome = guestPlayerData?.videos?.celebration?.home;
       const hasAvatar = !!(fullbodyHome?.raw || fullbodyHome?.processed);
+      const hasCloseup = !!(closeupHome?.raw || closeupHome?.processed);
+      const hasIntro = !!(introHome?.raw || introHome?.processed || introHome?.url);
+      const hasCelebration = !!(celebrationHome?.raw || celebrationHome?.processed || celebrationHome?.url);
       setGuestPlayer({
         has_avatar: hasAvatar,
+        has_closeup: hasCloseup,
+        has_intro: hasIntro,
+        has_celebration: hasCelebration,
         guest_player: guestPlayerData,
       });
     } else {
@@ -2857,7 +2796,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         {guestPlayer?.has_avatar && (() => {
                           const gp = guestPlayer?.guest_player || {};
                           const fullbodyHome = gp?.images?.fullbody?.home;
-                          // Try processed first (after bg-removal), then raw, then presigned_url fallback
                           const previewPath = fullbodyHome?.processed || fullbodyHome?.raw || fullbodyHome?.presigned_url || fullbodyHome?.url;
                           const previewUrl = previewPath ? (previewPath.startsWith('http') ? previewPath : getAssetUrl(previewPath)) : null;
                           return previewUrl ? (
@@ -2875,22 +2813,50 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             />
                           ) : null;
                         })()}
-                        <Button
-                          variant={guestPlayer?.has_avatar ? 'outline' : 'primary'}
-                          onClick={handleGenerateGuestAvatar}
-                          disabled={guestPlayerGenerating || !(clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home'))}
-                        >
-                          {guestPlayerGenerating
-                            ? '⏳ Genereren...'
-                            : guestPlayer?.has_avatar
-                              ? '🔄 Opnieuw genereren'
-                              : '🤖 Genereer Gast Avatar'}
-                        </Button>
-                        {!(clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home')) && (
-                          <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
-                            Upload eerst een club tenue
-                          </span>
-                        )}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            <Button
+                              variant={guestPlayer?.has_avatar ? 'outline' : 'primary'}
+                              onClick={() => openGuestAiModal('fullbody_in_tenue')}
+                              disabled={!(clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home'))}
+                              style={{ fontSize: '12px', padding: '4px 10px' }}
+                            >
+                              {guestPlayer?.has_avatar ? '🔄' : '🤖'} Fullbody
+                            </Button>
+                            <Button
+                              variant={(guestPlayer as any)?.has_closeup ? 'outline' : 'secondary'}
+                              onClick={() => openGuestAiModal('closeup_in_tenue')}
+                              disabled={!guestPlayer?.has_avatar}
+                              style={{ fontSize: '12px', padding: '4px 10px' }}
+                              title={!guestPlayer?.has_avatar ? 'Genereer eerst een fullbody' : undefined}
+                            >
+                              {(guestPlayer as any)?.has_closeup ? '🔄' : '📸'} Close-up
+                            </Button>
+                            <Button
+                              variant={(guestPlayer as any)?.has_intro ? 'outline' : 'secondary'}
+                              onClick={() => openGuestAiModal('member_intro')}
+                              disabled={!guestPlayer?.has_avatar}
+                              style={{ fontSize: '12px', padding: '4px 10px' }}
+                              title={!guestPlayer?.has_avatar ? 'Genereer eerst een fullbody' : undefined}
+                            >
+                              {(guestPlayer as any)?.has_intro ? '🔄' : '🎬'} Intro
+                            </Button>
+                            <Button
+                              variant={(guestPlayer as any)?.has_celebration ? 'outline' : 'secondary'}
+                              onClick={() => openGuestAiModal('member_goal_celebration')}
+                              disabled={!guestPlayer?.has_avatar}
+                              style={{ fontSize: '12px', padding: '4px 10px' }}
+                              title={!guestPlayer?.has_avatar ? 'Genereer eerst een fullbody' : undefined}
+                            >
+                              {(guestPlayer as any)?.has_celebration ? '🔄' : '🎉'} Celebration
+                            </Button>
+                          </div>
+                          {!(clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home')) && (
+                            <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                              Upload eerst een club tenue
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </Card>
@@ -2969,17 +2935,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   <span style={{ color: '#a78bfa', fontWeight: 600 }}>🏃 Gast Speler</span>
                                 </td>
                                 {MEDIA_SLOTS.map((slot) => {
-                                  // Guest only needs 'kit' (fullbody in tenue) — other slots are N/A
-                                  if (slot.id === 'kit') {
-                                    const hasKit = guestPlayer?.has_avatar;
+                                  // Guest supports: kit (fullbody), closeup, intro, celebration
+                                  // Not applicable: profile, legacy_photo, then_vs_now, legacy
+                                  const guestSlotMap: Record<string, { has: boolean; templateId: string; label: string }> = {
+                                    kit: { has: !!guestPlayer?.has_avatar, templateId: 'fullbody_in_tenue', label: 'In Tenue' },
+                                    closeup: { has: !!(guestPlayer as any)?.has_closeup, templateId: 'closeup_in_tenue', label: 'Close-up' },
+                                    intro: { has: !!(guestPlayer as any)?.has_intro, templateId: 'member_intro', label: 'Short Intro' },
+                                    celebration: { has: !!(guestPlayer as any)?.has_celebration, templateId: 'member_goal_celebration', label: 'Celebration' },
+                                  };
+                                  const guestSlot = guestSlotMap[slot.id];
+                                  if (guestSlot) {
                                     return (
                                       <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
                                         <span
-                                          style={{ fontSize: '14px', cursor: !hasKit ? 'pointer' : undefined }}
-                                          title={hasKit ? 'In Tenue: Beschikbaar' : 'In Tenue: Klik om te genereren'}
-                                          onClick={!hasKit ? handleGenerateGuestAvatar : undefined}
+                                          style={{ fontSize: '14px', cursor: 'pointer' }}
+                                          title={guestSlot.has ? `${guestSlot.label}: Beschikbaar — klik om opnieuw te genereren` : `${guestSlot.label}: Klik om te genereren`}
+                                          onClick={() => openGuestAiModal(guestSlot.templateId)}
                                         >
-                                          {guestPlayerGenerating ? '⏳' : hasKit ? '✅' : '⬜'}
+                                          {guestSlot.has ? '✅' : '⬜'}
                                         </span>
                                       </td>
                                     );
@@ -2992,9 +2965,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   );
                                 })}
                                 <td style={{ ...compactTdStyle, textAlign: 'center' }}>
-                                  <Badge variant={guestPlayer?.has_avatar ? 'success' : 'default'}>
-                                    {guestPlayer?.has_avatar ? '1/1' : '0/1'}
-                                  </Badge>
+                                  {(() => {
+                                    const guestFilledCount = [
+                                      guestPlayer?.has_avatar,
+                                      (guestPlayer as any)?.has_closeup,
+                                      (guestPlayer as any)?.has_intro,
+                                      (guestPlayer as any)?.has_celebration,
+                                    ].filter(Boolean).length;
+                                    return (
+                                      <Badge variant={guestFilledCount === 4 ? 'success' : 'default'}>
+                                        {guestFilledCount}/4
+                                      </Badge>
+                                    );
+                                  })()}
                                 </td>
                               </tr>
                               {members.map((m: any) => {
@@ -4041,6 +4024,52 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           organisationId={org?.id || null}
           template={selectedTemplate}
           contentTypeLabel={selectedContentTypeLabel}
+        />
+
+        {/* Guest Player AI Generation Modal */}
+        <AssetGenerationModal
+          isOpen={showGuestAiModal}
+          onClose={() => {
+            setShowGuestAiModal(false);
+          }}
+          context="guest"
+          preSelectedTemplate={guestAiPreselectedTemplate}
+          projectId={String(project?.id || '')}
+          organisationId={String(org?.id || '')}
+          requireApproval
+          inputAssets={{
+            logo: clubBrand.getAsset?.('logo_upload')
+              ? getAssetUrl(clubBrand.getAsset('logo_upload')!.url)
+              : null,
+            sponsor: clubBrand.getAsset?.('sponsor_logo_upload')
+              ? getAssetUrl(clubBrand.getAsset('sponsor_logo_upload')!.url)
+              : null,
+            reference: (() => {
+              const kitAsset = clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home');
+              return kitAsset ? getAssetUrl(kitAsset.url) : null;
+            })(),
+            // For closeup/intro/celebration: use guest fullbody as person input
+            // For fullbody: no person (backend generates silhouette)
+            person: guestAiPreselectedTemplate !== 'fullbody_in_tenue'
+              ? (() => {
+                  const gp = guestPlayer?.guest_player || {};
+                  const fullbodyHome = gp?.images?.fullbody?.home;
+                  const path = fullbodyHome?.processed || fullbodyHome?.raw;
+                  return path ? (path.startsWith('http') ? path : getAssetUrl(path)) : null;
+                })()
+              : null,
+          }}
+          initialParams={{
+            kit_type: guestAiSelectedKitType,
+            role: 'player',
+          }}
+          onAssetSaved={() => {
+            setShowGuestAiModal(false);
+            // Reload project to pick up updated guest_player metadata
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          }}
         />
 
         {/* Batch AI Generation Modal */}

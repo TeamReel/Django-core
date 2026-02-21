@@ -2713,14 +2713,19 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
 
 
 def _propagate_approved_guest_avatar_to_project(job) -> None:  # noqa: ANN001
-    """Write an approved guest_player avatar into Project.metadata.guest_player.
+    """Write an approved guest_player asset into Project.metadata.guest_player.
 
     Called after marking a guest_player generation job as approved so the guest
-    player avatar appears immediately on the project season page.
+    player assets appear immediately on the project season page.
 
-    Writes to: project.metadata.guest_player.images.fullbody.home
+    Supported asset types:
+    - guest_player          → project.metadata.guest_player.images.fullbody.home
+    - guest_player_closeup  → project.metadata.guest_player.images.closeup.home
+    - guest_player_intro    → project.metadata.guest_player.videos.intro.home
+    - guest_player_celebration → project.metadata.guest_player.videos.celebration.home
     """
-    if job.output_asset_type != "guest_player" or not job.project_id:
+    asset_type = job.output_asset_type or ""
+    if not asset_type.startswith("guest_player") or not job.project_id:
         return
 
     from django.apps import apps
@@ -2745,42 +2750,81 @@ def _propagate_approved_guest_avatar_to_project(job) -> None:  # noqa: ANN001
     if not isinstance(guest_player, dict):
         return
 
-    images = guest_player.setdefault("images", {})
-    if not isinstance(images, dict):
-        return
-
-    fullbody = images.setdefault("fullbody", {})
-    if not isinstance(fullbody, dict):
-        return
-
     # Use first approved variant
     first_variant = approved_variants[0]
     storage_path = first_variant.get("storage_path", "")
 
-    if storage_path:
-        fullbody["home"] = {
-            "raw": storage_path,
-            "processed": None,
-            "processing_state": "pending",
-            "specs": {},
-            "source": "ai_generated",
-            "generated_at": project.updated_at.isoformat() if project.updated_at else None,
-        }
+    if not storage_path:
+        return
 
-        project.metadata = meta
-        try:
-            project.save(update_fields=["metadata"])
-            logger.info(
-                "propagate_guest_avatar: project=%s updated with guest_player fullbody (job=%s)",
-                job.project_id,
-                job.task_id,
-            )
-        except Exception as exc:  # noqa: BLE001
-            logger.warning(
-                "propagate_guest_avatar: failed to save project %s: %s",
-                job.project_id,
-                exc,
-            )
+    asset_entry = {
+        "raw": storage_path,
+        "processed": None,
+        "processing_state": "pending",
+        "specs": {},
+        "source": "ai_generated",
+        "generated_at": project.updated_at.isoformat() if project.updated_at else None,
+    }
+
+    # Determine where to write based on asset_type
+    if asset_type == "guest_player":
+        # Fullbody image → images.fullbody.home
+        images = guest_player.setdefault("images", {})
+        if not isinstance(images, dict):
+            return
+        fullbody = images.setdefault("fullbody", {})
+        if not isinstance(fullbody, dict):
+            return
+        fullbody["home"] = asset_entry
+    elif asset_type == "guest_player_closeup":
+        # Closeup image → images.closeup.home
+        images = guest_player.setdefault("images", {})
+        if not isinstance(images, dict):
+            return
+        closeup = images.setdefault("closeup", {})
+        if not isinstance(closeup, dict):
+            return
+        closeup["home"] = asset_entry
+    elif asset_type == "guest_player_intro":
+        # Intro video → videos.intro.home
+        videos = guest_player.setdefault("videos", {})
+        if not isinstance(videos, dict):
+            return
+        intro = videos.setdefault("intro", {})
+        if not isinstance(intro, dict):
+            return
+        intro["home"] = asset_entry
+    elif asset_type == "guest_player_celebration":
+        # Celebration video → videos.celebration.home
+        videos = guest_player.setdefault("videos", {})
+        if not isinstance(videos, dict):
+            return
+        celebration = videos.setdefault("celebration", {})
+        if not isinstance(celebration, dict):
+            return
+        celebration["home"] = asset_entry
+    else:
+        logger.info(
+            "propagate_guest_avatar: unknown guest asset_type %s — skipping",
+            asset_type,
+        )
+        return
+
+    project.metadata = meta
+    try:
+        project.save(update_fields=["metadata"])
+        logger.info(
+            "propagate_guest_avatar: project=%s updated with %s (job=%s)",
+            job.project_id,
+            asset_type,
+            job.task_id,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "propagate_guest_avatar: failed to save project %s: %s",
+            job.project_id,
+            exc,
+        )
 
 
 @api_view(["POST"])
@@ -2907,7 +2951,7 @@ def review_generation_job_view(request: Request, task_id: str) -> Response:
             )
 
     # Propagate approved guest_player avatar to Project.metadata so the season page reflects it
-    if action == "approve" and job.output_type == "image":
+    if action == "approve" and (job.output_asset_type or "").startswith("guest_player"):
         try:
             _propagate_approved_guest_avatar_to_project(job)
         except Exception as propagate_exc:  # noqa: BLE001

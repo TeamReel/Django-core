@@ -844,9 +844,13 @@ export function getTemplate(id: string): AssetTemplate | undefined {
 }
 
 /** Get templates suitable for a specific context */
-export function getTemplatesForContext(context: 'club' | 'member'): AssetTemplate[] {
-  if (context === 'member') {
-    return ASSET_TEMPLATES.filter((t) => ['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now'].includes(t.category));
+export function getTemplatesForContext(context: 'club' | 'member' | 'guest'): AssetTemplate[] {
+  if (context === 'member' || context === 'guest') {
+    // Guest uses same templates as member but without then_vs_now (no legacy photo)
+    const memberCategories = context === 'guest'
+      ? ['fullbody', 'closeup', 'intro', 'celebration']
+      : ['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now'];
+    return ASSET_TEMPLATES.filter((t) => memberCategories.includes(t.category));
   }
   return ASSET_TEMPLATES.filter((t) => !['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now'].includes(t.category));
 }

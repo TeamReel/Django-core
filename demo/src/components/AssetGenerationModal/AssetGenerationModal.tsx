@@ -46,7 +46,7 @@ interface AssetGenerationModalProps {
   isOpen: boolean;
   onClose: () => void;
   /** Context: which templates to show */
-  context: 'club' | 'member';
+  context: 'club' | 'member' | 'guest';
   /** Pre-selected template ID (from asset card button) */
   preSelectedTemplate?: string;
   /** Project (club/team) ID */
@@ -523,6 +523,7 @@ export default function AssetGenerationModal({
       parameters: {
         ...params,
         ...(selectedTemplate.id === 'fullbody_in_tenue' ? { shoe_color: shoeColor } : {}),
+        ...(context === 'guest' ? { guest_player: 'true' } : {}),
       },
       variantCount,
       projectId,
@@ -564,6 +565,16 @@ export default function AssetGenerationModal({
   // Helper to determine effective output asset type based on template and params
   const getEffectiveOutputAssetType = () => {
     if (!selectedTemplate) return 'unknown';
+
+    // Guest context: use guest_player prefix for all asset types
+    if (context === 'guest') {
+      if (selectedTemplate.id === 'fullbody_in_tenue') return 'guest_player';
+      if (selectedTemplate.id === 'closeup_in_tenue') return 'guest_player_closeup';
+      if (selectedTemplate.id === 'member_intro') return 'guest_player_intro';
+      if (selectedTemplate.id === 'member_goal_celebration') return 'guest_player_celebration';
+      return 'guest_player';
+    }
+
     let effectiveOutputAssetType = selectedTemplate.outputAssetType;
     if (selectedTemplate.id === 'tenue_generate') {
       if (params['kit_type'] === 'away') effectiveOutputAssetType = 'kit_away';
@@ -631,6 +642,7 @@ export default function AssetGenerationModal({
       parameters: {
         ...params,
         ...(selectedTemplate.id === 'fullbody_in_tenue' ? { shoe_color: shoeColor } : {}),
+        ...(context === 'guest' ? { guest_player: 'true' } : {}),
       },
       variantCount,
       projectId,
