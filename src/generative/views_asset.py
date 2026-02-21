@@ -2510,6 +2510,7 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
 
     Supported template_ids:
       - "fullbody_in_tenue" → images.fullbody.{kit_type}
+      - "closeup_in_tenue" → images.closeup.{kit_type}
 
     After writing the raw path, queues a Celery process_member_asset task so
     background removal + resize run automatically.
@@ -2519,7 +2520,7 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
 
     IMAGE_TEMPLATE_MAP = {
         "fullbody_in_tenue": ("fullbody", "images"),
-        # Future: "closeup_in_tenue": ("closeup", "images"),
+        "closeup_in_tenue": ("closeup", "images"),
     }
     mapping = IMAGE_TEMPLATE_MAP.get(job.template_id)
     if not mapping or not job.membership_id:

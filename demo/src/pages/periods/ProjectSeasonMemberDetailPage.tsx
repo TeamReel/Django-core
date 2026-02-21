@@ -3590,6 +3590,7 @@ export default function ProjectSeasonMemberDetailPage() {
         projectId={clubId || ''}
         organisationId={String(org?.id || '')}
         membershipId={membershipId}
+        requireApproval={aiPreselectedTemplate === 'fullbody_in_tenue' || aiPreselectedTemplate === 'closeup_in_tenue'}
         inputAssets={{
           logo: clubBrand.getAsset?.('logo_upload')
             ? getAssetUrl(clubBrand.getAsset('logo_upload')!.url)

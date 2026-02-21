@@ -63,6 +63,8 @@ interface AssetGenerationModalProps {
   initialParams?: Record<string, string>;
   /** Callback after a variant is accepted and saved. Receives info about the saved asset. */
   onAssetSaved?: (info?: SavedAssetInfo) => void;
+  /** Route through approval queue instead of auto-saving (shows different message) */
+  requireApproval?: boolean;
 }
 
 type ModalStep = 'template' | 'configure' | 'results';
@@ -371,6 +373,7 @@ export default function AssetGenerationModal({
   previousResultUrl,
   initialParams = {},
   onAssetSaved,
+  requireApproval = false,
 }: AssetGenerationModalProps) {
   // State
   const [modalStep, setModalStep] = useState<ModalStep>('template');
@@ -431,6 +434,16 @@ export default function AssetGenerationModal({
       setSelectedVariantIdx(generation.variants[0].variant_index);
     }
   }, [generation.step, generation.variants]);
+
+  // Auto-reload page after 2s when queued with requireApproval (so approved asset appears after refresh)
+  useEffect(() => {
+    if (generation.step === 'queued' && requireApproval) {
+      const timer = setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [generation.step, requireApproval]);
 
   // Reset when modal opens
   useEffect(() => {
@@ -519,6 +532,7 @@ export default function AssetGenerationModal({
       inputImageUrls: mappedInputs,
       userPrompt: extraInstructions,
       ...(videoProvider ? { provider: videoProvider } : {}),
+      requireApproval,
     });
     setModalStep('results');
   };
@@ -625,6 +639,7 @@ export default function AssetGenerationModal({
       outputAssetType: getEffectiveOutputAssetType(),
       inputImageUrls: mappedInputs,
       userPrompt: prompt,
+      requireApproval,
     });
   };
 
@@ -1054,12 +1069,14 @@ export default function AssetGenerationModal({
                 <div style={{ textAlign: 'center', padding: '40px 0' }}>
                   <div style={{ fontSize: 64, marginBottom: 16 }}>🟢</div>
                   <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>
-                    Toegevoegd aan de AI Queue!
+                    {requireApproval ? 'In Approvals Wachtrij!' : 'Toegevoegd aan de AI Queue!'}
                   </div>
                   <div style={{ fontSize: 13, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 24, maxWidth: 320, margin: '0 auto 24px' }}>
-                    {selectedTemplate?.outputType === 'video'
-                      ? 'De video wordt op de achtergrond gegenereerd (2–5 min). Je krijgt een melding zodra hij klaar is.'
-                      : 'De afbeelding wordt op de achtergrond gegenereerd. Je krijgt een melding zodra hij klaar is.'}
+                    {requireApproval
+                      ? 'Keur de gegenereerde afbeelding goed via de Approvals pagina, daarna verschijnt deze automatisch op deze pagina.'
+                      : selectedTemplate?.outputType === 'video'
+                        ? 'De video wordt op de achtergrond gegenereerd (2–5 min). Je krijgt een melding zodra hij klaar is.'
+                        : 'De afbeelding wordt op de achtergrond gegenereerd. Je krijgt een melding zodra hij klaar is.'}
                   </div>
                   <div
                     style={{
@@ -1075,12 +1092,12 @@ export default function AssetGenerationModal({
                     }}
                   >
                     <span>📥</span>
-                    <span>Volg de voortgang in</span>
+                    <span>{requireApproval ? 'Keur goed via' : 'Volg de voortgang in'}</span>
                     <a
-                      href="/approvals?tab=ai_queue"
+                      href={requireApproval ? '/approvals' : '/approvals?tab=ai_queue'}
                       style={{ color: '#60a5fa', textDecoration: 'none', fontWeight: 600 }}
                     >
-                      Workflow → AI Queue
+                      {requireApproval ? 'Approvals' : 'Workflow → AI Queue'}
                     </a>
                   </div>
                 </div>

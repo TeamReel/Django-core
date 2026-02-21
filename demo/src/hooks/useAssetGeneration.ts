@@ -96,6 +96,8 @@ export interface SubmitParams {
   workflowObjectId?: number;
   /** Workflow: template ID to use when auto-creating workflow instance */
   workflowTemplateId?: number;
+  /** Route through approval queue instead of auto-saving */
+  requireApproval?: boolean;
 }
 
 // ============================================================================
@@ -265,6 +267,8 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             ...(params.membershipId ? { membership_id: params.membershipId } : {}),
             ...(params.outputAssetType ? { asset_type: params.outputAssetType } : {}),
             ...(params.provider ? { provider: params.provider } : {}),
+            // Route through approval queue if requested
+            ...(params.requireApproval ? { save_to_brand: false, save_to_media_library: false } : {}),
           }),
         });
 
