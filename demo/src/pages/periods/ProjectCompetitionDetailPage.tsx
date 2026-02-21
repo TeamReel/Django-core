@@ -930,6 +930,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const [membersLoading, setMembersLoading] = useState(false);
   const [matchMediaMap, setMatchMediaMap] = useState<Record<string, any[]>>({});
   const [matchMediaLoading, setMatchMediaLoading] = useState(false);
+  const [opponentClubNames, setOpponentClubNames] = useState<Record<string, string>>({});
   const [hierarchySearch, setHierarchySearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1507,11 +1508,49 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     return matches.filter((m: any) => String(m.title || '').toLowerCase().includes(q));
   }, [hierarchySearch, matches]);
 
+  // Fetch opponent club names from match metadata (opponent_club_id → project name)
+  useEffect(() => {
+    if (!matches.length || !apiBaseUrl) return;
+    const clubIds = [...new Set(
+      matches
+        .map((m: any) => String(m.metadata?.teamreel?.match_context?.opponent_club_id || '').trim())
+        .filter((id: string) => id && !opponentClubNames[id])
+    )];
+    if (!clubIds.length) return;
+
+    let cancelled = false;
+    (async () => {
+      const results: Record<string, string> = {};
+      await Promise.all(
+        clubIds.map(async (cid) => {
+          try {
+            const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(cid)}/`, { credentials: 'include' });
+            if (res.ok) {
+              const raw: any = await res.json();
+              const data = raw?.data ?? raw;
+              if (data?.name) results[cid] = data.name;
+            }
+          } catch { /* ignore */ }
+        })
+      );
+      if (!cancelled) setOpponentClubNames((prev) => ({ ...prev, ...results }));
+    })();
+    return () => { cancelled = true; };
+  }, [matches, apiBaseUrl]);
+
   // Show club name (parent project) instead of team name (child project) in match titles
   const matchDisplayTitle = (m: any, fallback?: string) => {
-    const raw = m.title || m.name || fallback || `Match ${m.id}`;
+    let raw = m.title || m.name || fallback || `Match ${m.id}`;
+    // Replace home team name with club name
     if (project?.name && club?.name && project.name !== club.name) {
-      return raw.replace(project.name, club.name);
+      raw = raw.replace(project.name, club.name);
+    }
+    // Replace opponent team name with opponent club name
+    const oppClubId = String(m.metadata?.teamreel?.match_context?.opponent_club_id || '').trim();
+    const oppTeamName = m.opponent_project?.name || m.metadata?.teamreel?.match_context?.away_team_name || '';
+    const oppClubName = oppClubId ? opponentClubNames[oppClubId] : '';
+    if (oppTeamName && oppClubName && oppTeamName !== oppClubName) {
+      raw = raw.replace(oppTeamName, oppClubName);
     }
     return raw;
   };

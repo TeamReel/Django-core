@@ -191,6 +191,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [competitionsLoading, setCompetitionsLoading] = useState(false);
   const [matchesLoading, setMatchesLoading] = useState(false);
+  const [opponentClubNames, setOpponentClubNames] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
   // Edit modal (match TeamDetail page patterns: edit in-place, no /edit route)
@@ -1406,6 +1407,51 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     };
   }, [activeTab, apiBaseUrl, project, resolvedSeasonId]);
 
+  // Fetch opponent club names from match metadata (opponent_club_id → project name)
+  useEffect(() => {
+    if (!matches.length || !apiBaseUrl) return;
+    const clubIds = [...new Set(
+      matches
+        .map((m: any) => String(m.metadata?.teamreel?.match_context?.opponent_club_id || '').trim())
+        .filter((id: string) => id && !opponentClubNames[id])
+    )];
+    if (!clubIds.length) return;
+
+    let cancelled = false;
+    (async () => {
+      const results: Record<string, string> = {};
+      await Promise.all(
+        clubIds.map(async (cid) => {
+          try {
+            const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(cid)}/`, { credentials: 'include' });
+            if (res.ok) {
+              const raw: any = await res.json();
+              const data = raw?.data ?? raw;
+              if (data?.name) results[cid] = data.name;
+            }
+          } catch { /* ignore */ }
+        })
+      );
+      if (!cancelled) setOpponentClubNames((prev) => ({ ...prev, ...results }));
+    })();
+    return () => { cancelled = true; };
+  }, [matches, apiBaseUrl]);
+
+  // Show club name (parent project) instead of team name (child project) in match titles
+  const matchDisplayTitle = (m: any) => {
+    let raw = m.title || m.name || '';
+    if (project?.name && club?.name && project.name !== club.name) {
+      raw = raw.replace(project.name, club.name);
+    }
+    const oppClubId = String(m.metadata?.teamreel?.match_context?.opponent_club_id || '').trim();
+    const oppTeamName = m.opponent_project?.name || m.metadata?.teamreel?.match_context?.away_team_name || '';
+    const oppClubName = oppClubId ? opponentClubNames[oppClubId] : '';
+    if (oppTeamName && oppClubName && oppTeamName !== oppClubName) {
+      raw = raw.replace(oppTeamName, oppClubName);
+    }
+    return raw;
+  };
+
   return (
     <>
       <div>
@@ -2287,13 +2333,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                                 onClick={() => navigate(matchPath)}
                                                 style={{ textAlign: 'left', fontWeight: 700, fontSize: 13, color: '#60a5fa' }}
                                               >
-                                                {(() => {
-                                                  const raw = match.title || match.name || '';
-                                                  if (project?.name && club?.name && project.name !== club.name) {
-                                                    return raw.replace(project.name, club.name);
-                                                  }
-                                                  return raw;
-                                                })()}
+                                                {matchDisplayTitle(match)}
                                               </button>
                                               <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
                                                 {match.start_time ? new Date(match.start_time).toLocaleString() : '"”'}
@@ -3343,13 +3383,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   className="hover:underline"
                                   style={{ textDecoration: 'none', color: '#60a5fa' }}
                                 >
-                                  {(() => {
-                                    const raw = match.title || match.name || '';
-                                    if (project?.name && club?.name && project.name !== club.name) {
-                                      return raw.replace(project.name, club.name);
-                                    }
-                                    return raw;
-                                  })()}
+                                  {matchDisplayTitle(match)}
                                 </Link>
                                   );
                                 })()}

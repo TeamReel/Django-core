@@ -157,6 +157,7 @@ export default function HierarchyMatchDetailPage() {
   const [org, setOrg] = useState<Organisation | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [club, setClub] = useState<Project | null>(null);
+  const [opponentClub, setOpponentClub] = useState<Project | null>(null);
   const [season, setSeason] = useState<Period | null>(null);
   const [competition, setCompetition] = useState<Period | null>(null);
   const [match, setMatch] = useState<MatchDetail | null>(null);
@@ -868,6 +869,18 @@ export default function HierarchyMatchDetailPage() {
         const matchJson = getEnvelopeData<MatchDetail>(await matchRes.json());
         setMatch(matchJson);
 
+        // Fetch opponent club (parent project) for display name
+        const oppClubId = String(matchJson.metadata?.teamreel?.match_context?.opponent_club_id || '').trim();
+        if (oppClubId && orgSlugOrId) {
+          try {
+            const oppClubRes = await fetch(
+              `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(oppClubId)}/`,
+              { credentials: 'include' }
+            );
+            if (oppClubRes.ok) setOpponentClub(getEnvelopeData<Project>(await oppClubRes.json()));
+          } catch { /* ignore */ }
+        }
+
         const desiredMatchKey = String((matchJson as any)?.slug || '').trim();
         if (desiredMatchKey && desiredMatchKey !== String(effectiveMatchId)) {
           const suffix = location.search ? location.search : '';
@@ -1323,7 +1336,7 @@ export default function HierarchyMatchDetailPage() {
 
   // Use club name (parent project) instead of team name (child project)
   const homeTeamName = club?.name || match.project?.name || 'Home';
-  const awayTeamName = match.opponent_project?.name || 'Opponent';
+  const awayTeamName = opponentClub?.name || match.opponent_project?.name || 'Opponent';
   const scoreDisplay = status === 'finished'
     ? `${match.metadata?.home_score ?? 0} - ${match.metadata?.away_score ?? 0}`
     : 'vs';
