@@ -257,15 +257,31 @@ class GoalCelebrationBuilder:
 
         own_team_name = project.name or ""
         opponent_name = activity.opponent_project.name if activity.opponent_project else ""
-        is_home = getattr(activity, "is_home_game", True)
-        venue = getattr(activity, "venue", None) or ""
-
-        season_name = None
-        competition_name = None
-        if activity.period:
-            season_name = getattr(activity.period, "name", None)
         meta = activity.metadata or {}
-        competition_name = meta.get("competition_name")
+        is_home = meta.get("is_home", meta.get("venue", "Home") == "Home")
+
+        # Venue: prefer the actual location field or teamreel match_location
+        # over metadata.venue which is just a generic "Home"/"Away" label.
+        raw_venue = (
+            getattr(activity, "location", None)
+            or meta.get("teamreel", {}).get("vars", {}).get("match_location")
+            or meta.get("teamreel", {}).get("match_context", {}).get("location")
+            or meta.get("teamreel", {}).get("match_context", {}).get("home_club_default_location")
+            or meta.get("venue")
+        )
+        venue = (
+            None
+            if raw_venue and raw_venue.strip().lower() in ("home", "away", "thuis", "uit", "")
+            else raw_venue
+        )
+
+        # Season / competition
+        season_name = activity.period.name if activity.period else None
+        competition_name = meta.get("teamreel", {}).get("vars", {}).get("competition_name")
+        if not competition_name:
+            competition_name = meta.get("competition_name")
+        if not competition_name and activity.period:
+            competition_name = activity.period.name
 
         # ── Goal scorer assets ──
         membership = ProjectMembership.objects.filter(id=self.scorer_member_id).first()
