@@ -889,7 +889,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
     }
 
     setStep('done');
-  }, [members, getEffectiveParams, getInputAssetsForMember, selectedTemplate, organisationId, projectId, apiBase, batchMode]);
+  }, [members, getEffectiveParams, getInputAssetsForMember, selectedTemplate, organisationId, projectId, apiBase, batchMode, processAssetType, processAfterGeneration]);
 
   // Update membership metadata after successful generation
   const updateMembershipMetadata = useCallback(
