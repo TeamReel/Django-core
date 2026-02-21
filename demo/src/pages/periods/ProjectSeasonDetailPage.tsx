@@ -2934,7 +2934,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         <Button
                           variant={guestPlayer?.has_avatar ? 'outline' : 'primary'}
                           onClick={handleGenerateGuestAvatar}
-                          disabled={guestPlayerGenerating || !(club as any)?.metadata?.teamreel_assets?.tenue?.url}
+                          disabled={guestPlayerGenerating || !(clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home'))}
                         >
                           {guestPlayerGenerating
                             ? '⏳ Genereren...'
@@ -2942,7 +2942,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               ? '🔄 Opnieuw genereren'
                               : '🤖 Genereer Gast Avatar'}
                         </Button>
-                        {!(club as any)?.metadata?.teamreel_assets?.tenue?.url && (
+                        {!(clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home')) && (
                           <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
                             Upload eerst een club tenue
                           </span>
