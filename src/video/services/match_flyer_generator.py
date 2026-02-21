@@ -358,6 +358,7 @@ def _render_bold(data: MatchFlyerData) -> Image.Image:
     """Variant 2: Bold — large typography, high-contrast, full-bleed color.
 
     Layout:
+    - Header bar (same as lineup/classic)
     - Full brand-color background with diagonal stripe
     - Huge team names stacked vertically
     - Large date/time block
@@ -376,37 +377,35 @@ def _render_bold(data: MatchFlyerData) -> Image.Image:
     stripe_color = primary_rgb
     # Draw a fat diagonal stripe
     points = [
-        (0, int(HEIGHT * 0.35)),
-        (WIDTH, int(HEIGHT * 0.20)),
-        (WIDTH, int(HEIGHT * 0.50)),
-        (0, int(HEIGHT * 0.65)),
+        (0, int(HEIGHT * 0.38)),
+        (WIDTH, int(HEIGHT * 0.23)),
+        (WIDTH, int(HEIGHT * 0.53)),
+        (0, int(HEIGHT * 0.68)),
     ]
     draw.polygon(points, fill=stripe_color)
 
     cx = WIDTH // 2
 
-    # "MATCH DAY" at top
-    title_font = _get_font(48, bold=True)
-    _draw_centered(
-        draw,
-        "MATCH DAY",
-        cx,
-        80,
-        title_font,
-        fill=(*secondary_rgb, 255),
-    )
+    # -- Header bar (shared with lineup / classic) --
+    from src.video.services.header_generator import render_header_pil
 
-    # Competition name
-    if data.competition_name:
-        comp_font = _get_font(30, bold=True)
-        _draw_centered(
-            draw,
-            data.competition_name.upper(),
-            cx,
-            140,
-            comp_font,
-            fill=(*secondary_rgb, 180),
-        )
+    header = render_header_pil(
+        width=WIDTH,
+        height=HEADER_HEIGHT,
+        logo_url=data.logo_url,
+        opponent_logo_url=data.opponent_logo_url,
+        sponsor_url=data.sponsor_url,
+        match_date=data.match_date or "",
+        own_team_name=data.own_team_name,
+        opponent_name=data.opponent_name,
+        is_home=data.is_home,
+        kickoff_time=data.kickoff_time,
+        competition_name=data.competition_name,
+        venue=data.venue,
+        background_color=data.brand_primary,
+        title_text="MATCH DAY",
+    )
+    canvas.paste(header.convert("RGB"), (0, 0))
 
     # Home team name (huge)
     home_name = data.own_team_name if data.is_home else data.opponent_name
@@ -418,7 +417,7 @@ def _render_bold(data: MatchFlyerData) -> Image.Image:
         draw,
         home_name.upper(),
         cx,
-        int(HEIGHT * 0.32),
+        int(HEIGHT * 0.35),
         big_font,
         fill=(255, 255, 255, 255),
         stroke_fill=(0, 0, 0, 255),
@@ -431,7 +430,7 @@ def _render_bold(data: MatchFlyerData) -> Image.Image:
         draw,
         "VS",
         cx,
-        int(HEIGHT * 0.43),
+        int(HEIGHT * 0.46),
         vs_font,
         fill=(*secondary_rgb, 255),
     )
@@ -441,7 +440,7 @@ def _render_bold(data: MatchFlyerData) -> Image.Image:
         draw,
         away_name.upper(),
         cx,
-        int(HEIGHT * 0.54),
+        int(HEIGHT * 0.57),
         big_font,
         fill=(255, 255, 255, 255),
         stroke_fill=(0, 0, 0, 255),
@@ -449,7 +448,7 @@ def _render_bold(data: MatchFlyerData) -> Image.Image:
     )
 
     # Date/time block
-    date_y = int(HEIGHT * 0.68)
+    date_y = int(HEIGHT * 0.71)
 
     # Background block
     block_h = 160
@@ -593,49 +592,32 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
     canvas = Image.blend(ai_bg, dark_overlay, alpha=0.3)
 
     draw = ImageDraw.Draw(canvas)
-    primary_rgb = _hex_to_rgb(data.brand_primary)
     cx = WIDTH // 2
 
-    # Top gradient bar with brand color
-    gradient = Image.new("RGBA", (WIDTH, 200), (0, 0, 0, 0))
-    gdraw = ImageDraw.Draw(gradient)
-    for i in range(200):
-        alpha = int(200 * (1 - i / 200))
-        gdraw.line([(0, i), (WIDTH, i)], fill=(*primary_rgb, alpha))
-    canvas_rgba = canvas.convert("RGBA")
-    canvas_rgba.paste(gradient, (0, 0), gradient)
-    canvas = canvas_rgba.convert("RGB")
+    # -- Header bar (shared with lineup / classic / bold) --
+    from src.video.services.header_generator import render_header_pil
+
+    header = render_header_pil(
+        width=WIDTH,
+        height=HEADER_HEIGHT,
+        logo_url=data.logo_url,
+        opponent_logo_url=data.opponent_logo_url,
+        sponsor_url=data.sponsor_url,
+        match_date=data.match_date or "",
+        own_team_name=data.own_team_name,
+        opponent_name=data.opponent_name,
+        is_home=data.is_home,
+        kickoff_time=data.kickoff_time,
+        competition_name=data.competition_name,
+        venue=data.venue,
+        background_color=data.brand_primary,
+        title_text="MATCH DAY",
+    )
+    canvas.paste(header.convert("RGB"), (0, 0))
     draw = ImageDraw.Draw(canvas)
 
-    # "MATCH DAY" title
-    title_font = _get_font(64, bold=True)
-    _draw_centered(
-        draw,
-        "MATCH DAY",
-        cx,
-        80,
-        title_font,
-        fill=(255, 255, 255),
-        stroke_fill=(0, 0, 0),
-        stroke_width=4,
-    )
-
-    # Competition
-    if data.competition_name:
-        comp_font = _get_font(30, bold=True)
-        _draw_centered(
-            draw,
-            data.competition_name.upper(),
-            cx,
-            150,
-            comp_font,
-            fill=(220, 220, 220),
-            stroke_fill=(0, 0, 0),
-            stroke_width=2,
-        )
-
-    # Center VS block
-    vs_center_y = int(HEIGHT * 0.45)
+    # Center VS block (shifted down to account for header)
+    vs_center_y = int(HEIGHT * 0.48)
 
     # Logos
     logo_size = 260
@@ -769,64 +751,39 @@ VARIANT_RENDERERS = {
 
 def generate_match_flyer(
     data: MatchFlyerData,
-    variants: list[str] | None = None,
-) -> list[dict]:
-    """Generate match flyer in requested variants.
+    variant: str = "classic",
+) -> str:
+    """Generate a single match flyer variant and upload to S3.
 
     Args:
         data: Match info + brand assets.
-        variants: List of variant keys (classic/bold/stadium).
-                  If None, all 3 are generated.
+        variant: Variant key (classic / bold / stadium).
 
     Returns:
-        List of dicts with variant info + presigned_url.
+        Presigned URL to the generated PNG on S3.
     """
-    if variants is None:
-        variants = list(VARIANT_RENDERERS.keys())
-
-    results = []
-    for variant_key in variants:
-        renderer, label = VARIANT_RENDERERS.get(variant_key, (_render_classic, "Classic"))
-        try:
-            logger.info("Generating match flyer variant: %s", variant_key)
-            img = renderer(data)
-            upload_info = _upload_flyer(img, data.activity_id)
-            results.append(
-                {
-                    "variant_key": variant_key,
-                    "variant_label": label,
-                    "presigned_url": upload_info["presigned_url"],
-                    "storage_path": upload_info.get("storage_path"),
-                    "file_size_bytes": upload_info.get("file_size_bytes", 0),
-                    "mime_type": "image/png",
-                    "error": None,
-                }
-            )
-        except Exception as exc:  # noqa: BLE001
-            logger.error("Failed to render variant %s: %s", variant_key, exc)
-            results.append(
-                {
-                    "variant_key": variant_key,
-                    "variant_label": label,
-                    "presigned_url": None,
-                    "error": str(exc),
-                }
-            )
-    return results
+    renderer, label = VARIANT_RENDERERS.get(variant, (_render_classic, "Classic"))
+    logger.info("Generating match flyer variant: %s (%s)", variant, label)
+    img = renderer(data)
+    upload_info = _upload_flyer(img, data.activity_id)
+    url = upload_info.get("presigned_url")
+    if not url:
+        raise RuntimeError(f"Failed to upload match flyer variant '{variant}' to S3")
+    return url
 
 
 def build_match_flyer(
     activity_id: str,
-    variants: list[str] | None = None,
-) -> list[dict]:
+    variant: str = "classic",
+) -> str:
     """High-level entry point: gather data from DB, resolve brand, generate.
 
     Args:
         activity_id: Match/activity UUID
-        variants: Optional variant keys to generate
+        variant: Variant key to generate (classic / bold / stadium)
 
     Returns:
-        List of variant results with presigned_url.
+        Presigned URL to the generated PNG.
     """
     from django.apps import apps
 
@@ -989,4 +946,4 @@ def build_match_flyer(
         brand_secondary=brand_secondary,
     )
 
-    return generate_match_flyer(flyer_data, variants=variants)
+    return generate_match_flyer(flyer_data, variant=variant)

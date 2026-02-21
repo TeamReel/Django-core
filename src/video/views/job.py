@@ -1301,30 +1301,20 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="match-flyer")
     def match_flyer(self, request: Request) -> Response:
-        """Generate match flyer images (PNG) in multiple design variants.
+        """Generate a single match flyer image (PNG) in a chosen design variant.
 
         POST /api/v1/video/jobs/match-flyer/
 
         Request body:
         {
-            "activity_id": "uuid",                          # Required
-            "variants": ["classic", "bold", "stadium"]      # Optional (default: all 3)
+            "activity_id": "uuid",           # Required
+            "variant": "classic"             # Optional (classic / bold / stadium, default: classic)
         }
 
         Returns:
         {
-            "variants": [
-                {
-                    "variant_key": "classic",
-                    "variant_label": "Klassiek — schone layout met header",
-                    "presigned_url": "https://...",
-                    "storage_path": "generated/match/flyers/...",
-                    "file_size_bytes": 123456,
-                    "mime_type": "image/png",
-                    "error": null
-                },
-                ...
-            ],
+            "flyer_url": "https://...",
+            "variant": "classic",
             "activity_id": "uuid"
         }
         """
@@ -1337,7 +1327,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        variants = request.data.get("variants")  # None → all 3
+        variant = request.data.get("variant", "classic")
 
         # Validate activity exists and user has access
         Activity = apps.get_model("activities", "Activity")
@@ -1355,14 +1345,15 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("You must be a project member to generate match flyers.")
 
         try:
-            results = build_match_flyer(
+            flyer_url = build_match_flyer(
                 activity_id=str(activity_id),
-                variants=variants,
+                variant=variant,
             )
 
             return Response(
                 {
-                    "variants": results,
+                    "flyer_url": flyer_url,
+                    "variant": variant,
                     "activity_id": str(activity_id),
                 },
                 status=status.HTTP_200_OK,

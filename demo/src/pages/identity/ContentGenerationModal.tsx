@@ -467,6 +467,9 @@ export default function ContentGenerationModal({
   const [selectedBackgroundUrl, setSelectedBackgroundUrl] = useState<string | null>(null);
   const [appBackgrounds, setAppBackgrounds] = useState<Array<{ id: string; url: string; profile_name?: string }>>([]);
 
+  // Match flyer options
+  const [matchFlyerVariant, setMatchFlyerVariant] = useState<'classic' | 'bold' | 'stadium'>('classic');
+
   // Goal celebration options
   const [goalScoreHome, setGoalScoreHome] = useState<number>(0);
   const [goalScoreAway, setGoalScoreAway] = useState<number>(0);
@@ -965,7 +968,7 @@ export default function ContentGenerationModal({
     }
   };
 
-  // Generate match flyer (static PNG) in multiple design variants
+  // Generate match flyer (static PNG) in a single chosen design variant
   const handleGenerateMatchFlyer = async () => {
     setProgress(10);
 
@@ -978,9 +981,9 @@ export default function ContentGenerationModal({
         throw new Error('No match/activity data available for flyer generation');
       }
 
-      setProgress(20);
+      setProgress(30);
 
-      // Call the match-flyer endpoint (synchronous — returns variant URLs directly)
+      // Call the match-flyer endpoint (synchronous — returns a single flyer URL)
       const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/match-flyer/`, {
         method: 'POST',
         credentials: 'include',
@@ -991,8 +994,7 @@ export default function ContentGenerationModal({
         },
         body: JSON.stringify({
           activity_id: matchData.id,
-          // Generate all 3 variants: classic, bold, stadium
-          variants: ['classic', 'bold', 'stadium'],
+          variant: matchFlyerVariant,
         }),
       });
 
@@ -1004,44 +1006,25 @@ export default function ContentGenerationModal({
       }
 
       const data = await response.json();
-      const variantsData = data.data?.variants || data.variants || [];
-      console.log('📣 Match flyer generated:', variantsData.length, 'variants');
+      console.log('📣 Match flyer generated:', data);
 
-      if (variantsData.length === 0) {
-        throw new Error('No flyer variants were generated');
+      const flyerUrl = data.data?.flyer_url || data.flyer_url;
+      if (!flyerUrl) {
+        throw new Error('Flyer generated but no URL returned');
       }
 
-      // Map backend variants to GeneratedVariant objects
-      const variants: GeneratedVariant[] = variantsData
-        .filter((v: { presigned_url?: string; error?: string }) => v.presigned_url && !v.error)
-        .map((v: { presigned_url: string; variant_key: string; variant_label: string; storage_path?: string; file_size_bytes?: number }, index: number) => ({
-          variant_index: index,
-          image_base64: null,
-          presigned_url: v.presigned_url,
-          mime_type: 'image/png',
-          filename: `match_flyer_${v.variant_key}_${matchData.id}.png`,
-          error: null,
-          storage_info: {
-            storage_path: v.storage_path || null,
-            file_size_bytes: v.file_size_bytes || 0,
-            storage_backend: 's3',
-          },
-          metadata: {
-            type: 'match_flyer',
-            variant_key: v.variant_key,
-            variant_label: v.variant_label,
-            activity_id: matchData.id,
-          },
-        }));
+      // Set result as a single generated variant (image, not video) — same as lineup flyer
+      setGeneratedVariants([{
+        variant_index: 0,
+        image_base64: null,
+        presigned_url: flyerUrl,
+        mime_type: 'image/png',
+        filename: `match_flyer_${matchFlyerVariant}_${matchData.id}.png`,
+        error: null,
+        storage_info: null,
+        metadata: { type: 'match_flyer', variant: matchFlyerVariant, activity_id: matchData.id },
+      }]);
 
-      if (variants.length === 0) {
-        // All variants had errors
-        const firstError = variantsData.find((v: { error?: string }) => v.error);
-        throw new Error(firstError?.error || 'All flyer variants failed to generate');
-      }
-
-      setGeneratedVariants(variants);
-      setSelectedVariantIndex(0);
       setProgress(100);
       setTimeout(() => setStep('success'), 300);
 
@@ -2958,7 +2941,7 @@ export default function ContentGenerationModal({
                 {selectedType?.subtype === 'goal'
                   ? 'Vul de doelpuntgegevens in en kies een speler.'
                   : selectedType?.subtype === 'flyer'
-                    ? 'Er worden 3 ontwerpvarianten gegenereerd. Je kunt daarna de beste kiezen.'
+                    ? 'Kies een ontwerpstijl en genereer je match flyer.'
                     : <>Je gaat een <strong>{selectedType?.label || selectedTemplate?.name}</strong> maken.</>
                 }
               </p>
@@ -2974,6 +2957,71 @@ export default function ContentGenerationModal({
                       {new Date(matchData.start_time).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Match Flyer Variant Picker */}
+              {selectedType?.subtype === 'flyer' && (
+                <div style={{
+                  width: '100%',
+                  maxWidth: 480,
+                  marginTop: 20,
+                  border: '1px solid var(--vscode-widget-border, #ddd)',
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                  background: 'var(--vscode-editor-background, #fff)',
+                }}>
+                  <div style={{
+                    padding: '14px 20px',
+                    borderBottom: '1px solid var(--vscode-widget-border, #ddd)',
+                    background: 'var(--vscode-editor-inactiveSelectionBackground, #f5f5f5)',
+                  }}>
+                    <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--vscode-foreground, #333)' }}>
+                      🎨 Kies Ontwerpstijl
+                    </h4>
+                  </div>
+                  <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {([
+                      { key: 'classic' as const, label: 'Klassiek', desc: 'Header + logo\'s + wedstrijdinfo', icon: '🏟️' },
+                      { key: 'bold' as const, label: 'Bold', desc: 'Groot typografie, hoog contrast', icon: '💪' },
+                      { key: 'stadium' as const, label: 'Stadium AI', desc: 'AI-gegenereerde stadion achtergrond', icon: '✨' },
+                    ]).map((opt) => {
+                      const isSelected = matchFlyerVariant === opt.key;
+                      return (
+                        <div
+                          key={opt.key}
+                          onClick={() => setMatchFlyerVariant(opt.key)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            padding: '12px 16px',
+                            borderRadius: 8,
+                            border: isSelected ? '2px solid #3b82f6' : '2px solid transparent',
+                            background: isSelected ? '#eff6ff' : 'var(--vscode-editor-background, #f9fafb)',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <div style={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            border: isSelected ? '6px solid #3b82f6' : '2px solid #d1d5db',
+                            flexShrink: 0,
+                          }} />
+                          <div>
+                            <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--vscode-foreground, #333)' }}>
+                              {opt.icon} {opt.label}
+                            </div>
+                            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
+                              {opt.desc}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
