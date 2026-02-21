@@ -692,7 +692,7 @@ export default function ApprovalsPage() {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontSize: 10, fontWeight: 700, color: '#0891b2', backgroundColor: '#0891b218', borderRadius: 99, padding: '2px 8px', letterSpacing: '0.04em' }}>
-                          {vJob.job_type === 'lineup' ? 'LINEUP' : 'VIDEO'}
+                          {vJob.job_type === 'lineup' ? 'LINEUP' : vJob.job_type === 'goal_celebration' ? 'GOAL' : 'VIDEO'}
                         </span>
                         <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, color: statusDisplay.color, backgroundColor: `${statusDisplay.color}18`, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                           {statusDisplay.icon} {statusDisplay.label}

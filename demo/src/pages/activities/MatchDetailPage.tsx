@@ -253,8 +253,9 @@ export default function HierarchyMatchDetailPage() {
     );
     for (const item of sorted) {
       const subtype = (item.extraction_metadata?.asset_type as string) || 'other';
-      // Normalize: "lineup_07df73a6" → "lineup"
-      const normalizedSubtype = subtype.replace(/_[a-f0-9]{8}$/i, '');
+      // Normalize: "lineup_07df73a6" → "lineup", "goal_celebration_07df73a6" → "goal"
+      let normalizedSubtype = subtype.replace(/_[a-f0-9]{8}$/i, '');
+      if (normalizedSubtype === 'goal_celebration') normalizedSubtype = 'goal';
       if (!grouped[normalizedSubtype]) {
         grouped[normalizedSubtype] = { latest: item, history: [] };
       } else {

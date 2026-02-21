@@ -19,7 +19,7 @@ import { getApiBaseUrl } from '../utils/apiBase';
 // ============================================================================
 
 export type VideoJobStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled';
-export type VideoJobType = 'transcode' | 'thumbnail' | 'compose' | 'lineup';
+export type VideoJobType = 'transcode' | 'thumbnail' | 'compose' | 'lineup' | 'goal_celebration';
 
 export interface VideoPreset {
   id: string;
@@ -154,6 +154,8 @@ export function getJobTypeDisplay(type: VideoJobType): {
       return { icon: '🎨', label: 'Compose' };
     case 'lineup':
       return { icon: '📋', label: 'Lineup' };
+    case 'goal_celebration':
+      return { icon: '⚽', label: 'Goal Celebration' };
   }
 }
 
