@@ -3014,7 +3014,6 @@ export default function ContentGenerationModal({
                               >
                                 {name}{hasCelebration ? ' 🎉' : ' (geen celebration video)'}
                               </option>
-                              </option>
                             );
                           })}
                       </select>
