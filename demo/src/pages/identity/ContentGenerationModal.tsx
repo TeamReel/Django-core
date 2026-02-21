@@ -1763,8 +1763,8 @@ export default function ContentGenerationModal({
         is_active: true,
         input_requirements: {
           members: {
-            goalkeeper: { count: 1, asset_types: ['home', 'away'] },
-            player: { count: 10, asset_types: ['home', 'away'] },
+            goalkeeper: { count: 1, asset_types: ['in_tenue'] },
+            player: { count: 10, asset_types: ['in_tenue'] },
           },
         },
       } as ContentTemplate);
