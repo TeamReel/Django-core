@@ -531,17 +531,8 @@ export default function MatchCreateModal({
     resolvedClubId,
   ]);
 
-  useEffect(() => {
-    if (!opened) return;
-    if (titleTouched) return;
-    if (!derived.titleDefault) return;
-    // Always sync title from derived when user hasn't manually typed
-    // This ensures club names replace team names when club details load
-    if (title !== derived.titleDefault) {
-      setTitle(derived.titleDefault);
-      setTitleAutoValue(derived.titleDefault);
-    }
-  }, [opened, titleTouched, title, derived.titleDefault]);
+  // Compute the effective title: use derived club-name title when user hasn't manually edited
+  const effectiveTitle = titleTouched ? title : (derived.titleDefault || title);
 
   useEffect(() => {
     if (!opened) return;
@@ -1030,7 +1021,7 @@ export default function MatchCreateModal({
       // Football match default duration: 2 hours (includes warm-up/overrun)
       const end = addHoursToIsoLike(start, 2);
 
-      const finalTitle = (titleTouched ? title.trim() : '') || derived.titleDefault || title.trim() || '';
+      const finalTitle = effectiveTitle.trim() || derived.titleDefault || '';
       if (!finalTitle) throw new Error('Enter a title.');
 
       const finalLocation = (location || derived.locationDefault || '').trim() || undefined;
@@ -1151,11 +1142,11 @@ export default function MatchCreateModal({
               Title
             </label>
             {isTeamContextMode ? (
-              <div style={{ ...controlStyle(true), cursor: 'default' }}>{title || derived.titleDefault || '—'}</div>
+              <div style={{ ...controlStyle(true), cursor: 'default' }}>{effectiveTitle || '—'}</div>
             ) : (
               <input
                 id="match-create-title"
-                value={title}
+                value={effectiveTitle}
                 onChange={(e) => {
                   setTitleTouched(true);
                   setTitle(e.target.value);
@@ -1378,14 +1369,6 @@ export default function MatchCreateModal({
                   onChange={(e) => {
                     const nextId = e.target.value;
                     setSelectedOpponentTeamId(nextId);
-
-                    if (!titleTouched && !title.trim() && selectedTeamId && nextId) {
-                      const homeId = venue === 'Home' ? String(selectedTeamId) : String(nextId);
-                      const awayId = venue === 'Home' ? String(nextId) : String(selectedTeamId);
-                      const home = projectNameById(homeId) || 'Home';
-                      const away = projectNameById(awayId) || 'Opponent';
-                      setTitle(`${home} vs ${away}`);
-                    }
                   }}
                   disabled={isSaving || loadingOpponentTeams || !selectedOpponentOrganisationId}
                   required={requireOpponent}
@@ -1410,14 +1393,6 @@ export default function MatchCreateModal({
                   onChange={(e) => {
                     const nextId = e.target.value;
                     setSelectedOpponentTeamId(nextId);
-
-                    if (!titleTouched && !title.trim() && selectedTeamId && nextId) {
-                      const homeId = venue === 'Home' ? String(selectedTeamId) : String(nextId);
-                      const awayId = venue === 'Home' ? String(nextId) : String(selectedTeamId);
-                      const home = projectNameById(homeId) || 'Home';
-                      const away = projectNameById(awayId) || 'Opponent';
-                      setTitle(`${home} vs ${away}`);
-                    }
                   }}
                   disabled={isSaving || loadingOpponentTeams || !selectedOrganisationId}
                   required
