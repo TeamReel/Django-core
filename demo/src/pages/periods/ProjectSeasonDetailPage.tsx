@@ -508,7 +508,45 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       }
 
       const genData = await genRes.json();
-      const variant = (genData?.data?.variants || genData?.variants || [])?.[0];
+
+      // Check if this is an async job (queued)
+      const responseData = genData?.data || genData;
+      const taskId = responseData?.task_id;
+
+      let variants: any[] = responseData?.variants || [];
+
+      // If no variants but we have a task_id, poll for result
+      if (!variants.length && taskId) {
+        // Poll status endpoint until completed
+        for (let i = 0; i < 60; i++) { // max 5 minutes (60 * 5s)
+          await new Promise(r => setTimeout(r, 5000)); // wait 5s
+
+          const statusRes = await fetch(
+            `${apiBaseUrl}/api/v1/generative/assets/generate/${taskId}/status/`,
+            { credentials: 'include' }
+          );
+
+          if (!statusRes.ok) {
+            throw new Error(`Status check failed: HTTP ${statusRes.status}`);
+          }
+
+          const statusJson = await statusRes.json();
+          const statusData = statusJson?.data || statusJson;
+
+          if (statusData.status === 'completed') {
+            variants = (statusData?.data?.variants || statusData?.variants || []);
+            break;
+          }
+
+          if (statusData.status === 'failed') {
+            throw new Error(statusData.error || 'Generation failed');
+          }
+
+          // Still processing, continue polling
+        }
+      }
+
+      const variant = variants?.[0];
       if (!variant) throw new Error('No variant returned from generation');
 
       // Step 2: Save generated asset to storage
