@@ -34,6 +34,15 @@ import {
 } from '../hooks/useVideoJobs';
 
 type FilterState = 'all' | 'review' | 'active' | 'completed' | 'rejected' | 'ai_queue' | 'video';
+type ContentTypeFilter = 'all' | 'ai_video' | 'ai_image' | 'lineup_video' | 'video_processing';
+
+const CONTENT_TYPE_CHIPS: { key: ContentTypeFilter; label: string; icon: string }[] = [
+  { key: 'all', label: 'Alles', icon: '📋' },
+  { key: 'ai_video', label: 'AI Video', icon: '🎬' },
+  { key: 'ai_image', label: 'AI Image', icon: '🖼️' },
+  { key: 'lineup_video', label: 'Lineup Video', icon: '⚽' },
+  { key: 'video_processing', label: 'Video Processing', icon: '⚙️' },
+];
 
 /** Filter AI jobs by the active sidebar tab */
 function filterAiJobsByTab(jobs: GenerationJob[], tab: FilterState): GenerationJob[] {
@@ -324,6 +333,7 @@ export default function ApprovalsPage() {
     ? (rawTab as FilterState)
     : 'all';
   const [actionError, setActionError] = useState<string | null>(null);
+  const [contentType, setContentType] = useState<ContentTypeFilter>('all');
 
   // Review modal
   const [modalJob, setModalJob] = useState<GenerationJob | null>(null);
@@ -450,6 +460,37 @@ export default function ApprovalsPage() {
   const visibleAiJobs = filterAiJobsByTab(mergedJobs, filter);
   const visibleVideoJobs = useMemo(() => filterVideoJobsByTab(videoJobs, filter), [videoJobs, filter]);
 
+  // ── Content type filter counts ───────────────────────────────────
+  const contentTypeCounts = useMemo(() => ({
+    all: visibleAiJobs.length + visibleVideoJobs.length,
+    ai_video: visibleAiJobs.filter(j => j.output_type === 'video').length,
+    ai_image: visibleAiJobs.filter(j => j.output_type === 'image').length,
+    lineup_video: visibleVideoJobs.filter(j => j.job_type === 'lineup').length,
+    video_processing: visibleVideoJobs.filter(j => j.job_type !== 'lineup').length,
+  }), [visibleAiJobs, visibleVideoJobs]);
+
+  // ── Unified items: merge AI + video jobs in one chronological list ──
+  type UnifiedItem =
+    | { kind: 'ai'; job: GenerationJob; sortDate: number }
+    | { kind: 'video'; job: VideoJob; sortDate: number };
+
+  const unifiedItems = useMemo<UnifiedItem[]>(() => {
+    const items: UnifiedItem[] = [];
+    for (const job of visibleAiJobs) {
+      if (contentType === 'ai_video' && job.output_type !== 'video') continue;
+      if (contentType === 'ai_image' && job.output_type !== 'image') continue;
+      if (contentType === 'lineup_video' || contentType === 'video_processing') continue;
+      items.push({ kind: 'ai', job, sortDate: new Date(job.created_at).getTime() });
+    }
+    for (const vj of visibleVideoJobs) {
+      if (contentType === 'ai_video' || contentType === 'ai_image') continue;
+      if (contentType === 'lineup_video' && vj.job_type !== 'lineup') continue;
+      if (contentType === 'video_processing' && vj.job_type === 'lineup') continue;
+      items.push({ kind: 'video', job: vj, sortDate: new Date(vj.created_at).getTime() });
+    }
+    return items.sort((a, b) => b.sortDate - a.sortDate);
+  }, [visibleAiJobs, visibleVideoJobs, contentType]);
+
   const tabTitles: Record<FilterState, { title: string; subtitle: string }> = {
     all: { title: 'Queue', subtitle: 'Alle items — workflows, AI-generatie en video processing.' },
     review: { title: 'Needs Review', subtitle: 'Items die wachten op beoordeling.' },
@@ -524,7 +565,7 @@ export default function ApprovalsPage() {
         )}
 
         {/* ── Empty state ── */}
-        {!loading && !aiLoading && !videoLoading && filtered.length === 0 && visibleAiJobs.length === 0 && visibleVideoJobs.length === 0 && (
+        {!loading && !aiLoading && !videoLoading && filtered.length === 0 && unifiedItems.length === 0 && (
           <div style={{ padding: 48, textAlign: 'center', color: 'var(--app-text-secondary, #9ca3af)', backgroundColor: 'var(--app-surface-2, #f9fafb)', borderRadius: 12, border: '1px dashed var(--app-border, #e5e7eb)' }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Geen items</div>
@@ -532,154 +573,189 @@ export default function ApprovalsPage() {
           </div>
         )}
 
-        {/* ── AI Jobs for this tab ── */}
-        {!aiLoading && visibleAiJobs.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: (filtered.length > 0 || visibleVideoJobs.length > 0) ? 24 : 0 }}>
-            {visibleAiJobs.map(job => {
-              const isActive = job.status === 'processing' || job.status === 'queued' || job.status === 'waiting';
-              const isReviewable = job.status === 'completed' && (job.approval_status === 'pending_review' || !job.approval_status);
-              const approvalBadge = job.approval_status === 'approved'
-                ? { label: 'Goedgekeurd', color: '#16a34a' }
-                : job.approval_status === 'rejected'
-                ? { label: 'Afgewezen', color: '#dc2626' }
-                : job.status === 'completed' ? { label: 'Te beoordelen', color: '#d97706' }
-                : null;
-
+        {/* ── Content type filter chips ── */}
+        {!aiLoading && !videoLoading && (visibleAiJobs.length > 0 || visibleVideoJobs.length > 0) && (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+            {CONTENT_TYPE_CHIPS.map(chip => {
+              const count = contentTypeCounts[chip.key];
+              const isActive = contentType === chip.key;
               return (
-                <div
-                  key={job.task_id}
-                  onClick={() => job.status === 'completed' && openModal(job)}
+                <button
+                  key={chip.key}
+                  onClick={() => setContentType(chip.key)}
                   style={{
-                    padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10,
-                    border: `1px solid ${job.status === 'failed' ? '#fca5a5' : isReviewable ? '#fde68a' : 'var(--app-border, #e5e7eb)'}`,
-                    transition: 'box-shadow 0.15s', cursor: job.status === 'completed' ? 'pointer' : 'default',
-                    display: 'flex', alignItems: 'center', gap: 14,
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                    border: `1.5px solid ${isActive ? '#2563eb' : 'var(--app-border, #e5e7eb)'}`,
+                    backgroundColor: isActive ? '#2563eb' : 'var(--app-surface, #fff)',
+                    color: isActive ? '#fff' : 'var(--app-text-secondary, #6b7280)',
+                    cursor: count > 0 || chip.key === 'all' ? 'pointer' : 'default',
+                    opacity: count > 0 || chip.key === 'all' ? 1 : 0.4,
+                    transition: 'all 0.15s',
                   }}
-                  onMouseEnter={e => { if (job.status === 'completed') e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.09)'; }}
-                  onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
                 >
-                  <span style={{ fontSize: 20, flexShrink: 0 }}>{statusIcon[job.status]}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)', marginBottom: 2 }}>{job.label || job.template_id}</div>
-                    <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>{job.output_type} · {new Date(job.created_at).toLocaleString()}</div>
-                    {isActive && (
-                      <div style={{ height: 3, backgroundColor: '#e5e7eb', borderRadius: 99, overflow: 'hidden', marginTop: 6 }}>
-                        <div style={{ height: '100%', width: `${job.progress || 0}%`, backgroundColor: '#2563eb', borderRadius: 99, transition: 'width 0.4s ease', minWidth: job.progress ? 0 : '8%' }} />
-                      </div>
-                    )}
-                    {job.status === 'failed' && job.error_message && (
-                      <div style={{ fontSize: 11, color: '#dc2626', backgroundColor: '#fee2e2', borderRadius: 6, padding: '3px 8px', marginTop: 4 }}>{job.error_message}</div>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#8b5cf6', backgroundColor: '#8b5cf618', borderRadius: 99, padding: '2px 8px', letterSpacing: '0.04em' }}>
-                      AI
-                    </span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: statusColor[job.status], backgroundColor: `${statusColor[job.status]}18`, borderRadius: 99, padding: '2px 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      {job.status}
-                    </span>
-                    {approvalBadge && (
-                      <span style={{ fontSize: 10, fontWeight: 700, color: approvalBadge.color, backgroundColor: `${approvalBadge.color}18`, borderRadius: 99, padding: '2px 8px' }}>
-                        {approvalBadge.label}
-                      </span>
-                    )}
-                  </div>
-                  {job.status === 'completed' && <span style={{ color: '#d1d5db', fontSize: 16, flexShrink: 0 }}>›</span>}
-                </div>
+                  <span>{chip.icon}</span>
+                  <span>{chip.label}</span>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700,
+                    backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : 'var(--app-surface-2, #f3f4f6)',
+                    borderRadius: 99, padding: '1px 6px', minWidth: 18, textAlign: 'center',
+                  }}>
+                    {count}
+                  </span>
+                </button>
               );
             })}
           </div>
         )}
 
-        {/* ── Video Processing Jobs ── */}
-        {!videoLoading && visibleVideoJobs.length > 0 && (
+        {/* ── Unified Jobs List (AI + Video interleaved by date) ── */}
+        {!aiLoading && !videoLoading && unifiedItems.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: filtered.length > 0 ? 24 : 0 }}>
-            {visibleVideoJobs.map(vJob => {
-              const statusDisplay = getJobStatusDisplay(vJob.status);
-              const typeDisplay = getJobTypeDisplay(vJob.job_type);
-              const isActive = vJob.status === 'queued' || vJob.status === 'processing';
+            {unifiedItems.map(item => {
+              if (item.kind === 'ai') {
+                const job = item.job;
+                const isActive = job.status === 'processing' || job.status === 'queued' || job.status === 'waiting';
+                const isReviewable = job.status === 'completed' && (job.approval_status === 'pending_review' || !job.approval_status);
+                const approvalBadge = job.approval_status === 'approved'
+                  ? { label: 'Goedgekeurd', color: '#16a34a' }
+                  : job.approval_status === 'rejected'
+                  ? { label: 'Afgewezen', color: '#dc2626' }
+                  : job.status === 'completed' ? { label: 'Te beoordelen', color: '#d97706' }
+                  : null;
+                const typeBadgeColor = job.output_type === 'video' ? '#8b5cf6' : job.output_type === 'image' ? '#d946ef' : '#6366f1';
+                const typeBadgeLabel = job.output_type === 'video' ? 'AI VIDEO' : job.output_type === 'image' ? 'AI IMAGE' : 'AI';
 
-              return (
-                <div
-                  key={vJob.id}
-                  style={{
-                    padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10,
-                    border: `1px solid ${vJob.status === 'failed' ? '#fca5a5' : 'var(--app-border, #e5e7eb)'}`,
-                    display: 'flex', flexDirection: 'column', gap: 10,
-                  }}
-                >
-                  {/* Header */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 18 }}>{typeDisplay.icon}</span>
-                      <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--app-text)' }}>{typeDisplay.label}</span>
-                      <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--app-text-secondary, #6b7280)' }}>{vJob.id.slice(0, 8)}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: '#0891b2', backgroundColor: '#0891b218', borderRadius: 99, padding: '2px 8px', letterSpacing: '0.04em' }}>
-                        VIDEO
-                      </span>
-                      <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 12, color: statusDisplay.color, backgroundColor: statusDisplay.bgColor }}>
-                        {statusDisplay.icon} {statusDisplay.label}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Progress */}
-                  {isActive && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: 'var(--app-border, #e5e7eb)', overflow: 'hidden' }}>
-                        <div style={{ width: `${Math.min(vJob.progress_percent, 100)}%`, height: '100%', borderRadius: 3, backgroundColor: vJob.progress_percent >= 100 ? '#059669' : '#2563eb', transition: 'width 0.5s ease-out' }} />
-                      </div>
-                      <span style={{ fontSize: 11, color: 'var(--app-text-secondary, #6b7280)', minWidth: 32 }}>{vJob.progress_percent}%</span>
-                    </div>
-                  )}
-
-                  {/* Meta */}
-                  <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', flexWrap: 'wrap' }}>
-                    <span>{new Date(vJob.created_at).toLocaleString('nl-NL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-                    {vJob.started_at && <span>Duur: {formatVideoDuration(vJob.started_at, vJob.completed_at)}</span>}
-                    {vJob.preset_name && <span>Preset: {vJob.preset_name}</span>}
-                    {vJob.retry_count > 0 && <span>Retries: {vJob.retry_count}</span>}
-                  </div>
-
-                  {/* Error */}
-                  {vJob.error_message && (
-                    <div style={{ fontSize: 12, color: '#dc2626', backgroundColor: '#fef2f2', padding: '8px 12px', borderRadius: 6, borderLeft: '3px solid #dc2626' }}>
-                      {vJob.error_message}
-                    </div>
-                  )}
-
-                  {/* Workflow info */}
-                  {vJob.workflow_instance && (
-                    <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #6b7280)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      🔄 Workflow: {vJob.workflow_instance.template_name} — {vJob.workflow_instance.current_state}
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  {(isActive || vJob.status === 'failed') && (
-                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                return (
+                  <div
+                    key={`ai-${job.task_id}`}
+                    onClick={() => job.status === 'completed' && openModal(job)}
+                    style={{
+                      padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10,
+                      border: `1px solid ${job.status === 'failed' ? '#fca5a5' : isReviewable ? '#fde68a' : 'var(--app-border, #e5e7eb)'}`,
+                      transition: 'box-shadow 0.15s', cursor: job.status === 'completed' ? 'pointer' : 'default',
+                      display: 'flex', alignItems: 'center', gap: 14,
+                    }}
+                    onMouseEnter={e => { if (job.status === 'completed') e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.09)'; }}
+                    onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+                  >
+                    <span style={{ fontSize: 20, flexShrink: 0 }}>{statusIcon[job.status]}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)', marginBottom: 2 }}>{job.label || job.template_id}</div>
+                      <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>{job.output_type} · {new Date(job.created_at).toLocaleString()}</div>
                       {isActive && (
-                        <button
-                          onClick={() => cancelVideoJob(vJob.id)}
-                          style={{ fontSize: 12, padding: '5px 12px', borderRadius: 6, border: '1px solid #dc2626', backgroundColor: 'transparent', color: '#dc2626', cursor: 'pointer' }}
-                        >
-                          Cancel
-                        </button>
+                        <div style={{ height: 3, backgroundColor: '#e5e7eb', borderRadius: 99, overflow: 'hidden', marginTop: 6 }}>
+                          <div style={{ height: '100%', width: `${job.progress || 0}%`, backgroundColor: '#2563eb', borderRadius: 99, transition: 'width 0.4s ease', minWidth: job.progress ? 0 : '8%' }} />
+                        </div>
                       )}
-                      {vJob.status === 'failed' && (
-                        <button
-                          onClick={() => retryVideoJob(vJob.id)}
-                          style={{ fontSize: 12, padding: '5px 12px', borderRadius: 6, border: '1px solid #2563eb', backgroundColor: '#2563eb', color: '#fff', cursor: 'pointer' }}
-                        >
-                          Retry
-                        </button>
+                      {job.status === 'failed' && job.error_message && (
+                        <div style={{ fontSize: 11, color: '#dc2626', backgroundColor: '#fee2e2', borderRadius: 6, padding: '3px 8px', marginTop: 4 }}>{job.error_message}</div>
                       )}
                     </div>
-                  )}
-                </div>
-              );
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: typeBadgeColor, backgroundColor: `${typeBadgeColor}18`, borderRadius: 99, padding: '2px 8px', letterSpacing: '0.04em' }}>
+                        {typeBadgeLabel}
+                      </span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: statusColor[job.status], backgroundColor: `${statusColor[job.status]}18`, borderRadius: 99, padding: '2px 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        {job.status}
+                      </span>
+                      {approvalBadge && (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: approvalBadge.color, backgroundColor: `${approvalBadge.color}18`, borderRadius: 99, padding: '2px 8px' }}>
+                          {approvalBadge.label}
+                        </span>
+                      )}
+                    </div>
+                    {job.status === 'completed' && <span style={{ color: '#d1d5db', fontSize: 16, flexShrink: 0 }}>›</span>}
+                  </div>
+                );
+              } else {
+                const vJob = item.job;
+                const statusDisplay = getJobStatusDisplay(vJob.status);
+                const typeDisplay = getJobTypeDisplay(vJob.job_type);
+                const isActive = vJob.status === 'queued' || vJob.status === 'processing';
+
+                return (
+                  <div
+                    key={`video-${vJob.id}`}
+                    style={{
+                      padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10,
+                      border: `1px solid ${vJob.status === 'failed' ? '#fca5a5' : isActive ? '#93c5fd' : 'var(--app-border, #e5e7eb)'}`,
+                      display: 'flex', flexDirection: 'column', gap: 10,
+                    }}
+                  >
+                    {/* Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 18 }}>{typeDisplay.icon}</span>
+                        <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--app-text)' }}>{typeDisplay.label}</span>
+                        <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--app-text-secondary, #6b7280)' }}>{vJob.id.slice(0, 8)}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#0891b2', backgroundColor: '#0891b218', borderRadius: 99, padding: '2px 8px', letterSpacing: '0.04em' }}>
+                          {vJob.job_type === 'lineup' ? 'LINEUP' : 'VIDEO'}
+                        </span>
+                        <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 12, color: statusDisplay.color, backgroundColor: statusDisplay.bgColor }}>
+                          {statusDisplay.icon} {statusDisplay.label}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Progress */}
+                    {isActive && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: 'var(--app-border, #e5e7eb)', overflow: 'hidden' }}>
+                          <div style={{ width: `${Math.min(vJob.progress_percent, 100)}%`, height: '100%', borderRadius: 3, backgroundColor: vJob.progress_percent >= 100 ? '#059669' : '#2563eb', transition: 'width 0.5s ease-out' }} />
+                        </div>
+                        <span style={{ fontSize: 11, color: 'var(--app-text-secondary, #6b7280)', minWidth: 32 }}>{vJob.progress_percent}%</span>
+                      </div>
+                    )}
+
+                    {/* Meta */}
+                    <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', flexWrap: 'wrap' }}>
+                      <span>{new Date(vJob.created_at).toLocaleString('nl-NL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                      {vJob.started_at && <span>Duur: {formatVideoDuration(vJob.started_at, vJob.completed_at)}</span>}
+                      {vJob.preset_name && <span>Preset: {vJob.preset_name}</span>}
+                      {vJob.retry_count > 0 && <span>Retries: {vJob.retry_count}</span>}
+                    </div>
+
+                    {/* Error */}
+                    {vJob.error_message && (
+                      <div style={{ fontSize: 12, color: '#dc2626', backgroundColor: '#fef2f2', padding: '8px 12px', borderRadius: 6, borderLeft: '3px solid #dc2626' }}>
+                        {vJob.error_message}
+                      </div>
+                    )}
+
+                    {/* Workflow info */}
+                    {vJob.workflow_instance && (
+                      <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #6b7280)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        🔄 Workflow: {vJob.workflow_instance.template_name} — {vJob.workflow_instance.current_state}
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    {(isActive || vJob.status === 'failed') && (
+                      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                        {isActive && (
+                          <button
+                            onClick={() => cancelVideoJob(vJob.id)}
+                            style={{ fontSize: 12, padding: '5px 12px', borderRadius: 6, border: '1px solid #dc2626', backgroundColor: 'transparent', color: '#dc2626', cursor: 'pointer' }}
+                          >
+                            Cancel
+                          </button>
+                        )}
+                        {vJob.status === 'failed' && (
+                          <button
+                            onClick={() => retryVideoJob(vJob.id)}
+                            style={{ fontSize: 12, padding: '5px 12px', borderRadius: 6, border: '1px solid #2563eb', backgroundColor: '#2563eb', color: '#fff', cursor: 'pointer' }}
+                          >
+                            Retry
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
             })}
           </div>
         )}
