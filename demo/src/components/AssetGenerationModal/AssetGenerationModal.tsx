@@ -664,7 +664,9 @@ export default function AssetGenerationModal({
   const stepTitles: Record<ModalStep, string> = {
     template: 'Stap 1 — Kies type',
     configure: 'Stap 2 — Instellingen',
-    results: generation.step === 'queued' ? 'In de wachtrij gezet ✅' : 'Stap 3 — Resultaten',
+    results: generation.step === 'queued' ? 'In de wachtrij gezet ✅'
+      : generation.step === 'polling' ? 'Video wordt gegenereerd...'
+      : 'Stap 3 — Resultaten',
   };
 
   return (
@@ -1072,6 +1074,20 @@ export default function AssetGenerationModal({
                   <ProgressBar progress={generation.progress} />
                   <div style={{ fontSize: 12, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 8 }}>
                     Wordt toegevoegd aan de AI wachtrij...
+                  </div>
+                </div>
+              )}
+
+              {/* Polling — video is being generated, waiting for result */}
+              {generation.step === 'polling' && (
+                <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                  <div style={{ fontSize: 48, marginBottom: 16 }}>🎬</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
+                    Video wordt gegenereerd...
+                  </div>
+                  <ProgressBar progress={generation.progress} />
+                  <div style={{ fontSize: 12, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 8, maxWidth: 320, margin: '8px auto 0' }}>
+                    Dit duurt 2–5 minuten. Je kunt dit venster open laten — het resultaat verschijnt automatisch.
                   </div>
                 </div>
               )}

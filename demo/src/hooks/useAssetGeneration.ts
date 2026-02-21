@@ -283,11 +283,31 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           if (!taskId) throw new Error('Backend returned 202 but no task_id');
 
           console.log(`🎬 Video generation queued. task_id=${taskId}`);
-          // Don't poll in-modal — the GenerationJob queue + useGenerationJobs hook
-          // handles status tracking and sends a notification when done.
-          setQueuedTaskId(taskId);
-          setStep('queued');
-          setProgress(100);
+
+          if (params.requireApproval) {
+            // Approval flow: show "queued" and let user close — result goes
+            // through the Approvals page review flow instead.
+            setQueuedTaskId(taskId);
+            setStep('queued');
+            setProgress(100);
+            return;
+          }
+
+          // Non-approval flow (celebration, intro, then_vs_now):
+          // Poll for result in-modal so the user can accept & save to metadata.
+          setStep('polling');
+          setProgress(15);
+
+          try {
+            const polledVariants = await pollForResult(taskId, controller.signal);
+            setVariants(polledVariants);
+            setStep('completed');
+            setProgress(100);
+          } catch (pollErr) {
+            if ((pollErr as Error).name === 'AbortError') return;
+            setError(pollErr instanceof Error ? pollErr.message : 'Video generatie mislukt');
+            setStep('error');
+          }
           return;
         }
 

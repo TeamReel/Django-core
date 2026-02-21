@@ -1268,7 +1268,7 @@ export default function ProjectSeasonMemberDetailPage() {
   useEffect(() => {
     // Collect all raw S3 keys from videoVariants and form
     const paths: string[] = [];
-    for (const category of ['fullbody', 'closeup', 'intro', 'celebration'] as const) {
+    for (const category of ['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now'] as const) {
       const variants = videoVariants[category];
       if (variants) {
         for (const val of Object.values(variants)) {
