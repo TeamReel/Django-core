@@ -1321,7 +1321,8 @@ export default function HierarchyMatchDetailPage() {
   const date = match.start_time ? new Date(match.start_time) : null;
   const status = String(match.metadata?.status || 'scheduled');
 
-  const homeTeamName = match.project?.name || 'Home';
+  // Use club name (parent project) instead of team name (child project)
+  const homeTeamName = club?.name || match.project?.name || 'Home';
   const awayTeamName = match.opponent_project?.name || 'Opponent';
   const scoreDisplay = status === 'finished'
     ? `${match.metadata?.home_score ?? 0} - ${match.metadata?.away_score ?? 0}`

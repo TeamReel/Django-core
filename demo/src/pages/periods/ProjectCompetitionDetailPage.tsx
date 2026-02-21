@@ -1507,6 +1507,15 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     return matches.filter((m: any) => String(m.title || '').toLowerCase().includes(q));
   }, [hierarchySearch, matches]);
 
+  // Show club name (parent project) instead of team name (child project) in match titles
+  const matchDisplayTitle = (m: any, fallback?: string) => {
+    const raw = m.title || m.name || fallback || `Match ${m.id}`;
+    if (project?.name && club?.name && project.name !== club.name) {
+      return raw.replace(project.name, club.name);
+    }
+    return raw;
+  };
+
   const deleteCompetition = async () => {
     const competitionUuid = String(resolvedCompetitionId || (competition as any)?.id || '').trim();
     if (!competitionUuid) return;
@@ -1639,7 +1648,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                     className="hover:underline"
                     style={{ textDecoration: 'none', color: 'var(--app-link)' }}
                   >
-                    {m.title || `Match ${m.id}`}
+                    {matchDisplayTitle(m)}
                   </Link>
                 </td>
                 <td style={compactTdStyle}>
@@ -1681,7 +1690,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                       type="button"
                       className="app-action-button"
                       onClick={async () => {
-                        if (!window.confirm(`Delete match ${m.title || m.id}?`)) return;
+                        if (!window.confirm(`Delete match ${matchDisplayTitle(m)}?`)) return;
                         try {
                           const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(m.id))}/`, {
                             method: 'DELETE',
@@ -2044,7 +2053,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                                           onClick={() => navigate(matchDetailPath(String(m.id)))}
                                           style={{ textAlign: 'left', fontWeight: 700, fontSize: 13, color: '#60a5fa' }}
                                         >
-                                          {m.title || `Match ${m.id}`}
+                                          {matchDisplayTitle(m)}
                                         </button>
                                         <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
                                           {m.start_time ? new Date(m.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'} • {m.location || '—'}
@@ -2063,7 +2072,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                                           type="button"
                                           className="app-action-button"
                                           onClick={async () => {
-                                            if (!window.confirm(`Delete match ${m.title || m.id}?`)) return;
+                                            if (!window.confirm(`Delete match ${matchDisplayTitle(m)}?`)) return;
                                             try {
                                               const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(m.id))}/`, {
                                                 method: 'DELETE',
@@ -2190,7 +2199,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                                           : `/matches/${String(matchKey)}`;
                                         return (
                                           <Link to={matchPath} style={{ textDecoration: 'none', color: '#60a5fa' }} className="hover:underline">
-                                            {match.title || match.name}
+                                            {matchDisplayTitle(match)}
                                           </Link>
                                         );
                                       })()}
