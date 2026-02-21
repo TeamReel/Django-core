@@ -1025,7 +1025,7 @@ export default function ContentGenerationModal({
       const data = await response.json();
       console.log('📸 Team poster generated:', data);
 
-      const posterUrl = data.poster_url;
+      const posterUrl = data.poster_url || data.data?.poster_url;
       if (!posterUrl) {
         throw new Error('Poster generated but no URL returned');
       }
