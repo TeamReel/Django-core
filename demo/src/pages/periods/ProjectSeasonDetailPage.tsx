@@ -225,7 +225,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [isActiveJobsModalOpen, setIsActiveJobsModalOpen] = useState(false);
 
   // Guest player state
-  const [guestPlayer, setGuestPlayer] = useState<{ has_avatar: boolean; guest_player: any } | null>(null);
+  const [guestPlayer, setGuestPlayer] = useState<{ has_avatar: boolean; has_closeup: boolean; has_intro: boolean; has_celebration: boolean; guest_player: any } | null>(null);
   const [guestPlayerLoading, setGuestPlayerLoading] = useState(false);
   const [guestPlayerGenerating, setGuestPlayerGenerating] = useState(false);
 
@@ -2824,31 +2824,31 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               {guestPlayer?.has_avatar ? '🔄' : '🤖'} Fullbody
                             </Button>
                             <Button
-                              variant={(guestPlayer as any)?.has_closeup ? 'outline' : 'secondary'}
+                              variant={guestPlayer?.has_closeup ? 'outline' : 'secondary'}
                               onClick={() => openGuestAiModal('closeup_in_tenue')}
                               disabled={!guestPlayer?.has_avatar}
                               style={{ fontSize: '12px', padding: '4px 10px' }}
                               title={!guestPlayer?.has_avatar ? 'Genereer eerst een fullbody' : undefined}
                             >
-                              {(guestPlayer as any)?.has_closeup ? '🔄' : '📸'} Close-up
+                              {guestPlayer?.has_closeup ? '🔄' : '📸'} Close-up
                             </Button>
                             <Button
-                              variant={(guestPlayer as any)?.has_intro ? 'outline' : 'secondary'}
+                              variant={guestPlayer?.has_intro ? 'outline' : 'secondary'}
                               onClick={() => openGuestAiModal('member_intro')}
                               disabled={!guestPlayer?.has_avatar}
                               style={{ fontSize: '12px', padding: '4px 10px' }}
                               title={!guestPlayer?.has_avatar ? 'Genereer eerst een fullbody' : undefined}
                             >
-                              {(guestPlayer as any)?.has_intro ? '🔄' : '🎬'} Intro
+                              {guestPlayer?.has_intro ? '🔄' : '🎬'} Intro
                             </Button>
                             <Button
-                              variant={(guestPlayer as any)?.has_celebration ? 'outline' : 'secondary'}
+                              variant={guestPlayer?.has_celebration ? 'outline' : 'secondary'}
                               onClick={() => openGuestAiModal('member_goal_celebration')}
                               disabled={!guestPlayer?.has_avatar}
                               style={{ fontSize: '12px', padding: '4px 10px' }}
                               title={!guestPlayer?.has_avatar ? 'Genereer eerst een fullbody' : undefined}
                             >
-                              {(guestPlayer as any)?.has_celebration ? '🔄' : '🎉'} Celebration
+                              {guestPlayer?.has_celebration ? '🔄' : '🎉'} Celebration
                             </Button>
                           </div>
                           {!(clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home')) && (
@@ -2939,9 +2939,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   // Not applicable: profile, legacy_photo, then_vs_now, legacy
                                   const guestSlotMap: Record<string, { has: boolean; templateId: string; label: string }> = {
                                     kit: { has: !!guestPlayer?.has_avatar, templateId: 'fullbody_in_tenue', label: 'In Tenue' },
-                                    closeup: { has: !!(guestPlayer as any)?.has_closeup, templateId: 'closeup_in_tenue', label: 'Close-up' },
-                                    intro: { has: !!(guestPlayer as any)?.has_intro, templateId: 'member_intro', label: 'Short Intro' },
-                                    celebration: { has: !!(guestPlayer as any)?.has_celebration, templateId: 'member_goal_celebration', label: 'Celebration' },
+                                    closeup: { has: !!guestPlayer?.has_closeup, templateId: 'closeup_in_tenue', label: 'Close-up' },
+                                    intro: { has: !!guestPlayer?.has_intro, templateId: 'member_intro', label: 'Short Intro' },
+                                    celebration: { has: !!guestPlayer?.has_celebration, templateId: 'member_goal_celebration', label: 'Celebration' },
                                   };
                                   const guestSlot = guestSlotMap[slot.id];
                                   if (guestSlot) {
@@ -2968,9 +2968,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   {(() => {
                                     const guestFilledCount = [
                                       guestPlayer?.has_avatar,
-                                      (guestPlayer as any)?.has_closeup,
-                                      (guestPlayer as any)?.has_intro,
-                                      (guestPlayer as any)?.has_celebration,
+                                      guestPlayer?.has_closeup,
+                                      guestPlayer?.has_intro,
+                                      guestPlayer?.has_celebration,
                                     ].filter(Boolean).length;
                                     return (
                                       <Badge variant={guestFilledCount === 4 ? 'success' : 'default'}>
