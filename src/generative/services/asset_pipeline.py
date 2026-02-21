@@ -468,6 +468,17 @@ OUTPUT_POSTPROCESSORS: dict[str, Any] = {
     ),
 }
 
+# Postprocess templates that use pure Pillow (no AI / Gemini call).
+# These only crop, center and resize — running through the Celery queue would
+# add unnecessary latency.  Used by generate_asset_view to decide whether
+# to run synchronously.
+PILLOW_ONLY_TEMPLATES: set[str] = {
+    "logo_postprocess",
+    "sponsor_postprocess",
+    "kit_postprocess",
+    "location_postprocess",
+}
+
 
 # =============================================================================
 # Template Helpers
@@ -672,13 +683,6 @@ def generate_asset(
     # These only crop, center and resize — sending through Gemini would
     # degrade quality (colours shift, details lost, logo gets darker).
     # =========================================================================
-    PILLOW_ONLY_TEMPLATES = {
-        "logo_postprocess",
-        "sponsor_postprocess",
-        "kit_postprocess",
-        "location_postprocess",
-    }
-
     if template_id in PILLOW_ONLY_TEMPLATES:
         return _pillow_only_postprocess(template_id, params, input_images)
 

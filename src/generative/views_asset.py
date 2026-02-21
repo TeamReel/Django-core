@@ -350,6 +350,90 @@ def generate_asset_view(request: Request) -> Response:
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
+    # ── Fast synchronous path for Pillow-only postprocess templates ───
+    # Templates like logo_postprocess, sponsor_postprocess, kit_postprocess,
+    # location_postprocess are pure Pillow (no AI call). Running them through
+    # the Celery ai_generation queue adds unnecessary latency and UI
+    # complexity. Execute them inline and return the result immediately.
+    from .services.asset_pipeline import PILLOW_ONLY_TEMPLATES
+
+    if template_id in PILLOW_ONLY_TEMPLATES:
+        try:
+            from .services.asset_pipeline import generate_asset
+
+            results = generate_asset(
+                template_id=template_id,
+                params=params,
+                input_images=input_images,
+                variant_count=variant_count,
+            )
+
+            # Upload results to storage and build response
+            stored_variants = []
+            for r in results:
+                image_bytes = r.get("image_bytes")
+                if image_bytes and not r.get("error"):
+                    upload_result = _upload_image_bytes_to_storage(
+                        image_bytes=image_bytes,
+                        filename=r.get("filename", f"{template_id}_postprocessed.png"),
+                        mime_type=r.get("mime_type", "image/png"),
+                        variant_index=r.get("variant_index", 0),
+                        template_id=template_id,
+                        template_type="output",
+                        template_subtype=template_id.replace("_postprocess", ""),
+                        project_id=str(project_id) if project_id else None,
+                        organisation_id=str(organisation_id) if organisation_id else None,
+                        membership_id=str(membership_id) if membership_id else None,
+                    )
+                    stored_variants.append(
+                        {
+                            "variant_index": r.get("variant_index", 0),
+                            "image_base64": r.get("image_base64"),
+                            "mime_type": r.get("mime_type"),
+                            "filename": r.get("filename"),
+                            "error": None,
+                            "metadata": r.get("metadata"),
+                            "storage_path": upload_result.get("storage_path"),
+                            "presigned_url": upload_result.get("presigned_url"),
+                            "storage_info": upload_result,
+                        }
+                    )
+                else:
+                    stored_variants.append(
+                        {
+                            "variant_index": r.get("variant_index", 0),
+                            "image_base64": None,
+                            "mime_type": None,
+                            "filename": None,
+                            "error": r.get("error", "No image bytes produced"),
+                        }
+                    )
+
+            logger.info(
+                "Pillow-only postprocess %s completed synchronously",
+                template_id,
+            )
+
+            # Return 200 with variants directly (sync path).
+            # The frontend useAssetGeneration hook handles 200 responses
+            # by immediately setting step='completed' with the variants,
+            # which triggers auto-accept in the AssetsTab useEffect.
+            return Response(
+                {
+                    "template_id": template_id,
+                    "variant_count": len(stored_variants),
+                    "variants": stored_variants,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:  # noqa: BLE001
+            logger.exception("Pillow-only postprocess failed for %s: %s", template_id, e)
+            return Response(
+                {"error": f"Postprocess failed: {e}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
     # Run the appropriate pipeline based on output type
     if output_type == "video":
         # Video generation is async via Celery queue (ai_generation).
