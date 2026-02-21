@@ -244,6 +244,7 @@ def generate_header_image(  # noqa: PLR0913
     venue: str | None = None,
     background_color: str | None = None,
     text_color: str | None = None,  # noqa: ARG001 - kept for API compat
+    title_text: str | None = None,
 ) -> str:
     """Generate header image and return presigned URL.
 
@@ -266,6 +267,7 @@ def generate_header_image(  # noqa: PLR0913
         competition_name=competition_name,
         venue=venue,
         background_color=background_color,
+        title_text=title_text,
     )
     # Flatten RGBA → RGB so FFmpeg never renders alpha as a checkerboard.
     # All compositing is done on a white base, so this is lossless.
@@ -287,6 +289,7 @@ def render_header_pil(  # noqa: PLR0913
     competition_name: str | None = None,
     venue: str | None = None,
     background_color: str | None = None,
+    title_text: str | None = None,
 ) -> Image.Image:
     """Render header as a PIL Image (no upload).
 
@@ -328,10 +331,11 @@ def render_header_pil(  # noqa: PLR0913
     # Center panel text
     cx = width // 2
 
-    # "STARTING XI" at top center (with black stroke for readability)
+    # "STARTING XI" (or custom title) at top center (with black stroke for readability)
     black = (0, 0, 0, 255)
+    header_title = title_text or "STARTING XI"
     _draw_centered_text(
-        draw, "STARTING XI", cx, int(height * 0.15), fonts["xl"], white, black, stroke_width=4
+        draw, header_title, cx, int(height * 0.15), fonts["xl"], white, black, stroke_width=4
     )
 
     # Match title: "Home - Away" (e.g., "Ajax - Heracles Almelo")

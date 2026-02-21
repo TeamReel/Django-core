@@ -14,6 +14,7 @@ class JobType(models.TextChoices):
     THUMBNAIL = "thumbnail", _("Thumbnail")
     COMPOSE = "compose", _("Compose")
     LINEUP = "lineup", _("Lineup")
+    GOAL_CELEBRATION = "goal_celebration", _("Goal Celebration")
 
 
 class JobStatus(models.TextChoices):

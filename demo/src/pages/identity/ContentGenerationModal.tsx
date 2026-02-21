@@ -467,6 +467,11 @@ export default function ContentGenerationModal({
   const [selectedBackgroundUrl, setSelectedBackgroundUrl] = useState<string | null>(null);
   const [appBackgrounds, setAppBackgrounds] = useState<Array<{ id: string; url: string; profile_name?: string }>>([]);
 
+  // Goal celebration options
+  const [goalScoreHome, setGoalScoreHome] = useState<number>(0);
+  const [goalScoreAway, setGoalScoreAway] = useState<number>(0);
+  const [goalScorerId, setGoalScorerId] = useState<string | null>(null);
+
   // Selected members per role
   const [selectedMembers, setSelectedMembers] = useState<Record<string, string[]>>({
     goalkeeper: [],
@@ -1259,10 +1264,182 @@ export default function ContentGenerationModal({
     }
   };
 
+  // Generate goal celebration video
+  const handleGenerateGoalCelebration = async () => {
+    abortActiveVideoJobPoll();
+    setProgress(10);
+
+    try {
+      const projectId = matchData?.project?.id || season?.project_id;
+      if (!projectId) {
+        throw new Error('No project ID available — cannot create video job');
+      }
+
+      if (!matchData?.id) {
+        throw new Error('No match/activity data available for goal celebration');
+      }
+
+      if (!goalScorerId) {
+        throw new Error('No goal scorer selected');
+      }
+
+      console.log('⚽ Creating goal celebration video:', {
+        activity_id: matchData.id,
+        scorer_member_id: goalScorerId,
+        score_home: goalScoreHome,
+        score_away: goalScoreAway,
+      });
+
+      setProgress(20);
+
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/goal-celebration-from-template/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+          'X-Project-ID': String(projectId),
+        },
+        body: JSON.stringify({
+          activity_id: matchData.id,
+          scorer_member_id: goalScorerId,
+          score_home: goalScoreHome,
+          score_away: goalScoreAway,
+          output_resolution: 'vertical_1080p',
+          ...(selectedBackgroundUrl ? { background_url: selectedBackgroundUrl } : {}),
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData?.error || errData?.detail || `Failed to create video job: ${response.status}`);
+      }
+
+      const jobData = await response.json();
+      const jobId = jobData.data?.id || jobData.id;
+      console.log('⚽ Goal celebration video job created:', jobId);
+
+      setVideoJobId(jobId);
+      setVideoJobStatus('queued');
+      setVideoJobProgressRaw(0);
+      setProgress(30);
+
+      // Poll for completion (same pattern as lineup)
+      const pollController = new AbortController();
+      activeVideoJobPollRef.current = pollController;
+      const pollSignal = pollController.signal;
+
+      let pollCount = 0;
+      const maxPolls = 360;
+      let consecutiveErrors = 0;
+      const maxConsecutiveErrors = 5;
+
+      const pollJob = async (): Promise<void> => {
+        if (pollSignal.aborted) return;
+        if (pollCount >= maxPolls) {
+          throw new Error('Video processing timed out. Please try again.');
+        }
+
+        let statusRes: Response;
+        try {
+          statusRes = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/${jobId}/`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            signal: pollSignal,
+          });
+        } catch (networkErr) {
+          if ((networkErr as any)?.name === 'AbortError' || pollSignal.aborted) return;
+          consecutiveErrors++;
+          console.warn(`⚠️ Poll network error (${consecutiveErrors}/${maxConsecutiveErrors}):`, networkErr);
+          if (consecutiveErrors >= maxConsecutiveErrors) {
+            throw new Error('Lost connection to server. Please check your network and try again.');
+          }
+          pollCount++;
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          return pollJob();
+        }
+
+        if (!statusRes.ok) {
+          consecutiveErrors++;
+          console.warn(`⚠️ Poll HTTP ${statusRes.status} (${consecutiveErrors}/${maxConsecutiveErrors})`);
+          if (consecutiveErrors >= maxConsecutiveErrors) {
+            throw new Error(`Server error while checking job status (HTTP ${statusRes.status})`);
+          }
+          pollCount++;
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          return pollJob();
+        }
+
+        consecutiveErrors = 0;
+        const statusData = await statusRes.json();
+        const job = statusData.data || statusData;
+        const jobStatus = job.status;
+        const progressPercent = job.progress_percent || 0;
+
+        setVideoJobStatus(jobStatus);
+        setVideoJobProgressRaw(progressPercent);
+        setVideoJobMeta(job.metadata || {});
+        setProgress(30 + (progressPercent * 0.6));
+
+        if (jobStatus === 'completed') {
+          const outputUrl = job.output_file?.presigned_url || job.output_file?.url;
+          if (outputUrl) {
+            setGeneratedVariants([{
+              variant_index: 0,
+              image_base64: null,
+              presigned_url: outputUrl,
+              mime_type: 'video/mp4',
+              filename: `goal_celebration_${jobId}.mp4`,
+              error: null,
+              storage_info: job.output_file?.storage_info || null,
+              metadata: { job_id: jobId, type: 'goal_celebration' },
+            }]);
+            setProgress(100);
+            setTimeout(() => setStep('success'), 300);
+          } else {
+            throw new Error('Video completed but no output file found');
+          }
+          abortActiveVideoJobPoll();
+          return;
+        }
+
+        if (jobStatus === 'failed') {
+          abortActiveVideoJobPoll();
+          throw new Error(job.error_message || 'Video processing failed');
+        }
+
+        if (jobStatus === 'cancelled') {
+          abortActiveVideoJobPoll();
+          throw new Error('Video processing was cancelled');
+        }
+
+        pollCount++;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        return pollJob();
+      };
+
+      await pollJob();
+
+    } catch (err) {
+      if ((err as any)?.name === 'AbortError') return;
+      console.error('❌ Goal celebration video generation failed:', err);
+      setGenerationError(err instanceof Error ? err.message : 'Video generation failed');
+      setStep('error');
+    }
+  };
+
   if (!isOpen) return null;
 
   const handleSelectType = (type: string, subtype: string, label: string) => {
     setSelectedType({ type, subtype, label });
+
+    // Goal celebration skips template selection — go directly to confirm step
+    // with the goal celebration form (score, scorer, background)
+    if (subtype === 'goal') {
+      setStep('confirm');
+      return;
+    }
+
     setStep('template');
     fetchTemplates(type, subtype);
   };
@@ -1334,6 +1511,13 @@ export default function ContentGenerationModal({
       if (templateSubtype === 'lineup') {
         clearInterval(progressInterval);
         await handleGenerateLineupVideo();
+        return;
+      }
+
+      // Check if this is a goal celebration video generation
+      if (templateSubtype === 'goal') {
+        clearInterval(progressInterval);
+        await handleGenerateGoalCelebration();
         return;
       }
 
@@ -1593,7 +1777,12 @@ export default function ContentGenerationModal({
           key !== 'use_formation' && val && typeof val !== 'boolean' && val.count > 0
         );
       const isLineup = selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer';
-      if (isLineup && needsMembers) {
+      const isGoal = selectedType?.subtype === 'goal';
+      if (isGoal) {
+        // Goal celebration skips template step, go back to type selection
+        setStep('type');
+        setSelectedType(null);
+      } else if (isLineup && needsMembers) {
         setStep('lineup_squad');
       } else if (needsMembers) {
         setStep('members');
@@ -2656,10 +2845,15 @@ export default function ContentGenerationModal({
           {/* Confirm - Review before generation */}
           {step === 'confirm' && (
             <div className="flex flex-col items-center justify-center h-full py-12">
-              <div className="text-6xl mb-6">🎬</div>
-              <h3 className="text-2xl font-bold mb-2">Klaar om te genereren</h3>
+              <div className="text-6xl mb-6">{selectedType?.subtype === 'goal' ? '⚽' : '🎬'}</div>
+              <h3 className="text-2xl font-bold mb-2">
+                {selectedType?.subtype === 'goal' ? 'Goal Celebration Video' : 'Klaar om te genereren'}
+              </h3>
               <p className="text-gray-600 mb-6 text-center max-w-md">
-                Je gaat een <strong>{selectedType?.label || selectedTemplate?.name}</strong> maken.
+                {selectedType?.subtype === 'goal'
+                  ? 'Vul de doelpuntgegevens in en kies een speler.'
+                  : <>Je gaat een <strong>{selectedType?.label || selectedTemplate?.name}</strong> maken.</>
+                }
               </p>
 
               {/* Match info */}
@@ -2676,6 +2870,308 @@ export default function ContentGenerationModal({
                 </div>
               )}
 
+              {/* Goal Celebration Options */}
+              {selectedType?.subtype === 'goal' && (
+                <div style={{
+                  width: '100%',
+                  maxWidth: 480,
+                  marginTop: 20,
+                  border: '1px solid var(--vscode-widget-border, #ddd)',
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                  background: 'var(--vscode-editor-background, #fff)',
+                }}>
+                  {/* Section header */}
+                  <div style={{
+                    padding: '14px 20px',
+                    borderBottom: '1px solid var(--vscode-widget-border, #ddd)',
+                    background: 'var(--vscode-editor-inactiveSelectionBackground, #f5f5f5)',
+                  }}>
+                    <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--vscode-foreground, #333)' }}>
+                      ⚽ Doelpunt Details
+                    </h4>
+                  </div>
+
+                  <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                    {/* Score input */}
+                    <div>
+                      <label style={{
+                        display: 'block',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        marginBottom: 10,
+                        color: 'var(--vscode-foreground, #555)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                      }}>Nieuwe Stand</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center' }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 4, color: 'var(--vscode-foreground, #666)' }}>
+                            {matchData?.project?.name || 'Thuis'}
+                          </div>
+                          <input
+                            type="number"
+                            min={0}
+                            max={99}
+                            value={goalScoreHome}
+                            onChange={(e) => setGoalScoreHome(Math.max(0, parseInt(e.target.value) || 0))}
+                            style={{
+                              width: 64,
+                              height: 56,
+                              fontSize: 28,
+                              fontWeight: 700,
+                              textAlign: 'center',
+                              border: '2px solid var(--vscode-widget-border, #ccc)',
+                              borderRadius: 8,
+                              background: 'var(--vscode-input-background, #fff)',
+                              color: 'var(--vscode-foreground, #333)',
+                            }}
+                          />
+                        </div>
+                        <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--vscode-foreground, #666)' }}>-</span>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 4, color: 'var(--vscode-foreground, #666)' }}>
+                            {matchData?.opponent_project?.name || 'Uit'}
+                          </div>
+                          <input
+                            type="number"
+                            min={0}
+                            max={99}
+                            value={goalScoreAway}
+                            onChange={(e) => setGoalScoreAway(Math.max(0, parseInt(e.target.value) || 0))}
+                            style={{
+                              width: 64,
+                              height: 56,
+                              fontSize: 28,
+                              fontWeight: 700,
+                              textAlign: 'center',
+                              border: '2px solid var(--vscode-widget-border, #ccc)',
+                              borderRadius: 8,
+                              background: 'var(--vscode-input-background, #fff)',
+                              color: 'var(--vscode-foreground, #333)',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Goal scorer selector */}
+                    <div>
+                      <label style={{
+                        display: 'block',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        marginBottom: 10,
+                        color: 'var(--vscode-foreground, #555)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                      }}>Doelpuntenmaker</label>
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                        gap: 8,
+                        maxHeight: 300,
+                        overflowY: 'auto',
+                      }}>
+                        {/* Show all players (goalkeeper + player roles) who have celebration or intro video */}
+                        {[...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || [])]
+                          .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx) // dedupe
+                          .map((member) => {
+                            const user = member.user || member.member;
+                            const name = user ? (
+                              ('name' in user && user.name) ||
+                              ('user_name' in user && user.user_name) ||
+                              `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                            ) : 'Unknown';
+
+                            // Check if member has celebration or intro video
+                            const tr = (member.metadata as any)?.teamreel_assets || {};
+                            const videos = tr?.videos || {};
+                            const hasCelebration = videos?.celebration && Object.keys(videos.celebration).length > 0;
+                            const hasIntro = videos?.intro && Object.keys(videos.intro).length > 0;
+                            const hasVideoAsset = hasCelebration || hasIntro;
+
+                            // Get profile photo for thumbnail
+                            const images = tr?.images || {};
+                            const profileUrl = images?.closeup?.home?.url || images?.closeup?.goalkeeper?.url || images?.fullbody?.home?.url || images?.fullbody?.goalkeeper?.url || null;
+
+                            const isSelected = goalScorerId === member.id;
+
+                            return (
+                              <button
+                                key={member.id}
+                                onClick={() => setGoalScorerId(member.id)}
+                                style={{
+                                  position: 'relative',
+                                  border: isSelected
+                                    ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                    : '1px solid var(--vscode-widget-border, #ddd)',
+                                  borderRadius: 8,
+                                  overflow: 'hidden',
+                                  cursor: 'pointer',
+                                  padding: 0,
+                                  background: isSelected
+                                    ? 'var(--vscode-list-activeSelectionBackground, #e0f0ff)'
+                                    : 'var(--vscode-editor-background, #fff)',
+                                  opacity: hasVideoAsset ? 1 : 0.5,
+                                  transition: 'all 0.15s ease',
+                                }}
+                                title={!hasVideoAsset ? 'Geen celebration/intro video beschikbaar' : name}
+                              >
+                                {/* Photo or placeholder */}
+                                <div style={{
+                                  width: '100%',
+                                  aspectRatio: '1/1',
+                                  background: profileUrl
+                                    ? `url(${profileUrl}) center/cover`
+                                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}>
+                                  {!profileUrl && (
+                                    <span style={{ fontSize: 24, color: '#fff' }}>👤</span>
+                                  )}
+                                  {hasCelebration && (
+                                    <div style={{
+                                      position: 'absolute', bottom: 4, left: 4,
+                                      background: '#10b981',
+                                      borderRadius: 4,
+                                      padding: '1px 4px',
+                                      fontSize: 9,
+                                      fontWeight: 700,
+                                      color: '#fff',
+                                    }}>🎉</div>
+                                  )}
+                                </div>
+                                <div style={{
+                                  padding: '4px 2px',
+                                  textAlign: 'center',
+                                  fontWeight: 600,
+                                  fontSize: 10,
+                                  color: isSelected ? 'var(--vscode-focusBorder, #007fd4)' : 'var(--vscode-foreground, #555)',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}>
+                                  {name.split(' ').slice(-1)[0]}
+                                </div>
+                                {isSelected && (
+                                  <div style={{
+                                    position: 'absolute', top: 3, right: 3,
+                                    width: 16, height: 16, borderRadius: '50%',
+                                    background: '#10b981', display: 'flex',
+                                    alignItems: 'center', justifyContent: 'center',
+                                    fontSize: 9, color: '#fff', fontWeight: 700,
+                                  }}>✓</div>
+                                )}
+                              </button>
+                            );
+                          })}
+                      </div>
+                      {!goalScorerId && (
+                        <div style={{ fontSize: 11, color: '#e11d48', marginTop: 6 }}>
+                          Selecteer een doelpuntenmaker
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Background selector (reuse same pattern) */}
+                    {appBackgrounds.length > 0 && (
+                      <div>
+                        <label style={{
+                          display: 'block',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          marginBottom: 10,
+                          color: 'var(--vscode-foreground, #555)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                        }}>Achtergrond</label>
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+                          gap: 8,
+                        }}>
+                          <button
+                            onClick={() => setSelectedBackgroundUrl(null)}
+                            style={{
+                              position: 'relative',
+                              border: !selectedBackgroundUrl
+                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                : '1px solid var(--vscode-widget-border, #ddd)',
+                              borderRadius: 8,
+                              overflow: 'hidden',
+                              cursor: 'pointer',
+                              padding: 0,
+                            }}
+                          >
+                            <div style={{
+                              width: '100%',
+                              aspectRatio: '9/16',
+                              background: 'linear-gradient(to bottom, #16a34a, #14532d)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                              <span style={{ fontSize: 20 }}>⚽</span>
+                            </div>
+                            <div style={{
+                              padding: '3px 0',
+                              textAlign: 'center',
+                              fontWeight: 600,
+                              fontSize: 9,
+                              color: !selectedBackgroundUrl ? 'var(--vscode-focusBorder, #007fd4)' : 'var(--vscode-foreground, #888)',
+                            }}>
+                              Standaard
+                            </div>
+                          </button>
+
+                          {appBackgrounds.map((bg) => {
+                            const isSel = selectedBackgroundUrl === bg.url;
+                            return (
+                              <button
+                                key={bg.id}
+                                onClick={() => setSelectedBackgroundUrl(bg.url)}
+                                style={{
+                                  position: 'relative',
+                                  border: isSel
+                                    ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                    : '1px solid var(--vscode-widget-border, #ddd)',
+                                  borderRadius: 8,
+                                  overflow: 'hidden',
+                                  cursor: 'pointer',
+                                  padding: 0,
+                                }}
+                              >
+                                <div style={{
+                                  width: '100%',
+                                  aspectRatio: '9/16',
+                                  background: `url(${bg.url}) center/cover`,
+                                }} />
+                                <div style={{
+                                  padding: '3px 0',
+                                  textAlign: 'center',
+                                  fontWeight: 600,
+                                  fontSize: 9,
+                                  color: isSel ? 'var(--vscode-focusBorder, #007fd4)' : 'var(--vscode-foreground, #888)',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}>
+                                  {bg.profile_name || 'Locatie'}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
             </div>
           )}
 
@@ -2686,17 +3182,36 @@ export default function ContentGenerationModal({
                 const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
                 const isLineupVideo = templateSubtype === 'lineup';
                 const isLineupFlyer = templateSubtype === 'lineup_flyer';
+                const isGoalCelebration = templateSubtype === 'goal';
                 const isLineup = isLineupVideo || isLineupFlyer;
+                const isVideoJob = isLineup || isGoalCelebration;
                 const status = (videoJobStatus || '').toLowerCase();
 
                 // Determine progress value (use videoJobProgressRaw for lineup, progress for others)
-                const displayProgress = isLineup && videoJobProgressRaw > 0 ? videoJobProgressRaw : progress;
+                const displayProgress = isVideoJob && videoJobProgressRaw > 0 ? videoJobProgressRaw : progress;
 
                 // Dynamic headline and description based on status
                 let headline = 'Bezig met genereren…';
                 let description = 'Even geduld, we maken je content.';
 
-                if (isLineupFlyer) {
+                if (isGoalCelebration) {
+                  headline = '⚽ Goal Celebration wordt gemaakt';
+                  if (status === 'queued') {
+                    description = 'Wachten op verwerking…';
+                  } else if (status === 'processing') {
+                    if (displayProgress > 0) {
+                      description = displayProgress < 30
+                        ? 'Assets worden geladen…'
+                        : displayProgress < 70
+                          ? 'Video wordt samengesteld…'
+                          : 'Bijna klaar, video wordt afgerond…';
+                    } else {
+                      description = 'Celebration video wordt verwerkt…';
+                    }
+                  } else if (status === 'completed') {
+                    description = 'Voltooid! ⚽🎉';
+                  }
+                } else if (isLineupFlyer) {
                   headline = 'Flyer wordt gemaakt';
                   description = 'Even geduld, we genereren je lineup flyer.';
                 } else if (isLineupVideo) {
@@ -2728,7 +3243,7 @@ export default function ContentGenerationModal({
                 return (
                   <div className="w-full max-w-md text-center">
                     {/* Icon */}
-                    <div className="text-5xl mb-6 animate-pulse">{isLineupFlyer ? '📋' : '🎬'}</div>
+                    <div className="text-5xl mb-6 animate-pulse">{isGoalCelebration ? '⚽' : isLineupFlyer ? '📋' : '🎬'}</div>
 
                     {/* Headline */}
                     <h2 className="text-xl font-semibold text-gray-800 mb-2">{headline}</h2>
@@ -2745,8 +3260,8 @@ export default function ContentGenerationModal({
                     </div>
                     <div className="text-sm text-gray-600 font-medium">{Math.round(displayProgress)}%</div>
 
-                    {/* Close option for lineup (runs in background) */}
-                    {isLineup && videoJobId && (
+                    {/* Close option for lineup/goal (runs in background) */}
+                    {isVideoJob && videoJobId && (
                       <div className="mt-8">
                         <p className="text-xs text-gray-400 mb-2">
                           Je kunt dit venster sluiten — de video wordt op de achtergrond verwerkt.
@@ -3149,7 +3664,10 @@ export default function ContentGenerationModal({
               </Button>
             )}
             {step === 'confirm' && (
-              <Button onClick={handleGenerate}>
+              <Button
+                onClick={handleGenerate}
+                disabled={selectedType?.subtype === 'goal' && !goalScorerId}
+              >
                 🚀 Generate Content
               </Button>
             )}

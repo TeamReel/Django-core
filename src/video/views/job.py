@@ -1120,6 +1120,96 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_201_CREATED,
             )
 
+    @action(detail=False, methods=["post"], url_path="goal-celebration-from-template")
+    def goal_celebration_from_template(self, request: Request) -> Response:
+        """Create a goal celebration video job.
+
+        POST /api/v1/video/jobs/goal-celebration-from-template/
+
+        Request body:
+        {
+            "activity_id": "uuid",           # Required: match/activity ID
+            "scorer_member_id": "uuid",      # Required: membership ID of goal scorer
+            "score_home": 2,                 # Required: current home score
+            "score_away": 1,                 # Required: current away score
+            "background_url": "https://...", # Optional: custom background
+            "output_resolution": "vertical_1080p"  # Optional
+        }
+        """
+        from src.video.services.video_service import VideoService
+
+        activity_id = request.data.get("activity_id")
+        scorer_member_id = request.data.get("scorer_member_id")
+        score_home = request.data.get("score_home")
+        score_away = request.data.get("score_away")
+        background_url = request.data.get("background_url")
+        output_resolution = request.data.get("output_resolution", "vertical_1080p")
+
+        if not activity_id:
+            return Response(
+                {"error": "activity_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not scorer_member_id:
+            return Response(
+                {"error": "scorer_member_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if score_home is None or score_away is None:
+            return Response(
+                {"error": "score_home and score_away are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Get activity and verify access
+        Activity = apps.get_model("activities", "Activity")
+        try:
+            activity = Activity.objects.select_related("project").get(id=activity_id)
+        except Activity.DoesNotExist:
+            return Response(
+                {"error": f"Activity {activity_id} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        project = activity.project
+
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+        if not ProjectMembership.objects.filter(project=project, user=request.user).exists():
+            raise PermissionDenied(
+                "You must be a project member to create goal celebration videos."
+            )
+
+        # Verify scorer membership exists
+        scorer = ProjectMembership.objects.filter(id=scorer_member_id).first()
+        if not scorer:
+            return Response(
+                {"error": f"Scorer membership {scorer_member_id} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Create the job (async processing in background thread)
+        service = VideoService()
+        job = service.create_job(
+            project=project,
+            user=request.user,
+            job_type=JobType.GOAL_CELEBRATION,
+            config={
+                "activity_id": str(activity_id),
+                "scorer_member_id": str(scorer_member_id),
+                "score_home": int(score_home),
+                "score_away": int(score_away),
+                "background_url": background_url,
+                "output_resolution": output_resolution,
+            },
+        )
+
+        output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
+        data = dict(output.data)
+        data["sync_mode"] = False
+        return Response(data, status=status.HTTP_201_CREATED)
+
     @action(detail=False, methods=["post"], url_path="lineup-flyer")
     def lineup_flyer(self, request: Request) -> Response:
         """Generate a static lineup flyer (PNG) from Activity data.
