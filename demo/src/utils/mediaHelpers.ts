@@ -102,6 +102,26 @@ export function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMedia
 }
 
 /**
+ * Count how many media slots are processed (lineup-ready) for a membership.
+ * Uses getMediaProcessingState which checks per-variant data, not just flat URLs.
+ */
+export function countProcessedMediaSlots(membership: any): number {
+  return MEDIA_SLOTS.filter(
+    (slot) => getMediaProcessingState(membership, slot.id) === 'processed',
+  ).length;
+}
+
+/**
+ * Count how many media slots have any content (not empty) for a membership.
+ * Uses getMediaProcessingState which checks per-variant data.
+ */
+export function countNonEmptyMediaSlots(membership: any): number {
+  return MEDIA_SLOTS.filter(
+    (slot) => getMediaProcessingState(membership, slot.id) !== 'empty',
+  ).length;
+}
+
+/**
  * Get media URL for a specific slot from membership
  */
 export function getMediaUrl(membership: any, slotId: MediaSlotId): string | undefined {

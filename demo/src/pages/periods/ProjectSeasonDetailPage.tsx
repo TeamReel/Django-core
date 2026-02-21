@@ -6,7 +6,7 @@ import { KitsTab } from '../../components/KitsTab';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
-import { memberHasMedia, countFilledMediaSlots, getMediaProcessingState } from '../../utils/mediaHelpers';
+import { memberHasMedia, countFilledMediaSlots, countProcessedMediaSlots, getMediaProcessingState } from '../../utils/mediaHelpers';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import {
@@ -2910,7 +2910,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                         <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}> Media Completion Matrix</h3>
                         <Badge variant="default">
-                          {members.filter((m) => countFilledMediaSlots(m) === MEDIA_SLOTS.length).length} / {members.length} Complete
+                          {members.filter((m) => countProcessedMediaSlots(m) === MEDIA_SLOTS.length).length} / {members.length} Complete
                         </Badge>
                         <Button
                           variant="outline"
@@ -3037,7 +3037,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   '"”';
                                 const membershipId = String(m.id || '').trim();
                                 const href = memberDetailHref(membershipId);
-                                const filledCount = countFilledMediaSlots(m);
+                                const filledCount = countProcessedMediaSlots(m);
                                 const isComplete = filledCount === MEDIA_SLOTS.length;
                                 const isBatchSelected = batchSelectedMemberIds.has(membershipId);
 

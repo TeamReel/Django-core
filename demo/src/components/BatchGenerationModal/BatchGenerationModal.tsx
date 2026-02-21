@@ -958,12 +958,12 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         } else {
           const videos = updatedTr.videos || {};
           const subcat = videos[category] || {};
-          // MiniMax videos are already complete (have background) - mark as processed
+          // Videos from MiniMax still have background — need processing (bg removal)
           updatedTr.videos = {
             ...videos,
             [category]: {
               ...subcat,
-              [metaKey]: { raw: savedUrl, processed: savedUrl, processing_state: 'processed' },
+              [metaKey]: { raw: savedUrl, processed: null, processing_state: 'raw' },
             },
           };
         }
