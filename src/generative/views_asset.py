@@ -2877,9 +2877,9 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
 
     VIDEO_TEMPLATE_MAP = {
         "member_intro": "intro",
+        "member_goal_celebration": "celebration",
         "then_vs_now_sidebyside": "then_vs_now",
         "then_vs_now_transformation": "then_vs_now",
-        # Future: "member_celebration": "celebration",
     }
     asset_type = VIDEO_TEMPLATE_MAP.get(job.template_id)
     if not asset_type or not job.membership_id:
@@ -2928,24 +2928,42 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
 
             composite_key = f"{kit_type}_{style_variant}" if style_variant else kit_type
 
+        # then_vs_now videos don't need bg removal; intro/celebration do
+        needs_bg_removal = asset_type in ("intro", "celebration")
         asset_dict[composite_key] = {
             "raw": storage_path,
-            "processing_state": "processed",
-            "processed": storage_path,
-            "processed_at": now_iso,
+            "processing_state": "raw" if needs_bg_removal else "processed",
+            "processed": None if needs_bg_removal else storage_path,
+            "processed_at": None if needs_bg_removal else now_iso,
             "specs": {},
             "source": "ai_generated",
         }
         changed = True
         logger.info(
-            "propagate_approved_video: membership=%s, %s.%s → %s",
+            "propagate_approved_video: membership=%s, %s.%s → %s (needs_bg_removal=%s)",
             job.membership_id,
             asset_type,
             composite_key,
             storage_path,
+            needs_bg_removal,
         )
 
     if changed:
+        # Also update flat media.{slotId}.url so the media matrix picks it up
+        ASSET_TYPE_TO_MEDIA_SLOT = {
+            "intro": "intro",
+            "celebration": "celebration",
+        }
+        media_slot = ASSET_TYPE_TO_MEDIA_SLOT.get(asset_type)
+        if media_slot and storage_path:
+            media = ta.setdefault("media", {})
+            if isinstance(media, dict):
+                slot_data = media.get(media_slot, {})
+                if not isinstance(slot_data, dict):
+                    slot_data = {}
+                slot_data["url"] = storage_path
+                media[media_slot] = slot_data
+
         membership.metadata = meta
         try:
             membership.save(update_fields=["metadata"])

@@ -34,8 +34,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--template-id",
             type=str,
-            default="member_intro",
-            help="Only process jobs with this template_id (default: member_intro)",
+            default=None,
+            help="Only process jobs with this template_id (default: all video templates)",
         )
 
     def handle(self, *args, **options):
@@ -49,8 +49,18 @@ class Command(BaseCommand):
         qs = GenerationJob.objects.filter(
             output_type="video",
             approval_status=GenerationJob.ApprovalStatus.APPROVED,
-            template_id=template_id,
         )
+        if template_id:
+            qs = qs.filter(template_id=template_id)
+        else:
+            qs = qs.filter(
+                template_id__in=[
+                    "member_intro",
+                    "member_goal_celebration",
+                    "then_vs_now_sidebyside",
+                    "then_vs_now_transformation",
+                ]
+            )
         if job_id:
             qs = qs.filter(task_id=job_id)
 
