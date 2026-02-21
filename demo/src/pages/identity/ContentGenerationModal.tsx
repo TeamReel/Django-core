@@ -1753,6 +1753,8 @@ export default function ContentGenerationModal({
       setSelectedTemplate({
         id: 'poster-synthetic',
         name: 'Elftalfoto',
+        description: '',
+        style_variant: '',
         template_type: 'pre_match',
         template_subtype: 'poster',
         is_active: true,
