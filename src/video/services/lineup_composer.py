@@ -774,11 +774,17 @@ def _compose_phase(
     animation_style: str = "slide_up",
     bg_is_landscape: bool = True,
     solo_mode: bool = False,
+    badge_xs: list[float] | None = None,
+    badge_ys: list[float] | None = None,
 ) -> list[Path] | None:
     """Generate clips for one phase (e.g. 'defenders').
 
     Args:
         solo_mode: If True, render a single player centered and larger on screen.
+        badge_xs: Target X positions for the closeup badge (formation spot).
+            Defaults to active_xs if not provided.
+        badge_ys: Target Y positions for the closeup badge (formation spot).
+            Defaults to closeup_ys if not provided.
     """
     role = role_from_group(group_name)
     active_y = Y_POS.get(role, 50) / 100.0
@@ -794,6 +800,10 @@ def _compose_phase(
     closeup_base = closeup_y_for_role(role, active_y)
     cu_offsets = get_y_stagger_offsets(len(active_players), CLOSEUP_ROW4_STAGGER_PCT)
     closeup_ys = [clamp01(closeup_base + off) for off in cu_offsets]
+
+    # Final badge positions (formation spots). Default to active/closeup if not overridden.
+    badge_xs = badge_xs or list(active_xs)
+    badge_ys = badge_ys or list(closeup_ys)
 
     circle_size = int(HEIGHT * PLAYER_SCALE_CLOSEUP)
     if circle_size % 2 != 0:
@@ -1116,16 +1126,22 @@ def _compose_phase(
             f3 += f"[tcvb_{i}]copy,format=rgba[pc_fin{i}];"
 
         # Fullbody
-        f3 += f"[{idx_full}:v]scale=-1:{int(HEIGHT * PLAYER_SCALE_FULLBODY)}[pf_fin{i}];"
+        f3 += f"[{idx_full}:v]scale=-1:{int(HEIGHT * scale_full)}[pf_fin{i}];"
 
         # Fades
         f3 += f"[pf_fin{i}]format=rgba,fade=t=out:st=0:d={trans_dur}:alpha=1[pf_fade{i}];"
         f3 += f"[pc_fin{i}]format=rgba,fade=t=in:st=0:d={trans_dur}:alpha=1[pc_fade{i}];"
 
-        # Overlay
+        # Fullbody overlay: static at active position, fades out
         f3 += f"[bg][pf_fade{i}]overlay=(W*{active_xs[i]}-w/2):(H*{active_ys[i]}-h)[bg_step1_{i}];"
-        cu_y = f"(H*{closeup_ys[i]}-h)"
-        f3 += f"[bg_step1_{i}][pc_fade{i}]overlay=(W*{active_xs[i]}-w/2):{cu_y}[bg_step2_{i}];"
+        # Closeup overlay: animate from active position → badge position
+        start_bx = active_xs[i]
+        start_by = active_ys[i]
+        end_bx = badge_xs[i]
+        end_by = badge_ys[i]
+        anim_bx = f"(W*({start_bx}+({end_bx}-{start_bx})*t/{trans_dur})-w/2)"
+        anim_by = f"(H*({start_by}+({end_by}-{start_by})*t/{trans_dur})-h)"
+        f3 += f"[bg_step1_{i}][pc_fade{i}]overlay={anim_bx}:{anim_by}[bg_step2_{i}];"
 
         # Name transitions
         lbl_full = fullbody_label(p.name, role, len(active_players))
@@ -1143,8 +1159,8 @@ def _compose_phase(
             f"alpha='{alpha_out}'[bg_step3_{i}];"
         )
         label_w = circle_size + BADGE_LABEL_EXTRA_W
-        lx = f"({WIDTH}*{active_xs[i]}-{label_w // 2})"
-        ly = f"({HEIGHT}*{closeup_ys[i]}-{cutoff_h}+{BADGE_LABEL_GAP})"
+        lx = f"({WIDTH}*{badge_xs[i]}-{label_w // 2})"
+        ly = f"({HEIGHT}*{badge_ys[i]}-{cutoff_h}+{BADGE_LABEL_GAP})"
         # Use drawtext with large boxborderw for consistent label background
         # Fixed-width drawbox (matches persistent + hold labels) then
         # drawtext with alpha fade — box appears instantly, text fades in.
@@ -1568,6 +1584,15 @@ def compose_lineup_video(
                     "Solo phase %d player %s has NO visual assets", solo_idx, player.name
                 )
 
+            # Compute badge target position (formation spot, not centre)
+            role = role_from_group(group_name)
+            ay = Y_POS.get(role, 50) / 100.0
+            full_group = [p for gn, g in phases if gn == group_name for p in g]
+            axs = get_x_positions_for_group(len(full_group), role, formation)
+            cu_base = closeup_y_for_role(role, ay)
+            cu_offsets = get_y_stagger_offsets(len(full_group), CLOSEUP_ROW4_STAGGER_PCT)
+            cu_ys = [clamp01(cu_base + off) for off in cu_offsets]
+
             segs = _compose_phase(
                 solo_idx,
                 group_name,
@@ -1584,6 +1609,8 @@ def compose_lineup_video(
                 animation_style,
                 bg_is_landscape,
                 solo_mode=True,
+                badge_xs=[axs[group_offset]],
+                badge_ys=[cu_ys[group_offset]],
             )
             if segs:
                 all_segments.extend(segs)
@@ -1594,14 +1621,6 @@ def compose_lineup_video(
 
             # Badge at correct formation position (not centre)
             if group_name != "coach" and player.closeup:
-                role = role_from_group(group_name)
-                ay = Y_POS.get(role, 50) / 100.0
-                full_group = [p for gn, g in phases if gn == group_name for p in g]
-                axs = get_x_positions_for_group(len(full_group), role, formation)
-                cu_base = closeup_y_for_role(role, ay)
-                cu_offsets = get_y_stagger_offsets(len(full_group), CLOSEUP_ROW4_STAGGER_PCT)
-                cu_ys = [clamp01(cu_base + off) for off in cu_offsets]
-
                 badge_out = badge_body_dir / f"badge_{len(persistent_players):02d}.png"
                 _render_badge_body_png(
                     src_path=player.closeup,
