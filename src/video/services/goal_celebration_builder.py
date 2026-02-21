@@ -18,7 +18,7 @@ from uuid import UUID
 logger = logging.getLogger(__name__)
 
 # Style priority for celebration variants (most common poses first)
-_CELEBRATION_STYLE_PRIORITY = ["arms_crossed", "thumbs_up", "hand_up"]
+_CELEBRATION_STYLE_PRIORITY = ["fist_pump", "arms_wide", "point_to_sky", "slide"]
 
 
 def _find_best_celebration_url(
@@ -291,24 +291,25 @@ class GoalCelebrationBuilder:
 
         jersey_number = (membership.metadata or {}).get("jersey_number")
 
-        # Helper to extract URL from variant value
-        def get_best_url(val):
-            if isinstance(val, dict):
-                return val.get("processed") or val.get("raw")
-            elif isinstance(val, str) and val.strip():
-                return val
-            return None
+        # Use get_ffmpeg_best_url for videos (prefers processed_source .mov with alpha)
+        # and get_best_url for images (prefers processed browser-playable)
+        from src.video.services.asset_processing_specs import (
+            get_best_url,
+            get_ffmpeg_best_url,
+        )
 
         # Find celebration video
         celebration_variants = videos.get("celebration", {}) or {}
-        celebration_url = _find_best_celebration_url(celebration_variants, kit_type, get_best_url)
+        celebration_url = _find_best_celebration_url(
+            celebration_variants, kit_type, get_ffmpeg_best_url
+        )
 
         # Find intro video as fallback for celebration
         if not celebration_url:
             intro_variants = videos.get("intro", {}) or {}
             from src.video.services.lineup_builder import _find_best_intro_url
 
-            celebration_url = _find_best_intro_url(intro_variants, kit_type, get_best_url)
+            celebration_url = _find_best_intro_url(intro_variants, kit_type, get_ffmpeg_best_url)
 
         # Fullbody image
         kit_url = None
