@@ -256,6 +256,7 @@ export default function HierarchyMatchDetailPage() {
       // Normalize: "lineup_07df73a6" → "lineup", "goal_celebration_07df73a6" → "goal"
       let normalizedSubtype = subtype.replace(/_[a-f0-9]{8}$/i, '');
       if (normalizedSubtype === 'goal_celebration') normalizedSubtype = 'goal';
+      if (normalizedSubtype === 'match_flyer') normalizedSubtype = 'flyer';
       if (!grouped[normalizedSubtype]) {
         grouped[normalizedSubtype] = { latest: item, history: [] };
       } else {

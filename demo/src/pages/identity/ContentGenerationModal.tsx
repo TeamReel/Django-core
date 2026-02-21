@@ -965,6 +965,93 @@ export default function ContentGenerationModal({
     }
   };
 
+  // Generate match flyer (static PNG) in multiple design variants
+  const handleGenerateMatchFlyer = async () => {
+    setProgress(10);
+
+    try {
+      const projectId = matchData?.project?.id || season?.project_id;
+      if (!projectId) {
+        throw new Error('No project ID available');
+      }
+      if (!matchData?.id) {
+        throw new Error('No match/activity data available for flyer generation');
+      }
+
+      setProgress(20);
+
+      // Call the match-flyer endpoint (synchronous — returns variant URLs directly)
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/match-flyer/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+          'X-Project-ID': String(projectId),
+        },
+        body: JSON.stringify({
+          activity_id: matchData.id,
+          // Generate all 3 variants: classic, bold, stadium
+          variants: ['classic', 'bold', 'stadium'],
+        }),
+      });
+
+      setProgress(70);
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData?.error || errData?.detail || `Failed to generate match flyer: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const variantsData = data.data?.variants || data.variants || [];
+      console.log('📣 Match flyer generated:', variantsData.length, 'variants');
+
+      if (variantsData.length === 0) {
+        throw new Error('No flyer variants were generated');
+      }
+
+      // Map backend variants to GeneratedVariant objects
+      const variants: GeneratedVariant[] = variantsData
+        .filter((v: { presigned_url?: string; error?: string }) => v.presigned_url && !v.error)
+        .map((v: { presigned_url: string; variant_key: string; variant_label: string; storage_path?: string; file_size_bytes?: number }, index: number) => ({
+          variant_index: index,
+          image_base64: null,
+          presigned_url: v.presigned_url,
+          mime_type: 'image/png',
+          filename: `match_flyer_${v.variant_key}_${matchData.id}.png`,
+          error: null,
+          storage_info: {
+            storage_path: v.storage_path || null,
+            file_size_bytes: v.file_size_bytes || 0,
+            storage_backend: 's3',
+          },
+          metadata: {
+            type: 'match_flyer',
+            variant_key: v.variant_key,
+            variant_label: v.variant_label,
+            activity_id: matchData.id,
+          },
+        }));
+
+      if (variants.length === 0) {
+        // All variants had errors
+        const firstError = variantsData.find((v: { error?: string }) => v.error);
+        throw new Error(firstError?.error || 'All flyer variants failed to generate');
+      }
+
+      setGeneratedVariants(variants);
+      setSelectedVariantIndex(0);
+      setProgress(100);
+      setTimeout(() => setStep('success'), 300);
+
+    } catch (err) {
+      console.error('❌ Match flyer generation failed:', err);
+      setGenerationError(err instanceof Error ? err.message : 'Match flyer generation failed');
+      setStep('error');
+    }
+  };
+
   // Generate lineup video using video module
   const handleGenerateLineupVideo = async () => {
     // If a previous job poll is still running (e.g. user retried or reopened), stop it.
@@ -1512,6 +1599,13 @@ export default function ContentGenerationModal({
         return;
       }
 
+      // Check if this is a match flyer generation
+      if (templateSubtype === 'flyer') {
+        clearInterval(progressInterval);
+        await handleGenerateMatchFlyer();
+        return;
+      }
+
       // Check if this is a lineup video generation
       if (templateSubtype === 'lineup') {
         clearInterval(progressInterval);
@@ -1661,6 +1755,9 @@ export default function ContentGenerationModal({
       } else if (templateSubtype === 'lineup_flyer') {
         const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
         brandAssetType = `lineup_flyer_${matchSuffix}`;
+      } else if (templateSubtype === 'flyer') {
+        const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
+        brandAssetType = `match_flyer_${matchSuffix}`;
       } else if (templateSubtype === 'goal' || templateSubtype === 'goal_celebration') {
         const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
         brandAssetType = `goal_${matchSuffix}`;
@@ -2853,14 +2950,16 @@ export default function ContentGenerationModal({
           {/* Confirm - Review before generation */}
           {step === 'confirm' && (
             <div className="flex flex-col items-center justify-center h-full py-12">
-              <div className="text-6xl mb-6">{selectedType?.subtype === 'goal' ? '⚽' : '🎬'}</div>
+              <div className="text-6xl mb-6">{selectedType?.subtype === 'goal' ? '⚽' : selectedType?.subtype === 'flyer' ? '📣' : '🎬'}</div>
               <h3 className="text-2xl font-bold mb-2">
-                {selectedType?.subtype === 'goal' ? 'Goal Celebration Video' : 'Klaar om te genereren'}
+                {selectedType?.subtype === 'goal' ? 'Goal Celebration Video' : selectedType?.subtype === 'flyer' ? 'Match Flyer' : 'Klaar om te genereren'}
               </h3>
               <p className="text-gray-600 mb-6 text-center max-w-md">
                 {selectedType?.subtype === 'goal'
                   ? 'Vul de doelpuntgegevens in en kies een speler.'
-                  : <>Je gaat een <strong>{selectedType?.label || selectedTemplate?.name}</strong> maken.</>
+                  : selectedType?.subtype === 'flyer'
+                    ? 'Er worden 3 ontwerpvarianten gegenereerd. Je kunt daarna de beste kiezen.'
+                    : <>Je gaat een <strong>{selectedType?.label || selectedTemplate?.name}</strong> maken.</>
                 }
               </p>
 

@@ -1298,3 +1298,85 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 {"error": f"Failed to generate lineup flyer: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    @action(detail=False, methods=["post"], url_path="match-flyer")
+    def match_flyer(self, request: Request) -> Response:
+        """Generate match flyer images (PNG) in multiple design variants.
+
+        POST /api/v1/video/jobs/match-flyer/
+
+        Request body:
+        {
+            "activity_id": "uuid",                          # Required
+            "variants": ["classic", "bold", "stadium"]      # Optional (default: all 3)
+        }
+
+        Returns:
+        {
+            "variants": [
+                {
+                    "variant_key": "classic",
+                    "variant_label": "Klassiek — schone layout met header",
+                    "presigned_url": "https://...",
+                    "storage_path": "generated/match/flyers/...",
+                    "file_size_bytes": 123456,
+                    "mime_type": "image/png",
+                    "error": null
+                },
+                ...
+            ],
+            "activity_id": "uuid"
+        }
+        """
+        from src.video.services.match_flyer_generator import build_match_flyer
+
+        activity_id = request.data.get("activity_id")
+        if not activity_id:
+            return Response(
+                {"error": "activity_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        variants = request.data.get("variants")  # None → all 3
+
+        # Validate activity exists and user has access
+        Activity = apps.get_model("activities", "Activity")
+        try:
+            activity = Activity.objects.select_related("project").get(id=activity_id)
+        except Activity.DoesNotExist:
+            return Response(
+                {"error": f"Activity {activity_id} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        project = activity.project
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+        if not ProjectMembership.objects.filter(project=project, user=request.user).exists():
+            raise PermissionDenied("You must be a project member to generate match flyers.")
+
+        try:
+            results = build_match_flyer(
+                activity_id=str(activity_id),
+                variants=variants,
+            )
+
+            return Response(
+                {
+                    "variants": results,
+                    "activity_id": str(activity_id),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            import traceback
+
+            logger.error(
+                "Failed to generate match flyer: %s\n%s",
+                e,
+                traceback.format_exc(),
+            )
+            return Response(
+                {"error": f"Failed to generate match flyer: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
