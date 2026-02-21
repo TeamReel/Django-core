@@ -2558,7 +2558,38 @@ export default function HierarchyMatchDetailPage() {
                                   });
                                 }
                               }}
-                              onReplace={(hasTemplate || templateNotRequired) ? () => openContentModal(matchedTemplate, item.label) : undefined}
+                              onReplace={(hasTemplate || templateNotRequired) ? () => {
+                                if (matchedTemplate) {
+                                  openContentModal(matchedTemplate, item.label);
+                                } else if (item.subtype === 'match_intro') {
+                                  // Synthetic template so modal skips type selection
+                                  openContentModal({
+                                    id: 0, name: 'Match Intro', description: '', style_variant: '',
+                                    template_type: 'pre_match', template_subtype: 'match_intro',
+                                    is_active: true, input_requirements: {},
+                                  } as any, item.label);
+                                } else if (item.subtype === 'poster') {
+                                  openContentModal({
+                                    id: 0, name: 'Elftalfoto', description: '', style_variant: '',
+                                    template_type: 'pre_match', template_subtype: 'poster',
+                                    is_active: true,
+                                    input_requirements: {
+                                      members: {
+                                        goalkeeper: { count: 1, asset_types: ['home', 'away'] },
+                                        player: { count: 10, asset_types: ['home', 'away'] },
+                                      },
+                                    },
+                                  } as any, item.label);
+                                } else if (item.subtype === 'goal') {
+                                  openContentModal({
+                                    id: 0, name: 'Goal Celebration', description: '', style_variant: '',
+                                    template_type: 'during_match', template_subtype: 'goal',
+                                    is_active: true, input_requirements: {},
+                                  } as any, item.label);
+                                } else {
+                                  openContentModal(undefined, item.label);
+                                }
+                              } : undefined}
                               onDelete={(mi) => handleDeleteMediaItem(mi)}
                               onRestore={(mi) => handleRestoreMediaItem(mi)}
                             />

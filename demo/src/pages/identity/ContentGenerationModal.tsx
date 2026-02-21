@@ -651,9 +651,12 @@ export default function ContentGenerationModal({
           setSelectedTemplate(initialTemplate);
           setSelectedType({ type: initialTemplate.template_type, subtype: initialTemplate.template_subtype || '', label: contentTypeLabel || initialTemplate.name });
 
-          // Goal celebration always skips to confirm (has its own form)
-          if (initialTemplate.template_subtype === 'goal') {
+          // Goal celebration and match intro skip to confirm directly
+          if (initialTemplate.template_subtype === 'goal' || initialTemplate.template_subtype === 'match_intro') {
             setStep('confirm');
+          } else if (initialTemplate.template_subtype === 'poster') {
+            // Poster needs lineup squad selection (synthetic template already has member reqs)
+            setStep('members');
           } else {
             // Check if template requires member selection
             const needsMembers = initialTemplate.input_requirements?.members &&
