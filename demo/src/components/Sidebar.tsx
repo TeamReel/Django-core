@@ -724,10 +724,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
                                     { label: 'Lineup', path: makeTabUrl(baseUrl, 'lineup'), icon: Users },
                                     { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
-                                    { label: 'Details', path: makeTabUrl(baseUrl, 'details'), icon: Globe },
-                                    { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
-                                    { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
-                                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
                                 ];
                                 break;
                         }

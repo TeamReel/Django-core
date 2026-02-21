@@ -18,9 +18,7 @@ import MatchEditModal from '../identity/MatchEditModal';
 import ContentGenerationModal, { CONTENT_TYPES, FORMATION_LAYOUTS, type ContentTemplate } from '../identity/ContentGenerationModal';
 import { actionButtonStyle } from '../identity/detail/detailStyles';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
-import { AssetsTab } from '../../components/AssetsTab';
 import MobileTabBar from '../../components/MobileTabBar';
-import { WorkflowPanel } from '../../components/Workflows';
 
 type Organisation = {
   id: string;
@@ -739,7 +737,7 @@ export default function HierarchyMatchDetailPage() {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'content', 'lineup', 'transactions', 'details', 'assets', 'identity', 'workflow']);
+    const allowed = new Set(['overview', 'content', 'lineup', 'transactions']);
     if (allowed.has(raw)) return raw;
     const legacyMap: Record<string, string> = {
       hierarchy: 'details',
@@ -1296,58 +1294,6 @@ export default function HierarchyMatchDetailPage() {
       navigate(-1);
     }
   };
-
-  const personaGroups = useMemo(() => {
-    const byMemberId = new Map<string, OrgMember>();
-    for (const m of orgMembersAll) byMemberId.set(String(m.id), m);
-
-    const roleByTeamUserId = new Map<string, string>();
-    for (const m of teamProjectMembers) {
-      const uid = String(m?.user?.id ?? m?.user_id ?? '').trim();
-      if (uid) roleByTeamUserId.set(uid, String(m.role || '').toLowerCase());
-    }
-
-    const roleByClubUserId = new Map<string, string>();
-    for (const m of clubProjectMembers) {
-      const uid = String(m?.user?.id ?? m?.user_id ?? '').trim();
-      if (uid) roleByClubUserId.set(uid, String(m.role || '').toLowerCase());
-    }
-
-    const groups: Record<string, Participation[]> = {
-      'Land Admin': [],
-      'Club Admin': [],
-      'Team Admin': [],
-      'Team Member': [],
-      Supporter: [],
-      Other: [],
-    };
-
-    for (const p of match?.participations ?? []) {
-      const memberId = String(p.member?.id || '').trim();
-      const orgMember = memberId ? byMemberId.get(memberId) : undefined;
-      const userId = String(orgMember?.user?.id ?? '').trim();
-
-      const teamRole = userId ? roleByTeamUserId.get(userId) : undefined;
-      const clubRole = userId ? roleByClubUserId.get(userId) : undefined;
-      const orgRole = String(orgMember?.role || '').toLowerCase();
-
-      if (teamRole === 'admin') {
-        groups['Team Admin'].push(p);
-      } else if (clubRole === 'admin') {
-        groups['Club Admin'].push(p);
-      } else if (teamRole) {
-        groups['Team Member'].push(p);
-      } else if (clubRole) {
-        groups.Supporter.push(p);
-      } else if (orgRole === 'admin') {
-        groups['Land Admin'].push(p);
-      } else {
-        groups.Other.push(p);
-      }
-    }
-
-    return groups;
-  }, [clubProjectMembers, match?.participations, orgMembersAll, teamProjectMembers]);
 
   if (loading) {
     return (
@@ -2006,20 +1952,6 @@ export default function HierarchyMatchDetailPage() {
     );
   };
 
-  const roleLabel = (raw: any): string => {
-    const r = String(raw || '').toLowerCase();
-    if (r === 'land_admin' || r === 'land admin') return 'Land Admin';
-    if (r === 'club_admin' || r === 'club admin') return 'Club Admin';
-    if (r === 'team_admin' || r === 'team admin') return 'Team Admin';
-    if (r === 'team_member' || r === 'team member') return 'Team Member';
-    if (r === 'supporter') return 'Supporter';
-    if (r === 'admin') return 'Admin';
-    if (r === 'member') return 'Member';
-    if (r === 'viewer') return 'Viewer';
-    if (r === 'editor') return 'Editor';
-    return raw ? String(raw) : '—';
-  };
-
   if (pendingClubSlugResolve) return null;
   if (clubSlugRedirectTarget) return <Navigate to={clubSlugRedirectTarget} replace />;
 
@@ -2467,16 +2399,31 @@ export default function HierarchyMatchDetailPage() {
             { id: 'content', label: 'Content' },
             { id: 'lineup', label: 'Lineup' },
             { id: 'transactions', label: 'Transactions' },
-            { id: 'details', label: 'Details' },
-            { id: 'assets', label: 'Assets' },
-            { id: 'workflow', label: 'Workflow' },
-            { id: 'identity', label: 'Identity' },
           ]}
           activeTab={activeTab}
         />
 
         <PageContent>
-          {activeTab === 'overview' && (
+          {activeTab === 'overview' && (() => {
+            // Derive logo URLs from club/project metadata
+            const homeLogoUrl = (() => {
+              const assets = (club as any)?.metadata?.teamreel_assets || (project as any)?.metadata?.teamreel_assets;
+              const url = assets?.logo?.url;
+              return url ? (url.startsWith('http') ? url : getAssetUrl(url)) : null;
+            })();
+            const awayLogoUrl = (() => {
+              const url = match.metadata?.opponent_logo_url;
+              return url ? (url.startsWith('http') ? url : getAssetUrl(url)) : null;
+            })();
+
+            // Content completion matrix: gather all match-level content types
+            const allMatchContentItems = [
+              ...CONTENT_TYPES.pre_match.items,
+              ...CONTENT_TYPES.during_match.items,
+              ...CONTENT_TYPES.post_match.items,
+            ];
+
+            return (
             <>
               <Card className="mb-6">
                 <div
@@ -2484,41 +2431,52 @@ export default function HierarchyMatchDetailPage() {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: '20px 0',
+                    padding: '24px 16px',
                   }}
                 >
-                  <div style={{ flex: 1, textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>{homeTeamName}</h3>
-                    <Badge variant="default">Home</Badge>
+                  {/* Home team */}
+                  <div style={{ flex: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    {homeLogoUrl ? (
+                      <img src={homeLogoUrl} alt={homeTeamName} style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 8 }} />
+                    ) : (
+                      <div style={{ width: 64, height: 64, borderRadius: 8, background: 'var(--app-surface-secondary, #2a2a2a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>🏠</div>
+                    )}
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: 0, fontWeight: 700 }}>{homeTeamName}</h3>
                   </div>
 
-                  <div style={{ textAlign: 'center', minWidth: '150px' }}>
+                  {/* Score */}
+                  <div style={{ textAlign: 'center', minWidth: '140px' }}>
                     <div style={{ fontSize: '2.5rem', fontWeight: 'bold', lineHeight: 1 }}>{scoreDisplay}</div>
                     <div style={{ marginTop: '12px', color: 'var(--app-text-secondary)' }}>
                       <Badge variant={status === 'finished' ? 'success' : status === 'live' ? 'error' : 'default'}>
                         {status.toUpperCase()}
                       </Badge>
                     </div>
-                    <div style={{ marginTop: '8px', fontSize: '0.9rem' }}>
+                    <div style={{ marginTop: '8px', fontSize: '0.85rem', color: 'var(--app-text-secondary)' }}>
                       {date
                         ? `${date.toLocaleDateString()} • ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
                         : '—'}
                     </div>
                   </div>
 
-                  <div style={{ flex: 1, textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '1.5rem', marginBottom: '8px' }}>{awayTeamName}</h3>
-                    <Badge variant="default">Away</Badge>
+                  {/* Away team */}
+                  <div style={{ flex: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    {awayLogoUrl ? (
+                      <img src={awayLogoUrl} alt={awayTeamName} style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 8 }} />
+                    ) : (
+                      <div style={{ width: 64, height: 64, borderRadius: 8, background: 'var(--app-surface-secondary, #2a2a2a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>⚽</div>
+                    )}
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: 0, fontWeight: 700 }}>{awayTeamName}</h3>
                   </div>
                 </div>
 
                 <div
                   style={{
                     textAlign: 'center',
-                    marginTop: '20px',
                     borderTop: '1px solid var(--app-border)',
-                    paddingTop: '10px',
+                    padding: '10px 16px',
                     color: 'var(--app-text-secondary)',
+                    fontSize: '0.9rem',
                   }}
                 >
                   📍 {match.location || match.metadata?.venue || 'Unknown Venue'} • 🏆{' '}
@@ -2526,6 +2484,101 @@ export default function HierarchyMatchDetailPage() {
                 </div>
               </Card>
 
+              {/* Content Generation Matrix */}
+              <Card title="📊 Content Status">
+                <div style={{ padding: '16px' }}>
+                  <div className="overflow-x-auto">
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                      <thead>
+                        <tr>
+                          <th style={{ textAlign: 'left', padding: '8px 10px', borderBottom: '1px solid var(--app-border, #333)', fontWeight: 600, color: 'var(--app-text-secondary, #999)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fase</th>
+                          <th style={{ textAlign: 'left', padding: '8px 10px', borderBottom: '1px solid var(--app-border, #333)', fontWeight: 600, color: 'var(--app-text-secondary, #999)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Content</th>
+                          <th style={{ textAlign: 'center', padding: '8px 10px', borderBottom: '1px solid var(--app-border, #333)', fontWeight: 600, color: 'var(--app-text-secondary, #999)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', width: 80 }}>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(['pre_match', 'during_match', 'post_match'] as const).map(categoryKey => {
+                          const category = CONTENT_TYPES[categoryKey];
+                          if (!category) return null;
+                          return category.items.map((item, idx) => {
+                            const latestMedia = getLatestMediaForSubtype(item.subtype);
+                            const existingItem = getContentItemForSubtype(item.subtype);
+                            const isGenerating = existingItem != null && ['queued', 'generating'].includes(existingItem.status);
+                            const isFailed = existingItem?.status === 'failed';
+                            const hasMedia = latestMedia != null;
+
+                            let statusIcon = '⬜';
+                            let statusText = 'Niet gemaakt';
+                            let statusColor = 'var(--app-text-secondary, #999)';
+                            if (isGenerating) {
+                              statusIcon = '⏳';
+                              statusText = 'Bezig...';
+                              statusColor = '#f59e0b';
+                            } else if (isFailed) {
+                              statusIcon = '❌';
+                              statusText = 'Mislukt';
+                              statusColor = '#ef4444';
+                            } else if (hasMedia) {
+                              statusIcon = '✅';
+                              statusText = 'Gereed';
+                              statusColor = '#10b981';
+                            }
+
+                            return (
+                              <tr key={item.id} style={{ borderBottom: idx === category.items.length - 1 ? '2px solid var(--app-border, #333)' : '1px solid var(--app-border, #222)' }}>
+                                {idx === 0 && (
+                                  <td
+                                    rowSpan={category.items.length}
+                                    style={{
+                                      padding: '8px 10px',
+                                      fontWeight: 600,
+                                      fontSize: 12,
+                                      color: 'var(--app-text-secondary, #aaa)',
+                                      verticalAlign: 'top',
+                                      borderRight: '1px solid var(--app-border, #333)',
+                                    }}
+                                  >
+                                    {category.label}
+                                  </td>
+                                )}
+                                <td style={{ padding: '8px 10px' }}>
+                                  <span style={{ marginRight: 6 }}>{item.icon}</span>
+                                  {item.label}
+                                </td>
+                                <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                                  <span title={statusText} style={{ cursor: 'default', color: statusColor, fontWeight: 600, fontSize: 12 }}>
+                                    {statusIcon} {statusText}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          });
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Summary */}
+                  <div style={{ marginTop: 12, display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12, color: 'var(--app-text-secondary, #999)' }}>
+                    {(() => {
+                      const total = allMatchContentItems.length;
+                      const done = allMatchContentItems.filter(item => getLatestMediaForSubtype(item.subtype) != null).length;
+                      const generating = allMatchContentItems.filter(item => {
+                        const ci = getContentItemForSubtype(item.subtype);
+                        return ci != null && ['queued', 'generating'].includes(ci.status);
+                      }).length;
+                      return (
+                        <>
+                          <span>✅ {done}/{total} gereed</span>
+                          {generating > 0 && <span>⏳ {generating} bezig</span>}
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </Card>
+
+              {/* Match Events & Lineups */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card title="Match Events">
                   {matchEvents.length === 0 ? (
@@ -2572,7 +2625,8 @@ export default function HierarchyMatchDetailPage() {
                 </Card>
               </div>
             </>
-          )}
+            );
+          })()}
 
           {activeTab === 'content' && (
             <div style={{ display: 'grid', gap: '16px' }}>
@@ -2735,175 +2789,6 @@ export default function HierarchyMatchDetailPage() {
                 }}
               />
             </div>
-          )}
-
-          {activeTab === 'details' && (
-            <div style={{ display: 'grid', gap: '12px' }}>
-              <Card>
-                <div style={{ padding: '16px' }}>
-                  <div style={{ color: 'var(--app-muted-text)', fontSize: '13px', marginBottom: '10px' }}>
-                    Navigate the hierarchy around this match.
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <Button variant="secondary" size="sm" onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}`)}>
-                      Season
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}`)}
-                    >
-                      Competition
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => navigate(`${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}?tab=matches`)}
-                    >
-                      Matches
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-
-              <Card>
-                <div style={{ padding: '16px' }}>
-                  <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 600 }}>Match Details</h3>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <tbody>
-                        <tr>
-                          <th style={{ textAlign: 'left', width: '180px' }}>Title</th>
-                          <td>{match.title}</td>
-                        </tr>
-                        <tr>
-                          <th style={{ textAlign: 'left' }}>Home</th>
-                          <td>{homeTeamName}</td>
-                        </tr>
-                        <tr>
-                          <th style={{ textAlign: 'left' }}>Away</th>
-                          <td>{awayTeamName}</td>
-                        </tr>
-                        <tr>
-                          <th style={{ textAlign: 'left' }}>Status</th>
-                          <td>{status}</td>
-                        </tr>
-                        <tr>
-                          <th style={{ textAlign: 'left' }}>Venue</th>
-                          <td>{match.location || match.metadata?.venue || '—'}</td>
-                        </tr>
-                        <tr>
-                          <th style={{ textAlign: 'left' }}>Competition</th>
-                          <td>
-                            {competition ? (
-                              <Link
-                                to={`${seasonsBasePath}/${seasonKeyOrId}/${effectiveCompetitionId}`}
-                                className="text-blue-600 hover:underline"
-                                style={{ textDecoration: 'none' }}
-                              >
-                                {competition.name}
-                              </Link>
-                            ) : (
-                              match.period?.name || '—'
-                            )}
-                          </td>
-                        </tr>
-                        <tr>
-                          <th style={{ textAlign: 'left' }}>Start</th>
-                          <td>{match.start_time ? new Date(match.start_time).toLocaleString() : '—'}</td>
-                        </tr>
-                        <tr>
-                          <th style={{ textAlign: 'left' }}>End</th>
-                          <td>{match.end_time ? new Date(match.end_time).toLocaleString() : '—'}</td>
-                        </tr>
-                        <tr>
-                          <th style={{ textAlign: 'left' }}>Round</th>
-                          <td>{String(match.metadata?.round ?? '—')}</td>
-                        </tr>
-                      </tbody>
-                    </Table>
-                  </div>
-
-                  <div style={{ marginTop: '16px' }}>
-                    <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 600 }}>Selected users by role</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {Object.entries(personaGroups)
-                        .filter(([, users]) => users.length > 0)
-                        .map(([group, users]) => (
-                          <div
-                            key={group}
-                            style={{
-                              border: '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              padding: '12px',
-                              background: 'var(--app-surface-2)',
-                            }}
-                          >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div style={{ fontWeight: 600 }}>{group}</div>
-                              <Badge variant="default">{users.length}</Badge>
-                            </div>
-                            <div style={{ marginTop: '8px', display: 'grid', gap: '6px' }}>
-                              {users.map((p) => (
-                                <div key={String(p.id)} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                  <span style={{ fontWeight: 500 }}>{p.member?.user_name || 'Unknown'}</span>
-                                  {p.role ? <Badge variant="default">{roleLabel(p.role)}</Badge> : null}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      {Object.values(personaGroups).every((arr) => arr.length === 0) ? (
-                        <Alert variant="info">No participants selected for this match.</Alert>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: '14px' }}>
-                    <details>
-                      <summary style={{ cursor: 'pointer', color: 'var(--app-muted-text)' }}>Raw metadata</summary>
-                      <pre
-                        style={{
-                          marginTop: '10px',
-                          background: 'var(--app-surface-2)',
-                          padding: '12px',
-                          borderRadius: '6px',
-                          overflowX: 'auto',
-                          fontSize: '12px',
-                        }}
-                      >
-                        {JSON.stringify(match.metadata || {}, null, 2)}
-                      </pre>
-                    </details>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          )}
-
-          {activeTab === 'assets' && match && (
-            <AssetsTab
-              level="match"
-              organisationId={String(org?.id || '')}
-              projectId={String(match?.project?.id || project?.id || '')}
-              parentProjectId={undefined}
-              entityName={match.title}
-              readOnly
-            />
-          )}
-
-          {activeTab === 'identity' && match && (
-            <div style={{ padding: 16, color: 'var(--vscode-descriptionForeground, #888)', fontSize: 13 }}>
-              <p>Design tokens worden geërfd van het seizoen/team. Ga naar de club- of teampagina om kleuren, fonts en spacing aan te passen.</p>
-            </div>
-          )}
-
-          {activeTab === 'workflow' && match && (
-            <WorkflowPanel
-              projectId={String(match?.project?.id || project?.id || '')}
-              contentTypeName="activity"
-              objectId={String(match?.id || '')}
-            />
           )}
 
           {activeTab === 'lineup' && (
