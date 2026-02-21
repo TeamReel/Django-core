@@ -466,6 +466,50 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     setShowGuestAiModal(true);
   }, []);
 
+  // ── Crop guest player closeup from fullbody (no AI — deterministic crop) ──
+  const [croppingGuestCloseup, setCroppingGuestCloseup] = useState(false);
+
+  const cropGuestCloseup = useCallback(async (kitType: string = 'home') => {
+    const projectId = String(project?.id || '');
+    if (!projectId) {
+      alert('Project ID ontbreekt.');
+      return;
+    }
+    setCroppingGuestCloseup(true);
+    try {
+      const csrfToken = getCsrfToken();
+      const res = await fetch(`${apiBaseUrl}/api/v1/generative/assets/crop-closeup/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({ project_id: projectId, kit_type: kitType }),
+      });
+
+      const raw = await res.json();
+      const inner = (raw.data ?? raw) as Record<string, string>;
+
+      if (!res.ok) {
+        throw new Error(inner?.error || raw?.error || `Server error ${res.status}`);
+      }
+
+      // Update local state to reflect the new closeup
+      setGuestPlayer((prev) => prev ? { ...prev, has_closeup: true } : prev);
+
+      // Reload to pick up updated project metadata
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    } catch (err) {
+      console.error('Guest closeup crop error:', err);
+      alert(err instanceof Error ? err.message : 'Crop mislukt');
+    } finally {
+      setCroppingGuestCloseup(false);
+    }
+  }, [apiBaseUrl, project?.id]);
+
   const savePeriodEdits = async (periodToEdit: any, patch: any) => {
     const periodId = String(periodToEdit?.id || '').trim();
     if (!periodId) throw new Error('Missing period id');
@@ -2825,12 +2869,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             </Button>
                             <Button
                               variant={guestPlayer?.has_closeup ? 'outline' : 'secondary'}
-                              onClick={() => openGuestAiModal('closeup_in_tenue')}
-                              disabled={!guestPlayer?.has_avatar}
+                              onClick={() => cropGuestCloseup('home')}
+                              disabled={!guestPlayer?.has_avatar || croppingGuestCloseup}
                               style={{ fontSize: '12px', padding: '4px 10px' }}
-                              title={!guestPlayer?.has_avatar ? 'Genereer eerst een fullbody' : undefined}
+                              title={!guestPlayer?.has_avatar ? 'Genereer eerst een fullbody' : croppingGuestCloseup ? 'Bezig met croppen...' : undefined}
                             >
-                              {guestPlayer?.has_closeup ? '🔄' : '📸'} Close-up
+                              {croppingGuestCloseup ? '⏳' : guestPlayer?.has_closeup ? '🔄' : '📸'} Close-up
                             </Button>
                             <Button
                               variant={guestPlayer?.has_intro ? 'outline' : 'secondary'}
@@ -2945,12 +2989,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   };
                                   const guestSlot = guestSlotMap[slot.id];
                                   if (guestSlot) {
+                                    // Closeup uses deterministic crop, not AI generation
+                                    const handleClick = slot.id === 'closeup'
+                                      ? () => cropGuestCloseup('home')
+                                      : () => openGuestAiModal(guestSlot.templateId);
                                     return (
                                       <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
                                         <span
                                           style={{ fontSize: '14px', cursor: 'pointer' }}
                                           title={guestSlot.has ? `${guestSlot.label}: Beschikbaar — klik om opnieuw te genereren` : `${guestSlot.label}: Klik om te genereren`}
-                                          onClick={() => openGuestAiModal(guestSlot.templateId)}
+                                          onClick={handleClick}
                                         >
                                           {guestSlot.has ? '✅' : '⬜'}
                                         </span>
