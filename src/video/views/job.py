@@ -1371,3 +1371,59 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 {"error": f"Failed to generate match flyer: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    @action(detail=False, methods=["post"], url_path="match-intro-from-template")
+    def match_intro_from_template(self, request: Request) -> Response:
+        """Create a match intro video job (6-second announcement video).
+
+        POST /api/v1/video/jobs/match-intro-from-template/
+
+        Request body:
+        {
+            "activity_id": "uuid",                   # Required: match/activity ID
+            "output_resolution": "vertical_1080p"    # Optional
+        }
+        """
+        from src.video.services.video_service import VideoService
+
+        activity_id = request.data.get("activity_id")
+        output_resolution = request.data.get("output_resolution", "vertical_1080p")
+
+        if not activity_id:
+            return Response(
+                {"error": "activity_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Get activity and verify access
+        Activity = apps.get_model("activities", "Activity")
+        try:
+            activity = Activity.objects.select_related("project").get(id=activity_id)
+        except Activity.DoesNotExist:
+            return Response(
+                {"error": f"Activity {activity_id} not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        project = activity.project
+
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")
+        if not ProjectMembership.objects.filter(project=project, user=request.user).exists():
+            raise PermissionDenied("You must be a project member to create match intro videos.")
+
+        # Create the job (async processing in background thread)
+        service = VideoService()
+        job = service.create_job(
+            project=project,
+            user=request.user,
+            job_type=JobType.MATCH_INTRO,
+            config={
+                "activity_id": str(activity_id),
+                "output_resolution": output_resolution,
+            },
+        )
+
+        output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
+        data = dict(output.data)
+        data["sync_mode"] = False
+        return Response(data, status=status.HTTP_201_CREATED)

@@ -114,6 +114,7 @@ export const CONTENT_TYPES = {
       { id: 'flyer', label: 'Match Flyer', icon: '📣', subtype: 'flyer' },
       { id: 'lineup', label: 'Lineup Video', icon: '🎬', subtype: 'lineup' },
       { id: 'lineup_flyer', label: 'Lineup Flyer', icon: '📋', subtype: 'lineup_flyer' },
+      { id: 'match_intro', label: 'Match Intro', icon: '🎥', subtype: 'match_intro' },
       { id: 'walkon', label: 'Walk-on Video', icon: '🚶', subtype: 'walkon' },
       { id: 'anthem', label: 'Anthem Video', icon: '🎵', subtype: 'anthem' },
     ],
@@ -1503,14 +1504,165 @@ export default function ContentGenerationModal({
     }
   };
 
+  const handleGenerateMatchIntro = async () => {
+    abortActiveVideoJobPoll();
+    setProgress(10);
+
+    try {
+      const projectId = matchData?.project?.id || season?.project_id;
+      if (!projectId) {
+        throw new Error('No project ID available — cannot create video job');
+      }
+
+      if (!matchData?.id) {
+        throw new Error('No match/activity data available for match intro');
+      }
+
+      console.log('🎥 Creating match intro video:', {
+        activity_id: matchData.id,
+      });
+
+      setProgress(20);
+
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/match-intro-from-template/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+          'X-Project-ID': String(projectId),
+        },
+        body: JSON.stringify({
+          activity_id: matchData.id,
+          output_resolution: 'vertical_1080p',
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData?.error || errData?.detail || `Failed to create video job: ${response.status}`);
+      }
+
+      const jobData = await response.json();
+      const jobId = jobData.data?.id || jobData.id;
+      console.log('🎥 Match intro video job created:', jobId);
+
+      setVideoJobId(jobId);
+      setVideoJobStatus('queued');
+      setVideoJobProgressRaw(0);
+      setProgress(30);
+
+      // Poll for completion (same pattern as lineup/goal)
+      const pollController = new AbortController();
+      activeVideoJobPollRef.current = pollController;
+      const pollSignal = pollController.signal;
+
+      let pollCount = 0;
+      const maxPolls = 360;
+      let consecutiveErrors = 0;
+      const maxConsecutiveErrors = 5;
+
+      const pollJob = async (): Promise<void> => {
+        if (pollSignal.aborted) return;
+        if (pollCount >= maxPolls) {
+          throw new Error('Video processing timed out. Please try again.');
+        }
+
+        let statusRes: Response;
+        try {
+          statusRes = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/${jobId}/`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            signal: pollSignal,
+          });
+        } catch (networkErr) {
+          if ((networkErr as any)?.name === 'AbortError' || pollSignal.aborted) return;
+          consecutiveErrors++;
+          console.warn(`⚠️ Poll network error (${consecutiveErrors}/${maxConsecutiveErrors}):`, networkErr);
+          if (consecutiveErrors >= maxConsecutiveErrors) {
+            throw new Error('Lost connection to server. Please check your network and try again.');
+          }
+          pollCount++;
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          return pollJob();
+        }
+
+        if (!statusRes.ok) {
+          consecutiveErrors++;
+          console.warn(`⚠️ Poll HTTP ${statusRes.status} (${consecutiveErrors}/${maxConsecutiveErrors})`);
+          if (consecutiveErrors >= maxConsecutiveErrors) {
+            throw new Error(`Server error while checking job status (HTTP ${statusRes.status})`);
+          }
+          pollCount++;
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          return pollJob();
+        }
+
+        consecutiveErrors = 0;
+        const statusData = await statusRes.json();
+        const job = statusData.data || statusData;
+        const jobStatus = job.status;
+        const progressPercent = job.progress_percent || 0;
+
+        setVideoJobStatus(jobStatus);
+        setVideoJobProgressRaw(progressPercent);
+        setVideoJobMeta(job.metadata || {});
+        setProgress(30 + (progressPercent * 0.6));
+
+        if (jobStatus === 'completed') {
+          const outputUrl = job.output_file?.presigned_url || job.output_file?.url;
+          if (outputUrl) {
+            setGeneratedVariants([{
+              variant_index: 0,
+              image_base64: null,
+              presigned_url: outputUrl,
+              mime_type: 'video/mp4',
+              filename: `match_intro_${jobId}.mp4`,
+              error: null,
+              storage_info: job.output_file?.storage_info || null,
+              metadata: { job_id: jobId, type: 'match_intro' },
+            }]);
+            setProgress(100);
+            setTimeout(() => setStep('success'), 300);
+          } else {
+            throw new Error('Video completed but no output file found');
+          }
+          abortActiveVideoJobPoll();
+          return;
+        }
+
+        if (jobStatus === 'failed') {
+          abortActiveVideoJobPoll();
+          throw new Error(job.error_message || 'Video processing failed');
+        }
+
+        if (jobStatus === 'cancelled') {
+          abortActiveVideoJobPoll();
+          throw new Error('Video processing was cancelled');
+        }
+
+        pollCount++;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        return pollJob();
+      };
+
+      await pollJob();
+
+    } catch (err) {
+      if ((err as any)?.name === 'AbortError') return;
+      console.error('❌ Match intro video generation failed:', err);
+      setGenerationError(err instanceof Error ? err.message : 'Video generation failed');
+      setStep('error');
+    }
+  };
+
   if (!isOpen) return null;
 
   const handleSelectType = (type: string, subtype: string, label: string) => {
     setSelectedType({ type, subtype, label });
 
-    // Goal celebration skips template selection — go directly to confirm step
-    // with the goal celebration form (score, scorer, background)
-    if (subtype === 'goal') {
+    // Goal celebration and match intro skip template selection — go directly to confirm step
+    if (subtype === 'goal' || subtype === 'match_intro') {
       setStep('confirm');
       return;
     }
@@ -1600,6 +1752,13 @@ export default function ContentGenerationModal({
       if (templateSubtype === 'goal') {
         clearInterval(progressInterval);
         await handleGenerateGoalCelebration();
+        return;
+      }
+
+      // Check if this is a match intro video generation
+      if (templateSubtype === 'match_intro') {
+        clearInterval(progressInterval);
+        await handleGenerateMatchIntro();
         return;
       }
 
@@ -1744,6 +1903,9 @@ export default function ContentGenerationModal({
       } else if (templateSubtype === 'goal' || templateSubtype === 'goal_celebration') {
         const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
         brandAssetType = `goal_${matchSuffix}`;
+      } else if (templateSubtype === 'match_intro') {
+        const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
+        brandAssetType = `match_intro_${matchSuffix}`;
       } else if (templateSubtype === 'lineup' || isVideo) {
         // Lineup videos need a non-empty asset_type. Use a per-match unique value to avoid
         // overwriting due to unique(profile, asset_type).
@@ -2933,16 +3095,18 @@ export default function ContentGenerationModal({
           {/* Confirm - Review before generation */}
           {step === 'confirm' && (
             <div className="flex flex-col items-center justify-center h-full py-12">
-              <div className="text-6xl mb-6">{selectedType?.subtype === 'goal' ? '⚽' : selectedType?.subtype === 'flyer' ? '📣' : '🎬'}</div>
+              <div className="text-6xl mb-6">{selectedType?.subtype === 'goal' ? '⚽' : selectedType?.subtype === 'flyer' ? '📣' : selectedType?.subtype === 'match_intro' ? '🎥' : '🎬'}</div>
               <h3 className="text-2xl font-bold mb-2">
-                {selectedType?.subtype === 'goal' ? 'Goal Celebration Video' : selectedType?.subtype === 'flyer' ? 'Match Flyer' : 'Klaar om te genereren'}
+                {selectedType?.subtype === 'goal' ? 'Goal Celebration Video' : selectedType?.subtype === 'flyer' ? 'Match Flyer' : selectedType?.subtype === 'match_intro' ? 'Match Intro Video' : 'Klaar om te genereren'}
               </h3>
               <p className="text-gray-600 mb-6 text-center max-w-md">
                 {selectedType?.subtype === 'goal'
                   ? 'Vul de doelpuntgegevens in en kies een speler.'
                   : selectedType?.subtype === 'flyer'
                     ? 'Kies een ontwerpstijl en genereer je match flyer.'
-                    : <>Je gaat een <strong>{selectedType?.label || selectedTemplate?.name}</strong> maken.</>
+                    : selectedType?.subtype === 'match_intro'
+                      ? 'Er wordt een 6 seconden intro video gegenereerd met header, logo\'s en wedstrijdinfo.'
+                      : <>Je gaat een <strong>{selectedType?.label || selectedTemplate?.name}</strong> maken.</>
                 }
               </p>
 
@@ -3280,8 +3444,9 @@ export default function ContentGenerationModal({
                 const isLineupVideo = templateSubtype === 'lineup';
                 const isLineupFlyer = templateSubtype === 'lineup_flyer';
                 const isGoalCelebration = templateSubtype === 'goal';
+                const isMatchIntro = templateSubtype === 'match_intro';
                 const isLineup = isLineupVideo || isLineupFlyer;
-                const isVideoJob = isLineup || isGoalCelebration;
+                const isVideoJob = isLineup || isGoalCelebration || isMatchIntro;
                 const status = (videoJobStatus || '').toLowerCase();
 
                 // Determine progress value (use videoJobProgressRaw for lineup, progress for others)
@@ -3307,6 +3472,23 @@ export default function ContentGenerationModal({
                     }
                   } else if (status === 'completed') {
                     description = 'Voltooid! ⚽🎉';
+                  }
+                } else if (isMatchIntro) {
+                  headline = '🎥 Match Intro wordt gemaakt';
+                  if (status === 'queued') {
+                    description = 'Wachten op verwerking…';
+                  } else if (status === 'processing') {
+                    if (displayProgress > 0) {
+                      description = displayProgress < 30
+                        ? 'Header en logo\'s worden geladen…'
+                        : displayProgress < 70
+                          ? 'Intro video wordt samengesteld…'
+                          : 'Bijna klaar, video wordt afgerond…';
+                    } else {
+                      description = 'Match intro wordt verwerkt…';
+                    }
+                  } else if (status === 'completed') {
+                    description = 'Voltooid! 🎥🎉';
                   }
                 } else if (isLineupFlyer) {
                   headline = 'Flyer wordt gemaakt';
@@ -3340,7 +3522,7 @@ export default function ContentGenerationModal({
                 return (
                   <div className="w-full max-w-md text-center">
                     {/* Icon */}
-                    <div className="text-5xl mb-6 animate-pulse">{isGoalCelebration ? '⚽' : isLineupFlyer ? '📋' : '🎬'}</div>
+                    <div className="text-5xl mb-6 animate-pulse">{isGoalCelebration ? '⚽' : isMatchIntro ? '🎥' : isLineupFlyer ? '📋' : '🎬'}</div>
 
                     {/* Headline */}
                     <h2 className="text-xl font-semibold text-gray-800 mb-2">{headline}</h2>
@@ -3658,20 +3840,74 @@ export default function ContentGenerationModal({
                       </div>
                     </div>
                   ) : generatedOutput?.image_base64 ? (
-                    <div className="mb-4">
-                      <img
-                        src={`data:${getSecureMimeType(generatedOutput.image_base64, generatedOutput.storage_info?.mime_type || 'image/png')};base64,${generatedOutput.image_base64}`}
-                        alt="Generated content"
-                        className="max-w-48 max-h-48 rounded-lg border shadow-lg"
-                      />
+                    <div style={{ width: '220px', maxWidth: '92vw', marginBottom: '16px', alignSelf: 'center' }}>
+                      <div style={{
+                        border: saveSuccess ? '2px solid #22c55e' : '2px solid #e5e7eb',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        background: '#f9fafb',
+                        cursor: !saveSuccess ? 'pointer' : 'default',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.10)',
+                      }}
+                        onClick={() => { if (!saveSuccess && !savingAsset) handleSaveAsAsset(); }}
+                        title={!saveSuccess ? 'Klik om op te slaan' : ''}
+                      >
+                        <div style={{ position: 'relative' }}>
+                          <img
+                            src={`data:${getSecureMimeType(generatedOutput.image_base64, generatedOutput.storage_info?.mime_type || 'image/png')};base64,${generatedOutput.image_base64}`}
+                            alt="Generated content"
+                            style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', display: 'block' }}
+                          />
+                          <div style={{
+                            position: 'absolute', top: 8, right: 8,
+                            padding: '4px 10px', borderRadius: '12px',
+                            fontSize: '11px', fontWeight: 600,
+                            background: saveSuccess ? '#22c55e' : '#3b82f6', color: 'white',
+                          }}>
+                            {savingAsset ? '⏳ Opslaan...' : saveSuccess ? '✅ Opgeslagen' : '💾 Klik om op te slaan'}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ) : (generatedOutput?.presigned_url || generatedVariants[0]?.presigned_url) ? (
-                    <div className="mb-4">
-                      <img
-                        src={generatedOutput?.presigned_url || generatedVariants[0]?.presigned_url || ''}
-                        alt="Generated content"
-                        className="max-w-48 max-h-48 rounded-lg border shadow-lg"
-                      />
+                    <div style={{ width: '220px', maxWidth: '92vw', marginBottom: '16px', alignSelf: 'center' }}>
+                      <div style={{
+                        border: saveSuccess ? '2px solid #22c55e' : '2px solid #e5e7eb',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        background: '#f9fafb',
+                        cursor: !saveSuccess ? 'pointer' : 'default',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.10)',
+                      }}
+                        onClick={() => { if (!saveSuccess && !savingAsset) handleSaveAsAsset(); }}
+                        title={!saveSuccess ? 'Klik om op te slaan' : ''}
+                      >
+                        <div style={{ position: 'relative' }}>
+                          <img
+                            src={generatedOutput?.presigned_url || generatedVariants[0]?.presigned_url || ''}
+                            alt="Generated content"
+                            style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', display: 'block' }}
+                          />
+                          <div style={{
+                            position: 'absolute', top: 8, right: 8,
+                            padding: '4px 10px', borderRadius: '12px',
+                            fontSize: '11px', fontWeight: 600,
+                            background: saveSuccess ? '#22c55e' : '#3b82f6', color: 'white',
+                          }}>
+                            {savingAsset ? '⏳ Opslaan...' : saveSuccess ? '✅ Opgeslagen' : '💾 Klik om op te slaan'}
+                          </div>
+                        </div>
+                        <div style={{ padding: '10px 14px', background: 'var(--app-surface, #fff)', borderTop: '1px solid #e5e7eb' }}>
+                          <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--app-text, #333)', marginBottom: '4px' }}>
+                            📣 {selectedType?.label || 'Content'}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#9ca3af' }}>
+                            {matchData?.title || 'Match'} — {new Date().toLocaleDateString('nl-NL')}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <div className="aspect-video w-64 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border flex items-center justify-center text-gray-400 mb-4">
