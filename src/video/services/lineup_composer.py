@@ -192,9 +192,17 @@ def _resolve_brand_color(activity_id: str) -> str | None:
                 continue
             brand = BrandProfile.objects.filter(project=proj, is_active=True).first()
             if brand:
-                tokens = getattr(brand, "design_tokens", None) or {}
-                colors = tokens.get("colors", {})
-                value = colors.get("primary_color") or colors.get("primary")
+                tokens = brand.get_tokens()  # {key: value} dict from DesignToken rows
+                value = tokens.get("primary_color") or tokens.get("primary")
+                if value:
+                    return value
+        # Fallback: check organisation-level brand
+        org = getattr(project, "organisation", None)
+        if org:
+            brand = BrandProfile.objects.filter(organisation=org, is_active=True).first()
+            if brand:
+                tokens = brand.get_tokens()
+                value = tokens.get("primary_color") or tokens.get("primary")
                 if value:
                     return value
         return None
