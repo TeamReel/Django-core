@@ -1751,7 +1751,7 @@ export default function ContentGenerationModal({
     if (subtype === 'poster') {
       // Set a synthetic template so lineup_squad step can read member requirements
       setSelectedTemplate({
-        id: 'poster-synthetic',
+        id: 0,
         name: 'Elftalfoto',
         description: '',
         style_variant: '',
