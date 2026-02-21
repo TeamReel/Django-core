@@ -2711,6 +2711,77 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
             )
 
 
+def _propagate_approved_guest_avatar_to_project(job) -> None:  # noqa: ANN001
+    """Write an approved guest_player avatar into Project.metadata.guest_player.
+
+    Called after marking a guest_player generation job as approved so the guest
+    player avatar appears immediately on the project season page.
+
+    Writes to: project.metadata.guest_player.images.fullbody.home
+    """
+    if job.output_asset_type != "guest_player" or not job.project_id:
+        return
+
+    from django.apps import apps
+
+    approved_variants = [v for v in (job.output_variants or []) if v.get("approved") is True]
+    if not approved_variants:
+        return
+
+    Project = apps.get_model("projects", "Project")
+    try:
+        project = Project.objects.get(id=job.project_id)
+    except Exception:  # noqa: BLE001
+        logger.warning(
+            "propagate_guest_avatar: project %s not found for job %s",
+            job.project_id,
+            job.task_id,
+        )
+        return
+
+    meta = project.metadata or {}
+    guest_player = meta.setdefault("guest_player", {})
+    if not isinstance(guest_player, dict):
+        return
+
+    images = guest_player.setdefault("images", {})
+    if not isinstance(images, dict):
+        return
+
+    fullbody = images.setdefault("fullbody", {})
+    if not isinstance(fullbody, dict):
+        return
+
+    # Use first approved variant
+    first_variant = approved_variants[0]
+    storage_path = first_variant.get("storage_path", "")
+
+    if storage_path:
+        fullbody["home"] = {
+            "raw": storage_path,
+            "processed": None,
+            "processing_state": "pending",
+            "specs": {},
+            "source": "ai_generated",
+            "generated_at": project.updated_at.isoformat() if project.updated_at else None,
+        }
+
+        project.metadata = meta
+        try:
+            project.save(update_fields=["metadata"])
+            logger.info(
+                "propagate_guest_avatar: project=%s updated with guest_player fullbody (job=%s)",
+                job.project_id,
+                job.task_id,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "propagate_guest_avatar: failed to save project %s: %s",
+                job.project_id,
+                exc,
+            )
+
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def review_generation_job_view(request: Request, task_id: str) -> Response:
@@ -2830,6 +2901,17 @@ def review_generation_job_view(request: Request, task_id: str) -> Response:
         except Exception as propagate_exc:  # noqa: BLE001
             logger.warning(
                 "review_generation_job_view: brand propagation failed for job %s: %s",
+                task_id,
+                propagate_exc,
+            )
+
+    # Propagate approved guest_player avatar to Project.metadata so the season page reflects it
+    if action == "approve" and job.output_type == "image":
+        try:
+            _propagate_approved_guest_avatar_to_project(job)
+        except Exception as propagate_exc:  # noqa: BLE001
+            logger.warning(
+                "review_generation_job_view: guest avatar propagation failed for job %s: %s",
                 task_id,
                 propagate_exc,
             )

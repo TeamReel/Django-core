@@ -518,10 +518,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       const taskId = responseData?.task_id;
 
       if (taskId) {
-        alert('✅ Gast avatar generatie gestart! Check de Approvals pagina om het resultaat goed te keuren.');
+        alert('✅ Gast avatar generatie gestart! Keur deze goed via de Approvals pagina, daarna verschijnt deze automatisch op deze pagina.');
       } else {
         alert('✅ Gast avatar generatie gestart!');
       }
+
+      // Refresh the page after a short delay to check if guest player was approved
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
 
     } catch (err) {
       console.error('Guest player generation failed:', err);
@@ -863,34 +868,22 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     };
   }, [apiBaseUrl, project, resolvedSeasonId, membersReloadToken]);
 
-  // ── Fetch guest player data for the project ──────────────────────────
+  // ── Guest player data from project metadata ──────────────────────────
   useEffect(() => {
     if (activeTab !== 'media') return;
-    const projectId = String((project as any)?.id || '').trim();
-    if (!projectId) return;
-
-    let cancelled = false;
-    const run = async () => {
-      setGuestPlayerLoading(true);
-      try {
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/guest-player/`,
-          { credentials: 'include' }
-        );
-        if (res.ok) {
-          const raw = await res.json();
-          const data = raw?.data || raw;
-          if (!cancelled) setGuestPlayer(data);
-        }
-      } catch {
-        // silent — guest player is optional
-      } finally {
-        if (!cancelled) setGuestPlayerLoading(false);
-      }
-    };
-    run();
-    return () => { cancelled = true; };
-  }, [apiBaseUrl, project, activeTab]);
+    const guestPlayerData = (project as any)?.metadata?.guest_player;
+    if (guestPlayerData) {
+      // Check if guest player has a fullbody image
+      const fullbodyHome = guestPlayerData?.images?.fullbody?.home;
+      const hasAvatar = !!(fullbodyHome?.raw || fullbodyHome?.processed);
+      setGuestPlayer({
+        has_avatar: hasAvatar,
+        guest_player: guestPlayerData,
+      });
+    } else {
+      setGuestPlayer(null);
+    }
+  }, [project, activeTab]);
 
   // Fetch full team roster (all memberships on the team, any period) so we can show
   // "team members not in squad" for quick assignment.
@@ -2863,7 +2856,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                         {guestPlayer?.has_avatar && (() => {
                           const gp = guestPlayer?.guest_player || {};
-                          const previewUrl = gp?.images?.fullbody?.home?.presigned_url || gp?.images?.fullbody?.home?.url;
+                          const fullbodyHome = gp?.images?.fullbody?.home;
+                          // Try processed first (after bg-removal), then raw, then presigned_url fallback
+                          const previewPath = fullbodyHome?.processed || fullbodyHome?.raw || fullbodyHome?.presigned_url || fullbodyHome?.url;
+                          const previewUrl = previewPath ? (previewPath.startsWith('http') ? previewPath : getAssetUrl(previewPath)) : null;
                           return previewUrl ? (
                             <img
                               src={previewUrl}
