@@ -330,6 +330,14 @@ class GoalCelebrationBuilder:
             closeup_val = closeup_data.get("home")
         closeup_url = get_best_url(closeup_val) if closeup_val else None
 
+        # Convert relative paths to presigned URLs if needed
+        if celebration_url and not celebration_url.startswith("http"):
+            celebration_url = self._get_presigned_url(celebration_url)
+        if kit_url and not kit_url.startswith("http"):
+            kit_url = self._get_presigned_url(kit_url)
+        if closeup_url and not closeup_url.startswith("http"):
+            closeup_url = self._get_presigned_url(closeup_url)
+
         # Output dimensions
         res_presets = {
             "vertical_1080p": (1080, 1920, 30),
