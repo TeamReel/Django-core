@@ -16,6 +16,7 @@ import { addRecent } from '../utils/navStorage';
 import { ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
 import { looksLikeUuid } from '../utils/periodPath';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { useQueueCounts } from '../hooks/useQueueCounts';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -101,6 +102,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       competitionSlugOrId, competitionName,
             matchId,
   } = useAppSelection();
+
+  const queueCounts = useQueueCounts(30000);
 
     type ResolvedAppContext = {
         orgSlug: string;
@@ -1297,6 +1300,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 const active = isActive || isActiveViaItem;
 
                                 return {
+                                position: 'relative' as const,
                                 height: 40,
                                 textDecoration: 'none',
                                 padding: isOpen ? '0 12px' : '0',
@@ -1313,6 +1317,40 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 <AppIcon icon={item.icon} size={18} />
                             </span>
                             {isOpen && <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 500 }}>{item.label}</span>}
+                            {isOpen && item.path === '/approvals' && queueCounts.review > 0 && (
+                              <span style={{
+                                marginLeft: 'auto',
+                                backgroundColor: '#dc3545',
+                                color: '#fff',
+                                borderRadius: 10,
+                                padding: '1px 6px',
+                                fontSize: 10,
+                                fontWeight: 700,
+                                minWidth: 18,
+                                textAlign: 'center',
+                                lineHeight: '16px',
+                              }}>
+                                {queueCounts.review}
+                              </span>
+                            )}
+                            {!isOpen && item.path === '/approvals' && queueCounts.review > 0 && (
+                              <span style={{
+                                position: 'absolute',
+                                top: 4,
+                                right: 4,
+                                backgroundColor: '#dc3545',
+                                color: '#fff',
+                                borderRadius: 10,
+                                padding: '1px 5px',
+                                fontSize: 9,
+                                fontWeight: 700,
+                                minWidth: 14,
+                                textAlign: 'center',
+                                lineHeight: '14px',
+                              }}>
+                                {queueCounts.review}
+                              </span>
+                            )}
                         </NavLink>
                     ))}
                </div>
@@ -1452,6 +1490,26 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                             </span>
                                         )}
                                         {item.label}
+                                        {/* Queue tab counts */}
+                                        {(() => {
+                                          if (!itemPathname.startsWith('/approvals')) return null;
+                                          const tabKey = itemTab as keyof typeof queueCounts;
+                                          const count = queueCounts[tabKey];
+                                          if (count === undefined) return null;
+                                          return (
+                                            <span style={{
+                                              marginLeft: 'auto',
+                                              fontSize: 11,
+                                              fontWeight: 600,
+                                              opacity: count > 0 ? 0.9 : 0.4,
+                                              color: tabKey === 'review' && count > 0
+                                                ? '#dc3545'
+                                                : isActive ? 'var(--sidebar-b-active-text)' : 'var(--sidebar-b-muted-text)',
+                                            }}>
+                                              ({count})
+                                            </span>
+                                          );
+                                        })()}
                                     </Link>
                                 );
                             })}

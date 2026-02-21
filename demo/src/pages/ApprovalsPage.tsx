@@ -694,7 +694,7 @@ export default function ApprovalsPage() {
                         <span style={{ fontSize: 10, fontWeight: 700, color: '#0891b2', backgroundColor: '#0891b218', borderRadius: 99, padding: '2px 8px', letterSpacing: '0.04em' }}>
                           {vJob.job_type === 'lineup' ? 'LINEUP' : 'VIDEO'}
                         </span>
-                        <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 12, color: statusDisplay.color, backgroundColor: statusDisplay.bgColor }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, color: statusDisplay.color, backgroundColor: `${statusDisplay.color}18`, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                           {statusDisplay.icon} {statusDisplay.label}
                         </span>
                       </div>
