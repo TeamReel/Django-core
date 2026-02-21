@@ -536,8 +536,34 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                     continue
 
             if state == "processing":
-                skipped.append({"key": key, "reason": "already_processing"})
-                continue
+                # Allow reprocessing if stuck > 15 min (worker crash / OOM)
+                stuck_threshold_minutes = 15
+                is_stuck = False
+                processing_started_at = (
+                    val.get("processing_started_at") if isinstance(val, dict) else None
+                )
+                if processing_started_at:
+                    from datetime import datetime
+
+                    try:
+                        started_time = datetime.fromisoformat(
+                            processing_started_at.replace("Z", "+00:00")
+                        )
+                        age_seconds = (timezone.now() - started_time).total_seconds()
+                        if age_seconds > stuck_threshold_minutes * 60:
+                            is_stuck = True
+                            logger.info(
+                                "process_all_variants: resetting stuck 'processing' variant "
+                                "key=%s (started %d min ago)",
+                                key,
+                                int(age_seconds / 60),
+                            )
+                            state = "raw"  # Reset to allow reprocessing
+                    except (ValueError, TypeError):
+                        pass
+                if not is_stuck:
+                    skipped.append({"key": key, "reason": "already_processing"})
+                    continue
 
             # Parse kit_type and variant_id from composite key
             # Format: {kit_type}_{variant_id} or bare {variant_id}

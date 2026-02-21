@@ -207,8 +207,8 @@ export function getMediaProcessingState(
     }
   }
 
-  if (hasProcessed) return 'processed';
   if (hasProcessing) return 'processing';
+  if (hasProcessed) return 'processed';
   if (hasRaw || flatUrl) return 'raw';
   return 'empty';
 }

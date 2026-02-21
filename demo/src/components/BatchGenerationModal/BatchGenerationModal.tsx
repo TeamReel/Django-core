@@ -397,6 +397,10 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                   status: 'skipped',
                   error: skippedReasons.includes('already_processed')
                     ? 'Alle varianten al verwerkt'
+                    : skippedReasons.includes('already_processing')
+                    ? 'Varianten worden al verwerkt'
+                    : skippedReasons.includes('no_raw_url')
+                    ? 'Geen ruwe video gevonden'
                     : 'Geen varianten gevonden'
                 },
               }));
