@@ -214,7 +214,7 @@ interface ContentGenerationModalProps {
     participations?: Participation[];
     start_time?: string;
     location?: string;
-    metadata?: { formation?: string; [key: string]: unknown };
+    metadata?: { formation?: string; lineup?: { formation?: string; goalkeeper?: string[]; player?: string[] }; [key: string]: unknown };
   } | null;
   season?: {
     id: string;
@@ -248,14 +248,14 @@ const ASSET_TYPE_TO_MEDIA_KEY: Record<string, string> = {
 
 // Formation position layout data (x, y as percentages on a mini-field)
 // Positions numbered 1-11: 1=GK, 2-5=DEF, 6-8=MID, 9-11=ATT (varies by formation)
-interface FormationPosition {
+export interface FormationPosition {
   slot: number;
   x: number;  // percentage from left
   y: number;  // percentage from top (0 = attacking end)
   label: string;
 }
 
-const FORMATION_LAYOUTS: Record<string, { name: string; positions: FormationPosition[] }> = {
+export const FORMATION_LAYOUTS: Record<string, { name: string; positions: FormationPosition[] }> = {
   '4-3-3': {
     name: '4-3-3',
     positions: [
@@ -399,7 +399,7 @@ function getMissingAssets(member: Participation, assetTypes: string[], role?: st
 }
 
 // Group participations by functional role
-function groupParticipationsByRole(participations: Participation[]): Record<string, Participation[]> {
+export function groupParticipationsByRole(participations: Participation[]): Record<string, Participation[]> {
   const groups: Record<string, Participation[]> = {
     goalkeeper: [],
     player: [],
@@ -643,7 +643,22 @@ export default function ContentGenerationModal({
       // Only reset selections on FRESH open (not when staying open or after error)
       if (freshOpen && !hasInitializedRef.current) {
         hasInitializedRef.current = true;
-        setSelectedMembers({ goalkeeper: [], player: [], coach: [], assistant: [] });
+
+        // Pre-load saved lineup from match metadata if available
+        const savedLineup = matchData?.metadata?.lineup;
+        if (savedLineup && (savedLineup.goalkeeper?.length || savedLineup.player?.length)) {
+          setSelectedMembers({
+            goalkeeper: savedLineup.goalkeeper || [],
+            player: savedLineup.player || [],
+            coach: [],
+            assistant: [],
+          });
+          if (savedLineup.formation && savedLineup.formation !== lineupFormation) {
+            setLineupFormation(savedLineup.formation);
+          }
+        } else {
+          setSelectedMembers({ goalkeeper: [], player: [], coach: [], assistant: [] });
+        }
         setTemplates([]);
 
         // If template is provided, skip to appropriate step

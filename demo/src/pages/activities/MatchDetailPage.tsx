@@ -15,7 +15,7 @@ import CreateTransactionModal, { type WalletOption } from '../../components/tran
 import { useAuth } from '@django-core/auth-ui';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import MatchEditModal from '../identity/MatchEditModal';
-import ContentGenerationModal, { CONTENT_TYPES, type ContentTemplate } from '../identity/ContentGenerationModal';
+import ContentGenerationModal, { CONTENT_TYPES, FORMATION_LAYOUTS, type ContentTemplate } from '../identity/ContentGenerationModal';
 import { actionButtonStyle } from '../identity/detail/detailStyles';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { AssetsTab } from '../../components/AssetsTab';
@@ -646,6 +646,14 @@ export default function HierarchyMatchDetailPage() {
   const [selectedLineupParticipationIdsHome, setSelectedLineupParticipationIdsHome] = useState<Set<string>>(new Set());
   const [selectedLineupParticipationIdsAway, setSelectedLineupParticipationIdsAway] = useState<Set<string>>(new Set());
 
+  // Formation lineup editor state
+  const [lineupFormation, setLineupFormation] = useState<string>('4-3-3');
+  const [lineupSlots, setLineupSlots] = useState<Record<string, string[]>>({ goalkeeper: [], player: [] });
+  const [lineupSquad, setLineupSquad] = useState<Record<string, any[]>>({ goalkeeper: [], player: [], coach: [], assistant: [] });
+  const [lineupSquadLoading, setLineupSquadLoading] = useState(false);
+  const [lineupSaving, setLineupSaving] = useState(false);
+  const [lineupSaveSuccess, setLineupSaveSuccess] = useState(false);
+
   const isTeamRoute = Boolean(clubId);
   const orgSlugOrId = String(orgId || '').trim();
   const projectSlugOrId = String(projectId || '').trim();
@@ -1136,6 +1144,80 @@ export default function HierarchyMatchDetailPage() {
     run();
   }, [apiBaseUrl, club?.id, match?.project?.id, orgSlugOrId, resolvedSeasonUuid]);
 
+  // Fetch project members for formation lineup editor (same as ContentGenerationModal)
+  useEffect(() => {
+    const projectIdVal = match?.project?.id;
+    if (!projectIdVal) return;
+
+    const fetchSquad = async () => {
+      setLineupSquadLoading(true);
+      try {
+        const url = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(projectIdVal))}/members/?page_size=100`;
+        const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
+        if (!res.ok) return;
+        const raw = await res.json();
+        let members: any[] = [];
+        if (raw?.data?.data && Array.isArray(raw.data.data)) members = raw.data.data;
+        else if (raw?.data?.results && Array.isArray(raw.data.results)) members = raw.data.results;
+        else if (raw?.results && Array.isArray(raw.results)) members = raw.results;
+        else if (Array.isArray(raw?.data)) members = raw.data;
+        else if (Array.isArray(raw)) members = raw;
+
+        // Paginate
+        let nextUrl = raw?.meta?.pagination?.next;
+        while (nextUrl) {
+          const nr = await fetch(nextUrl, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
+          if (!nr.ok) break;
+          const nd = await nr.json();
+          let nm: any[] = [];
+          if (nd?.data?.data && Array.isArray(nd.data.data)) nm = nd.data.data;
+          else if (Array.isArray(nd?.data)) nm = nd.data;
+          else if (Array.isArray(nd)) nm = nd;
+          members = [...members, ...nm];
+          nextUrl = nd?.meta?.pagination?.next;
+        }
+
+        // Group by role (same logic as ContentGenerationModal)
+        const groups: Record<string, any[]> = { goalkeeper: [], player: [], coach: [], assistant: [] };
+        members.forEach((p: any) => {
+          let roles: string[] = [];
+          if (p.functional_roles && Array.isArray(p.functional_roles) && p.functional_roles.length > 0) roles = p.functional_roles;
+          else if (p.metadata?.functional_roles && Array.isArray(p.metadata.functional_roles) && p.metadata.functional_roles.length > 0) roles = p.metadata.functional_roles;
+          else if (p.data?.functional_role) roles = [p.data.functional_role];
+          else if (p.metadata?.team_role) roles = [p.metadata.team_role];
+          else roles = ['player'];
+          roles.forEach(role => {
+            const nr = role.toLowerCase();
+            if (groups[nr]) groups[nr].push(p);
+          });
+        });
+        setLineupSquad(groups);
+      } catch { /* ignore */ } finally {
+        setLineupSquadLoading(false);
+      }
+    };
+
+    fetchSquad();
+  }, [apiBaseUrl, match?.project?.id]);
+
+  // Load saved lineup from match metadata on mount / match change
+  useEffect(() => {
+    const saved = match?.metadata?.lineup;
+    if (saved) {
+      if (saved.formation && FORMATION_LAYOUTS[saved.formation]) {
+        setLineupFormation(saved.formation);
+      }
+      if (saved.goalkeeper || saved.player) {
+        setLineupSlots({
+          goalkeeper: saved.goalkeeper || [],
+          player: saved.player || [],
+        });
+      }
+    } else if (match?.metadata?.formation) {
+      setLineupFormation(match.metadata.formation);
+    }
+  }, [match?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
 
   const saveMatchEdits = async (matchToEdit: any, patch: any) => {
@@ -1156,6 +1238,32 @@ export default function HierarchyMatchDetailPage() {
     const raw = await res.json().catch(() => null);
     const updated = getEnvelopeData<MatchDetail>(raw);
     setMatch(updated);
+  };
+
+  const saveLineup = async () => {
+    if (!match?.id) return;
+    setLineupSaving(true);
+    setLineupSaveSuccess(false);
+    try {
+      const lineupData = {
+        formation: lineupFormation,
+        goalkeeper: lineupSlots.goalkeeper || [],
+        player: lineupSlots.player || [],
+      };
+      await saveMatchEdits(match, {
+        metadata: {
+          ...(match.metadata || {}),
+          formation: lineupFormation,
+          lineup: lineupData,
+        },
+      });
+      setLineupSaveSuccess(true);
+      setTimeout(() => setLineupSaveSuccess(false), 3000);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Failed to save lineup');
+    } finally {
+      setLineupSaving(false);
+    }
   };
 
   const handleDeleteMatch = async () => {
@@ -2793,20 +2901,314 @@ export default function HierarchyMatchDetailPage() {
           )}
 
           {activeTab === 'lineup' && (
-            <Card>
-              <div style={{ padding: '16px' }}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {renderLineupEditor('home')}
-                  {match.opponent_project ? (
-                    renderLineupEditor('away')
-                  ) : (
-                    <Card title="Lineup: Opponent">
-                      <Alert variant="info">No opponent team configured for this match.</Alert>
-                    </Card>
-                  )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* Formation Lineup Editor */}
+              <Card title="⚽ Opstelling">
+                <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {/* Formation picker */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      marginBottom: 10,
+                      color: 'var(--app-text-secondary, #999)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>Formatie</label>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                      gap: 8,
+                    }}>
+                      {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
+                        const isSelected = lineupFormation === code;
+                        return (
+                          <button
+                            key={code}
+                            onClick={() => setLineupFormation(code)}
+                            style={{
+                              border: isSelected ? '2px solid #16a34a' : '1px solid var(--app-border, #333)',
+                              borderRadius: 8,
+                              cursor: 'pointer',
+                              padding: 0,
+                              background: isSelected ? 'rgba(22,163,74,0.1)' : 'var(--app-surface, #1e1e1e)',
+                              transition: 'all 0.15s ease',
+                            }}
+                          >
+                            {/* Mini field preview */}
+                            <div style={{
+                              position: 'relative',
+                              width: '100%',
+                              aspectRatio: '3/4',
+                              background: isSelected
+                                ? 'linear-gradient(to bottom, #16a34a, #15803d)'
+                                : 'linear-gradient(to bottom, #166534, #14532d)',
+                              borderRadius: '7px 7px 0 0',
+                            }}>
+                              <div style={{ position: 'absolute', left: 8, right: 8, top: '15%', height: 1, background: 'rgba(255,255,255,0.25)' }} />
+                              <div style={{ position: 'absolute', left: 8, right: 8, top: '50%', height: 1, background: 'rgba(255,255,255,0.25)' }} />
+                              <div style={{
+                                position: 'absolute', left: '50%', top: '50%',
+                                width: 20, height: 20, transform: 'translate(-50%, -50%)',
+                                border: '1px solid rgba(255,255,255,0.25)', borderRadius: '50%',
+                              }} />
+                              {layout.positions.map(pos => (
+                                <div
+                                  key={pos.slot}
+                                  style={{
+                                    position: 'absolute',
+                                    left: `${pos.x}%`,
+                                    top: `${pos.y}%`,
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: '50%',
+                                    background: isSelected ? '#fff' : 'rgba(255,255,255,0.5)',
+                                    transform: 'translate(-50%, -50%)',
+                                  }}
+                                />
+                              ))}
+                            </div>
+                            <div style={{
+                              padding: '6px 4px',
+                              textAlign: 'center',
+                              fontSize: 12,
+                              fontWeight: isSelected ? 700 : 500,
+                              color: isSelected ? '#16a34a' : 'var(--app-text, #ccc)',
+                            }}>{code}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Field visualization */}
+                  {lineupSquadLoading ? (
+                    <div style={{ textAlign: 'center', padding: 32, color: 'var(--app-text-secondary)' }}>
+                      Spelers laden...
+                    </div>
+                  ) : (() => {
+                    const formationLayout = FORMATION_LAYOUTS[lineupFormation] || FORMATION_LAYOUTS['4-3-3'];
+                    const gkPool = (lineupSquad.goalkeeper || [])
+                      .filter((p: any, idx: number, arr: any[]) => arr.findIndex((x: any) => x.id === p.id) === idx);
+                    const allMembers = Object.values(lineupSquad).flat() as any[];
+                    const gkIds = new Set(gkPool.map((p: any) => p.id));
+                    const playerPool = allMembers
+                      .filter((p: any) => !gkIds.has(p.id))
+                      .filter((p: any, idx: number, arr: any[]) => arr.findIndex((x: any) => x.id === p.id) === idx);
+
+                    const gkSelected = lineupSlots.goalkeeper || [];
+                    const playerSelected = lineupSlots.player || [];
+
+                    const getSquadMemberName = (p: any): string => {
+                      const user = p.user || p.member;
+                      if (!user) return 'Unknown';
+                      if (user.name) return user.name;
+                      if (user.user_name) return user.user_name;
+                      const full = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+                      if (full) return full;
+                      if (user.email) return user.email;
+                      return 'Unknown';
+                    };
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div style={{
+                          position: 'relative',
+                          width: '100%',
+                          maxWidth: 500,
+                          aspectRatio: '3 / 4',
+                          margin: '0 auto',
+                          background: 'linear-gradient(to bottom, #16a34a, #15803d)',
+                          borderRadius: 12,
+                          overflow: 'hidden',
+                          border: '1px solid var(--app-border, #333)',
+                        }}>
+                          {/* Field markings */}
+                          <div style={{ position: 'absolute', left: 16, right: 16, top: '15%', height: 1, background: 'rgba(255,255,255,0.2)' }} />
+                          <div style={{ position: 'absolute', left: 16, right: 16, top: '50%', height: 1, background: 'rgba(255,255,255,0.2)' }} />
+                          <div style={{ position: 'absolute', left: '50%', top: '50%', width: 48, height: 48, transform: 'translate(-50%, -50%)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%' }} />
+                          <div style={{ position: 'absolute', left: '22%', right: '22%', bottom: 0, height: '14%', borderTop: '1px solid rgba(255,255,255,0.2)', borderLeft: '1px solid rgba(255,255,255,0.2)', borderRight: '1px solid rgba(255,255,255,0.2)' }} />
+                          <div style={{ position: 'absolute', left: '22%', right: '22%', top: 0, height: '14%', borderBottom: '1px solid rgba(255,255,255,0.2)', borderLeft: '1px solid rgba(255,255,255,0.2)', borderRight: '1px solid rgba(255,255,255,0.2)' }} />
+
+                          {/* Position nodes */}
+                          {formationLayout.positions.map(pos => {
+                            const isGk = pos.slot === 1;
+                            const role = isGk ? 'goalkeeper' : 'player';
+                            const idx = isGk ? 0 : pos.slot - 2;
+                            const selected = isGk ? gkSelected : playerSelected;
+                            const currentId = selected[idx] || '';
+                            const pool = isGk ? gkPool : playerPool;
+                            const currentMember = currentId ? pool.find((p: any) => p.id === currentId) : null;
+                            const jerseyNumber = currentMember?.metadata?.shirt_number || currentMember?.data?.jersey_number;
+
+                            return (
+                              <div
+                                key={pos.slot}
+                                style={{
+                                  position: 'absolute',
+                                  left: `${pos.x}%`,
+                                  top: `${pos.y}%`,
+                                  transform: 'translate(-50%, -50%)',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  gap: 2,
+                                  zIndex: 10,
+                                  minWidth: 100,
+                                }}
+                              >
+                                {/* Position label */}
+                                <div style={{
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  color: 'rgba(255,255,255,0.7)',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em',
+                                }}>{pos.label}</div>
+
+                                {/* Dropdown */}
+                                <select
+                                  value={currentId}
+                                  onChange={(e) => {
+                                    const newSelected = [...selected];
+                                    while (newSelected.length <= idx) newSelected.push('');
+                                    newSelected[idx] = e.target.value;
+                                    setLineupSlots({ ...lineupSlots, [role]: [...newSelected] });
+                                  }}
+                                  style={{
+                                    width: 120,
+                                    padding: '4px 6px',
+                                    fontSize: 11,
+                                    fontWeight: currentId ? 700 : 400,
+                                    background: currentId
+                                      ? 'rgba(22,163,74,0.6)'
+                                      : 'rgba(0,0,0,0.6)',
+                                    color: '#fff',
+                                    border: currentId
+                                      ? '2px solid rgba(255,255,255,0.7)'
+                                      : '1px solid rgba(255,255,255,0.3)',
+                                    borderRadius: 6,
+                                    outline: 'none',
+                                    cursor: 'pointer',
+                                    textAlign: 'center',
+                                    appearance: 'none',
+                                    WebkitAppearance: 'none',
+                                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E")`,
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'right 6px center',
+                                    paddingRight: 20,
+                                  }}
+                                >
+                                  <option value="" style={{ background: '#1e1e1e', color: '#ccc' }}>— Kies —</option>
+                                  {pool.map((p: any) => {
+                                    const name = getSquadMemberName(p);
+                                    const jersey = p.metadata?.shirt_number || p.data?.jersey_number;
+                                    const allUsedIds = [...gkSelected, ...playerSelected].filter(Boolean);
+                                    const isAlreadyUsed = allUsedIds.includes(p.id) && p.id !== currentId;
+                                    return (
+                                      <option
+                                        key={p.id}
+                                        value={p.id}
+                                        disabled={isAlreadyUsed}
+                                        style={{ background: '#1e1e1e', color: isAlreadyUsed ? '#666' : '#ccc' }}
+                                      >
+                                        {jersey ? `#${jersey} ` : ''}{name}{isAlreadyUsed ? ' ✗' : ''}
+                                      </option>
+                                    );
+                                  })}
+                                </select>
+
+                                {/* Selected name display */}
+                                {currentMember && (
+                                  <div style={{
+                                    fontSize: 10,
+                                    fontWeight: 600,
+                                    color: '#fff',
+                                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                                    maxWidth: 110,
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    textAlign: 'center',
+                                  }}>
+                                    {jerseyNumber ? `#${jerseyNumber} ` : ''}{getSquadMemberName(currentMember)}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Summary bar + Save button */}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '10px 14px',
+                          background: 'var(--app-surface-secondary, #2a2a2a)',
+                          borderRadius: 8,
+                          fontSize: 13,
+                          maxWidth: 500,
+                          margin: '0 auto',
+                          width: '100%',
+                        }}>
+                          <span style={{ color: 'var(--app-text-secondary, #999)' }}>
+                            Formatie: <strong style={{ color: 'var(--app-text, #ccc)' }}>{lineupFormation}</strong>
+                            {' • '}
+                            {(() => {
+                              const filled = [...gkSelected, ...playerSelected].filter(Boolean).length;
+                              const total = formationLayout.positions.length;
+                              return filled === total
+                                ? <span style={{ color: '#10b981' }}>✓ Alle {total} posities ingevuld</span>
+                                : <span>{filled} / {total} posities</span>;
+                            })()}
+                          </span>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            {lineupSaveSuccess && (
+                              <span style={{ color: '#10b981', fontSize: 12, fontWeight: 600 }}>✓ Opgeslagen!</span>
+                            )}
+                            <button
+                              onClick={saveLineup}
+                              disabled={lineupSaving}
+                              style={{
+                                padding: '8px 20px',
+                                fontSize: 13,
+                                fontWeight: 600,
+                                background: '#16a34a',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: 6,
+                                cursor: lineupSaving ? 'not-allowed' : 'pointer',
+                                opacity: lineupSaving ? 0.7 : 1,
+                              }}
+                            >
+                              {lineupSaving ? 'Opslaan...' : '💾 Opstelling opslaan'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
-              </div>
-            </Card>
+              </Card>
+
+              {/* Existing roster assignment tables below */}
+              <Card title="📋 Spelersselectie">
+                <div style={{ padding: '16px' }}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {renderLineupEditor('home')}
+                    {match.opponent_project ? (
+                      renderLineupEditor('away')
+                    ) : (
+                      <Card title="Lineup: Opponent">
+                        <Alert variant="info">No opponent team configured for this match.</Alert>
+                      </Card>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            </div>
           )}
         </PageContent>
       </div>
