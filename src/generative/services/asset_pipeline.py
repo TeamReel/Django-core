@@ -446,23 +446,25 @@ def _postprocess_sponsor_crop(image_bytes: bytes, orientation: str = "landscape"
     return buf.getvalue()
 
 
-def _postprocess_kit_standardize(image_bytes: bytes, target_size: int = 1024) -> bytes:
-    """Standardize a kit image: resize to square canvas preserving aspect ratio."""
+def _postprocess_kit_standardize(
+    image_bytes: bytes, canvas_w: int = 820, canvas_h: int = 1024
+) -> bytes:
+    """Standardize a kit image: resize to portrait canvas preserving aspect ratio."""
     from PIL import Image
 
     img = Image.open(BytesIO(image_bytes)).convert("RGBA")
     w, h = img.size
 
-    # Fit into a square canvas preserving aspect ratio
-    scale = min(target_size / w, target_size / h)
+    # Fit into portrait canvas preserving aspect ratio
+    scale = min(canvas_w / w, canvas_h / h)
     new_w = max(1, int(w * scale))
     new_h = max(1, int(h * scale))
 
     resized = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
 
-    canvas = Image.new("RGBA", (target_size, target_size), (0, 0, 0, 0))
-    offset_x = (target_size - new_w) // 2
-    offset_y = (target_size - new_h) // 2
+    canvas = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+    offset_x = (canvas_w - new_w) // 2
+    offset_y = (canvas_h - new_h) // 2
     canvas.paste(resized, (offset_x, offset_y), resized)
 
     buf = BytesIO()
@@ -518,7 +520,6 @@ OUTPUT_POSTPROCESSORS: dict[str, Any] = {
     ),
     "kit_postprocess": lambda img_bytes, params: _postprocess_kit_standardize(
         img_bytes,
-        target_size=int(params.get("target_size", "1024")),
     ),
     "location_postprocess": lambda img_bytes, params: _postprocess_location_standardize(
         img_bytes,
