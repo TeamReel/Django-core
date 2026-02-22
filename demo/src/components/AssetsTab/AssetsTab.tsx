@@ -488,10 +488,6 @@ export function AssetsTab({
 
   const sponsorMode = externalSponsorMode || 'club';
 
-  // Per-kit reference source selection for team-level generation
-  // 'upload' = team's own upload, 'club' = club's processed kit, 'ai' = improve current AI result
-  const [kitRefSource, setKitRefSource] = useState<Record<string, 'upload' | 'club' | 'ai'>>({});
-
   const { fetchHistory, restoreAsset } = useBrandProfile({ projectId, organisationId, autoFetch: false }); // Reuse hook for methods
 
   const handleShowHistory = async (assetType: string) => {
@@ -540,6 +536,13 @@ export function AssetsTab({
       folder = 'clubs';
       // "ID en slug gecombineerd" -> unique path like "ajax-uuid"
       const slug = entityName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'club';
+      const pid = projectId?.toString() || '';
+      pathId = pid ? `${slug}-${pid}` : slug;
+    }
+
+    } else if (level === 'team') {
+      folder = 'teams';
+      const slug = entityName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'team';
       const pid = projectId?.toString() || '';
       pathId = pid ? `${slug}-${pid}` : slug;
     }
@@ -744,57 +747,7 @@ export function AssetsTab({
     }
   };
 
-  // Team-level kit generation with per-input source selection
-  const openAiForTeamKit = (roleId: string) => {
-    const processedType = `kit_${roleId}`;
-    const uploadType = `kit_${roleId}_upload`;
 
-    // Map role → template + initial params (same logic as openAiForAsset)
-    let templateId: string;
-    let initialParams: Record<string, string> = {};
-
-    if (roleId === 'home') { templateId = 'tenue_generate'; initialParams['kit_type'] = 'home'; }
-    else if (roleId === 'away') { templateId = 'tenue_generate'; initialParams['kit_type'] = 'away'; }
-    else if (roleId === 'third') { templateId = 'tenue_generate'; initialParams['kit_type'] = 'third'; }
-    else if (roleId === 'goalkeeper') { templateId = 'keeper_tenue'; }
-    else if (roleId === 'training') { templateId = 'tracksuit_generate'; }
-    else if (roleId === 'coach') { templateId = 'coach_outfit'; }
-    else if (roleId === 'assistant') { templateId = 'coach_outfit'; }
-    else if (roleId === 'legacy') { templateId = 'legacy_tenue_generate'; }
-    else { return; }
-
-    const source = kitRefSource[roleId] || 'club';
-    const inputs: Record<string, string | null> = { ...baseAiInputAssets };
-
-    // Always set previousResultUrl if team has an AI result (modal can offer "improve" toggle)
-    const currentAi = getAsset(processedType);
-    const previousUrl = currentAi ? getAssetUrl(currentAi.url) : null;
-
-    // Set reference based on selected source
-    if (source === 'upload') {
-      const upload = getAsset(uploadType);
-      if (upload) inputs['reference'] = getAssetUrl(upload.url);
-    } else if (source === 'club') {
-      // Use club's processed kit as reference (best quality)
-      const clubKit = parentBrand.getAsset?.(processedType);
-      if (clubKit) {
-        inputs['reference'] = getAssetUrl(clubKit.url);
-      } else {
-        // Fallback: club's upload
-        const clubUpload = parentBrand.getAsset?.(uploadType);
-        if (clubUpload) inputs['reference'] = getAssetUrl(clubUpload.url);
-      }
-    } else if (source === 'ai') {
-      // Use current team AI result as reference
-      if (currentAi) inputs['reference'] = getAssetUrl(currentAi.url);
-    }
-
-    setAiPreviousResultUrl(previousUrl);
-    setAiPreselectedTemplate(templateId);
-    setAiInitialParams(initialParams);
-    setAiCustomInputs(inputs);
-    setShowAiModal(true);
-  };
 
   if (loading || parentBrand.loading) {
     return (
@@ -1069,199 +1022,50 @@ export function AssetsTab({
     );
   }
 
-  // ── TEAM level ──
+  // ── TEAM level ── (mirrors club layout, with inheritance fallbacks)
   if (level === 'team') {
     return (
       <div style={{ padding: 16 }}>
-        {/* Inherited logo */}
-        <Section title="Logo" description="Geërfd van de club. Kan niet worden overschreven op teamniveau.">
-          <AssetGrid>
-            {(() => { const e = getEffectiveAsset('logo'); return (
-              <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
-            ); })()}
-          </AssetGrid>
-        </Section>
-
-        {/* Sponsor choice */}
-        <Section title="Sponsor" description="Kies of dit team de club-sponsor erft, of een eigen sponsor heeft.">
-          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-            <button
-              onClick={() => onSponsorModeChange?.('club')}
-              style={{
-                padding: '6px 12px',
-                fontSize: 12,
-                cursor: 'pointer',
-                background: sponsorMode === 'club' ? 'var(--vscode-button-background, #0078d4)' : 'transparent',
-                color: sponsorMode === 'club' ? 'var(--vscode-button-foreground, #fff)' : 'var(--vscode-foreground, #ccc)',
-                border: '1px solid var(--vscode-widget-border, #333)',
-                borderRadius: 4,
-              }}
-            >
-              Erven van club
-            </button>
-            <button
-              onClick={() => onSponsorModeChange?.('custom')}
-              style={{
-                padding: '6px 12px',
-                fontSize: 12,
-                cursor: 'pointer',
-                background: sponsorMode === 'custom' ? 'var(--vscode-button-background, #0078d4)' : 'transparent',
-                color: sponsorMode === 'custom' ? 'var(--vscode-button-foreground, #fff)' : 'var(--vscode-foreground, #ccc)',
-                border: '1px solid var(--vscode-widget-border, #333)',
-                borderRadius: 4,
-              }}
-            >
-              Eigen sponsor
-            </button>
-          </div>
-
-          <AssetGrid>
-            {sponsorMode === 'club' ? (
-              (() => { const e = getEffectiveAsset('sponsor_logo'); return (
-                <AssetCard label="Sponsor (van club)" assetType="sponsor_logo" asset={e.asset} inherited inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
-              ); })()
-            ) : (
-              <>
-                <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-                <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} readOnly aspectRatio="1 / 1" />
-              </>
-            )}
-          </AssetGrid>
-        </Section>
-
-        {/* Tenues — per-kit source selection */}
-        <Section title="Tenues" description="Per tenue kun je kiezen: eigen upload, van club overnemen, of huidige AI versie verbeteren.">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 16 }}>
-            {KIT_ROLES.map((role) => {
-              const uploadType = `kit_${role.id}_upload`;
-              const processedType = `kit_${role.id}`;
-              const clubKit = parentBrand.getAsset?.(processedType);
-              const clubUpload = parentBrand.getAsset?.(uploadType);
-              const teamUpload = getAsset(uploadType);
-              const teamAi = getAsset(processedType);
-              const source = kitRefSource[role.id] || 'club';
-
-              const hasClubRef = !!(clubKit || clubUpload);
-              const hasTeamUpload = !!teamUpload;
-              const hasTeamAi = !!teamAi;
-
-              return (
-                <div key={role.id} style={{ background: '#252526', padding: 12, borderRadius: 8, border: '1px solid #333' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                    <span style={{ fontSize: 18 }}>{role.icon}</span>
-                    <span style={{ fontWeight: 600, fontSize: 13 }}>{role.label}</span>
-                  </div>
-
-                  {/* Club preview (read-only thumbnail) */}
-                  {clubKit && (
-                    <div style={{ marginBottom: 10, padding: 8, background: '#1e1e1e', borderRadius: 6, border: '1px solid #333' }}>
-                      <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>📋 Club referentie</div>
-                      <div style={{
-                        width: 60, height: 80,
-                        background: `url(${getAssetUrl(clubKit.url)}) center/contain no-repeat`,
-                        borderRadius: 4,
-                      }} />
-                    </div>
-                  )}
-
-                  {/* Team upload + AI result cards */}
-                  <AssetGrid>
-                    <AssetCard
-                      label={`${role.label} (upload)`}
-                      assetType={uploadType}
-                      asset={teamUpload}
-                      onUpload={handleUpload}
-                      onDelete={handleDelete}
-                    />
-                    <AssetCard
-                      label={`${role.label} (bewerkt)`}
-                      assetType={processedType}
-                      asset={teamAi}
-                      onUpload={handleUpload}
-                      onDelete={handleDelete}
-                      onReplace={() => openAiForTeamKit(role.id)}
-                      onPostProcess={handlePostProcess}
-                      isProcessing={postProcessingAsset === processedType}
-                      onShowHistory={handleShowHistory}
-                    />
-                  </AssetGrid>
-
-                  {/* Reference source selector for AI generation */}
-                  <div style={{ marginTop: 10, padding: 8, background: '#1e1e1e', borderRadius: 6, border: '1px solid #333' }}>
-                    <div style={{ fontSize: 11, color: '#888', marginBottom: 6 }}>🎨 Referentiebron voor AI generatie:</div>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      <button
-                        onClick={() => setKitRefSource(prev => ({ ...prev, [role.id]: 'club' }))}
-                        disabled={!hasClubRef}
-                        style={{
-                          padding: '4px 10px',
-                          fontSize: 11,
-                          cursor: hasClubRef ? 'pointer' : 'not-allowed',
-                          opacity: hasClubRef ? 1 : 0.4,
-                          background: source === 'club' ? 'var(--vscode-button-background, #0078d4)' : 'transparent',
-                          color: source === 'club' ? 'var(--vscode-button-foreground, #fff)' : 'var(--vscode-foreground, #ccc)',
-                          border: '1px solid var(--vscode-widget-border, #333)',
-                          borderRadius: 4,
-                        }}
-                      >
-                        Van club
-                      </button>
-                      <button
-                        onClick={() => setKitRefSource(prev => ({ ...prev, [role.id]: 'upload' }))}
-                        disabled={!hasTeamUpload}
-                        style={{
-                          padding: '4px 10px',
-                          fontSize: 11,
-                          cursor: hasTeamUpload ? 'pointer' : 'not-allowed',
-                          opacity: hasTeamUpload ? 1 : 0.4,
-                          background: source === 'upload' ? 'var(--vscode-button-background, #0078d4)' : 'transparent',
-                          color: source === 'upload' ? 'var(--vscode-button-foreground, #fff)' : 'var(--vscode-foreground, #ccc)',
-                          border: '1px solid var(--vscode-widget-border, #333)',
-                          borderRadius: 4,
-                        }}
-                      >
-                        Eigen upload
-                      </button>
-                      <button
-                        onClick={() => setKitRefSource(prev => ({ ...prev, [role.id]: 'ai' }))}
-                        disabled={!hasTeamAi}
-                        style={{
-                          padding: '4px 10px',
-                          fontSize: 11,
-                          cursor: hasTeamAi ? 'pointer' : 'not-allowed',
-                          opacity: hasTeamAi ? 1 : 0.4,
-                          background: source === 'ai' ? 'var(--vscode-button-background, #0078d4)' : 'transparent',
-                          color: source === 'ai' ? 'var(--vscode-button-foreground, #fff)' : 'var(--vscode-foreground, #ccc)',
-                          border: '1px solid var(--vscode-widget-border, #333)',
-                          borderRadius: 4,
-                        }}
-                      >
-                        Verbeter AI
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </Section>
-
-        {/* Spinner animation for postprocess overlay */}
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-
-        {/* AI Generation Modal for team-level kits */}
-        <AssetGenerationModal
-          isOpen={showAiModal}
-          onClose={() => { setShowAiModal(false); setAiPreviousResultUrl(null); }}
-          context="club"
-          preSelectedTemplate={aiPreselectedTemplate}
-          projectId={projectId || ''}
-          organisationId={organisationId}
-          inputAssets={aiCustomInputs}
-          previousResultUrl={aiPreviousResultUrl}
-          initialParams={aiInitialParams}
-          onAssetSaved={refresh}
-        />
+        {/* AI Generation Buttons */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+          <button
+            onClick={() => { setAiPreselectedTemplate(undefined); setAiInitialParams({}); setAiCustomInputs(baseAiInputAssets); setShowAiModal(true); }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 20px',
+              fontSize: 13,
+              fontWeight: 600,
+              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              transition: 'opacity 0.15s',
+            }}
+          >
+            🎨 AI Asset Genereren
+          </button>
+          <button
+            onClick={() => { setAiPreselectedTemplate('tenue_generate'); setAiInitialParams({ kit_type: 'home' }); setAiCustomInputs(baseAiInputAssets); setShowAiModal(true); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', fontSize: 12, background: 'transparent', color: 'var(--vscode-foreground, #ccc)', border: '1px solid var(--vscode-widget-border, #444)', borderRadius: 8, cursor: 'pointer' }}
+          >
+            👕 Tenue
+          </button>
+          <button
+            onClick={() => { setAiPreselectedTemplate('keeper_tenue'); setAiInitialParams({}); setAiCustomInputs(baseAiInputAssets); setShowAiModal(true); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', fontSize: 12, background: 'transparent', color: 'var(--vscode-foreground, #ccc)', border: '1px solid var(--vscode-widget-border, #444)', borderRadius: 8, cursor: 'pointer' }}
+          >
+            🧤 Keeper
+          </button>
+          <button
+            onClick={() => { setAiPreselectedTemplate('tracksuit_generate'); setAiInitialParams({}); setAiCustomInputs(baseAiInputAssets); setShowAiModal(true); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', fontSize: 12, background: 'transparent', color: 'var(--vscode-foreground, #ccc)', border: '1px solid var(--vscode-widget-border, #444)', borderRadius: 8, cursor: 'pointer' }}
+          >
+            🏃 Training
+          </button>
+        </div>
 
         {/* History Modal */}
         {showHistoryModal && (
@@ -1296,6 +1100,136 @@ export function AssetsTab({
                     )}
                 </div>
             </div>
+        )}
+
+        {/* Spinner animation for postprocess overlay */}
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+        {/* AI Generation Modal */}
+        <AssetGenerationModal
+          isOpen={showAiModal}
+          onClose={() => { setShowAiModal(false); setAiPreviousResultUrl(null); }}
+          context="club"
+          preSelectedTemplate={aiPreselectedTemplate}
+          projectId={projectId || ''}
+          organisationId={organisationId}
+          inputAssets={aiCustomInputs}
+          previousResultUrl={aiPreviousResultUrl}
+          initialParams={aiInitialParams}
+          onAssetSaved={refresh}
+        />
+
+        {/* Assets Top Row: Logo & Sponsor */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: 24, marginBottom: 24 }}>
+          {/* Logo */}
+          <div style={{ background: '#252526', padding: 16, borderRadius: 8, border: '1px solid #333' }}>
+             <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Logo</h3>
+             <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het teamlogo → AI standaardiseert het. Zonder eigen logo wordt het clublogo geërfd.</p>
+             <AssetGrid>
+                <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
+                {(() => { const e = getEffectiveAsset('logo'); return (
+                  <AssetCard label="Logo (bewerkt)" assetType="logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'logo'} aspectRatio="1 / 1" />
+                ); })()}
+             </AssetGrid>
+          </div>
+
+          {/* Sponsor */}
+          <div style={{ background: '#252526', padding: 16, borderRadius: 8, border: '1px solid #333' }}>
+             <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Sponsor</h3>
+             <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het sponsor logo → AI standaardiseert. Zonder eigen sponsor wordt de clubsponsor geërfd.</p>
+             <AssetGrid>
+                <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
+                {(() => { const e = getEffectiveAsset('sponsor_logo'); return (
+                  <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'sponsor_logo'} aspectRatio="1 / 1" />
+                ); })()}
+             </AssetGrid>
+          </div>
+        </div>
+
+        {/* Kits Grid — same layout as club */}
+        <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Tenues</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+        {KIT_ROLES.map((role) => {
+          const uploadType = `kit_${role.id}_upload`;
+          const processedType = `kit_${role.id}`;
+          const eff = getEffectiveAsset(processedType);
+
+          return (
+            <div key={role.id} style={{ background: '#252526', padding: 12, borderRadius: 8, border: '1px solid #333' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: 18 }}>{role.icon}</span>
+                    <span style={{ fontWeight: 600, fontSize: 13 }}>{role.label}</span>
+                    {eff.inherited && <span style={{ fontSize: 10, background: '#0e639c', color: '#fff', padding: '2px 6px', borderRadius: 4 }}>Club</span>}
+                </div>
+              <AssetGrid>
+                <AssetCard
+                  label={`${role.label} (upload)`}
+                  assetType={uploadType}
+                  asset={getAsset(uploadType)}
+                  onUpload={handleUpload}
+                  onDelete={handleDelete}
+                />
+                <AssetCard
+                  label={`${role.label} (bewerkt)`}
+                  assetType={processedType}
+                  asset={eff.asset}
+                  inherited={eff.inherited}
+                  inheritedFrom="Club"
+                  onUpload={handleUpload}
+                  onDelete={handleDelete}
+                  onReplace={handleReplaceAi}
+                  onPostProcess={handlePostProcess}
+                  isProcessing={postProcessingAsset === processedType}
+                  onShowHistory={handleShowHistory}
+                />
+              </AssetGrid>
+            </div>
+          );
+        })}
+        </div>
+
+        {/* Location */}
+        <Section title="📍 Locatie" description="Upload een voetbalveld foto → AI zet het om naar portrait formaat. Zonder eigen foto wordt de club-locatie geërfd.">
+          <AssetGrid>
+            <AssetCard
+              label="Veld foto (upload)"
+              assetType="location_photo"
+              asset={getAsset('location_photo')}
+              onUpload={handleUpload}
+              onDelete={handleDelete}
+              aspectRatio="16 / 9"
+            />
+            {(() => { const e = getEffectiveAsset('stadium_background'); return (
+              <AssetCard
+                label="Achtergrond (bewerkt)"
+                assetType="stadium_background"
+                asset={e.asset}
+                inherited={e.inherited}
+                inheritedFrom="Club"
+                onUpload={handleUpload}
+                onDelete={handleDelete}
+                onReplace={handleReplaceAi}
+                onPostProcess={handlePostProcess}
+                isProcessing={postProcessingAsset === 'stadium_background'}
+                aspectRatio="9 / 16"
+              />
+            ); })()}
+          </AssetGrid>
+        </Section>
+
+        {!profile && (
+          <div
+            style={{
+              padding: 16,
+              background: 'var(--vscode-inputValidation-warningBackground, #5a4000)',
+              border: '1px solid var(--vscode-inputValidation-warningBorder, #856d00)',
+              borderRadius: 8,
+              marginTop: 16,
+              fontSize: 12,
+            }}
+          >
+            ⚠️ Nog geen brand profiel voor dit team. Upload of genereer een asset — het profiel wordt automatisch aangemaakt.
+          </div>
         )}
       </div>
     );
