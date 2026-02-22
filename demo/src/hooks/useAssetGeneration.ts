@@ -243,12 +243,20 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         setProgress((prev) => Math.min(prev + 1, 90));
       }, 3000);
 
+      // Image generation timeout: 120s (OpenAI can take 30-90s for complex templates)
+      let timedOut = false;
+
       try {
         // Inject user instruction into params if present
         const finalParams = { ...params.parameters };
         if (params.userPrompt) {
             finalParams['user_instruction'] = params.userPrompt;
         }
+
+        const timeoutId = setTimeout(() => {
+          timedOut = true;
+          controller.abort();
+        }, 120_000);
 
         const res = await fetch(`${apiBase}/api/v1/generative/assets/generate/`, {
           method: 'POST',
@@ -275,6 +283,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           }),
         });
 
+        clearTimeout(timeoutId);
         clearInterval(progressTimer);
 
         // ── Async path: video generation returns 202 + task_id ───────
@@ -351,7 +360,13 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         setProgress(100);
       } catch (err) {
         clearInterval(progressTimer);
-        if ((err as Error).name === 'AbortError') return; // Cancelled by user
+        if ((err as Error).name === 'AbortError') {
+          if (timedOut) {
+            setError('Generatie timeout – de AI heeft te lang geduurd (>2 min). Probeer het opnieuw.');
+            setStep('error');
+          }
+          return; // Cancelled by user
+        }
         setError(err instanceof Error ? err.message : 'Generatie mislukt');
         setStep('error');
       }
