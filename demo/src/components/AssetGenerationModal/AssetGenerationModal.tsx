@@ -395,6 +395,7 @@ export default function AssetGenerationModal({
   const [referenceSource, setReferenceSource] = useState<'upload' | 'previous'>('upload'); // Default: use original upload
   const [shoeColor, setShoeColor] = useState<string>('zwart'); // For fullbody_in_tenue template
   const [videoProvider, setVideoProvider] = useState<string>(''); // '' = auto-select
+  const [selectedModel, setSelectedModel] = useState<string>(''); // '' = provider default
 
   const generation = useAssetGeneration();
 
@@ -460,6 +461,7 @@ export default function AssetGenerationModal({
       setFeedbackFields({ colors: '', pattern: '', logo: '', collar: '', other: '' });
       setShoeColor('zwart');
       setVideoProvider('');
+      setSelectedModel('');
       generation.reset();
     }
   }, [isOpen, preSelectedTemplate]);
@@ -533,6 +535,7 @@ export default function AssetGenerationModal({
       inputImageUrls: mappedInputs,
       userPrompt: extraInstructions,
       ...(videoProvider ? { provider: videoProvider } : {}),
+      ...(selectedModel ? { model: selectedModel } : {}),
       requireApproval,
     });
     setModalStep('results');
@@ -951,79 +954,137 @@ export default function AssetGenerationModal({
               {/* Extra Instructions */}
               <div style={{ marginBottom: 16 }}>
 
-              {/* Video Provider Selector — only for video templates */}
-              {selectedTemplate.outputType === 'video' && (
-                <div style={{ marginBottom: 16 }}>
-                  <label
-                    style={{
-                      display: 'block',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      marginBottom: 6,
-                      color: 'var(--vscode-foreground, #ccc)',
-                    }}
-                  >
-                    Video Provider
-                  </label>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {[
-                      { value: '', label: '🔄 Auto', desc: 'Automatisch kiezen' },
-                      { value: 'minimax', label: '🎬 MiniMax', desc: 'Hailuo video-01' },
-                      { value: 'runway', label: '✈️ Runway', desc: 'Gen4 Turbo' },
-                      { value: 'pika', label: '🎨 Pika', desc: 'Pika 2.2 (fal.ai)' },
-                    ].map((opt) => (
-                      <button
-                        key={opt.value}
-                        onClick={() => setVideoProvider(opt.value)}
-                        style={{
-                          flex: 1,
-                          minWidth: 90,
-                          padding: '8px 10px',
-                          border:
-                            videoProvider === opt.value
-                              ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                              : '1px solid var(--vscode-widget-border, #333)',
-                          background:
-                            videoProvider === opt.value
-                              ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                              : 'transparent',
-                          color: 'var(--vscode-foreground, #ccc)',
-                          borderRadius: 6,
-                          cursor: 'pointer',
-                          fontSize: 12,
-                          textAlign: 'center',
-                        }}
-                      >
-                        <div style={{ fontWeight: 600 }}>{opt.label}</div>
-                        <div
+              {/* ── AI Model Selector ── */}
+              {(() => {
+                const isVideo = selectedTemplate.outputType === 'video';
+                // Model options per provider (video) or for image
+                const VIDEO_MODELS: { provider: string; modelId: string; label: string; desc: string; costLabel: string }[] = [
+                  { provider: '', modelId: '', label: '🔄 Auto', desc: 'Automatisch kiezen', costLabel: '' },
+                  { provider: 'minimax', modelId: 'video-01', label: '🎬 MiniMax', desc: 'Video-01', costLabel: '$0.05/video' },
+                  { provider: 'minimax', modelId: 'video-01-live2d', label: '🎬 Live2D', desc: 'MiniMax 2D→Video', costLabel: '$0.05/video' },
+                  { provider: 'runway', modelId: 'gen4_turbo', label: '✈️ Gen4 Turbo', desc: 'Runway — snel', costLabel: '$0.096/s' },
+                  { provider: 'runway', modelId: 'gen4', label: '✈️ Gen4', desc: 'Runway — beter', costLabel: '$0.23/s' },
+                  { provider: 'pika', modelId: 'pika-2.2', label: '🎨 Pika 2.2', desc: 'fal.ai', costLabel: '$0.05/s' },
+                  { provider: 'veo', modelId: 'veo-3.1-fast', label: '🌐 Veo Fast', desc: 'Google Veo 3.1', costLabel: '$0.15/video' },
+                  { provider: 'veo', modelId: 'veo-3.1-generate', label: '🌐 Veo Std', desc: 'Google Veo 3.1 HQ', costLabel: '$0.60/video' },
+                ];
+                const IMAGE_MODELS: { modelId: string; label: string; desc: string; costLabel: string }[] = [
+                  { modelId: '', label: '🔄 Auto', desc: 'Standard model', costLabel: '~€0.04/img' },
+                  { modelId: 'nano-banana-pro-preview', label: '🍌 Nano Banana', desc: 'Snel & goedkoop', costLabel: '~€0.04/img' },
+                  { modelId: 'gemini-2.5-flash-preview-native-audio-dialog', label: '⚡ Gemini 2.5 Flash', desc: 'Iets beter, iets duurder', costLabel: '~€0.04/img' },
+                ];
+
+                // Cost estimate helper
+                const estimateCost = (): string => {
+                  if (isVideo) {
+                    const sel = VIDEO_MODELS.find(m => m.modelId === selectedModel);
+                    if (!sel || !sel.costLabel) return '';
+                    // Parse cost
+                    const match = sel.costLabel.match(/\$([\d.]+)\/(video|s)/);
+                    if (!match) return '';
+                    const rate = parseFloat(match[1]);
+                    const unit = match[2];
+                    const dur = unit === 's' ? 5 : 1; // 5s default for per-second
+                    const totalUsd = rate * dur * variantCount;
+                    const totalEur = totalUsd * 0.92;
+                    return `~€${totalEur.toFixed(2)} (${variantCount} variant${variantCount > 1 ? 'en' : ''})`;
+                  } else {
+                    // Image — ~€0.04 per image
+                    const rateMap: Record<string, number> = {
+                      '': 0.04,
+                      'nano-banana-pro-preview': 0.04,
+                      'gemini-2.5-flash-preview-native-audio-dialog': 0.043,
+                    };
+                    const rate = rateMap[selectedModel] ?? 0.04;
+                    const total = rate * variantCount;
+                    return `~€${total.toFixed(2)} (${variantCount} variant${variantCount > 1 ? 'en' : ''})`;
+                  }
+                };
+
+                const models = isVideo ? VIDEO_MODELS : IMAGE_MODELS;
+
+                return (
+                  <div style={{ marginBottom: 16 }}>
+                    <label
+                      style={{
+                        display: 'block',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        marginBottom: 6,
+                        color: 'var(--vscode-foreground, #ccc)',
+                      }}
+                    >
+                      {isVideo ? 'Video Model' : 'Image Model'}
+                    </label>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {models.map((opt) => (
+                        <button
+                          key={opt.modelId}
+                          onClick={() => {
+                            setSelectedModel(opt.modelId);
+                            if (isVideo) {
+                              const vm = opt as typeof VIDEO_MODELS[0];
+                              setVideoProvider(vm.provider);
+                            }
+                          }}
                           style={{
-                            fontSize: 10,
-                            color: 'var(--vscode-descriptionForeground, #888)',
-                            marginTop: 2,
+                            flex: '1 1 auto',
+                            minWidth: 80,
+                            padding: '6px 8px',
+                            border:
+                              selectedModel === opt.modelId
+                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                : '1px solid var(--vscode-widget-border, #333)',
+                            background:
+                              selectedModel === opt.modelId
+                                ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                                : 'transparent',
+                            color: 'var(--vscode-foreground, #ccc)',
+                            borderRadius: 6,
+                            cursor: 'pointer',
+                            fontSize: 11,
+                            textAlign: 'center',
                           }}
                         >
-                          {opt.desc}
-                        </div>
-                      </button>
-                    ))}
+                          <div style={{ fontWeight: 600, fontSize: 11 }}>{opt.label}</div>
+                          <div
+                            style={{
+                              fontSize: 9,
+                              color: 'var(--vscode-descriptionForeground, #888)',
+                              marginTop: 1,
+                            }}
+                          >
+                            {opt.desc}
+                          </div>
+                          {opt.costLabel && (
+                            <div
+                              style={{
+                                fontSize: 9,
+                                color: 'var(--vscode-charts-green, #4ec)',
+                                marginTop: 1,
+                              }}
+                            >
+                              {opt.costLabel}
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    {estimateCost() && (
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: 'var(--vscode-charts-green, #4ec)',
+                          marginTop: 4,
+                          fontWeight: 600,
+                        }}
+                      >
+                        Geschatte kosten: {estimateCost()}
+                      </div>
+                    )}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: 'var(--vscode-descriptionForeground, #888)',
-                      marginTop: 4,
-                    }}
-                  >
-                    {videoProvider === 'runway'
-                      ? 'Runway Gen4 Turbo — snelle I2V generatie, 5 credits/sec.'
-                      : videoProvider === 'minimax'
-                        ? 'MiniMax Hailuo — standaard video model.'
-                        : videoProvider === 'pika'
-                          ? 'Pika 2.2 via fal.ai — T2V & I2V, tot 1080p, 5-10s clips.'
-                          : 'De backend kiest het beste beschikbare model.'}
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
                 <label
                   style={{

@@ -90,6 +90,8 @@ export interface SubmitParams {
   userPrompt?: string;
   /** Explicit video provider (minimax, runway, veo). If omitted, auto-selects. */
   provider?: string;
+  /** Explicit model ID (e.g. gen4_turbo, video-01). If omitted, uses provider default. */
+  model?: string;
   /** Workflow: content type model name for auto-creating workflow instance */
   workflowContentType?: ContentTypeName;
   /** Workflow: the object ID that the workflow attaches to (e.g. match ID) */
@@ -267,6 +269,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             ...(params.membershipId ? { membership_id: params.membershipId } : {}),
             ...(params.outputAssetType ? { asset_type: params.outputAssetType } : {}),
             ...(params.provider ? { provider: params.provider } : {}),
+            ...(params.model ? { model: params.model } : {}),
             // Route through approval queue if requested
             ...(params.requireApproval ? { save_to_brand: false, save_to_media_library: false } : {}),
           }),

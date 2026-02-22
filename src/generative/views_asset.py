@@ -29,6 +29,165 @@ from rest_framework.response import Response
 
 logger = logging.getLogger("generative.views.asset")
 
+
+# =============================================================================
+# Model Registry — single source of truth for available AI models & pricing
+# =============================================================================
+# Each entry: { provider, model_id, label, description, output_type,
+#               cost_per_unit, cost_unit, default }
+# cost_per_unit is in USD; frontend converts to EUR (×0.92).
+# "default" marks the auto-selected model for that provider+output combo.
+
+MODEL_REGISTRY: list[dict[str, Any]] = [
+    # ── Image Generation (Gemini) ────────────────────────────────────
+    {
+        "provider": "gemini",
+        "model_id": "nano-banana-pro-preview",
+        "label": "Nano Banana Pro",
+        "description": "Google image gen model, fast & cheap. Default.",
+        "output_type": "image",
+        "cost_per_unit": 0.04,
+        "cost_unit": "per image",
+        "cost_input_per_1m": 0.10,
+        "cost_output_per_1m": 30.00,
+        "default": True,
+    },
+    {
+        "provider": "gemini",
+        "model_id": "gemini-2.5-flash-preview-native-audio-dialog",
+        "label": "Gemini 2.5 Flash Image",
+        "description": "Gemini 2.5 Flash met native image output. Iets beter, iets duurder.",
+        "output_type": "image",
+        "cost_per_unit": 0.043,
+        "cost_unit": "per image",
+        "cost_input_per_1m": 0.15,
+        "cost_output_per_1m": 30.00,
+        "default": False,
+    },
+    # ── Video Generation (MiniMax) ───────────────────────────────────
+    {
+        "provider": "minimax",
+        "model_id": "video-01",
+        "label": "MiniMax Video-01",
+        "description": "Standaard Hailuo video model, 6s clips. Goedkoop.",
+        "output_type": "video",
+        "cost_per_unit": 0.05,
+        "cost_unit": "per video",
+        "default": True,
+    },
+    {
+        "provider": "minimax",
+        "model_id": "video-01-live2d",
+        "label": "MiniMax Live2D",
+        "description": "Geoptimaliseerd voor 2D-naar-video animatie.",
+        "output_type": "video",
+        "cost_per_unit": 0.05,
+        "cost_unit": "per video",
+        "default": False,
+    },
+    # ── Video Generation (Runway) ────────────────────────────────────
+    {
+        "provider": "runway",
+        "model_id": "gen4_turbo",
+        "label": "Runway Gen-4 Turbo",
+        "description": "Snel & goedkoop. 5 credits/s (~$0.096/s). Default.",
+        "output_type": "video",
+        "cost_per_unit": 0.096,
+        "cost_unit": "per second",
+        "default_duration": 5,
+        "default": True,
+    },
+    {
+        "provider": "runway",
+        "model_id": "gen4",
+        "label": "Runway Gen-4",
+        "description": "Hogere kwaliteit, 12 credits/s (~$0.23/s).",
+        "output_type": "video",
+        "cost_per_unit": 0.23,
+        "cost_unit": "per second",
+        "default_duration": 5,
+        "default": False,
+    },
+    # ── Video Generation (Pika) ──────────────────────────────────────
+    {
+        "provider": "pika",
+        "model_id": "pika-2.2",
+        "label": "Pika 2.2",
+        "description": "Via fal.ai. I2V & T2V, tot 1080p.",
+        "output_type": "video",
+        "cost_per_unit": 0.05,
+        "cost_unit": "per second",
+        "default_duration": 5,
+        "default": True,
+    },
+    # ── Video Generation (Veo) ───────────────────────────────────────
+    {
+        "provider": "veo",
+        "model_id": "veo-3.1-fast",
+        "label": "Veo 3.1 Fast",
+        "description": "Google Veo 3. Snel, $0.15/video.",
+        "output_type": "video",
+        "cost_per_unit": 0.15,
+        "cost_unit": "per video",
+        "default": True,
+    },
+    {
+        "provider": "veo",
+        "model_id": "veo-3.1-generate",
+        "label": "Veo 3.1 Standard",
+        "description": "Google Veo 3 Standard. Hogere kwaliteit, $0.60/video.",
+        "output_type": "video",
+        "cost_per_unit": 0.60,
+        "cost_unit": "per video",
+        "default": False,
+    },
+]
+
+# Quick lookup: model_id → registry entry
+_MODEL_LOOKUP: dict[str, dict[str, Any]] = {m["model_id"]: m for m in MODEL_REGISTRY}
+
+# Provider → default model_id (per output_type)
+_PROVIDER_DEFAULT_MODEL: dict[str, dict[str, str]] = {}
+for _m in MODEL_REGISTRY:
+    _key = f"{_m['provider']}_{_m['output_type']}"
+    if _m.get("default"):
+        _PROVIDER_DEFAULT_MODEL[_key] = _m["model_id"]
+
+
+def _get_model_cost_usd(
+    provider: str,
+    model_id: str | None,
+    variant_count: int = 1,
+    content_duration: float | None = None,
+    template_id: str | None = None,
+) -> float | None:
+    """Calculate estimated cost in USD for a given model.
+
+    Returns None if model is not in registry.
+    """
+    if not model_id:
+        # Fallback to default model for provider
+        for m in MODEL_REGISTRY:
+            if m["provider"] == provider and m.get("default"):
+                model_id = m["model_id"]
+                break
+    entry = _MODEL_LOOKUP.get(model_id or "")
+    if not entry:
+        return None
+
+    unit = entry["cost_unit"]
+    rate = entry["cost_per_unit"]
+
+    if unit == "per image":
+        return rate * variant_count
+    elif unit == "per video":
+        return rate * variant_count
+    elif unit == "per second":
+        dur = content_duration or entry.get("default_duration", 5)
+        return rate * dur * variant_count
+    return None
+
+
 # =============================================================================
 # Cache-backed task store for async video generation
 # =============================================================================
@@ -175,7 +334,7 @@ class AssetGenerateInputSerializer(serializers.Serializer):
         help_text="Create MediaItem record for rich media features",
     )
 
-    # === Provider selection ===
+    # === Provider & Model selection ===
     provider = serializers.ChoiceField(
         choices=["minimax", "runway", "pika", "veo"],
         required=False,
@@ -183,6 +342,13 @@ class AssetGenerateInputSerializer(serializers.Serializer):
         allow_blank=True,
         default=None,
         help_text="Explicit video provider (minimax, runway, pika, veo). If omitted, auto-selects.",
+    )
+    model = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+        default=None,
+        help_text="Explicit model ID (e.g. gen4_turbo, video-01). If omitted, uses provider default.",
     )
 
 
@@ -284,6 +450,7 @@ def generate_asset_view(request: Request) -> Response:
     save_to_brand = serializer.validated_data.get("save_to_brand", True)
     save_to_media_library = serializer.validated_data.get("save_to_media_library", True)
     provider = serializer.validated_data.get("provider") or None
+    model = serializer.validated_data.get("model") or None
 
     # Resolve project slug → canonical project ID early so all downstream
     # references (GenerationJob record, storage_context, Celery kwargs) use
@@ -497,6 +664,7 @@ def generate_asset_view(request: Request) -> Response:
                         "organisation_id": str(organisation_id) if organisation_id else None,
                         "storage_context": storage_context,
                         "provider": provider,
+                        "model": model,
                     },
                     queue="ai_generation",
                 )
@@ -600,6 +768,7 @@ def generate_asset_view(request: Request) -> Response:
                     "user_id": user_id,
                     "organisation_id": str(organisation_id) if organisation_id else None,
                     "storage_context": storage_context,
+                    "model": model,
                 },
                 queue="ai_generation",
             )
@@ -1008,6 +1177,33 @@ def generate_asset_view(request: Request) -> Response:
     }
 
     return Response(output, status=status.HTTP_200_OK)
+
+
+# =============================================================================
+# Models endpoint — returns available AI models per provider with pricing
+# =============================================================================
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def list_asset_models_view(request: Request) -> Response:  # noqa: ARG001
+    """List available AI models with pricing info.
+
+    GET /api/v1/generative/assets/models/
+    Optional query params:
+      - output_type: filter by 'image' or 'video'
+      - provider: filter by provider name
+    """
+    output_type = request.query_params.get("output_type")
+    provider_filter = request.query_params.get("provider")
+
+    models = MODEL_REGISTRY
+    if output_type:
+        models = [m for m in models if m["output_type"] == output_type]
+    if provider_filter:
+        models = [m for m in models if m["provider"] == provider_filter]
+
+    return Response(models, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
@@ -2248,15 +2444,21 @@ def list_generation_jobs_view(request: Request) -> Response:
             # Infer provider from output_type when cache is expired
             ai_provider = "gemini" if job.output_type == "image" else "minimax"
 
-        # Model name inference from provider (updated Feb 2026)
+        # Model name inference — prefer model from job metadata, then provider default
         _provider_model_map = {
-            "gemini": "Nano Banana Pro",
-            "minimax": "MiniMax Video-01",
-            "runway": "Runway Gen-4 Turbo",
-            "pika": "Pika 2.2",
-            "veo": "Google Veo 3.1 Fast",
+            "gemini": "nano-banana-pro-preview",
+            "minimax": "video-01",
+            "runway": "gen4_turbo",
+            "pika": "pika-2.2",
+            "veo": "veo-3.1-fast",
         }
-        ai_model = _provider_model_map.get(ai_provider, ai_provider)
+        ai_model_id = _provider_model_map.get(ai_provider, "")
+        # Try to get the actual model from live cache or job metadata
+        if live:
+            ai_model_id = (live.get("data") or {}).get("model") or live.get("model") or ai_model_id
+        # Look up display label from registry
+        _reg_entry = _MODEL_LOOKUP.get(ai_model_id)
+        ai_model = _reg_entry["label"] if _reg_entry else ai_model_id
 
         # Processing duration (time from creation to completion)
         duration_seconds: float | None = None
@@ -2343,26 +2545,26 @@ def list_generation_jobs_view(request: Request) -> Response:
             estimated_cost_eur = round(cost_usd * 0.92, 4)
 
         elif ai_provider == "minimax":
-            # MiniMax Video-01: $0.05 per video (fixed)
-            cost_usd = 0.05 * _variant_ct
-            estimated_cost_eur = round(cost_usd * 0.92, 4)
+            # Use model registry for model-specific pricing
+            cost_usd = _get_model_cost_usd(ai_provider, ai_model_id, _variant_ct, content_duration)
+            if cost_usd is not None:
+                estimated_cost_eur = round(cost_usd * 0.92, 4)
 
         elif ai_provider == "runway":
-            # Runway Gen-4 Turbo: ~5 credits/s, ~$0.096/s
-            dur = content_duration or 5
-            cost_usd = 0.096 * dur * _variant_ct
-            estimated_cost_eur = round(cost_usd * 0.92, 4)
+            # Use model registry — picks up gen4 vs gen4_turbo pricing
+            cost_usd = _get_model_cost_usd(ai_provider, ai_model_id, _variant_ct, content_duration)
+            if cost_usd is not None:
+                estimated_cost_eur = round(cost_usd * 0.92, 4)
 
         elif ai_provider == "pika":
-            # Pika 2.2 via fal.ai: ~$0.05/s
-            dur = content_duration or 5
-            cost_usd = 0.05 * dur * _variant_ct
-            estimated_cost_eur = round(cost_usd * 0.92, 4)
+            cost_usd = _get_model_cost_usd(ai_provider, ai_model_id, _variant_ct, content_duration)
+            if cost_usd is not None:
+                estimated_cost_eur = round(cost_usd * 0.92, 4)
 
         elif ai_provider == "veo":
-            # Veo 3.1 Fast: $0.15 per video (720p/1080p)
-            cost_usd = 0.15 * _variant_ct
-            estimated_cost_eur = round(cost_usd * 0.92, 4)
+            cost_usd = _get_model_cost_usd(ai_provider, ai_model_id, _variant_ct, content_duration)
+            if cost_usd is not None:
+                estimated_cost_eur = round(cost_usd * 0.92, 4)
 
         results.append(
             {

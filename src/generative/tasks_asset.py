@@ -192,6 +192,7 @@ def generate_asset_task(
     organisation_id: str | None = None,
     storage_context: dict[str, Any] | None = None,
     provider: str | None = None,
+    model: str | None = None,
 ) -> dict[str, Any]:
     """Process an AI asset generation job through the rate-limited queue.
 
@@ -281,6 +282,7 @@ def generate_asset_task(
                 storage_context=storage_context or {},
                 provider=effective_provider,
                 explicit_provider=provider,
+                model=model,
             )
         else:
             return _process_images(
@@ -294,6 +296,7 @@ def generate_asset_task(
                 organisation_id=organisation_id,
                 storage_context=storage_context or {},
                 provider=effective_provider,
+                model=model,
             )
     except Exception as exc:
         logger.exception("Asset generation failed for job %s: %s", job_id, exc)
@@ -326,6 +329,7 @@ def _process_images(
     organisation_id: str | None,
     storage_context: dict[str, Any],
     provider: str,
+    model: str | None = None,
 ) -> dict[str, Any]:
     """Generate images via Gemini, upload all variants to storage, store in DB."""
     from .services.asset_pipeline import generate_asset
@@ -345,6 +349,7 @@ def _process_images(
         params=params,
         input_images=input_images,
         variant_count=variant_count,
+        model=model,
     )
     elapsed = time.time() - t0
 
@@ -466,6 +471,7 @@ def _process_video(
     storage_context: dict[str, Any],
     provider: str,
     explicit_provider: str | None = None,
+    model: str | None = None,
 ) -> dict[str, Any]:
     """Generate video via MiniMax/Runway/Veo with status tracking.
 
@@ -492,6 +498,7 @@ def _process_video(
         context=storage_context,
         variant_count=variant_count,
         provider=explicit_provider,
+        model=model,
     )
     elapsed = time.time() - t0
 

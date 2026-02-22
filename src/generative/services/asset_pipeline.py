@@ -666,6 +666,7 @@ def generate_asset(
     params: dict[str, str],
     input_images: dict[str, bytes],
     variant_count: int = 1,
+    model: str | None = None,
 ) -> list[dict[str, Any]]:
     """Generate asset variants using the TeamReel prompt pipeline.
 
@@ -767,6 +768,13 @@ def generate_asset(
 
     client = genai.Client(api_key=api_key)
 
+    # Resolve image generation model (user override or default)
+    image_model = model or "models/nano-banana-pro-preview"
+    # Ensure model has "models/" prefix for Gemini API
+    if not image_model.startswith("models/"):
+        image_model = f"models/{image_model}"
+    logger.info("Using image model: %s", image_model)
+
     results = []
     for i in range(variant_count):
         # Inter-request delay to prevent Gemini rate limiting (skip first)
@@ -791,7 +799,7 @@ def generate_asset(
             # We rely on the prompt instructions for image aspect ratio.
 
             response = client.models.generate_content(
-                model="models/nano-banana-pro-preview",
+                model=image_model,
                 contents=content_parts,
                 config=types.GenerateContentConfig(
                     response_modalities=["IMAGE", "TEXT"],
@@ -930,6 +938,7 @@ def generate_video(
     max_wait_seconds: int = 300,
     variant_count: int = 1,
     provider: str | None = None,
+    model: str | None = None,
 ) -> dict[str, Any]:
     """Generate a short video using MiniMax, Runway, Pika, or Google Veo.
 
@@ -1032,6 +1041,7 @@ def generate_video(
             context=context,
             api_key=runway_key,
             variant_count=variant_count,
+            model_override=model,
         )
     elif provider == "minimax":
         if not minimax_key:
@@ -1049,6 +1059,7 @@ def generate_video(
             api_key=minimax_key,
             group_id=minimax_group,
             variant_count=variant_count,
+            model_override=model,
         )
     elif provider == "pika":
         if not pika_key:
@@ -1083,6 +1094,7 @@ def generate_video(
             poll_interval=poll_interval,
             max_wait_seconds=max_wait_seconds,
             variant_count=variant_count,
+            model_override=model,
         )
 
     # Auto-select provider based on available API keys
@@ -1100,6 +1112,7 @@ def generate_video(
             api_key=minimax_key,
             group_id=minimax_group,
             variant_count=variant_count,
+            model_override=model,
         )
     elif runway_key:
         logger.info("Using Runway Gen provider (auto-fallback) for video generation")
@@ -1114,6 +1127,7 @@ def generate_video(
             context=context,
             api_key=runway_key,
             variant_count=variant_count,
+            model_override=model,
         )
     elif pika_key:
         logger.info("Using Pika 2.2 provider (auto-fallback) for video generation")
@@ -1146,6 +1160,7 @@ def generate_video(
             poll_interval=poll_interval,
             max_wait_seconds=max_wait_seconds,
             variant_count=variant_count,
+            model_override=model,
         )
     else:
         raise ValueError(
@@ -1172,6 +1187,7 @@ def _generate_video_minimax(
     api_key: str,
     group_id: str | None,
     variant_count: int = 1,
+    model_override: str | None = None,
 ) -> dict[str, Any]:
     """Generate video using MiniMax (Hailuo) video-01 model.
 
@@ -1185,7 +1201,7 @@ def _generate_video_minimax(
     from .minimax_client import MiniMaxClient
 
     video_config = template.get("video_config", {})
-    model = video_config.get("minimax_model", "video-01")
+    model = model_override or video_config.get("minimax_model", "video-01")
 
     # MiniMax supports max 2000 chars prompt
     if len(final_prompt) > 2000:
@@ -1368,6 +1384,7 @@ def _generate_video_runway(
     context: dict | None,
     api_key: str,
     variant_count: int = 1,
+    model_override: str | None = None,
 ) -> dict[str, Any]:
     """Generate video using Runway Gen models (gen4_turbo, gen4.5).
 
@@ -1382,7 +1399,7 @@ def _generate_video_runway(
     from .runway_client import RunwayClient
 
     video_config = template.get("video_config", {})
-    model = video_config.get("runway_model", "gen4_turbo")
+    model = model_override or video_config.get("runway_model", "gen4_turbo")
     duration = video_config.get("duration_seconds", 5)
     aspect_ratio = video_config.get("aspect_ratio", "9:16")
 
@@ -1773,6 +1790,7 @@ def _generate_video_veo(
     poll_interval: int = 10,
     max_wait_seconds: int = 300,
     variant_count: int = 1,
+    model_override: str | None = None,
 ) -> dict[str, Any]:
     """Generate video using Google Veo 3.1 (legacy fallback).
 
@@ -1785,6 +1803,12 @@ def _generate_video_veo(
     client = genai.Client(api_key=api_key)
 
     video_config = template.get("video_config", {})
+    # Map model registry IDs to Veo API model strings
+    _veo_model_map = {
+        "veo-3.1-fast": "veo-3.1-fast-generate-preview",
+        "veo-3.1-generate": "veo-3.1-generate-preview",
+    }
+    veo_model = _veo_model_map.get(model_override or "", "veo-3.1-fast-generate-preview")
     duration = video_config.get(
         "duration_seconds", 4
     )  # 4s default (reduced from 6s for cost/speed)
@@ -1809,14 +1833,14 @@ def _generate_video_veo(
     try:
         if person_img:
             operation = client.models.generate_videos(
-                model="veo-3.1-fast-generate-preview",
+                model=veo_model,
                 prompt=final_prompt,
                 image=image_obj,
                 config=veo_config,
             )
         else:
             operation = client.models.generate_videos(
-                model="veo-3.1-fast-generate-preview",
+                model=veo_model,
                 prompt=final_prompt,
                 config=veo_config,
             )
