@@ -3183,20 +3183,31 @@ def _propagate_approved_image_to_brand(job) -> None:  # noqa: ANN001
             metadata={"source": "ai_generation_approved", "asset_type": asset_type},
         )
 
-    # Create / update BrandAsset.
+    # Create / update BrandAsset — scoped to the exact project (team or club),
+    # NOT walking up the hierarchy.  This prevents a team-level generation
+    # from overwriting the club-level asset.
     BrandProfile = apps.get_model("branding", "BrandProfile")
     BrandAsset = apps.get_model("branding", "BrandAsset")
 
-    brand_profile = BrandProfile.get_effective_brand(
-        organisation=organisation,
-        project=project,
-    )
-    if not brand_profile:
-        brand_profile = BrandProfile.objects.create(
-            organisation=organisation,
-            name=f"{organisation.name} Brand",
-            is_active=True,
-        )
+    brand_profile = None
+    if project:
+        brand_profile = BrandProfile.objects.filter(project=project, is_active=True).first()
+        if not brand_profile:
+            brand_profile = BrandProfile.objects.create(
+                project=project,
+                name=f"{project.name} Brand",
+                is_active=True,
+            )
+    else:
+        brand_profile = BrandProfile.objects.filter(
+            organisation=organisation, project__isnull=True, is_active=True
+        ).first()
+        if not brand_profile:
+            brand_profile = BrandProfile.objects.create(
+                organisation=organisation,
+                name=f"{organisation.name} Brand",
+                is_active=True,
+            )
 
     brand_asset, created = BrandAsset.objects.update_or_create(
         profile=brand_profile,
