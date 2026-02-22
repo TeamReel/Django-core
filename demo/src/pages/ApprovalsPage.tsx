@@ -213,6 +213,13 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
               {reviewList.length > 0 && ` · ${currentIdx + 1} van ${reviewList.length}`}
               {variants.length > 1 && ` · ${variants.length} varianten`}
             </div>
+            {(job.provider || job.model || job.duration_seconds != null) && (
+              <div style={{ fontSize: 10, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {job.provider && <span>🤖 <strong>{job.provider}</strong></span>}
+                {job.model && <span>📦 {job.model}</span>}
+                {job.duration_seconds != null && <span>⏱️ {job.duration_seconds < 60 ? `${Math.round(job.duration_seconds)}s` : `${Math.floor(job.duration_seconds / 60)}m ${Math.round(job.duration_seconds % 60)}s`}</span>}
+              </div>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
             <button disabled={!hasPrev} onClick={() => onReviewed('__prev__', 'approve')} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasPrev ? 'pointer' : 'default', opacity: hasPrev ? 1 : 0.3, fontSize: 16 }}>&#8249;</button>
@@ -642,7 +649,13 @@ export default function ApprovalsPage() {
                     <span style={{ fontSize: 20, flexShrink: 0 }}>{statusIcon[job.status]}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)', marginBottom: 2 }}>{job.label || job.template_id}</div>
-                      <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>{job.output_type} · {new Date(job.created_at).toLocaleString()}</div>
+                      <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
+                        {job.output_type} · {new Date(job.created_at).toLocaleString()}
+                        {job.provider && <> · <span style={{ fontWeight: 600 }}>{job.provider}</span></>}
+                        {job.model && <> · {job.model}</>}
+                        {job.duration_seconds != null && <> · {job.duration_seconds < 60 ? `${Math.round(job.duration_seconds)}s` : `${Math.floor(job.duration_seconds / 60)}m ${Math.round(job.duration_seconds % 60)}s`}</>}
+                        {(job.variant_count ?? 0) > 1 && <> · {job.variant_count} varianten</>}
+                      </div>
                       {isActive && (
                         <div style={{ height: 3, backgroundColor: '#e5e7eb', borderRadius: 99, overflow: 'hidden', marginTop: 6 }}>
                           <div style={{ height: '100%', width: `${job.progress || 0}%`, backgroundColor: '#2563eb', borderRadius: 99, transition: 'width 0.4s ease', minWidth: job.progress ? 0 : '8%' }} />

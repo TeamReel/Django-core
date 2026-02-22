@@ -43,6 +43,11 @@ export interface GenerationJob {
   created_at: string;
   updated_at: string;
   completed_at: string | null;
+  // AI metadata
+  provider: string | null;
+  model: string | null;
+  duration_seconds: number | null;
+  variant_count: number | null;
 }
 
 export interface UseGenerationJobsOptions {

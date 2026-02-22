@@ -2196,6 +2196,27 @@ def list_generation_jobs_view(request: Request) -> Response:
             if first_fresh:
                 primary_url = first_fresh
 
+        # ── AI metadata: provider, model, duration ──────────────────────
+        ai_provider = (live or {}).get("provider", "")
+        if not ai_provider:
+            # Infer provider from output_type when cache is expired
+            ai_provider = "gemini" if job.output_type == "image" else "minimax"
+
+        # Model name inference from provider
+        _provider_model_map = {
+            "gemini": "Gemini 2.0 Flash",
+            "minimax": "MiniMax Video-01",
+            "runway": "Runway Gen-3",
+            "pika": "Pika 2.2",
+            "veo": "Google Veo 2",
+        }
+        ai_model = _provider_model_map.get(ai_provider, ai_provider)
+
+        # Duration in seconds (time from creation to completion)
+        duration_seconds: float | None = None
+        if job.completed_at and job.created_at:
+            duration_seconds = round((job.completed_at - job.created_at).total_seconds(), 1)
+
         results.append(
             {
                 "task_id": str(job.task_id),
@@ -2217,6 +2238,11 @@ def list_generation_jobs_view(request: Request) -> Response:
                 "created_at": job.created_at.isoformat(),
                 "updated_at": job.updated_at.isoformat(),
                 "completed_at": job.completed_at.isoformat() if job.completed_at else None,
+                # AI metadata
+                "provider": ai_provider,
+                "model": ai_model,
+                "duration_seconds": duration_seconds,
+                "variant_count": len(fresh_variants) or (live or {}).get("variant_count"),
             }
         )
 

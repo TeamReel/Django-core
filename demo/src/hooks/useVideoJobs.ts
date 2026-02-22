@@ -138,6 +138,8 @@ export function getJobStatusDisplay(status: VideoJobStatus): {
       return { color: '#dc2626', bgColor: '#fee2e2', icon: '❌', label: 'Failed' };
     case 'cancelled':
       return { color: '#9ca3af', bgColor: '#f3f4f6', icon: '🚫', label: 'Cancelled' };
+    default:
+      return { color: '#6b7280', bgColor: '#f3f4f6', icon: '❓', label: status || 'Unknown' };
   }
 }
 
@@ -156,6 +158,8 @@ export function getJobTypeDisplay(type: VideoJobType): {
       return { icon: '📋', label: 'Lineup' };
     case 'goal_celebration':
       return { icon: '⚽', label: 'Goal Celebration' };
+    default:
+      return { icon: '📦', label: type || 'Unknown' };
   }
 }
 
