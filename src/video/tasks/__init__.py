@@ -3,6 +3,7 @@
 from src.video.tasks.compose import compose_video
 from src.video.tasks.asset_processing import process_member_asset
 from src.video.tasks.lineup import process_lineup_video
+from src.video.tasks.then_vs_now import process_then_vs_now_video
 
 # Legacy task for backwards compatibility
 from src.video.tasks.processing import process_video_job
@@ -14,6 +15,7 @@ __all__ = [
     "generate_thumbnail",
     "compose_video",
     "process_lineup_video",
+    "process_then_vs_now_video",
     "process_member_asset",
     "process_video_job",  # Legacy
 ]

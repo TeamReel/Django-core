@@ -1187,11 +1187,6 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             },
         )
 
-        # Dispatch to Celery
-        from src.video.tasks.then_vs_now import process_then_vs_now_video
-
-        process_then_vs_now_video.delay(str(job.id))
-
         logger.info(
             "Then vs Now compilation job created: %s (type=%s, project=%s)",
             job.id,

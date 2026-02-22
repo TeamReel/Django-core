@@ -1,7 +1,7 @@
 ﻿import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import { AssetsTab } from '../../components/AssetsTab';
-import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
 import { memberHasMedia, countFilledMediaSlots, countProcessedMediaSlots, getMediaProcessingState } from '../../utils/mediaHelpers';
@@ -171,14 +171,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   // Then vs Now compilation modal state
   const [thenVsNowModalOpen, setThenVsNowModalOpen] = useState(false);
   const [thenVsNowModalType, setThenVsNowModalType] = useState<'sidebyside' | 'transformation'>('sidebyside');
-  const [thenVsNowModalStep, setThenVsNowModalStep] = useState<'members' | 'generating' | 'success' | 'error'>('members');
+  const [thenVsNowModalStep, setThenVsNowModalStep] = useState<'members' | 'generating' | 'submitted' | 'error'>('members');
   const [thenVsNowModalSelected, setThenVsNowModalSelected] = useState<Set<string>>(new Set());
   const [thenVsNowModalSearch, setThenVsNowModalSearch] = useState('');
   const [thenVsNowModalJobId, setThenVsNowModalJobId] = useState<string | null>(null);
-  const [thenVsNowModalProgress, setThenVsNowModalProgress] = useState(0);
   const [thenVsNowModalError, setThenVsNowModalError] = useState<string | null>(null);
-  const [thenVsNowModalVideoUrl, setThenVsNowModalVideoUrl] = useState<string | null>(null);
-  const thenVsNowPollRef = useRef<AbortController | null>(null);
 
   const [teamRoster, setTeamRoster] = useState<any[]>([]);
   const [teamRosterLoading, setTeamRosterLoading] = useState(false);
@@ -1178,15 +1175,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     setThenVsNowModalStep('members');
     setThenVsNowModalSearch('');
     setThenVsNowModalJobId(null);
-    setThenVsNowModalProgress(0);
     setThenVsNowModalError(null);
-    setThenVsNowModalVideoUrl(null);
     setThenVsNowModalOpen(true);
   };
 
   // Close the Then vs Now compilation modal
   const closeThenVsNowModal = () => {
-    if (thenVsNowPollRef.current) { thenVsNowPollRef.current.abort(); thenVsNowPollRef.current = null; }
     setThenVsNowModalOpen(false);
   };
 
@@ -1194,8 +1188,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const submitThenVsNowCompilation = async () => {
     setThenVsNowModalStep('generating');
     setThenVsNowModalError(null);
-    setThenVsNowModalProgress(0);
-    setThenVsNowModalVideoUrl(null);
     try {
       const projId = String((project as any)?.id || '').trim();
       if (!projId) throw new Error('No project ID available');
@@ -1221,56 +1213,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       const jobId = data.data?.id || data.id;
       setThenVsNowModalJobId(jobId);
 
-      // Poll for job status
-      const controller = new AbortController();
-      thenVsNowPollRef.current = controller;
-      let pollCount = 0;
-      const maxPolls = 360;
-
-      const pollJob = async (): Promise<void> => {
-        if (controller.signal.aborted) return;
-        if (pollCount >= maxPolls) { setThenVsNowModalError('Video processing timed out.'); setThenVsNowModalStep('error'); return; }
-        try {
-          const statusRes = await fetch(`${apiBaseUrl}/api/v1/video/jobs/${jobId}/`, {
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            signal: controller.signal,
-          });
-          if (!statusRes.ok) { pollCount++; await new Promise(r => setTimeout(r, 5000)); return pollJob(); }
-          const raw = await statusRes.json();
-          const job = raw.data || raw;
-          setThenVsNowModalProgress(job.progress_percent || 0);
-
-          if (job.status === 'completed') {
-            const outputUrl = job.output_file?.presigned_url || job.output_file?.url;
-            if (outputUrl) setThenVsNowModalVideoUrl(outputUrl);
-            setThenVsNowModalStep('success');
-            thenVsNowPollRef.current = null;
-            return;
-          }
-          if (job.status === 'failed') {
-            setThenVsNowModalError(job.error_message || 'Video processing failed.');
-            setThenVsNowModalStep('error');
-            thenVsNowPollRef.current = null;
-            return;
-          }
-          if (job.status === 'cancelled') {
-            setThenVsNowModalError('Video was cancelled.');
-            setThenVsNowModalStep('error');
-            thenVsNowPollRef.current = null;
-            return;
-          }
-          pollCount++;
-          await new Promise(r => setTimeout(r, 5000));
-          return pollJob();
-        } catch (e: any) {
-          if (e.name === 'AbortError') return;
-          pollCount++;
-          await new Promise(r => setTimeout(r, 5000));
-          return pollJob();
-        }
-      };
-      pollJob();
+      // Show "submitted" confirmation, then auto-close after 2s
+      setThenVsNowModalStep('submitted');
+      setTimeout(() => {
+        closeThenVsNowModal();
+      }, 2500);
     } catch (err: any) {
       setThenVsNowModalError(err.message || 'Failed to start compilation');
       setThenVsNowModalStep('error');
@@ -4183,26 +4130,26 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           projectId={String(project?.id || '')}
         />
 
-        {/* Then vs Now compilation modal (member picker → generating → success) */}
+        {/* Then vs Now compilation modal (member picker → submit → auto-close) */}
         {thenVsNowModalOpen && (
           <div
-            style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.6)' }}
+            style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.75)', padding: '20px' }}
             onClick={() => { if (thenVsNowModalStep !== 'generating') closeThenVsNowModal(); }}
           >
             <div
-              style={{ backgroundColor: 'var(--app-card-bg)', borderRadius: '12px', maxWidth: '640px', width: '94%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
+              style={{ backgroundColor: 'var(--app-surface, #1a1a2e)', borderRadius: '12px', maxWidth: '640px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', border: '1px solid var(--app-border, #333)' }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--app-border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--app-border, #333)' }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>
                     Then vs Now — {thenVsNowModalType === 'sidebyside' ? 'Naast Elkaar' : 'Transformatie'}
                   </h3>
                   <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '2px' }}>
                     {thenVsNowModalStep === 'members' ? 'Selecteer spelers voor de compilatie video'
-                      : thenVsNowModalStep === 'generating' ? 'Video wordt gegenereerd...'
-                      : thenVsNowModalStep === 'success' ? 'Video is klaar!'
+                      : thenVsNowModalStep === 'generating' ? 'Job wordt aangemaakt...'
+                      : thenVsNowModalStep === 'submitted' ? 'Job is gestart!'
                       : 'Er is een fout opgetreden'}
                   </div>
                 </div>
@@ -4291,35 +4238,28 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 );
               })()}
 
-              {/* Step: Generating */}
+              {/* Step: Generating (brief loading while POST in progress) */}
               {thenVsNowModalStep === 'generating' && (
                 <div style={{ padding: '40px 20px', textAlign: 'center' }}>
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>{"\u23F3"}</div>
                   <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--app-text)', marginBottom: '8px' }}>
-                    Video wordt gegenereerd...
+                    Job wordt aangemaakt...
                   </div>
-                  <div style={{ fontSize: '13px', color: 'var(--app-muted-text)', marginBottom: '20px' }}>
-                    {thenVsNowModalSelected.size} speler{thenVsNowModalSelected.size !== 1 ? 's' : ''} • Dit kan enkele minuten duren
-                  </div>
-                  {/* Progress bar */}
-                  <div style={{ width: '200px', height: '6px', borderRadius: '3px', backgroundColor: 'var(--app-border)', margin: '0 auto', overflow: 'hidden' }}>
-                    <div style={{ width: `${thenVsNowModalProgress}%`, height: '100%', backgroundColor: '#f59e0b', transition: 'width 0.5s ease', borderRadius: '3px' }} />
-                  </div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '8px' }}>{thenVsNowModalProgress}%</div>
                 </div>
               )}
 
-              {/* Step: Success */}
-              {thenVsNowModalStep === 'success' && thenVsNowModalVideoUrl && (
-                <div>
-                  {/* Video player */}
-                  <div style={{ padding: '20px', textAlign: 'center', backgroundColor: '#000' }}>
-                    <video
-                      src={thenVsNowModalVideoUrl}
-                      controls
-                      autoPlay
-                      style={{ maxWidth: '100%', maxHeight: '55vh', borderRadius: '4px' }}
-                    />
+              {/* Step: Submitted — confirmation, auto-closes */}
+              {thenVsNowModalStep === 'submitted' && (
+                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>{"\u2705"}</div>
+                  <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--app-text)', marginBottom: '8px' }}>
+                    Job gestart!
+                  </div>
+                  <div style={{ fontSize: '13px', color: 'var(--app-muted-text)', marginBottom: '12px' }}>
+                    {thenVsNowModalSelected.size} speler{thenVsNowModalSelected.size !== 1 ? 's' : ''} • Video wordt op de achtergrond verwerkt
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                    Bekijk de voortgang bij <strong>Workflow</strong> of in de <strong>Video Jobs</strong> queue.
                   </div>
                 </div>
               )}
@@ -4338,12 +4278,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               )}
 
               {/* Modal footer */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 20px', borderTop: '1px solid var(--app-border)', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 20px', borderTop: '1px solid var(--app-border, #333)', gap: '8px' }}>
                 {thenVsNowModalStep === 'members' && (
                   <>
                     <button
                       onClick={closeThenVsNowModal}
-                      style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)' }}
+                      style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2, #2a2a3e)', color: 'var(--app-text)' }}
                     >Annuleren</button>
                     <button
                       onClick={submitThenVsNowCompilation}
@@ -4356,33 +4296,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     >{"\uD83C\uDFAC"} Genereer Video ({thenVsNowModalSelected.size})</button>
                   </>
                 )}
-                {thenVsNowModalStep === 'success' && (
-                  <>
-                    <a
-                      href={thenVsNowModalVideoUrl || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)', textDecoration: 'none', cursor: 'pointer' }}
-                    >{"\u2B07\uFE0F"} Download</a>
-                    <button
-                      onClick={() => { setThenVsNowModalStep('members'); setThenVsNowModalVideoUrl(null); }}
-                      style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)' }}
-                    >{"\uD83D\uDD04"} Opnieuw</button>
-                    <button
-                      onClick={closeThenVsNowModal}
-                      style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)' }}
-                    >Sluiten</button>
-                  </>
+                {thenVsNowModalStep === 'submitted' && (
+                  <button
+                    onClick={closeThenVsNowModal}
+                    style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2, #2a2a3e)', color: 'var(--app-text)' }}
+                  >Sluiten</button>
                 )}
                 {thenVsNowModalStep === 'error' && (
                   <>
                     <button
                       onClick={() => setThenVsNowModalStep('members')}
-                      style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)' }}
+                      style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2, #2a2a3e)', color: 'var(--app-text)' }}
                     >{"\u2190"} Terug</button>
                     <button
                       onClick={closeThenVsNowModal}
-                      style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)' }}
+                      style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2, #2a2a3e)', color: 'var(--app-text)' }}
                     >Sluiten</button>
                   </>
                 )}

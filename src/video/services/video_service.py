@@ -201,6 +201,31 @@ class VideoService:
                     extra={"job_id": job_id},
                 )
                 self._start_match_intro_thread(threading, job_id)
+            elif job.job_type == JobType.THEN_VS_NOW:
+                # Then vs Now compilation jobs run in a background thread.
+                updated = VideoJob.objects.filter(
+                    id=job.id,
+                    status=JobStatus.QUEUED,
+                    started_at__isnull=True,
+                ).update(
+                    status=JobStatus.PROCESSING,
+                    started_at=timezone.now(),
+                    progress_percent=1,
+                    updated_at=timezone.now(),
+                )
+
+                if not updated:
+                    logger.info(
+                        "Then vs Now job dispatch skipped (already started or not queued)",
+                        extra={"job_id": job_id},
+                    )
+                    return
+
+                logger.info(
+                    "Then vs Now job - processing in background thread",
+                    extra={"job_id": job_id},
+                )
+                self._start_then_vs_now_thread(threading, job_id)
             else:
                 logger.error(
                     "Unknown job type for dispatch",
@@ -458,6 +483,73 @@ class VideoService:
         finally:
             close_old_connections()
 
+    def _start_then_vs_now_thread(self, threading_module, job_id: str) -> None:
+        thread = threading_module.Thread(
+            target=self._process_then_vs_now_sync,
+            args=(job_id,),
+            daemon=True,
+        )
+        thread.start()
+
+    def _process_then_vs_now_sync(self, job_id: str) -> None:
+        """Process Then vs Now compilation job synchronously in a background thread."""
+        from django.db import close_old_connections
+
+        from src.video.services.processors.base import JobCancelledError
+        from src.video.services.processors.then_vs_now import ThenVsNowProcessor
+
+        try:
+            close_old_connections()
+            job = VideoJob.objects.select_related("project", "preset", "created_by").get(id=job_id)
+
+            if job.status in (JobStatus.COMPLETED, JobStatus.CANCELLED):
+                return
+
+            # Mark as processing early so UI doesn't look stuck in queued.
+            if job.status == JobStatus.QUEUED:
+                job.status = JobStatus.PROCESSING
+                job.started_at = timezone.now()
+                job.progress_percent = max(int(job.progress_percent or 0), 1)
+                job.save(
+                    update_fields=[
+                        "status",
+                        "started_at",
+                        "progress_percent",
+                        "updated_at",
+                    ]
+                )
+
+            processor = ThenVsNowProcessor(job)
+            processor.execute()
+
+            logger.info("Then vs Now job processed in background thread", extra={"job_id": job_id})
+
+        except JobCancelledError:
+            try:
+                job = VideoJob.objects.get(id=job_id)
+                if job.status != JobStatus.CANCELLED:
+                    job.status = JobStatus.CANCELLED
+                job.completed_at = timezone.now()
+                job.save(update_fields=["status", "completed_at", "updated_at"])
+            except Exception:
+                pass
+            return
+
+        except Exception as exc:
+            logger.exception(
+                "Then vs Now job failed in background thread", extra={"job_id": job_id}
+            )
+            try:
+                job = VideoJob.objects.get(id=job_id)
+                job.status = JobStatus.FAILED
+                job.error_message = str(exc)[:4000]
+                job.completed_at = timezone.now()
+                job.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
+            except Exception:
+                pass
+        finally:
+            close_old_connections()
+
     def cancel_job(self, job: VideoJob) -> bool:
         """Cancel pending/queued job."""
         if job.status == JobStatus.QUEUED:
@@ -466,11 +558,12 @@ class VideoService:
             job.save(update_fields=["status", "completed_at", "updated_at"])
             return True
 
-        # Allow cancelling in-flight lineup/goal celebration/match intro jobs.
+        # Allow cancelling in-flight jobs running in background threads.
         if job.status == JobStatus.PROCESSING and job.job_type in (
             JobType.LINEUP,
             JobType.GOAL_CELEBRATION,
             JobType.MATCH_INTRO,
+            JobType.THEN_VS_NOW,
         ):
             job.status = JobStatus.CANCELLED
             job.completed_at = timezone.now()
