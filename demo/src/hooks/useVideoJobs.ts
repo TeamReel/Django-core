@@ -19,7 +19,7 @@ import { getApiBaseUrl } from '../utils/apiBase';
 // ============================================================================
 
 export type VideoJobStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled';
-export type VideoJobType = 'transcode' | 'thumbnail' | 'compose' | 'lineup' | 'goal_celebration';
+export type VideoJobType = 'transcode' | 'thumbnail' | 'compose' | 'lineup' | 'goal_celebration' | 'match_intro' | 'then_vs_now';
 
 export interface VideoPreset {
   id: string;
@@ -58,6 +58,8 @@ export interface VideoJob {
   completed_at?: string | null;
   created_at: string;
   updated_at: string;
+  output_url?: string | null;
+  thumbnail_url?: string | null;
 }
 
 export interface CreateVideoJobParams {
@@ -164,6 +166,10 @@ export function getJobTypeDisplay(type: VideoJobType): {
       return { icon: '📋', label: 'Lineup' };
     case 'goal_celebration':
       return { icon: '⚽', label: 'Goal Celebration' };
+    case 'match_intro':
+      return { icon: '🎬', label: 'Match Intro' };
+    case 'then_vs_now':
+      return { icon: '🔄', label: 'Then vs Now' };
     default:
       return { icon: '📦', label: type || 'Unknown' };
   }

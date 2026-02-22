@@ -35,6 +35,12 @@ import { ActiveJobsModal } from '../../components/ActiveJobsModal';
 import { AssetGenerationModal, type SavedAssetInfo } from '../../components/AssetGenerationModal';
 import { useBrandProfile, getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
 import {
+  useVideoJobs,
+  getJobStatusDisplay,
+  getJobTypeDisplay,
+  type VideoJob,
+} from '../../hooks/useVideoJobs';
+import {
   actionButtonStyle,
   ctaButtonStyle,
   type ActionTone,
@@ -476,6 +482,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     organisationId: String(org?.id || ''),
     autoFetch: !!teamProjectId,
   });
+
+  // ── Video processing jobs for this project (content tab gallery) ──
+  const contentProjectId = String(project?.id || '');
+  const {
+    jobs: contentVideoJobs,
+    loading: contentVideoLoading,
+    refresh: refreshContentVideoJobs,
+  } = useVideoJobs({
+    projectId: contentProjectId || null,
+    autoRefresh: true,
+    refreshInterval: 15_000,
+  });
+  const completedVideoJobs = useMemo<VideoJob[]>(() =>
+    contentVideoJobs.filter(j => j.status === 'completed' && j.output_url),
+  [contentVideoJobs]);
 
   // ── Open guest player AI generation modal ──────────────────────────
   const openGuestAiModal = useCallback((templateId: string, kitType?: string) => {
@@ -2098,13 +2119,93 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     </div>
                   </Card>
 
-                  {/* Generated Content placeholder */}
-                  <Card title="Generated Content">
-                    <div className="text-center py-8 text-gray-400">
-                      <div className="text-3xl mb-2">{"\uD83D\uDCED"}</div>
-                      <p>No content generated yet</p>
-                      <p className="text-sm">Generated graphics will appear here</p>
-                    </div>
+                  {/* Generated Content — completed video jobs */}
+                  <Card title={`Generated Content${completedVideoJobs.length ? ` (${completedVideoJobs.length})` : ''}`}>
+                    {contentVideoLoading && completedVideoJobs.length === 0 && (
+                      <div className="text-center py-8 text-gray-400">
+                        <div className="text-sm">Loading video jobs…</div>
+                      </div>
+                    )}
+                    {!contentVideoLoading && completedVideoJobs.length === 0 && (
+                      <div className="text-center py-8 text-gray-400">
+                        <div className="text-3xl mb-2">{"\uD83D\uDCED"}</div>
+                        <p>No content generated yet</p>
+                        <p className="text-sm">Generated videos will appear here</p>
+                      </div>
+                    )}
+                    {completedVideoJobs.length > 0 && (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
+                        {completedVideoJobs.map(job => {
+                          const typeDisplay = getJobTypeDisplay(job.job_type);
+                          const ago = (() => {
+                            const diff = Date.now() - new Date(job.completed_at || job.created_at).getTime();
+                            const mins = Math.floor(diff / 60000);
+                            if (mins < 60) return `${mins}m ago`;
+                            const hrs = Math.floor(mins / 60);
+                            if (hrs < 24) return `${hrs}h ago`;
+                            return `${Math.floor(hrs / 24)}d ago`;
+                          })();
+                          const fileSize = (() => {
+                            const bytes = (job as any).output_file?.size;
+                            if (!bytes) return null;
+                            if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+                            return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+                          })();
+                          return (
+                            <div
+                              key={job.id}
+                              style={{
+                                border: '1px solid var(--app-border)',
+                                borderRadius: 10,
+                                overflow: 'hidden',
+                                backgroundColor: 'var(--app-card-bg, var(--app-surface))',
+                              }}
+                            >
+                              {/* Video preview */}
+                              {job.output_url && (
+                                <video
+                                  src={job.output_url}
+                                  controls
+                                  preload="metadata"
+                                  style={{ width: '100%', maxHeight: 180, backgroundColor: '#0f172a', display: 'block' }}
+                                />
+                              )}
+                              {/* Meta */}
+                              <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text)' }}>
+                                    {typeDisplay.icon} {typeDisplay.label}
+                                  </span>
+                                  <span style={{
+                                    fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99,
+                                    color: '#059669', backgroundColor: '#d1fae5',
+                                    textTransform: 'uppercase', letterSpacing: '0.04em',
+                                  }}>
+                                    ✅ Completed
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: 11, color: 'var(--app-muted-text)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                  <span>{ago}</span>
+                                  {fileSize && <span>{fileSize}</span>}
+                                  <span style={{ fontFamily: 'monospace', fontSize: 10 }}>{job.id.slice(0, 8)}</span>
+                                </div>
+                                {job.output_url && (
+                                  <a
+                                    href={job.output_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    download
+                                    style={{ fontSize: 11, color: '#2563eb', fontWeight: 600, textDecoration: 'none', marginTop: 2 }}
+                                  >
+                                    ⬇ Download
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </Card>
                 </div>
               )}
