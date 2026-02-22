@@ -710,7 +710,14 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
       aspectRatio: '9:16',
       resolution: '720p',
     },
-    parameters: {},
+    parameters: {
+      style_variant: {
+        label: 'Transformatie Stijl',
+        type: 'select' as const,
+        options: ['hands_on_head', 'spin', 'clap', 'jersey_pull', 'arms_wide', 'fist_pump', 'snap'],
+        default: 'hands_on_head',
+      },
+    },
   },
   // ============================================================================
   // Post-Process Templates (optimize AI-generated assets for print/flyers)

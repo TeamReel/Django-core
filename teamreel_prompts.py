@@ -1042,7 +1042,14 @@ RULES:
         "output_type": "video",
         "description": "4 seconden portretvideo: de speler transformeert van legacy-look naar huidige look in tenue.",
         "input_requirements": ["person_photo", "reference_photo"],
-        "parameters": {},
+        "parameters": {
+            "style_variant": {
+                "label": "Transformatie Stijl",
+                "type": "select",
+                "options": ["hands_on_head", "spin", "clap", "jersey_pull", "arms_wide", "fist_pump", "snap"],
+                "default": "hands_on_head",
+            },
+        },
         "video_config": {
             "duration_seconds": 4,
             "fps": 30,
@@ -1058,13 +1065,13 @@ The provided image is the FIRST FRAME showing the person in their OLD / legacy a
 
 TRANSFORMATION SEQUENCE (must be precise):
 1. FRAMES 0-0.5s: The person stands still, looking at the camera. Old appearance exactly as shown in the input image.
-2. FRAMES 0.5-1.5s: The person raises both hands and places them on their head (like a surprised/amazed gesture). Expression shifts to excitement/wonder.
-3. FRAMES 1.5-3s: While hands are on head, a smooth realistic transformation happens:
+2. FRAMES 0.5-1.5s: {style_variant_label}
+3. FRAMES 1.5-3s: During this gesture/motion, a smooth realistic transformation happens:
    - Clothing morphs and changes color to modern football kit
    - The person visibly ages/matures slightly (if the legacy photo shows a younger version)
    - Hair may update to current style
    - The transformation should feel magical but REALISTIC — like a time-lapse, NOT like a cartoon or glitch effect
-4. FRAMES 3-4s: The person lowers their hands, now in their CURRENT / modern appearance. They look at themselves briefly (looking down at their new kit), then look up at the camera with a big proud smile.
+4. FRAMES 3-4s: The person completes the gesture, now in their CURRENT / modern appearance. They look at themselves briefly (looking down at their new kit), then look up at the camera with a big proud smile.
 
 BACKGROUND:
 - Plain solid color background (bright green #00FF00 or bright blue #0000FF chroma-key).
@@ -1251,6 +1258,12 @@ PARAM_RESOLVERS = {
         "fist_pump": "The player pumps one fist into the air with intensity, powerful celebration. Other arm bent at side.",
         "point_to_sky": "The player points to the sky with one index finger, emotional dedication gesture. Other hand on chest.",
         "slide": "The player drops to both knees in a knee slide, arms spread wide. Then stands back up to starting position.",
+        # Transformation poses — gesture triggers the then-vs-now morph
+        "hands_on_head": "The person raises both hands and places them on their head (like a surprised/amazed gesture). Expression shifts to excitement and wonder.",
+        "spin": "The person does a slow 360-degree spin, turning away from the camera and back. The transformation happens mid-spin as the person turns back to face the camera.",
+        "clap": "The person claps both hands together once, hard and decisive. The clap triggers the transformation. Arms then lower to reveal the new appearance.",
+        "jersey_pull": "The person grabs the front of their shirt/jersey with both hands and pulls it outward proudly. The clothing morphs in their grip as the transformation happens.",
+        "snap": "The person raises one hand and snaps their fingers dramatically. The snap triggers the transformation. Confident, cool demeanor throughout.",
     },
     "time_of_day": {
         "as_is": "Keep the original lighting and time of day as-is from the photo.",

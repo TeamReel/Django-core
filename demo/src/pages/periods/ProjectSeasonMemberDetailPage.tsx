@@ -2908,7 +2908,16 @@ export default function ProjectSeasonMemberDetailPage() {
 
                   const thenVsNowDefs = [
                     { id: 'sidebyside', templateId: 'then_vs_now_sidebyside', icon: '👫', label: 'Naast Elkaar', desc: '6 sec — kijken naar elkaar en lachen' },
-                    { id: 'transformation', templateId: 'then_vs_now_transformation', icon: '🔄', label: 'Transformatie', desc: '4 sec — legacy verandert in huidige speler' },
+                  ];
+
+                  const transformationVariantDefs = [
+                    { id: 'hands_on_head', icon: '🤯', label: 'Handen op hoofd' },
+                    { id: 'spin', icon: '🔄', label: '360° Spin' },
+                    { id: 'clap', icon: '👏', label: 'Klap' },
+                    { id: 'jersey_pull', icon: '👕', label: 'Shirt trekken' },
+                    { id: 'arms_wide', icon: '🙌', label: 'Armen wijd' },
+                    { id: 'fist_pump', icon: '✊', label: 'Vuist omhoog' },
+                    { id: 'snap', icon: '🫰', label: 'Vingerknip' },
                   ];
 
                   return (
@@ -2970,7 +2979,7 @@ export default function ProjectSeasonMemberDetailPage() {
                           </div>
                         </div>
 
-                        {/* Video variants */}
+                        {/* Side-by-side variant */}
                         <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', opacity: hasBothInputs ? 1 : 0.5 }}>
                           {thenVsNowDefs.map((variant) => {
                             const variantRaw = videoVariants.then_vs_now[variant.id];
@@ -3085,6 +3094,129 @@ export default function ProjectSeasonMemberDetailPage() {
                               </div>
                             );
                           })}
+                        </div>
+
+                        {/* Transformation variants */}
+                        <div style={{ marginTop: '28px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                            <span style={{ fontSize: '20px' }}>🔄</span>
+                            <div style={{ fontSize: '14px', fontWeight: 700 }}>Transformatie</div>
+                            <div style={{ fontSize: '11px', opacity: 0.6, marginLeft: '4px' }}>4 sec — legacy verandert in huidige speler</div>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasBothInputs ? 1 : 0.5 }}>
+                            {transformationVariantDefs.map((variant) => {
+                              const compositeKey = `transformation_${variant.id}`;
+                              // Also check legacy key (just "transformation") for backwards compat
+                              const variantRaw = videoVariants.then_vs_now[compositeKey] || (variant.id === 'hands_on_head' ? videoVariants.then_vs_now.transformation : undefined);
+                              const variantUrl = getBestUrl(variantRaw) || '';
+                              const hasVideo = Boolean(variantUrl);
+                              const resolvedUrl = hasVideo ? resolveDisplayUrl(variantUrl) : null;
+
+                              return (
+                                <div key={variant.id} style={{
+                                  border: hasVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+                                  borderRadius: '8px',
+                                  overflow: 'hidden',
+                                  background: 'var(--app-surface)',
+                                }}>
+                                  <div
+                                    onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
+                                    style={{
+                                      aspectRatio: '9/16',
+                                      background: hasVideo
+                                        ? '#000'
+                                        : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      minHeight: '180px',
+                                      position: 'relative',
+                                      cursor: hasVideo ? 'pointer' : 'default',
+                                    }}>
+                                    {hasVideo && resolvedUrl ? (
+                                      <>
+                                        <video
+                                          key={resolvedUrl}
+                                          src={resolvedUrl}
+                                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                          muted
+                                          loop
+                                          playsInline
+                                          autoPlay
+                                          onError={(e) => {
+                                            (e.target as HTMLVideoElement).style.display = 'none';
+                                          }}
+                                        />
+                                        <div style={{
+                                          position: 'absolute',
+                                          top: '6px',
+                                          right: '6px',
+                                          background: 'rgba(99, 102, 241, 0.85)',
+                                          color: '#fff',
+                                          fontSize: '9px',
+                                          fontWeight: 700,
+                                          padding: '2px 5px',
+                                          borderRadius: '4px',
+                                        }}>
+                                          AI
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                        {variant.icon}<br />Niet gegenereerd
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div style={{ padding: '10px' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                      {variant.icon} {variant.label}
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                      {hasVideo ? (
+                                        <>
+                                          <Button
+                                            size="sm"
+                                            onClick={() => openAiModal('then_vs_now_transformation', 'home', legacyFullbodyUrl, variant.id, currentFullbodyUrl)}
+                                            disabled={!hasBothInputs}
+                                            style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
+                                          >
+                                            Opnieuw
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={async () => {
+                                              if (!confirm('Weet je zeker dat je deze video wilt verwijderen?')) return;
+                                              const newVV: VideoVariantsMap = {
+                                                ...videoVariants,
+                                                then_vs_now: { ...videoVariants.then_vs_now },
+                                              };
+                                              delete newVV.then_vs_now[compositeKey];
+                                              setVideoVariants(newVV);
+                                              const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
+                                              await handleMetadataUpdate(updatedMeta);
+                                            }}
+                                            style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}
+                                          >
+                                            🗑️
+                                          </Button>
+                                        </>
+                                      ) : (
+                                        <Button
+                                          size="sm"
+                                          onClick={() => openAiModal('then_vs_now_transformation', 'home', legacyFullbodyUrl, variant.id, currentFullbodyUrl)}
+                                          disabled={!hasBothInputs}
+                                          style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                        >
+                                          ✨ Genereer
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
 
                         {!userCanEditProject && (
@@ -3650,9 +3782,11 @@ export default function ProjectSeasonMemberDetailPage() {
                   ? getBestUrl(videoVariants.celebration[`${aiSelectedKitType}_${aiSelectedStyleVariant}`]) || null
                   : aiPreselectedTemplate === 'then_vs_now_sidebyside'
                     ? getBestUrl(videoVariants.then_vs_now.sidebyside) || null
-                    : aiPreselectedTemplate === 'then_vs_now_transformation'
-                      ? getBestUrl(videoVariants.then_vs_now.transformation) || null
-                      : null
+                    : aiPreselectedTemplate === 'then_vs_now_transformation' && aiSelectedStyleVariant
+                      ? getBestUrl(videoVariants.then_vs_now[`transformation_${aiSelectedStyleVariant}`]) || getBestUrl(videoVariants.then_vs_now.transformation) || null
+                      : aiPreselectedTemplate === 'then_vs_now_transformation'
+                        ? getBestUrl(videoVariants.then_vs_now.transformation) || null
+                        : null
         }
         onAssetSaved={async (savedInfo) => {
           // Capture membershipId from URL params at call time — never rely on
@@ -3743,10 +3877,18 @@ export default function ProjectSeasonMemberDetailPage() {
               const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVariants);
               await handleMetadataUpdate(updatedMeta, saveMembershipId);
             } else if (isThenVsNow) {
-              // Then vs Now video storage: then_vs_now.sidebyside or then_vs_now.transformation
-              const variantKey = assetType === 'then_vs_now_sidebyside' ? 'sidebyside'
-                : assetType === 'then_vs_now_transformation' ? 'transformation'
-                : assetType.replace('then_vs_now_', '');
+              // Then vs Now video storage
+              // Transformation uses composite key: transformation_{style_variant}
+              // Side-by-side stays as: sidebyside
+              let variantKey: string;
+              if (assetType === 'then_vs_now_sidebyside') {
+                variantKey = 'sidebyside';
+              } else if (assetType === 'then_vs_now_transformation' && aiSelectedStyleVariant) {
+                variantKey = `transformation_${aiSelectedStyleVariant}`;
+              } else {
+                variantKey = assetType === 'then_vs_now_transformation' ? 'transformation'
+                  : assetType.replace('then_vs_now_', '');
+              }
               console.log(`🎯 Saving then_vs_now variant: ${variantKey} = ${savedUrl}`);
 
               const newVariants: AssetVariantsMap = {
