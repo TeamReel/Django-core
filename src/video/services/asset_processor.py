@@ -1,6 +1,6 @@
 """Asset processing service for raw → lineup-ready conversion.
 
-Processes member media assets (fullbody, closeup, intro, celebration)
+Processes member media assets (fullbody, closeup, intro, celebration, then_vs_now)
 to standardized lineup-ready format:
   - Background removal
   - Resize / crop to target dimensions
@@ -58,7 +58,7 @@ class AssetProcessor:
 
     Handles:
     - Images (fullbody, closeup): bg removal + resize/crop + PNG
-    - Videos (intro, celebration): bg removal + resize + re-encode MP4
+    - Videos (intro, celebration, then_vs_now): bg removal + resize + re-encode MP4
     """
 
     def process_asset(
@@ -77,7 +77,7 @@ class AssetProcessor:
 
         Args:
             raw_url: S3 path or URL to the raw asset
-            asset_type: One of 'fullbody', 'closeup', 'intro', 'celebration'
+            asset_type: One of 'fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now'
             membership_id: ProjectMembership ID (for S3 path scoping)
             kit_type: Kit type (home, away, third, goalkeeper)
             variant_id: Optional style variant (e.g. 'arms_crossed')

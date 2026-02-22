@@ -4,10 +4,11 @@ Defines the target specifications for each asset type when processing
 from "raw" (AI-generated / uploaded) to "lineup-ready" (standardized).
 
 Asset Types:
-  fullbody  — Full body in tenue (PNG, 1080×1920, transparent bg)
-  closeup   — Close-up portrait (PNG, 512×512, transparent bg)
-  intro     — Short intro video (WebM VP9, 540×960, 25fps, transparent bg via RVM)
+  fullbody    — Full body in tenue (PNG, 1080×1920, transparent bg)
+  closeup     — Close-up portrait (PNG, 512×512, transparent bg)
+  intro       — Short intro video (WebM VP9, 540×960, 25fps, transparent bg via RVM)
   celebration — Celebration video (WebM VP9, 540×960, 25fps, transparent bg via RVM)
+  then_vs_now — Then-vs-now video (WebM VP9, 540×960, 25fps, transparent bg via RVM)
 
 Variant Value Structure:
   Old: images.fullbody.home = "s3://path/to/image.png"
@@ -125,11 +126,23 @@ CELEBRATION_SPEC = VideoSpec(
     aspect_ratio="9:16",
 )
 
+THEN_VS_NOW_SPEC = VideoSpec(
+    width=540,
+    height=960,
+    format="webm",
+    fps=25,
+    codec="vp9",
+    bg_removed=True,
+    max_duration=None,
+    aspect_ratio="9:16",
+)
+
 ASSET_SPECS: dict[str, ImageSpec | VideoSpec] = {
     "fullbody": FULLBODY_SPEC,
     "closeup": CLOSEUP_SPEC,
     "intro": INTRO_SPEC,
     "celebration": CELEBRATION_SPEC,
+    "then_vs_now": THEN_VS_NOW_SPEC,
 }
 
 
