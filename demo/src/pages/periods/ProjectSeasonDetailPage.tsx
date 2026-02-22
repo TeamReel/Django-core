@@ -458,6 +458,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     autoFetch: !!clubProjectId,
   });
 
+  // ── Brand profile for team-level assets (kits may differ from club) ──
+  const teamProjectId = isTeamRoute ? (project as any)?.id : null;
+  const teamBrand = useBrandProfile({
+    projectId: teamProjectId ? String(teamProjectId) : undefined,
+    organisationId: String(org?.id || ''),
+    autoFetch: !!teamProjectId,
+  });
+
   // ── Open guest player AI generation modal ──────────────────────────
   const openGuestAiModal = useCallback((templateId: string, kitType?: string) => {
     setGuestAiPreselectedTemplate(templateId);
@@ -742,10 +750,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   }, [apiBaseUrl, project?.id]);
 
   // Build brand assets object for batch modal
+  // On team routes: prefer team-level kits, fall back to club-level
   const batchBrandAssets = useMemo(() => {
     const kits: Record<string, string | null> = {};
     for (const role of KIT_ROLES) {
-      const asset = clubBrand.getAsset?.(`kit_${role.id}_combined`) || clubBrand.getAsset?.(`kit_${role.id}`);
+      // Prefer team-level kit (if on team route), then club-level kit
+      const teamAsset = isTeamRoute
+        ? (teamBrand.getAsset?.(`kit_${role.id}_combined`) || teamBrand.getAsset?.(`kit_${role.id}`))
+        : null;
+      const clubAsset = clubBrand.getAsset?.(`kit_${role.id}_combined`) || clubBrand.getAsset?.(`kit_${role.id}`);
+      const asset = teamAsset || clubAsset;
       kits[role.id] = asset ? getAssetUrl(asset.url) : null;
     }
     return {
@@ -753,7 +767,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       sponsor: clubBrand.getAsset?.('sponsor_logo_upload') ? getAssetUrl(clubBrand.getAsset('sponsor_logo_upload')!.url) : null,
       kits,
     };
-  }, [clubBrand]);
+  }, [clubBrand, teamBrand, isTeamRoute]);
 
   // Build BatchMember objects from squad members
   const batchMembers = useMemo((): BatchMember[] => {

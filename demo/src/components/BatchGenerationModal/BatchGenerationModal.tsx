@@ -293,7 +293,9 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         personUrl = member.fullbodyUrls[kitType] || member.fullbodyUrls['home'] || member.profilePhotoUrl;
       } else if (kitType === 'legacy') {
         // Legacy kit type: use the member's legacy photo (historical photo) as person input
-        const legacyUrl = member.metadata?.teamreel_assets?.media?.legacy_photo?.url;
+        // Check new format (media.legacy_photo.url) and legacy format (old.profile_photo_url)
+        const tr = member.metadata?.teamreel_assets;
+        const legacyUrl = tr?.media?.legacy_photo?.url || tr?.old?.profile_photo_url;
         personUrl = legacyUrl || member.profilePhotoUrl;
       } else {
         personUrl = member.profilePhotoUrl;
