@@ -419,6 +419,43 @@ def _process_images(
                 }
             )
 
+    # Check if any variants succeeded — if all failed, mark job as failed
+    all_errors = [v.get("error") for v in variants if v.get("error")]
+    has_success = any(not v.get("error") for v in variants)
+
+    if not has_success and variants:
+        # All variants failed (e.g., content-blocked by AI safety filter)
+        combined_error = "; ".join(all_errors[:3])  # first 3 errors
+        set_job(
+            job_id,
+            {
+                "status": "failed",
+                "progress": 100,
+                "error": combined_error,
+                "data": {
+                    "template_id": template_id,
+                    "variant_count": 0,
+                    "variants": variants,
+                },
+            },
+        )
+        _sync_job_status(job_id, "failed", progress=100, error=combined_error)
+
+        logger.warning(
+            "Image generation job %s: all %d variants failed: %s",
+            job_id,
+            len(variants),
+            combined_error,
+        )
+
+        return {
+            "status": "failed",
+            "job_id": job_id,
+            "variant_count": 0,
+            "error": combined_error,
+            "elapsed_seconds": round(elapsed, 2),
+        }
+
     # Store in the SAME format as _run_video_generation uses
     set_job(
         job_id,
