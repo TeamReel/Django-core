@@ -158,7 +158,9 @@ const S3_REGION = 'eu-north-1';
 export function getAssetUrl(storagePath: string | null | undefined): string | null {
   if (!storagePath) return null;
   if (storagePath.startsWith('http')) return storagePath;
-  return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${storagePath}`;
+  // Encode path segments to handle spaces/special chars in S3 keys
+  const encodedPath = storagePath.split('/').map(segment => encodeURIComponent(segment)).join('/');
+  return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${encodedPath}`;
 }
 
 /**
