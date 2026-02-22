@@ -714,7 +714,15 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
       style_variant: {
         label: 'Transformatie Stijl',
         type: 'select' as const,
-        options: ['hands_on_head', 'spin', 'clap', 'jersey_pull', 'arms_wide', 'fist_pump', 'snap'],
+        options: [
+          { value: 'hands_on_head', label: 'Handen op hoofd' },
+          { value: 'spin', label: '360° Spin' },
+          { value: 'clap', label: 'Klap' },
+          { value: 'jersey_pull', label: 'Shirt trekken' },
+          { value: 'arms_wide', label: 'Armen wijd' },
+          { value: 'fist_pump', label: 'Vuist omhoog' },
+          { value: 'snap', label: 'Vingerknip' },
+        ],
         default: 'hands_on_head',
       },
     },
