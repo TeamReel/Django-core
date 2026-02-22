@@ -13,30 +13,29 @@ import {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatDuration(seconds: number | null | undefined): string {
-  if (seconds == null) return '—';
-  if (seconds < 60) return `${Math.round(seconds)}s`;
-  const m = Math.floor(seconds / 60);
-  const s = Math.round(seconds % 60);
-  return s > 0 ? `${m}m ${s}s` : `${m}m`;
+function fmtDur(s: number | null | undefined): string {
+  if (s == null) return '—';
+  if (s < 60) return `${Math.round(s)}s`;
+  const m = Math.floor(s / 60);
+  const r = Math.round(s % 60);
+  return r > 0 ? `${m}m ${r}s` : `${m}m`;
 }
 
-function formatDate(iso: string): string {
+function fmtDate(iso: string): string {
   try {
-    const d = new Date(iso);
-    return d.toLocaleDateString('nl-NL', { day: '2-digit', month: 'short', year: 'numeric' });
-  } catch {
-    return iso;
-  }
+    return new Date(iso).toLocaleDateString('nl-NL', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch { return iso; }
 }
 
-function formatTime(iso: string): string {
+function fmtTime(iso: string): string {
   try {
-    const d = new Date(iso);
-    return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-  } catch {
-    return '';
-  }
+    return new Date(iso).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  } catch { return ''; }
+}
+
+function fmtCost(eur: number | null | undefined): string {
+  if (eur == null) return '—';
+  return `€${eur.toFixed(eur < 0.01 ? 4 : 2)}`;
 }
 
 const statusColors: Record<string, { bg: string; fg: string }> = {
@@ -54,52 +53,36 @@ const approvalColors: Record<string, { bg: string; fg: string }> = {
   rejected: { bg: '#fde2e2', fg: '#991b1b' },
 };
 
-function Pill({ text, colorMap }: { text: string; colorMap: Record<string, { bg: string; fg: string }> }) {
-  const c = colorMap[text] ?? { bg: '#f3f4f6', fg: '#374151' };
+function Pill({ text, colors }: { text: string; colors: Record<string, { bg: string; fg: string }> }) {
+  const c = colors[text] ?? { bg: '#f3f4f6', fg: '#374151' };
   return (
-    <span
-      style={{
-        padding: '2px 8px',
-        borderRadius: 9999,
-        fontSize: 11,
-        fontWeight: 600,
-        background: c.bg,
-        color: c.fg,
-        whiteSpace: 'nowrap',
-      }}
-    >
+    <span style={{ padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 600, background: c.bg, color: c.fg, whiteSpace: 'nowrap' }}>
       {text.replace(/_/g, ' ')}
     </span>
   );
 }
 
-// ── Filter bar inline select style ──────────────────────────────────────────
 const selectStyle: React.CSSProperties = {
-  padding: '4px 8px',
-  fontSize: 13,
-  border: '1px solid #d1d5db',
-  borderRadius: 6,
-  background: '#fff',
-  minWidth: 100,
+  padding: '4px 8px', fontSize: 13, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', minWidth: 100,
 };
 
-// ── Main component ───────────────────────────────────────────────────────────
+type SortCol = 'created_at' | 'duration_seconds' | 'content_duration_seconds' | 'estimated_cost_eur' | 'provider' | 'status';
+
+// ── Component ────────────────────────────────────────────────────────────────
 
 export const ContentList: React.FC = () => {
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters
   const [statusFilter, setStatusFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState(''); // image | video
+  const [typeFilter, setTypeFilter] = useState('');
   const [providerFilter, setProviderFilter] = useState('');
   const [approvalFilter, setApprovalFilter] = useState('');
   const [clubFilter, setClubFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Sort
-  const [sortCol, setSortCol] = useState<'created_at' | 'duration_seconds' | 'provider' | 'status'>('created_at');
+  const [sortCol, setSortCol] = useState<SortCol>('created_at');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
@@ -107,9 +90,7 @@ export const ContentList: React.FC = () => {
     (async () => {
       try {
         const base = getApiBaseUrl();
-        const res = await fetch(`${base}/api/v1/generative/jobs/?limit=200`, {
-          credentials: 'include',
-        });
+        const res = await fetch(`${base}/api/v1/generative/jobs/?limit=200`, { credentials: 'include' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const payload = data.data ?? data;
@@ -123,99 +104,66 @@ export const ContentList: React.FC = () => {
     return () => { cancelled = true; };
   }, []);
 
-  // ── Unique values for filter dropdowns ─────────────────────────────────
   const filterOptions = useMemo(() => {
-    const statuses = new Set<string>();
-    const providers = new Set<string>();
-    const clubs = new Set<string>();
+    const statuses = new Set<string>(), providers = new Set<string>(), clubs = new Set<string>();
     for (const j of jobs) {
       statuses.add(j.status);
       if (j.provider) providers.add(j.provider);
       const club = j.club_name || j.project_name || '';
       if (club) clubs.add(club);
     }
-    return {
-      statuses: [...statuses].sort(),
-      providers: [...providers].sort(),
-      clubs: [...clubs].sort(),
-    };
+    return { statuses: [...statuses].sort(), providers: [...providers].sort(), clubs: [...clubs].sort() };
   }, [jobs]);
 
-  // ── Filtered + sorted ─────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let list = [...jobs];
-
     if (statusFilter) list = list.filter((j) => j.status === statusFilter);
     if (typeFilter) list = list.filter((j) => j.output_type === typeFilter);
     if (providerFilter) list = list.filter((j) => j.provider === providerFilter);
-    if (approvalFilter) {
-      list = list.filter((j) => (j.approval_status || 'none') === approvalFilter);
-    }
-    if (clubFilter) {
-      list = list.filter((j) => (j.club_name || j.project_name || '') === clubFilter);
-    }
+    if (approvalFilter) list = list.filter((j) => (j.approval_status || 'none') === approvalFilter);
+    if (clubFilter) list = list.filter((j) => (j.club_name || j.project_name || '') === clubFilter);
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (j) =>
-          j.label?.toLowerCase().includes(q) ||
-          j.membership_name?.toLowerCase().includes(q) ||
-          j.project_name?.toLowerCase().includes(q) ||
-          j.model?.toLowerCase().includes(q),
-      );
+      list = list.filter((j) =>
+        j.label?.toLowerCase().includes(q) || j.membership_name?.toLowerCase().includes(q) ||
+        j.project_name?.toLowerCase().includes(q) || j.model?.toLowerCase().includes(q));
     }
-
-    // Sort
     list.sort((a, b) => {
       let cmp = 0;
-      if (sortCol === 'created_at') {
-        cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      } else if (sortCol === 'duration_seconds') {
-        cmp = (a.duration_seconds ?? 0) - (b.duration_seconds ?? 0);
-      } else if (sortCol === 'provider') {
-        cmp = (a.provider ?? '').localeCompare(b.provider ?? '');
-      } else if (sortCol === 'status') {
-        cmp = (a.status ?? '').localeCompare(b.status ?? '');
-      }
+      if (sortCol === 'created_at') cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      else if (sortCol === 'duration_seconds') cmp = (a.duration_seconds ?? 0) - (b.duration_seconds ?? 0);
+      else if (sortCol === 'content_duration_seconds') cmp = (a.content_duration_seconds ?? 0) - (b.content_duration_seconds ?? 0);
+      else if (sortCol === 'estimated_cost_eur') cmp = (a.estimated_cost_eur ?? 0) - (b.estimated_cost_eur ?? 0);
+      else if (sortCol === 'provider') cmp = (a.provider ?? '').localeCompare(b.provider ?? '');
+      else if (sortCol === 'status') cmp = (a.status ?? '').localeCompare(b.status ?? '');
       return sortDir === 'asc' ? cmp : -cmp;
     });
-
     return list;
   }, [jobs, statusFilter, typeFilter, providerFilter, approvalFilter, clubFilter, searchQuery, sortCol, sortDir]);
 
-  // ── Click handler for sortable headers ─────────────────────────────────
-  const toggleSort = (col: typeof sortCol) => {
-    if (sortCol === col) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-    } else {
-      setSortCol(col);
-      setSortDir('desc');
-    }
+  const toggleSort = (col: SortCol) => {
+    if (sortCol === col) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else { setSortCol(col); setSortDir('desc'); }
   };
+  const arrow = (col: SortCol) => (sortCol === col ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '');
 
-  const sortIndicator = (col: typeof sortCol) =>
-    sortCol === col ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '';
+  const thSort: React.CSSProperties = { ...compactThStyle, cursor: 'pointer' };
+  const thSortR: React.CSSProperties = { ...compactThStyle, cursor: 'pointer', textAlign: 'right' };
 
-  // ── Render ────────────────────────────────────────────────────────────
+  const totalCost = useMemo(() => filtered.reduce((s, j) => s + (j.estimated_cost_eur ?? 0), 0), [filtered]);
+
   if (loading) return <LoadingState message="Loading content…" />;
   if (error) return <div style={{ padding: 20, color: '#991b1b' }}>Error: {error}</div>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {/* ── Filter bar ─────────────────────────────────────────────────── */}
+      {/* ── Filter bar ────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <input
-          type="text"
-          placeholder="Search label, member, model…"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ ...selectStyle, minWidth: 180 }}
-        />
+        <input type="text" placeholder="Search label, member, model…" value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)} style={{ ...selectStyle, minWidth: 180 }} />
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={selectStyle}>
           <option value="">All Status</option>
-          {filterOptions.statuses.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
+          {filterOptions.statuses.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
         <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} style={selectStyle}>
           <option value="">All Types</option>
@@ -224,9 +172,7 @@ export const ContentList: React.FC = () => {
         </select>
         <select value={providerFilter} onChange={(e) => setProviderFilter(e.target.value)} style={selectStyle}>
           <option value="">All Providers</option>
-          {filterOptions.providers.map((p) => (
-            <option key={p} value={p}>{p}</option>
-          ))}
+          {filterOptions.providers.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
         <select value={approvalFilter} onChange={(e) => setApprovalFilter(e.target.value)} style={selectStyle}>
           <option value="">All Approvals</option>
@@ -238,150 +184,76 @@ export const ContentList: React.FC = () => {
         {filterOptions.clubs.length > 1 && (
           <select value={clubFilter} onChange={(e) => setClubFilter(e.target.value)} style={selectStyle}>
             <option value="">All Clubs</option>
-            {filterOptions.clubs.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
+            {filterOptions.clubs.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         )}
         {(statusFilter || typeFilter || providerFilter || approvalFilter || clubFilter || searchQuery) && (
-          <button
-            onClick={() => {
-              setStatusFilter('');
-              setTypeFilter('');
-              setProviderFilter('');
-              setApprovalFilter('');
-              setClubFilter('');
-              setSearchQuery('');
-            }}
-            style={actionButtonStyle('neutral')}
-          >
-            Clear
-          </button>
+          <button onClick={() => { setStatusFilter(''); setTypeFilter(''); setProviderFilter(''); setApprovalFilter(''); setClubFilter(''); setSearchQuery(''); }}
+            style={actionButtonStyle('neutral')}>Clear</button>
         )}
         <span style={{ marginLeft: 'auto', fontSize: 12, color: '#9ca3af' }}>
-          {filtered.length} / {jobs.length} items
+          {filtered.length} / {jobs.length} items · Est. {fmtCost(totalCost)}
         </span>
       </div>
 
-      {/* ── Table ──────────────────────────────────────────────────────── */}
+      {/* ── Table ─────────────────────────────────────────────────────── */}
       <Card>
         <div style={{ overflowX: 'auto' }}>
           <table style={compactTableStyle}>
             <thead>
               <tr>
                 <th style={compactThStyle}>Type</th>
-                <th style={compactThStyle}>Label / Member</th>
+                <th style={compactThStyle}>Label</th>
+                <th style={compactThStyle}>Member</th>
                 <th style={compactThStyle}>Club</th>
                 <th style={compactThStyle}>Team</th>
-                <th style={{ ...compactThStyle, cursor: 'pointer' }} onClick={() => toggleSort('provider')}>
-                  Provider{sortIndicator('provider')}
-                </th>
+                <th style={thSort} onClick={() => toggleSort('provider')}>Provider{arrow('provider')}</th>
                 <th style={compactThStyle}>Model</th>
-                <th style={{ ...compactThStyle, cursor: 'pointer' }} onClick={() => toggleSort('status')}>
-                  Status{sortIndicator('status')}
-                </th>
+                <th style={thSort} onClick={() => toggleSort('status')}>Status{arrow('status')}</th>
                 <th style={compactThStyle}>Approval</th>
-                <th style={{ ...compactThStyle, cursor: 'pointer' }} onClick={() => toggleSort('created_at')}>
-                  Created{sortIndicator('created_at')}
-                </th>
-                <th style={{ ...compactThStyle, cursor: 'pointer', textAlign: 'right' }} onClick={() => toggleSort('duration_seconds')}>
-                  Duration{sortIndicator('duration_seconds')}
-                </th>
+                <th style={thSort} onClick={() => toggleSort('created_at')}>Created{arrow('created_at')}</th>
+                <th style={thSortR} onClick={() => toggleSort('duration_seconds')}>Gen. Time{arrow('duration_seconds')}</th>
+                <th style={thSortR} onClick={() => toggleSort('content_duration_seconds')}>Content Dur.{arrow('content_duration_seconds')}</th>
+                <th style={thSortR} onClick={() => toggleSort('estimated_cost_eur')}>Cost{arrow('estimated_cost_eur')}</th>
                 <th style={{ ...compactThStyle, textAlign: 'right' }}>Variants</th>
                 <th style={compactThStyle}>Preview</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={12} style={{ ...compactTdStyle, textAlign: 'center', color: '#9ca3af', padding: 24 }}>
-                    No content items found
+                <tr><td colSpan={15} style={{ ...compactTdStyle, textAlign: 'center', color: '#9ca3af', padding: 24 }}>No content items found</td></tr>
+              )}
+              {filtered.map((job) => (
+                <tr key={job.task_id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                  <td style={compactTdStyle}>
+                    <span style={{ fontSize: 15, marginRight: 3 }}>{job.output_type === 'image' ? '🖼️' : '🎬'}</span>
+                    <span style={{ fontSize: 11, color: '#6b7280' }}>{job.output_asset_type || job.output_type}</span>
+                  </td>
+                  <td style={compactTextTdStyle}>{job.label || '—'}</td>
+                  <td style={compactTextTdStyle}>{job.membership_name || '—'}</td>
+                  <td style={compactTextTdStyle}>{job.club_name || '—'}</td>
+                  <td style={compactTextTdStyle}>{job.project_name || '—'}</td>
+                  <td style={{ ...compactTdStyle, fontWeight: 600 }}>{job.provider || '—'}</td>
+                  <td style={compactTextTdStyle}>{job.model || '—'}</td>
+                  <td style={compactTdStyle}><Pill text={job.status} colors={statusColors} /></td>
+                  <td style={compactTdStyle}>
+                    {job.approval_status ? <Pill text={job.approval_status} colors={approvalColors} /> : <span style={{ fontSize: 11, color: '#d1d5db' }}>—</span>}
+                  </td>
+                  <td style={compactTdStyle}>
+                    <span style={{ fontSize: 12, whiteSpace: 'nowrap' }}>{fmtDate(job.created_at)}</span>{' '}
+                    <span style={{ fontSize: 10, color: '#9ca3af' }}>{fmtTime(job.created_at)}</span>
+                  </td>
+                  <td style={{ ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtDur(job.duration_seconds)}</td>
+                  <td style={{ ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtDur(job.content_duration_seconds)}</td>
+                  <td style={{ ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtCost(job.estimated_cost_eur)}</td>
+                  <td style={{ ...compactTdStyle, textAlign: 'right' }}>{job.variant_count ?? 0}</td>
+                  <td style={compactTdStyle}>
+                    {job.output_url
+                      ? <a href={job.output_url} target="_blank" rel="noopener noreferrer" style={{ ...actionButtonStyle('primary'), textDecoration: 'none', fontSize: 11 }}>View</a>
+                      : <span style={{ fontSize: 11, color: '#d1d5db' }}>—</span>}
                   </td>
                 </tr>
-              )}
-              {filtered.map((job) => {
-                const club = job.club_name || '';
-                const team = job.project_name || '';
-                return (
-                  <tr key={job.task_id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                    {/* Type */}
-                    <td style={compactTdStyle}>
-                      <span style={{ fontSize: 16, marginRight: 4 }}>
-                        {job.output_type === 'image' ? '🖼️' : '🎬'}
-                      </span>
-                      <span style={{ fontSize: 12, color: '#6b7280' }}>
-                        {job.output_asset_type || job.output_type}
-                      </span>
-                    </td>
-
-                    {/* Label / Member */}
-                    <td style={compactTextTdStyle}>
-                      <div style={{ fontWeight: 500, fontSize: 13 }}>{job.label || '—'}</div>
-                      {job.membership_name && (
-                        <div style={{ fontSize: 11, color: '#9ca3af' }}>{job.membership_name}</div>
-                      )}
-                    </td>
-
-                    {/* Club */}
-                    <td style={compactTextTdStyle}>{club || '—'}</td>
-
-                    {/* Team */}
-                    <td style={compactTextTdStyle}>{team || '—'}</td>
-
-                    {/* Provider */}
-                    <td style={{ ...compactTdStyle, fontWeight: 600 }}>{job.provider || '—'}</td>
-
-                    {/* Model */}
-                    <td style={compactTextTdStyle}>{job.model || '—'}</td>
-
-                    {/* Status */}
-                    <td style={compactTdStyle}>
-                      <Pill text={job.status} colorMap={statusColors} />
-                    </td>
-
-                    {/* Approval */}
-                    <td style={compactTdStyle}>
-                      {job.approval_status ? (
-                        <Pill text={job.approval_status} colorMap={approvalColors} />
-                      ) : (
-                        <span style={{ fontSize: 11, color: '#d1d5db' }}>—</span>
-                      )}
-                    </td>
-
-                    {/* Created */}
-                    <td style={compactTdStyle}>
-                      <div style={{ fontSize: 12, whiteSpace: 'nowrap' }}>{formatDate(job.created_at)}</div>
-                      <div style={{ fontSize: 10, color: '#9ca3af' }}>{formatTime(job.created_at)}</div>
-                    </td>
-
-                    {/* Duration */}
-                    <td style={{ ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                      {formatDuration(job.duration_seconds)}
-                    </td>
-
-                    {/* Variants */}
-                    <td style={{ ...compactTdStyle, textAlign: 'right' }}>
-                      {job.variant_count ?? 0}
-                    </td>
-
-                    {/* Preview */}
-                    <td style={compactTdStyle}>
-                      {job.output_url ? (
-                        <a
-                          href={job.output_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ ...actionButtonStyle('primary'), textDecoration: 'none', fontSize: 11 }}
-                        >
-                          View
-                        </a>
-                      ) : (
-                        <span style={{ fontSize: 11, color: '#d1d5db' }}>—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              ))}
             </tbody>
           </table>
         </div>

@@ -11,80 +11,23 @@ import {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatDuration(seconds: number | null | undefined): string {
-  if (seconds == null) return '—';
-  if (seconds < 60) return `${Math.round(seconds)}s`;
-  const m = Math.floor(seconds / 60);
-  const s = Math.round(seconds % 60);
-  return s > 0 ? `${m}m ${s}s` : `${m}m`;
+function fmtDur(s: number | null | undefined): string {
+  if (s == null) return '—';
+  if (s < 60) return `${Math.round(s)}s`;
+  const m = Math.floor(s / 60);
+  const r = Math.round(s % 60);
+  return r > 0 ? `${m}m ${r}s` : `${m}m`;
 }
 
-/** Colour-coded pill for status values. */
-function StatusBadge({ status, count }: { status: string; count: number }) {
-  const colors: Record<string, { bg: string; fg: string }> = {
-    completed: { bg: '#dcfce7', fg: '#166534' },
-    processing: { bg: '#dbeafe', fg: '#1e40af' },
-    queued: { bg: '#fef9c3', fg: '#854d0e' },
-    waiting: { bg: '#fef9c3', fg: '#854d0e' },
-    failed: { bg: '#fde2e2', fg: '#991b1b' },
-    cancelled: { bg: '#f3f4f6', fg: '#6b7280' },
-    pending_review: { bg: '#fef3c7', fg: '#92400e' },
-    approved: { bg: '#dcfce7', fg: '#166534' },
-    rejected: { bg: '#fde2e2', fg: '#991b1b' },
-  };
-  const c = colors[status] ?? { bg: '#f3f4f6', fg: '#374151' };
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: '2px 10px',
-        borderRadius: 9999,
-        fontSize: 12,
-        fontWeight: 600,
-        background: c.bg,
-        color: c.fg,
-      }}
-    >
-      {status.replace(/_/g, ' ')} <span style={{ fontWeight: 700 }}>{count}</span>
-    </span>
-  );
+function fmtCost(eur: number | null | undefined): string {
+  if (eur == null) return '—';
+  return `€${eur.toFixed(eur < 0.01 ? 4 : 2)}`;
 }
 
-// ── Stat card used for top-level KPIs ────────────────────────────────────────
+const rightTd: React.CSSProperties = { ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' };
+const rightTh: React.CSSProperties = { ...compactThStyle, textAlign: 'right' };
 
-function StatCard({
-  icon,
-  label,
-  value,
-  sub,
-}: {
-  icon: string;
-  label: string;
-  value: number | string;
-  sub?: string;
-}) {
-  return (
-    <div
-      style={{
-        flex: '1 1 180px',
-        padding: '16px 20px',
-        background: '#fff',
-        borderRadius: 10,
-        border: '1px solid #e5e7eb',
-        minWidth: 160,
-      }}
-    >
-      <div style={{ fontSize: 28 }}>{icon}</div>
-      <div style={{ fontSize: 24, fontWeight: 700, marginTop: 4 }}>{value}</div>
-      <div style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>{label}</div>
-      {sub && <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{sub}</div>}
-    </div>
-  );
-}
-
-// ── Main component ───────────────────────────────────────────────────────────
+// ── Component ────────────────────────────────────────────────────────────────
 
 export const ContentOverview: React.FC = () => {
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
@@ -96,9 +39,7 @@ export const ContentOverview: React.FC = () => {
     (async () => {
       try {
         const base = getApiBaseUrl();
-        const res = await fetch(`${base}/api/v1/generative/jobs/?limit=200`, {
-          credentials: 'include',
-        });
+        const res = await fetch(`${base}/api/v1/generative/jobs/?limit=200`, { credentials: 'include' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const payload = data.data ?? data;
@@ -112,190 +53,195 @@ export const ContentOverview: React.FC = () => {
     return () => { cancelled = true; };
   }, []);
 
-  // ── Derived stats ────────────────────────────────────────────────────────
+  // ── Compute all stats ──────────────────────────────────────────────────
 
-  const stats = useMemo(() => {
+  const { summary, byProvider, byClub, byStatus, byApproval } = useMemo(() => {
     const total = jobs.length;
-    const images = jobs.filter((j) => j.output_type === 'image');
-    const videos = jobs.filter((j) => j.output_type === 'video');
+    const images = jobs.filter((j) => j.output_type === 'image').length;
+    const videos = jobs.filter((j) => j.output_type === 'video').length;
+    const variants = jobs.reduce((s, j) => s + (j.variant_count ?? 0), 0);
+    const totalCost = jobs.reduce((s, j) => s + (j.estimated_cost_eur ?? 0), 0);
 
-    // By status
-    const byStatus: Record<string, number> = {};
-    for (const j of jobs) {
-      byStatus[j.status] = (byStatus[j.status] ?? 0) + 1;
-    }
-
-    // By approval status
-    const byApproval: Record<string, number> = {};
-    for (const j of jobs) {
-      const a = j.approval_status || 'none';
-      byApproval[a] = (byApproval[a] ?? 0) + 1;
-    }
-
-    // By provider
-    const byProvider: Record<string, { count: number; models: Set<string>; totalDur: number; durCount: number; images: number; videos: number }> = {};
-    for (const j of jobs) {
-      const prov = j.provider || 'unknown';
-      if (!byProvider[prov]) {
-        byProvider[prov] = { count: 0, models: new Set(), totalDur: 0, durCount: 0, images: 0, videos: 0 };
-      }
-      byProvider[prov].count++;
-      if (j.model) byProvider[prov].models.add(j.model);
-      if (j.duration_seconds != null) {
-        byProvider[prov].totalDur += j.duration_seconds;
-        byProvider[prov].durCount++;
-      }
-      if (j.output_type === 'image') byProvider[prov].images++;
-      if (j.output_type === 'video') byProvider[prov].videos++;
-    }
-
-    // By club
-    const byClub: Record<string, { count: number; images: number; videos: number }> = {};
-    for (const j of jobs) {
-      const club = j.club_name || j.project_name || 'Unknown';
-      if (!byClub[club]) byClub[club] = { count: 0, images: 0, videos: 0 };
-      byClub[club].count++;
-      if (j.output_type === 'image') byClub[club].images++;
-      if (j.output_type === 'video') byClub[club].videos++;
-    }
-
-    // Total variants produced
-    const totalVariants = jobs.reduce((acc, j) => acc + (j.variant_count ?? 0), 0);
-
-    // Average duration (completed jobs only)
     const completedWithDur = jobs.filter((j) => j.status === 'completed' && j.duration_seconds != null);
-    const avgDuration = completedWithDur.length
+    const avgGenTime = completedWithDur.length
       ? completedWithDur.reduce((s, j) => s + (j.duration_seconds ?? 0), 0) / completedWithDur.length
       : null;
+    const pendingReview = jobs.filter((j) => j.approval_status === 'pending_review').length;
+
+    // ── By provider ──────────────────────────────────────────────────
+    type ProvRow = { count: number; models: Set<string>; images: number; videos: number; totalDur: number; durN: number; cost: number };
+    const provMap: Record<string, ProvRow> = {};
+    for (const j of jobs) {
+      const p = j.provider || 'unknown';
+      if (!provMap[p]) provMap[p] = { count: 0, models: new Set(), images: 0, videos: 0, totalDur: 0, durN: 0, cost: 0 };
+      provMap[p].count++;
+      if (j.model) provMap[p].models.add(j.model);
+      if (j.output_type === 'image') provMap[p].images++;
+      if (j.output_type === 'video') provMap[p].videos++;
+      if (j.duration_seconds != null) { provMap[p].totalDur += j.duration_seconds; provMap[p].durN++; }
+      provMap[p].cost += j.estimated_cost_eur ?? 0;
+    }
+    const byProvider = Object.entries(provMap).sort((a, b) => b[1].count - a[1].count);
+
+    // ── By club ──────────────────────────────────────────────────────
+    type ClubRow = { count: number; images: number; videos: number; cost: number };
+    const clubMap: Record<string, ClubRow> = {};
+    for (const j of jobs) {
+      const c = j.club_name || j.project_name || 'Unknown';
+      if (!clubMap[c]) clubMap[c] = { count: 0, images: 0, videos: 0, cost: 0 };
+      clubMap[c].count++;
+      if (j.output_type === 'image') clubMap[c].images++;
+      if (j.output_type === 'video') clubMap[c].videos++;
+      clubMap[c].cost += j.estimated_cost_eur ?? 0;
+    }
+    const byClub = Object.entries(clubMap).sort((a, b) => b[1].count - a[1].count);
+
+    // ── By status ────────────────────────────────────────────────────
+    const statusMap: Record<string, number> = {};
+    for (const j of jobs) statusMap[j.status] = (statusMap[j.status] ?? 0) + 1;
+    const byStatus = Object.entries(statusMap).sort((a, b) => b[1] - a[1]);
+
+    // ── By approval ──────────────────────────────────────────────────
+    const apprMap: Record<string, number> = {};
+    for (const j of jobs) { const a = j.approval_status || 'none'; apprMap[a] = (apprMap[a] ?? 0) + 1; }
+    const byApproval = Object.entries(apprMap).sort((a, b) => b[1] - a[1]);
 
     return {
-      total,
-      images: images.length,
-      videos: videos.length,
-      byStatus,
-      byApproval,
+      summary: { total, images, videos, variants, totalCost, avgGenTime, pendingReview },
       byProvider,
       byClub,
-      totalVariants,
-      avgDuration,
-      pendingReview: byApproval['pending_review'] ?? 0,
+      byStatus,
+      byApproval,
     };
   }, [jobs]);
-
-  // ── Render ───────────────────────────────────────────────────────────────
 
   if (loading) return <LoadingState message="Loading content overview…" />;
   if (error) return <div style={{ padding: 20, color: '#991b1b' }}>Error: {error}</div>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* ── Top KPI cards ─────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <StatCard icon="📦" label="Total Content Items" value={stats.total} />
-        <StatCard
-          icon="🖼️"
-          label="AI Images"
-          value={stats.images}
-          sub={stats.totalVariants > 0 ? `${stats.totalVariants} variants total` : undefined}
-        />
-        <StatCard icon="🎬" label="AI Videos" value={stats.videos} />
-        <StatCard
-          icon="⏱️"
-          label="Avg. Generation Time"
-          value={formatDuration(stats.avgDuration)}
-          sub={stats.pendingReview > 0 ? `${stats.pendingReview} pending review` : undefined}
-        />
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-      {/* ── Status & Approval badges ──────────────────────────────────── */}
+      {/* ── Summary table ─────────────────────────────────────────────── */}
       <Card>
-        <div style={{ padding: 16 }}>
-          <h3 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 600 }}>Job Status</h3>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {Object.entries(stats.byStatus)
-              .sort((a, b) => b[1] - a[1])
-              .map(([s, c]) => (
-                <StatusBadge key={s} status={s} count={c} />
-              ))}
-          </div>
-
-          <h3 style={{ margin: '16px 0 10px', fontSize: 14, fontWeight: 600 }}>Approval Status</h3>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {Object.entries(stats.byApproval)
-              .sort((a, b) => b[1] - a[1])
-              .map(([s, c]) => (
-                <StatusBadge key={s} status={s} count={c} />
-              ))}
-          </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={compactTableStyle}>
+            <thead>
+              <tr>
+                <th style={compactThStyle}>Metric</th>
+                <th style={rightTh}>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style={compactTdStyle}>Total Content Items</td><td style={rightTd}>{summary.total}</td></tr>
+              <tr><td style={compactTdStyle}>🖼️ AI Images</td><td style={rightTd}>{summary.images}</td></tr>
+              <tr><td style={compactTdStyle}>🎬 AI Videos</td><td style={rightTd}>{summary.videos}</td></tr>
+              <tr><td style={compactTdStyle}>Total Variants</td><td style={rightTd}>{summary.variants}</td></tr>
+              <tr><td style={compactTdStyle}>Avg. Generation Time</td><td style={rightTd}>{fmtDur(summary.avgGenTime)}</td></tr>
+              <tr><td style={compactTdStyle}>Pending Review</td><td style={rightTd}>{summary.pendingReview}</td></tr>
+              <tr><td style={{ ...compactTdStyle, fontWeight: 600 }}>Est. Total Cost</td><td style={{ ...rightTd, fontWeight: 600 }}>{fmtCost(summary.totalCost)}</td></tr>
+            </tbody>
+          </table>
         </div>
       </Card>
 
-      {/* ── Provider / Model breakdown ────────────────────────────────── */}
+      {/* ── Status / Approval side-by-side ────────────────────────────── */}
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        <Card style={{ flex: '1 1 300px' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={compactTableStyle}>
+              <thead><tr><th style={compactThStyle}>Job Status</th><th style={rightTh}>Count</th></tr></thead>
+              <tbody>
+                {byStatus.map(([s, c]) => (
+                  <tr key={s}><td style={compactTdStyle}>{s.replace(/_/g, ' ')}</td><td style={rightTd}>{c}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+        <Card style={{ flex: '1 1 300px' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={compactTableStyle}>
+              <thead><tr><th style={compactThStyle}>Approval Status</th><th style={rightTh}>Count</th></tr></thead>
+              <tbody>
+                {byApproval.map(([s, c]) => (
+                  <tr key={s}><td style={compactTdStyle}>{s.replace(/_/g, ' ')}</td><td style={rightTd}>{c}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </div>
+
+      {/* ── Providers & Models ────────────────────────────────────────── */}
       <Card>
-        <div style={{ padding: 16 }}>
-          <h3 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 600 }}>AI Providers & Models</h3>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={compactTableStyle}>
+            <thead>
+              <tr>
+                <th style={compactThStyle}>Provider</th>
+                <th style={compactThStyle}>Model</th>
+                <th style={rightTh}>Total</th>
+                <th style={rightTh}>Images</th>
+                <th style={rightTh}>Videos</th>
+                <th style={rightTh}>Avg Gen. Time</th>
+                <th style={rightTh}>Est. Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              {byProvider.map(([prov, d]) => (
+                <tr key={prov}>
+                  <td style={{ ...compactTdStyle, fontWeight: 600 }}>{prov}</td>
+                  <td style={compactTdStyle}>{[...d.models].join(', ') || '—'}</td>
+                  <td style={rightTd}>{d.count}</td>
+                  <td style={rightTd}>{d.images}</td>
+                  <td style={rightTd}>{d.videos}</td>
+                  <td style={rightTd}>{d.durN > 0 ? fmtDur(d.totalDur / d.durN) : '—'}</td>
+                  <td style={rightTd}>{fmtCost(d.cost)}</td>
+                </tr>
+              ))}
+              {/* Totals row */}
+              {byProvider.length > 1 && (
+                <tr style={{ borderTop: '2px solid #e5e7eb', fontWeight: 600 }}>
+                  <td style={compactTdStyle}>Total</td>
+                  <td style={compactTdStyle}></td>
+                  <td style={rightTd}>{summary.total}</td>
+                  <td style={rightTd}>{summary.images}</td>
+                  <td style={rightTd}>{summary.videos}</td>
+                  <td style={rightTd}>{fmtDur(summary.avgGenTime)}</td>
+                  <td style={rightTd}>{fmtCost(summary.totalCost)}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* ── Per Club / Team ───────────────────────────────────────────── */}
+      {byClub.length > 1 && (
+        <Card>
           <div style={{ overflowX: 'auto' }}>
             <table style={compactTableStyle}>
               <thead>
                 <tr>
-                  <th style={compactThStyle}>Provider</th>
-                  <th style={compactThStyle}>Model</th>
-                  <th style={{ ...compactThStyle, textAlign: 'right' }}>Total</th>
-                  <th style={{ ...compactThStyle, textAlign: 'right' }}>Images</th>
-                  <th style={{ ...compactThStyle, textAlign: 'right' }}>Videos</th>
-                  <th style={{ ...compactThStyle, textAlign: 'right' }}>Avg Duration</th>
+                  <th style={compactThStyle}>Club / Team</th>
+                  <th style={rightTh}>Total</th>
+                  <th style={rightTh}>Images</th>
+                  <th style={rightTh}>Videos</th>
+                  <th style={rightTh}>Est. Cost</th>
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(stats.byProvider)
-                  .sort((a, b) => b[1].count - a[1].count)
-                  .map(([prov, d]) => (
-                    <tr key={prov}>
-                      <td style={{ ...compactTdStyle, fontWeight: 600 }}>{prov}</td>
-                      <td style={compactTdStyle}>{[...d.models].join(', ') || '—'}</td>
-                      <td style={{ ...compactTdStyle, textAlign: 'right' }}>{d.count}</td>
-                      <td style={{ ...compactTdStyle, textAlign: 'right' }}>{d.images}</td>
-                      <td style={{ ...compactTdStyle, textAlign: 'right' }}>{d.videos}</td>
-                      <td style={{ ...compactTdStyle, textAlign: 'right' }}>
-                        {d.durCount > 0 ? formatDuration(d.totalDur / d.durCount) : '—'}
-                      </td>
-                    </tr>
-                  ))}
+                {byClub.map(([club, d]) => (
+                  <tr key={club}>
+                    <td style={{ ...compactTdStyle, fontWeight: 500 }}>{club}</td>
+                    <td style={rightTd}>{d.count}</td>
+                    <td style={rightTd}>{d.images}</td>
+                    <td style={rightTd}>{d.videos}</td>
+                    <td style={rightTd}>{fmtCost(d.cost)}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
-          </div>
-        </div>
-      </Card>
-
-      {/* ── Per-Club breakdown ─────────────────────────────────────────── */}
-      {Object.keys(stats.byClub).length > 1 && (
-        <Card>
-          <div style={{ padding: 16 }}>
-            <h3 style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 600 }}>Content by Club / Team</h3>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={compactTableStyle}>
-                <thead>
-                  <tr>
-                    <th style={compactThStyle}>Club / Team</th>
-                    <th style={{ ...compactThStyle, textAlign: 'right' }}>Total</th>
-                    <th style={{ ...compactThStyle, textAlign: 'right' }}>Images</th>
-                    <th style={{ ...compactThStyle, textAlign: 'right' }}>Videos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(stats.byClub)
-                    .sort((a, b) => b[1].count - a[1].count)
-                    .map(([club, d]) => (
-                      <tr key={club}>
-                        <td style={{ ...compactTdStyle, fontWeight: 500 }}>{club}</td>
-                        <td style={{ ...compactTdStyle, textAlign: 'right' }}>{d.count}</td>
-                        <td style={{ ...compactTdStyle, textAlign: 'right' }}>{d.images}</td>
-                        <td style={{ ...compactTdStyle, textAlign: 'right' }}>{d.videos}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
           </div>
         </Card>
       )}

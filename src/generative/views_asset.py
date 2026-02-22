@@ -2258,10 +2258,43 @@ def list_generation_jobs_view(request: Request) -> Response:
         }
         ai_model = _provider_model_map.get(ai_provider, ai_provider)
 
-        # Duration in seconds (time from creation to completion)
+        # Processing duration (time from creation to completion)
         duration_seconds: float | None = None
         if job.completed_at and job.created_at:
             duration_seconds = round((job.completed_at - job.created_at).total_seconds(), 1)
+
+        # Content duration (video length in seconds) — from cache or persisted variants
+        content_duration: float | None = None
+        if live:
+            content_duration = (live.get("data") or {}).get("content_duration_seconds")
+        if content_duration is None and job.output_variants:
+            # Try reading from persisted variant metadata
+            for _v in job.output_variants:
+                if _v.get("content_duration_seconds") is not None:
+                    content_duration = _v["content_duration_seconds"]
+                    break
+        # Default content duration for known video providers (when not persisted)
+        if content_duration is None and job.output_type == "video" and job.status == "completed":
+            _default_content_dur = {
+                "minimax": 6,
+                "runway": 10,
+                "pika": 5,
+                "veo": 8,
+            }
+            content_duration = _default_content_dur.get(ai_provider)
+
+        # Estimated cost (EUR) per provider — approximate API pricing
+        _provider_cost_eur: dict[str, float] = {
+            "gemini": 0.01,  # Gemini Flash image generation
+            "minimax": 0.05,  # MiniMax Video-01
+            "runway": 0.50,  # Runway Gen-3 Alpha
+            "pika": 0.20,  # Pika 2.2
+            "veo": 0.45,  # Google Veo 2
+        }
+        _variant_ct = len(fresh_variants) or (live or {}).get("variant_count") or 1
+        estimated_cost_eur: float | None = None
+        if ai_provider in _provider_cost_eur:
+            estimated_cost_eur = round(_provider_cost_eur[ai_provider] * _variant_ct, 4)
 
         results.append(
             {
@@ -2288,6 +2321,8 @@ def list_generation_jobs_view(request: Request) -> Response:
                 "provider": ai_provider,
                 "model": ai_model,
                 "duration_seconds": duration_seconds,
+                "content_duration_seconds": content_duration,
+                "estimated_cost_eur": estimated_cost_eur,
                 "variant_count": len(fresh_variants) or (live or {}).get("variant_count"),
                 # Resolved names for directory display
                 "project_name": _project_name_map.get(job.project_id or "", ""),

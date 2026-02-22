@@ -528,6 +528,9 @@ def _process_video(
         storage_context=storage_context,
     )
 
+    # Extract content duration from provider metadata (video length in seconds)
+    _content_duration = result.get("metadata", {}).get("duration_seconds")
+
     # Store in the status format
     set_job(
         job_id,
@@ -538,6 +541,7 @@ def _process_video(
                 "template_id": template_id,
                 "variant_count": len(variants),
                 "variants": variants,
+                "content_duration_seconds": _content_duration,
             },
         },
     )
@@ -559,6 +563,7 @@ def _process_video(
             "mime_type": v.get("mime_type", "video/mp4"),
             "filename": v.get("filename"),
             "approved": None,
+            "content_duration_seconds": _content_duration,
         }
         for i, v in enumerate(variants)
         if not v.get("error")
