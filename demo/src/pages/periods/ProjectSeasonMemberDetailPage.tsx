@@ -1184,12 +1184,23 @@ export default function ProjectSeasonMemberDetailPage() {
     autoFetch: !!clubId,
   });
 
-  // Get effective kits from club brand
+  // Fetch team-level brand assets (kits may differ from club)
+  const teamProjectId = isTeamRoute ? project?.id : null;
+  const teamBrand = useBrandProfile({
+    projectId: teamProjectId ? String(teamProjectId) : undefined,
+    organisationId: String(org?.id || ''),
+    autoFetch: !!teamProjectId,
+  });
+
+  // Get effective kits — team brand takes priority over club brand
   const effectiveKits = useMemo(() => {
     const kits: { id: string; label: string; icon: string; url: string | null }[] = [];
     for (const role of KIT_ROLES) {
-      // Try combined first, then processed
-      let asset = clubBrand.getAsset?.(`kit_${role.id}_combined`) || clubBrand.getAsset?.(`kit_${role.id}`);
+      // Try team brand first, then club brand (combined first, then processed)
+      let asset = teamBrand.getAsset?.(`kit_${role.id}_combined`)
+        || teamBrand.getAsset?.(`kit_${role.id}`)
+        || clubBrand.getAsset?.(`kit_${role.id}_combined`)
+        || clubBrand.getAsset?.(`kit_${role.id}`);
       kits.push({
         id: role.id,
         label: role.label,
@@ -1198,7 +1209,7 @@ export default function ProjectSeasonMemberDetailPage() {
       });
     }
     return kits;
-  }, [clubBrand]);
+  }, [teamBrand, clubBrand]);
 
   // Handler to open AI modal for a specific template
   const openAiModal = (templateId: string, defaultKitType?: string, playerInTenueUrl?: string | null, styleVariant?: string | null, referenceOverride?: string | null) => {
@@ -3600,16 +3611,16 @@ export default function ProjectSeasonMemberDetailPage() {
         }}
         context="member"
         preSelectedTemplate={aiPreselectedTemplate}
-        projectId={clubId || ''}
+        projectId={isTeamRoute ? String(project?.id || '') : String(clubId || '')}
         organisationId={String(org?.id || '')}
         membershipId={membershipId}
         requireApproval={aiPreselectedTemplate === 'fullbody_in_tenue' || aiPreselectedTemplate === 'closeup_in_tenue'}
         inputAssets={{
-          logo: clubBrand.getAsset?.('logo_upload')
-            ? getAssetUrl(clubBrand.getAsset('logo_upload')!.url)
+          logo: (teamBrand.getAsset?.('logo_upload') || clubBrand.getAsset?.('logo_upload'))
+            ? getAssetUrl((teamBrand.getAsset?.('logo_upload') || clubBrand.getAsset?.('logo_upload'))!.url)
             : null,
-          sponsor: clubBrand.getAsset?.('sponsor_logo_upload')
-            ? getAssetUrl(clubBrand.getAsset('sponsor_logo_upload')!.url)
+          sponsor: (teamBrand.getAsset?.('sponsor_logo_upload') || clubBrand.getAsset?.('sponsor_logo_upload'))
+            ? getAssetUrl((teamBrand.getAsset?.('sponsor_logo_upload') || clubBrand.getAsset?.('sponsor_logo_upload'))!.url)
             : null,
           reference: aiSelectedKitUrl,
           // For intro/celebration: use player in tenue as input, otherwise use profile photo
