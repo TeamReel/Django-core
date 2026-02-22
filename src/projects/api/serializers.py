@@ -289,6 +289,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "description",
             "is_active",
             "is_private",
+            "team_type",
             "created_at",
             "updated_at",
             "archived_at",
@@ -371,6 +372,7 @@ class ProjectPublicListSerializer(serializers.ModelSerializer):
             "description",
             "is_active",
             "is_private",
+            "team_type",
             "created_at",
             "updated_at",
             "archived_at",
@@ -409,6 +411,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "description",
             "is_active",
             "is_private",
+            "team_type",
             "metadata",
             "created_at",
             "updated_at",
@@ -526,7 +529,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name", "description", "metadata"]
+        fields = ["name", "description", "metadata", "team_type"]
 
     def validate_name(self, value):
         """Validate name length and format."""

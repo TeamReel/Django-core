@@ -779,7 +779,7 @@ export default function TeamOrganisationDetailPage() {
       <div className="team-detail-page">
         <PageHeader
           title={team.name}
-          subtitle="Team overview"
+          subtitle={`${(team as any)?.team_type === 'legends' ? 'Legends' : 'Regulier'} Team`}
           breadcrumbs={[
             { label: 'Dashboard', onClick: () => navigate('/dashboard') },
             { label: org?.name || 'Federation', onClick: () => navigate(federationClubsHref) },
@@ -799,6 +799,41 @@ export default function TeamOrganisationDetailPage() {
           ]}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <select
+                value={(team as any)?.team_type || 'regular'}
+                onChange={async (e) => {
+                  const newType = e.target.value;
+                  try {
+                    const res = await fetch(
+                      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`,
+                      {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                        credentials: 'include',
+                        body: JSON.stringify({ team_type: newType }),
+                      },
+                    );
+                    if (!res.ok) throw new Error('Failed to update team type');
+                    setTeam((prev: any) => prev ? { ...prev, team_type: newType } : prev);
+                  } catch (err) {
+                    console.error('Failed to update team type:', err);
+                    alert('Kon team type niet opslaan');
+                  }
+                }}
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  border: '1px solid #e5e7eb',
+                  borderRadius: 6,
+                  padding: '4px 10px',
+                  background: (team as any)?.team_type === 'legends' ? '#fffbeb' : 'white',
+                  cursor: 'pointer',
+                  color: (team as any)?.team_type === 'legends' ? '#d97706' : '#374151',
+                }}
+              >
+                <option value="regular">Regulier</option>
+                <option value="legends">Legends</option>
+              </select>
               {(() => {
                 const isActive = !!team && String(activeContext?.team?.id ?? '') === String(team.id ?? '');
                 return (

@@ -24,6 +24,10 @@ class Project(models.Model):
     Access is controlled at the organisation level (no project-specific memberships).
     """
 
+    class TeamType(models.TextChoices):
+        REGULAR = "regular", "Regulier"
+        LEGENDS = "legends", "Legends"
+
     organisation = models.ForeignKey(
         "organisations.Organisation",
         on_delete=models.CASCADE,
@@ -78,6 +82,13 @@ class Project(models.Model):
         blank=True,
         related_name="children",
         help_text="Parent project (e.g., Club for a Team). NULL = root level.",
+    )
+
+    team_type = models.CharField(
+        max_length=20,
+        choices=TeamType.choices,
+        default=TeamType.REGULAR,
+        help_text="Team type (regular, legends). Only meaningful for child projects (teams).",
     )
 
     # B32: Sport Configuration
