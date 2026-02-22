@@ -61,6 +61,8 @@ export const ContentOverview: React.FC = () => {
     const videos = jobs.filter((j) => j.output_type === 'video').length;
     const variants = jobs.reduce((s, j) => s + (j.variant_count ?? 0), 0);
     const totalCost = jobs.reduce((s, j) => s + (j.estimated_cost_eur ?? 0), 0);
+    const totalInputTokens = jobs.reduce((s, j) => s + (j.estimated_input_tokens ?? 0), 0);
+    const totalOutputTokens = jobs.reduce((s, j) => s + (j.estimated_output_tokens ?? 0), 0);
 
     const completedWithDur = jobs.filter((j) => j.status === 'completed' && j.duration_seconds != null);
     const avgGenTime = completedWithDur.length
@@ -69,17 +71,19 @@ export const ContentOverview: React.FC = () => {
     const pendingReview = jobs.filter((j) => j.approval_status === 'pending_review').length;
 
     // ── By provider ──────────────────────────────────────────────────
-    type ProvRow = { count: number; models: Set<string>; images: number; videos: number; totalDur: number; durN: number; cost: number };
+    type ProvRow = { count: number; models: Set<string>; images: number; videos: number; totalDur: number; durN: number; cost: number; inTok: number; outTok: number };
     const provMap: Record<string, ProvRow> = {};
     for (const j of jobs) {
       const p = j.provider || 'unknown';
-      if (!provMap[p]) provMap[p] = { count: 0, models: new Set(), images: 0, videos: 0, totalDur: 0, durN: 0, cost: 0 };
+      if (!provMap[p]) provMap[p] = { count: 0, models: new Set(), images: 0, videos: 0, totalDur: 0, durN: 0, cost: 0, inTok: 0, outTok: 0 };
       provMap[p].count++;
       if (j.model) provMap[p].models.add(j.model);
       if (j.output_type === 'image') provMap[p].images++;
       if (j.output_type === 'video') provMap[p].videos++;
       if (j.duration_seconds != null) { provMap[p].totalDur += j.duration_seconds; provMap[p].durN++; }
       provMap[p].cost += j.estimated_cost_eur ?? 0;
+      provMap[p].inTok += j.estimated_input_tokens ?? 0;
+      provMap[p].outTok += j.estimated_output_tokens ?? 0;
     }
     const byProvider = Object.entries(provMap).sort((a, b) => b[1].count - a[1].count);
 
@@ -107,7 +111,7 @@ export const ContentOverview: React.FC = () => {
     const byApproval = Object.entries(apprMap).sort((a, b) => b[1] - a[1]);
 
     return {
-      summary: { total, images, videos, variants, totalCost, avgGenTime, pendingReview },
+      summary: { total, images, videos, variants, totalCost, totalInputTokens, totalOutputTokens, avgGenTime, pendingReview },
       byProvider,
       byClub,
       byStatus,
@@ -137,6 +141,8 @@ export const ContentOverview: React.FC = () => {
               <tr><td style={compactTdStyle}>🎬 AI Videos</td><td style={rightTd}>{summary.videos}</td></tr>
               <tr><td style={compactTdStyle}>Total Variants</td><td style={rightTd}>{summary.variants}</td></tr>
               <tr><td style={compactTdStyle}>Avg. Generation Time</td><td style={rightTd}>{fmtDur(summary.avgGenTime)}</td></tr>
+              <tr><td style={compactTdStyle}>Est. Input Tokens</td><td style={rightTd}>{summary.totalInputTokens > 0 ? summary.totalInputTokens.toLocaleString('nl-NL') : '—'}</td></tr>
+              <tr><td style={compactTdStyle}>Est. Output Tokens</td><td style={rightTd}>{summary.totalOutputTokens > 0 ? summary.totalOutputTokens.toLocaleString('nl-NL') : '—'}</td></tr>
               <tr><td style={compactTdStyle}>Pending Review</td><td style={rightTd}>{summary.pendingReview}</td></tr>
               <tr><td style={{ ...compactTdStyle, fontWeight: 600 }}>Est. Total Cost</td><td style={{ ...rightTd, fontWeight: 600 }}>{fmtCost(summary.totalCost)}</td></tr>
             </tbody>
@@ -184,6 +190,7 @@ export const ContentOverview: React.FC = () => {
                 <th style={rightTh}>Images</th>
                 <th style={rightTh}>Videos</th>
                 <th style={rightTh}>Avg Gen. Time</th>
+                <th style={rightTh}>Tokens (in/out)</th>
                 <th style={rightTh}>Est. Cost</th>
               </tr>
             </thead>
@@ -196,6 +203,7 @@ export const ContentOverview: React.FC = () => {
                   <td style={rightTd}>{d.images}</td>
                   <td style={rightTd}>{d.videos}</td>
                   <td style={rightTd}>{d.durN > 0 ? fmtDur(d.totalDur / d.durN) : '—'}</td>
+                  <td style={{ ...rightTd, fontSize: 11 }}>{d.inTok > 0 || d.outTok > 0 ? `${(d.inTok / 1000).toFixed(1)}k / ${(d.outTok / 1000).toFixed(1)}k` : '—'}</td>
                   <td style={rightTd}>{fmtCost(d.cost)}</td>
                 </tr>
               ))}
@@ -208,6 +216,7 @@ export const ContentOverview: React.FC = () => {
                   <td style={rightTd}>{summary.images}</td>
                   <td style={rightTd}>{summary.videos}</td>
                   <td style={rightTd}>{fmtDur(summary.avgGenTime)}</td>
+                  <td style={{ ...rightTd, fontSize: 11 }}>{summary.totalInputTokens > 0 || summary.totalOutputTokens > 0 ? `${(summary.totalInputTokens / 1000).toFixed(1)}k / ${(summary.totalOutputTokens / 1000).toFixed(1)}k` : '—'}</td>
                   <td style={rightTd}>{fmtCost(summary.totalCost)}</td>
                 </tr>
               )}

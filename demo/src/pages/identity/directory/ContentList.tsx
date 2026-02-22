@@ -38,6 +38,12 @@ function fmtCost(eur: number | null | undefined): string {
   return `€${eur.toFixed(eur < 0.01 ? 4 : 2)}`;
 }
 
+function fmtTokens(input: number | null | undefined, output: number | null | undefined): string {
+  if (input == null && output == null) return '—';
+  const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${n}`;
+  return `${fmt(input ?? 0)} / ${fmt(output ?? 0)}`;
+}
+
 const statusColors: Record<string, { bg: string; fg: string }> = {
   completed: { bg: '#dcfce7', fg: '#166534' },
   processing: { bg: '#dbeafe', fg: '#1e40af' },
@@ -214,6 +220,7 @@ export const ContentList: React.FC = () => {
                 <th style={thSort} onClick={() => toggleSort('created_at')}>Created{arrow('created_at')}</th>
                 <th style={thSortR} onClick={() => toggleSort('duration_seconds')}>Gen. Time{arrow('duration_seconds')}</th>
                 <th style={thSortR} onClick={() => toggleSort('content_duration_seconds')}>Content Dur.{arrow('content_duration_seconds')}</th>
+                <th style={{ ...compactThStyle, textAlign: 'right' }}>Tokens (in/out)</th>
                 <th style={thSortR} onClick={() => toggleSort('estimated_cost_eur')}>Cost{arrow('estimated_cost_eur')}</th>
                 <th style={{ ...compactThStyle, textAlign: 'right' }}>Variants</th>
                 <th style={compactThStyle}>Preview</th>
@@ -221,7 +228,7 @@ export const ContentList: React.FC = () => {
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={15} style={{ ...compactTdStyle, textAlign: 'center', color: '#9ca3af', padding: 24 }}>No content items found</td></tr>
+                <tr><td colSpan={16} style={{ ...compactTdStyle, textAlign: 'center', color: '#9ca3af', padding: 24 }}>No content items found</td></tr>
               )}
               {filtered.map((job) => (
                 <tr key={job.task_id} style={{ borderBottom: '1px solid #f3f4f6' }}>
@@ -245,6 +252,7 @@ export const ContentList: React.FC = () => {
                   </td>
                   <td style={{ ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtDur(job.duration_seconds)}</td>
                   <td style={{ ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtDur(job.content_duration_seconds)}</td>
+                  <td style={{ ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontSize: 11 }}>{fmtTokens(job.estimated_input_tokens, job.estimated_output_tokens)}</td>
                   <td style={{ ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtCost(job.estimated_cost_eur)}</td>
                   <td style={{ ...compactTdStyle, textAlign: 'right' }}>{job.variant_count ?? 0}</td>
                   <td style={compactTdStyle}>

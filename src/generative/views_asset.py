@@ -2248,13 +2248,13 @@ def list_generation_jobs_view(request: Request) -> Response:
             # Infer provider from output_type when cache is expired
             ai_provider = "gemini" if job.output_type == "image" else "minimax"
 
-        # Model name inference from provider
+        # Model name inference from provider (updated Feb 2026)
         _provider_model_map = {
-            "gemini": "Gemini 2.0 Flash",
+            "gemini": "Nano Banana Pro",
             "minimax": "MiniMax Video-01",
-            "runway": "Runway Gen-3",
+            "runway": "Runway Gen-4 Turbo",
             "pika": "Pika 2.2",
-            "veo": "Google Veo 2",
+            "veo": "Google Veo 3.1 Fast",
         }
         ai_model = _provider_model_map.get(ai_provider, ai_provider)
 
@@ -2268,33 +2268,101 @@ def list_generation_jobs_view(request: Request) -> Response:
         if live:
             content_duration = (live.get("data") or {}).get("content_duration_seconds")
         if content_duration is None and job.output_variants:
-            # Try reading from persisted variant metadata
             for _v in job.output_variants:
                 if _v.get("content_duration_seconds") is not None:
                     content_duration = _v["content_duration_seconds"]
                     break
         # Default content duration for known video providers (when not persisted)
         if content_duration is None and job.output_type == "video" and job.status == "completed":
-            _default_content_dur = {
-                "minimax": 6,
-                "runway": 10,
-                "pika": 5,
-                "veo": 8,
-            }
+            _default_content_dur = {"minimax": 6, "runway": 5, "pika": 5, "veo": 4}
             content_duration = _default_content_dur.get(ai_provider)
 
-        # Estimated cost (EUR) per provider — approximate API pricing
-        _provider_cost_eur: dict[str, float] = {
-            "gemini": 0.01,  # Gemini Flash image generation
-            "minimax": 0.05,  # MiniMax Video-01
-            "runway": 0.50,  # Runway Gen-3 Alpha
-            "pika": 0.20,  # Pika 2.2
-            "veo": 0.45,  # Google Veo 2
-        }
+        # ── Token & Cost estimation (based on provider documentation) ────
+        #
+        # Gemini (image gen via nano-banana-pro-preview):
+        #   Input:  ~200 text tokens + 560 tokens per input image
+        #   Output: 1290 tokens per generated image (at $30/1M tokens)
+        #   Analysis step (kit analysis via gemini-2.0-flash): +760 in, +375 out
+        #   Source: https://ai.google.dev/gemini-api/docs/pricing
+        #
+        # MiniMax Video-01: $0.05/video (fixed per video, ~6s output)
+        # Runway Gen-4 Turbo: ~5 credits/s, ~$0.096/s at standard rate
+        # Pika 2.2 via fal.ai: ~$0.05/s
+        # Veo 3.1 Fast: $0.15/video (720p/1080p)
+        # EUR conversion: ×0.92
+        # ─────────────────────────────────────────────────────────────────
+
         _variant_ct = len(fresh_variants) or (live or {}).get("variant_count") or 1
+
+        # Input image count per template (for Gemini token estimation)
+        _tpl_input_images: dict[str, int] = {
+            "logo_standardize": 1,
+            "sponsor_standardize": 1,
+            "location_standardize": 1,
+            "tenue_generate": 3,
+            "legacy_tenue_generate": 3,
+            "keeper_tenue": 3,
+            "tracksuit_generate": 2,
+            "coach_outfit": 3,
+            "fullbody_in_tenue": 4,
+            "closeup_in_tenue": 4,
+        }
+        # Templates that trigger a Gemini Flash kit-analysis step
+        _tpls_with_analysis = {
+            "tenue_generate",
+            "legacy_tenue_generate",
+            "keeper_tenue",
+            "tracksuit_generate",
+            "coach_outfit",
+            "fullbody_in_tenue",
+            "closeup_in_tenue",
+        }
+
+        est_input_tokens: int | None = None
+        est_output_tokens: int | None = None
         estimated_cost_eur: float | None = None
-        if ai_provider in _provider_cost_eur:
-            estimated_cost_eur = round(_provider_cost_eur[ai_provider] * _variant_ct, 4)
+
+        if ai_provider == "gemini":
+            # Gemini image generation — token-based pricing
+            n_imgs = _tpl_input_images.get(job.template_id or "", 2)
+            has_analysis = (job.template_id or "") in _tpls_with_analysis
+
+            # Per-variant: ~200 prompt tokens + 560 per input image
+            in_per_variant = 200 + (n_imgs * 560)
+            out_per_variant = 1290  # 1 output image = 1290 tokens
+
+            # Analysis step: prompt (~200 tok) + 1 image (560 tok) → ~375 output
+            analysis_in = 760 if has_analysis else 0
+            analysis_out = 375 if has_analysis else 0
+
+            est_input_tokens = analysis_in + (in_per_variant * _variant_ct)
+            est_output_tokens = analysis_out + (out_per_variant * _variant_ct)
+
+            # Cost: input at $0.10/1M, image-output at $30/1M → convert to EUR
+            cost_usd = est_input_tokens * 0.10 / 1_000_000 + est_output_tokens * 30.0 / 1_000_000
+            estimated_cost_eur = round(cost_usd * 0.92, 4)
+
+        elif ai_provider == "minimax":
+            # MiniMax Video-01: $0.05 per video (fixed)
+            cost_usd = 0.05 * _variant_ct
+            estimated_cost_eur = round(cost_usd * 0.92, 4)
+
+        elif ai_provider == "runway":
+            # Runway Gen-4 Turbo: ~5 credits/s, ~$0.096/s
+            dur = content_duration or 5
+            cost_usd = 0.096 * dur * _variant_ct
+            estimated_cost_eur = round(cost_usd * 0.92, 4)
+
+        elif ai_provider == "pika":
+            # Pika 2.2 via fal.ai: ~$0.05/s
+            dur = content_duration or 5
+            cost_usd = 0.05 * dur * _variant_ct
+            estimated_cost_eur = round(cost_usd * 0.92, 4)
+
+        elif ai_provider == "veo":
+            # Veo 3.1 Fast: $0.15 per video (720p/1080p)
+            cost_usd = 0.15 * _variant_ct
+            estimated_cost_eur = round(cost_usd * 0.92, 4)
 
         results.append(
             {
@@ -2323,6 +2391,8 @@ def list_generation_jobs_view(request: Request) -> Response:
                 "duration_seconds": duration_seconds,
                 "content_duration_seconds": content_duration,
                 "estimated_cost_eur": estimated_cost_eur,
+                "estimated_input_tokens": est_input_tokens,
+                "estimated_output_tokens": est_output_tokens,
                 "variant_count": len(fresh_variants) or (live or {}).get("variant_count"),
                 # Resolved names for directory display
                 "project_name": _project_name_map.get(job.project_id or "", ""),

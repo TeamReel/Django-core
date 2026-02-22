@@ -49,6 +49,8 @@ export interface GenerationJob {
   duration_seconds: number | null;
   content_duration_seconds: number | null;
   estimated_cost_eur: number | null;
+  estimated_input_tokens: number | null;
+  estimated_output_tokens: number | null;
   variant_count: number | null;
   // Resolved names for directory display
   project_name: string | null;
