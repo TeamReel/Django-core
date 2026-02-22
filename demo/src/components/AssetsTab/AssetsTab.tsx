@@ -52,6 +52,10 @@ interface AssetsTabProps {
   sponsorMode?: 'club' | 'custom';
   /** Callback when sponsor mode changes */
   onSponsorModeChange?: (mode: 'club' | 'custom') => void;
+  /** Kit mode for teams: 'club' (inherit) | 'custom' (own kits) */
+  kitMode?: 'club' | 'custom';
+  /** Callback when kit mode changes */
+  onKitModeChange?: (mode: 'club' | 'custom') => void;
 }
 
 // ============================================================================
@@ -406,6 +410,8 @@ export function AssetsTab({
   readOnly = false,
   sponsorMode: externalSponsorMode,
   onSponsorModeChange,
+  kitMode: externalKitMode,
+  onKitModeChange,
 }: AssetsTabProps) {
   // Load brand profile for this entity
   const {
@@ -1073,38 +1079,161 @@ export function AssetsTab({
           </AssetGrid>
         </Section>
 
-        {/* Inherited kits */}
-        <Section title="Tenues" description="Geërfd van de club. Gecombineerd met de team-sponsor.">
-          {KIT_ROLES.slice(0, 4).map((role) => {
-            const combinedType = `kit_${role.id}_combined`;
-            const eff = getEffectiveAsset(combinedType);
-            const kitEff = getEffectiveAsset(`kit_${role.id}`);
+        {/* Tenues — inherit from club or own */}
+        <Section title="Tenues" description="Kies of dit team de club-tenues erft, of eigen tenues heeft.">
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <button
+              onClick={() => onKitModeChange?.('club')}
+              style={{
+                padding: '6px 12px',
+                fontSize: 12,
+                cursor: 'pointer',
+                background: (externalKitMode || 'club') === 'club' ? 'var(--vscode-button-background, #0078d4)' : 'transparent',
+                color: (externalKitMode || 'club') === 'club' ? 'var(--vscode-button-foreground, #fff)' : 'var(--vscode-foreground, #ccc)',
+                border: '1px solid var(--vscode-widget-border, #333)',
+                borderRadius: 4,
+              }}
+            >
+              Erven van club
+            </button>
+            <button
+              onClick={() => onKitModeChange?.('custom')}
+              style={{
+                padding: '6px 12px',
+                fontSize: 12,
+                cursor: 'pointer',
+                background: externalKitMode === 'custom' ? 'var(--vscode-button-background, #0078d4)' : 'transparent',
+                color: externalKitMode === 'custom' ? 'var(--vscode-button-foreground, #fff)' : 'var(--vscode-foreground, #ccc)',
+                border: '1px solid var(--vscode-widget-border, #333)',
+                borderRadius: 4,
+              }}
+            >
+              Eigen tenues
+            </button>
+          </div>
 
-            return (
-              <div key={role.id} style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>{role.icon} {role.label}</div>
-                <AssetGrid>
-                  <AssetCard
-                    label={`${role.label} (bewerkt)`}
-                    assetType={`kit_${role.id}`}
-                    asset={kitEff.asset}
-                    inherited={kitEff.inherited}
-                    inheritedFrom="Club"
-                    readOnly
-                  />
-                  <AssetCard
-                    label={`${role.label} (compleet)`}
-                    assetType={combinedType}
-                    asset={eff.asset}
-                    inherited={eff.inherited}
-                    inheritedFrom={eff.inherited ? 'Club' : undefined}
-                    readOnly
-                  />
-                </AssetGrid>
-              </div>
-            );
-          })}
+          {(externalKitMode || 'club') === 'club' ? (
+            // Inherited kits (read-only)
+            <>
+              {KIT_ROLES.slice(0, 4).map((role) => {
+                const combinedType = `kit_${role.id}_combined`;
+                const eff = getEffectiveAsset(combinedType);
+                const kitEff = getEffectiveAsset(`kit_${role.id}`);
+                return (
+                  <div key={role.id} style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>{role.icon} {role.label}</div>
+                    <AssetGrid>
+                      <AssetCard
+                        label={`${role.label} (bewerkt)`}
+                        assetType={`kit_${role.id}`}
+                        asset={kitEff.asset}
+                        inherited={kitEff.inherited}
+                        inheritedFrom="Club"
+                        readOnly
+                      />
+                      <AssetCard
+                        label={`${role.label} (compleet)`}
+                        assetType={combinedType}
+                        asset={eff.asset}
+                        inherited={eff.inherited}
+                        inheritedFrom={eff.inherited ? 'Club' : undefined}
+                        readOnly
+                      />
+                    </AssetGrid>
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            // Custom kits (upload + AI generate, same as club level)
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+              {KIT_ROLES.map((role) => {
+                const uploadType = `kit_${role.id}_upload`;
+                const processedType = `kit_${role.id}`;
+                return (
+                  <div key={role.id} style={{ background: '#252526', padding: 12, borderRadius: 8, border: '1px solid #333' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: 18 }}>{role.icon}</span>
+                      <span style={{ fontWeight: 600, fontSize: 13 }}>{role.label}</span>
+                    </div>
+                    <AssetGrid>
+                      <AssetCard
+                        label={`${role.label} (upload)`}
+                        assetType={uploadType}
+                        asset={getAsset(uploadType)}
+                        onUpload={handleUpload}
+                        onDelete={handleDelete}
+                      />
+                      <AssetCard
+                        label={`${role.label} (bewerkt)`}
+                        assetType={processedType}
+                        asset={getAsset(processedType)}
+                        onUpload={handleUpload}
+                        onDelete={handleDelete}
+                        onReplace={handleReplaceAi}
+                        onPostProcess={handlePostProcess}
+                        isProcessing={postProcessingAsset === processedType}
+                        onShowHistory={handleShowHistory}
+                      />
+                    </AssetGrid>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Section>
+
+        {/* Spinner animation for postprocess overlay */}
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+        {/* AI Generation Modal for team-level kits */}
+        <AssetGenerationModal
+          isOpen={showAiModal}
+          onClose={() => { setShowAiModal(false); setAiPreviousResultUrl(null); }}
+          context="club"
+          preSelectedTemplate={aiPreselectedTemplate}
+          projectId={projectId || ''}
+          organisationId={organisationId}
+          inputAssets={aiCustomInputs}
+          previousResultUrl={aiPreviousResultUrl}
+          initialParams={aiInitialParams}
+          onAssetSaved={refresh}
+        />
+
+        {/* History Modal */}
+        {showHistoryModal && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ background: '#1e1e1e', border: '1px solid #333', borderRadius: 8, padding: 20, width: 500, maxHeight: '80vh', overflow: 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                        <h3 style={{ margin: 0, fontSize: 16 }}>Versiegeschiedenis</h3>
+                        <button onClick={() => setShowHistoryModal(false)} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer' }}>✕</button>
+                    </div>
+                    {loadingHistory ? (
+                        <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>Geschiedenis laden...</div>
+                    ) : historyList.length === 0 ? (
+                        <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>Geen eerdere versies gevonden.</div>
+                    ) : (
+                        <div style={{ display: 'grid', gap: 12 }}>
+                           {historyList.map(item => (
+                               <div key={item.id} style={{ display: 'flex', gap: 12, padding: 10, background: '#252526', borderRadius: 6, alignItems: 'center' }}>
+                                   <div style={{ width: 60, height: 80, background: `url(${item.url}) center/contain no-repeat`, backgroundSize: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                                   <div style={{ flex: 1 }}>
+                                       <div style={{ fontSize: 12, fontWeight: 600 }}>{new Date(item.created_at).toLocaleString()}</div>
+                                       <div style={{ fontSize: 11, color: '#888' }}>{item.original_name}</div>
+                                   </div>
+                                   <button
+                                     onClick={() => handleRestore(item.id)}
+                                     style={{ padding: '6px 12px', background: '#094771', color: '#fff', border: 'none', borderRadius: 4, fontSize: 12, cursor: 'pointer' }}
+                                   >
+                                     Herstellen
+                                   </button>
+                               </div>
+                           ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        )}
       </div>
     );
   }

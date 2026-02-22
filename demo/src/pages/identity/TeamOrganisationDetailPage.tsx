@@ -1351,6 +1351,22 @@ export default function TeamOrganisationDetailPage() {
                   setTeam((prev) => ({ ...(prev as any), ...(updated as any) }));
                 }
               }}
+              kitMode={((team as any)?.metadata?.kit_mode as 'club' | 'custom') || 'club'}
+              onKitModeChange={async (mode) => {
+                if (!team) return;
+                const csrfToken = getCsrfToken();
+                const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json', ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}) },
+                  credentials: 'include',
+                  body: JSON.stringify({ metadata: { ...((team as any)?.metadata || {}), kit_mode: mode } }),
+                });
+                if (res.ok) {
+                  const raw = await res.json().catch(() => null);
+                  const updated: any = (raw?.data ?? raw) as any;
+                  setTeam((prev) => ({ ...(prev as any), ...(updated as any) }));
+                }
+              }}
             />
           )}
 
