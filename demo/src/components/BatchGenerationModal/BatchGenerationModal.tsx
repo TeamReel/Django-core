@@ -287,9 +287,17 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
       // — the fullbody already has the correct kit, so the closeup crops from that.
       const needsFullbodyAsInput = selectedTemplate?.outputType === 'video'
         || selectedTemplate?.category === 'closeup';
-      const personUrl = needsFullbodyAsInput
-        ? member.fullbodyUrls[kitType] || member.fullbodyUrls['home'] || member.profilePhotoUrl
-        : member.profilePhotoUrl;
+
+      let personUrl: string | null;
+      if (needsFullbodyAsInput) {
+        personUrl = member.fullbodyUrls[kitType] || member.fullbodyUrls['home'] || member.profilePhotoUrl;
+      } else if (kitType === 'legacy') {
+        // Legacy kit type: use the member's legacy photo (historical photo) as person input
+        const legacyUrl = member.metadata?.teamreel_assets?.media?.legacy_photo?.url;
+        personUrl = legacyUrl || member.profilePhotoUrl;
+      } else {
+        personUrl = member.profilePhotoUrl;
+      }
 
       return {
         logo: brandAssets.logo || null,
