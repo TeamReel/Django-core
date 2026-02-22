@@ -37,8 +37,13 @@ class VideoService:
         config: dict | None = None,
     ) -> VideoJob:
         """Create job and dispatch to Celery (placeholder)."""
-        # Lineup, goal celebration and match intro jobs don't require input_file
-        if job_type not in (JobType.LINEUP, JobType.GOAL_CELEBRATION, JobType.MATCH_INTRO):
+        # Lineup, goal celebration, match intro and then-vs-now jobs don't require input_file
+        if job_type not in (
+            JobType.LINEUP,
+            JobType.GOAL_CELEBRATION,
+            JobType.MATCH_INTRO,
+            JobType.THEN_VS_NOW,
+        ):
             if not input_file:
                 raise ValidationError({"input_file": "Input file is required"})
             self._validate_input_file(input_file)

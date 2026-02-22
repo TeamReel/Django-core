@@ -1,4 +1,4 @@
-﻿import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
+import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import { AssetsTab } from '../../components/AssetsTab';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
@@ -167,6 +167,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [thenNowSearch, setThenNowSearch] = useState('');
   const [thenNowSelectedUserIds, setThenNowSelectedUserIds] = useState<Set<string>>(new Set());
   const [thenNowLayout, setThenNowLayout] = useState<'morph' | 'side-by-side'>('morph');
+  const [compilationLoading, setCompilationLoading] = useState<string | null>(null);
+  const [compilationJobId, setCompilationJobId] = useState<string | null>(null);
+  const [compilationError, setCompilationError] = useState<string | null>(null);
 
   const [teamRoster, setTeamRoster] = useState<any[]>([]);
   const [teamRosterLoading, setTeamRosterLoading] = useState(false);
@@ -1121,6 +1124,61 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
   }, [members, thenNowSearch, getFunctionalRolesForUser]);
 
+  // Count members that have then_vs_now videos (for compilation tiles)
+  const thenVsNowCounts = useMemo(() => {
+    let sidebyside = 0;
+    let transformation = 0;
+    for (const m of members || []) {
+      const thenVsNow = m?.metadata?.teamreel_assets?.videos?.then_vs_now || {};
+      // Check sidebyside
+      const sbVariant = thenVsNow.sidebyside;
+      if (sbVariant && (sbVariant.processed || sbVariant.raw)) sidebyside++;
+      // Check transformation (base key + style variants)
+      const hasTransformation = Object.keys(thenVsNow).some((k) => {
+        if (!k.startsWith('transformation')) return false;
+        const v = thenVsNow[k];
+        return v && (v.processed || v.raw);
+      });
+      if (hasTransformation) transformation++;
+    }
+    return { sidebyside, transformation };
+  }, [members]);
+
+  // Generate Then vs Now compilation video
+  const handleGenerateThenVsNowCompilation = async (videoType: 'sidebyside' | 'transformation') => {
+    if (compilationLoading) return;
+    setCompilationLoading(videoType);
+    setCompilationError(null);
+    setCompilationJobId(null);
+    try {
+      const projId = String((project as any)?.id || '').trim();
+      if (!projId) throw new Error('No project ID available');
+      const res = await fetch(`${apiBaseUrl}/api/v1/video/jobs/then-vs-now-compilation/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          project_id: projId,
+          video_type: videoType,
+          period_id: resolvedSeasonId || effectiveSeasonId || null,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || err.detail || `Failed (${res.status})`);
+      }
+      const data = await res.json();
+      setCompilationJobId(data.id);
+    } catch (err: any) {
+      setCompilationError(err.message || 'Failed to start compilation');
+    } finally {
+      setCompilationLoading(null);
+    }
+  };
+
   const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
   const getRetryDelayMsFromResponse = async (res: Response): Promise<number | null> => {
@@ -1960,12 +2018,123 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   {/* Then & Now feature */}
                   <Card title="Then &amp; Now">
                       <div style={{ padding: '16px' }}>
+                        {/* Compilation video tiles */}
+                        <div style={{ marginBottom: '20px' }}>
+                          <div style={{ fontWeight: 800, fontSize: '14px', marginBottom: '10px' }}>Compilatie Video</div>
+                          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                            {/* Naast Elkaar tile */}
+                            <div
+                              onClick={() => thenVsNowCounts.sidebyside > 0 && !compilationLoading && handleGenerateThenVsNowCompilation('sidebyside')}
+                              title={thenVsNowCounts.sidebyside > 0
+                                ? `Generate compilation from ${thenVsNowCounts.sidebyside} member(s)`
+                                : 'No members with side-by-side videos yet'}
+                              style={{
+                                width: '160px',
+                                padding: '16px 12px',
+                                border: thenVsNowCounts.sidebyside > 0 ? '1px solid var(--app-border)' : '1px dashed var(--app-border)',
+                                borderRadius: '10px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                textAlign: 'center',
+                                cursor: thenVsNowCounts.sidebyside > 0 && !compilationLoading ? 'pointer' : 'not-allowed',
+                                opacity: thenVsNowCounts.sidebyside > 0 ? 1 : 0.5,
+                                backgroundColor: 'var(--app-card-bg)',
+                                transition: 'all 0.2s ease',
+                              }}
+                              onMouseEnter={(e) => {
+                                if (thenVsNowCounts.sidebyside > 0) {
+                                  e.currentTarget.style.borderColor = 'var(--app-primary)';
+                                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--app-border)';
+                                e.currentTarget.style.boxShadow = 'none';
+                              }}
+                            >
+                              <div style={{ fontSize: '28px', marginBottom: '6px' }}>
+                                {compilationLoading === 'sidebyside' ? '\u23F3' : '\u2194\uFE0F'}
+                              </div>
+                              <div style={{ fontWeight: 700, fontSize: '12px', color: 'var(--app-text)', lineHeight: 1.3 }}>
+                                Then vs Now
+                              </div>
+                              <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '2px' }}>
+                                Naast Elkaar
+                              </div>
+                              <div style={{ fontSize: '10px', color: 'var(--app-muted-text)', marginTop: '6px' }}>
+                                {thenVsNowCounts.sidebyside} member{thenVsNowCounts.sidebyside !== 1 ? 's' : ''}
+                              </div>
+                            </div>
+
+                            {/* Transformatie tile */}
+                            <div
+                              onClick={() => thenVsNowCounts.transformation > 0 && !compilationLoading && handleGenerateThenVsNowCompilation('transformation')}
+                              title={thenVsNowCounts.transformation > 0
+                                ? `Generate compilation from ${thenVsNowCounts.transformation} member(s)`
+                                : 'No members with transformation videos yet'}
+                              style={{
+                                width: '160px',
+                                padding: '16px 12px',
+                                border: thenVsNowCounts.transformation > 0 ? '1px solid var(--app-border)' : '1px dashed var(--app-border)',
+                                borderRadius: '10px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                textAlign: 'center',
+                                cursor: thenVsNowCounts.transformation > 0 && !compilationLoading ? 'pointer' : 'not-allowed',
+                                opacity: thenVsNowCounts.transformation > 0 ? 1 : 0.5,
+                                backgroundColor: 'var(--app-card-bg)',
+                                transition: 'all 0.2s ease',
+                              }}
+                              onMouseEnter={(e) => {
+                                if (thenVsNowCounts.transformation > 0) {
+                                  e.currentTarget.style.borderColor = 'var(--app-primary)';
+                                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--app-border)';
+                                e.currentTarget.style.boxShadow = 'none';
+                              }}
+                            >
+                              <div style={{ fontSize: '28px', marginBottom: '6px' }}>
+                                {compilationLoading === 'transformation' ? '\u23F3' : '\uD83D\uDD04'}
+                              </div>
+                              <div style={{ fontWeight: 700, fontSize: '12px', color: 'var(--app-text)', lineHeight: 1.3 }}>
+                                Then vs Now
+                              </div>
+                              <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '2px' }}>
+                                Transformatie
+                              </div>
+                              <div style={{ fontSize: '10px', color: 'var(--app-muted-text)', marginTop: '6px' }}>
+                                {thenVsNowCounts.transformation} member{thenVsNowCounts.transformation !== 1 ? 's' : ''}
+                              </div>
+                            </div>
+                          </div>
+                          {/* Status messages */}
+                          {compilationJobId && (
+                            <div style={{ marginTop: '10px', padding: '8px 12px', background: 'var(--app-success-bg, #e8f5e9)', borderRadius: '8px', fontSize: '13px', color: 'var(--app-success, #2e7d32)' }}>
+                              Video generation started! Job ID: <code style={{ fontSize: '11px' }}>{compilationJobId}</code>
+                            </div>
+                          )}
+                          {compilationError && (
+                            <div style={{ marginTop: '10px', padding: '8px 12px', background: 'var(--app-danger-bg, #fce4ec)', borderRadius: '8px', fontSize: '13px', color: 'var(--app-danger, #c62828)' }}>
+                              {compilationError}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Divider */}
+                        <div style={{ borderTop: '1px solid var(--app-border)', marginBottom: '16px' }} />
+
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                           <div>
-                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Then &amp; Now</div>
+                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Studio</div>
                             <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                              Season-wide player content (not tied to a match). Pick up to 5 players and generate either a morph video
-                              (then â†’ now) or a side-by-side montage.
+                              Pick up to 5 players and generate either a morph video or a side-by-side montage.
                             </div>
                           </div>
                           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>

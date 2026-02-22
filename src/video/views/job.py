@@ -1122,6 +1122,88 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_201_CREATED,
             )
 
+    @action(detail=False, methods=["post"], url_path="then-vs-now-compilation")
+    def then_vs_now_compilation(self, request: Request) -> Response:
+        """Create a Then vs Now compilation video job.
+
+        POST /api/v1/video/jobs/then-vs-now-compilation/
+
+        Compiles individual member then_vs_now clips into a single video
+        with a header bar (club logos + "THEN VS NOW" title), location
+        background, and per-member name labels.
+
+        Request body:
+            project_id  (str, required)  – Team project UUID.
+            video_type  (str, required)  – "sidebyside" or "transformation".
+            period_id   (str, optional)  – Season/period UUID for header text.
+            selected_member_ids (list, optional) – Restrict to these members.
+        """
+        project_id = request.data.get("project_id")
+        video_type = request.data.get("video_type")
+        period_id = request.data.get("period_id")
+        selected_member_ids = request.data.get("selected_member_ids", [])
+
+        if not project_id:
+            return Response(
+                {"error": "project_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if video_type not in ("sidebyside", "transformation"):
+            return Response(
+                {"error": "video_type must be 'sidebyside' or 'transformation'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Resolve and authorise project
+        Project = apps.get_model("projects", "Project")  # noqa: N806
+        try:
+            project = Project.objects.get(id=project_id)
+        except Project.DoesNotExist:
+            return Response(
+                {"error": "Project not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Permission check: user must be a member of the project
+        ProjectMembership = apps.get_model("projects", "ProjectMembership")  # noqa: N806
+        is_member = ProjectMembership.objects.filter(project=project, user=request.user).exists()
+        if not is_member and not request.user.is_staff:
+            raise PermissionDenied("You are not a member of this project.")
+
+        from src.video.services.video_service import VideoService
+
+        service = VideoService()
+        job = service.create_job(
+            project=project,
+            user=request.user,
+            job_type=JobType.THEN_VS_NOW,
+            config={
+                "project_id": str(project.id),
+                "video_type": video_type,
+                "period_id": str(period_id) if period_id else None,
+                "selected_member_ids": (
+                    [str(mid) for mid in selected_member_ids] if selected_member_ids else []
+                ),
+            },
+        )
+
+        # Dispatch to Celery
+        from src.video.tasks.then_vs_now import process_then_vs_now_video
+
+        process_then_vs_now_video.delay(str(job.id))
+
+        logger.info(
+            "Then vs Now compilation job created: %s (type=%s, project=%s)",
+            job.id,
+            video_type,
+            project.name,
+        )
+
+        output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
+        data = dict(output.data)
+        data["sync_mode"] = False
+        return Response(data, status=status.HTTP_201_CREATED)
+
     @action(detail=False, methods=["post"], url_path="goal-celebration-from-template")
     def goal_celebration_from_template(self, request: Request) -> Response:
         """Create a goal celebration video job.

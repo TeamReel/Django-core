@@ -16,6 +16,7 @@ class JobType(models.TextChoices):
     LINEUP = "lineup", _("Lineup")
     GOAL_CELEBRATION = "goal_celebration", _("Goal Celebration")
     MATCH_INTRO = "match_intro", _("Match Intro")
+    THEN_VS_NOW = "then_vs_now", _("Then vs Now")
 
 
 class JobStatus(models.TextChoices):
