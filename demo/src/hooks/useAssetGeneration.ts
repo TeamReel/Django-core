@@ -134,6 +134,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
     workflowContentType?: ContentTypeName;
     workflowObjectId?: number;
     workflowTemplateId?: number;
+    taskId?: string;
   } | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
@@ -296,6 +297,9 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
           console.log(`🎬 Video generation queued. task_id=${taskId}`);
 
+          // Store task_id in context so acceptVariant can auto-approve the job
+          setContext(prev => prev ? { ...prev, taskId } : prev);
+
           if (params.requireApproval) {
             // Approval flow: show "queued" and let user close — result goes
             // through the Approvals page review flow instead.
@@ -450,6 +454,8 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             project_id: projId,
             asset_type: assetType,
             ...(memberId ? { membership_id: memberId } : {}),
+            // Auto-approve the GenerationJob in the queue
+            ...(context?.taskId ? { task_id: context.taskId, variant_index: variantIndex } : {}),
           }),
         });
 

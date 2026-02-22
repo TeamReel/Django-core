@@ -1326,6 +1326,17 @@ class SaveAssetInputSerializer(serializers.Serializer):
         required=True,
         help_text="BrandAsset type (e.g. logo, sponsor_logo, kit_home, member_intro)",
     )
+    task_id = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+        help_text="Generation task_id — when provided, auto-approves the GenerationJob",
+    )
+    variant_index = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        help_text="Index of the chosen variant to mark as approved",
+    )
 
 
 @api_view(["POST"])
@@ -1354,6 +1365,8 @@ def save_asset_view(request: Request) -> Response:
     membership_id = serializer.validated_data.get("membership_id")
     activity_id = serializer.validated_data.get("activity_id")
     asset_type = serializer.validated_data.get("asset_type")
+    task_id = serializer.validated_data.get("task_id")
+    variant_index = serializer.validated_data.get("variant_index")
 
     logger.info(
         f"🎯 Save asset request: type={asset_type}, org={organisation_id}, project={project_id}"
@@ -1720,6 +1733,62 @@ def save_asset_view(request: Request) -> Response:
                     {"error": f"Failed to create BrandAsset: {e}"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
+
+    # ── Auto-approve GenerationJob if task_id provided ────────────────
+    if task_id:
+        try:
+            from .models import GenerationJob
+            from django.utils import timezone as tz
+
+            job = GenerationJob.objects.get(task_id=task_id)
+            job.approval_status = GenerationJob.ApprovalStatus.APPROVED
+            job.reviewed_at = tz.now()
+            if current_user and current_user.is_authenticated:
+                job.reviewed_by_id = current_user.id
+
+            # Mark the chosen variant as approved in output_variants
+            if job.output_variants and variant_index is not None:
+                updated = []
+                for v in job.output_variants:
+                    v = dict(v)
+                    if v.get("variant_index") == variant_index:
+                        v["approved"] = True
+                    else:
+                        v["approved"] = False
+                    updated.append(v)
+                job.output_variants = updated
+
+            job.save(
+                update_fields=[
+                    "approval_status",
+                    "reviewed_at",
+                    "reviewed_by_id",
+                    "output_variants",
+                    "updated_at",
+                ]
+            )
+            logger.info(f"✅ Auto-approved GenerationJob {task_id} " f"(variant={variant_index})")
+
+            # Propagate approved image to brand assets / membership
+            if job.output_type == "image":
+                try:
+                    _propagate_approved_image_to_brand(job)
+                except Exception:
+                    logger.warning("Auto-approve: brand propagation failed for %s", task_id)
+                try:
+                    _propagate_approved_image_to_membership(job)
+                except Exception:
+                    logger.warning("Auto-approve: membership propagation failed for %s", task_id)
+            elif job.output_type == "video":
+                try:
+                    _propagate_approved_video_to_membership(job)
+                except Exception:
+                    logger.warning("Auto-approve: video propagation failed for %s", task_id)
+
+        except GenerationJob.DoesNotExist:
+            logger.warning(f"Auto-approve: GenerationJob {task_id} not found")
+        except Exception as approve_err:
+            logger.warning(f"Auto-approve failed for {task_id}: {approve_err}")
 
     # Generate presigned URL for immediate frontend display
     presigned_url = None
