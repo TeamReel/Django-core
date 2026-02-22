@@ -395,12 +395,35 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         assetType,
         hasImage: !!selectedVariant.image_base64,
         hasVideo: !!selectedVariant.video_url,
+        hasPresigned: !!selectedVariant.presigned_url,
         storagePath: selectedVariant.storage_path || selectedVariant.storage_info?.storage_path,
+        error: selectedVariant.error,
       });
+
+      // Guard: variant with error should not be saved
+      if (selectedVariant.error) {
+        console.error('Variant has error, cannot save:', selectedVariant.error);
+        setError(selectedVariant.error);
+        return null;
+      }
 
       if (!orgId) {
          console.error('Missing organisation context for saving asset');
          return null;
+      }
+
+      // Guard: ensure at least one content source is available
+      const hasContent = selectedVariant.image_base64 ||
+        selectedVariant.video_base64 ||
+        selectedVariant.presigned_url ||
+        selectedVariant.video_url ||
+        selectedVariant.storage_path ||
+        selectedVariant.storage_info?.storage_path;
+
+      if (!hasContent) {
+        console.error('No content source in variant (image_base64, storage_path, presigned_url all missing)');
+        setError('Geen resultaat om op te slaan (server gaf geen afbeelding terug)');
+        return null;
       }
 
       try {

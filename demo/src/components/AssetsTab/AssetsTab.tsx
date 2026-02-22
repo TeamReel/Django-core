@@ -451,6 +451,19 @@ export function AssetsTab({
 
       (async () => {
         try {
+          const variant = postProcessGen.variants[0];
+          // Guard: if the variant has an error (e.g. Pillow postprocess failed), don't try to save
+          if (variant?.error) {
+            console.error('❌ Postprocess variant has error:', variant.error);
+            alert(`Bewerken mislukt: ${variant.error}`);
+            return;
+          }
+          // Guard: ensure at least one content field is present
+          if (!variant?.image_base64 && !variant?.storage_path && !variant?.presigned_url && !variant?.storage_info?.storage_path) {
+            console.error('❌ Postprocess variant has no content:', variant);
+            alert('Bewerken mislukt: geen resultaat ontvangen van de server.');
+            return;
+          }
           console.log('📝 Postprocess auto-accept starting for', postProcessingAsset);
           const result = await postProcessGen.acceptVariant(0);
           if (result) {
