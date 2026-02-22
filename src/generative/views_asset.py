@@ -1667,21 +1667,39 @@ def save_asset_view(request: Request) -> Response:
             try:
                 from branding.models import BrandAsset, BrandProfile
 
-                # Get the effective brand profile
-                brand_profile = BrandProfile.get_effective_brand(
-                    organisation=organisation,
-                    project=project,
-                )
-
-                if not brand_profile:
-                    # Create a default brand profile for this organisation
-                    brand_profile = BrandProfile.objects.create(
-                        organisation=organisation,
-                        name=f"{organisation.name} Brand",
-                        is_active=True,
-                        created_by=current_user,
-                    )
-                    logger.info(f"🆕 Created new BrandProfile: {brand_profile.id}")
+                # When saving for a specific project, ensure a project-level
+                # BrandProfile exists (don't fall back to org/parent profile,
+                # otherwise the frontend can't find the asset when querying
+                # by project_id).
+                brand_profile = None
+                if project:
+                    brand_profile = BrandProfile.objects.filter(
+                        project=project, is_active=True
+                    ).first()
+                    if not brand_profile:
+                        brand_profile = BrandProfile.objects.create(
+                            project=project,
+                            name=f"{project.name} Brand",
+                            is_active=True,
+                            created_by=current_user,
+                        )
+                        logger.info(
+                            f"🆕 Created project-level BrandProfile: {brand_profile.id} "
+                            f"(project={project.id})"
+                        )
+                else:
+                    # No project specified — use org-level profile
+                    brand_profile = BrandProfile.objects.filter(
+                        organisation=organisation, is_active=True
+                    ).first()
+                    if not brand_profile:
+                        brand_profile = BrandProfile.objects.create(
+                            organisation=organisation,
+                            name=f"{organisation.name} Brand",
+                            is_active=True,
+                            created_by=current_user,
+                        )
+                        logger.info(f"🆕 Created org-level BrandProfile: {brand_profile.id}")
 
                 # Create or update the BrandAsset
                 brand_asset, created = BrandAsset.objects.update_or_create(
