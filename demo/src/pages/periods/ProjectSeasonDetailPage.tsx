@@ -781,7 +781,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
           memberUser.email || '';
         const tr = m.metadata?.teamreel_assets || {};
-        const profileUrl = tr?.media?.profile?.url || memberUser.avatar_url || null;
+        const profileUrl = tr?.media?.profile?.url || tr?.kit?.profile_photo_url || memberUser.avatar_url || null;
         const fullbodyUrls: Record<string, string> = {};
         const closeupUrls: Record<string, string> = {};
         const imgFb = tr?.images?.fullbody || {};

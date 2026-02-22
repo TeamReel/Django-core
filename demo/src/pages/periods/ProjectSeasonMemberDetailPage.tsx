@@ -155,6 +155,12 @@ function readAssetsFromMembership(membership: any): MemberMediaForm {
     form.legacy_photo.url = String(legacyOld.profile_photo_url).trim();
   }
 
+  // Fall back to user avatar for profile photo
+  const avatarUrl = (membership as any)?.user?.avatar_url;
+  if (!form.profile.url && avatarUrl) {
+    form.profile.url = String(avatarUrl).trim();
+  }
+
   return form;
 }
 
