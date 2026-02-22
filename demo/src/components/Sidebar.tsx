@@ -473,6 +473,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     { label: 'Competitions', path: '/directory?tab=competitions', icon: Trophy },
                     { label: 'Matches', path: '/directory?tab=matches', icon: Timer },
                     { label: 'Users', path: '/directory?tab=users', icon: Users },
+                    { label: 'Content', path: '/directory?tab=content', icon: Sparkles },
+                    { label: 'All Content', path: '/directory?tab=all-content', icon: Film },
                 ];
                 break;
             }

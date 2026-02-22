@@ -12,6 +12,8 @@ import { SeasonsList } from './directory/SeasonsList';
 import { CompetitionsList } from './directory/CompetitionsList';
 import { MatchesList } from './directory/MatchesList';
 import { UsersList } from './directory/UsersList';
+import { ContentOverview } from './directory/ContentOverview';
+import { ContentList } from './directory/ContentList';
 
 export const DirectoryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,24 +23,22 @@ export const DirectoryPage: React.FC = () => {
     .trim()
     .toLowerCase();
 
-  const allowed = new Set(['federations', 'clubs', 'teams', 'seasons', 'competitions', 'matches', 'users', 'members']);
+  const allowed = new Set(['federations', 'clubs', 'teams', 'seasons', 'competitions', 'matches', 'users', 'members', 'content', 'all-content']);
   const effectiveTab = allowed.has(tab) ? tab : 'federations';
   const normalizedTab = effectiveTab === 'members' ? 'users' : effectiveTab;
 
-  const subtitle =
-    normalizedTab === 'clubs'
-      ? 'Clubs'
-      : normalizedTab === 'teams'
-        ? 'Teams'
-        : normalizedTab === 'seasons'
-          ? 'Seasons'
-          : normalizedTab === 'competitions'
-            ? 'Competitions'
-            : normalizedTab === 'matches'
-              ? 'Matches'
-              : normalizedTab === 'users'
-                ? 'Users'
-                : 'Federations';
+  const subtitleMap: Record<string, string> = {
+    clubs: 'Clubs',
+    teams: 'Teams',
+    seasons: 'Seasons',
+    competitions: 'Competitions',
+    matches: 'Matches',
+    users: 'Users',
+    content: 'Content Overview',
+    'all-content': 'All Content',
+    federations: 'Federations',
+  };
+  const subtitle = subtitleMap[normalizedTab] ?? 'Federations';
 
   return (
       <div>
@@ -63,6 +63,10 @@ export const DirectoryPage: React.FC = () => {
               <MatchesList />
             ) : normalizedTab === 'users' ? (
               <UsersList />
+            ) : normalizedTab === 'content' ? (
+              <ContentOverview />
+            ) : normalizedTab === 'all-content' ? (
+              <ContentList />
             ) : (
               <FederationsList />
             )}

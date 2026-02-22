@@ -48,6 +48,10 @@ export interface GenerationJob {
   model: string | null;
   duration_seconds: number | null;
   variant_count: number | null;
+  // Resolved names for directory display
+  project_name: string | null;
+  club_name: string | null;
+  membership_name: string | null;
 }
 
 export interface UseGenerationJobsOptions {

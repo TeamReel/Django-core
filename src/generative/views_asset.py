@@ -2118,6 +2118,52 @@ def list_generation_jobs_view(request: Request) -> Response:
     limit = min(int(request.query_params.get("limit", 50)), 200)
     jobs = list(qs[:limit])
 
+    # ── Resolve project + membership names for directory display ────────
+    _project_ids = {j.project_id for j in jobs if j.project_id}
+    _project_name_map: dict[str, str] = {}
+    _project_parent_map: dict[str, str | None] = {}  # project_id → parent project name (club)
+    if _project_ids:
+        try:
+            from projects.models import Project
+
+            # Try matching on id, slug, and canonical UUID variants
+            from django.db.models import Q
+
+            q = Q()
+            for pid in _project_ids:
+                q |= Q(id__iexact=pid) | Q(slug=pid)
+                # Handle canonical UUID format: 00000000-0000-0000-0000-000000000123
+                if str(pid).isdigit():
+                    canonical = f"00000000-0000-0000-0000-{int(pid):012d}"
+                    q |= Q(id__iexact=canonical)
+            for p in (
+                Project.objects.filter(q)
+                .select_related("parent_project")
+                .only("id", "name", "slug", "parent_project__id", "parent_project__name")
+            ):
+                _project_name_map[str(p.id)] = p.name
+                _project_name_map[p.slug] = p.name
+                _project_parent_map[str(p.id)] = p.parent_project.name if p.parent_project else None
+                _project_parent_map[p.slug] = p.parent_project.name if p.parent_project else None
+        except Exception:  # noqa: BLE001
+            pass
+
+    _membership_ids = {j.membership_id for j in jobs if j.membership_id}
+    _membership_name_map: dict[str, str] = {}
+    if _membership_ids:
+        try:
+            from projects.models import ProjectMembership
+
+            for m in (
+                ProjectMembership.objects.filter(id__in=_membership_ids)
+                .select_related("user")
+                .only("id", "user__first_name", "user__last_name")
+            ):
+                full = f"{m.user.first_name or ''} {m.user.last_name or ''}".strip()
+                _membership_name_map[str(m.id)] = full or f"Member {m.id}"
+        except Exception:  # noqa: BLE001
+            pass
+
     # Enrich active jobs with live cache progress
     results = []
     # Storage backend — reused across all jobs to avoid repeated instantiation
@@ -2243,6 +2289,10 @@ def list_generation_jobs_view(request: Request) -> Response:
                 "model": ai_model,
                 "duration_seconds": duration_seconds,
                 "variant_count": len(fresh_variants) or (live or {}).get("variant_count"),
+                # Resolved names for directory display
+                "project_name": _project_name_map.get(job.project_id or "", ""),
+                "club_name": _project_parent_map.get(job.project_id or "", "") or "",
+                "membership_name": _membership_name_map.get(job.membership_id or "", ""),
             }
         )
 
