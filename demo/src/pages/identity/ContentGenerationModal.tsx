@@ -141,7 +141,8 @@ export const CONTENT_TYPES = {
     label: 'Season',
     sportRequired: true,
     items: [
-      { id: 'transformation', label: 'Then vs Now', icon: '🔄', subtype: 'transformation' },
+      { id: 'sidebyside', label: 'Then & Now', icon: '⏪', subtype: 'sidebyside' },
+      { id: 'transformation', label: 'Transformatie', icon: '🔄', subtype: 'transformation' },
       { id: 'season_recap', label: 'Season Recap', icon: '📅', subtype: 'season_recap' },
     ],
   },

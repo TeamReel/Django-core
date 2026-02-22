@@ -172,7 +172,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [thenVsNowModalOpen, setThenVsNowModalOpen] = useState(false);
   const [thenVsNowModalType, setThenVsNowModalType] = useState<'sidebyside' | 'transformation'>('sidebyside');
   const [thenVsNowModalStep, setThenVsNowModalStep] = useState<'members' | 'generating' | 'submitted' | 'error'>('members');
-  const [thenVsNowModalSelected, setThenVsNowModalSelected] = useState<Set<string>>(new Set());
+  const [thenVsNowModalSelected, setThenVsNowModalSelected] = useState<string[]>([]);
   const [thenVsNowModalSearch, setThenVsNowModalSearch] = useState('');
   const [thenVsNowModalJobId, setThenVsNowModalJobId] = useState<string | null>(null);
   const [thenVsNowModalError, setThenVsNowModalError] = useState<string | null>(null);
@@ -1170,7 +1170,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       videoType === 'sidebyside' ? m.hasSidebyside : m.hasTransformation
     );
     // Pre-select all eligible members
-    setThenVsNowModalSelected(new Set(eligible.map((m: any) => m.id)));
+    setThenVsNowModalSelected(eligible.map((m: any) => m.id));
     setThenVsNowModalType(videoType);
     setThenVsNowModalStep('members');
     setThenVsNowModalSearch('');
@@ -1202,7 +1202,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           project_id: projId,
           video_type: thenVsNowModalType,
           period_id: resolvedSeasonId || effectiveSeasonId || null,
-          selected_member_ids: Array.from(thenVsNowModalSelected),
+          selected_member_ids: thenVsNowModalSelected,
         }),
       });
       if (!res.ok) {
@@ -4144,7 +4144,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--app-border, #333)' }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>
-                    Then vs Now — {thenVsNowModalType === 'sidebyside' ? 'Naast Elkaar' : 'Transformatie'}
+                    Then vs Now — {thenVsNowModalType === 'sidebyside' ? 'Then & Now' : 'Transformatie'}
                   </h3>
                   <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '2px' }}>
                     {thenVsNowModalStep === 'members' ? 'Selecteer spelers voor de compilatie video'
@@ -4161,79 +4161,164 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Step: Member selection */}
+              {/* Step: Member selection with ordering */}
               {thenVsNowModalStep === 'members' && (() => {
                 const eligible = thenVsNowEligibleMembers.filter((m: any) =>
                   thenVsNowModalType === 'sidebyside' ? m.hasSidebyside : m.hasTransformation
                 );
+                const eligibleMap = new Map(eligible.map((m: any) => [m.id, m]));
                 const q = thenVsNowModalSearch.toLowerCase().trim();
-                const filtered = q ? eligible.filter((m: any) => m.name.toLowerCase().includes(q)) : eligible;
+
+                // Selected members in order (with data)
+                const selectedOrdered = thenVsNowModalSelected
+                  .map((id: string) => eligibleMap.get(id))
+                  .filter(Boolean);
+
+                // Unselected members (for the "add" section)
+                const unselected = eligible.filter((m: any) => !thenVsNowModalSelected.includes(m.id));
+                const filteredUnselected = q ? unselected.filter((m: any) => m.name.toLowerCase().includes(q)) : unselected;
+
+                const moveUp = (idx: number) => {
+                  if (idx <= 0) return;
+                  const next = [...thenVsNowModalSelected];
+                  [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+                  setThenVsNowModalSelected(next);
+                };
+                const moveDown = (idx: number) => {
+                  if (idx >= thenVsNowModalSelected.length - 1) return;
+                  const next = [...thenVsNowModalSelected];
+                  [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+                  setThenVsNowModalSelected(next);
+                };
+                const removeItem = (id: string) => {
+                  setThenVsNowModalSelected(thenVsNowModalSelected.filter((x: string) => x !== id));
+                };
+                const addItem = (id: string) => {
+                  if (!thenVsNowModalSelected.includes(id)) {
+                    setThenVsNowModalSelected([...thenVsNowModalSelected, id]);
+                  }
+                };
+
                 return (
                   <div style={{ padding: '16px 20px' }}>
-                    {/* Search + select all */}
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
-                      <input
-                        type="text"
-                        placeholder="Zoek speler..."
-                        value={thenVsNowModalSearch}
-                        onChange={(e) => setThenVsNowModalSearch(e.target.value)}
-                        style={{ flex: 1, padding: '8px 12px', border: '1px solid var(--app-border)', borderRadius: '6px', fontSize: '13px', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)' }}
-                      />
+                    {/* Select all / deselect all */}
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                        {thenVsNowModalSelected.length} van {eligible.length} speler{eligible.length !== 1 ? 's' : ''} geselecteerd
+                      </div>
                       <button
                         onClick={() => {
-                          if (thenVsNowModalSelected.size === eligible.length) {
-                            setThenVsNowModalSelected(new Set());
+                          if (thenVsNowModalSelected.length === eligible.length) {
+                            setThenVsNowModalSelected([]);
                           } else {
-                            setThenVsNowModalSelected(new Set(eligible.map((m: any) => m.id)));
+                            setThenVsNowModalSelected(eligible.map((m: any) => m.id));
                           }
                         }}
-                        style={{ padding: '8px 12px', fontSize: '12px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)', whiteSpace: 'nowrap' }}
+                        style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2, #2a2a3e)', color: 'var(--app-text)', whiteSpace: 'nowrap' }}
                       >
-                        {thenVsNowModalSelected.size === eligible.length ? 'Deselecteer alles' : 'Selecteer alles'}
+                        {thenVsNowModalSelected.length === eligible.length ? 'Deselecteer alles' : 'Selecteer alles'}
                       </button>
                     </div>
 
-                    {/* Count badge */}
-                    <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '10px' }}>
-                      {thenVsNowModalSelected.size} van {eligible.length} speler{eligible.length !== 1 ? 's' : ''} geselecteerd
-                    </div>
-
-                    {/* Member list */}
-                    <div style={{ maxHeight: '340px', overflow: 'auto', border: '1px solid var(--app-border)', borderRadius: '8px' }}>
-                      {filtered.length === 0 ? (
-                        <div style={{ padding: '20px', textAlign: 'center', color: 'var(--app-muted-text)', fontSize: '13px' }}>
-                          Geen spelers gevonden
+                    {/* Selected members — ordered list with reorder controls */}
+                    {selectedOrdered.length > 0 && (
+                      <div style={{ marginBottom: '16px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--app-muted-text)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
+                          Volgorde in video
                         </div>
-                      ) : filtered.map((m: any) => (
-                        <label
-                          key={m.id}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px',
-                            borderBottom: '1px solid var(--app-border)', cursor: 'pointer',
-                            backgroundColor: thenVsNowModalSelected.has(m.id) ? 'var(--app-surface-2)' : 'transparent',
-                            transition: 'background 0.15s',
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={thenVsNowModalSelected.has(m.id)}
-                            onChange={() => {
-                              const next = new Set(thenVsNowModalSelected);
-                              if (next.has(m.id)) next.delete(m.id); else next.add(m.id);
-                              setThenVsNowModalSelected(next);
-                            }}
-                            style={{ width: '16px', height: '16px', accentColor: 'var(--app-primary)' }}
-                          />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--app-text)' }}>{m.name}</div>
-                            <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', display: 'flex', gap: '8px', marginTop: '2px' }}>
-                              {m.shirtNumber && <span>#{m.shirtNumber}</span>}
-                              {m.position && <span>{m.position}</span>}
+                        <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', overflow: 'hidden', maxHeight: '260px', overflowY: 'auto' }}>
+                          {selectedOrdered.map((m: any, idx: number) => (
+                            <div
+                              key={m.id}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px',
+                                borderBottom: idx < selectedOrdered.length - 1 ? '1px solid var(--app-border)' : 'none',
+                                backgroundColor: 'var(--app-surface-2, #2a2a3e)',
+                              }}
+                            >
+                              {/* Order number */}
+                              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--app-muted-text)', width: '20px', textAlign: 'center', flexShrink: 0 }}>
+                                {idx + 1}
+                              </span>
+                              {/* Name + info */}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--app-text)' }}>{m.name}</div>
+                                <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', display: 'flex', gap: '8px', marginTop: '1px' }}>
+                                  {m.shirtNumber && <span>#{m.shirtNumber}</span>}
+                                  {m.position && <span>{m.position}</span>}
+                                </div>
+                              </div>
+                              {/* Move up */}
+                              <button
+                                onClick={() => moveUp(idx)}
+                                disabled={idx === 0}
+                                title="Omhoog"
+                                style={{ background: 'none', border: 'none', cursor: idx === 0 ? 'default' : 'pointer', opacity: idx === 0 ? 0.25 : 0.7, fontSize: '14px', padding: '2px 4px', color: 'var(--app-text)' }}
+                              >{"\u25B2"}</button>
+                              {/* Move down */}
+                              <button
+                                onClick={() => moveDown(idx)}
+                                disabled={idx === selectedOrdered.length - 1}
+                                title="Omlaag"
+                                style={{ background: 'none', border: 'none', cursor: idx === selectedOrdered.length - 1 ? 'default' : 'pointer', opacity: idx === selectedOrdered.length - 1 ? 0.25 : 0.7, fontSize: '14px', padding: '2px 4px', color: 'var(--app-text)' }}
+                              >{"\u25BC"}</button>
+                              {/* Remove */}
+                              <button
+                                onClick={() => removeItem(m.id)}
+                                title="Verwijderen"
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.5, fontSize: '14px', padding: '2px 4px', color: 'var(--app-danger, #ef4444)' }}
+                              >{"\u2715"}</button>
                             </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Unselected members — add to list */}
+                    {unselected.length > 0 && (
+                      <div>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>
+                          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--app-muted-text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Beschikbare spelers
                           </div>
-                        </label>
-                      ))}
-                    </div>
+                          <input
+                            type="text"
+                            placeholder="Zoek..."
+                            value={thenVsNowModalSearch}
+                            onChange={(e) => setThenVsNowModalSearch(e.target.value)}
+                            style={{ flex: 1, padding: '4px 8px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '12px', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)' }}
+                          />
+                        </div>
+                        <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', overflow: 'hidden', maxHeight: '160px', overflowY: 'auto' }}>
+                          {filteredUnselected.length === 0 ? (
+                            <div style={{ padding: '12px', textAlign: 'center', color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                              Geen spelers gevonden
+                            </div>
+                          ) : filteredUnselected.map((m: any) => (
+                            <div
+                              key={m.id}
+                              onClick={() => addItem(m.id)}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px',
+                                borderBottom: '1px solid var(--app-border)', cursor: 'pointer',
+                                transition: 'background 0.15s',
+                              }}
+                              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--app-surface-2, #2a2a3e)'; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                            >
+                              <span style={{ fontSize: '14px', color: 'var(--app-primary, #2563eb)', flexShrink: 0 }}>+</span>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--app-text)' }}>{m.name}</div>
+                                <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', display: 'flex', gap: '8px', marginTop: '1px' }}>
+                                  {m.shirtNumber && <span>#{m.shirtNumber}</span>}
+                                  {m.position && <span>{m.position}</span>}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })()}
@@ -4256,7 +4341,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     Job gestart!
                   </div>
                   <div style={{ fontSize: '13px', color: 'var(--app-muted-text)', marginBottom: '12px' }}>
-                    {thenVsNowModalSelected.size} speler{thenVsNowModalSelected.size !== 1 ? 's' : ''} • Video wordt op de achtergrond verwerkt
+                    {thenVsNowModalSelected.length} speler{thenVsNowModalSelected.length !== 1 ? 's' : ''} • Video wordt op de achtergrond verwerkt
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
                     Bekijk de voortgang bij <strong>Workflow</strong> of in de <strong>Video Jobs</strong> queue.
@@ -4287,13 +4372,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     >Annuleren</button>
                     <button
                       onClick={submitThenVsNowCompilation}
-                      disabled={thenVsNowModalSelected.size === 0}
+                      disabled={thenVsNowModalSelected.length === 0}
                       style={{
-                        padding: '8px 16px', fontSize: '13px', fontWeight: 700, border: 'none', borderRadius: '6px', cursor: thenVsNowModalSelected.size > 0 ? 'pointer' : 'not-allowed',
-                        backgroundColor: thenVsNowModalSelected.size > 0 ? 'var(--app-primary, #2563eb)' : '#6b7280',
-                        color: '#fff', opacity: thenVsNowModalSelected.size > 0 ? 1 : 0.5,
+                        padding: '8px 16px', fontSize: '13px', fontWeight: 700, border: 'none', borderRadius: '6px', cursor: thenVsNowModalSelected.length > 0 ? 'pointer' : 'not-allowed',
+                        backgroundColor: thenVsNowModalSelected.length > 0 ? 'var(--app-primary, #2563eb)' : '#6b7280',
+                        color: '#fff', opacity: thenVsNowModalSelected.length > 0 ? 1 : 0.5,
                       }}
-                    >{"\uD83C\uDFAC"} Genereer Video ({thenVsNowModalSelected.size})</button>
+                    >{"\uD83C\uDFAC"} Genereer Video ({thenVsNowModalSelected.length})</button>
                   </>
                 )}
                 {thenVsNowModalStep === 'submitted' && (

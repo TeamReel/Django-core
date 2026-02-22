@@ -255,8 +255,13 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                     )
                 )
 
-        # Sort by name for consistent ordering
-        members.sort(key=lambda m: m.name)
+        # Sort by the order specified in selected_member_ids (preserve user's chosen order)
+        if selected_member_ids:
+            order_map = {mid: idx for idx, mid in enumerate(selected_member_ids)}
+            members.sort(key=lambda m: order_map.get(m.member_id, len(selected_member_ids)))
+        else:
+            # Fallback: sort by name for consistent ordering
+            members.sort(key=lambda m: m.name)
 
         logger.info(
             "then_vs_now_gather: found %d qualifying members " "(type=%s, project=%s)",
