@@ -596,18 +596,44 @@ export default function AssetGenerationModal({
   const handleRegenerate = () => {
     if (!selectedTemplate) return;
 
-    // Use the same inputs but add feedback text if provided
+    // Start from the original inputs
     const validInputs: Record<string, string> = {};
     Object.entries(inputAssets).forEach(([key, val]) => {
       if (val) validInputs[key] = val;
     });
 
-    // Source picker: swap the primary input with previousResultUrl when 'previous' is selected
-    if (referenceSource === 'previous' && previousResultUrl) {
-      const primaryKey = _getPrimaryInputKey(selectedTemplate);
-      if (primaryKey) {
+    // ── KEY FIX: On regeneration, ALWAYS use the last generated result as
+    // the reference input so the AI can iterate on its own output.
+    // This replaces the primary input key (reference, logo, sponsor, etc.)
+    // with the presigned_url of the best variant from the previous run.
+    const primaryKey = _getPrimaryInputKey(selectedTemplate);
+    const base64Inputs: Record<string, string> = {}; // For variants where we only have base64
+
+    if (primaryKey) {
+      // Priority: selected variant > first variant > original previousResultUrl
+      const bestVariant = selectedVariantIdx !== null
+        ? generation.variants.find(v => v.variant_index === selectedVariantIdx)
+        : generation.variants[0];
+
+      if (bestVariant?.presigned_url) {
+        // Best case: S3 presigned URL is fetchable by backend
+        validInputs[primaryKey] = bestVariant.presigned_url;
+        console.log(`♻️ Regenerate: using presigned_url as ${primaryKey}`);
+      } else if (bestVariant?.image_base64) {
+        // Fallback: send raw base64 via input_images instead of input_image_urls
+        // Map to backend key (reference→reference_photo, etc.)
+        const backendKey = primaryKey === 'person' ? 'person_photo'
+          : primaryKey === 'reference' ? 'reference_photo'
+          : primaryKey;
+        base64Inputs[backendKey] = bestVariant.image_base64;
+        // Remove from URL inputs to avoid conflict
+        delete validInputs[primaryKey];
+        console.log(`♻️ Regenerate: using image_base64 as ${backendKey}`);
+      } else if (referenceSource === 'previous' && previousResultUrl) {
+        // Fallback: use the previousResultUrl from when modal opened
         validInputs[primaryKey] = previousResultUrl;
       }
+      // else: keep original upload as-is
     }
 
     // Map frontend keys to backend expected keys
@@ -653,7 +679,10 @@ export default function AssetGenerationModal({
       membershipId,
       outputAssetType: getEffectiveOutputAssetType(),
       inputImageUrls: mappedInputs,
+      inputImages: Object.keys(base64Inputs).length > 0 ? base64Inputs : undefined,
       userPrompt: prompt,
+      ...(videoProvider ? { provider: videoProvider } : {}),
+      ...(selectedModel ? { model: selectedModel } : {}),
       requireApproval,
     });
   };
