@@ -276,7 +276,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        valid_asset_types = ["fullbody", "closeup", "intro", "celebration"]
+        valid_asset_types = ["fullbody", "closeup", "intro", "celebration", "then_vs_now"]
         if asset_type not in valid_asset_types:
             return Response(
                 {"error": f"asset_type must be one of: {valid_asset_types}"},
@@ -399,7 +399,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         # This runs on a dedicated worker service, not blocking HTTP requests
         from src.video.tasks.asset_processing import process_member_asset
 
-        backend = "rvm" if asset_type in ("intro", "celebration") else "rembg"
+        backend = "rvm" if asset_type in ("intro", "celebration", "then_vs_now") else "rembg"
 
         logger.info(
             "process_asset_background_start membership_id=%s asset_type=%s kit_type=%s variant_id=%s backend=%s",
@@ -693,7 +693,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        valid_asset_types = ["fullbody", "closeup", "intro", "celebration"]
+        valid_asset_types = ["fullbody", "closeup", "intro", "celebration", "then_vs_now"]
         if asset_type not in valid_asset_types:
             return Response(
                 {"error": f"asset_type must be one of: {valid_asset_types}"},

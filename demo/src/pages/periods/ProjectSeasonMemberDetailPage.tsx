@@ -2986,6 +2986,12 @@ export default function ProjectSeasonMemberDetailPage() {
                             const variantUrl = getBestUrl(variantRaw) || '';
                             const hasVideo = Boolean(variantUrl);
                             const resolvedUrl = hasVideo ? resolveDisplayUrl(variantUrl) : null;
+                            const variantLineupReady = isLineupReady(variantRaw);
+                            const variantProcessing = isProcessing(variantRaw);
+                            const normalizedVariant = normalizeVariantValue(variantRaw as any);
+                            const isCancellingOrProcessing =
+                              normalizedVariant?.processing_state === 'processing' ||
+                              normalizedVariant?.processing_state === 'cancelling';
 
                             return (
                               <div key={variant.id} style={{
@@ -2998,7 +3004,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                   onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
                                   style={{
                                     aspectRatio: '9/16',
-                                    background: hasVideo
+                                    background: (hasVideo && !variantLineupReady)
                                       ? '#000'
                                       : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                     display: 'flex',
@@ -3026,14 +3032,22 @@ export default function ProjectSeasonMemberDetailPage() {
                                         position: 'absolute',
                                         top: '6px',
                                         right: '6px',
-                                        background: 'rgba(99, 102, 241, 0.85)',
-                                        color: '#fff',
-                                        fontSize: '9px',
-                                        fontWeight: 700,
-                                        padding: '2px 5px',
-                                        borderRadius: '4px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '3px',
+                                        alignItems: 'flex-end',
                                       }}>
-                                        AI
+                                        <div style={{
+                                          background: 'rgba(99, 102, 241, 0.85)',
+                                          color: '#fff',
+                                          fontSize: '9px',
+                                          fontWeight: 700,
+                                          padding: '2px 5px',
+                                          borderRadius: '4px',
+                                        }}>
+                                          AI
+                                        </div>
+                                        <ProcessingBadge value={variantRaw} />
                                       </div>
                                     </>
                                   ) : (
@@ -3060,6 +3074,76 @@ export default function ProjectSeasonMemberDetailPage() {
                                         >
                                           Opnieuw
                                         </Button>
+                                        {!variantProcessing && (
+                                          <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={async () => {
+                                              const result = await triggerAssetProcessing(
+                                                apiBaseUrl, membershipId!, 'then_vs_now', variant.id, null
+                                              );
+                                              if (result.ok) {
+                                                const rawUrl = getVariantRawUrl(variantRaw) || '';
+                                                const newVV: VideoVariantsMap = {
+                                                  ...videoVariants,
+                                                  then_vs_now: {
+                                                    ...videoVariants.then_vs_now,
+                                                    [variant.id]: {
+                                                      raw: rawUrl,
+                                                      processed: null,
+                                                      processing_state: 'processing' as const,
+                                                    },
+                                                  },
+                                                };
+                                                setVideoVariants(newVV);
+                                                startProcessingPoll('then_vs_now', variant.id);
+                                              }
+                                            }}
+                                            style={{
+                                              fontSize: '10px',
+                                              padding: '4px 8px',
+                                              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                              border: 'none',
+                                              color: '#fff',
+                                            }}
+                                          >
+                                            {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                                          </Button>
+                                        )}
+
+                                        {isCancellingOrProcessing && (
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={async () => {
+                                              const result = await cancelAssetProcessing(
+                                                apiBaseUrl, membershipId!, 'then_vs_now', variant.id, null
+                                              );
+                                              if (result.ok) {
+                                                const rawUrl = getVariantRawUrl(variantRaw) || '';
+                                                const newVV: VideoVariantsMap = {
+                                                  ...videoVariants,
+                                                  then_vs_now: {
+                                                    ...videoVariants.then_vs_now,
+                                                    [variant.id]: {
+                                                      raw: rawUrl,
+                                                      processed: null,
+                                                      processing_state: 'cancelling' as const,
+                                                    },
+                                                  },
+                                                };
+                                                setVideoVariants(newVV);
+                                                startProcessingPoll('then_vs_now', variant.id);
+                                              }
+                                            }}
+                                            style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
+                                          >
+                                            ⏹️ Cancel
+                                          </Button>
+                                        )}
+                                        {variantLineupReady && (
+                                          <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
+                                        )}
                                         <Button
                                           size="sm"
                                           variant="ghost"
@@ -3111,6 +3195,12 @@ export default function ProjectSeasonMemberDetailPage() {
                               const variantUrl = getBestUrl(variantRaw) || '';
                               const hasVideo = Boolean(variantUrl);
                               const resolvedUrl = hasVideo ? resolveDisplayUrl(variantUrl) : null;
+                              const variantLineupReady = isLineupReady(variantRaw);
+                              const variantProcessing = isProcessing(variantRaw);
+                              const normalizedVariant = normalizeVariantValue(variantRaw as any);
+                              const isCancellingOrProcessing =
+                                normalizedVariant?.processing_state === 'processing' ||
+                                normalizedVariant?.processing_state === 'cancelling';
 
                               return (
                                 <div key={variant.id} style={{
@@ -3123,7 +3213,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                     onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
                                     style={{
                                       aspectRatio: '9/16',
-                                      background: hasVideo
+                                      background: (hasVideo && !variantLineupReady)
                                         ? '#000'
                                         : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                       display: 'flex',
@@ -3151,14 +3241,22 @@ export default function ProjectSeasonMemberDetailPage() {
                                           position: 'absolute',
                                           top: '6px',
                                           right: '6px',
-                                          background: 'rgba(99, 102, 241, 0.85)',
-                                          color: '#fff',
-                                          fontSize: '9px',
-                                          fontWeight: 700,
-                                          padding: '2px 5px',
-                                          borderRadius: '4px',
+                                          display: 'flex',
+                                          flexDirection: 'column',
+                                          gap: '3px',
+                                          alignItems: 'flex-end',
                                         }}>
-                                          AI
+                                          <div style={{
+                                            background: 'rgba(99, 102, 241, 0.85)',
+                                            color: '#fff',
+                                            fontSize: '9px',
+                                            fontWeight: 700,
+                                            padding: '2px 5px',
+                                            borderRadius: '4px',
+                                          }}>
+                                            AI
+                                          </div>
+                                          <ProcessingBadge value={variantRaw} />
                                         </div>
                                       </>
                                     ) : (
@@ -3182,6 +3280,76 @@ export default function ProjectSeasonMemberDetailPage() {
                                           >
                                             Opnieuw
                                           </Button>
+                                          {!variantProcessing && (
+                                            <Button
+                                              size="sm"
+                                              variant="secondary"
+                                              onClick={async () => {
+                                                const result = await triggerAssetProcessing(
+                                                  apiBaseUrl, membershipId!, 'then_vs_now', 'transformation', variant.id
+                                                );
+                                                if (result.ok) {
+                                                  const rawUrl = getVariantRawUrl(variantRaw) || '';
+                                                  const newVV: VideoVariantsMap = {
+                                                    ...videoVariants,
+                                                    then_vs_now: {
+                                                      ...videoVariants.then_vs_now,
+                                                      [compositeKey]: {
+                                                        raw: rawUrl,
+                                                        processed: null,
+                                                        processing_state: 'processing' as const,
+                                                      },
+                                                    },
+                                                  };
+                                                  setVideoVariants(newVV);
+                                                  startProcessingPoll('then_vs_now', 'transformation', variant.id);
+                                                }
+                                              }}
+                                              style={{
+                                                fontSize: '10px',
+                                                padding: '4px 8px',
+                                                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                                border: 'none',
+                                                color: '#fff',
+                                              }}
+                                            >
+                                              {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                                            </Button>
+                                          )}
+
+                                          {isCancellingOrProcessing && (
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              onClick={async () => {
+                                                const result = await cancelAssetProcessing(
+                                                  apiBaseUrl, membershipId!, 'then_vs_now', 'transformation', variant.id
+                                                );
+                                                if (result.ok) {
+                                                  const rawUrl = getVariantRawUrl(variantRaw) || '';
+                                                  const newVV: VideoVariantsMap = {
+                                                    ...videoVariants,
+                                                    then_vs_now: {
+                                                      ...videoVariants.then_vs_now,
+                                                      [compositeKey]: {
+                                                        raw: rawUrl,
+                                                        processed: null,
+                                                        processing_state: 'cancelling' as const,
+                                                      },
+                                                    },
+                                                  };
+                                                  setVideoVariants(newVV);
+                                                  startProcessingPoll('then_vs_now', 'transformation', variant.id);
+                                                }
+                                              }}
+                                              style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
+                                            >
+                                              ⏹️ Cancel
+                                            </Button>
+                                          )}
+                                          {variantLineupReady && (
+                                            <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
+                                          )}
                                           <Button
                                             size="sm"
                                             variant="ghost"
