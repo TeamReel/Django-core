@@ -101,6 +101,12 @@ async function videoApiFetch<T>(
 
   if (!response.ok) {
     const errorBody = await response.text().catch(() => '');
+    // Tag permission errors so callers can handle them gracefully
+    if (response.status === 403) {
+      const err = new Error(`HTTP 403: ${errorBody || response.statusText}`);
+      (err as any).status = 403;
+      throw err;
+    }
     throw new Error(`HTTP ${response.status}: ${errorBody || response.statusText}`);
   }
 
@@ -210,7 +216,14 @@ export function useVideoJobs(options: UseVideoJobsOptions) {
         }
       } catch (err: any) {
         if (!cancelled) {
-          setError(err.message || 'Failed to load video jobs');
+          // 403 = user isn't a member of this project → treat as empty, not error
+          if (err?.status === 403) {
+            console.warn(`[useVideoJobs] No access to project ${projectId}, returning empty jobs`);
+            setJobs([]);
+            setError(null);
+          } else {
+            setError(err.message || 'Failed to load video jobs');
+          }
         }
       } finally {
         if (!cancelled) setLoading(false);
