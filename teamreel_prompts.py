@@ -1439,6 +1439,16 @@ def resolve_prompt(template_id: str, params: dict, kit_analysis: str = "", extra
     for key, value in replacements.items():
         prompt = prompt.replace(f"{{{key}}}", str(value))
 
+    # Team-level kit generation: preserve the reference kit exactly, only add sponsor
+    is_team_level = params.get("team_level", "").strip().lower() in ("true", "1", "yes")
+    if is_team_level and template_id in ("tenue_generate", "legacy_tenue_generate", "keeper_tenue"):
+        prompt += "\n\nTEAM-LEVEL PRESERVATION (HIGHEST PRIORITY):"
+        prompt += "\n- This is a TEAM-LEVEL generation. The reference photo shows the CLUB kit."
+        prompt += "\n- You MUST reproduce the reference kit EXACTLY: same colors, same pattern, same shorts, same socks. Do NOT alter ANY design element."
+        prompt += "\n- The ONLY change allowed is adding the provided SPONSOR logo to the chest area."
+        prompt += "\n- If there is no sponsor provided, reproduce the kit 100% identically."
+        prompt += "\n- Do NOT reinterpret, modernize, or creatively alter the original kit design in any way."
+
     # Append user instruction if present in params (for iterative feedback)
     user_instruction = params.get("user_instruction", "").strip()
     if user_instruction:

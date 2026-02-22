@@ -719,7 +719,14 @@ export function AssetsTab({
     } else if (assetType.includes('kit_legacy')) {
       templateId = 'legacy_tenue_generate';
       referenceAssetType = 'kit_legacy_upload';
-    } else if (assetType === 'stadium_background') {
+    }
+
+    // Team-level: tell backend to preserve club kit, only add sponsor
+    if (parentProjectId && (templateId === 'tenue_generate' || templateId === 'legacy_tenue_generate' || templateId === 'keeper_tenue')) {
+      initialParams['team_level'] = 'true';
+    }
+
+    if (assetType === 'stadium_background') {
         templateId = 'location_standardize';
         referenceAssetType = 'location_photo';
     }
