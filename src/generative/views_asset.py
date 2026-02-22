@@ -487,14 +487,38 @@ def generate_asset_view(request: Request) -> Response:
     # Fetch images from URLs if provided (and not already in base64)
     if input_image_urls:
         import requests as http_requests
+        from urllib.parse import unquote, urlparse
+
+        from django.conf import settings
+
+        # Detect our own S3 bucket URLs and download directly via boto3
+        s3_bucket = getattr(settings, "AWS_S3_BUCKET_NAME", "teamreel-assets-demo")
+        s3_url_prefix = ".s3."  # matches *.s3.*.amazonaws.com
 
         for key, url in input_image_urls.items():
             if key not in input_images:
                 try:
-                    resp = http_requests.get(url, timeout=30)
-                    resp.raise_for_status()
-                    input_images[key] = resp.content
-                except (http_requests.RequestException, OSError) as e:
+                    # Check if this URL points to our own S3 bucket
+                    parsed = urlparse(url)
+                    is_own_s3 = (
+                        parsed.hostname
+                        and s3_bucket in parsed.hostname
+                        and s3_url_prefix in parsed.hostname
+                    )
+
+                    if is_own_s3:
+                        # Extract the S3 key from the URL path (decode %20 etc.)
+                        s3_key = unquote(parsed.path.lstrip("/"))
+                        from files.utils import get_storage_backend
+
+                        backend = get_storage_backend()
+                        file_obj = backend.open(s3_key)
+                        input_images[key] = file_obj.read()
+                    else:
+                        resp = http_requests.get(url, timeout=30)
+                        resp.raise_for_status()
+                        input_images[key] = resp.content
+                except (http_requests.RequestException, OSError, Exception) as e:
                     return Response(
                         {"error": f"Failed to fetch input_image_urls.{key}: {e}"},
                         status=status.HTTP_400_BAD_REQUEST,
