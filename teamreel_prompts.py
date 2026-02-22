@@ -1049,7 +1049,7 @@ RULES:
             "resolution": "1080p",
             "aspect_ratio": "9:16",
             "loop": False,
-            "minimax_model": "video-01",
+            "minimax_model": "MiniMax-Hailuo-02",  # FL2V: only this model supports first+last frame
             "composite_mode": "first_last_frame",  # Pipeline preprocessing flag
         },
         "prompt_template": """4-second realistic transformation video. One person morphs from their old appearance to their current appearance.

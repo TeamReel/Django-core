@@ -115,6 +115,15 @@ class MiniMaxClient:
             payload["first_frame_image"] = self._encode_image(image)
 
         if last_frame is not None:
+            # last_frame_image only supported by MiniMax-Hailuo-02 (FL2V endpoint)
+            if model not in ("MiniMax-Hailuo-02",):
+                logger.warning(
+                    "MiniMax: last_frame_image requires MiniMax-Hailuo-02, "
+                    "auto-upgrading from %s",
+                    model,
+                )
+                model = "MiniMax-Hailuo-02"
+                payload["model"] = model
             payload["last_frame_image"] = self._encode_image(last_frame)
             logger.info("MiniMax: last_frame_image provided for end-frame guidance")
 
