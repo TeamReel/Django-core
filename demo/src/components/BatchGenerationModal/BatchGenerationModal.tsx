@@ -296,6 +296,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         // Check new format (media.legacy_photo.url) and legacy format (old.profile_photo_url)
         const tr = member.metadata?.teamreel_assets;
         const legacyUrl = tr?.media?.legacy_photo?.url || tr?.old?.profile_photo_url;
+        console.log(`🔍 Batch legacy photo for ${member.name}: legacyUrl=${legacyUrl}, profilePhotoUrl=${member.profilePhotoUrl}`);
         personUrl = legacyUrl || member.profilePhotoUrl;
       } else {
         personUrl = member.profilePhotoUrl;
@@ -727,14 +728,26 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         // Frontend uses: person, reference
         // Backend expects: person_photo, reference_photo
         const inputImageUrls: Record<string, string> = {};
+        const isValidUrl = (url: string): boolean => {
+          try { new URL(url); return true; } catch { return false; }
+        };
         for (const [key, val] of Object.entries(inputAssets)) {
           if (!val) continue;
+          // Ensure URL is valid (encode spaces/special chars in S3 paths)
+          let safeVal = val;
+          if (!isValidUrl(safeVal)) {
+            safeVal = encodeURI(safeVal);
+          }
+          if (!isValidUrl(safeVal)) {
+            console.warn(`⚠️ Batch: skipping invalid URL for ${key}:`, val);
+            continue;
+          }
           if (key === 'person') {
-            inputImageUrls['person_photo'] = val;
+            inputImageUrls['person_photo'] = safeVal;
           } else if (key === 'reference') {
-            inputImageUrls['reference_photo'] = val;
+            inputImageUrls['reference_photo'] = safeVal;
           } else {
-            inputImageUrls[key] = val;
+            inputImageUrls[key] = safeVal;
           }
         }
 
