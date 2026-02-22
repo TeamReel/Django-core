@@ -318,7 +318,47 @@ export function useBrandProfile({
 
   const uploadAsset = useCallback(
     async (file: File, assetType: string, pathPrefix?: string): Promise<BrandAsset | null> => {
-      if (!profile || !organisationId) return null;
+      let activeProfile = profile;
+
+      // Auto-create BrandProfile if missing (e.g. first upload on a team page)
+      if (!activeProfile && (projectId || organisationId)) {
+        try {
+          const createBody: Record<string, unknown> = {
+            name: `Auto-created brand`,
+            is_active: true,
+          };
+          if (projectId) {
+            createBody['project'] = Number(projectId);
+          } else if (organisationId) {
+            createBody['organisation'] = organisationId;
+          }
+
+          const createRes = await fetch(`${apiBase}/api/v1/branding/profiles/`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify(createBody),
+          });
+
+          if (createRes.ok) {
+            const createJson = await createRes.json();
+            activeProfile = createJson?.data || createJson;
+            setProfile(activeProfile);
+            console.log('[useBrandProfile] Auto-created BrandProfile:', activeProfile?.id);
+          } else {
+            console.error('[useBrandProfile] Failed to auto-create profile:', createRes.status);
+            return null;
+          }
+        } catch (err) {
+          console.error('[useBrandProfile] Auto-create profile error:', err);
+          return null;
+        }
+      }
+
+      if (!activeProfile || !organisationId) return null;
 
       try {
         // Step 1: Upload file to FileAsset
@@ -327,7 +367,7 @@ export function useBrandProfile({
         formData.append('original_name', file.name);
         formData.append('is_public', 'true');
 
-        const prefix = pathPrefix || `brand/${profile.id}/${assetType}`;
+        const prefix = pathPrefix || `brand/${activeProfile.id}/${assetType}`;
         const fileRes = await fetch(
           `${apiBase}/api/v1/files/?path_prefix=${encodeURIComponent(prefix)}`,
           {
@@ -353,7 +393,7 @@ export function useBrandProfile({
         if (existing) {
           // Update existing
           const updateRes = await fetch(
-            `${apiBase}/api/v1/branding/profiles/${profile.id}/assets/${existing.id}/`,
+            `${apiBase}/api/v1/branding/profiles/${activeProfile.id}/assets/${existing.id}/`,
             {
               method: 'PATCH',
               credentials: 'include',
@@ -370,7 +410,7 @@ export function useBrandProfile({
         } else {
           // Create new
           const createRes = await fetch(
-            `${apiBase}/api/v1/branding/profiles/${profile.id}/assets/`,
+            `${apiBase}/api/v1/branding/profiles/${activeProfile.id}/assets/`,
             {
               method: 'POST',
               credentials: 'include',
@@ -379,7 +419,7 @@ export function useBrandProfile({
                 'X-CSRFToken': getCsrfToken(),
               },
               body: JSON.stringify({
-                profile: profile.id,
+                profile: activeProfile.id,
                 file: fileData.id,
                 asset_type: assetType,
                 is_active: true,
@@ -400,7 +440,7 @@ export function useBrandProfile({
         return null;
       }
     },
-    [apiBase, organisationId, profile, assets, fetchProfile]
+    [apiBase, organisationId, projectId, profile, assets, fetchProfile]
   );
 
   const deleteAsset = useCallback(
