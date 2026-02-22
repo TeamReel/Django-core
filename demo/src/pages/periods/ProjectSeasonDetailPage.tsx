@@ -1,7 +1,7 @@
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import { AssetsTab } from '../../components/AssetsTab';
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
 import { memberHasMedia, countFilledMediaSlots, countProcessedMediaSlots, getMediaProcessingState } from '../../utils/mediaHelpers';
@@ -170,6 +170,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [compilationLoading, setCompilationLoading] = useState<string | null>(null);
   const [compilationJobId, setCompilationJobId] = useState<string | null>(null);
   const [compilationError, setCompilationError] = useState<string | null>(null);
+  const [compilationStatus, setCompilationStatus] = useState<string | null>(null);
+  const [compilationProgress, setCompilationProgress] = useState<number>(0);
+  const [compilationVideoUrl, setCompilationVideoUrl] = useState<string | null>(null);
+  const [compilationVideoType, setCompilationVideoType] = useState<string | null>(null);
+  const [compilationPreview, setCompilationPreview] = useState<{ title: string; url: string } | null>(null);
+  const compilationPollRef = useRef<AbortController | null>(null);
 
   const [teamRoster, setTeamRoster] = useState<any[]>([]);
   const [teamRosterLoading, setTeamRosterLoading] = useState(false);
@@ -1147,9 +1153,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   // Generate Then vs Now compilation video
   const handleGenerateThenVsNowCompilation = async (videoType: 'sidebyside' | 'transformation') => {
     if (compilationLoading) return;
+    // Abort any existing poll
+    if (compilationPollRef.current) { compilationPollRef.current.abort(); compilationPollRef.current = null; }
     setCompilationLoading(videoType);
     setCompilationError(null);
     setCompilationJobId(null);
+    setCompilationStatus(null);
+    setCompilationProgress(0);
+    setCompilationVideoUrl(null);
+    setCompilationVideoType(videoType);
     try {
       const projId = String((project as any)?.id || '').trim();
       if (!projId) throw new Error('No project ID available');
@@ -1157,7 +1169,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          'X-CSRFToken': getCsrfToken(),
         },
         credentials: 'include',
         body: JSON.stringify({
@@ -1171,10 +1183,65 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         throw new Error(err.error || err.detail || `Failed (${res.status})`);
       }
       const data = await res.json();
-      setCompilationJobId(data.id);
+      const jobId = data.data?.id || data.id;
+      setCompilationJobId(jobId);
+      setCompilationStatus('queued');
+      setCompilationLoading(null);
+
+      // Start polling for job status
+      const controller = new AbortController();
+      compilationPollRef.current = controller;
+      let pollCount = 0;
+      const maxPolls = 360; // 30 min @ 5s
+
+      const pollJob = async (): Promise<void> => {
+        if (controller.signal.aborted) return;
+        if (pollCount >= maxPolls) { setCompilationError('Video processing timed out.'); return; }
+        try {
+          const statusRes = await fetch(`${apiBaseUrl}/api/v1/video/jobs/${jobId}/`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+          });
+          if (!statusRes.ok) {
+            pollCount++;
+            await new Promise(r => setTimeout(r, 5000));
+            return pollJob();
+          }
+          const raw = await statusRes.json();
+          const job = raw.data || raw;
+          setCompilationStatus(job.status);
+          setCompilationProgress(job.progress_percent || 0);
+
+          if (job.status === 'completed') {
+            const outputUrl = job.output_file?.presigned_url || job.output_file?.url;
+            if (outputUrl) setCompilationVideoUrl(outputUrl);
+            compilationPollRef.current = null;
+            return;
+          }
+          if (job.status === 'failed') {
+            setCompilationError(job.error_message || 'Video processing failed.');
+            compilationPollRef.current = null;
+            return;
+          }
+          if (job.status === 'cancelled') {
+            setCompilationError('Video processing was cancelled.');
+            compilationPollRef.current = null;
+            return;
+          }
+          pollCount++;
+          await new Promise(r => setTimeout(r, 5000));
+          return pollJob();
+        } catch (e: any) {
+          if (e.name === 'AbortError') return;
+          pollCount++;
+          await new Promise(r => setTimeout(r, 5000));
+          return pollJob();
+        }
+      };
+      pollJob();
     } catch (err: any) {
       setCompilationError(err.message || 'Failed to start compilation');
-    } finally {
       setCompilationLoading(null);
     }
   };
@@ -2021,105 +2088,198 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         {/* Compilation video tiles */}
                         <div style={{ marginBottom: '20px' }}>
                           <div style={{ fontWeight: 800, fontSize: '14px', marginBottom: '10px' }}>Compilatie Video</div>
-                          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
                             {/* Naast Elkaar tile */}
-                            <div
-                              onClick={() => thenVsNowCounts.sidebyside > 0 && !compilationLoading && handleGenerateThenVsNowCompilation('sidebyside')}
-                              title={thenVsNowCounts.sidebyside > 0
-                                ? `Generate compilation from ${thenVsNowCounts.sidebyside} member(s)`
-                                : 'No members with side-by-side videos yet'}
-                              style={{
-                                width: '160px',
-                                padding: '16px 12px',
-                                border: thenVsNowCounts.sidebyside > 0 ? '1px solid var(--app-border)' : '1px dashed var(--app-border)',
-                                borderRadius: '10px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                textAlign: 'center',
-                                cursor: thenVsNowCounts.sidebyside > 0 && !compilationLoading ? 'pointer' : 'not-allowed',
-                                opacity: thenVsNowCounts.sidebyside > 0 ? 1 : 0.5,
-                                backgroundColor: 'var(--app-card-bg)',
-                                transition: 'all 0.2s ease',
-                              }}
-                              onMouseEnter={(e) => {
-                                if (thenVsNowCounts.sidebyside > 0) {
-                                  e.currentTarget.style.borderColor = 'var(--app-primary)';
-                                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.borderColor = 'var(--app-border)';
-                                e.currentTarget.style.boxShadow = 'none';
-                              }}
-                            >
-                              <div style={{ fontSize: '28px', marginBottom: '6px' }}>
-                                {compilationLoading === 'sidebyside' ? '\u23F3' : '\u2194\uFE0F'}
-                              </div>
-                              <div style={{ fontWeight: 700, fontSize: '12px', color: 'var(--app-text)', lineHeight: 1.3 }}>
-                                Then vs Now
-                              </div>
-                              <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '2px' }}>
-                                Naast Elkaar
-                              </div>
-                              <div style={{ fontSize: '10px', color: 'var(--app-muted-text)', marginTop: '6px' }}>
-                                {thenVsNowCounts.sidebyside} member{thenVsNowCounts.sidebyside !== 1 ? 's' : ''}
-                              </div>
-                            </div>
+                            {(() => {
+                              const isActive = compilationVideoType === 'sidebyside';
+                              const isProcessing = isActive && (compilationStatus === 'queued' || compilationStatus === 'processing');
+                              const isCompleted = isActive && compilationStatus === 'completed' && compilationVideoUrl;
+                              const isFailed = isActive && compilationStatus === 'failed';
+                              const canGenerate = thenVsNowCounts.sidebyside > 0 && !compilationLoading;
+                              const borderColor = isProcessing ? '#f59e0b' : isFailed ? '#ef4444' : isCompleted ? '#22c55e' : 'var(--app-border)';
+                              return (
+                                <div style={{
+                                  border: canGenerate || isCompleted ? `2px solid ${borderColor}` : '1px dashed var(--app-border)',
+                                  borderRadius: '10px',
+                                  overflow: 'hidden',
+                                  backgroundColor: 'var(--app-card-bg)',
+                                  opacity: thenVsNowCounts.sidebyside > 0 || isCompleted ? 1 : 0.5,
+                                  transition: 'all 0.2s ease',
+                                  position: 'relative' as const,
+                                }}>
+                                  {/* Preview area */}
+                                  <div
+                                    onClick={() => isCompleted ? setCompilationPreview({ title: 'Then vs Now — Naast Elkaar', url: compilationVideoUrl! }) : undefined}
+                                    style={{
+                                      height: '160px',
+                                      background: isCompleted ? '#000' : 'repeating-conic-gradient(#e5e5e5 0% 25%, transparent 0% 50%) 50% / 16px 16px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      cursor: isCompleted ? 'pointer' : 'default',
+                                      position: 'relative' as const,
+                                    }}
+                                  >
+                                    {isCompleted ? (
+                                      <>
+                                        <video src={compilationVideoUrl!} preload="metadata" muted style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.25)' }}>
+                                          <span style={{ fontSize: '36px' }}>{"\u25B6"}</span>
+                                        </div>
+                                      </>
+                                    ) : isProcessing ? (
+                                      <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '32px', marginBottom: '8px' }}>{"\u23F3"}</div>
+                                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#f59e0b' }}>Bezig... {compilationProgress}%</div>
+                                        <div style={{ marginTop: '6px', width: '80px', height: '4px', borderRadius: '2px', backgroundColor: '#e5e7eb', overflow: 'hidden' }}>
+                                          <div style={{ width: `${compilationProgress}%`, height: '100%', backgroundColor: '#f59e0b', transition: 'width 0.3s' }} />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div style={{ fontSize: '36px', opacity: 0.4 }}>{"\u2194\uFE0F"}</div>
+                                    )}
+                                  </div>
+                                  {/* Status badge */}
+                                  {(isProcessing || isCompleted || isFailed) && (
+                                    <div style={{
+                                      position: 'absolute' as const, top: '6px', right: '6px',
+                                      padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 700,
+                                      backgroundColor: isProcessing ? '#fef3c7' : isCompleted ? '#dcfce7' : '#fce4ec',
+                                      color: isProcessing ? '#92400e' : isCompleted ? '#166534' : '#991b1b',
+                                    }}>
+                                      {isProcessing ? `\u23F3 Bezig` : isCompleted ? `\u2713 Klaar` : `\u2717 Mislukt`}
+                                    </div>
+                                  )}
+                                  {/* Footer */}
+                                  <div style={{ padding: '10px 12px', borderTop: '1px solid var(--app-border)' }}>
+                                    <div style={{ fontWeight: 700, fontSize: '12px', color: 'var(--app-text)' }}>Then vs Now</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '2px' }}>Naast Elkaar</div>
+                                    <div style={{ fontSize: '10px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
+                                      {thenVsNowCounts.sidebyside} member{thenVsNowCounts.sidebyside !== 1 ? 's' : ''}
+                                    </div>
+                                    <div style={{ marginTop: '8px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                      {isCompleted && (
+                                        <>
+                                          <button
+                                            onClick={() => setCompilationPreview({ title: 'Then vs Now — Naast Elkaar', url: compilationVideoUrl! })}
+                                            style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)' }}
+                                          >{"\u25B6"} Bekijken</button>
+                                          <a
+                                            href={compilationVideoUrl!}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)', textDecoration: 'none' }}
+                                          >{"\u2B07\uFE0F"} Download</a>
+                                        </>
+                                      )}
+                                      {(!isProcessing || isFailed || isCompleted) && canGenerate && (
+                                        <button
+                                          onClick={() => handleGenerateThenVsNowCompilation('sidebyside')}
+                                          style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)' }}
+                                        >{isCompleted || isFailed ? '\uD83D\uDD04 Opnieuw' : '\uD83C\uDFAC Genereer'}</button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
 
                             {/* Transformatie tile */}
-                            <div
-                              onClick={() => thenVsNowCounts.transformation > 0 && !compilationLoading && handleGenerateThenVsNowCompilation('transformation')}
-                              title={thenVsNowCounts.transformation > 0
-                                ? `Generate compilation from ${thenVsNowCounts.transformation} member(s)`
-                                : 'No members with transformation videos yet'}
-                              style={{
-                                width: '160px',
-                                padding: '16px 12px',
-                                border: thenVsNowCounts.transformation > 0 ? '1px solid var(--app-border)' : '1px dashed var(--app-border)',
-                                borderRadius: '10px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                textAlign: 'center',
-                                cursor: thenVsNowCounts.transformation > 0 && !compilationLoading ? 'pointer' : 'not-allowed',
-                                opacity: thenVsNowCounts.transformation > 0 ? 1 : 0.5,
-                                backgroundColor: 'var(--app-card-bg)',
-                                transition: 'all 0.2s ease',
-                              }}
-                              onMouseEnter={(e) => {
-                                if (thenVsNowCounts.transformation > 0) {
-                                  e.currentTarget.style.borderColor = 'var(--app-primary)';
-                                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.borderColor = 'var(--app-border)';
-                                e.currentTarget.style.boxShadow = 'none';
-                              }}
-                            >
-                              <div style={{ fontSize: '28px', marginBottom: '6px' }}>
-                                {compilationLoading === 'transformation' ? '\u23F3' : '\uD83D\uDD04'}
-                              </div>
-                              <div style={{ fontWeight: 700, fontSize: '12px', color: 'var(--app-text)', lineHeight: 1.3 }}>
-                                Then vs Now
-                              </div>
-                              <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '2px' }}>
-                                Transformatie
-                              </div>
-                              <div style={{ fontSize: '10px', color: 'var(--app-muted-text)', marginTop: '6px' }}>
-                                {thenVsNowCounts.transformation} member{thenVsNowCounts.transformation !== 1 ? 's' : ''}
-                              </div>
-                            </div>
+                            {(() => {
+                              const isActive = compilationVideoType === 'transformation';
+                              const isProcessing = isActive && (compilationStatus === 'queued' || compilationStatus === 'processing');
+                              const isCompleted = isActive && compilationStatus === 'completed' && compilationVideoUrl;
+                              const isFailed = isActive && compilationStatus === 'failed';
+                              const canGenerate = thenVsNowCounts.transformation > 0 && !compilationLoading;
+                              const borderColor = isProcessing ? '#f59e0b' : isFailed ? '#ef4444' : isCompleted ? '#22c55e' : 'var(--app-border)';
+                              return (
+                                <div style={{
+                                  border: canGenerate || isCompleted ? `2px solid ${borderColor}` : '1px dashed var(--app-border)',
+                                  borderRadius: '10px',
+                                  overflow: 'hidden',
+                                  backgroundColor: 'var(--app-card-bg)',
+                                  opacity: thenVsNowCounts.transformation > 0 || isCompleted ? 1 : 0.5,
+                                  transition: 'all 0.2s ease',
+                                  position: 'relative' as const,
+                                }}>
+                                  {/* Preview area */}
+                                  <div
+                                    onClick={() => isCompleted ? setCompilationPreview({ title: 'Then vs Now — Transformatie', url: compilationVideoUrl! }) : undefined}
+                                    style={{
+                                      height: '160px',
+                                      background: isCompleted ? '#000' : 'repeating-conic-gradient(#e5e5e5 0% 25%, transparent 0% 50%) 50% / 16px 16px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      cursor: isCompleted ? 'pointer' : 'default',
+                                      position: 'relative' as const,
+                                    }}
+                                  >
+                                    {isCompleted ? (
+                                      <>
+                                        <video src={compilationVideoUrl!} preload="metadata" muted style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.25)' }}>
+                                          <span style={{ fontSize: '36px' }}>{"\u25B6"}</span>
+                                        </div>
+                                      </>
+                                    ) : isProcessing ? (
+                                      <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '32px', marginBottom: '8px' }}>{"\u23F3"}</div>
+                                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#f59e0b' }}>Bezig... {compilationProgress}%</div>
+                                        <div style={{ marginTop: '6px', width: '80px', height: '4px', borderRadius: '2px', backgroundColor: '#e5e7eb', overflow: 'hidden' }}>
+                                          <div style={{ width: `${compilationProgress}%`, height: '100%', backgroundColor: '#f59e0b', transition: 'width 0.3s' }} />
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div style={{ fontSize: '36px', opacity: 0.4 }}>{"\uD83D\uDD04"}</div>
+                                    )}
+                                  </div>
+                                  {/* Status badge */}
+                                  {(isProcessing || isCompleted || isFailed) && (
+                                    <div style={{
+                                      position: 'absolute' as const, top: '6px', right: '6px',
+                                      padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 700,
+                                      backgroundColor: isProcessing ? '#fef3c7' : isCompleted ? '#dcfce7' : '#fce4ec',
+                                      color: isProcessing ? '#92400e' : isCompleted ? '#166534' : '#991b1b',
+                                    }}>
+                                      {isProcessing ? `\u23F3 Bezig` : isCompleted ? `\u2713 Klaar` : `\u2717 Mislukt`}
+                                    </div>
+                                  )}
+                                  {/* Footer */}
+                                  <div style={{ padding: '10px 12px', borderTop: '1px solid var(--app-border)' }}>
+                                    <div style={{ fontWeight: 700, fontSize: '12px', color: 'var(--app-text)' }}>Then vs Now</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', marginTop: '2px' }}>Transformatie</div>
+                                    <div style={{ fontSize: '10px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
+                                      {thenVsNowCounts.transformation} member{thenVsNowCounts.transformation !== 1 ? 's' : ''}
+                                    </div>
+                                    <div style={{ marginTop: '8px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                      {isCompleted && (
+                                        <>
+                                          <button
+                                            onClick={() => setCompilationPreview({ title: 'Then vs Now — Transformatie', url: compilationVideoUrl! })}
+                                            style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)' }}
+                                          >{"\u25B6"} Bekijken</button>
+                                          <a
+                                            href={compilationVideoUrl!}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)', textDecoration: 'none' }}
+                                          >{"\u2B07\uFE0F"} Download</a>
+                                        </>
+                                      )}
+                                      {(!isProcessing || isFailed || isCompleted) && canGenerate && (
+                                        <button
+                                          onClick={() => handleGenerateThenVsNowCompilation('transformation')}
+                                          style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)' }}
+                                        >{isCompleted || isFailed ? '\uD83D\uDD04 Opnieuw' : '\uD83C\uDFAC Genereer'}</button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </div>
-                          {/* Status messages */}
-                          {compilationJobId && (
-                            <div style={{ marginTop: '10px', padding: '8px 12px', background: 'var(--app-success-bg, #e8f5e9)', borderRadius: '8px', fontSize: '13px', color: 'var(--app-success, #2e7d32)' }}>
-                              Video generation started! Job ID: <code style={{ fontSize: '11px' }}>{compilationJobId}</code>
-                            </div>
-                          )}
+                          {/* Error message */}
                           {compilationError && (
                             <div style={{ marginTop: '10px', padding: '8px 12px', background: 'var(--app-danger-bg, #fce4ec)', borderRadius: '8px', fontSize: '13px', color: 'var(--app-danger, #c62828)' }}>
                               {compilationError}
@@ -4359,6 +4519,53 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           onClose={() => setIsActiveJobsModalOpen(false)}
           projectId={String(project?.id || '')}
         />
+
+        {/* Then vs Now compilation video preview modal */}
+        {compilationPreview && (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}
+            onClick={() => setCompilationPreview(null)}
+          >
+            <div
+              style={{ backgroundColor: 'var(--app-card-bg)', borderRadius: '12px', maxWidth: '900px', width: '92%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--app-border)' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>{compilationPreview.title}</h3>
+                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '2px' }}>Then vs Now Compilatie</div>
+                </div>
+                <button
+                  onClick={() => setCompilationPreview(null)}
+                  style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: 'var(--app-text)', padding: '4px 8px', borderRadius: '4px' }}
+                >&times;</button>
+              </div>
+              {/* Video player */}
+              <div style={{ padding: '20px', textAlign: 'center', backgroundColor: '#000' }}>
+                <video
+                  src={compilationPreview.url}
+                  controls
+                  autoPlay
+                  style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '4px' }}
+                />
+              </div>
+              {/* Footer */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 20px', borderTop: '1px solid var(--app-border)', gap: '8px' }}>
+                <a
+                  href={compilationPreview.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ padding: '6px 14px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)', textDecoration: 'none', cursor: 'pointer' }}
+                >{"\u2B07\uFE0F"} Download</a>
+                <button
+                  onClick={() => setCompilationPreview(null)}
+                  style={{ padding: '6px 14px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)', cursor: 'pointer' }}
+                >Sluiten</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
