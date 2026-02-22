@@ -10,7 +10,6 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { PageContent, PageHeader } from '@django-core/page-templates';
-import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   useWorkflowInstances,
   type WorkflowInstance,
@@ -332,8 +331,6 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ApprovalsPage() {
-  const { context } = useContextSwitcher();
-  const projectId = context.project?.id;
   const location = useLocation();
   const rawTab = new URLSearchParams(location.search).get('tab') || 'all';
   const filter: FilterState = (['all', 'review', 'active', 'completed', 'rejected', 'ai_queue', 'video'] as const).includes(rawTab as FilterState)
@@ -395,6 +392,9 @@ export default function ApprovalsPage() {
   const { instances, loading, error, refresh } = useWorkflowInstances({ page_size: 100 });
 
   // ── Video Processing Jobs ────────────────────────────────────────
+  // NOTE: Pass null (not projectId) so the queue shows jobs across ALL
+  // projects the user is a member of.  Sending a single context-switcher
+  // project_id caused 403 when the user wasn't a direct member.
   const {
     jobs: videoJobs,
     loading: videoLoading,
@@ -402,7 +402,7 @@ export default function ApprovalsPage() {
     refresh: refreshVideoJobs,
     cancelJob: cancelVideoJob,
     retryJob: retryVideoJob,
-  } = useVideoJobs({ projectId: projectId || null });
+  } = useVideoJobs({ projectId: null });
 
   const handleTransitionComplete = useCallback(
     (_entry: TransitionHistoryEntry) => {

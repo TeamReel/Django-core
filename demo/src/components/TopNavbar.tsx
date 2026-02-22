@@ -140,6 +140,8 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
     location.pathname.startsWith('/docs/') ||
     location.pathname === '/recents' ||
     location.pathname === '/favorites' ||
+    location.pathname === '/approvals' ||
+    location.pathname.startsWith('/approvals/') ||
     location.pathname.startsWith('/notifications') ||
     location.pathname.startsWith('/login') ||
     location.pathname.startsWith('/register') ||
