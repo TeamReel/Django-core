@@ -51,7 +51,13 @@ def _update_variant_metadata(
     else:
         videos = tr.setdefault("videos", {})
         cat = videos.setdefault(asset_type, {})
-        composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+        # then_vs_now stores by template sub-type only (e.g.
+        # "transformation", "sidebyside"); variant_id is just a style
+        # detail, not part of the key.
+        if asset_type == "then_vs_now":
+            composite_key = kit_type
+        else:
+            composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
         cat[composite_key] = variant_value
         if variant_id and variant_id in cat and variant_id != composite_key:
             cat.pop(variant_id, None)
@@ -97,7 +103,10 @@ def _get_variant_state(
     if asset_type in ("fullbody", "closeup"):
         variant_val = (tr.get("images", {}).get(asset_type, {}) or {}).get(kit_type)
     else:
-        composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+        if asset_type == "then_vs_now":
+            composite_key = kit_type
+        else:
+            composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
         variant_val = (tr.get("videos", {}).get(asset_type, {}) or {}).get(composite_key)
 
     if isinstance(variant_val, dict):
