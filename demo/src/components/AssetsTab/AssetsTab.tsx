@@ -538,8 +538,6 @@ export function AssetsTab({
       const slug = entityName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'club';
       const pid = projectId?.toString() || '';
       pathId = pid ? `${slug}-${pid}` : slug;
-    }
-
     } else if (level === 'team') {
       folder = 'teams';
       const slug = entityName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'team';
