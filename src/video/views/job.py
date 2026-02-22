@@ -1137,11 +1137,13 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             video_type  (str, required)  – "sidebyside" or "transformation".
             period_id   (str, optional)  – Season/period UUID for header text.
             selected_member_ids (list, optional) – Restrict to these members.
+            background_url (str, optional) – Override background (app-level location).
         """
         project_id = request.data.get("project_id")
         video_type = request.data.get("video_type")
         period_id = request.data.get("period_id")
         selected_member_ids = request.data.get("selected_member_ids", [])
+        background_url = request.data.get("background_url")
 
         if not project_id:
             return Response(
@@ -1183,6 +1185,13 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 "period_id": str(period_id) if period_id else None,
                 "selected_member_ids": (
                     [str(mid) for mid in selected_member_ids] if selected_member_ids else []
+                ),
+                **(
+                    {
+                        "background_url": background_url,
+                    }
+                    if background_url
+                    else {}
                 ),
             },
         )

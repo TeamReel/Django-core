@@ -25,6 +25,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
         "video_type": "sidebyside" | "transformation",
         "period_id": "uuid",           # Optional — season/period ID
         "selected_member_ids": [...],  # Optional — filter to specific members
+        "background_url": "https://...",  # Optional — override location background
     }
     """
 
@@ -165,18 +166,21 @@ class ThenVsNowProcessor(BaseVideoProcessor):
             except Exception:
                 pass
 
-        # ── Background URL (stadium_background) ──
-        background_url = self._resolve_brand_asset_url(
-            project,
-            club_project,
-            ["stadium_background"],
-            BrandProfile,
-            BrandAsset,
-        )
+        # ── Background URL (prefer config override, then brand asset) ──
+        background_url = (self.job.config or {}).get("background_url")
+        if not background_url:
+            background_url = self._resolve_brand_asset_url(
+                project,
+                club_project,
+                ["stadium_background"],
+                BrandProfile,
+                BrandAsset,
+            )
         if not background_url:
             raise ValueError(
                 "No stadium_background BrandAsset found. "
-                "Upload a location background for the club/team."
+                "Upload a location background for the club/team, "
+                "or select a location in the generation modal."
             )
 
         # ── Club logo URL ──

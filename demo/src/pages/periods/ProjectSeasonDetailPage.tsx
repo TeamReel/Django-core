@@ -176,6 +176,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [thenVsNowModalSearch, setThenVsNowModalSearch] = useState('');
   const [thenVsNowModalJobId, setThenVsNowModalJobId] = useState<string | null>(null);
   const [thenVsNowModalError, setThenVsNowModalError] = useState<string | null>(null);
+  const [thenVsNowBackgrounds, setThenVsNowBackgrounds] = useState<Array<{ id: string; url: string; profile_name?: string }>>([]);
+  const [thenVsNowSelectedBgUrl, setThenVsNowSelectedBgUrl] = useState<string | null>(null);
 
   const [teamRoster, setTeamRoster] = useState<any[]>([]);
   const [teamRosterLoading, setTeamRosterLoading] = useState(false);
@@ -1176,7 +1178,32 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     setThenVsNowModalSearch('');
     setThenVsNowModalJobId(null);
     setThenVsNowModalError(null);
+    setThenVsNowSelectedBgUrl(null);
     setThenVsNowModalOpen(true);
+
+    // Fetch available backgrounds (stadium_background assets)
+    (async () => {
+      try {
+        const res = await fetch(`${apiBaseUrl}/api/v1/branding/assets/app-backgrounds/`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const items = Array.isArray(data) ? data : (data?.data || data?.results || []);
+          const bgs = items
+            .filter((a: any) => a.url)
+            .map((a: any) => ({
+              id: a.id,
+              url: a.url,
+              profile_name: a.profile?.project?.name || a.profile?.organisation?.name || '',
+            }));
+          setThenVsNowBackgrounds(bgs);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch app backgrounds:', err);
+      }
+    })();
   };
 
   // Close the Then vs Now compilation modal
@@ -1203,6 +1230,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           video_type: thenVsNowModalType,
           period_id: resolvedSeasonId || effectiveSeasonId || null,
           selected_member_ids: thenVsNowModalSelected,
+          ...(thenVsNowSelectedBgUrl ? { background_url: thenVsNowSelectedBgUrl } : {}),
         }),
       });
       if (!res.ok) {
@@ -4316,6 +4344,69 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               </div>
                             </div>
                           ))}
+                        </div>
+                      </div>
+                    )}
+                    {/* Background / Location selector */}
+                    {thenVsNowBackgrounds.length > 0 && (
+                      <div style={{ marginTop: '16px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--app-muted-text)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                          Achtergrond / Locatie
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '8px' }}>
+                          {/* Default option */}
+                          <button
+                            onClick={() => setThenVsNowSelectedBgUrl(null)}
+                            style={{
+                              position: 'relative',
+                              border: !thenVsNowSelectedBgUrl
+                                ? '2px solid var(--app-primary, #2563eb)'
+                                : '1px solid var(--app-border, #333)',
+                              borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', padding: 0,
+                              background: !thenVsNowSelectedBgUrl ? 'var(--app-surface-2, #2a2a3e)' : 'transparent',
+                            }}
+                          >
+                            <div style={{ width: '100%', aspectRatio: '9/16', background: 'linear-gradient(to bottom, #16a34a, #14532d)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <span style={{ fontSize: '20px' }}>{"\u26BD"}</span>
+                            </div>
+                            <div style={{ padding: '3px 0', textAlign: 'center', fontWeight: 600, fontSize: '10px', color: !thenVsNowSelectedBgUrl ? '#fff' : 'var(--app-muted-text)', background: !thenVsNowSelectedBgUrl ? 'var(--app-primary, #2563eb)' : 'var(--app-surface-2, #2a2a3e)' }}>
+                              Standaard
+                            </div>
+                            {!thenVsNowSelectedBgUrl && (
+                              <div style={{ position: 'absolute', top: 3, right: 3, width: 14, height: 14, borderRadius: '50%', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: '#fff', fontWeight: 700 }}>{"\u2713"}</div>
+                            )}
+                          </button>
+                          {/* App-level backgrounds */}
+                          {thenVsNowBackgrounds.map((bg) => {
+                            const isSelected = thenVsNowSelectedBgUrl === bg.url;
+                            return (
+                              <button
+                                key={bg.id}
+                                onClick={() => setThenVsNowSelectedBgUrl(bg.url)}
+                                style={{
+                                  position: 'relative',
+                                  border: isSelected
+                                    ? '2px solid var(--app-primary, #2563eb)'
+                                    : '1px solid var(--app-border, #333)',
+                                  borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', padding: 0,
+                                  background: isSelected ? 'var(--app-surface-2, #2a2a3e)' : 'transparent',
+                                }}
+                              >
+                                <div style={{ width: '100%', aspectRatio: '9/16', background: `url(${bg.url}) center/cover` }} />
+                                <div style={{
+                                  padding: '3px 0', textAlign: 'center', fontWeight: 600, fontSize: '10px',
+                                  color: isSelected ? '#fff' : 'var(--app-muted-text)',
+                                  background: isSelected ? 'var(--app-primary, #2563eb)' : 'var(--app-surface-2, #2a2a3e)',
+                                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                }}>
+                                  {bg.profile_name || 'Locatie'}
+                                </div>
+                                {isSelected && (
+                                  <div style={{ position: 'absolute', top: 3, right: 3, width: 14, height: 14, borderRadius: '50%', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: '#fff', fontWeight: 700 }}>{"\u2713"}</div>
+                                )}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
