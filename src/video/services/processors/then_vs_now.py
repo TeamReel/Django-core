@@ -218,17 +218,23 @@ class ThenVsNowProcessor(BaseVideoProcessor):
             then_vs_now = videos.get("then_vs_now", {})
 
             # Find matching video variant
+            # For transformation, prefer RVM-processed variants (those with
+            # processed_source) over AI-only variants.
             variant = None
             if video_type == "sidebyside":
                 variant = then_vs_now.get("sidebyside")
             elif video_type == "transformation":
-                # Check base key first, then style variants
-                variant = then_vs_now.get("transformation")
-                if not variant:
-                    for key in then_vs_now:
-                        if key.startswith("transformation_"):
-                            variant = then_vs_now[key]
-                            break
+                # Collect all transformation candidates, prefer RVM-processed
+                best = None
+                for key in list(then_vs_now.keys()):
+                    if key == "transformation" or key.startswith("transformation_"):
+                        candidate = then_vs_now[key]
+                        if isinstance(candidate, dict) and candidate.get("processed_source"):
+                            best = candidate
+                            break  # RVM-processed is best, stop looking
+                        elif best is None:
+                            best = candidate
+                variant = best
             else:
                 variant = then_vs_now.get(video_type)
 

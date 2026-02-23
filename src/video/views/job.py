@@ -335,6 +335,20 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                         composite_key,
                     )
 
+            # Fallback 1b: bare kit_type key without variant suffix.
+            # AI propagation stores then_vs_now transformation under
+            # "transformation" but process-asset looks for
+            # "transformation_hands_on_head".  Find the bare key.
+            if not variant_val and variant_id:
+                variant_val = asset_variants.get(kit_type)
+                if variant_val:
+                    logger.info(
+                        "process-asset: found bare kit_type key '%s' for %s (expected '%s')",
+                        kit_type,
+                        asset_type,
+                        composite_key,
+                    )
+
             # Fallback 2: no variant specified — find first key starting with kit_type
             if not variant_val and not variant_id:
                 for key, val in asset_variants.items():
