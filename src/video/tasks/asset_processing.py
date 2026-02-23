@@ -234,7 +234,9 @@ def process_member_asset(
         processor = AssetProcessor()
         effective_backend = bg_removal_backend
         if not effective_backend:
-            effective_backend = "rvm" if asset_type in ("intro", "celebration") else "rembg"
+            effective_backend = (
+                "rvm" if asset_type in ("intro", "celebration", "then_vs_now") else "rembg"
+            )
 
         result = processor.process_asset(
             raw_url=raw_url,

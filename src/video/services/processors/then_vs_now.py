@@ -140,7 +140,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
         """
         from django.apps import apps
 
-        from src.video.services.asset_processing_specs import get_best_url
+        from src.video.services.asset_processing_specs import get_ffmpeg_best_url
         from src.video.services.then_vs_now_composer import MemberClip
 
         Project = apps.get_model("projects", "Project")  # noqa: N806
@@ -235,7 +235,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
             if not variant:
                 continue
 
-            url = get_best_url(variant)
+            url = get_ffmpeg_best_url(variant)
             if not url:
                 continue
 
