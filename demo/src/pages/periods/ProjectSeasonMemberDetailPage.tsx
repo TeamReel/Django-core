@@ -330,6 +330,7 @@ async function cancelAssetProcessing(
   assetType: string,
   kitType: string,
   variantId?: string | null,
+  force?: boolean,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     const csrfToken = getCsrfToken();
@@ -345,6 +346,7 @@ async function cancelAssetProcessing(
         asset_type: assetType,
         kit_type: kitType,
         variant_id: variantId || null,
+        force: force || false,
       }),
     });
     if (!res.ok) {
@@ -409,6 +411,41 @@ async function pollProcessingResult(
       }
     } catch {
       // Network error — keep trying
+    }
+  }
+
+  // Polling timed out — force-cancel the stale processing state so UI unsticks.
+  if (!abortSignal?.aborted) {
+    try {
+      const csrfToken = getCsrfToken();
+      const cancelRes = await fetch(`${apiBaseUrl}/api/v1/video/jobs/cancel-asset-processing/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({
+          membership_id: membershipId,
+          asset_type: assetType,
+          kit_type: kitType,
+          variant_id: variantId || null,
+          force: true,
+        }),
+      });
+      if (cancelRes.ok) {
+        // Refresh membership to pick up cancelled state
+        const memberRes = await fetch(
+          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
+          { credentials: 'include' }
+        );
+        if (memberRes.ok) {
+          const json = await memberRes.json();
+          setMembershipFn(json?.data || json);
+        }
+      }
+    } catch {
+      // Best-effort cleanup
     }
   }
 }
@@ -2544,33 +2581,48 @@ export default function ProjectSeasonMemberDetailPage() {
                                                 size="sm"
                                                 variant="ghost"
                                                 onClick={async () => {
+                                                  const isCancelling = normalizedVariant?.processing_state === 'cancelling';
                                                   const result = await cancelAssetProcessing(
                                                     apiBaseUrl,
                                                     membershipId!,
                                                     'intro',
                                                     kit.id,
                                                     variant.id,
+                                                    isCancelling,
                                                   );
                                                   if (result.ok) {
-                                                    const rawUrl = getVariantRawUrl(variantRaw) || '';
-                                                    const newVV: VideoVariantsMap = {
-                                                      ...videoVariants,
-                                                      intro: {
-                                                        ...videoVariants.intro,
-                                                        [compositeKey]: {
-                                                          raw: rawUrl,
-                                                          processed: null,
-                                                          processing_state: 'cancelling' as const,
+                                                    if (isCancelling) {
+                                                      try {
+                                                        const memberRes = await fetch(
+                                                          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project?.id || '')}/members/${encodeURIComponent(membershipId!)}/`,
+                                                          { credentials: 'include' }
+                                                        );
+                                                        if (memberRes.ok) {
+                                                          const json = await memberRes.json();
+                                                          setMembership(json?.data || json);
+                                                        }
+                                                      } catch { /* best-effort */ }
+                                                    } else {
+                                                      const rawUrl = getVariantRawUrl(variantRaw) || '';
+                                                      const newVV: VideoVariantsMap = {
+                                                        ...videoVariants,
+                                                        intro: {
+                                                          ...videoVariants.intro,
+                                                          [compositeKey]: {
+                                                            raw: rawUrl,
+                                                            processed: null,
+                                                            processing_state: 'cancelling' as const,
+                                                          },
                                                         },
-                                                      },
-                                                    };
-                                                    setVideoVariants(newVV);
-                                                    startProcessingPoll('intro', kit.id, variant.id);
+                                                      };
+                                                      setVideoVariants(newVV);
+                                                      startProcessingPoll('intro', kit.id, variant.id);
+                                                    }
                                                   }
                                                 }}
                                                 style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
                                               >
-                                                ⏹️ Cancel
+                                                {normalizedVariant?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
                                               </Button>
                                             )}
                                             {variantLineupReady && (
@@ -2813,33 +2865,48 @@ export default function ProjectSeasonMemberDetailPage() {
                                                 size="sm"
                                                 variant="ghost"
                                                 onClick={async () => {
+                                                  const isCancelling = normalizedVariant?.processing_state === 'cancelling';
                                                   const result = await cancelAssetProcessing(
                                                     apiBaseUrl,
                                                     membershipId!,
                                                     'celebration',
                                                     kit.id,
                                                     variant.id,
+                                                    isCancelling,
                                                   );
                                                   if (result.ok) {
-                                                    const rawUrl = getVariantRawUrl(variantRaw) || '';
-                                                    const newVV: VideoVariantsMap = {
-                                                      ...videoVariants,
-                                                      celebration: {
-                                                        ...videoVariants.celebration,
-                                                        [compositeKey]: {
-                                                          raw: rawUrl,
-                                                          processed: null,
-                                                          processing_state: 'cancelling' as const,
+                                                    if (isCancelling) {
+                                                      try {
+                                                        const memberRes = await fetch(
+                                                          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project?.id || '')}/members/${encodeURIComponent(membershipId!)}/`,
+                                                          { credentials: 'include' }
+                                                        );
+                                                        if (memberRes.ok) {
+                                                          const json = await memberRes.json();
+                                                          setMembership(json?.data || json);
+                                                        }
+                                                      } catch { /* best-effort */ }
+                                                    } else {
+                                                      const rawUrl = getVariantRawUrl(variantRaw) || '';
+                                                      const newVV: VideoVariantsMap = {
+                                                        ...videoVariants,
+                                                        celebration: {
+                                                          ...videoVariants.celebration,
+                                                          [compositeKey]: {
+                                                            raw: rawUrl,
+                                                            processed: null,
+                                                            processing_state: 'cancelling' as const,
+                                                          },
                                                         },
-                                                      },
-                                                    };
-                                                    setVideoVariants(newVV);
-                                                    startProcessingPoll('celebration', kit.id, variant.id);
+                                                      };
+                                                      setVideoVariants(newVV);
+                                                      startProcessingPoll('celebration', kit.id, variant.id);
+                                                    }
                                                   }
                                                 }}
                                                 style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
                                               >
-                                                ⏹️ Cancel
+                                                {normalizedVariant?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
                                               </Button>
                                             )}
                                             {variantLineupReady && (
@@ -3116,29 +3183,44 @@ export default function ProjectSeasonMemberDetailPage() {
                                             size="sm"
                                             variant="ghost"
                                             onClick={async () => {
+                                              const isCancelling = normalizedVariant?.processing_state === 'cancelling';
                                               const result = await cancelAssetProcessing(
-                                                apiBaseUrl, membershipId!, 'then_vs_now', variant.id, null
+                                                apiBaseUrl, membershipId!, 'then_vs_now', variant.id, null, isCancelling
                                               );
                                               if (result.ok) {
-                                                const rawUrl = getVariantRawUrl(variantRaw) || '';
-                                                const newVV: VideoVariantsMap = {
-                                                  ...videoVariants,
-                                                  then_vs_now: {
-                                                    ...videoVariants.then_vs_now,
-                                                    [variant.id]: {
-                                                      raw: rawUrl,
-                                                      processed: null,
-                                                      processing_state: 'cancelling' as const,
+                                                if (isCancelling) {
+                                                  // Force cancel — refresh membership to get updated state
+                                                  try {
+                                                    const memberRes = await fetch(
+                                                      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project?.id || '')}/members/${encodeURIComponent(membershipId!)}/`,
+                                                      { credentials: 'include' }
+                                                    );
+                                                    if (memberRes.ok) {
+                                                      const json = await memberRes.json();
+                                                      setMembership(json?.data || json);
+                                                    }
+                                                  } catch { /* best-effort */ }
+                                                } else {
+                                                  const rawUrl = getVariantRawUrl(variantRaw) || '';
+                                                  const newVV: VideoVariantsMap = {
+                                                    ...videoVariants,
+                                                    then_vs_now: {
+                                                      ...videoVariants.then_vs_now,
+                                                      [variant.id]: {
+                                                        raw: rawUrl,
+                                                        processed: null,
+                                                        processing_state: 'cancelling' as const,
+                                                      },
                                                     },
-                                                  },
-                                                };
-                                                setVideoVariants(newVV);
-                                                startProcessingPoll('then_vs_now', variant.id);
+                                                  };
+                                                  setVideoVariants(newVV);
+                                                  startProcessingPoll('then_vs_now', variant.id);
+                                                }
                                               }
                                             }}
                                             style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
                                           >
-                                            ⏹️ Cancel
+                                            {normalizedVariant?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
                                           </Button>
                                         )}
                                         {variantLineupReady && (
@@ -3322,29 +3404,43 @@ export default function ProjectSeasonMemberDetailPage() {
                                               size="sm"
                                               variant="ghost"
                                               onClick={async () => {
+                                                const isCancelling = normalizedVariant?.processing_state === 'cancelling';
                                                 const result = await cancelAssetProcessing(
-                                                  apiBaseUrl, membershipId!, 'then_vs_now', 'transformation', variant.id
+                                                  apiBaseUrl, membershipId!, 'then_vs_now', 'transformation', variant.id, isCancelling
                                                 );
                                                 if (result.ok) {
-                                                  const rawUrl = getVariantRawUrl(variantRaw) || '';
-                                                  const newVV: VideoVariantsMap = {
-                                                    ...videoVariants,
-                                                    then_vs_now: {
-                                                      ...videoVariants.then_vs_now,
-                                                      [compositeKey]: {
-                                                        raw: rawUrl,
-                                                        processed: null,
-                                                        processing_state: 'cancelling' as const,
+                                                  if (isCancelling) {
+                                                    try {
+                                                      const memberRes = await fetch(
+                                                        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project?.id || '')}/members/${encodeURIComponent(membershipId!)}/`,
+                                                        { credentials: 'include' }
+                                                      );
+                                                      if (memberRes.ok) {
+                                                        const json = await memberRes.json();
+                                                        setMembership(json?.data || json);
+                                                      }
+                                                    } catch { /* best-effort */ }
+                                                  } else {
+                                                    const rawUrl = getVariantRawUrl(variantRaw) || '';
+                                                    const newVV: VideoVariantsMap = {
+                                                      ...videoVariants,
+                                                      then_vs_now: {
+                                                        ...videoVariants.then_vs_now,
+                                                        [compositeKey]: {
+                                                          raw: rawUrl,
+                                                          processed: null,
+                                                          processing_state: 'cancelling' as const,
+                                                        },
                                                       },
-                                                    },
-                                                  };
-                                                  setVideoVariants(newVV);
-                                                  startProcessingPoll('then_vs_now', 'transformation', variant.id);
+                                                    };
+                                                    setVideoVariants(newVV);
+                                                    startProcessingPoll('then_vs_now', 'transformation', variant.id);
+                                                  }
                                                 }
                                               }}
                                               style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
                                             >
-                                              ⏹️ Cancel
+                                              {normalizedVariant?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
                                             </Button>
                                           )}
                                           {variantLineupReady && (

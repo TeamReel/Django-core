@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 from django.apps import apps
@@ -712,6 +712,8 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         ).exists():
             raise PermissionDenied("You must be a project member.")
 
+        force = request.data.get("force", False)
+
         existing_variant = self._get_variant_metadata(membership, asset_type, kit_type, variant_id)
         if not existing_variant:
             return Response(
@@ -722,13 +724,74 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         state = (
             existing_variant.get("processing_state") if isinstance(existing_variant, dict) else None
         )
+
+        # Detect stale cancellation: if already "cancelling" for >60s,
+        # the Celery task is likely dead — force to "cancelled".
+        is_stale_cancel = False
+        if state == "cancelling" and isinstance(existing_variant, dict):
+            cancel_at = existing_variant.get("cancel_requested_at")
+            if cancel_at:
+                try:
+                    cancel_time = datetime.fromisoformat(cancel_at.replace("Z", "+00:00"))
+                    if timezone.now() - cancel_time > timedelta(seconds=60):
+                        is_stale_cancel = True
+                except (ValueError, TypeError):
+                    is_stale_cancel = True
+
+        # Detect stale processing: "processing" for >15 minutes
+        is_stale_processing = False
+        if state == "processing" and isinstance(existing_variant, dict):
+            started_at = existing_variant.get("processing_started_at")
+            if started_at:
+                try:
+                    start_time = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+                    if timezone.now() - start_time > timedelta(minutes=15):
+                        is_stale_processing = True
+                except (ValueError, TypeError):
+                    pass
+
         if state not in ("processing", "cancelling"):
-            return Response(
-                {"error": f"Variant is not processing (current state: {state})"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            if not force:
+                return Response(
+                    {"error": f"Variant is not processing (current state: {state})"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         raw_url = existing_variant.get("raw") if isinstance(existing_variant, dict) else None
+
+        # Force-cancel: directly set to "cancelled" (skip cooperative waiting)
+        if force or is_stale_cancel or is_stale_processing:
+            self._update_variant_metadata(
+                membership,
+                asset_type,
+                kit_type,
+                variant_id,
+                {
+                    "raw": raw_url,
+                    "processed": None,
+                    "processing_state": "cancelled",
+                    "cancelled_at": timezone.now().isoformat(),
+                },
+            )
+            logger.info(
+                "cancel-asset-processing: force cancelled (stale_cancel=%s, stale_processing=%s, force=%s)",
+                is_stale_cancel,
+                is_stale_processing,
+                force,
+            )
+            return Response(
+                {
+                    "status": "cancelled",
+                    "membership_id": str(membership_id),
+                    "asset_type": asset_type,
+                    "kit_type": kit_type,
+                    "variant_id": variant_id,
+                    "force": True,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        # Cooperative cancellation: mark as "cancelling" for the task to pick up
         self._update_variant_metadata(
             membership,
             asset_type,
