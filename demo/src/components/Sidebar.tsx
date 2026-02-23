@@ -1249,7 +1249,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     {section.items.map((item, index) => (
                         <NavLink
                             key={`${section.id}:${index}:${item.label}`}
-                            to={item.path}
+                            to={item.path === '/approvals' && queueCounts.review > 0 ? '/approvals?tab=review' : item.path}
                             end={section.id === 'app'}
                             title={!isOpen ? item.label : undefined}
                             className="flex items-center rounded-md transition-colors"

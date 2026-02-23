@@ -38,6 +38,8 @@ import Breadcrumbs from './Breadcrumbs';
 import CommandPalette from './CommandPalette';
 import { getApiBaseUrl } from '../utils/apiBase';
 import { useQueueCounts } from '../hooks/useQueueCounts';
+import { useGenerationJobs, reviewJob } from '../hooks/useGenerationJobs';
+import type { GenerationJob } from '../hooks/useGenerationJobs';
 
 interface NavGroup {
   id: string;
@@ -80,6 +82,16 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   const queueCounts = useQueueCounts(30000);
   const queueBadgeCount = queueCounts.review > 0 ? queueCounts.review : queueCounts.active;
   const queueBadgeColor = queueCounts.review > 0 ? '#dc3545' : '#f59e0b';
+
+  // Quick-review: fetch pending_review jobs (only when modal is open or count > 0)
+  const { jobs: allAiJobs, refresh: refreshAiJobs } = useGenerationJobs({
+    pollInterval: quickReviewOpen ? 5000 : 30000,
+  });
+  const pendingReviewJobs = useMemo(() =>
+    allAiJobs.filter(j => j.status === 'completed' && (j.approval_status === 'pending_review' || !j.approval_status)),
+    [allAiJobs],
+  );
+
   const debugLog = (...args: unknown[]) => {
     if (import.meta.env.DEV) console.log(...args);
   };
@@ -93,6 +105,9 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   const [navSearchHasQuery, setNavSearchHasQuery] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
+  const [quickReviewOpen, setQuickReviewOpen] = useState(false);
+  const [quickReviewIdx, setQuickReviewIdx] = useState(0);
+  const [quickReviewBusy, setQuickReviewBusy] = useState(false);
   const createMenuRef = useRef<HTMLDivElement | null>(null);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -933,7 +948,14 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
 
             {/* Queue Icon - shows active/review count */}
             <button
-              onClick={() => navigate('/approvals')}
+              onClick={() => {
+                if (queueCounts.review > 0) {
+                  setQuickReviewIdx(0);
+                  setQuickReviewOpen(true);
+                } else {
+                  navigate('/approvals');
+                }
+              }}
               className="nav-right-fixed nav-icon-button"
               aria-label="Queue"
               style={{
@@ -1242,6 +1264,185 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           )}
         </div>
       )}
+
+      {/* ─── Quick Review Modal (triggered from navbar queue icon) ─── */}
+      {quickReviewOpen && (() => {
+        const job = pendingReviewJobs[quickReviewIdx];
+        if (!job) {
+          // No more items to review
+          return (
+            <div
+              onClick={() => setQuickReviewOpen(false)}
+              style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+            >
+              <div onClick={e => e.stopPropagation()} style={{ backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, padding: '40px 48px', textAlign: 'center', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text)', marginBottom: 8 }}>Alles beoordeeld!</div>
+                <div style={{ fontSize: 13, color: 'var(--app-text-secondary, #9ca3af)', marginBottom: 20 }}>Er zijn geen items meer die review nodig hebben.</div>
+                <button
+                  onClick={() => setQuickReviewOpen(false)}
+                  style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+                >
+                  Sluiten
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        const variants = job.output_variants?.length
+          ? job.output_variants
+          : job.output_url
+          ? [{ variant_index: 0, presigned_url: job.output_url, storage_path: '', file_asset_id: null as null, mime_type: job.output_type === 'video' ? 'video/mp4' : 'image/jpeg', filename: '', approved: null as null }]
+          : [];
+
+        const isVideo = (v: { mime_type?: string; filename?: string }) =>
+          v.mime_type?.startsWith('video/') || v.filename?.endsWith('.mp4') || job.output_type === 'video';
+
+        const handleQuickReview = async (action: 'approve' | 'reject') => {
+          if (quickReviewBusy) return;
+          setQuickReviewBusy(true);
+          try {
+            await reviewJob(job.task_id, action);
+            refreshAiJobs();
+            // Advance to next (idx stays, list shrinks on refresh)
+            if (quickReviewIdx >= pendingReviewJobs.length - 1) {
+              setQuickReviewIdx(Math.max(0, pendingReviewJobs.length - 2));
+            }
+          } catch (e) {
+            console.error('Quick review failed:', e);
+          } finally {
+            setQuickReviewBusy(false);
+          }
+        };
+
+        return (
+          <div
+            onClick={() => setQuickReviewOpen(false)}
+            style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '100%', maxWidth: variants.length > 1 ? 900 : 640,
+                backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, overflow: 'hidden',
+                display: 'flex', flexDirection: 'column', maxHeight: '92vh',
+                boxShadow: '0 24px 64px rgba(0,0,0,0.36)',
+              }}
+            >
+              {/* Header */}
+              <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
+                    {job.label || job.template_id}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
+                    {job.output_type} · {new Date(job.created_at).toLocaleString()}
+                    {pendingReviewJobs.length > 0 && ` · ${quickReviewIdx + 1} van ${pendingReviewJobs.length}`}
+                  </div>
+                </div>
+                {/* Nav arrows */}
+                <div style={{ display: 'flex', gap: 4 }}>
+                  <button
+                    disabled={quickReviewIdx <= 0}
+                    onClick={() => setQuickReviewIdx(i => Math.max(0, i - 1))}
+                    style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text)', cursor: quickReviewIdx > 0 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx > 0 ? 1 : 0.4, fontSize: 14 }}
+                  >
+                    ‹
+                  </button>
+                  <button
+                    disabled={quickReviewIdx >= pendingReviewJobs.length - 1}
+                    onClick={() => setQuickReviewIdx(i => Math.min(pendingReviewJobs.length - 1, i + 1))}
+                    style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text)', cursor: quickReviewIdx < pendingReviewJobs.length - 1 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx < pendingReviewJobs.length - 1 ? 1 : 0.4, fontSize: 14 }}
+                  >
+                    ›
+                  </button>
+                </div>
+                <button
+                  onClick={() => setQuickReviewOpen(false)}
+                  style={{ background: 'none', border: 'none', color: 'var(--app-text-secondary)', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Variants */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: variants.length > 1 ? `repeat(${Math.min(variants.length, 4)}, 1fr)` : '1fr',
+                  gap: 12,
+                  justifyItems: 'center',
+                }}>
+                  {variants.map((v) => (
+                    <div key={v.variant_index} style={{
+                      border: '1px solid var(--app-border, #334155)', borderRadius: 12, overflow: 'hidden',
+                      backgroundColor: '#0f172a', maxWidth: variants.length === 1 ? 420 : '100%', width: '100%',
+                    }}>
+                      {v.presigned_url && isVideo(v) ? (
+                        <video
+                          src={v.presigned_url}
+                          controls
+                          muted
+                          playsInline
+                          autoPlay
+                          loop
+                          style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block' }}
+                        />
+                      ) : v.presigned_url ? (
+                        <img
+                          src={v.presigned_url}
+                          alt={`Variant ${v.variant_index + 1}`}
+                          style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block' }}
+                        />
+                      ) : (
+                        <div style={{ padding: 40, textAlign: 'center', color: 'var(--app-text-secondary)' }}>Geen preview</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer — approve / reject */}
+              <div style={{
+                padding: '14px 20px', borderTop: '1px solid var(--app-border, #334155)',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0,
+              }}>
+                <button
+                  onClick={() => handleQuickReview('reject')}
+                  disabled={quickReviewBusy}
+                  style={{
+                    padding: '9px 20px', borderRadius: 8, border: '1px solid #dc2626',
+                    background: 'transparent', color: '#dc2626', fontWeight: 600, fontSize: 13,
+                    cursor: quickReviewBusy ? 'wait' : 'pointer', opacity: quickReviewBusy ? 0.6 : 1,
+                  }}
+                >
+                  ❌ Afwijzen
+                </button>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <button
+                    onClick={() => { setQuickReviewOpen(false); navigate('/approvals?tab=review'); }}
+                    style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text-secondary)', fontWeight: 500, fontSize: 12, cursor: 'pointer' }}
+                  >
+                    Open Queue →
+                  </button>
+                  <button
+                    onClick={() => handleQuickReview('approve')}
+                    disabled={quickReviewBusy}
+                    style={{
+                      padding: '9px 24px', borderRadius: 8, border: 'none',
+                      background: '#16a34a', color: '#fff', fontWeight: 600, fontSize: 13,
+                      cursor: quickReviewBusy ? 'wait' : 'pointer', opacity: quickReviewBusy ? 0.6 : 1,
+                    }}
+                  >
+                    ✅ Goedkeuren
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
