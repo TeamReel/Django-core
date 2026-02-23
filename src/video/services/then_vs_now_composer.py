@@ -4,8 +4,12 @@ Creates a compilation video from individual member then_vs_now clips:
 - Persistent header with club logos and "THEN VS NOW" title
 - Location background (slightly darkened)
 - Sequential member clips with name labels
-- Crossfade transitions between members
+- Smooth transitions: freeze last frame → empty field → next member fades in
 - Optional sponsor logo (bottom-left)
+
+Supports two video types with different sizing:
+- sidebyside: video fills full width between header and name/sponsor zone
+- transformation: video slightly smaller, centered in the same zone
 
 Output: 1080×1920 vertical MP4 at 30fps.
 """
@@ -28,15 +32,28 @@ WIDTH = 1080
 HEIGHT = 1920
 FPS = 30
 HEADER_HEIGHT = 300
-NAME_BAR_HEIGHT = 0  # name overlays on video; no reserved bar
-CONTENT_HEIGHT = HEIGHT - HEADER_HEIGHT - NAME_BAR_HEIGHT  # 1620
-XFADE_DURATION = 0.8  # seconds crossfade between members
+XFADE_DURATION = 1.5  # seconds crossfade between members
 
-# ── Sponsor overlay settings (mirrored from lineup_composer) ──
-SPONSOR_W = 220
+# ── Reserved zones ──
+SPONSOR_BOX_H = 120
 SPONSOR_MARGIN = 36
 SPONSOR_PAD = 16
-SPONSOR_BOX_H = 120
+SPONSOR_W = 220
+NAME_LABEL_H = 60  # space for name text
+BOTTOM_RESERVED = SPONSOR_BOX_H + SPONSOR_MARGIN + NAME_LABEL_H  # ~216px
+
+# ── Content area (between header and reserved bottom zone) ──
+CONTENT_HEIGHT = HEIGHT - HEADER_HEIGHT - BOTTOM_RESERVED  # ~1404px
+
+# ── Per-type sizing ──
+# sidebyside: covers full content area
+SBS_SCALE = 1.0
+# transformation: slightly smaller, centered
+TRANSFORM_SCALE = 0.88
+
+# ── Transition timing ──
+FREEZE_SECONDS = 2.0  # freeze on last frame
+EMPTY_FIELD_SECONDS = 1.5  # empty background between members
 
 
 @dataclass
@@ -219,18 +236,18 @@ def compose_then_vs_now_video(
     season_name: str | None,
     brand_color: str | None,
     sponsor_url: str | None = None,
+    video_type: str = "sidebyside",
     output_dir: Path | None = None,
     progress_callback=None,
 ) -> Path:
     """Compose compilation video from member then_vs_now clips.
 
     For each member:
-    1. Location background (scaled/rotated to 1080x1920, slightly darkened)
+    1. Location background (scaled/rotated to 1080×1920, slightly darkened)
     2. Header overlay at top
-    3. Member's then_vs_now video centered in content area
-    4. Name text at bottom
-
-    All member clips are concatenated into a final MP4.
+    3. Member's then_vs_now video in content area (sized per video_type)
+    4. Name text above sponsor zone
+    5. Freeze last frame 2s → empty field 1.5s → next member
 
     Args:
         members: List of MemberClip with name and video URL.
@@ -240,6 +257,7 @@ def compose_then_vs_now_video(
         season_name: Season/period name for header.
         brand_color: Brand primary hex color (e.g. "#D2122E").
         sponsor_url: Optional sponsor logo URL (bottom-left overlay).
+        video_type: "sidebyside" or "transformation" (controls video sizing).
         output_dir: Output directory. Uses tempfile if None.
         progress_callback: Optional fn(percent: int).
 
@@ -297,6 +315,11 @@ def compose_then_vs_now_video(
     total = len(member_paths)
     clip_paths: list[Path] = []
 
+    # ── Video sizing per type ──
+    scale = SBS_SCALE if video_type == "sidebyside" else TRANSFORM_SCALE
+    vid_w = int(WIDTH * scale)
+    vid_h = int(CONTENT_HEIGHT * scale)
+
     # ── 4. Compose a clip per member ──
     for idx, (member, video_path) in enumerate(member_paths):
         if progress_callback:
@@ -304,6 +327,12 @@ def compose_then_vs_now_video(
 
         duration = _probe_duration(video_path)
         clip_path = clips_dir / f"clip_{idx:03d}.mp4"
+
+        # Transition timing: last clip has no freeze/gap
+        is_last = idx == total - 1
+        freeze_dur = 0.0 if is_last else FREEZE_SECONDS
+        gap_dur = 0.0 if is_last else EMPTY_FIELD_SECONDS
+        total_clip_dur = duration + freeze_dur + gap_dur
 
         # Escape name for FFmpeg drawtext
         safe_name = (
@@ -325,41 +354,44 @@ def compose_then_vs_now_video(
         bg_parts.append(f"scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=increase")
         bg_parts.append(f"crop={WIDTH}:{HEIGHT}")
         bg_parts.append("setsar=1")
-        # Darken background so video stands out
         bg_parts.append("colorbalance=rs=-0.15:gs=-0.15:bs=-0.15")
         bg_filter = f"[0:v]{','.join(bg_parts)}[bg]"
 
         # Header: ensure correct width
         hdr_filter = f"[1:v]scale={WIDTH}:{HEADER_HEIGHT}[hdr]"
 
-        # Member video: scale to FILL content area (cover + crop)
-        content_w = WIDTH  # full width
-        content_h = CONTENT_HEIGHT  # full content zone (header to bottom)
+        # Member video: scale to fill sized area (cover + crop)
+        # Freeze last frame for FREEZE_SECONDS, then video ends → bg shows through
+        freeze_pad = f",tpad=stop_mode=clone:stop_duration={FREEZE_SECONDS}" if not is_last else ""
         vid_filter = (
-            f"[2:v]scale={content_w}:{content_h}"
+            f"[2:v]scale={vid_w}:{vid_h}"
             f":force_original_aspect_ratio=increase,"
-            f"crop={content_w}:{content_h},setsar=1[vid]"
+            f"crop={vid_w}:{vid_h},setsar=1{freeze_pad}[vid]"
         )
 
         # Overlay header on background
         overlay1 = "[bg][hdr]overlay=0:0[bgh]"
 
-        # Video fills content area exactly — place right below header
-        vid_x = f"({WIDTH}-w)/2"
-        vid_y = str(HEADER_HEIGHT)
-        overlay2 = f"[bgh][vid]overlay={vid_x}:{vid_y}[main]"
+        # Center video in content area (between header and bottom reserved zone)
+        # After video+freeze ends, overlay disappears → bg+header gap visible
+        vid_x = f"({WIDTH}-{vid_w})/2"
+        vid_y = int(HEADER_HEIGHT + (CONTENT_HEIGHT - vid_h) // 2)
+        overlay2 = f"[bgh][vid]overlay={vid_x}:{vid_y}" f":eof_action=pass:shortest=0[main]"
 
-        # Name text — positioned above sponsor overlay zone
-        name_y = HEIGHT - SPONSOR_BOX_H - SPONSOR_MARGIN - 80  # ~1684
+        # Name text — only visible while member video plays (not during gap)
+        name_y = HEIGHT - BOTTOM_RESERVED + 10  # just above sponsor box
+        member_visible_dur = duration + freeze_dur
         text_filter = (
             f"[main]drawtext=text='{safe_name}'"
             f":fontfile='{font_path}'"
             f":fontsize=56:fontcolor=white"
             f":x=(w-tw)/2:y={name_y}"
             f":shadowcolor=black@0.7:shadowx=3:shadowy=3"
+            f":enable='between(t,0,{member_visible_dur:.2f})'"
         )
 
         # Sponsor logo overlay (bottom-left, like lineup videos)
+        # Also only visible during member video, not during empty gap
         if sponsor_path:
             sponsor_w = int(WIDTH * 0.22)
             sponsor_box_w = sponsor_w + 2 * SPONSOR_PAD
@@ -368,11 +400,13 @@ def compose_then_vs_now_video(
                 f";[main_txt]drawbox="
                 f"x={SPONSOR_MARGIN}:y=ih-{SPONSOR_BOX_H}-{SPONSOR_MARGIN}"
                 f":w={sponsor_box_w}:h={SPONSOR_BOX_H}"
-                f":color=0x90EE90@0.85:t=fill[main_sb]"
+                f":color=0x90EE90@0.85:t=fill"
+                f":enable='between(t,0,{member_visible_dur:.2f})'[main_sb]"
                 f";[3:v]scale={sponsor_w}:-1,format=rgba[sponsor]"
                 f";[main_sb][sponsor]overlay="
                 f"({SPONSOR_MARGIN + SPONSOR_PAD}):(main_h-h-{SPONSOR_MARGIN + SPONSOR_PAD})"
-                f":format=auto[out]"
+                f":format=auto"
+                f":enable='between(t,0,{member_visible_dur:.2f})'[out]"
             )
             text_filter += sponsor_filter
         else:
@@ -397,13 +431,14 @@ def compose_then_vs_now_video(
         # Add sponsor as input [3] if present
         if sponsor_path:
             cmd += ["-loop", "1", "-i", str(sponsor_path)]
+
         cmd += [
             "-filter_complex",
             filter_complex,
             "-map",
             "[out]",
             "-t",
-            str(duration),
+            f"{total_clip_dur:.2f}",
             "-c:v",
             "libx264",
             "-preset",

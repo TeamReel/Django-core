@@ -48,6 +48,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
             project_id = config.get("project_id") or str(self.job.project_id)
             video_type = config.get("video_type", "sidebyside")
             selected_member_ids = config.get("selected_member_ids", [])
+            # Per-member variant key override: { member_id: "transformation_snap" }
+            member_variant_keys = config.get("member_variant_keys", {})
 
             # Resolve data from database
             (
@@ -58,7 +60,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 season_name,
                 brand_color,
                 sponsor_url,
-            ) = self._gather_data(project_id, video_type, selected_member_ids)
+            ) = self._gather_data(project_id, video_type, selected_member_ids, member_variant_keys)
 
             if not members:
                 raise ValueError(f"No members found with then_vs_now '{video_type}' videos.")
@@ -74,6 +76,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 season_name=season_name,
                 brand_color=brand_color,
                 sponsor_url=sponsor_url,
+                video_type=video_type,
                 output_dir=self.temp_dir,
                 progress_callback=self._update_progress,
             )
@@ -133,6 +136,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
         project_id: str,
         video_type: str,
         selected_member_ids: list[str],
+        member_variant_keys: dict[str, str] | None = None,
     ) -> tuple:
         """Gather all data needed for the composition.
 
@@ -232,20 +236,26 @@ class ThenVsNowProcessor(BaseVideoProcessor):
             # For transformation, prefer RVM-processed variants (those with
             # processed_source) over AI-only variants.
             variant = None
+            member_id_str = str(pm.id)
             if video_type == "sidebyside":
                 variant = then_vs_now.get("sidebyside")
             elif video_type == "transformation":
-                # Collect all transformation candidates, prefer RVM-processed
-                best = None
-                for key in list(then_vs_now.keys()):
-                    if key == "transformation" or key.startswith("transformation_"):
-                        candidate = then_vs_now[key]
-                        if isinstance(candidate, dict) and candidate.get("processed_source"):
-                            best = candidate
-                            break  # RVM-processed is best, stop looking
-                        elif best is None:
-                            best = candidate
-                variant = best
+                # If the frontend specified a variant key for this member, use it
+                explicit_key = (member_variant_keys or {}).get(member_id_str)
+                if explicit_key and explicit_key in then_vs_now:
+                    variant = then_vs_now[explicit_key]
+                else:
+                    # Collect all transformation candidates, prefer RVM-processed
+                    best = None
+                    for key in list(then_vs_now.keys()):
+                        if key == "transformation" or key.startswith("transformation_"):
+                            candidate = then_vs_now[key]
+                            if isinstance(candidate, dict) and candidate.get("processed_source"):
+                                best = candidate
+                                break  # RVM-processed is best, stop looking
+                            elif best is None:
+                                best = candidate
+                    variant = best
             else:
                 variant = then_vs_now.get(video_type)
 

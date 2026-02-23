@@ -1213,12 +1213,15 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             period_id   (str, optional)  – Season/period UUID for header text.
             selected_member_ids (list, optional) – Restrict to these members.
             background_url (str, optional) – Override background (app-level location).
+            member_variant_keys (dict, optional) – Per-member variant key override.
+                e.g. {"<membership_id>": "transformation_snap"}
         """
         project_id = request.data.get("project_id")
         video_type = request.data.get("video_type")
         period_id = request.data.get("period_id")
         selected_member_ids = request.data.get("selected_member_ids", [])
         background_url = request.data.get("background_url")
+        member_variant_keys = request.data.get("member_variant_keys", {})
 
         if not project_id:
             return Response(
@@ -1261,13 +1264,8 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 "selected_member_ids": (
                     [str(mid) for mid in selected_member_ids] if selected_member_ids else []
                 ),
-                **(
-                    {
-                        "background_url": background_url,
-                    }
-                    if background_url
-                    else {}
-                ),
+                **({"background_url": background_url} if background_url else {}),
+                **({"member_variant_keys": member_variant_keys} if member_variant_keys else {}),
             },
         )
 

@@ -184,6 +184,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [thenVsNowModalError, setThenVsNowModalError] = useState<string | null>(null);
   const [thenVsNowBackgrounds, setThenVsNowBackgrounds] = useState<Array<{ id: string; url: string; profile_name?: string }>>([]);
   const [thenVsNowSelectedBgUrl, setThenVsNowSelectedBgUrl] = useState<string | null>(null);
+  // Per-member transformation variant key override: { memberId: "transformation_snap" }
+  const [thenVsNowVariantKeys, setThenVsNowVariantKeys] = useState<Record<string, string>>({});
 
   const [teamRoster, setTeamRoster] = useState<any[]>([]);
   const [teamRosterLoading, setTeamRosterLoading] = useState(false);
@@ -1168,11 +1170,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       const thenVsNow = m?.metadata?.teamreel_assets?.videos?.then_vs_now || {};
       const sbVariant = thenVsNow.sidebyside;
       const hasSidebyside = !!(sbVariant && (sbVariant.processed || sbVariant.raw));
-      const hasTransformation = Object.keys(thenVsNow).some((k) => {
-        if (!k.startsWith('transformation')) return false;
+      // Collect all transformation variant keys with data
+      const transformationKeys: string[] = [];
+      for (const k of Object.keys(thenVsNow)) {
+        if (!k.startsWith('transformation')) continue;
         const v = thenVsNow[k];
-        return v && (v.processed || v.raw);
-      });
+        if (v && (v.processed || v.raw)) transformationKeys.push(k);
+      }
+      const hasTransformation = transformationKeys.length > 0;
       return {
         id: String(m.id || ''),
         userId: String(m.user?.id || m.user_id || ''),
@@ -1181,6 +1186,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         position: m.metadata?.position || m.position || null,
         hasSidebyside,
         hasTransformation,
+        transformationKeys,
       };
     }).filter((m: any) => m.id);
   }, [members]);
@@ -1209,6 +1215,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     setThenVsNowModalJobId(null);
     setThenVsNowModalError(null);
     setThenVsNowSelectedBgUrl(null);
+    setThenVsNowVariantKeys({});
     setThenVsNowModalOpen(true);
 
     // Fetch available backgrounds (stadium_background assets)
@@ -1261,6 +1268,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           period_id: resolvedSeasonId || effectiveSeasonId || null,
           selected_member_ids: thenVsNowModalSelected,
           ...(thenVsNowSelectedBgUrl ? { background_url: thenVsNowSelectedBgUrl } : {}),
+          ...(Object.keys(thenVsNowVariantKeys).length > 0 ? { member_variant_keys: thenVsNowVariantKeys } : {}),
         }),
       });
       if (!res.ok) {
@@ -4466,6 +4474,29 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   {m.shirtNumber && <span>#{m.shirtNumber}</span>}
                                   {m.position && <span>{m.position}</span>}
                                 </div>
+                                {/* Transformation variant picker (when member has multiple variants) */}
+                                {thenVsNowModalType === 'transformation' && m.transformationKeys && m.transformationKeys.length > 1 && (
+                                  <div style={{ display: 'flex', gap: '4px', marginTop: '4px', flexWrap: 'wrap' }}>
+                                    {m.transformationKeys.map((vk: string) => {
+                                      const label = vk.replace('transformation_', '').replace('transformation', 'default').replace(/_/g, ' ');
+                                      const isSelected = (thenVsNowVariantKeys[m.id] || '') === vk;
+                                      const isDefault = !thenVsNowVariantKeys[m.id] && vk === m.transformationKeys[0];
+                                      return (
+                                        <button
+                                          key={vk}
+                                          onClick={() => setThenVsNowVariantKeys(prev => ({ ...prev, [m.id]: vk }))}
+                                          style={{
+                                            padding: '2px 8px', fontSize: '10px', fontWeight: 600, borderRadius: '10px',
+                                            border: (isSelected || isDefault) ? '1px solid var(--app-primary, #2563eb)' : '1px solid var(--app-border)',
+                                            backgroundColor: (isSelected || isDefault) ? 'var(--app-primary, #2563eb)' : 'transparent',
+                                            color: (isSelected || isDefault) ? '#fff' : 'var(--app-muted-text)',
+                                            cursor: 'pointer', textTransform: 'capitalize',
+                                          }}
+                                        >{label}</button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
                               </div>
                               {/* Move up */}
                               <button
