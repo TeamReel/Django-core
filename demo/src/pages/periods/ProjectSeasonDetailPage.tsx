@@ -484,6 +484,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   });
 
   // ── Video processing jobs for this project (content tab gallery) ──
+  // Only show season-level content (then_vs_now), not match-level (lineup, match_intro, etc.)
   const contentProjectId = String(project?.id || '');
   const {
     jobs: contentVideoJobs,
@@ -491,6 +492,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     refresh: refreshContentVideoJobs,
   } = useVideoJobs({
     projectId: contentProjectId || null,
+    jobType: 'then_vs_now',
     autoRefresh: true,
     refreshInterval: 15_000,
   });
