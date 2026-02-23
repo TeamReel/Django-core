@@ -4,7 +4,8 @@ Creates a compilation video from individual member then_vs_now clips:
 - Persistent header with club logos and "THEN VS NOW" title
 - Location background (slightly darkened)
 - Sequential member clips with name labels
-- Simple cut transitions between members
+- Crossfade transitions between members
+- Optional sponsor logo (bottom-left)
 
 Output: 1080×1920 vertical MP4 at 30fps.
 """
@@ -27,8 +28,15 @@ WIDTH = 1080
 HEIGHT = 1920
 FPS = 30
 HEADER_HEIGHT = 300
-NAME_BAR_HEIGHT = 120
+NAME_BAR_HEIGHT = 80  # reduced — name label sits just below the video
 CONTENT_HEIGHT = HEIGHT - HEADER_HEIGHT - NAME_BAR_HEIGHT
+XFADE_DURATION = 0.8  # seconds crossfade between members
+
+# ── Sponsor overlay settings (mirrored from lineup_composer) ──
+SPONSOR_W = 220
+SPONSOR_MARGIN = 36
+SPONSOR_PAD = 16
+SPONSOR_BOX_H = 120
 
 
 @dataclass
@@ -210,6 +218,7 @@ def compose_then_vs_now_video(
     team_name: str,
     season_name: str | None,
     brand_color: str | None,
+    sponsor_url: str | None = None,
     output_dir: Path | None = None,
     progress_callback=None,
 ) -> Path:
@@ -230,6 +239,7 @@ def compose_then_vs_now_video(
         team_name: Team name for header.
         season_name: Season/period name for header.
         brand_color: Brand primary hex color (e.g. "#D2122E").
+        sponsor_url: Optional sponsor logo URL (bottom-left overlay).
         output_dir: Output directory. Uses tempfile if None.
         progress_callback: Optional fn(percent: int).
 
@@ -264,6 +274,13 @@ def compose_then_vs_now_video(
 
     # ── 2. Render header ──
     header_path = _render_header(logo_url, team_name, season_name, brand_color, asset_dir)
+
+    # ── 2b. Download sponsor logo (optional) ──
+    sponsor_path: Path | None = None
+    if sponsor_url:
+        _sp = asset_dir / "sponsor.png"
+        if _download_file(sponsor_url, _sp):
+            sponsor_path = _sp
 
     # ── 3. Download all member videos ──
     member_paths: list[tuple[MemberClip, Path]] = []
@@ -315,9 +332,9 @@ def compose_then_vs_now_video(
         # Header: ensure correct width
         hdr_filter = f"[1:v]scale={WIDTH}:{HEADER_HEIGHT}[hdr]"
 
-        # Member video: scale to fit content area (preserving aspect ratio)
-        content_w = int(WIDTH * 0.88)
-        content_h = CONTENT_HEIGHT - 40  # padding
+        # Member video: scale to fill content area (preserving aspect ratio)
+        content_w = int(WIDTH * 0.96)  # almost full width
+        content_h = CONTENT_HEIGHT  # fill entire content zone
         vid_filter = (
             f"[2:v]scale='min({content_w},iw)':'min({content_h},ih)'"
             f":force_original_aspect_ratio=decrease,setsar=1[vid]"
@@ -331,16 +348,35 @@ def compose_then_vs_now_video(
         vid_y = f"({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)/2)"
         overlay2 = f"[bgh][vid]overlay={vid_x}:{vid_y}[main]"
 
-        # Name text at bottom
-        name_y = HEIGHT - NAME_BAR_HEIGHT + 20
+        # Name text — positioned just below the video (not at very bottom)
+        # Use a dynamic Y: end of content area minus a small margin
+        name_y = HEADER_HEIGHT + CONTENT_HEIGHT - 20
         text_filter = (
             f"[main]drawtext=text='{safe_name}'"
             f":fontfile='{font_path}'"
             f":fontsize=56:fontcolor=white"
             f":x=(w-tw)/2:y={name_y}"
             f":shadowcolor=black@0.7:shadowx=3:shadowy=3"
-            f"[out]"
         )
+
+        # Sponsor logo overlay (bottom-left, like lineup videos)
+        if sponsor_path:
+            sponsor_w = int(WIDTH * 0.22)
+            sponsor_box_w = sponsor_w + 2 * SPONSOR_PAD
+            text_filter += "[main_txt]"
+            sponsor_filter = (
+                f";[main_txt]drawbox="
+                f"x={SPONSOR_MARGIN}:y=ih-{SPONSOR_BOX_H}-{SPONSOR_MARGIN}"
+                f":w={sponsor_box_w}:h={SPONSOR_BOX_H}"
+                f":color=0x90EE90@0.85:t=fill[main_sb]"
+                f";[3:v]scale={sponsor_w}:-1,format=rgba[sponsor]"
+                f";[main_sb][sponsor]overlay="
+                f"({SPONSOR_MARGIN + SPONSOR_PAD}):(main_h-h-{SPONSOR_MARGIN + SPONSOR_PAD})"
+                f":format=auto[out]"
+            )
+            text_filter += sponsor_filter
+        else:
+            text_filter += "[out]"
 
         filter_complex = ";".join(
             [bg_filter, hdr_filter, vid_filter, overlay1, overlay2, text_filter]
@@ -357,6 +393,11 @@ def compose_then_vs_now_video(
             str(header_path),
             "-i",
             str(video_path),
+        ]
+        # Add sponsor as input [3] if present
+        if sponsor_path:
+            cmd += ["-loop", "1", "-i", str(sponsor_path)]
+        cmd += [
             "-filter_complex",
             filter_complex,
             "-map",
@@ -404,40 +445,109 @@ def compose_then_vs_now_video(
     if not clip_paths:
         raise ValueError("No member clips were successfully composed.")
 
-    # ── 5. Concatenate all clips ──
-    concat_file = tmp_dir / "concat.txt"
-    with open(concat_file, "w") as f:
-        for path in clip_paths:
-            f.write(f"file '{path}'\n")
-
+    # ── 5. Concatenate all clips (with crossfade transitions) ──
     final_output = output_dir / "then_vs_now_compilation.mp4"
 
-    concat_cmd = [
-        ffmpeg,
-        "-y",
-        "-f",
-        "concat",
-        "-safe",
-        "0",
-        "-i",
-        str(concat_file),
-        "-c",
-        "copy",
-        str(final_output),
-    ]
+    if len(clip_paths) == 1:
+        # Single clip: just copy
+        import shutil
 
-    logger.info("Concatenating %d clips into final output", len(clip_paths))
-    result = subprocess.run(  # noqa: S603
-        concat_cmd,
-        capture_output=True,
-        text=True,
-        timeout=600,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f"FFmpeg concat failed: {result.stderr[-2000:]}")
+        shutil.copy2(str(clip_paths[0]), str(final_output))
+    else:
+        # Build xfade chain between consecutive clips
+        # Each clip needs to be re-encoded for xfade to work
+        input_args: list[str] = []
+        for clip in clip_paths:
+            input_args += ["-i", str(clip)]
+
+        # Probe durations for xfade offset calculation
+        durations = [_probe_duration(p) for p in clip_paths]
+
+        # Build xfade filter chain:
+        # [0:v][1:v]xfade=transition=fade:duration=0.8:offset=D0-0.8[v01]
+        # [v01][2:v]xfade=transition=fade:duration=0.8:offset=D0+D1-2*0.8[v012]
+        fc_parts: list[str] = []
+        cumulative_dur = durations[0]
+        prev_label = "0:v"
+        for i in range(1, len(clip_paths)):
+            offset = max(0.1, cumulative_dur - XFADE_DURATION)
+            out_label = f"v{i}"
+            fc_parts.append(
+                f"[{prev_label}][{i}:v]xfade="
+                f"transition=fade:duration={XFADE_DURATION}:offset={offset:.2f}"
+                f"[{out_label}]"
+            )
+            cumulative_dur = offset + durations[i]
+            prev_label = out_label
+
+        concat_cmd = [
+            ffmpeg,
+            "-y",
+            *input_args,
+            "-filter_complex",
+            ";".join(fc_parts),
+            "-map",
+            f"[{prev_label}]",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "fast",
+            "-crf",
+            "23",
+            "-pix_fmt",
+            "yuv420p",
+            "-r",
+            str(FPS),
+            "-an",
+            str(final_output),
+        ]
+
+        logger.info("Concatenating %d clips with crossfade into final output", len(clip_paths))
+        result = subprocess.run(  # noqa: S603
+            concat_cmd,
+            capture_output=True,
+            text=True,
+            timeout=600,
+        )
+        if result.returncode != 0:
+            logger.warning(
+                "xfade concat failed, falling back to simple concat: %s",
+                result.stderr[-1000:],
+            )
+            # Fallback: simple concat without crossfade
+            concat_file = tmp_dir / "concat.txt"
+            with open(concat_file, "w") as f:
+                for path in clip_paths:
+                    f.write(f"file '{path}'\n")
+            fallback_cmd = [
+                ffmpeg,
+                "-y",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                str(concat_file),
+                "-c",
+                "copy",
+                str(final_output),
+            ]
+            result = subprocess.run(  # noqa: S603
+                fallback_cmd,
+                capture_output=True,
+                text=True,
+                timeout=600,
+            )
+            if result.returncode != 0:
+                raise RuntimeError(f"FFmpeg concat failed: {result.stderr[-2000:]}")
 
     if progress_callback:
         progress_callback(100)
 
-    logger.info("Then vs Now compilation complete: %s (%d members)", final_output, len(clip_paths))
+    logger.info(
+        "Then vs Now compilation complete: %s (%d members, xfade=%.1fs)",
+        final_output,
+        len(clip_paths),
+        XFADE_DURATION,
+    )
     return final_output

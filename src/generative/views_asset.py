@@ -3427,7 +3427,16 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
         # Derive the composite key based on template type
         if asset_type == "then_vs_now":
             # then_vs_now_sidebyside → "sidebyside", then_vs_now_transformation → "transformation"
-            composite_key = job.template_id.replace("then_vs_now_", "")
+            base_key = job.template_id.replace("then_vs_now_", "")
+            # Also parse style_variant from filename for per-variant keying
+            # e.g. "then_vs_now_transformation_kit_type-home_style_variant-snap_..." → "transformation_snap"
+            source_str = filename or storage_path or ""
+            style_match = re.search(r"style_variant-([a-z][a-z_]*)", source_str)
+            if style_match:
+                style_variant = style_match.group(1).strip("_")
+                composite_key = f"{base_key}_{style_variant}"
+            else:
+                composite_key = base_key
         else:
             # Parse kit_type and style_variant from filename or storage_path
             # Pattern: member_intro_kit_type-{kit}_style_variant-{style}_{hash}_{idx}.mp4

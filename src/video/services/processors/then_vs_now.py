@@ -57,6 +57,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 team_name,
                 season_name,
                 brand_color,
+                sponsor_url,
             ) = self._gather_data(project_id, video_type, selected_member_ids)
 
             if not members:
@@ -72,6 +73,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 team_name=team_name,
                 season_name=season_name,
                 brand_color=brand_color,
+                sponsor_url=sponsor_url,
                 output_dir=self.temp_dir,
                 progress_callback=self._update_progress,
             )
@@ -192,6 +194,15 @@ class ThenVsNowProcessor(BaseVideoProcessor):
             BrandAsset,
         )
 
+        # ── Sponsor logo URL (bottom-left, like lineup videos) ──
+        sponsor_url = self._resolve_brand_asset_url(
+            project,
+            club_project,
+            ["sponsor_logo"],
+            BrandProfile,
+            BrandAsset,
+        )
+
         # ── Brand primary color ──
         brand_color = None
         for proj in [project, club_project]:
@@ -287,6 +298,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
             team_name,
             season_name,
             brand_color,
+            sponsor_url,
         )
 
     @staticmethod
