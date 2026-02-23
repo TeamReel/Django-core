@@ -137,6 +137,194 @@ function sortPriority(a: WorkflowInstance, b: WorkflowInstance): number {
   return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
 }
 
+// ─── Video Follow-Up Modal (after fullbody_in_tenue approval) ──────────
+
+interface VideoFollowUpInfo {
+  membershipId: string;
+  projectId: string;
+  organisationId: string;
+  approvedImageUrl: string; // presigned URL of the approved fullbody variant
+  kitType: string;          // parsed from template params/filename
+  memberName: string;
+}
+
+const INTRO_POSES = [
+  { value: 'arms_crossed', label: '🙅 Armen over elkaar', desc: 'Armen gekruist voor de borst, zelfverzekerde powerpose' },
+  { value: 'hand_up', label: '✋ Hand omhoog', desc: 'Eén hand omhoog als begroeting' },
+  { value: 'thumbs_up', label: '👍 Duim omhoog', desc: 'Duim omhoog naar de camera' },
+] as const;
+
+const CELEBRATION_STYLES = [
+  { value: 'arms_wide', label: '🙌 Armen wijd', desc: 'Armen wijd gespreid, juichend' },
+  { value: 'fist_pump', label: '✊ Vuist omhoog', desc: 'Vuist de lucht in pompen' },
+  { value: 'point_to_sky', label: '☝️ Wijs naar hemel', desc: 'Wijst met één vinger naar de hemel' },
+  { value: 'slide', label: '🛝 Knieën slide', desc: 'Op de knieën glijden over het veld' },
+] as const;
+
+interface VideoFollowUpModalProps {
+  info: VideoFollowUpInfo;
+  onClose: () => void;
+  onSubmitted: (count: number) => void;
+}
+
+function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUpModalProps) {
+  const [selectedIntro, setSelectedIntro] = useState<string | null>(null);
+  const [selectedCelebration, setSelectedCelebration] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submitCount = (selectedIntro ? 1 : 0) + (selectedCelebration ? 1 : 0);
+
+  const handleSubmit = async () => {
+    if (submitCount === 0) { onClose(); return; }
+    setSubmitting(true);
+    setError(null);
+
+    const { getApiBaseUrl } = await import('../utils/apiBase');
+    const apiBase = getApiBaseUrl();
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
+
+    const jobs: { templateId: string; styleVariant: string; outputAssetType: string }[] = [];
+    if (selectedIntro) {
+      jobs.push({ templateId: 'member_intro', styleVariant: selectedIntro, outputAssetType: 'member_intro' });
+    }
+    if (selectedCelebration) {
+      jobs.push({ templateId: 'member_goal_celebration', styleVariant: selectedCelebration, outputAssetType: 'member_goal_celebration' });
+    }
+
+    let succeeded = 0;
+    for (const job of jobs) {
+      try {
+        const body: Record<string, unknown> = {
+          template_id: job.templateId,
+          parameters: { kit_type: info.kitType, style_variant: job.styleVariant },
+          variant_count: 1,
+          project_id: info.projectId,
+          membership_id: info.membershipId,
+          output_asset_type: job.outputAssetType,
+          input_image_urls: { person_photo: info.approvedImageUrl },
+          output_type: 'video',
+          require_approval: true,
+        };
+        if (info.organisationId) body.organisation_id = info.organisationId;
+        const res = await fetch(`${apiBase}/api/v1/generative/assets/generate/`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err?.data?.error || err?.error || `HTTP ${res.status}`);
+        }
+        succeeded++;
+      } catch (e) {
+        console.error(`Failed to submit ${job.templateId}:`, e);
+        setError(e instanceof Error ? e.message : 'Generatie mislukt');
+      }
+    }
+    setSubmitting(false);
+    if (succeeded > 0) onSubmitted(succeeded);
+  };
+
+  const chipStyle = (selected: boolean): React.CSSProperties => ({
+    display: 'flex', flexDirection: 'column', gap: 4,
+    padding: '12px 16px', borderRadius: 10, cursor: 'pointer',
+    border: `2px solid ${selected ? '#2563eb' : 'var(--app-border, #e5e7eb)'}`,
+    backgroundColor: selected ? '#eff6ff' : 'var(--app-surface, #fff)',
+    transition: 'all 0.15s',
+  });
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 10001, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{ width: '100%', maxWidth: 560, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
+
+        {/* Header */}
+        <div style={{ padding: '20px 24px 12px', borderBottom: '1px solid var(--app-border, #e5e7eb)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text, #111)' }}>🎬 Video's genereren?</div>
+              <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', marginTop: 4 }}>
+                Fullbody goedgekeurd voor <strong>{info.memberName}</strong> ({info.kitType}). Wil je ook video's genereren?
+              </div>
+            </div>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}>✕</button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 20, maxHeight: '60vh', overflowY: 'auto' }}>
+
+          {/* Short Intro section */}
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--app-text, #111)', marginBottom: 8 }}>🎬 Short Intro</div>
+            <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', marginBottom: 10 }}>Korte intro video (6 sec) — kies een pose:</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+              {INTRO_POSES.map(pose => (
+                <div
+                  key={pose.value}
+                  onClick={() => setSelectedIntro(prev => prev === pose.value ? null : pose.value)}
+                  style={chipStyle(selectedIntro === pose.value)}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)' }}>{pose.label}</div>
+                  <div style={{ fontSize: 10, color: 'var(--app-text-secondary, #6b7280)', lineHeight: 1.3 }}>{pose.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Goal Celebration section */}
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--app-text, #111)', marginBottom: 8 }}>⚽ Goal Celebration</div>
+            <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', marginBottom: 10 }}>Korte viering video (6 sec) — kies een stijl:</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+              {CELEBRATION_STYLES.map(style => (
+                <div
+                  key={style.value}
+                  onClick={() => setSelectedCelebration(prev => prev === style.value ? null : style.value)}
+                  style={chipStyle(selectedCelebration === style.value)}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)' }}>{style.label}</div>
+                  <div style={{ fontSize: 10, color: 'var(--app-text-secondary, #6b7280)', lineHeight: 1.3 }}>{style.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {error && (
+            <div style={{ fontSize: 12, color: '#dc2626', backgroundColor: '#fee2e2', borderRadius: 8, padding: '8px 12px' }}>{error}</div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '14px 24px', borderTop: '1px solid var(--app-border, #e5e7eb)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button
+            onClick={onClose}
+            style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--app-border, #e5e7eb)', background: 'transparent', color: 'var(--app-text-secondary, #6b7280)', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}
+          >
+            Overslaan
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || submitCount === 0}
+            style={{
+              padding: '9px 24px', borderRadius: 8, border: 'none',
+              background: submitCount > 0 ? '#2563eb' : '#94a3b8', color: '#fff',
+              fontWeight: 600, fontSize: 13, cursor: submitting ? 'wait' : submitCount > 0 ? 'pointer' : 'not-allowed',
+              opacity: submitting ? 0.7 : 1,
+            }}
+          >
+            {submitting ? 'Bezig...' : submitCount > 0 ? `🚀 Genereer ${submitCount} video${submitCount > 1 ? "'s" : ''}` : 'Selecteer een optie'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Review Modal ─────────────────────────────────────────────
 
 interface ReviewModalProps {
@@ -342,6 +530,9 @@ export default function ApprovalsPage() {
   // Review modal
   const [modalJob, setModalJob] = useState<GenerationJob | null>(null);
 
+  // Video follow-up modal (shown after fullbody_in_tenue approval)
+  const [videoFollowUp, setVideoFollowUp] = useState<VideoFollowUpInfo | null>(null);
+
   // Optimistic approval overrides (task_id → approval_status string)
   const [optimisticApprovals, setOptimisticApprovals] = useState<Record<string, string>>({});
 
@@ -455,14 +646,37 @@ export default function ApprovalsPage() {
 
     // API call
     try {
-      await reviewJob(taskId, action);
+      const result = await reviewJob(taskId, action);
       pushToast(action === 'approve' ? '✅ Goedgekeurd!' : '❌ Afgewezen', 'success');
+
+      // After approving a fullbody_in_tenue job, offer to generate videos
+      if (action === 'approve') {
+        const approvedJob = mergedJobs.find(j => j.task_id === taskId);
+        if (approvedJob && approvedJob.template_id === 'fullbody_in_tenue' && approvedJob.membership_id) {
+          // Find the first approved variant's presigned URL
+          const approvedVariants = result?.output_variants?.filter((v: any) => v.approved === true) || [];
+          const imageUrl = approvedVariants[0]?.presigned_url || approvedJob.output_url;
+          if (imageUrl) {
+            // Parse kit_type from the job label or filename (e.g. "Player in Tenue (home)")
+            const kitMatch = approvedJob.label?.match(/\((home|away|third|goalkeeper)\)/i);
+            const kitType = kitMatch ? kitMatch[1].toLowerCase() : 'home';
+            setVideoFollowUp({
+              membershipId: approvedJob.membership_id,
+              projectId: approvedJob.project_id || '',
+              organisationId: '',  // Will be filled from context
+              approvedImageUrl: imageUrl,
+              kitType,
+              memberName: approvedJob.membership_name || approvedJob.label || 'Speler',
+            });
+          }
+        }
+      }
     } catch (e) {
       pushToast(e instanceof Error ? e.message : 'Review mislukt', 'error');
       // Revert
       setOptimisticApprovals(prev => { const n = { ...prev }; delete n[taskId]; return n; });
     }
-  }, [modalJob, needsReviewJobs, pushToast]);
+  }, [modalJob, mergedJobs, needsReviewJobs, pushToast]);
 
   const visibleAiJobs = filterAiJobsByTab(mergedJobs, filter);
   const visibleVideoJobs = useMemo(() => filterVideoJobsByTab(videoJobs, filter), [videoJobs, filter]);
@@ -533,6 +747,19 @@ export default function ApprovalsPage() {
           reviewList={needsReviewJobs}
           onClose={() => setModalJob(null)}
           onReviewed={handleModalAction}
+        />
+      )}
+
+      {/* Video follow-up modal (after fullbody approval) */}
+      {videoFollowUp && (
+        <VideoFollowUpModal
+          info={videoFollowUp}
+          onClose={() => setVideoFollowUp(null)}
+          onSubmitted={(count) => {
+            pushToast(`🎬 ${count} video${count > 1 ? "'s" : ''} in de wachtrij gezet!`, 'success');
+            setVideoFollowUp(null);
+            refreshAiJobs();
+          }}
         />
       )}
 
