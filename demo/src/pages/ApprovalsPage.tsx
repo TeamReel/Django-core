@@ -265,8 +265,8 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
                         </div>
                       )}
                     </div>
-                    {/* Per-variant approve/reject */}
-                    {isCanReview && (
+                    {/* Per-variant approve/reject — only for multi-variant jobs */}
+                    {isCanReview && variants.length > 1 && (
                       <div style={{ display: 'flex', gap: 6, padding: '8px 2px' }}>
                         <button
                           onClick={() => toggleVariant(v.variant_index, true)}
@@ -311,7 +311,7 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
                 disabled={!!reviewing}
                 style={{ padding: '9px 20px', borderRadius: 8, border: '1px solid #fca5a5', background: reviewing === 'reject' ? '#fee2e2' : '#fff5f5', color: '#dc2626', fontWeight: 600, fontSize: 13, cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'reject' ? 0.5 : 1 }}
               >
-                {reviewing === 'reject' ? '...' : '✘ Alles afwijzen'}
+                {reviewing === 'reject' ? '...' : '✘ Afwijzen'}
               </button>
               <button
                 onClick={() => handleSubmit('approve')}

@@ -3146,8 +3146,10 @@ def _propagate_approved_image_to_brand(job) -> None:  # noqa: ANN001
     if job.template_id == "tenue_generate" and job.output_variants:
         import re
 
-        fn = (job.output_variants[0] or {}).get("filename", "")
-        kit_match = re.search(r"kit_type-(\w+?)(?:_|\.)", fn)
+        fn = (job.output_variants[0] or {}).get("filename", "") or (
+            job.output_variants[0] or {}
+        ).get("storage_path", "")
+        kit_match = re.search(r"kit_type-([a-zA-Z0-9]+)", fn)
         if kit_match:
             asset_type = f"kit_{kit_match.group(1)}"
 
@@ -3306,9 +3308,12 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
     storage_path = first_variant.get("storage_path", "")
     filename = first_variant.get("filename", "")
 
-    # Parse kit_type from filename: fullbody_in_tenue_kit_type-home_... → "home"
-    kit_match = re.search(r"kit_type-(\w+?)(?:_pose|_role|_shoe|_sleeve|_v\d|$)", filename)
-    kit_type = kit_match.group(1).strip("_") if kit_match else "home"
+    # Parse kit_type from filename or storage_path.
+    # Filename pattern: fullbody_in_tenue_kit_type-legacy_neck-round_sleeves-short_v1_xxx.png
+    # Use [a-zA-Z0-9]+ (no underscore) to stop at the next param boundary.
+    source_str = filename or storage_path or ""
+    kit_match = re.search(r"kit_type-([a-zA-Z0-9]+)", source_str)
+    kit_type = kit_match.group(1) if kit_match else "home"
 
     if storage_path:
         asset_type_dict[kit_type] = {
@@ -3424,12 +3429,13 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
             # then_vs_now_sidebyside → "sidebyside", then_vs_now_transformation → "transformation"
             composite_key = job.template_id.replace("then_vs_now_", "")
         else:
-            # Parse kit_type and style_variant from filename
+            # Parse kit_type and style_variant from filename or storage_path
             # Pattern: member_intro_kit_type-{kit}_style_variant-{style}_{hash}_{idx}.mp4
-            kit_match = re.search(r"kit_type-(\w+?)_style_variant", filename)
-            style_match = re.search(r"style_variant-([a-z][a-z_]*)", filename)
+            source_str = filename or storage_path or ""
+            kit_match = re.search(r"kit_type-([a-zA-Z0-9]+)", source_str)
+            style_match = re.search(r"style_variant-([a-z][a-z_]*)", source_str)
 
-            kit_type = kit_match.group(1).strip("_") if kit_match else "home"
+            kit_type = kit_match.group(1) if kit_match else "home"
             style_variant = style_match.group(1).strip("_") if style_match else None
 
             composite_key = f"{kit_type}_{style_variant}" if style_variant else kit_type
