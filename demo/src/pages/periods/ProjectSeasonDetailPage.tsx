@@ -1,7 +1,7 @@
 ﻿import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import { AssetsTab } from '../../components/AssetsTab';
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
 import { memberHasMedia, countFilledMediaSlots, countProcessedMediaSlots, getMediaProcessingState } from '../../utils/mediaHelpers';
@@ -256,6 +256,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
   const [selectedContentTypeLabel, setSelectedContentTypeLabel] = useState('');
+
+  // Video preview modal state (content tab)
+  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
+  const [previewVideoLabel, setPreviewVideoLabel] = useState('');
+
+  // Stable video URL ref — prevents <video src> churn when polling returns new presigned URLs
+  const stableVideoUrlsRef = useRef<Map<string, string>>(new Map());
 
   const seasonWalletOptions = useMemo<WalletOption[]>(() => {
     const opts: WalletOption[] = [{ kind: 'default', label: 'Default (recommended)' }];
@@ -2153,24 +2160,57 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
                             return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
                           })();
+                          // Stabilize video URL: cache the first presigned URL per job
+                          // so polling doesn't cause <video> elements to reload
+                          const stableUrl = (() => {
+                            if (!job.output_url) return null;
+                            const cached = stableVideoUrlsRef.current.get(job.id);
+                            if (cached) return cached;
+                            stableVideoUrlsRef.current.set(job.id, job.output_url);
+                            return job.output_url;
+                          })();
                           return (
                             <div
                               key={job.id}
+                              onClick={() => {
+                                if (stableUrl) {
+                                  setPreviewVideoUrl(stableUrl);
+                                  setPreviewVideoLabel(`${typeDisplay.icon} ${typeDisplay.label}`);
+                                }
+                              }}
                               style={{
                                 border: '1px solid var(--app-border)',
                                 borderRadius: 10,
                                 overflow: 'hidden',
                                 backgroundColor: 'var(--app-card-bg, var(--app-surface))',
+                                cursor: stableUrl ? 'pointer' : 'default',
+                                transition: 'box-shadow 0.15s ease',
                               }}
+                              onMouseEnter={(e) => { if (stableUrl) e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.15)'; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
                             >
-                              {/* Video preview */}
-                              {job.output_url && (
-                                <video
-                                  src={job.output_url}
-                                  controls
-                                  preload="metadata"
-                                  style={{ width: '100%', maxHeight: 180, backgroundColor: '#0f172a', display: 'block' }}
-                                />
+                              {/* Video thumbnail — preload=none to avoid mass range requests */}
+                              {stableUrl && (
+                                <div style={{ position: 'relative', width: '100%', height: 180, backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <video
+                                    src={stableUrl}
+                                    preload="none"
+                                    muted
+                                    playsInline
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                  />
+                                  <div style={{
+                                    position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    background: 'rgba(0,0,0,0.3)',
+                                  }}>
+                                    <div style={{
+                                      width: 48, height: 48, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.9)',
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    }}>
+                                      <span style={{ fontSize: 22, marginLeft: 3 }}>▶</span>
+                                    </div>
+                                  </div>
+                                </div>
                               )}
                               {/* Meta */}
                               <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -2191,12 +2231,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   {fileSize && <span>{fileSize}</span>}
                                   <span style={{ fontFamily: 'monospace', fontSize: 10 }}>{job.id.slice(0, 8)}</span>
                                 </div>
-                                {job.output_url && (
+                                {stableUrl && (
                                   <a
-                                    href={job.output_url}
+                                    href={stableUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    download
+                                    onClick={(e) => e.stopPropagation()}
                                     style={{ fontSize: 11, color: '#2563eb', fontWeight: 600, textDecoration: 'none', marginTop: 2 }}
                                   >
                                     ⬇ Download
@@ -2209,6 +2249,64 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       </div>
                     )}
                   </Card>
+
+                  {/* Video Preview Modal */}
+                  {previewVideoUrl && (
+                    <div
+                      onClick={() => { setPreviewVideoUrl(null); setPreviewVideoLabel(''); }}
+                      style={{
+                        position: 'fixed', inset: 0, zIndex: 9999,
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: 24,
+                      }}
+                    >
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          backgroundColor: 'var(--app-card-bg, #1e293b)',
+                          borderRadius: 12, overflow: 'hidden', maxWidth: 900,
+                          width: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                        }}
+                      >
+                        <div style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '12px 16px', borderBottom: '1px solid var(--app-border)',
+                        }}>
+                          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
+                            {previewVideoLabel || 'Video Preview'}
+                          </span>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <a
+                              href={previewVideoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ fontSize: 12, color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}
+                            >
+                              ⬇ Download
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => { setPreviewVideoUrl(null); setPreviewVideoLabel(''); }}
+                              style={{
+                                background: 'none', border: 'none', color: 'var(--app-muted-text)',
+                                cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: '4px 8px',
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                        <video
+                          src={previewVideoUrl}
+                          controls
+                          autoPlay
+                          playsInline
+                          style={{ width: '100%', maxHeight: '70vh', display: 'block', backgroundColor: '#000' }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
