@@ -8,6 +8,7 @@ This section covers the operational aspects of running the Django Core-App in pr
 
 *   **[Deployment](deployment.md)**: Complete deployment guide for Railway, Docker, Kubernetes, and other platforms.
 *   **[Railway Integration](railway-integration.md)**: Specific guide for Railway deployment (recommended).
+    *   See also: [TeamReel-specific Railway guide](../05-demo/infrastructure/railway-services.md) for worker setup & queue routing.
 *   **[Observability](observability.md)**: Monitoring, logging, metrics, health checks, and error tracking.
 *   **[Database Management](database.md)**: Backups, migrations, maintenance, and optimization.
 - **[Production Validation](./production-validation.md)**

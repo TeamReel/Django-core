@@ -1,6 +1,6 @@
 # Demo Integration Documentation
 
-**Last Updated:** 2026-02-04
+**Last Updated:** 2026-02-23
 **Purpose:** Enable smooth integration of new backend modules with TeamReel
 **Status:** Restructured (v2.0)
 
@@ -20,10 +20,17 @@ This documentation provides everything needed to integrate new backend modules w
 |----------|---------|
 | [README.md](README.md) | **Start here** - Quick integration guide |
 | [glossary.md](glossary.md) | Domain concepts, naming conventions, canonical data |
-| [generation-queue.md](generation-queue.md) | AI Generation Queue — hoe werkt het in de praktijk (GenerationJob, workflow tab, toasts) |
+| [generation-queue.md](generation-queue.md) | AI Generation Queue — GenerationJob, workflow tab, toasts |
 | [media/media-architecture.md](media/media-architecture.md) | 4-laags media opslag (FileAsset → MediaItem → BrandAsset → VideoJob) |
 | [media/media-templates.md](media/media-templates.md) | Content generation: lineup, match updates, multi-sport templates |
 | [media/lineup-architecture.md](media/lineup-architecture.md) | Lineup video & flyer: modulaire opbouw, assets, pipeline |
+| [media/rvm-alpha-pipeline.md](media/rvm-alpha-pipeline.md) | RVM background removal: MOV alpha → MP4 preview pipeline |
+
+### Infrastructure
+
+| Document | Purpose |
+|----------|----------|
+| [infrastructure/railway-services.md](infrastructure/railway-services.md) | Railway services, 3-worker setup, queue routing, troubleshooting |
 
 ### Schema Reference
 
@@ -67,10 +74,16 @@ python scripts/generate_demo_docs.py
 ├── index.md              # This file
 ├── README.md             # Quick start integration guide
 ├── glossary.md           # Domain concepts + naming conventions
+├── generation-queue.md   # AI Generation Queue lifecycle
+├── infrastructure/
+│   └── railway-services.md    # Railway setup, workers, queues, troubleshooting
 ├── media/
 │   ├── media-architecture.md  # 4-laags media opslag model
-│   ├── media-templates.md     # Content generation templates (lineup, updates, multi-sport)
-│   └── lineup-architecture.md # Lineup video & flyer: modulaire opbouw, assets, pipeline
+│   ├── media-templates.md     # Content generation templates
+│   ├── lineup-architecture.md # Lineup video & flyer pipeline
+│   ├── rvm-alpha-pipeline.md  # RVM background removal + alpha pipeline
+│   ├── ai-models-pricing.md   # AI providers & pricing overview
+│   └── ai-providers.md        # Provider capabilities & comparison
 ├── schema/
 │   └── tables.md         # Auto-gen: Tables + FK relations
 ├── seeding/
