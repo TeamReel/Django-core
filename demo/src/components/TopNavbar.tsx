@@ -99,6 +99,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   const [quickReviewOpen, setQuickReviewOpen] = useState(false);
   const [quickReviewIdx, setQuickReviewIdx] = useState(0);
   const [quickReviewBusy, setQuickReviewBusy] = useState(false);
+  const [selectedVariantIdx, setSelectedVariantIdx] = useState<number | null>(null);
 
   // Quick-review: fetch pending_review jobs (only when modal is open or count > 0)
   const { jobs: allAiJobs, refresh: refreshAiJobs } = useGenerationJobs({
@@ -951,6 +952,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               onClick={() => {
                 if (queueCounts.review > 0) {
                   setQuickReviewIdx(0);
+                  setSelectedVariantIdx(null);
                   setQuickReviewOpen(true);
                 } else {
                   navigate('/approvals');
@@ -1303,7 +1305,10 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           if (quickReviewBusy) return;
           setQuickReviewBusy(true);
           try {
-            await reviewJob(job.task_id, action);
+            // If a specific variant is selected, pass its index
+            const variantIndices = selectedVariantIdx !== null ? [selectedVariantIdx] : undefined;
+            await reviewJob(job.task_id, action, variantIndices);
+            setSelectedVariantIdx(null);
             refreshAiJobs();
             // Advance to next (idx stays, list shrinks on refresh)
             if (quickReviewIdx >= pendingReviewJobs.length - 1) {
@@ -1345,14 +1350,14 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 <div style={{ display: 'flex', gap: 4 }}>
                   <button
                     disabled={quickReviewIdx <= 0}
-                    onClick={() => setQuickReviewIdx(i => Math.max(0, i - 1))}
+                    onClick={() => { setQuickReviewIdx(i => Math.max(0, i - 1)); setSelectedVariantIdx(null); }}
                     style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text)', cursor: quickReviewIdx > 0 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx > 0 ? 1 : 0.4, fontSize: 14 }}
                   >
                     ‹
                   </button>
                   <button
                     disabled={quickReviewIdx >= pendingReviewJobs.length - 1}
-                    onClick={() => setQuickReviewIdx(i => Math.min(pendingReviewJobs.length - 1, i + 1))}
+                    onClick={() => { setQuickReviewIdx(i => Math.min(pendingReviewJobs.length - 1, i + 1)); setSelectedVariantIdx(null); }}
                     style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text)', cursor: quickReviewIdx < pendingReviewJobs.length - 1 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx < pendingReviewJobs.length - 1 ? 1 : 0.4, fontSize: 14 }}
                   >
                     ›
@@ -1375,10 +1380,31 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                   justifyItems: 'center',
                 }}>
                   {variants.map((v) => (
-                    <div key={v.variant_index} style={{
-                      border: '1px solid var(--app-border, #334155)', borderRadius: 12, overflow: 'hidden',
-                      backgroundColor: '#0f172a', maxWidth: variants.length === 1 ? 420 : '100%', width: '100%',
-                    }}>
+                    <div
+                      key={v.variant_index}
+                      onClick={() => variants.length > 1 ? setSelectedVariantIdx(prev => prev === v.variant_index ? null : v.variant_index) : undefined}
+                      style={{
+                        border: selectedVariantIdx === v.variant_index ? '3px solid #16a34a' : '1px solid var(--app-border, #334155)',
+                        borderRadius: 12, overflow: 'hidden',
+                        backgroundColor: '#0f172a', maxWidth: variants.length === 1 ? 420 : '100%', width: '100%',
+                        cursor: variants.length > 1 ? 'pointer' : 'default',
+                        opacity: variants.length > 1 && selectedVariantIdx !== null && selectedVariantIdx !== v.variant_index ? 0.5 : 1,
+                        transition: 'all 0.15s ease',
+                        position: 'relative',
+                      }}
+                    >
+                      {variants.length > 1 && (
+                        <div style={{
+                          position: 'absolute', top: 8, right: 8, zIndex: 2,
+                          width: 28, height: 28, borderRadius: '50%',
+                          backgroundColor: selectedVariantIdx === v.variant_index ? '#16a34a' : 'rgba(0,0,0,0.5)',
+                          border: '2px solid white',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#fff', fontSize: 14, fontWeight: 700,
+                        }}>
+                          {selectedVariantIdx === v.variant_index ? '✓' : (v.variant_index + 1)}
+                        </div>
+                      )}
                       {v.presigned_url && isVideo(v) ? (
                         <video
                           src={v.presigned_url}
@@ -1435,7 +1461,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                       cursor: quickReviewBusy ? 'wait' : 'pointer', opacity: quickReviewBusy ? 0.6 : 1,
                     }}
                   >
-                    ✅ Goedkeuren
+                    ✅ {variants.length > 1 && selectedVariantIdx !== null ? `#${selectedVariantIdx + 1} Goedkeuren` : 'Goedkeuren'}
                   </button>
                 </div>
               </div>

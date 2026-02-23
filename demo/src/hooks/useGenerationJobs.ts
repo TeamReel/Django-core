@@ -116,7 +116,13 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
         prevStatusMap.current[job.task_id] = job.status;
       }
 
-      setJobs(newJobs);
+      // Only update state if data actually changed (prevents unnecessary re-renders
+      // that would reset video playback in modals, etc.)
+      setJobs(prev => {
+        const prevJson = JSON.stringify(prev.map(j => `${j.task_id}:${j.status}:${j.approval_status}:${j.progress}`));
+        const nextJson = JSON.stringify(newJobs.map(j => `${j.task_id}:${j.status}:${j.approval_status}:${j.progress}`));
+        return prevJson === nextJson ? prev : newJobs;
+      });
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load jobs');
