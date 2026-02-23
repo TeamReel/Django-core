@@ -843,8 +843,8 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                       ? { name: seasonSport.name, sport_icon: seasonSport.sport_icon, category_name: seasonSport.category_name }
                       : null;
 
-                    const clubSlugOrId = (clubObj as any)?.slug || clubId;
-                    const teamSlugOrId = (teamObj as any)?.slug || String(teamId || '').trim();
+                    const clubSlugOrId = (clubObj as any)?.slug || clubId || selectedClubId;
+                    const teamSlugOrId = (teamObj as any)?.slug || String(teamId || '').trim() || selectedTeamId;
                     const seasonSlugOrId = periodPathKey(season) || season.slug || season.id;
 
                     const teamDetailPath = (orgForRowRoutes && clubSlugOrId && teamSlugOrId)

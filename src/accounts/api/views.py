@@ -2477,6 +2477,20 @@ def admin_user_list(request):
     queryset = User.objects.select_related().prefetch_related("groups").order_by("-date_joined")
 
     # Apply filters
+    # Full-text search across name and email fields
+    search = request.query_params.get("search", "").strip()
+    if search:
+        from django.db.models import Q
+
+        search_q = Q()
+        for term in search.split():
+            search_q &= (
+                Q(first_name__icontains=term)
+                | Q(last_name__icontains=term)
+                | Q(email__icontains=term)
+            )
+        queryset = queryset.filter(search_q)
+
     is_active = request.query_params.get("is_active")
     if is_active is not None:
         queryset = queryset.filter(is_active=is_active.lower() == "true")
