@@ -83,15 +83,6 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   const queueBadgeCount = queueCounts.review > 0 ? queueCounts.review : queueCounts.active;
   const queueBadgeColor = queueCounts.review > 0 ? '#dc3545' : '#f59e0b';
 
-  // Quick-review: fetch pending_review jobs (only when modal is open or count > 0)
-  const { jobs: allAiJobs, refresh: refreshAiJobs } = useGenerationJobs({
-    pollInterval: quickReviewOpen ? 5000 : 30000,
-  });
-  const pendingReviewJobs = useMemo(() =>
-    allAiJobs.filter(j => j.status === 'completed' && (j.approval_status === 'pending_review' || !j.approval_status)),
-    [allAiJobs],
-  );
-
   const debugLog = (...args: unknown[]) => {
     if (import.meta.env.DEV) console.log(...args);
   };
@@ -108,6 +99,15 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   const [quickReviewOpen, setQuickReviewOpen] = useState(false);
   const [quickReviewIdx, setQuickReviewIdx] = useState(0);
   const [quickReviewBusy, setQuickReviewBusy] = useState(false);
+
+  // Quick-review: fetch pending_review jobs (only when modal is open or count > 0)
+  const { jobs: allAiJobs, refresh: refreshAiJobs } = useGenerationJobs({
+    pollInterval: quickReviewOpen ? 5000 : 30000,
+  });
+  const pendingReviewJobs = useMemo(() =>
+    allAiJobs.filter(j => j.status === 'completed' && (j.approval_status === 'pending_review' || !j.approval_status)),
+    [allAiJobs],
+  );
   const createMenuRef = useRef<HTMLDivElement | null>(null);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
