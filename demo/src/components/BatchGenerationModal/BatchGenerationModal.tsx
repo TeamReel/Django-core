@@ -25,12 +25,9 @@ import { getApiBaseUrl } from '../../utils/apiBase';
 // Constants
 // ============================================================================
 
-const PROCESS_ASSET_TYPES = [
-  { value: 'fullbody' as const, label: 'Fullbody', icon: '🧍' },
-  { value: 'closeup' as const, label: 'Close-up', icon: '👤' },
-  { value: 'intro' as const, label: 'Short Intro', icon: '🎬' },
-  { value: 'celebration' as const, label: 'Celebration', icon: '🎉' },
-];
+// Note: "Alleen Bewerken" (processOnly) mode and processAfterGeneration removed.
+// Processing now happens automatically on the backend after AI approval.
+// See: auto_crop_closeup_from_fullbody task + _auto_dispatch_rvm_processing().
 
 // ============================================================================
 // Types
@@ -199,13 +196,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
   const [jobStatuses, setJobStatuses] = useState<Record<string, MemberJobStatus>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const abortRef = useRef(false);
-  // Mode selection: 'generate' (AI generation + optional processing) or 'processOnly' (skip generation, process existing)
-  const [batchMode, setBatchMode] = useState<'generate' | 'processOnly'>('generate');
-  // If true, trigger backend processing (POST /api/v1/video/jobs/process-asset/) after
-  // the generated asset is saved to membership metadata.
-  const [processAfterGeneration, setProcessAfterGeneration] = useState<boolean>(false);
-  // Asset type selection for processOnly mode
-  const [processAssetType, setProcessAssetType] = useState<'fullbody' | 'closeup' | 'intro' | 'celebration'>('fullbody');
+
 
   // Available templates for member context
   const memberTemplates = useMemo(() => getTemplatesForContext('member'), []);
@@ -312,39 +303,6 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
     [brandAssets, selectedTemplate]
   );
 
-  // Get existing asset URL for a member (used in processOnly mode)
-  const getExistingAssetUrl = useCallback(
-    (member: BatchMember, assetType: string, kitType: string): string | null => {
-      const tr = member.metadata?.teamreel_assets || {};
-      const extractUrl = (val: any): string | null => {
-        if (!val) return null;
-        if (typeof val === 'string') return val;
-        if (typeof val === 'object') return val.raw || val.processed || null;
-        return null;
-      };
-
-      if (assetType === 'fullbody') {
-        return member.fullbodyUrls[kitType] || null;
-      }
-      if (assetType === 'closeup') {
-        return member.closeupUrls[kitType] || null;
-      }
-      // intro / celebration → videos.{assetType}.{kitType} or {kitType}_{variant}
-      const videos = tr?.videos || {};
-      const typeVideos = videos[assetType] || {};
-      // Check plain kitType first, then any variant key starting with kitType
-      if (typeVideos[kitType]) return extractUrl(typeVideos[kitType]);
-      const variantKey = Object.keys(typeVideos).find((k) => k.startsWith(kitType));
-      if (variantKey) return extractUrl(typeVideos[variantKey]);
-      // Fallback: any bare style key (old format like "arms_crossed" without kit prefix)
-      const bareKey = Object.keys(typeVideos).find((k) =>
-        k && !k.startsWith('home') && !k.startsWith('away') && !k.startsWith('third') && !k.startsWith('goalkeeper')
-      );
-      return bareKey ? extractUrl(typeVideos[bareKey]) : null;
-    },
-    []
-  );
-
   // ---- Batch execution ----
   const startBatch = useCallback(async () => {
     setStep('running');
@@ -370,211 +328,9 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
       const params = getEffectiveParams(member.id);
       const inputAssets = getInputAssetsForMember(member, params);
       const kitType = params.kit_type || 'home';
-      const category = batchMode === 'processOnly' ? processAssetType : selectedTemplate.category;
+      const category = selectedTemplate.category;
 
-      // ── PROCESS ONLY MODE: Skip generation, process existing asset ──
-      if (batchMode === 'processOnly') {
-        const isVideoType = processAssetType === 'intro' || processAssetType === 'celebration';
-
-        try {
-          // For video types (intro/celebration): use process-all-variants endpoint
-          // This processes ALL unprocessed variants for this asset type
-          if (isVideoType) {
-            const procRes = await fetch(`${apiBase}/api/v1/video/jobs/process-all-variants/`, {
-              method: 'POST',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken(),
-              },
-              body: JSON.stringify({
-                membership_id: member.id,
-                asset_type: processAssetType,
-              }),
-            });
-
-            const procJson = await procRes.json().catch(() => ({}));
-
-            if (!procRes.ok) {
-              throw new Error(procJson?.error || `Process failed (${procRes.status})`);
-            }
-
-            // Check if there was nothing to process
-            if (procJson.status === 'nothing_to_process') {
-              const skippedReasons = (procJson.skipped || []).map((s: any) => s.reason).join(', ');
-              setJobStatuses((prev) => ({
-                ...prev,
-                [member.id]: {
-                  status: 'skipped',
-                  error: skippedReasons.includes('already_processed')
-                    ? 'Alle varianten al verwerkt'
-                    : skippedReasons.includes('already_processing')
-                    ? 'Varianten worden al verwerkt'
-                    : skippedReasons.includes('no_raw_url')
-                    ? 'Geen ruwe video gevonden'
-                    : 'Geen varianten gevonden'
-                },
-              }));
-              continue;
-            }
-
-            const totalQueued = procJson.total_queued || 0;
-            setJobStatuses((prev) => ({
-              ...prev,
-              [member.id]: { status: 'running', error: `${totalQueued} variant(en) bezig…` }
-            }));
-
-            // Poll until ALL queued variants are processed
-            // RVM video processing can take 15-30 min per video
-            const POLL_INTERVAL = 5000;
-            const MAX_POLLS = 360; // ~30 min total
-            let allDone = false;
-
-            for (let p = 0; p < MAX_POLLS; p++) {
-              if (abortRef.current) break;
-              await new Promise((r) => setTimeout(r, POLL_INTERVAL));
-              if (abortRef.current) break;
-
-              const mRes = await fetch(
-                `${apiBase}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
-                { credentials: 'include' }
-              );
-              if (!mRes.ok) continue;
-
-              const mJson = await mRes.json().catch(() => null);
-              const mData = mJson?.data || mJson;
-              const mMeta = mData?.metadata || {};
-              const tr = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
-              const videoCategory = (tr.videos || {})[processAssetType] || {};
-
-              // Count how many are still processing
-              let stillProcessing = 0;
-              let processed = 0;
-              let failed = 0;
-
-              for (const [key, val] of Object.entries(videoCategory)) {
-                if (!val || typeof val !== 'object') continue;
-                const state = (val as any).processing_state || 'raw';
-                if (state === 'processing' || state === 'cancelling') stillProcessing++;
-                else if (state === 'processed') processed++;
-                else if (state === 'failed') failed++;
-              }
-
-              setJobStatuses((prev) => ({
-                ...prev,
-                [member.id]: {
-                  status: 'running',
-                  error: `${processed} voltooid, ${stillProcessing} bezig${failed > 0 ? `, ${failed} mislukt` : ''}`
-                },
-              }));
-
-              // All done when nothing is processing and we had queued items
-              if (stillProcessing === 0 && (processed > 0 || failed > 0)) {
-                allDone = true;
-                setJobStatuses((prev) => ({
-                  ...prev,
-                  [member.id]: {
-                    status: failed > 0 ? 'error' : 'success',
-                    error: `${processed} voltooid${failed > 0 ? `, ${failed} mislukt` : ''}`,
-                  },
-                }));
-                break;
-              }
-            }
-
-            if (!allDone && !abortRef.current) {
-              throw new Error('Processing timeout');
-            }
-          } else {
-            // For image types (fullbody/closeup): use single-variant endpoint
-            const existingRawUrl = getExistingAssetUrl(member, processAssetType, kitType);
-            if (!existingRawUrl) {
-              const typeLabel = PROCESS_ASSET_TYPES.find(t => t.value === processAssetType)?.label || processAssetType;
-              setJobStatuses((prev) => ({
-                ...prev,
-                [member.id]: { status: 'skipped', error: `Geen bestaande ${kitType} ${typeLabel}` },
-              }));
-              continue;
-            }
-
-            const procRes = await fetch(`${apiBase}/api/v1/video/jobs/process-asset/`, {
-              method: 'POST',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken(),
-              },
-              body: JSON.stringify({
-                membership_id: member.id,
-                asset_type: processAssetType,
-                kit_type: kitType,
-              }),
-            });
-
-            if (!procRes.ok) {
-              const errJson = await procRes.json().catch(() => ({}));
-              throw new Error(errJson?.error || `Process failed (${procRes.status})`);
-            }
-
-            setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'running', error: 'Bewerking bezig…' } }));
-
-            // Poll for completion
-            const POLL_INTERVAL = 3000;
-            const MAX_POLLS = 80; // images ~4min
-            let processed = false;
-
-            for (let p = 0; p < MAX_POLLS; p++) {
-              if (abortRef.current) break;
-              await new Promise((r) => setTimeout(r, POLL_INTERVAL));
-              if (abortRef.current) break;
-
-              const mRes = await fetch(
-                `${apiBase}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
-                { credentials: 'include' }
-              );
-              if (!mRes.ok) continue;
-
-              const mJson = await mRes.json().catch(() => null);
-              const mData = mJson?.data || mJson;
-              const mMeta = mData?.metadata || {};
-              const tr = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
-
-              const checkVal = ((tr.images || {})[processAssetType] || {})[kitType];
-
-              if (checkVal && typeof checkVal === 'object') {
-                const state = checkVal.processing_state || checkVal.state || null;
-                if (state === 'processed') {
-                  setJobStatuses((prev) => ({
-                    ...prev,
-                    [member.id]: { status: 'success', resultUrl: checkVal.processed || '' },
-                  }));
-                  processed = true;
-                  break;
-                }
-                if (state === 'failed') {
-                  throw new Error(checkVal.error || 'Processing failed');
-                }
-              }
-            }
-
-            if (!processed && !abortRef.current) {
-              throw new Error('Processing timeout');
-            }
-          }
-        } catch (err) {
-          console.error(`Batch processing failed for ${member.name}:`, err);
-          setJobStatuses((prev) => ({
-            ...prev,
-            [member.id]: {
-              status: 'error',
-              error: err instanceof Error ? err.message : 'Onbekende fout',
-            },
-          }));
-        }
-        continue;
-      }
-
-      // ── GENERATE MODE: AI generation + optional processing ──
+      // ── GENERATE MODE: AI generation (processing happens automatically on backend) ──
 
       // For video types (intro/celebration): Check if member already has an existing
       // raw video variant that can be processed, to avoid re-generating unnecessarily.
@@ -916,7 +672,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
     }
 
     setStep('done');
-  }, [members, getEffectiveParams, getInputAssetsForMember, selectedTemplate, organisationId, projectId, apiBase, batchMode, processAssetType, processAfterGeneration]);
+  }, [members, getEffectiveParams, getInputAssetsForMember, selectedTemplate, organisationId, projectId, apiBase]);
 
   // Update membership metadata after successful generation
   const updateMembershipMetadata = useCallback(
@@ -1018,91 +774,8 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         if (!res.ok) {
           console.error(`Failed to update metadata for ${member.name}:`, await res.text());
         }
-        // If requested, trigger backend processing for this newly-saved asset
-        if (processAfterGeneration) {
-          // Fire-and-poll: request processing then poll membership until processed/failed
-          void (async () => {
-            try {
-              // Trigger processing
-              const procRes = await fetch(`${apiBase}/api/v1/video/jobs/process-asset/`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRFToken': getCsrfToken(),
-                },
-                body: JSON.stringify({
-                  membership_id: member.id,
-                  asset_type: category,
-                  kit_type: kitType,
-                  variant_id: styleVariant || null,
-                }),
-              });
-
-              if (!procRes.ok) {
-                const errJson = await procRes.json().catch(() => null);
-                setJobStatuses((prev) => ({
-                  ...prev,
-                  [member.id]: { status: 'error', error: errJson?.error || `Process request failed (${procRes.status})` },
-                }));
-                return;
-              }
-
-              setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'running' } }));
-
-              // Poll for membership metadata update
-              const POLL_INTERVAL = 3000;
-              const MAX_POLLS = 80; // ~4 minutes
-              for (let p = 0; p < MAX_POLLS; p++) {
-                await new Promise((r) => setTimeout(r, POLL_INTERVAL));
-                // Fetch membership record
-                const mRes = await fetch(
-                  `${apiBase}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
-                  { credentials: 'include' }
-                );
-                if (!mRes.ok) continue;
-                const mJson = await mRes.json().catch(() => null);
-                const mData = mJson?.data || mJson;
-                const mMeta = mData?.metadata || mData?.metadata || {};
-                const tr = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
-
-                let checkVal: any = null;
-                if (category === 'fullbody' || category === 'closeup') {
-                  checkVal = ((tr.images || {})[category] || {})[metaKey];
-                } else {
-                  checkVal = ((tr.videos || {})[category] || {})[metaKey];
-                }
-
-                if (checkVal && typeof checkVal === 'object') {
-                  const state = checkVal.processing_state || checkVal.state || null;
-                  if (state === 'processed') {
-                    setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'success', resultUrl: checkVal.processed || checkVal.processed_url || '' } }));
-                    break;
-                  }
-                  if (state === 'failed') {
-                    setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'error', error: checkVal.error || 'Processing failed' } }));
-                    break;
-                  }
-                  // Update progress if available
-                  if (state === 'processing' && (checkVal.progress_frames || checkVal.total_frames)) {
-                    setJobStatuses((prev) => ({
-                      ...prev,
-                      [member.id]: {
-                        status: 'running',
-                        progressFrames: checkVal.progress_frames,
-                        totalFrames: checkVal.total_frames,
-                      }
-                    }));
-                  }
-                }
-                // continue polling until timeout
-              }
-            } catch (err) {
-              console.error('Error triggering/polling processing for', member.id, err);
-              setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'error', error: String(err) } }));
-            }
-          })();
-        }
+        // Note: Processing (bg removal, closeup crop) now happens automatically on the backend
+        // after AI approval — no manual process-asset call needed.
       } catch (err) {
         console.error(`Error updating metadata for ${member.name}:`, err);
       }
@@ -1130,10 +803,10 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         {/* Header */}
         <div style={headerStyle}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '24px' }}>{batchMode === 'processOnly' ? '⚙️' : '🚀'}</span>
+            <span style={{ fontSize: '24px' }}>🚀</span>
             <div>
               <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
-                {batchMode === 'processOnly' ? 'Batch Bewerking' : 'Batch AI Generatie'}
+                Batch AI Generatie
               </h2>
               <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
                 {members.length} {members.length === 1 ? 'member' : 'members'} geselecteerd
@@ -1161,132 +834,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         <div style={bodyStyle}>
           {step === 'configure' && (
             <>
-              {/* Mode selector */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
-                  Modus
-                </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => setBatchMode('generate')}
-                    style={{
-                      flex: 1,
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      border: `2px solid ${batchMode === 'generate' ? '#3b82f6' : 'var(--app-border, #444)'}`,
-                      background: batchMode === 'generate' ? 'rgba(59,130,246,0.15)' : 'var(--app-surface-2, #252540)',
-                      color: 'var(--app-text)',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <span>🎨</span>
-                    <div style={{ textAlign: 'left' }}>
-                      <div style={{ fontWeight: 600 }}>Genereer + Bewerk</div>
-                      <div style={{ fontSize: '11px', opacity: 0.7 }}>AI generatie → optioneel bewerken</div>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setBatchMode('processOnly')}
-                    style={{
-                      flex: 1,
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      border: `2px solid ${batchMode === 'processOnly' ? '#3b82f6' : 'var(--app-border, #444)'}`,
-                      background: batchMode === 'processOnly' ? 'rgba(59,130,246,0.15)' : 'var(--app-surface-2, #252540)',
-                      color: 'var(--app-text)',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <span>⚙️</span>
-                    <div style={{ textAlign: 'left' }}>
-                      <div style={{ fontWeight: 600 }}>Alleen Bewerken</div>
-                      <div style={{ fontSize: '11px', opacity: 0.7 }}>Bestaande assets bewerken</div>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              {/* Asset type selector for processOnly mode */}
-              {batchMode === 'processOnly' && (
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                  Asset Type
-                </label>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {PROCESS_ASSET_TYPES.map((t) => (
-                    <button
-                      key={t.value}
-                      onClick={() => setProcessAssetType(t.value)}
-                      style={{
-                        padding: '8px 14px',
-                        borderRadius: '8px',
-                        border: `2px solid ${processAssetType === t.value ? '#3b82f6' : 'var(--app-border, #444)'}`,
-                        background: processAssetType === t.value ? 'rgba(59,130,246,0.15)' : 'var(--app-surface-2, #252540)',
-                        color: 'var(--app-text)',
-                        cursor: 'pointer',
-                        fontSize: '13px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                      }}
-                    >
-                      <span>{t.icon}</span>
-                      <span>{t.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Kit type selector for processOnly mode (images only) */}
-                {(processAssetType === 'fullbody' || processAssetType === 'closeup') && (
-                <div style={{ marginTop: '12px' }}>
-                  <label style={{ display: 'block', fontSize: '11px', color: 'var(--app-muted-text)', marginBottom: '3px' }}>
-                    Tenue Type
-                  </label>
-                  <select
-                    value={defaultParams.kit_type || 'home'}
-                    onChange={(e) => setDefaultParams((prev) => ({ ...prev, kit_type: e.target.value }))}
-                    style={selectStyle}
-                  >
-                    {KIT_ROLES.map((kr) => (
-                      <option key={kr.id} value={kr.id}>{kr.label}</option>
-                    ))}
-                  </select>
-                </div>
-                )}
-
-                {/* Info text for intro/celebration - all variants are processed */}
-                {(processAssetType === 'intro' || processAssetType === 'celebration') && (
-                  <div style={{
-                    marginTop: '12px',
-                    padding: '12px',
-                    background: 'rgba(59,130,246,0.1)',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(59,130,246,0.3)',
-                    fontSize: '13px',
-                    color: 'var(--app-text)',
-                  }}>
-                    <div style={{ fontWeight: 600, marginBottom: '4px' }}>💡 Alle varianten worden verwerkt</div>
-                    <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                      Alle combinaties van tenue + stijl die nog niet bewerkt zijn worden automatisch verwerkt.
-                      Bijvoorbeeld: home_arms_crossed, goalkeeper_thumbs_up, etc.
-                    </div>
-                  </div>
-                )}
-              </div>
-              )}
-
               {/* Template selector */}
-              {batchMode === 'generate' && (
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
                   Template
@@ -1318,10 +866,9 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                   ))}
                 </div>
               </div>
-              )}
 
               {/* Default params */}
-              {batchMode === 'generate' && selectedTemplate && (
+              {selectedTemplate && (
                 <div style={{ marginBottom: '20px' }}>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
                     Standaard Instellingen (voor alle members)
@@ -1358,23 +905,22 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                 </div>
               )}
 
-              {/* Option: Process generated asset after save (only in generate mode) */}
-              {batchMode === 'generate' && (
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
-                  <input
-                    type="checkbox"
-                    checked={processAfterGeneration}
-                    onChange={(e) => setProcessAfterGeneration(e.target.checked)}
-                  />
-                  <span style={{ fontSize: '13px' }}>Bewerk asset na generatie (achtergrond verwijderen / formaat aanpassen)</span>
-                </label>
+              {/* Note: Processing (bg removal, closeup crop) now happens automatically on the backend after approval */}
+              <div style={{
+                marginBottom: '20px',
+                padding: '10px 12px',
+                background: 'rgba(34, 197, 94, 0.1)',
+                borderRadius: '8px',
+                border: '1px solid rgba(34, 197, 94, 0.25)',
+                fontSize: '12px',
+                color: 'var(--app-muted-text)',
+              }}>
+                ✅ Bewerking (achtergrond verwijderen, closeup crop) verloopt automatisch na goedkeuring
               </div>
-              )}
 
               {/* Member list with optional per-member overrides */}
               {/* Info box for video templates: existing variants are auto-detected */}
-              {batchMode === 'generate' && selectedTemplate && (selectedTemplate.category === 'intro' || selectedTemplate.category === 'celebration') && (
+              {selectedTemplate && (selectedTemplate.category === 'intro' || selectedTemplate.category === 'celebration') && (
                 <div style={{
                   marginBottom: '16px',
                   padding: '12px',
@@ -1406,12 +952,11 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                   const kitType = effectiveParams.kit_type || 'home';
                   const hasOverrides = Object.keys(memberOverrides[member.id] || {}).length > 0;
                   const inputAssets = getInputAssetsForMember(member, effectiveParams);
-                  const missingPerson = batchMode === 'generate' && !inputAssets.person;
-                  const missingExisting = batchMode === 'processOnly' && !getExistingAssetUrl(member, processAssetType, kitType);
+                  const missingPerson = !inputAssets.person;
 
                   // Check for existing unprocessed video variant (in generate mode with video template)
                   let existingVideoVariant: string | null = null;
-                  if (batchMode === 'generate' && selectedTemplate && (selectedTemplate.category === 'intro' || selectedTemplate.category === 'celebration')) {
+                  if (selectedTemplate && (selectedTemplate.category === 'intro' || selectedTemplate.category === 'celebration')) {
                     const tr = member.metadata?.teamreel_assets || {};
                     const videoCategory = (tr.videos || {})[selectedTemplate.category] || {};
                     for (const [key, val] of Object.entries(videoCategory)) {
@@ -1432,7 +977,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                         style={{
                           ...memberRowStyle,
                           cursor: 'pointer',
-                          opacity: (missingPerson || missingExisting) ? 0.5 : 1,
+                          opacity: missingPerson ? 0.5 : 1,
                           borderColor: hasOverrides ? '#3b82f6' : 'var(--app-border, #333)',
                         }}
                       >
@@ -1447,9 +992,6 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                           <div style={{ fontSize: '14px', fontWeight: 500 }}>{member.name}</div>
                           {missingPerson && (
                             <div style={{ fontSize: '11px', color: '#ef4444' }}>⚠️ Geen input foto beschikbaar</div>
-                          )}
-                          {missingExisting && (
-                            <div style={{ fontSize: '11px', color: '#ef4444' }}>⚠️ Geen bestaande {kitType} {PROCESS_ASSET_TYPES.find(t => t.value === processAssetType)?.label || processAssetType}</div>
                           )}
                           {existingVideoVariant && (
                             <div style={{ fontSize: '11px', color: '#22c55e' }}>✅ Bestaande {existingVideoVariant.replace(/_/g, ' ')} wordt verwerkt</div>
@@ -1540,7 +1082,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
           {(step === 'running' || step === 'done') && (
             <>
               {/* Background processing notice for video types */}
-              {step === 'running' && (batchMode === 'processOnly' ? (processAssetType === 'intro' || processAssetType === 'celebration') : (selectedTemplate?.category === 'intro' || selectedTemplate?.category === 'celebration')) && (
+              {step === 'running' && (selectedTemplate?.category === 'intro' || selectedTemplate?.category === 'celebration') && (
                 <div style={{
                   padding: '12px',
                   marginBottom: '16px',
@@ -1629,11 +1171,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
           {step === 'configure' && (
             <>
               <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
-                {batchMode === 'generate' ? (
-                  <>💎 {selectedTemplate ? selectedTemplate.creditsCost * members.length : 0} credits totaal ({selectedTemplate?.creditsCost || 0} per member)</>
-                ) : (
-                  <>⚙️ Bewerking: gratis (geen AI generatie)</>
-                )}
+                💎 {selectedTemplate ? selectedTemplate.creditsCost * members.length : 0} credits totaal ({selectedTemplate?.creditsCost || 0} per member)
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <Button variant="secondary" onClick={onClose}>
@@ -1644,7 +1182,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                   onClick={startBatch}
                   disabled={members.length === 0}
                 >
-                  {batchMode === 'processOnly' ? '⚙️' : '🚀'} Start Batch ({members.length})
+                  🚀 Start Batch ({members.length})
                 </Button>
               </div>
             </>
