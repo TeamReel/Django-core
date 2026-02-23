@@ -3413,6 +3413,7 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
 
     now_iso = timezone.now().isoformat()
     changed = False
+    _auto_process_queue: list[tuple[str, str]] = []  # (composite_key, storage_path)
 
     for variant in approved_variants:
         storage_path = variant.get("storage_path", "")
@@ -3433,24 +3434,32 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
 
             composite_key = f"{kit_type}_{style_variant}" if style_variant else kit_type
 
-        # then_vs_now videos don't need bg removal; intro/celebration do
-        needs_bg_removal = asset_type in ("intro", "celebration")
+        # All video types with visual assets benefit from RVM processing:
+        # - intro/celebration: removes bg for lineup video compositing
+        # - then_vs_now: removes bg for compilation compositing
+        # Auto-queue RVM processing after save (see below).
+        needs_processing = asset_type in ("intro", "celebration", "then_vs_now")
         asset_dict[composite_key] = {
             "raw": storage_path,
-            "processing_state": "raw" if needs_bg_removal else "processed",
-            "processed": None if needs_bg_removal else storage_path,
-            "processed_at": None if needs_bg_removal else now_iso,
+            "processing_state": "processing" if needs_processing else "processed",
+            "processed": storage_path,  # always set: UI preview while RVM runs
+            "processed_at": None if needs_processing else now_iso,
             "specs": {},
             "source": "ai_generated",
         }
         changed = True
+
+        # Collect for auto-dispatch after save
+        if needs_processing and storage_path:
+            _auto_process_queue.append((composite_key, storage_path))
+
         logger.info(
-            "propagate_approved_video: membership=%s, %s.%s → %s (needs_bg_removal=%s)",
+            "propagate_approved_video: membership=%s, %s.%s → %s (auto_process=%s)",
             job.membership_id,
             asset_type,
             composite_key,
             storage_path,
-            needs_bg_removal,
+            needs_processing,
         )
 
     if changed:
@@ -3478,6 +3487,74 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
                 job.membership_id,
                 exc,
             )
+            return  # Don't auto-dispatch if save failed
+
+        # Auto-dispatch RVM processing for approved AI videos.
+        # Runs after the metadata save so the worker can read the variant.
+        if _auto_process_queue:
+            _auto_dispatch_rvm_processing(str(membership.id), asset_type, _auto_process_queue)
+
+
+def _auto_dispatch_rvm_processing(
+    membership_id: str,
+    asset_type: str,
+    items: list[tuple[str, str]],
+) -> None:
+    """Auto-dispatch RVM background removal for newly-approved AI video variants.
+
+    Called after AI generation approval propagates a video to membership metadata.
+    Dispatches process_member_asset to the video_slow queue so the variant gets
+    its background removed without manual user action.
+
+    Args:
+        membership_id: ProjectMembership UUID
+        asset_type: "intro", "celebration", or "then_vs_now"
+        items: list of (composite_key, raw_storage_path)
+    """
+    from django.db import transaction
+
+    from src.video.tasks.asset_processing import process_member_asset
+
+    KIT_PREFIXES = ("home", "away", "third", "goalkeeper")
+
+    for composite_key, raw_url in items:
+        # Split composite_key → kit_type + variant_id for process_member_asset.
+        # then_vs_now uses bare keys: "sidebyside", "transformation"
+        # intro/celebration use: "home_arms_crossed" → kit="home", var="arms_crossed"
+        if asset_type == "then_vs_now":
+            kit_type, variant_id = composite_key, None
+        else:
+            kit_type, variant_id = composite_key, None
+            for prefix in KIT_PREFIXES:
+                if composite_key.startswith(f"{prefix}_"):
+                    kit_type = prefix
+                    variant_id = composite_key[len(prefix) + 1 :]
+                    break
+
+        # Use default args to capture loop variables in the closure
+        def _dispatch(
+            mid: str = membership_id,
+            at: str = asset_type,
+            kt: str = kit_type,
+            vid: str | None = variant_id,
+            url: str = raw_url,
+        ) -> None:
+            process_member_asset.delay(
+                membership_id=mid,
+                asset_type=at,
+                kit_type=kt,
+                raw_url=url,
+                variant_id=vid,
+                bg_removal_backend="rvm",
+            )
+            logger.info(
+                "auto_dispatch_rvm: queued RVM for %s.%s (membership=%s)",
+                at,
+                f"{kt}_{vid}" if vid else kt,
+                mid,
+            )
+
+        transaction.on_commit(_dispatch)
 
 
 def _propagate_approved_guest_avatar_to_project(job) -> None:  # noqa: ANN001
