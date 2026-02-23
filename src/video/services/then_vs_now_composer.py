@@ -28,8 +28,8 @@ WIDTH = 1080
 HEIGHT = 1920
 FPS = 30
 HEADER_HEIGHT = 300
-NAME_BAR_HEIGHT = 80  # reduced — name label sits just below the video
-CONTENT_HEIGHT = HEIGHT - HEADER_HEIGHT - NAME_BAR_HEIGHT
+NAME_BAR_HEIGHT = 0  # name overlays on video; no reserved bar
+CONTENT_HEIGHT = HEIGHT - HEADER_HEIGHT - NAME_BAR_HEIGHT  # 1620
 XFADE_DURATION = 0.8  # seconds crossfade between members
 
 # ── Sponsor overlay settings (mirrored from lineup_composer) ──
@@ -332,25 +332,25 @@ def compose_then_vs_now_video(
         # Header: ensure correct width
         hdr_filter = f"[1:v]scale={WIDTH}:{HEADER_HEIGHT}[hdr]"
 
-        # Member video: scale to fill content area (preserving aspect ratio)
-        content_w = int(WIDTH * 0.96)  # almost full width
-        content_h = CONTENT_HEIGHT  # fill entire content zone
+        # Member video: scale to FILL content area (cover + crop)
+        content_w = WIDTH  # full width
+        content_h = CONTENT_HEIGHT  # full content zone (header to bottom)
         vid_filter = (
-            f"[2:v]scale='min({content_w},iw)':'min({content_h},ih)'"
-            f":force_original_aspect_ratio=decrease,setsar=1[vid]"
+            f"[2:v]scale={content_w}:{content_h}"
+            f":force_original_aspect_ratio=increase,"
+            f"crop={content_w}:{content_h},setsar=1[vid]"
         )
 
         # Overlay header on background
         overlay1 = "[bg][hdr]overlay=0:0[bgh]"
 
-        # Center video in content area
+        # Video fills content area exactly — place right below header
         vid_x = f"({WIDTH}-w)/2"
-        vid_y = f"({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)/2)"
+        vid_y = str(HEADER_HEIGHT)
         overlay2 = f"[bgh][vid]overlay={vid_x}:{vid_y}[main]"
 
-        # Name text — positioned just below the video (not at very bottom)
-        # Use a dynamic Y: end of content area minus a small margin
-        name_y = HEADER_HEIGHT + CONTENT_HEIGHT - 20
+        # Name text — positioned above sponsor overlay zone
+        name_y = HEIGHT - SPONSOR_BOX_H - SPONSOR_MARGIN - 80  # ~1684
         text_filter = (
             f"[main]drawtext=text='{safe_name}'"
             f":fontfile='{font_path}'"

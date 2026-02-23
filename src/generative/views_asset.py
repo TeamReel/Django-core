@@ -3449,6 +3449,20 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
 
             composite_key = f"{kit_type}_{style_variant}" if style_variant else kit_type
 
+        # Guard: don't re-process if the same raw asset is already fully processed
+        existing = asset_dict.get(composite_key)
+        if (
+            isinstance(existing, dict)
+            and existing.get("processing_state") == "processed"
+            and existing.get("raw") == storage_path
+        ):
+            logger.info(
+                "propagate_approved_video: skipping %s.%s — same asset already processed",
+                asset_type,
+                composite_key,
+            )
+            continue
+
         # All video types with visual assets benefit from RVM processing:
         # - intro/celebration: removes bg for lineup video compositing
         # - then_vs_now: removes bg for compilation compositing
