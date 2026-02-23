@@ -10,12 +10,15 @@ Django Core-App supports multiple deployment targets. This guide covers the most
 
 Railway provides the simplest production deployment with automatic builds and managed PostgreSQL/Redis.
 
-**Architecture:**
-- **Web Service**: Django app (Gunicorn)
-- **Beat Service**: Celery Beat scheduler (metrics collection)
-- **Worker Service**: Celery workers (optional - for async tasks)
+**Architecture (6 services + 2 datastores):**
+- **Web Service** (`backend`): Django app (Gunicorn) — `api.teamreel.app`
+- **Beat Service** (`celery-beat`): Celery Beat scheduler (cleanup, metrics)
+- **Worker Fast** (`celery-worker`): Celery — `default` + `video_fast` queues (c=2)
+- **Worker Video** (`video-worker`): Celery — `video_slow` queue (c=1, heavy processing)
+- **Worker AI** (`worker-ai`): Celery — `ai_generation` queue (c=1, rate-limited)
+- **Frontend** (`frontend`): React/Vite — `demo.teamreel.app`
 - **PostgreSQL**: Managed database
-- **Redis**: Managed cache
+- **Redis**: Managed cache + Celery broker
 
 **Setup Guide:** See [Railway Integration](railway-integration.md) for complete setup instructions.
 
