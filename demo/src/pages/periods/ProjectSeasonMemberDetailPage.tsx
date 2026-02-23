@@ -4190,8 +4190,8 @@ export default function ProjectSeasonMemberDetailPage() {
             onClick={(e) => e.stopPropagation()}
             style={{
               position: 'relative',
-              maxWidth: '400px',
-              maxHeight: '90vh',
+              width: 'min(90vw, 500px)',
+              maxHeight: 'calc(100vh - 80px)',
               borderRadius: '12px',
               overflow: 'hidden',
               boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
@@ -4199,7 +4199,7 @@ export default function ProjectSeasonMemberDetailPage() {
           >
             <video
               src={videoPreviewUrl}
-              style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '12px' }}
+              style={{ width: '100%', maxHeight: 'calc(100vh - 80px)', objectFit: 'contain', borderRadius: '12px' }}
               controls
               autoPlay
               loop

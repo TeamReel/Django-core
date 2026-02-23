@@ -2189,12 +2189,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               onMouseEnter={(e) => { if (stableUrl) e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.15)'; }}
                               onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
                             >
-                              {/* Video thumbnail — preload=none to avoid mass range requests */}
+                              {/* Video thumbnail — use metadata preload + poster for first-frame preview */}
                               {stableUrl && (
                                 <div style={{ position: 'relative', width: '100%', height: 180, backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                   <video
                                     src={stableUrl}
-                                    preload="none"
+                                    preload="metadata"
+                                    {...(job.thumbnail_url ? { poster: job.thumbnail_url } : {})}
                                     muted
                                     playsInline
                                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
@@ -2302,7 +2303,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           controls
                           autoPlay
                           playsInline
-                          style={{ width: '100%', maxHeight: '70vh', display: 'block', backgroundColor: '#000' }}
+                          style={{ width: '100%', maxHeight: '85vh', display: 'block', backgroundColor: '#000' }}
                         />
                       </div>
                     </div>
