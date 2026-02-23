@@ -822,3 +822,16 @@ class GenerationJob(models.Model):
         self.error_message = error[:2000]
         self.completed_at = timezone.now()
         self.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
+
+    def mark_stale(self, reason: str = "Stale job detected — worker likely restarted") -> None:
+        """Mark a stuck job as failed due to staleness.
+
+        Called by the periodic ``recover_stale_generation_jobs`` task or the
+        ``reset_stuck_jobs`` management command when a job has been in an
+        active state (queued/waiting/processing) for longer than the
+        configured threshold.
+        """
+        self.status = self.Status.FAILED
+        self.error_message = reason[:2000]
+        self.completed_at = timezone.now()
+        self.save(update_fields=["status", "error_message", "completed_at", "updated_at"])

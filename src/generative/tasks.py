@@ -604,3 +604,49 @@ def update_template_costs(self):
     except Exception as e:
         logger.error(f"Cost update task failed: {str(e)}", exc_info=True)
         raise
+
+
+@shared_task(bind=True, name="generative.tasks.recover_stale_generation_jobs")
+def recover_stale_generation_jobs(self, threshold_minutes: int = 30):
+    """Detect and fail GenerationJob records stuck in active states.
+
+    Runs periodically via Celery Beat. Any job that has been in
+    queued/waiting/processing for longer than ``threshold_minutes`` is
+    marked as failed with an explanatory error message.
+
+    This handles the scenario where a worker restarts mid-task and the
+    DB record is never transitioned to a terminal state.
+
+    Returns:
+        dict: Number of stale jobs recovered.
+    """
+    from datetime import timedelta
+
+    from generative.models import GenerationJob
+
+    threshold = timezone.now() - timedelta(minutes=threshold_minutes)
+    active_statuses = [
+        GenerationJob.Status.QUEUED,
+        GenerationJob.Status.WAITING,
+        GenerationJob.Status.PROCESSING,
+    ]
+
+    stuck_jobs = GenerationJob.objects.filter(
+        status__in=active_statuses,
+        updated_at__lt=threshold,
+    )
+
+    count = 0
+    for job in stuck_jobs.iterator():
+        age_min = int((timezone.now() - job.updated_at).total_seconds() / 60)
+        reason = (
+            f"Stale job recovery — stuck in '{job.status}' for {age_min} min "
+            f"(threshold: {threshold_minutes} min). Worker likely restarted."
+        )
+        job.mark_stale(reason=reason)
+        logger.warning("Recovered stale GenerationJob %s: %s", job.task_id, reason)
+        count += 1
+
+    if count:
+        logger.info("Recovered %d stale GenerationJob(s)", count)
+    return {"status": "success", "recovered": count}

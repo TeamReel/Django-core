@@ -163,6 +163,15 @@ CELERY_BEAT_SCHEDULE = {
             "expires": 7200,  # Task expires if not run within 2 hours
         },
     },
+    # B34: Recover stale GenerationJobs every 15 minutes
+    "recover-stale-generation-jobs": {
+        "task": "generative.tasks.recover_stale_generation_jobs",
+        "schedule": crontab(minute="*/15"),  # Every 15 minutes
+        "kwargs": {"threshold_minutes": 30},
+        "options": {
+            "expires": 600,  # Task expires if not run within 10 minutes
+        },
+    },
 }
 
 # Beat Scheduler Settings
