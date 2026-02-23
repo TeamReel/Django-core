@@ -2200,17 +2200,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     playsInline
                                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                                   />
-                                  <div style={{
-                                    position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    background: 'rgba(0,0,0,0.3)',
-                                  }}>
-                                    <div style={{
-                                      width: 48, height: 48, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.9)',
-                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    }}>
-                                      <span style={{ fontSize: 22, marginLeft: 3 }}>▶</span>
-                                    </div>
-                                  </div>
                                 </div>
                               )}
                               {/* Meta */}
