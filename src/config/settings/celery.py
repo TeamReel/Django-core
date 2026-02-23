@@ -51,11 +51,10 @@ CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000  # Restart worker after N tasks (preven
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False  # Use Django logging
 
 # B55: Video Processing Pipeline - Tiered Queue Configuration
-# video_fast: Quick operations (thumbnails, metadata extraction) - concurrency=2
-# video_slow: Heavy operations (transcoding, composition) - concurrency=1
-# ai_generation: AI API calls (Gemini/MiniMax/Veo) - concurrency=1, rate-limited
-#   → Sequential processing prevents API overload and reduces costs
-#   → Run worker: celery -A src.config worker -Q ai_generation -c 1
+# ─── 3 separate Railway worker services (see Procfile) ───
+# Worker 1 (worker):      default + video_fast  — concurrency=2, lightweight tasks
+# Worker 2 (worker-video): video_slow           — concurrency=1, heavy CPU/memory
+# Worker 3 (worker-ai):    ai_generation        — concurrency=1, rate-limited AI calls
 CELERY_TASK_QUEUES = (
     Queue("default", routing_key="default"),
     Queue("video_fast", routing_key="video.fast"),
@@ -64,13 +63,16 @@ CELERY_TASK_QUEUES = (
 )
 
 CELERY_TASK_ROUTES = {
+    # video_fast: thumbnails, metadata extraction (seconds)
     "src.video.tasks.thumbnail.generate_thumbnail": {"queue": "video_fast"},
+    # video_slow: heavy operations (minutes to hours)
     "src.video.tasks.transcode.transcode_video": {"queue": "video_slow"},
     "src.video.tasks.compose.compose_video": {"queue": "video_slow"},
-    "src.video.tasks.lineup.process_lineup_video": {"queue": "default"},
-    # B56: RVM asset processing - heavy GPU/CPU operation
     "src.video.tasks.asset_processing.process_member_asset": {"queue": "video_slow"},
-    # AI generation: rate-limited queue for all Gemini/MiniMax/Veo calls
+    "src.video.tasks.then_vs_now.process_then_vs_now_video": {"queue": "video_slow"},
+    # default: lightweight / mixed tasks
+    "src.video.tasks.lineup.process_lineup_video": {"queue": "default"},
+    # ai_generation: rate-limited AI API calls (Gemini/MiniMax/Veo)
     "generative.tasks.generate_asset_task": {"queue": "ai_generation"},
 }
 

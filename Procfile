@@ -15,7 +15,21 @@ web: python manage.py migrate --noinput && gunicorn config.wsgi:application --bi
 # Command: celery -A config beat --loglevel=info
 beat: celery -A config beat --loglevel=info
 
-# Celery Worker (for async tasks including B31 content generation)
-# SETUP REQUIRED: Create a separate Railway service for async task processing
-# Command: celery -A config worker --loglevel=info --concurrency=2 -Q default,video_fast,video_slow
-worker: celery -A config worker --loglevel=info --concurrency=2 -Q default,video_fast,video_slow
+# ─── Celery Workers (3 separate Railway services) ───────────────────
+# Each worker handles a different queue tier to prevent blocking.
+# Create a separate Railway service for EACH worker type.
+
+# Worker 1: Fast/default tasks (thumbnails, lineup, quick operations)
+# Concurrency=2: handles multiple lightweight tasks in parallel
+# Command: celery -A config worker --loglevel=info --concurrency=2 -Q default,video_fast -n worker-fast@%h
+worker: celery -A config worker --loglevel=info --concurrency=2 -Q default,video_fast -n worker-fast@%h
+
+# Worker 2: Heavy video processing (RVM background removal, transcoding, composition)
+# Concurrency=1: these are CPU/memory-intensive, one at a time
+# Command: celery -A config worker --loglevel=info --concurrency=1 -Q video_slow -n worker-video@%h
+worker-video: celery -A config worker --loglevel=info --concurrency=1 -Q video_slow -n worker-video@%h
+
+# Worker 3: AI generation (Gemini/MiniMax/Veo API calls)
+# Concurrency=1: rate-limited, sequential to prevent API overload
+# Command: celery -A config worker --loglevel=info --concurrency=1 -Q ai_generation -n worker-ai@%h
+worker-ai: celery -A config worker --loglevel=info --concurrency=1 -Q ai_generation -n worker-ai@%h
