@@ -51,13 +51,7 @@ def _update_variant_metadata(
     else:
         videos = tr.setdefault("videos", {})
         cat = videos.setdefault(asset_type, {})
-        # then_vs_now stores by template sub-type only (e.g.
-        # "transformation", "sidebyside"); variant_id is just a style
-        # detail, not part of the key.
-        if asset_type == "then_vs_now":
-            composite_key = kit_type
-        else:
-            composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+        composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
         cat[composite_key] = variant_value
         if variant_id and variant_id in cat and variant_id != composite_key:
             cat.pop(variant_id, None)
@@ -103,10 +97,7 @@ def _get_variant_state(
     if asset_type in ("fullbody", "closeup"):
         variant_val = (tr.get("images", {}).get(asset_type, {}) or {}).get(kit_type)
     else:
-        if asset_type == "then_vs_now":
-            composite_key = kit_type
-        else:
-            composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+        composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
         variant_val = (tr.get("videos", {}).get(asset_type, {}) or {}).get(composite_key)
 
     if isinstance(variant_val, dict):
@@ -283,7 +274,7 @@ def process_member_asset(
 
         # Cooldown delay for video processing to let Railway CPU credits recover
         # This prevents throttling when processing multiple videos in batch
-        if asset_type in ("intro", "celebration"):
+        if asset_type in ("intro", "celebration", "then_vs_now"):
             cooldown_secs = 45
             logger.info(
                 "process_member_asset cooldown",

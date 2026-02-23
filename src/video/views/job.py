@@ -317,15 +317,10 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 slot = "kit" if asset_type == "fullbody" else "closeup"
                 raw_url = (media.get(slot, {}) or {}).get("url")
         else:
-            # intro / celebration → videos.{asset_type}.{kit_type}_{variant_id}
-            # then_vs_now → videos.then_vs_now.{kit_type}  (variant_id is
-            #   a style/pose detail baked into the video, not a storage key)
+            # intro / celebration / then_vs_now → videos.{asset_type}.{kit_type}_{variant_id}
             videos = teamreel_assets.get("videos", {})
             asset_variants = videos.get(asset_type, {}) or {}
-            if asset_type == "then_vs_now":
-                composite_key = kit_type
-            else:
-                composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+            composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
             variant_val = asset_variants.get(composite_key)
 
             # Fallback 1: bare variant_id key (old metadata format stored
@@ -880,13 +875,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         else:
             videos = tr.setdefault("videos", {})
             cat = videos.setdefault(asset_type, {})
-            # then_vs_now stores by template sub-type only (e.g.
-            # "transformation", "sidebyside"); variant_id is just a style
-            # detail, not part of the key.
-            if asset_type == "then_vs_now":
-                composite_key = kit_type
-            else:
-                composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+            composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
             cat[composite_key] = variant_value
             # Clean up old bare variant key if it exists (migrate on write)
             if variant_id and variant_id in cat and variant_id != composite_key:
@@ -932,10 +921,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
         videos = tr.get("videos", {}) or {}
         cat = videos.get(asset_type, {}) or {}
-        if asset_type == "then_vs_now":
-            composite_key = kit_type
-        else:
-            composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+        composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
         if composite_key in cat:
             return cat.get(composite_key)
         if variant_id and variant_id in cat:
