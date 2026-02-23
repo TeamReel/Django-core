@@ -274,6 +274,27 @@ def process_member_asset(
             },
         )
 
+        # Auto-crop closeup from processed fullbody image.
+        # The crop uses the bg-removed fullbody, so the closeup is immediately "processed".
+        if (
+            asset_type == "fullbody"
+            and result.get("processing_state") == ProcessingState.PROCESSED.value
+        ):
+            try:
+                auto_crop_closeup_from_fullbody.delay(
+                    membership_id=str(membership_id),
+                    kit_type=kit_type,
+                )
+                logger.info(
+                    "process_member_asset: queued auto-crop closeup",
+                    extra={"membership_id": membership_id, "kit_type": kit_type},
+                )
+            except Exception as crop_exc:  # noqa: BLE001
+                logger.warning(
+                    "process_member_asset: failed to queue closeup crop: %s",
+                    crop_exc,
+                )
+
         # Cooldown delay for video processing to let Railway CPU credits recover
         # This prevents throttling when processing multiple videos in batch
         if asset_type in ("intro", "celebration", "then_vs_now"):
@@ -350,3 +371,141 @@ def process_member_asset(
                 extra={"membership_id": membership_id, "error": str(write_exc)},
             )
         raise
+
+
+@shared_task(
+    bind=True,
+    max_retries=1,
+    soft_time_limit=120,
+    time_limit=150,
+    acks_late=True,
+    retry_backoff=30,
+)
+def auto_crop_closeup_from_fullbody(
+    self,
+    *,
+    membership_id: str,
+    kit_type: str,
+) -> str | None:
+    """Auto-crop a closeup from a processed fullbody image.
+
+    Dispatched automatically after process_member_asset completes for a fullbody.
+    Downloads the processed (bg-removed) fullbody, crops head+shoulders via
+    Pillow, uploads the result, and writes metadata as "processed" (no further
+    bg removal needed — the source is already transparent).
+    """
+    import io
+    import uuid as _uuid
+
+    from django.core.files.base import ContentFile
+    from PIL import Image as PilImage
+
+    # Import crop algorithm + constants from views_asset (pure Pillow, no Django deps)
+    from src.generative.views_asset import CLOSEUP_OUTPUT_SIZE
+    from src.generative.views_asset import _smart_crop_closeup
+
+    ProjectMembership = apps.get_model("projects", "ProjectMembership")
+    try:
+        membership = ProjectMembership.objects.get(id=membership_id)
+    except Exception:  # noqa: BLE001
+        logger.warning("auto_crop_closeup: membership %s not found", membership_id)
+        return None
+
+    # ── Read processed fullbody path ──────────────────────────────────────────
+    meta = membership.metadata or {}
+    ta = meta.get("teamreel_assets", {})
+    images = ta.get("images", {})
+    fullbody = images.get("fullbody", {}).get(kit_type, {})
+
+    if not isinstance(fullbody, dict):
+        logger.warning(
+            "auto_crop_closeup: no fullbody dict for membership=%s kit=%s",
+            membership_id,
+            kit_type,
+        )
+        return None
+
+    # Prefer processed (bg-removed); fall back to raw
+    source_path = fullbody.get("processed") or fullbody.get("raw")
+    if not source_path:
+        logger.warning(
+            "auto_crop_closeup: no fullbody path for membership=%s kit=%s",
+            membership_id,
+            kit_type,
+        )
+        return None
+
+    # ── Download fullbody from S3 ─────────────────────────────────────────────
+    try:
+        from files.utils import get_storage_backend
+
+        storage = get_storage_backend()
+        with storage.open(source_path, "rb") as fh:
+            raw_bytes = fh.read()
+    except Exception as exc:
+        logger.exception(
+            "auto_crop_closeup: download failed for %s: %s",
+            source_path,
+            exc,
+        )
+        raise self.retry(exc=exc)
+
+    # ── Pillow smart crop ─────────────────────────────────────────────────────
+    try:
+        img = PilImage.open(io.BytesIO(raw_bytes)).convert("RGBA")
+        cropped = _smart_crop_closeup(img)
+
+        out_buf = io.BytesIO()
+        cropped.save(out_buf, format="PNG", optimize=True)
+        closeup_bytes = out_buf.getvalue()
+    except Exception as exc:
+        logger.exception("auto_crop_closeup: crop failed: %s", exc)
+        return None
+
+    # ── Upload closeup to S3 ──────────────────────────────────────────────────
+    try:
+        timestamp = timezone.now().strftime("%Y%m%d")
+        unique = str(_uuid.uuid4())[:8]
+        filename = f"member_closeup_kit_type-{kit_type}_crop_{timestamp}_{unique}.png"
+        upload_path = f"members/{membership_id}/generated/output/closeup/{filename}"
+
+        file_obj = ContentFile(closeup_bytes, name=filename)
+        storage_path = storage.save(upload_path, file_obj)
+    except Exception as exc:
+        logger.exception("auto_crop_closeup: upload failed: %s", exc)
+        raise self.retry(exc=exc)
+
+    # ── Write metadata ────────────────────────────────────────────────────────
+    try:
+        membership.refresh_from_db()
+        with transaction.atomic():
+            _update_variant_metadata(
+                membership,
+                asset_type="closeup",
+                kit_type=kit_type,
+                variant_id=None,
+                variant_value={
+                    "raw": storage_path,
+                    "processed": storage_path,  # already bg-removed from fullbody
+                    "processing_state": ProcessingState.PROCESSED.value,
+                    "processed_at": timezone.now().isoformat(),
+                    "specs": {
+                        "width": CLOSEUP_OUTPUT_SIZE[0],
+                        "height": CLOSEUP_OUTPUT_SIZE[1],
+                        "format": "png",
+                        "bg_removed": True,
+                        "source": "auto_crop_from_fullbody",
+                    },
+                },
+            )
+        logger.info(
+            "auto_crop_closeup: saved closeup for membership=%s kit=%s path=%s",
+            membership_id,
+            kit_type,
+            storage_path,
+        )
+    except Exception as exc:
+        logger.exception("auto_crop_closeup: metadata save failed: %s", exc)
+        return None
+
+    return membership_id

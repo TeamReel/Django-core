@@ -70,6 +70,8 @@ CELERY_TASK_ROUTES = {
     "src.video.tasks.compose.compose_video": {"queue": "video_slow"},
     "src.video.tasks.asset_processing.process_member_asset": {"queue": "video_slow"},
     "src.video.tasks.then_vs_now.process_then_vs_now_video": {"queue": "video_slow"},
+    # video_fast: auto-crop closeup from fullbody (Pillow only, seconds)
+    "src.video.tasks.asset_processing.auto_crop_closeup_from_fullbody": {"queue": "video_fast"},
     # default: lightweight / mixed tasks
     "src.video.tasks.lineup.process_lineup_video": {"queue": "default"},
     # ai_generation: rate-limited AI API calls (Gemini/MiniMax/Veo)
