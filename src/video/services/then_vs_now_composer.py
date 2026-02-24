@@ -695,141 +695,397 @@ def compose_then_vs_now_video(
     return final_output
 
 
-# ── Photo Composite settings ──
-PHOTO_CLIP_DURATION = 6.0  # seconds per member
-PHOTO_FREEZE_SECONDS = 1.5  # hold before transition
-PHOTO_ZOOM_START = 1.0  # start scale
-PHOTO_ZOOM_END = 1.08  # end scale (subtle zoom-in effect)
-PHOTO_PLAYER_SCALE = 0.75  # fraction of content height for each player
-PHOTO_PLAYER_GAP = 0.04  # horizontal gap between players as fraction of WIDTH
+# ═══════════════════════════════════════════════════════════════════════════
+# Photo Composite Pipeline (AI-powered)
+#
+# Per member:
+#   1. PIL: crop fullbody images to hips, mirror legacy
+#   2. Gemini: realistically composite players onto background (lighting,
+#      perspective, shadows)
+#   3. MiniMax: generate 6s video from the composite (players slowly turn
+#      to look at each other, smile, look forward)
+#   4. RVM: remove background from generated video → transparent MOV
+#   5. FFmpeg: overlay transparent video on consistent club_background +
+#      header + name label + sponsor
+#
+# Then: concatenate all member clips with xfade transitions + fade-out.
+# ═══════════════════════════════════════════════════════════════════════════
+
+PHOTO_CLIP_DURATION = 6.0  # seconds — MiniMax generates ~6s clips
 
 
-def _composite_member_frame(
+def _crop_player_to_hips(img_path: Path, output_path: Path, mirror: bool = False) -> Path:
+    """Crop a fullbody transparent PNG to show from head to hips (~60%).
+
+    Trims transparent padding, keeps upper 60% of the visible person.
+    Optionally mirrors horizontally so legacy faces the other direction.
+    """
+    img = Image.open(img_path).convert("RGBA")
+
+    # Find bounding box of non-transparent content
+    bbox = img.getbbox()
+    if bbox:
+        img = img.crop(bbox)
+
+    # Keep upper ~60% (head to hips)
+    crop_h = int(img.height * 0.60)
+    img = img.crop((0, 0, img.width, crop_h))
+
+    if mirror:
+        img = img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+
+    img.save(str(output_path), "PNG")
+    return output_path
+
+
+def _prepare_gemini_composite_image(
     bg_path: Path,
-    home_path: Path,
-    legacy_path: Path,
-    name: str,
-    brand_color: str | None,
-    header_path: Path,
-    sponsor_path: Path | None,
+    home_cropped_path: Path,
+    legacy_cropped_path: Path,
     output_path: Path,
 ) -> Path:
-    """Create a single composite frame: background + header + 2 players + name label.
+    """Create a rough PIL composite for Gemini input.
 
-    Layout:
-    - Header at top (HEADER_HEIGHT)
-    - Content area: two fullbody players side by side (legacy left, home right)
-      visible from knees up, mirrored to face each other
-    - Name label with brand-color box at bottom of content area
-    - Sponsor logo bottom-left (optional)
+    This gives Gemini a clear reference of the desired composition:
+    background + two players side by side, so it can produce a photorealistic
+    version with proper lighting, shadows, and perspective.
     """
-    from src.video.services.header_generator import (
-        _hex_to_rgba,
-        get_font,
-    )
-
-    # Open and prepare background
     bg = Image.open(bg_path).convert("RGBA")
-    # Rotate landscape to portrait
+    # Make background portrait if landscape
     if bg.width > bg.height:
         bg = bg.transpose(Image.Transpose.ROTATE_90)
-    # Scale and crop to canvas size
+    # Scale to 1080x1920
     scale_factor = max(WIDTH / bg.width, HEIGHT / bg.height)
     bg = bg.resize(
         (int(bg.width * scale_factor), int(bg.height * scale_factor)),
         Image.Resampling.LANCZOS,
     )
-    # Center crop
     left = (bg.width - WIDTH) // 2
     top = (bg.height - HEIGHT) // 2
     bg = bg.crop((left, top, left + WIDTH, top + HEIGHT))
 
-    # Slight darken for contrast
+    # Load cropped players
+    home_img = Image.open(home_cropped_path).convert("RGBA")
+    legacy_img = Image.open(legacy_cropped_path).convert("RGBA")
+
+    # Scale players to fill the content zone nicely
+    # Each player should be about 45% of frame width, positioned close together
+    player_w = int(WIDTH * 0.42)
+    for player in [home_img, legacy_img]:
+        pass  # we resize below individually
+
+    def _scale_to_width(img: Image.Image, target_w: int) -> Image.Image:
+        aspect = img.height / img.width
+        return img.resize((target_w, int(target_w * aspect)), Image.Resampling.LANCZOS)
+
+    home_scaled = _scale_to_width(home_img, player_w)
+    legacy_scaled = _scale_to_width(legacy_img, player_w)
+
+    # Position: legacy on left, home on right, both in lower 2/3 of frame
+    # Players should be "standing" on the ground, visible from hips up
+    content_bottom = int(HEIGHT * 0.85)  # leave space for ground/feet
+    gap = int(WIDTH * 0.02)
+
+    # Legacy (left)
+    legacy_x = (WIDTH // 2 - gap // 2) - legacy_scaled.width
+    legacy_y = content_bottom - legacy_scaled.height
+    bg.paste(legacy_scaled, (legacy_x, legacy_y), legacy_scaled)
+
+    # Home (right)
+    home_x = WIDTH // 2 + gap // 2
+    home_y = content_bottom - home_scaled.height
+    bg.paste(home_scaled, (home_x, home_y), home_scaled)
+
+    bg = bg.convert("RGB")
+    bg.save(str(output_path), "PNG", quality=95)
+    return output_path
+
+
+def _gemini_composite(
+    bg_path: Path,
+    home_cropped_path: Path,
+    legacy_cropped_path: Path,
+    reference_composite_path: Path,
+    member_name: str,
+    output_path: Path,
+) -> Path | None:
+    """Use Gemini to realistically composite two players onto the background.
+
+    Sends: background image + both player crops + reference composite + prompt.
+    Gets back: photorealistic composite with proper lighting/shadows/perspective.
+
+    Returns output_path on success, None on failure.
+    """
+    from django.conf import settings
+
+    api_key = getattr(settings, "GOOGLE_API_KEY", None)
+    if not api_key:
+        logger.error("GOOGLE_API_KEY not configured — cannot run Gemini composite")
+        return None
+
+    try:
+        from google import genai
+        from google.genai import types
+    except ImportError:
+        logger.error("google-genai package not installed")
+        return None
+
+    client = genai.Client(api_key=api_key)
+
+    # Read image bytes
+    bg_bytes = bg_path.read_bytes()
+    home_bytes = home_cropped_path.read_bytes()
+    legacy_bytes = legacy_cropped_path.read_bytes()
+    ref_bytes = reference_composite_path.read_bytes()
+
+    prompt = (
+        "Create a photorealistic composite image in PORTRAIT orientation (9:16, 1080x1920px).\n\n"
+        "TASK:\n"
+        "Take the two football players (cropped from hips up) and place them realistically "
+        "on the background image. They should look like they are actually standing there, "
+        "photographed by a camera at the location.\n\n"
+        "LAYOUT:\n"
+        "- The background fills the entire frame (portrait 9:16)\n"
+        "- Player 1 (legacy kit - Image 2) stands on the LEFT side, facing slightly right\n"
+        "- Player 2 (current kit - Image 3) stands on the RIGHT side, facing slightly left\n"
+        "- They stand close together, about shoulder-width apart\n"
+        "- Both visible from hips/waist up, filling most of the vertical frame\n"
+        "- Both looking straight ahead at the camera\n"
+        "- Image 4 shows the approximate desired composition/positioning\n\n"
+        "REALISM REQUIREMENTS:\n"
+        "- Match the lighting and color temperature of the background\n"
+        "- Add subtle shadows on the ground/background behind players\n"
+        "- Correct perspective — players should look like they belong in the scene\n"
+        "- Preserve the exact appearance, face, skin tone from the player images\n"
+        "- Preserve the exact kit/clothing details from the player images\n"
+        "- Natural depth of field — slight background blur if appropriate\n"
+        "- No text, no logos, no overlays — just the composite photo\n\n"
+        "IMPORTANT:\n"
+        "- Do NOT change the players' poses or faces\n"
+        "- Do NOT add any elements not in the source images\n"
+        "- The output must be photorealistic, as if taken with a real camera\n"
+    )
+
+    content_parts: list = [prompt]
+    # Image 1: Background
+    content_parts.append(types.Part.from_bytes(data=bg_bytes, mime_type="image/png"))
+    # Image 2: Legacy player (cropped, mirrored)
+    content_parts.append(types.Part.from_bytes(data=legacy_bytes, mime_type="image/png"))
+    # Image 3: Home player (cropped)
+    content_parts.append(types.Part.from_bytes(data=home_bytes, mime_type="image/png"))
+    # Image 4: Reference composite (rough PIL placement)
+    content_parts.append(types.Part.from_bytes(data=ref_bytes, mime_type="image/png"))
+
+    try:
+        response = client.models.generate_content(
+            model="models/gemini-2.0-flash-preview-image-generation",
+            contents=content_parts,
+            config=types.GenerateContentConfig(
+                response_modalities=["IMAGE", "TEXT"],
+            ),
+        )
+
+        if (
+            not response.candidates
+            or not response.candidates[0].content
+            or not response.candidates[0].content.parts
+        ):
+            block_reason = getattr(response, "prompt_feedback", None)
+            logger.warning(
+                "Empty Gemini response for photo composite of %s (block=%s)",
+                member_name,
+                block_reason,
+            )
+            return None
+
+        for part in response.candidates[0].content.parts:
+            if hasattr(part, "inline_data") and part.inline_data:
+                output_path.write_bytes(part.inline_data.data)
+                logger.info("Gemini composite generated for %s → %s", member_name, output_path)
+                return output_path
+
+        logger.warning("No image data in Gemini response for %s", member_name)
+        return None
+
+    except Exception:
+        logger.exception("Gemini composite failed for %s", member_name)
+        return None
+
+
+def _minimax_generate_video(
+    composite_image_path: Path,
+    member_name: str,
+    output_path: Path,
+) -> Path | None:
+    """Use MiniMax to generate a 6s video from the composite image.
+
+    The video shows the two players slowly turning their heads to look at
+    each other, smiling, then looking forward again.
+
+    Returns output_path on success, None on failure.
+    """
+    from django.conf import settings
+
+    api_key = getattr(settings, "MINIMAX_API_KEY", None)
+    group_id = getattr(settings, "MINIMAX_GROUP_ID", None)
+    if not api_key or not group_id:
+        logger.error("MINIMAX_API_KEY / MINIMAX_GROUP_ID not configured")
+        return None
+
+    from src.generative.services.minimax_client import MiniMaxClient
+
+    prompt = (
+        "A cinematic portrait video of two football players standing side by side "
+        "on a football pitch. Very subtle, realistic movement only. "
+        "The players slowly turn their heads to look at each other with a slight smile, "
+        "then gradually turn back to face the camera. "
+        "The camera is completely static. Only the players' heads move — no body movement. "
+        "Subtle natural ambient movement like gentle wind on clothing is ok. "
+        "Maintain photorealistic quality throughout. "
+        "Smooth, slow, cinematic motion. 6 seconds."
+    )
+
+    image_bytes = composite_image_path.read_bytes()
+
+    try:
+        client = MiniMaxClient(
+            api_key=api_key,
+            group_id=group_id,
+            timeout=120.0,
+            poll_interval=8.0,
+            max_wait=600.0,
+        )
+        result = client.generate_video(
+            prompt=prompt,
+            image=image_bytes,
+            model="video-01",
+        )
+
+        video_bytes = result.get("video_bytes")
+        if not video_bytes:
+            logger.warning("MiniMax returned no video bytes for %s", member_name)
+            return None
+
+        output_path.write_bytes(video_bytes)
+        size_mb = len(video_bytes) / (1024 * 1024)
+        logger.info(
+            "MiniMax video generated for %s: %.1f MB → %s",
+            member_name,
+            size_mb,
+            output_path,
+        )
+        return output_path
+
+    except Exception:
+        logger.exception("MiniMax video generation failed for %s", member_name)
+        return None
+
+
+def _rvm_remove_background(
+    input_video: Path,
+    output_video: Path,
+) -> Path | None:
+    """Remove background from MiniMax video using RVM.
+
+    Returns path to transparent MOV (ProRes 4444 + alpha) on success.
+    """
+    from src.video.services.rvm_processor import is_rvm_available, process_video_rvm
+
+    if not is_rvm_available():
+        logger.error("RVM not available (torch not installed)")
+        return None
+
+    try:
+        metrics = process_video_rvm(
+            input_path=input_video,
+            output_path=output_video,
+            downsample_ratio=0.35,
+            portrait=True,
+            output_format="mov",  # ProRes 4444 with alpha — most reliable
+            model_name="mobilenetv3",
+            target_width=WIDTH,
+            target_height=HEIGHT,
+        )
+        logger.info(
+            "RVM bg removal complete: %d frames in %.1fs (%.1f ms/frame)",
+            metrics.get("frame_count", 0),
+            metrics.get("total_time_s", 0),
+            metrics.get("avg_ms_per_frame", 0),
+        )
+        return output_video
+
+    except Exception:
+        logger.exception("RVM background removal failed")
+        return None
+
+
+def _ffmpeg_overlay_on_background(
+    transparent_video: Path,
+    bg_path: Path,
+    header_path: Path,
+    sponsor_path: Path | None,
+    name: str,
+    brand_color: str | None,
+    output_path: Path,
+) -> Path | None:
+    """Overlay transparent RVM video on consistent background + header + name + sponsor.
+
+    Uses FFmpeg to compose all layers:
+    1. Background (scaled/cropped to 1080×1920, slightly darkened)
+    2. Header at top
+    3. Transparent player video (centered in content area)
+    4. Name label bar with brand color
+    5. Sponsor logo (optional)
+    """
+    ffmpeg = _get_ffmpeg_path()
+
+    # Pre-render the background frame with header, name, and sponsor (PIL)
+    # This avoids complex FFmpeg filter chains
+    from src.video.services.header_generator import (
+        _hex_to_rgba,
+        get_font,
+    )
+
+    bg = Image.open(bg_path).convert("RGBA")
+    if bg.width > bg.height:
+        bg = bg.transpose(Image.Transpose.ROTATE_90)
+    scale_factor = max(WIDTH / bg.width, HEIGHT / bg.height)
+    bg = bg.resize(
+        (int(bg.width * scale_factor), int(bg.height * scale_factor)),
+        Image.Resampling.LANCZOS,
+    )
+    left = (bg.width - WIDTH) // 2
+    top = (bg.height - HEIGHT) // 2
+    bg = bg.crop((left, top, left + WIDTH, top + HEIGHT))
+
+    # Darken
     darken = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 40))
     bg = Image.alpha_composite(bg, darken)
 
-    # Paste header at top
+    # Header
     header = Image.open(header_path).convert("RGBA")
     bg.paste(header, (0, 0), header)
 
-    # Load and prepare player images
-    home_img = Image.open(home_path).convert("RGBA")
-    legacy_img = Image.open(legacy_path).convert("RGBA")
-
-    # Mirror legacy so they face each other (legacy faces right, home faces left)
-    legacy_img = legacy_img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
-
-    # Target height for players: fill content area, showing from knees up
-    # We want the upper ~70% of the fullbody to be visible (head to knees)
-    player_h = int(CONTENT_HEIGHT * PHOTO_PLAYER_SCALE)
-    # Crop top 70% of each player image (head to knees)
-    crop_ratio = 0.72  # show top 72% of the body (head to upper knees)
-
-    def _prepare_player(img: Image.Image) -> Image.Image:
-        """Scale and crop player to show from knees up."""
-        # First, scale to target height (as if showing full body)
-        full_h = int(player_h / crop_ratio)  # full body height before crop
-        aspect = img.width / img.height
-        full_w = int(full_h * aspect)
-        img = img.resize((full_w, full_h), Image.Resampling.LANCZOS)
-        # Crop to show only top portion (head to knees)
-        return img.crop((0, 0, full_w, player_h))
-
-    home_cropped = _prepare_player(home_img)
-    legacy_cropped = _prepare_player(legacy_img)
-
-    # Position players side by side in the content area
-    gap = int(WIDTH * PHOTO_PLAYER_GAP)
-    total_w = legacy_cropped.width + gap + home_cropped.width
-
-    # If players are too wide, scale down proportionally
-    if total_w > WIDTH - 40:  # 20px margin each side
-        scale_down = (WIDTH - 40) / total_w
-        legacy_cropped = legacy_cropped.resize(
-            (int(legacy_cropped.width * scale_down), int(legacy_cropped.height * scale_down)),
-            Image.Resampling.LANCZOS,
-        )
-        home_cropped = home_cropped.resize(
-            (int(home_cropped.width * scale_down), int(home_cropped.height * scale_down)),
-            Image.Resampling.LANCZOS,
-        )
-        total_w = legacy_cropped.width + gap + home_cropped.width
-
-    # Center horizontally
-    start_x = (WIDTH - total_w) // 2
-    # Align to bottom of content area (players "stand" at ground level)
+    # Name label bar at bottom of content area
     content_bottom = HEADER_HEIGHT + CONTENT_HEIGHT
-    player_y = content_bottom - max(legacy_cropped.height, home_cropped.height) - NAME_LABEL_H - 10
-
-    # Paste legacy (left) then home (right)
-    bg.paste(legacy_cropped, (start_x, player_y), legacy_cropped)
-    bg.paste(
-        home_cropped,
-        (start_x + legacy_cropped.width + gap, player_y),
-        home_cropped,
-    )
-
-    # Draw name label with brand-color background
     draw = ImageDraw.Draw(bg)
     brand_hex = (brand_color or "#D2122E").lstrip("#")
     brand_rgba = _hex_to_rgba(f"#{brand_hex}") if brand_color else (210, 18, 46, 255)
     label_y = content_bottom - NAME_LABEL_H - 10
     label_box_h = 80
-    # Semi-transparent brand color box
     label_bg = Image.new("RGBA", (WIDTH, label_box_h), (*brand_rgba[:3], 220))
     bg.paste(label_bg, (0, label_y), label_bg)
-    # Name text centered
+    draw = ImageDraw.Draw(bg)
     font = get_font(72, bold=True)
     text_bbox = draw.textbbox((0, 0), name.upper(), font=font)
     text_w = text_bbox[2] - text_bbox[0]
     text_h = text_bbox[3] - text_bbox[1]
     text_x = (WIDTH - text_w) // 2
     text_y = label_y + (label_box_h - text_h) // 2
-    # Shadow
     draw.text((text_x + 2, text_y + 2), name.upper(), fill=(0, 0, 0, 128), font=font)
     draw.text((text_x, text_y), name.upper(), fill=(255, 255, 255, 255), font=font)
 
-    # Sponsor logo (bottom-left, optional)
+    # Sponsor
     if sponsor_path and sponsor_path.exists():
         sponsor_img = Image.open(sponsor_path).convert("RGBA")
         sponsor_w = int(WIDTH * 0.22)
@@ -838,7 +1094,6 @@ def _composite_member_frame(
             (sponsor_w, int(sponsor_w / aspect)),
             Image.Resampling.LANCZOS,
         )
-        # Green box behind sponsor
         spx = SPONSOR_MARGIN + SPONSOR_PAD
         spy = HEIGHT - SPONSOR_BOX_H - SPONSOR_MARGIN + SPONSOR_PAD
         sponsor_box = Image.new(
@@ -847,13 +1102,64 @@ def _composite_member_frame(
             (144, 238, 144, 220),
         )
         bg.paste(
-            sponsor_box, (SPONSOR_MARGIN, HEIGHT - SPONSOR_BOX_H - SPONSOR_MARGIN), sponsor_box
+            sponsor_box,
+            (SPONSOR_MARGIN, HEIGHT - SPONSOR_BOX_H - SPONSOR_MARGIN),
+            sponsor_box,
         )
         bg.paste(sponsor_img, (spx, spy), sponsor_img)
 
-    # Save as RGB (for FFmpeg)
+    # Save background frame
+    bg_frame_path = output_path.parent / f"{output_path.stem}_bg.png"
     bg = bg.convert("RGB")
-    bg.save(str(output_path), "PNG", quality=95)
+    bg.save(str(bg_frame_path), "PNG")
+
+    # Use ffprobe to get transparent video duration
+    dur = _probe_duration(transparent_video)
+    if dur <= 0:
+        dur = PHOTO_CLIP_DURATION
+
+    # FFmpeg: loop background image + overlay transparent video
+    # The transparent MOV (ProRes 4444) has alpha, so overlay works directly
+    cmd = [
+        ffmpeg,
+        "-y",
+        "-loop",
+        "1",
+        "-i",
+        str(bg_frame_path),  # input 0: background frame
+        "-i",
+        str(transparent_video),  # input 1: transparent player video
+        "-filter_complex",
+        (
+            f"[0:v]scale={WIDTH}:{HEIGHT},setsar=1,format=yuva420p[bg];"
+            f"[1:v]scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=decrease,"
+            f"pad={WIDTH}:{HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=0x00000000,format=yuva420p[fg];"
+            f"[bg][fg]overlay=0:0:format=auto,format=yuv420p[out]"
+        ),
+        "-map",
+        "[out]",
+        "-t",
+        f"{dur:.2f}",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "fast",
+        "-crf",
+        "20",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        str(FPS),
+        "-an",
+        str(output_path),
+    ]
+
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)  # noqa: S603
+    if result.returncode != 0:
+        logger.error("FFmpeg overlay failed: %s", result.stderr[-2000:])
+        return None
+
+    logger.info("FFmpeg overlay complete → %s (%.1fs)", output_path, dur)
     return output_path
 
 
@@ -868,15 +1174,16 @@ def compose_photo_composite_video(
     output_dir: Path | None = None,
     progress_callback=None,
 ) -> Path:
-    """Compose a Then vs Now compilation from static fullbody images.
+    """Compose a Then vs Now compilation using AI-powered video generation.
 
-    For each member:
-    1. Composite: legacy fullbody (left, mirrored) + home fullbody (right)
-       on the club/stadium background, visible from knees up
-    2. Ken Burns animation: slow zoom-in over PHOTO_CLIP_DURATION seconds
-    3. Header overlay + name label + sponsor
+    Full pipeline per member:
+    1. PIL: crop fullbody images to hips, mirror legacy
+    2. Gemini: realistically composite players onto background
+    3. MiniMax: generate 6s video (players look at each other, smile, look back)
+    4. RVM: remove background from generated video
+    5. FFmpeg: overlay transparent video on consistent background + header + name
 
-    Clips are concatenated with crossfade transitions.
+    All member clips are concatenated with crossfade transitions.
 
     Args:
         members: List of MemberPhotoComposite with fullbody image URLs.
@@ -918,18 +1225,22 @@ def compose_photo_composite_video(
         if _download_file(sponsor_url, _sp):
             sponsor_path = _sp
 
-    # ── 3. Download fullbody images & composite per member ──
+    # ── 3. Process each member through the AI pipeline ──
     total = len(members)
     clip_paths: list[Path] = []
+    # Progress allocation: 0-80% for member processing, 80-100% for concat
+    member_pct = 75  # percent allocated to member processing
 
     for idx, member in enumerate(members):
+        member_start_pct = int(idx / total * member_pct)
         if progress_callback:
-            progress_callback(int(idx / total * 80))
+            progress_callback(member_start_pct)
 
-        # Download both fullbody images
-        home_path = asset_dir / f"member_{idx}_home.png"
-        legacy_path = asset_dir / f"member_{idx}_legacy.png"
+        logger.info("Photo composite pipeline %d/%d: %s", idx + 1, total, member.name)
 
+        # 3a. Download fullbody images
+        home_path = asset_dir / f"m{idx}_home.png"
+        legacy_path = asset_dir / f"m{idx}_legacy.png"
         if not _download_file(member.fullbody_home_url, home_path):
             logger.warning("Skipping %s: failed to download home fullbody", member.name)
             continue
@@ -937,77 +1248,94 @@ def compose_photo_composite_video(
             logger.warning("Skipping %s: failed to download legacy fullbody", member.name)
             continue
 
-        # Create composite frame (PIL)
-        frame_path = asset_dir / f"member_{idx}_frame.png"
-        try:
-            _composite_member_frame(
-                bg_path=bg_path,
-                home_path=home_path,
-                legacy_path=legacy_path,
-                name=member.name,
-                brand_color=brand_color,
-                header_path=header_path,
-                sponsor_path=sponsor_path,
-                output_path=frame_path,
-            )
-        except Exception:
-            logger.exception("Failed to composite frame for %s", member.name)
+        # 3b. Crop to hips (PIL)
+        home_cropped = asset_dir / f"m{idx}_home_crop.png"
+        legacy_cropped = asset_dir / f"m{idx}_legacy_crop.png"
+        _crop_player_to_hips(home_path, home_cropped, mirror=False)
+        _crop_player_to_hips(legacy_path, legacy_cropped, mirror=True)
+
+        # 3c. Create rough reference composite (PIL — for Gemini guidance)
+        ref_composite = asset_dir / f"m{idx}_ref_composite.png"
+        _prepare_gemini_composite_image(bg_path, home_cropped, legacy_cropped, ref_composite)
+
+        # 3d. Gemini: photorealistic composite
+        gemini_output = asset_dir / f"m{idx}_gemini.png"
+        gemini_result = _gemini_composite(
+            bg_path=bg_path,
+            home_cropped_path=home_cropped,
+            legacy_cropped_path=legacy_cropped,
+            reference_composite_path=ref_composite,
+            member_name=member.name,
+            output_path=gemini_output,
+        )
+        if not gemini_result:
+            logger.warning("Skipping %s: Gemini composite failed", member.name)
             continue
 
-        # ── 4. Animate frame with FFmpeg Ken Burns (slow zoom-in) ──
-        clip_duration = PHOTO_CLIP_DURATION + PHOTO_FREEZE_SECONDS
-        clip_path = clips_dir / f"clip_{idx:03d}.mp4"
+        step_pct = int((idx + 0.3) / total * member_pct)
+        if progress_callback:
+            progress_callback(step_pct)
 
-        # Ken Burns: slow zoom from PHOTO_ZOOM_START to PHOTO_ZOOM_END,
-        # centered on the players (center of content area)
-        # zoompan filter: z goes from 1.0 to 1.08 over the clip duration
-        total_frames = int(clip_duration * FPS)
-        zoom_expr = f"{PHOTO_ZOOM_START}+on*{(PHOTO_ZOOM_END - PHOTO_ZOOM_START) / total_frames}"
-        # Keep centered: x = (iw - iw/zoom)/2, y = (ih - ih/zoom)/2
-        ken_burns_filter = (
-            f"zoompan=z='{zoom_expr}':"
-            f"x='(iw-iw/zoom)/2':y='(ih-ih/zoom)/2':"
-            f"d={total_frames}:s={WIDTH}x{HEIGHT}:fps={FPS},"
-            f"format=yuv420p"
+        # 3e. MiniMax: generate 6s video
+        minimax_video = clips_dir / f"m{idx}_minimax.mp4"
+        minimax_result = _minimax_generate_video(
+            composite_image_path=gemini_output,
+            member_name=member.name,
+            output_path=minimax_video,
+        )
+        if not minimax_result:
+            logger.warning("Skipping %s: MiniMax video generation failed", member.name)
+            continue
+
+        step_pct = int((idx + 0.6) / total * member_pct)
+        if progress_callback:
+            progress_callback(step_pct)
+
+        # 3f. RVM: remove background
+        rvm_video = clips_dir / f"m{idx}_rvm.mov"
+        rvm_result = _rvm_remove_background(
+            input_video=minimax_video,
+            output_video=rvm_video,
+        )
+        if not rvm_result:
+            logger.warning("Skipping %s: RVM failed, using raw MiniMax video", member.name)
+            # Fallback: use raw MiniMax video without bg removal
+            rvm_result = minimax_video
+
+        step_pct = int((idx + 0.85) / total * member_pct)
+        if progress_callback:
+            progress_callback(step_pct)
+
+        # 3g. FFmpeg: overlay on consistent background + header + name + sponsor
+        final_clip = clips_dir / f"clip_{idx:03d}.mp4"
+        overlay_result = _ffmpeg_overlay_on_background(
+            transparent_video=rvm_result,
+            bg_path=bg_path,
+            header_path=header_path,
+            sponsor_path=sponsor_path,
+            name=member.name,
+            brand_color=brand_color,
+            output_path=final_clip,
+        )
+        if not overlay_result:
+            logger.warning("Skipping %s: FFmpeg overlay failed", member.name)
+            continue
+
+        clip_paths.append(final_clip)
+        logger.info(
+            "Photo composite pipeline complete for %s (%d/%d)",
+            member.name,
+            idx + 1,
+            total,
         )
 
-        cmd = [
-            ffmpeg,
-            "-y",
-            "-loop",
-            "1",
-            "-i",
-            str(frame_path),
-            "-vf",
-            ken_burns_filter,
-            "-t",
-            f"{clip_duration:.2f}",
-            "-c:v",
-            "libx264",
-            "-preset",
-            "fast",
-            "-crf",
-            "20",
-            "-pix_fmt",
-            "yuv420p",
-            "-r",
-            str(FPS),
-            "-an",
-            str(clip_path),
-        ]
-
-        logger.info("Creating Ken Burns clip %d/%d for %s", idx + 1, total, member.name)
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)  # noqa: S603
-        if result.returncode != 0:
-            logger.error("FFmpeg Ken Burns failed for %s: %s", member.name, result.stderr[-2000:])
-            continue
-
-        clip_paths.append(clip_path)
-
     if not clip_paths:
-        raise ValueError("No member clips were successfully composed.")
+        raise ValueError("No member clips were successfully composed through the AI pipeline.")
 
-    # ── 5. Concatenate clips with crossfade transitions ──
+    if progress_callback:
+        progress_callback(member_pct)
+
+    # ── 4. Concatenate clips with crossfade transitions ──
     joined_output = output_dir / "photo_composite_joined.mp4"
     final_output = output_dir / "then_vs_now_compilation.mp4"
 
@@ -1026,7 +1354,6 @@ def compose_photo_composite_video(
         for clip in clip_paths:
             input_args += ["-i", str(clip)]
 
-        # Build xfade chain
         fc_parts: list[str] = []
         for i in range(len(clip_paths)):
             fc_parts.append(f"[{i}:v]settb=AVTB,fps={FPS},format=yuv420p,setsar=1[v{i}]")
@@ -1134,7 +1461,7 @@ def compose_photo_composite_video(
         progress_callback(100)
 
     logger.info(
-        "Photo composite compilation complete: %s (%d members)",
+        "Photo composite compilation complete: %s (%d members, AI pipeline)",
         final_output,
         len(clip_paths),
     )
