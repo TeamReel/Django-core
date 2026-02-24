@@ -103,6 +103,7 @@ type AssetVariants = Record<string, AssetVariantRaw>; // e.g. { home: "s3://..."
 type AssetVariantsMap = {
   // Per-kit-type images
   fullbody: AssetVariants;  // { home: "s3://...", away: "...", third: "...", keeper: "..." }
+  halfbody: AssetVariants;  // same pattern (head to waist crop)
   closeup: AssetVariants;   // same pattern
   // Per-style-variant videos
   intro: AssetVariants;
@@ -117,7 +118,7 @@ type AssetVariantsMap = {
 type VideoVariantsMap = AssetVariantsMap;
 
 function createEmptyVideoVariants(): AssetVariantsMap {
-  return { fullbody: {}, closeup: {}, intro: {}, celebration: {}, then_vs_now: {}, photo_composite: {} };
+  return { fullbody: {}, halfbody: {}, closeup: {}, intro: {}, celebration: {}, then_vs_now: {}, photo_composite: {} };
 }
 
 function readAssetsFromMembership(membership: any): MemberMediaForm {
@@ -196,6 +197,7 @@ function readVideoVariantsFromMembership(membership: any): AssetVariantsMap {
 
   const result: AssetVariantsMap = {
     fullbody: safeObj(images?.fullbody),
+    halfbody: safeObj(images?.halfbody),
     closeup: safeObj(images?.closeup),
     intro: migrateVideoKeys(safeObj(videos?.intro)),
     celebration: migrateVideoKeys(safeObj(videos?.celebration)),
@@ -258,6 +260,7 @@ function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm, v
   if (videoVariants) {
     next.images = {
       fullbody: videoVariants.fullbody || {},
+      halfbody: videoVariants.halfbody || {},
       closeup: videoVariants.closeup || {},
     };
     next.videos = {
@@ -382,7 +385,7 @@ async function pollProcessingResult(
   abortSignal?: AbortSignal,
 ): Promise<void> {
   const POLL_INTERVAL = 3000;
-  const isImage = assetType === 'fullbody' || assetType === 'closeup';
+  const isImage = assetType === 'fullbody' || assetType === 'halfbody' || assetType === 'closeup';
   // Videos need much longer for per-frame bg removal (~75 frames × ~1.5s = ~2min)
   const MAX_POLLS = isImage ? 80 : 200; // images ~4min, videos ~10min
   const compositeKey = variantId ? `${kitType}_${variantId}` : kitType;
@@ -1194,6 +1197,54 @@ export default function ProjectSeasonMemberDetailPage() {
     }
   };
 
+  // Halfbody from fullbody crop
+  const [croppingHalfbody, setCroppingHalfbody] = useState<Record<string, boolean>>({});
+
+  const cropHalfbodyFromFullbody = async (kitType: string) => {
+    if (!membershipId) {
+      alert('Membership ID ontbreekt.');
+      return;
+    }
+    setCroppingHalfbody((prev) => ({ ...prev, [kitType]: true }));
+    try {
+      const csrfToken = getCsrfToken();
+      const res = await fetch(`${apiBaseUrl}/api/v1/generative/assets/crop-halfbody/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({ membership_id: membershipId, kit_type: kitType }),
+      });
+
+      const raw = await res.json();
+      const inner = (raw.data ?? raw) as Record<string, string>;
+
+      if (!res.ok) {
+        throw new Error(inner?.error || raw?.error || `Server error ${res.status}`);
+      }
+
+      const storagePath: string = inner.storage_path || '';
+      if (!storagePath) throw new Error('Geen storage pad ontvangen van de server');
+
+      // Set as proper variant object so the presigning useEffect picks it up
+      setVideoVariants((prev) => ({
+        ...prev,
+        halfbody: {
+          ...prev.halfbody,
+          [kitType]: { raw: storagePath, processed: storagePath, processing_state: 'processed' as const },
+        },
+      }));
+
+    } catch (err) {
+      console.error('Halfbody crop error:', err);
+      alert(err instanceof Error ? err.message : 'Crop mislukt');
+    } finally {
+      setCroppingHalfbody((prev) => ({ ...prev, [kitType]: false }));
+    }
+  };
+
   // AI Generation Modal State
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiPreselectedTemplate, setAiPreselectedTemplate] = useState<string | undefined>();
@@ -1337,7 +1388,7 @@ export default function ProjectSeasonMemberDetailPage() {
   useEffect(() => {
     // Collect all raw S3 keys from videoVariants and form
     const paths: string[] = [];
-    for (const category of ['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite'] as const) {
+    for (const category of ['fullbody', 'halfbody', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite'] as const) {
       const variants = videoVariants[category];
       if (variants) {
         for (const val of Object.values(variants)) {
@@ -3942,6 +3993,183 @@ export default function ProjectSeasonMemberDetailPage() {
                                           const updated = mergeAssetsIntoMetadata(
                                             membership?.metadata,
                                             newForm,
+                                            newVV
+                                          );
+                                          await handleMetadataUpdate(updated);
+                                        }}
+                                        style={{ fontSize: '11px', padding: '4px 8px', color: '#ef4444' }}
+                                      >
+                                        🗑️
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Halfbody Assets Grid */}
+                      <div>
+                        <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>👤 Halfbody in Tenue</h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
+                          {effectiveKits.map((kit) => {
+                            const variantVal = videoVariants.halfbody[kit.id] || null;
+                            const assetUrl = getVariantDisplayUrl(variantVal);
+                            const lineupReady = isLineupReady(variantVal);
+                            const currentlyProcessing = isProcessing(variantVal);
+                            const fullbodyRef = getVariantDisplayUrl(videoVariants.fullbody[kit.id]);
+
+                            return (
+                              <div
+                                key={`halfbody-${kit.id}`}
+                                style={{
+                                  border: lineupReady
+                                    ? '2px solid #10b981'
+                                    : assetUrl
+                                      ? '2px solid #f59e0b'
+                                      : '1px solid var(--vscode-widget-border, #333)',
+                                  borderRadius: '8px',
+                                  overflow: 'hidden',
+                                  background: 'var(--vscode-editor-background)',
+                                }}
+                              >
+                                {/* Preview */}
+                                <div
+                                  onClick={() => {
+                                    const url = resolveDisplayUrl(assetUrl);
+                                    if (url) window.open(url, '_blank');
+                                  }}
+                                  style={{
+                                    aspectRatio: '3/4',
+                                    background: assetUrl
+                                      ? `url(${resolveDisplayUrl(assetUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
+                                      : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                    position: 'relative',
+                                    minHeight: '150px',
+                                    cursor: assetUrl ? 'zoom-in' : 'default',
+                                  }}
+                                >
+                                  {!assetUrl && (
+                                    <div style={{
+                                      position: 'absolute',
+                                      inset: 0,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: 'var(--vscode-descriptionForeground)',
+                                      fontSize: '12px',
+                                    }}>
+                                      Niet gegenereerd
+                                    </div>
+                                  )}
+                                  {assetUrl && (
+                                    <div style={{
+                                      position: 'absolute',
+                                      top: '6px',
+                                      right: '6px',
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      gap: '4px',
+                                      alignItems: 'flex-end',
+                                    }}>
+                                      <span style={{
+                                        background: '#6366f1dd',
+                                        color: '#fff',
+                                        fontSize: '10px',
+                                        padding: '2px 6px',
+                                        borderRadius: '4px',
+                                        fontWeight: 600,
+                                      }}>
+                                        AI
+                                      </span>
+                                      <ProcessingBadge value={variantVal} />
+                                    </div>
+                                  )}
+                                  {currentlyProcessing && (
+                                    <div style={{
+                                      position: 'absolute',
+                                      inset: 0,
+                                      background: 'rgba(0,0,0,0.4)',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: '#fff',
+                                      fontSize: '13px',
+                                      fontWeight: 600,
+                                    }}>
+                                      ⏳ Bezig met verwerken...
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Label + Actions */}
+                                <div style={{ padding: '10px' }}>
+                                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
+                                    {kit.icon} {kit.label}
+                                  </div>
+                                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => cropHalfbodyFromFullbody(kit.id)}
+                                      disabled={croppingHalfbody[kit.id] || !fullbodyRef}
+                                      style={{ fontSize: '11px', padding: '4px 8px' }}
+                                      title={!fullbodyRef ? 'Genereer eerst een fullbody' : ''}
+                                    >
+                                      {croppingHalfbody[kit.id] ? '⏳...' : assetUrl ? '🔄 Opnieuw' : '✂️ Crop'}
+                                    </Button>
+                                    {assetUrl && !currentlyProcessing && (
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        onClick={async () => {
+                                          const result = await triggerAssetProcessing(
+                                            apiBaseUrl, membershipId!, 'halfbody', kit.id
+                                          );
+                                          if (result.ok) {
+                                            const rawUrl = getVariantRawUrl(variantVal);
+                                            const newVV = {
+                                              ...videoVariants,
+                                              halfbody: {
+                                                ...videoVariants.halfbody,
+                                                [kit.id]: {
+                                                  raw: rawUrl || '',
+                                                  processed: null,
+                                                  processing_state: 'processing' as const,
+                                                },
+                                              },
+                                            };
+                                            setVideoVariants(newVV);
+                                            startProcessingPoll('halfbody', kit.id, null);
+                                          }
+                                        }}
+                                        style={{
+                                          fontSize: '11px',
+                                          padding: '4px 8px',
+                                          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                          border: 'none',
+                                          color: '#fff',
+                                        }}
+                                      >
+                                        {lineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                                      </Button>
+                                    )}
+                                    {assetUrl && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={async () => {
+                                          if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
+                                          const newVV = {
+                                            ...videoVariants,
+                                            halfbody: { ...videoVariants.halfbody },
+                                          };
+                                          delete newVV.halfbody[kit.id];
+                                          setVideoVariants(newVV);
+                                          const updated = mergeAssetsIntoMetadata(
+                                            membership?.metadata,
+                                            form,
                                             newVV
                                           );
                                           await handleMetadataUpdate(updated);

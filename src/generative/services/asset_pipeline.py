@@ -882,6 +882,58 @@ def _validate_photo_composite(
         return True, f"Validation skipped ({e})", 6  # Pass on error to not block
 
 
+def _crop_gemini_output_upper_body(image_bytes: bytes) -> bytes:
+    """Crop Gemini composite output to ensure consistent upper body framing.
+
+    Takes the Gemini output and crops to keep only the upper ~60% which should
+    contain head, shoulders, chest, stomach. This ensures no legs are visible
+    and both players are cropped at the same level.
+
+    Returns the cropped image as PNG bytes, scaled back to 9:16 portrait format.
+    """
+    import io
+
+    from PIL import Image
+
+    img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+
+    # Keep top 60% of the image (removes bottom 40% where legs might be)
+    crop_h = int(img.height * 0.60)
+    cropped = img.crop((0, 0, img.width, crop_h))
+
+    # Scale back to 9:16 portrait format (1080x1920)
+    target_w = 1080
+    target_h = 1920
+
+    # Create canvas and position cropped content
+    result = Image.new("RGB", (target_w, target_h), (0, 0, 0))
+
+    # Scale cropped image to fit width
+    scale = target_w / cropped.width
+    new_w = target_w
+    new_h = int(cropped.height * scale)
+    cropped_scaled = cropped.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+    # Position slightly above center (players in upper portion of frame)
+    y_offset = int((target_h - new_h) * 0.25)
+    if cropped_scaled.mode == "RGBA":
+        result.paste(cropped_scaled, (0, y_offset), cropped_scaled)
+    else:
+        result.paste(cropped_scaled, (0, y_offset))
+
+    output = io.BytesIO()
+    result.save(output, format="PNG")
+    cropped_bytes = output.getvalue()
+
+    logger.info(
+        "Post-Gemini crop: %d bytes → %d bytes (%.0f%% height kept)",
+        len(image_bytes),
+        len(cropped_bytes),
+        60.0,
+    )
+    return cropped_bytes
+
+
 def _generate_photo_composite_gemini(
     input_images: dict[str, bytes],
     params: dict[str, str],
@@ -1128,6 +1180,10 @@ def _generate_photo_composite_gemini(
                                 final_image_bytes = retry_image_bytes
 
                         attempt += 1
+
+                # ── Post-Gemini crop: ensure consistent upper body framing ──
+                # This guarantees no legs even if Gemini generates them
+                final_image_bytes = _crop_gemini_output_upper_body(final_image_bytes)
 
                 filename = f"photo_composite_gemini_v{i+1}_{int(time.time())}.png"
                 result_metadata = {

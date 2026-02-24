@@ -274,12 +274,13 @@ def process_member_asset(
             },
         )
 
-        # Auto-crop closeup from processed fullbody image.
-        # The crop uses the bg-removed fullbody, so the closeup is immediately "processed".
+        # Auto-crop closeup and halfbody from processed fullbody image.
+        # The crop uses the bg-removed fullbody, so the results are immediately "processed".
         if (
             asset_type == "fullbody"
             and result.get("processing_state") == ProcessingState.PROCESSED.value
         ):
+            # Queue closeup crop
             try:
                 auto_crop_closeup_from_fullbody.delay(
                     membership_id=str(membership_id),
@@ -292,6 +293,22 @@ def process_member_asset(
             except Exception as crop_exc:  # noqa: BLE001
                 logger.warning(
                     "process_member_asset: failed to queue closeup crop: %s",
+                    crop_exc,
+                )
+
+            # Queue halfbody crop
+            try:
+                auto_crop_halfbody_from_fullbody.delay(
+                    membership_id=str(membership_id),
+                    kit_type=kit_type,
+                )
+                logger.info(
+                    "process_member_asset: queued auto-crop halfbody",
+                    extra={"membership_id": membership_id, "kit_type": kit_type},
+                )
+            except Exception as crop_exc:  # noqa: BLE001
+                logger.warning(
+                    "process_member_asset: failed to queue halfbody crop: %s",
                     crop_exc,
                 )
 
@@ -506,6 +523,142 @@ def auto_crop_closeup_from_fullbody(
         )
     except Exception as exc:
         logger.exception("auto_crop_closeup: metadata save failed: %s", exc)
+        return None
+
+    return membership_id
+
+
+@shared_task(
+    bind=True,
+    max_retries=2,
+    time_limit=150,
+    acks_late=True,
+    retry_backoff=30,
+)
+def auto_crop_halfbody_from_fullbody(
+    self,
+    *,
+    membership_id: str,
+    kit_type: str,
+) -> str | None:
+    """Auto-crop a halfbody (head to waist) from a processed fullbody image.
+
+    Dispatched automatically after process_member_asset completes for a fullbody.
+    Downloads the processed (bg-removed) fullbody, crops top 55% via Pillow,
+    uploads the result, and writes metadata as "processed".
+    """
+    import io
+    import uuid as _uuid
+
+    from django.core.files.base import ContentFile
+    from PIL import Image as PilImage
+
+    # Import crop algorithm + constants from views_asset
+    from src.generative.views_asset import HALFBODY_OUTPUT_SIZE
+    from src.generative.views_asset import _smart_crop_halfbody
+
+    ProjectMembership = apps.get_model("projects", "ProjectMembership")
+    try:
+        membership = ProjectMembership.objects.get(id=membership_id)
+    except Exception:  # noqa: BLE001
+        logger.warning("auto_crop_halfbody: membership %s not found", membership_id)
+        return None
+
+    # ── Read processed fullbody path ──────────────────────────────────────────
+    meta = membership.metadata or {}
+    ta = meta.get("teamreel_assets", {})
+    images = ta.get("images", {})
+    fullbody = images.get("fullbody", {}).get(kit_type, {})
+
+    if not isinstance(fullbody, dict):
+        logger.warning(
+            "auto_crop_halfbody: no fullbody dict for membership=%s kit=%s",
+            membership_id,
+            kit_type,
+        )
+        return None
+
+    # Prefer processed (bg-removed); fall back to raw
+    source_path = fullbody.get("processed") or fullbody.get("raw")
+    if not source_path:
+        logger.warning(
+            "auto_crop_halfbody: no fullbody path for membership=%s kit=%s",
+            membership_id,
+            kit_type,
+        )
+        return None
+
+    # ── Download fullbody from S3 ─────────────────────────────────────────────
+    try:
+        from files.utils import get_storage_backend
+
+        storage = get_storage_backend()
+        with storage.open(source_path, "rb") as fh:
+            raw_bytes = fh.read()
+    except Exception as exc:
+        logger.exception(
+            "auto_crop_halfbody: download failed for %s: %s",
+            source_path,
+            exc,
+        )
+        raise self.retry(exc=exc)
+
+    # ── Pillow smart crop ─────────────────────────────────────────────────────
+    try:
+        img = PilImage.open(io.BytesIO(raw_bytes)).convert("RGBA")
+        cropped = _smart_crop_halfbody(img)
+
+        out_buf = io.BytesIO()
+        cropped.save(out_buf, format="PNG", optimize=True)
+        halfbody_bytes = out_buf.getvalue()
+    except Exception as exc:
+        logger.exception("auto_crop_halfbody: crop failed: %s", exc)
+        return None
+
+    # ── Upload halfbody to S3 ──────────────────────────────────────────────────
+    try:
+        timestamp = timezone.now().strftime("%Y%m%d")
+        unique = str(_uuid.uuid4())[:8]
+        filename = f"member_halfbody_kit_type-{kit_type}_crop_{timestamp}_{unique}.png"
+        upload_path = f"members/{membership_id}/generated/output/halfbody/{filename}"
+
+        file_obj = ContentFile(halfbody_bytes, name=filename)
+        storage_path = storage.save(upload_path, file_obj)
+    except Exception as exc:
+        logger.exception("auto_crop_halfbody: upload failed: %s", exc)
+        raise self.retry(exc=exc)
+
+    # ── Write metadata ────────────────────────────────────────────────────────
+    try:
+        membership.refresh_from_db()
+        with transaction.atomic():
+            _update_variant_metadata(
+                membership,
+                asset_type="halfbody",
+                kit_type=kit_type,
+                variant_id=None,
+                variant_value={
+                    "raw": storage_path,
+                    "processed": storage_path,  # already bg-removed from fullbody
+                    "processing_state": ProcessingState.PROCESSED.value,
+                    "processed_at": timezone.now().isoformat(),
+                    "specs": {
+                        "width": HALFBODY_OUTPUT_SIZE[0],
+                        "height": HALFBODY_OUTPUT_SIZE[1],
+                        "format": "png",
+                        "bg_removed": True,
+                        "source": "auto_crop_from_fullbody",
+                    },
+                },
+            )
+        logger.info(
+            "auto_crop_halfbody: saved halfbody for membership=%s kit=%s path=%s",
+            membership_id,
+            kit_type,
+            storage_path,
+        )
+    except Exception as exc:
+        logger.exception("auto_crop_halfbody: metadata save failed: %s", exc)
         return None
 
     return membership_id

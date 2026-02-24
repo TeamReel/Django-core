@@ -2768,6 +2768,10 @@ CLOSEUP_PERSON_RATIO = 0.28
 CLOSEUP_OUTPUT_SIZE = (512, 512)  # target CLOSEUP_SPEC
 CLOSEUP_ALPHA_THRESHOLD = 10  # pixels below this alpha are treated as background
 
+# Halfbody settings: head to waist/navel
+HALFBODY_PERSON_RATIO = 0.55  # 55% of person height (head to navel)
+HALFBODY_OUTPUT_SIZE = (768, 1024)  # 3:4 aspect ratio, tall
+
 
 def _smart_crop_closeup(img):  # type: ignore[return]  # PIL.Image
     """Return a square 512×512 closeup of head + shoulders from a transparent fullbody PNG.
@@ -2825,6 +2829,66 @@ def _smart_crop_closeup(img):  # type: ignore[return]  # PIL.Image
 
     cropped = img.crop((crop_left, crop_top, crop_right, crop_bottom))
     return cropped.resize(CLOSEUP_OUTPUT_SIZE, PilImage.LANCZOS)
+
+
+def _smart_crop_halfbody(img):  # type: ignore[return]  # PIL.Image
+    """Return a 768×1024 (3:4) halfbody crop from head to waist from a transparent fullbody PNG.
+
+    Strategy:
+    1. Find the tight bounding box of the non-transparent person pixels via the
+       alpha channel (``getbbox``).
+    2. Take the top ``HALFBODY_PERSON_RATIO`` fraction of the person's height (55%),
+       plus a small breathing-room pad at the top.
+    3. Crop horizontally centred on the person bounding box with 3:4 aspect ratio.
+    4. Resize to HALFBODY_OUTPUT_SIZE.
+
+    Falls back to a plain top-55%-of-frame crop if bounding box detection fails.
+    """
+    from PIL import Image as PilImage
+
+    img = img.convert("RGBA")
+    w, h = img.size
+
+    # ── Detect person bounding box via alpha ──────────────────────────────────
+    alpha = img.split()[3]  # A channel
+    binary = alpha.point(lambda v: 255 if v > CLOSEUP_ALPHA_THRESHOLD else 0)
+    bbox = binary.getbbox()
+
+    if bbox:
+        bx_min, by_min, bx_max, by_max = bbox
+        person_h = by_max - by_min
+
+        # How many px of person height to keep (55% = head to waist)
+        keep_h = max(1, int(person_h * HALFBODY_PERSON_RATIO))
+
+        # Add a small padding above the head
+        top_pad = max(0, by_min - int(person_h * 0.02))
+
+        crop_top = top_pad
+        crop_bottom = by_min + keep_h
+
+        # 3:4 aspect ratio crop, centred horizontally on the person
+        crop_height = crop_bottom - crop_top
+        crop_width = int(crop_height * 3 / 4)
+        cx = (bx_min + bx_max) // 2
+        crop_left = max(0, cx - crop_width // 2)
+        crop_right = min(w, crop_left + crop_width)
+        # Adjust if we hit the right edge
+        if crop_right == w:
+            crop_left = max(0, w - crop_width)
+            crop_right = w
+    else:
+        # Fallback: top 55% of whole frame
+        crop_top = 0
+        crop_bottom = max(1, int(h * 0.55))
+        crop_height = crop_bottom
+        crop_width = int(crop_height * 3 / 4)
+        cx = w // 2
+        crop_left = max(0, cx - crop_width // 2)
+        crop_right = min(w, crop_left + crop_width)
+
+    cropped = img.crop((crop_left, crop_top, crop_right, crop_bottom))
+    return cropped.resize(HALFBODY_OUTPUT_SIZE, PilImage.LANCZOS)
 
 
 def _crop_closeup_guest_player(request: Request, project_id: str, kit_type: str) -> Response:
@@ -3127,6 +3191,168 @@ def crop_closeup_from_fullbody_view(request: Request) -> Response:
     except Exception as exc:
         logger.exception("crop_closeup: failed to save to membership metadata: %s", exc)
         # Still return the URL — the frontend can show it even if metadata save failed
+        return Response(
+            {
+                "storage_path": new_storage_path,
+                "presigned_url": presigned_url,
+                "filename": filename,
+                "warning": f"Image generated but metadata save failed: {exc}",
+            }
+        )
+
+    return Response(
+        {
+            "storage_path": new_storage_path,
+            "presigned_url": presigned_url,
+            "filename": filename,
+        }
+    )
+
+
+# =============================================================================
+# Crop Halfbody From Fullbody — smart alpha-channel detection, no AI
+# =============================================================================
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def crop_halfbody_from_fullbody_view(request: Request) -> Response:
+    """Crop a halfbody (head to waist) image from the stored fullbody PNG.
+
+    No AI credit cost — pure Pillow image processing.
+
+    POST /api/v1/generative/assets/crop-halfbody/
+    Body:
+        membership_id  — ProjectMembership UUID
+        kit_type       — e.g. "home", "away", "third"
+
+    Returns:
+        { storage_path, presigned_url, filename }
+    """
+    import io
+
+    membership_id = request.data.get("membership_id", "").strip()
+    kit_type = request.data.get("kit_type", "home").strip()
+
+    if not membership_id:
+        return Response(
+            {"error": "membership_id is required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    from projects.models import ProjectMembership
+
+    # ── Fetch membership ──────────────────────────────────────────────────────
+    try:
+        membership = ProjectMembership.objects.get(id=membership_id)
+    except ProjectMembership.DoesNotExist:
+        return Response({"error": "Membership not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # ── Find fullbody storage path ────────────────────────────────────────────
+    metadata = membership.metadata or {}
+    ta = metadata.get("teamreel_assets", {})
+    images = ta.get("images", {})
+    fullbody_variants = images.get("fullbody", {})
+    fullbody_val = fullbody_variants.get(kit_type)
+
+    if not fullbody_val:
+        return Response(
+            {"error": f"No fullbody found for kit_type='{kit_type}'. Generate a fullbody first."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Prefer the processed path; fall back to raw
+    if isinstance(fullbody_val, dict):
+        storage_path = fullbody_val.get("processed") or fullbody_val.get("raw") or ""
+    else:
+        storage_path = str(fullbody_val)
+
+    if not storage_path:
+        return Response(
+            {"error": "Fullbody entry has no usable storage path."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # ── Download fullbody bytes from storage ──────────────────────────────────
+    try:
+        from files.utils import get_storage_backend
+
+        storage = get_storage_backend()
+        with storage.open(storage_path, "rb") as fh:
+            raw_bytes = fh.read()
+    except Exception as exc:
+        logger.exception("crop_halfbody: failed to download fullbody '%s': %s", storage_path, exc)
+        return Response(
+            {"error": f"Could not download fullbody image: {exc}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    # ── Pillow smart crop + resize ────────────────────────────────────────────
+    try:
+        from PIL import Image as PilImage
+
+        img = PilImage.open(io.BytesIO(raw_bytes)).convert("RGBA")
+        resized = _smart_crop_halfbody(img)
+
+        out_buf = io.BytesIO()
+        resized.save(out_buf, format="PNG", optimize=True)
+        halfbody_bytes = out_buf.getvalue()
+    except Exception as exc:
+        logger.exception("crop_halfbody: Pillow processing failed: %s", exc)
+        return Response(
+            {"error": f"Image processing failed: {exc}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    # ── Upload to storage ─────────────────────────────────────────────────────
+    filename = f"member_halfbody_kit_type-{kit_type}_crop.png"
+    upload_result = _upload_image_bytes_to_storage(
+        image_bytes=halfbody_bytes,
+        filename=filename,
+        mime_type="image/png",
+        template_id="halfbody_in_tenue",
+        template_type="output",
+        template_subtype="halfbody",
+        membership_id=membership_id,
+    )
+
+    if "error" in upload_result:
+        return Response(
+            {"error": upload_result["error"]},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    new_storage_path = upload_result.get("storage_path", "")
+    presigned_url = upload_result.get("presigned_url", "")
+
+    # ── Persist in membership metadata ────────────────────────────────────────
+    try:
+        variant_value = {
+            "raw": new_storage_path,
+            "processed": new_storage_path,
+            "processing_state": "processed",
+            "specs": {
+                "width": HALFBODY_OUTPUT_SIZE[0],
+                "height": HALFBODY_OUTPUT_SIZE[1],
+                "format": "png",
+                "bg_removed": True,
+                "source": "crop_from_fullbody",
+            },
+        }
+
+        metadata.setdefault("teamreel_assets", {}).setdefault("images", {}).setdefault(
+            "halfbody", {}
+        )[kit_type] = variant_value
+        membership.metadata = metadata
+        membership.save(update_fields=["metadata"])
+        logger.info(
+            "crop_halfbody: saved halfbody for membership=%s kit=%s path=%s",
+            membership_id,
+            kit_type,
+            new_storage_path,
+        )
+    except Exception as exc:
+        logger.exception("crop_halfbody: failed to save to membership metadata: %s", exc)
         return Response(
             {
                 "storage_path": new_storage_path,
