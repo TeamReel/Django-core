@@ -1126,6 +1126,95 @@ RULES:
 - The transformation is the ONLY "magical" element — everything else must look real.
 """,
     },
+
+    # =========================================================================
+    # 12. PHOTO COMPOSITE — GEMINI (image: realistic composite of 2 players on bg)
+    # =========================================================================
+    "photo_composite_gemini": {
+        "id": "photo_composite_gemini",
+        "name": "Foto Composite (Gemini)",
+        "category": "photo_composite",
+        "output_type": "image",
+        "description": "AI-composiet: twee versies van dezelfde speler (legacy + current) realistisch op een achtergrond geplaatst.",
+        "input_requirements": ["person_photo", "reference_photo", "background"],
+        "parameters": {},
+        "prompt_template": """Create a photorealistic composite image in PORTRAIT orientation (9:16, 1080x1920px).
+
+TASK:
+Take the two football players (cropped from hips up) and place them realistically
+on the background image. They should look like they are actually standing there,
+photographed by a camera at the location.
+
+LAYOUT:
+- The background fills the entire frame (portrait 9:16)
+- Player 1 (legacy kit) stands on the LEFT side, facing slightly right
+- Player 2 (current kit) stands on the RIGHT side, facing slightly left
+- They stand close together, about shoulder-width apart
+- Both visible from hips/waist up, filling most of the vertical frame
+- Both looking straight ahead at the camera
+- The reference composite image shows the approximate desired composition/positioning
+
+REALISM REQUIREMENTS:
+- Match the lighting and color temperature of the background
+- Add subtle shadows on the ground/background behind players
+- Correct perspective — players should look like they belong in the scene
+- Preserve the exact appearance, face, skin tone from the player images
+- Preserve the exact kit/clothing details from the player images
+- Natural depth of field — slight background blur if appropriate
+- No text, no logos, no overlays — just the composite photo
+
+IMPORTANT:
+- Do NOT change the players' poses or faces
+- Do NOT add any elements not in the source images
+- The output must be photorealistic, as if taken with a real camera
+""",
+    },
+
+    # =========================================================================
+    # 13. PHOTO COMPOSITE — VIDEO (MiniMax: 6s video from composite image)
+    # =========================================================================
+    "photo_composite_video": {
+        "id": "photo_composite_video",
+        "name": "Foto Composite Video",
+        "category": "photo_composite",
+        "output_type": "video",
+        "description": "6 seconden video van de Gemini-composiet: spelers kijken naar elkaar, lachen, kijken terug. Greenscreen background.",
+        "input_requirements": ["person_photo"],
+        "parameters": {},
+        "video_config": {
+            "duration_seconds": 6,
+            "fps": 30,
+            "resolution": "1080p",
+            "aspect_ratio": "9:16",
+            "loop": True,
+            "minimax_model": "video-01",
+            "composite_mode": None,  # No preprocessing — single image input
+        },
+        "prompt_template": """A cinematic 6-second portrait video of two football players standing side by side on a football pitch.
+
+The provided image shows the FIRST FRAME: two people standing next to each other in football kits.
+
+MOVEMENT SEQUENCE (must be precise):
+1. FRAMES 0-1s: Both stand facing the camera, looking straight ahead. Neutral expression. Minimal movement (natural breathing only).
+2. FRAMES 1-2.5s: They slowly turn their heads to look at EACH OTHER. Left person turns head RIGHT. Right person turns head LEFT. Their eyes meet.
+3. FRAMES 2.5-4s: They begin to smile, then laugh together. Natural, genuine laughter. Their bodies can shift slightly toward each other. Keep it subtle and warm.
+4. FRAMES 4-5.5s: Still laughing/smiling, they slowly turn their heads back to face the camera.
+5. FRAMES 5.5-6s: Both face forward again with a warm smile. Return to near-starting pose for seamless loop.
+
+BACKGROUND:
+- Keep the background from the input image as-is. Do NOT change the background.
+- The players should remain in their exact positions from the first frame.
+
+RULES:
+- NO visual effects, NO particles, NO lens flares, NO glow, NO transitions.
+- NO text overlays, NO graphics, NO logos added.
+- NO camera movement. Static locked-off camera.
+- Photorealistic quality. Natural lighting.
+- Both people must remain fully visible at all times.
+- Movement is slow, natural, and controlled. No sudden jerks.
+- 9:16 vertical aspect ratio.
+""",
+    },
 }
 
 

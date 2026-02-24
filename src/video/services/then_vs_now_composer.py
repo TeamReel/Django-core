@@ -74,12 +74,15 @@ class MemberClip:
 
 @dataclass
 class MemberPhotoComposite:
-    """A single member's data for photo composite compilation."""
+    """A single member's data for photo composite compilation (Step 5).
+
+    At this point, the member should have a pre-processed transparent video
+    (from the modular pipeline: Gemini composite → MiniMax video → RVM bg removal).
+    """
 
     member_id: str
     name: str
-    fullbody_home_url: str  # Current kit fullbody (transparent PNG)
-    fullbody_legacy_url: str  # Legacy kit fullbody (transparent PNG)
+    transparent_video_url: str  # RVM-processed transparent video (MOV/MP4 with alpha)
 
 
 def _get_ffmpeg_path() -> str:
@@ -1174,19 +1177,19 @@ def compose_photo_composite_video(
     output_dir: Path | None = None,
     progress_callback=None,
 ) -> Path:
-    """Compose a Then vs Now compilation using AI-powered video generation.
+    """Compose a photo composite compilation from pre-processed transparent member videos.
 
-    Full pipeline per member:
-    1. PIL: crop fullbody images to hips, mirror legacy
-    2. Gemini: realistically composite players onto background
-    3. MiniMax: generate 6s video (players look at each other, smile, look back)
-    4. RVM: remove background from generated video
-    5. FFmpeg: overlay transparent video on consistent background + header + name
+    This is Step 5 of the modular pipeline. All AI processing (Gemini composite,
+    MiniMax video, RVM bg removal) has already been done at the member level.
+    This function only does:
 
-    All member clips are concatenated with crossfade transitions.
+    1. Download each member's transparent video (RVM-processed, has alpha channel)
+    2. FFmpeg overlay on consistent background + header + name label + sponsor
+    3. Concatenate all member clips with crossfade transitions
+    4. Fade out at the end
 
     Args:
-        members: List of MemberPhotoComposite with fullbody image URLs.
+        members: List of MemberPhotoComposite with transparent_video_url.
         background_url: Club/stadium background image URL.
         logo_url: Club logo URL (header).
         team_name: Team name for header.
@@ -1225,10 +1228,9 @@ def compose_photo_composite_video(
         if _download_file(sponsor_url, _sp):
             sponsor_path = _sp
 
-    # ── 3. Process each member through the AI pipeline ──
+    # ── 3. Process each member: download transparent video → FFmpeg overlay ──
     total = len(members)
     clip_paths: list[Path] = []
-    # Progress allocation: 0-80% for member processing, 80-100% for concat
     member_pct = 75  # percent allocated to member processing
 
     for idx, member in enumerate(members):
@@ -1236,80 +1238,20 @@ def compose_photo_composite_video(
         if progress_callback:
             progress_callback(member_start_pct)
 
-        logger.info("Photo composite pipeline %d/%d: %s", idx + 1, total, member.name)
+        logger.info("Photo composite overlay %d/%d: %s", idx + 1, total, member.name)
 
-        # 3a. Download fullbody images
-        home_path = asset_dir / f"m{idx}_home.png"
-        legacy_path = asset_dir / f"m{idx}_legacy.png"
-        if not _download_file(member.fullbody_home_url, home_path):
-            logger.warning("Skipping %s: failed to download home fullbody", member.name)
-            continue
-        if not _download_file(member.fullbody_legacy_url, legacy_path):
-            logger.warning("Skipping %s: failed to download legacy fullbody", member.name)
+        # Download the pre-processed transparent video
+        # Try .mov first (ProRes 4444 with alpha), fall back to .mp4
+        ext = ".mov" if member.transparent_video_url.endswith(".mov") else ".mp4"
+        transparent_path = clips_dir / f"m{idx}_transparent{ext}"
+        if not _download_file(member.transparent_video_url, transparent_path):
+            logger.warning("Skipping %s: failed to download transparent video", member.name)
             continue
 
-        # 3b. Crop to hips (PIL)
-        home_cropped = asset_dir / f"m{idx}_home_crop.png"
-        legacy_cropped = asset_dir / f"m{idx}_legacy_crop.png"
-        _crop_player_to_hips(home_path, home_cropped, mirror=False)
-        _crop_player_to_hips(legacy_path, legacy_cropped, mirror=True)
-
-        # 3c. Create rough reference composite (PIL — for Gemini guidance)
-        ref_composite = asset_dir / f"m{idx}_ref_composite.png"
-        _prepare_gemini_composite_image(bg_path, home_cropped, legacy_cropped, ref_composite)
-
-        # 3d. Gemini: photorealistic composite
-        gemini_output = asset_dir / f"m{idx}_gemini.png"
-        gemini_result = _gemini_composite(
-            bg_path=bg_path,
-            home_cropped_path=home_cropped,
-            legacy_cropped_path=legacy_cropped,
-            reference_composite_path=ref_composite,
-            member_name=member.name,
-            output_path=gemini_output,
-        )
-        if not gemini_result:
-            logger.warning("Skipping %s: Gemini composite failed", member.name)
-            continue
-
-        step_pct = int((idx + 0.3) / total * member_pct)
-        if progress_callback:
-            progress_callback(step_pct)
-
-        # 3e. MiniMax: generate 6s video
-        minimax_video = clips_dir / f"m{idx}_minimax.mp4"
-        minimax_result = _minimax_generate_video(
-            composite_image_path=gemini_output,
-            member_name=member.name,
-            output_path=minimax_video,
-        )
-        if not minimax_result:
-            logger.warning("Skipping %s: MiniMax video generation failed", member.name)
-            continue
-
-        step_pct = int((idx + 0.6) / total * member_pct)
-        if progress_callback:
-            progress_callback(step_pct)
-
-        # 3f. RVM: remove background
-        rvm_video = clips_dir / f"m{idx}_rvm.mov"
-        rvm_result = _rvm_remove_background(
-            input_video=minimax_video,
-            output_video=rvm_video,
-        )
-        if not rvm_result:
-            logger.warning("Skipping %s: RVM failed, using raw MiniMax video", member.name)
-            # Fallback: use raw MiniMax video without bg removal
-            rvm_result = minimax_video
-
-        step_pct = int((idx + 0.85) / total * member_pct)
-        if progress_callback:
-            progress_callback(step_pct)
-
-        # 3g. FFmpeg: overlay on consistent background + header + name + sponsor
+        # FFmpeg overlay on consistent background + header + name + sponsor
         final_clip = clips_dir / f"clip_{idx:03d}.mp4"
         overlay_result = _ffmpeg_overlay_on_background(
-            transparent_video=rvm_result,
+            transparent_video=transparent_path,
             bg_path=bg_path,
             header_path=header_path,
             sponsor_path=sponsor_path,
@@ -1323,14 +1265,14 @@ def compose_photo_composite_video(
 
         clip_paths.append(final_clip)
         logger.info(
-            "Photo composite pipeline complete for %s (%d/%d)",
+            "Photo composite overlay complete for %s (%d/%d)",
             member.name,
             idx + 1,
             total,
         )
 
     if not clip_paths:
-        raise ValueError("No member clips were successfully composed through the AI pipeline.")
+        raise ValueError("No member clips were successfully overlaid.")
 
     if progress_callback:
         progress_callback(member_pct)
@@ -1461,7 +1403,7 @@ def compose_photo_composite_video(
         progress_callback(100)
 
     logger.info(
-        "Photo composite compilation complete: %s (%d members, AI pipeline)",
+        "Photo composite compilation complete: %s (%d members, FFmpeg-only)",
         final_output,
         len(clip_paths),
     )

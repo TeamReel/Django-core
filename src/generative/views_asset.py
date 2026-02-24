@@ -3309,6 +3309,7 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
     IMAGE_TEMPLATE_MAP = {
         "fullbody_in_tenue": ("fullbody", "images"),
         "closeup_in_tenue": ("closeup", "images"),
+        "photo_composite_gemini": ("photo_composite", "images"),
     }
     mapping = IMAGE_TEMPLATE_MAP.get(job.template_id)
     if not mapping or not job.membership_id:
@@ -3352,20 +3353,25 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
     kit_type = kit_match.group(1) if kit_match else "home"
 
     if storage_path:
+        # Photo composite images are already composited — no bg removal needed.
+        # They go directly to "processed" state so they can be used as input
+        # for the next step (MiniMax video generation).
+        needs_processing = asset_type not in ("photo_composite",)
         asset_type_dict[kit_type] = {
             "raw": storage_path,
-            "processed": None,
-            "processing_state": "pending",
+            "processed": None if needs_processing else storage_path,
+            "processing_state": "pending" if needs_processing else "processed",
             "specs": {},
             "source": "ai_generated",
         }
         changed = True
         logger.info(
-            "propagate_approved_image: membership=%s, %s.%s → %s (queuing bg-removal)",
+            "propagate_approved_image: membership=%s, %s.%s → %s (needs_processing=%s)",
             job.membership_id,
             asset_type,
             kit_type,
             storage_path,
+            needs_processing,
         )
 
     if changed:
@@ -3381,27 +3387,29 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
             return
 
         # Queue background removal + resize via existing Celery task
-        try:
-            from src.video.tasks.asset_processing import process_member_asset
+        # Skip for photo_composite — those are already final composites.
+        if asset_type not in ("photo_composite",):
+            try:
+                from src.video.tasks.asset_processing import process_member_asset
 
-            process_member_asset.delay(
-                membership_id=str(job.membership_id),
-                asset_type=asset_type,
-                kit_type=kit_type,
-                raw_url=storage_path,
-                bg_removal_backend="rembg",
-            )
-            logger.info(
-                "propagate_approved_image: queued process_member_asset for membership=%s kit=%s",
-                job.membership_id,
-                kit_type,
-            )
-        except Exception as exc:  # noqa: BLE001
-            logger.warning(
-                "propagate_approved_image: failed to queue processing for membership %s: %s",
-                job.membership_id,
-                exc,
-            )
+                process_member_asset.delay(
+                    membership_id=str(job.membership_id),
+                    asset_type=asset_type,
+                    kit_type=kit_type,
+                    raw_url=storage_path,
+                    bg_removal_backend="rembg",
+                )
+                logger.info(
+                    "propagate_approved_image: queued process_member_asset for membership=%s kit=%s",
+                    job.membership_id,
+                    kit_type,
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "propagate_approved_image: failed to queue processing for membership %s: %s",
+                    job.membership_id,
+                    exc,
+                )
 
 
 def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
@@ -3426,6 +3434,7 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
         "member_goal_celebration": "celebration",
         "then_vs_now_sidebyside": "then_vs_now",
         "then_vs_now_transformation": "then_vs_now",
+        "photo_composite_video": "photo_composite",
     }
     asset_type = VIDEO_TEMPLATE_MAP.get(job.template_id)
     if not asset_type or not job.membership_id:
@@ -3473,6 +3482,9 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
                 composite_key = f"{base_key}_{style_variant}"
             else:
                 composite_key = base_key
+        elif asset_type == "photo_composite":
+            # photo_composite_video → use "default" as key (single variant per member)
+            composite_key = "default"
         else:
             # Parse kit_type and style_variant from filename or storage_path
             # Pattern: member_intro_kit_type-{kit}_style_variant-{style}_{hash}_{idx}.mp4
@@ -3503,7 +3515,7 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
         # - intro/celebration: removes bg for lineup video compositing
         # - then_vs_now: removes bg for compilation compositing
         # Auto-queue RVM processing after save (see below).
-        needs_processing = asset_type in ("intro", "celebration", "then_vs_now")
+        needs_processing = asset_type in ("intro", "celebration", "then_vs_now", "photo_composite")
         asset_dict[composite_key] = {
             "raw": storage_path,
             "processing_state": "processing" if needs_processing else "processed",
@@ -3585,8 +3597,9 @@ def _auto_dispatch_rvm_processing(
     for composite_key, raw_url in items:
         # Split composite_key → kit_type + variant_id for process_member_asset.
         # then_vs_now uses bare keys: "sidebyside", "transformation"
+        # photo_composite uses bare key: "default"
         # intro/celebration use: "home_arms_crossed" → kit="home", var="arms_crossed"
-        if asset_type == "then_vs_now":
+        if asset_type in ("then_vs_now", "photo_composite"):
             kit_type, variant_id = composite_key, None
         else:
             kit_type, variant_id = composite_key, None

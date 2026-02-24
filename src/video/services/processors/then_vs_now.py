@@ -255,34 +255,37 @@ class ThenVsNowProcessor(BaseVideoProcessor):
         members: list[MemberClip] | list[MemberPhotoComposite] = []
 
         if video_type == "photo_composite":
-            # ── Photo composite: gather fullbody images (home + legacy) ──
+            # ── Photo composite: gather pre-processed transparent videos ──
+            # These have been through the modular pipeline:
+            #   Gemini composite → MiniMax video → RVM bg removal
+            # We just need the final transparent video URL.
             for pm in qs:
                 meta = pm.metadata or {}
                 tr = meta.get("teamreel_assets", {})
-                images = tr.get("images", {})
-                fullbody = images.get("fullbody", {})
+                videos = tr.get("videos", {})
+                photo_composite = videos.get("photo_composite", {})
 
-                home_variant = fullbody.get("home", {})
-                legacy_variant = fullbody.get("legacy", {})
+                # Get the "default" variant (single variant per member)
+                variant_data = photo_composite.get("default", {})
+                if not variant_data:
+                    continue
 
-                # Extract URL: prefer processed (bg-removed) > raw
-                def _extract_image_url(variant_data):
-                    if not variant_data:
-                        return None
-                    if isinstance(variant_data, str):
-                        return variant_data
-                    return (
-                        variant_data.get("processed")
-                        or variant_data.get("raw")
-                        or variant_data.get("presigned_url")
-                        or variant_data.get("url")
-                        or None
-                    )
+                if isinstance(variant_data, str):
+                    video_url = variant_data
+                else:
+                    # Prefer RVM-processed (transparent), fall back to raw
+                    video_url = variant_data.get("processed") or variant_data.get("raw") or None
+                    # Only use processed videos that have completed RVM
+                    processing_state = variant_data.get("processing_state", "")
+                    if processing_state not in ("processed",):
+                        logger.info(
+                            "Skipping %s: photo_composite not yet processed (state=%s)",
+                            pm.user.get_full_name() if pm.user else "?",
+                            processing_state,
+                        )
+                        continue
 
-                home_url = _extract_image_url(home_variant)
-                legacy_url = _extract_image_url(legacy_variant)
-
-                if not home_url or not legacy_url:
+                if not video_url:
                     continue
 
                 # Presign relative paths
@@ -297,17 +300,15 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                             pass
                     return url
 
-                home_url = _presign_if_needed(home_url)
-                legacy_url = _presign_if_needed(legacy_url)
+                video_url = _presign_if_needed(video_url)
 
-                if home_url and legacy_url:
+                if video_url:
                     name = pm.user.get_full_name() if pm.user else "Unknown"
                     members.append(
                         MemberPhotoComposite(
                             member_id=str(pm.id),
                             name=name,
-                            fullbody_home_url=home_url,
-                            fullbody_legacy_url=legacy_url,
+                            transparent_video_url=video_url,
                         )
                     )
         else:

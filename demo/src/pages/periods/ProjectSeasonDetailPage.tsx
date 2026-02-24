@@ -1180,17 +1180,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       }
       const hasTransformation = transformationKeys.length > 0;
 
-      // Photo composite eligibility: needs both fullbody home + legacy
-      const images = m?.metadata?.teamreel_assets?.images || {};
-      const fbHome = images?.fullbody?.home;
-      const fbLegacy = images?.fullbody?.legacy;
-      const extractUrl = (val: any): string | null => {
-        if (!val) return null;
-        if (typeof val === 'string') return val;
-        if (typeof val === 'object') return val.processed || val.raw || null;
-        return null;
-      };
-      const hasPhotoComposite = !!(extractUrl(fbHome) && extractUrl(fbLegacy));
+      // Photo composite eligibility: needs a processed transparent video (RVM output)
+      const videos = m?.metadata?.teamreel_assets?.videos || {};
+      const compositeVideo = videos?.photo_composite?.default;
+      const hasPhotoComposite = !!(
+        compositeVideo
+        && typeof compositeVideo === 'object'
+        && compositeVideo.processing_state === 'processed'
+        && compositeVideo.processed
+      );
 
       return {
         id: String(m.id || ''),

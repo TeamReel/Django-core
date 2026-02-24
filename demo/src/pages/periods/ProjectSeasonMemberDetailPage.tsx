@@ -109,13 +109,15 @@ type AssetVariantsMap = {
   celebration: AssetVariants;
   // Then vs Now videos
   then_vs_now: AssetVariants; // { sidebyside: "s3://...", transformation: "..." }
+  // Photo composite (Gemini image + MiniMax video)
+  photo_composite: AssetVariants; // images: { default: { raw, processed } }, videos: { default: { raw, processed } }
 };
 
 // Keep old name as alias for backwards compatibility within file
 type VideoVariantsMap = AssetVariantsMap;
 
 function createEmptyVideoVariants(): AssetVariantsMap {
-  return { fullbody: {}, closeup: {}, intro: {}, celebration: {}, then_vs_now: {} };
+  return { fullbody: {}, closeup: {}, intro: {}, celebration: {}, then_vs_now: {}, photo_composite: {} };
 }
 
 function readAssetsFromMembership(membership: any): MemberMediaForm {
@@ -198,6 +200,11 @@ function readVideoVariantsFromMembership(membership: any): AssetVariantsMap {
     intro: migrateVideoKeys(safeObj(videos?.intro)),
     celebration: migrateVideoKeys(safeObj(videos?.celebration)),
     then_vs_now: safeObj(videos?.then_vs_now),
+    // Photo composite merges images (Gemini composite) + videos (MiniMax video)
+    photo_composite: {
+      ...safeObj(images?.photo_composite),  // gemini_composite key from images
+      ...safeObj(videos?.photo_composite),  // default key from videos
+    },
   };
 
   // Migrate: if form.kit has a URL but fullbody.home is empty, seed it
@@ -257,6 +264,7 @@ function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm, v
       intro: videoVariants.intro || {},
       celebration: videoVariants.celebration || {},
       then_vs_now: videoVariants.then_vs_now || {},
+      photo_composite: videoVariants.photo_composite || {},
     };
   } else {
     if (existingTeamReel.images) next.images = existingTeamReel.images;
@@ -1329,7 +1337,7 @@ export default function ProjectSeasonMemberDetailPage() {
   useEffect(() => {
     // Collect all raw S3 keys from videoVariants and form
     const paths: string[] = [];
-    for (const category of ['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now'] as const) {
+    for (const category of ['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite'] as const) {
       const variants = videoVariants[category];
       if (variants) {
         for (const val of Object.values(variants)) {
@@ -1685,6 +1693,7 @@ export default function ProjectSeasonMemberDetailPage() {
           { id: 'intro', label: 'Short Intro' },
           { id: 'celebration', label: 'Celebration' },
           { id: 'then_vs_now', label: 'Then vs Now' },
+          { id: 'photo_composite', label: 'Foto Composite' },
           { id: 'legacy', label: 'Legacy in Tenue' },
           { id: 'assets', label: 'Assets' },
           { id: 'workflow', label: 'Workflow' },
@@ -2029,7 +2038,7 @@ export default function ProjectSeasonMemberDetailPage() {
 
                 {/* Other media slot tabs — preview + upload only (no URL/caption inputs) */}
                 {/* AI-generative slots and dedicated tabs are handled separately */}
-                {(MEDIA_SLOTS as readonly { id: string; label: string; icon: string; description: string; isInput: boolean }[]).filter((s) => !['profile', 'legacy_photo', 'kit', 'closeup', 'intro', 'celebration', 'then_vs_now', 'legacy'].includes(s.id)).map((slot) => activeTab === slot.id && (
+                {(MEDIA_SLOTS as readonly { id: string; label: string; icon: string; description: string; isInput: boolean }[]).filter((s) => !['profile', 'legacy_photo', 'kit', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite', 'legacy'].includes(s.id)).map((slot) => activeTab === slot.id && (
                   <Card key={slot.id}>
                     <div style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
@@ -3494,6 +3503,255 @@ export default function ProjectSeasonMemberDetailPage() {
                 })()}
 
                 {/* Assets Tab - Member-specific generated assets */}
+                {activeTab === 'photo_composite' && (() => {
+                  // Resolve input images for Step 1 (Gemini composite)
+                  const legacyFullbodyUrl =
+                    resolveDisplayUrl(getBestUrl(videoVariants.fullbody.legacy)) || null;
+                  const currentFullbodyUrl =
+                    resolveDisplayUrl(getBestUrl(videoVariants.fullbody.home))
+                    || resolveDisplayUrl(form.kit?.url) || null;
+                  const hasBothInputs = Boolean(legacyFullbodyUrl) && Boolean(currentFullbodyUrl);
+
+                  // Step 1: Gemini composite image (stored in images.photo_composite.home)
+                  const compositeImageData = videoVariants.photo_composite?.home;
+                  const compositeImageUrl = compositeImageData ? resolveDisplayUrl(getBestUrl(compositeImageData)) : null;
+                  const hasCompositeImage = Boolean(compositeImageUrl);
+
+                  // Step 2: MiniMax video
+                  const compositeVideoData = videoVariants.photo_composite?.default;
+                  const compositeVideoUrl = compositeVideoData ? resolveDisplayUrl(getBestUrl(compositeVideoData)) : null;
+                  const hasCompositeVideo = Boolean(compositeVideoUrl);
+                  const compositeVideoNormalized = normalizeVariantValue(compositeVideoData as any);
+                  const compositeVideoLineupReady = isLineupReady(compositeVideoData);
+                  const compositeVideoProcessing = isProcessing(compositeVideoData);
+
+                  return (
+                    <Card>
+                      <div style={{ padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '24px' }}>📸</span>
+                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Foto Composite</div>
+                          </div>
+                          <Badge variant={userCanEditProject ? 'default' : 'info'}>
+                            {userCanEditProject ? 'Editable' : 'Read-only'}
+                          </Badge>
+                        </div>
+
+                        <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                          AI-composiet van twee versies van de speler (legacy + huidig) op een achtergrond.
+                          Stap 1: Gemini maakt het composiet-beeld. Stap 2: MiniMax maakt er een 6s video van.
+                        </div>
+
+                        {/* Prerequisites check */}
+                        <div style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                          <div style={{
+                            flex: '1 1 200px',
+                            border: legacyFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
+                            borderRadius: '8px',
+                            padding: '12px',
+                            textAlign: 'center',
+                          }}>
+                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>🏆 Legacy in Tenue</div>
+                            {legacyFullbodyUrl ? (
+                              <img src={legacyFullbodyUrl} alt="Legacy" style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                            ) : (
+                              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Legacy in Tenue</div>
+                            )}
+                          </div>
+                          <div style={{
+                            flex: '1 1 200px',
+                            border: currentFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
+                            borderRadius: '8px',
+                            padding: '12px',
+                            textAlign: 'center',
+                          }}>
+                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>👕 Huidige Fullbody</div>
+                            {currentFullbodyUrl ? (
+                              <img src={currentFullbodyUrl} alt="Current" style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                            ) : (
+                              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Player in Tenue</div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Step 1: Gemini Composite Image */}
+                        <div style={{ marginTop: '24px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                            <span style={{ background: '#6366f1', color: '#fff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>1</span>
+                            <span style={{ fontWeight: 700, fontSize: '14px' }}>Gemini Composite (Beeld)</span>
+                            {hasCompositeImage && <span style={{ fontSize: '12px', color: '#10b981' }}>✓</span>}
+                          </div>
+                          <div style={{
+                            border: hasCompositeImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            background: 'var(--app-surface)',
+                            maxWidth: '300px',
+                          }}>
+                            <div style={{
+                              aspectRatio: '9/16',
+                              background: hasCompositeImage ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              minHeight: '200px',
+                            }}>
+                              {hasCompositeImage && compositeImageUrl ? (
+                                <img src={compositeImageUrl} alt="Gemini Composite" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              ) : (
+                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                  📸<br />Niet gegenereerd
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ padding: '12px' }}>
+                              <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>📸 Gemini Composite</div>
+                              <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '10px' }}>
+                                Gemini composiet de twee spelers realistisch op de achtergrond
+                              </div>
+                              <Button
+                                size="sm"
+                                onClick={() => openAiModal('photo_composite_gemini', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)}
+                                disabled={!hasBothInputs}
+                                style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                              >
+                                {hasCompositeImage ? '🔄 Opnieuw genereren' : '✨ Genereer Composite'}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Step 2: MiniMax Video */}
+                        <div style={{ marginTop: '24px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                            <span style={{ background: hasCompositeImage ? '#6366f1' : '#555', color: '#fff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>2</span>
+                            <span style={{ fontWeight: 700, fontSize: '14px', opacity: hasCompositeImage ? 1 : 0.5 }}>MiniMax Video (6s)</span>
+                            {hasCompositeVideo && <span style={{ fontSize: '12px', color: '#10b981' }}>✓</span>}
+                          </div>
+                          <div style={{
+                            border: hasCompositeVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            background: 'var(--app-surface)',
+                            maxWidth: '300px',
+                            opacity: hasCompositeImage ? 1 : 0.4,
+                          }}>
+                            <div
+                              onClick={() => { if (compositeVideoUrl) setVideoPreviewUrl(compositeVideoUrl); }}
+                              style={{
+                                aspectRatio: '9/16',
+                                background: (hasCompositeVideo && !compositeVideoLineupReady) ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                minHeight: '200px',
+                                position: 'relative',
+                                cursor: hasCompositeVideo ? 'pointer' : 'default',
+                              }}>
+                              {hasCompositeVideo && compositeVideoUrl ? (
+                                <>
+                                  <video key={compositeVideoUrl} src={compositeVideoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} muted loop playsInline autoPlay onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }} />
+                                  <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
+                                    <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                    <ProcessingBadge value={compositeVideoData} />
+                                  </div>
+                                </>
+                              ) : (
+                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                  🎬<br />Niet gegenereerd
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ padding: '12px' }}>
+                              <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>🎬 MiniMax Video</div>
+                              <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '10px' }}>
+                                6s video: spelers kijken naar elkaar, lachen, kijken terug
+                              </div>
+                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                {hasCompositeVideo ? (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => {
+                                        if (compositeImageUrl) {
+                                          openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null);
+                                        }
+                                      }}
+                                      disabled={!hasCompositeImage}
+                                      style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
+                                    >
+                                      Opnieuw
+                                    </Button>
+                                    {!compositeVideoProcessing && (
+                                      <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        onClick={async () => {
+                                          const result = await triggerAssetProcessing(
+                                            apiBaseUrl, membershipId!, 'photo_composite', 'default', null
+                                          );
+                                          if (result.ok) {
+                                            const rawUrl = getVariantRawUrl(compositeVideoData) || '';
+                                            setVideoVariants(prev => ({
+                                              ...prev,
+                                              photo_composite: {
+                                                ...prev.photo_composite,
+                                                default: { raw: rawUrl, processed: null, processing_state: 'processing' as const },
+                                              },
+                                            }));
+                                            startProcessingPoll('photo_composite', 'default');
+                                          }
+                                        }}
+                                        style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}
+                                      >
+                                        {compositeVideoLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                                      </Button>
+                                    )}
+                                    {compositeVideoLineupReady && (
+                                      <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
+                                    )}
+                                  </>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      if (compositeImageUrl) {
+                                        openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null);
+                                      }
+                                    }}
+                                    disabled={!hasCompositeImage}
+                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                  >
+                                    ✨ Genereer Video
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Progress summary */}
+                        <div style={{ marginTop: '24px', padding: '12px', background: 'var(--app-surface-alt)', borderRadius: '8px', fontSize: '12px' }}>
+                          <div style={{ fontWeight: 700, marginBottom: '8px' }}>Pipeline Status</div>
+                          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                            <div>1. Gemini Composite: <span style={{ color: hasCompositeImage ? '#10b981' : '#f59e0b' }}>{hasCompositeImage ? '✓ Klaar' : '⏳ Niet gestart'}</span></div>
+                            <div>2. MiniMax Video: <span style={{ color: hasCompositeVideo ? '#10b981' : '#f59e0b' }}>{hasCompositeVideo ? '✓ Klaar' : '⏳ Niet gestart'}</span></div>
+                            <div>3. RVM Processing: <span style={{ color: compositeVideoLineupReady ? '#10b981' : '#f59e0b' }}>{compositeVideoLineupReady ? '✓ Ready' : compositeVideoProcessing ? '🔧 Bezig...' : '⏳ Wacht op video'}</span></div>
+                          </div>
+                        </div>
+
+                        {!userCanEditProject && (
+                          <div style={{ marginTop: '16px' }}>
+                            <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })()}
+
+                {/* Assets Tab continued */}
                 {activeTab === 'assets' && (
                   <Card>
                     <div style={{ padding: '20px' }}>
@@ -4026,6 +4284,12 @@ export default function ProjectSeasonMemberDetailPage() {
             : aiSelectedKitType === 'legacy'
               ? resolveDisplayUrl(form.legacy_photo?.url) || resolveDisplayUrl(form.profile?.url) || membership?.user?.avatar_url || null
               : resolveDisplayUrl(form.profile?.url) || membership?.user?.avatar_url || null,
+          // Club/team background for photo_composite_gemini
+          background: (() => {
+            const bgs = clubBrand.getAssets?.('club_background') || [];
+            const bg = bgs[0] || clubBrand.getAsset?.('stadium_background');
+            return bg ? getAssetUrl(bg.url) : null;
+          })(),
         }}
         initialParams={{
           kit_type: aiSelectedKitType,
@@ -4050,7 +4314,11 @@ export default function ProjectSeasonMemberDetailPage() {
                       ? getBestUrl(videoVariants.then_vs_now[`transformation_${aiSelectedStyleVariant}`]) || getBestUrl(videoVariants.then_vs_now.transformation) || null
                       : aiPreselectedTemplate === 'then_vs_now_transformation'
                         ? getBestUrl(videoVariants.then_vs_now.transformation) || null
-                        : null
+                        : aiPreselectedTemplate === 'photo_composite_gemini'
+                          ? getBestUrl(videoVariants.photo_composite?.home) || null
+                          : aiPreselectedTemplate === 'photo_composite_video'
+                            ? getBestUrl(videoVariants.photo_composite?.default) || null
+                            : null
         }
         onAssetSaved={async (savedInfo) => {
           // Capture membershipId from URL params at call time — never rely on
@@ -4166,6 +4434,35 @@ export default function ProjectSeasonMemberDetailPage() {
 
               const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVariants);
               await handleMetadataUpdate(updatedMeta, saveMembershipId);
+            } else if (assetType.startsWith('photo_composite')) {
+              // Photo composite: Gemini image or MiniMax video
+              // Gemini image → photo_composite.home (will be propagated by backend)
+              // MiniMax video → photo_composite.default (will be propagated by backend)
+              const isGeminiImage = assetType === 'photo_composite_gemini';
+              const variantKey = isGeminiImage ? 'home' : 'default';
+              console.log(`🎯 Saving photo_composite: ${variantKey} = ${savedUrl}`);
+
+              const newVariants: AssetVariantsMap = {
+                ...videoVariants,
+                photo_composite: {
+                  ...videoVariants.photo_composite,
+                  [variantKey]: savedUrl,
+                },
+              };
+              setVideoVariants(newVariants);
+
+              // Don't manually update metadata here — backend propagation handles it
+              // Just refresh the membership to pick up the propagated changes
+              try {
+                const memberRes = await fetch(
+                  `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project?.id || '')}/members/${encodeURIComponent(saveMembershipId)}/`,
+                  { credentials: 'include' }
+                );
+                if (memberRes.ok) {
+                  const json = await memberRes.json();
+                  setMembership(json?.data || json);
+                }
+              } catch { /* best-effort refresh */ }
             }
           }
         }}

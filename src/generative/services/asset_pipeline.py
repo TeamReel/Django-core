@@ -756,6 +756,211 @@ def _pillow_only_postprocess(
 # =============================================================================
 
 
+def _generate_photo_composite_gemini(
+    input_images: dict[str, bytes],
+    params: dict[str, str],
+    variant_count: int = 1,
+    model: str | None = None,
+) -> list[dict[str, Any]]:
+    """Generate photo composite via Gemini with multi-image preprocessing.
+
+    This is Step 1 of the modular photo composite pipeline.
+    Takes two fullbody images (current + legacy) and a background image,
+    preprocesses them (crop to hips, mirror legacy, create reference layout),
+    then asks Gemini to produce a photorealistic composite.
+
+    Expected input_images keys:
+      - ``person_photo``: current fullbody in home kit (transparent PNG)
+      - ``reference_photo``: legacy fullbody (transparent PNG)
+      - ``background``: stadium/location background image
+
+    Returns list of result dicts compatible with ``generate_asset()`` format.
+    """
+    import tempfile
+    from pathlib import Path
+
+    from google import genai
+    from google.genai import types
+
+    api_key = getattr(settings, "GOOGLE_API_KEY", None)
+    if not api_key:
+        raise ValueError("GOOGLE_API_KEY not configured — cannot run Gemini composite")
+
+    person_bytes = input_images.get("person_photo")
+    reference_bytes = input_images.get("reference_photo")
+    bg_bytes = input_images.get("background")
+
+    if not person_bytes or not reference_bytes:
+        raise ValueError(
+            "photo_composite_gemini requires person_photo (current) and reference_photo (legacy)"
+        )
+    if not bg_bytes:
+        raise ValueError("photo_composite_gemini requires a background image")
+
+    # ── Preprocessing: crop to hips + mirror legacy + create reference ──
+    # Use the functions from then_vs_now_composer (they work on file paths)
+    from src.video.services.then_vs_now_composer import (
+        _crop_player_to_hips,
+        _prepare_gemini_composite_image,
+    )
+
+    tmp_dir = Path(tempfile.mkdtemp(prefix="photo_composite_gemini_"))
+    try:
+        # Write input bytes to temp files
+        home_path = tmp_dir / "home.png"
+        legacy_path = tmp_dir / "legacy.png"
+        bg_path = tmp_dir / "background.png"
+        home_path.write_bytes(person_bytes)
+        legacy_path.write_bytes(reference_bytes)
+        bg_path.write_bytes(bg_bytes)
+
+        # Crop both players to hips (upper 60%)
+        home_cropped = tmp_dir / "home_crop.png"
+        legacy_cropped = tmp_dir / "legacy_crop.png"
+        _crop_player_to_hips(home_path, home_cropped, mirror=False)
+        _crop_player_to_hips(legacy_path, legacy_cropped, mirror=True)
+
+        # Create rough reference composite (PIL)
+        ref_composite = tmp_dir / "ref_composite.png"
+        _prepare_gemini_composite_image(bg_path, home_cropped, legacy_cropped, ref_composite)
+
+        # Read preprocessed bytes
+        home_cropped_bytes = home_cropped.read_bytes()
+        legacy_cropped_bytes = legacy_cropped.read_bytes()
+        ref_composite_bytes = ref_composite.read_bytes()
+    finally:
+        # Cleanup happens after we read the bytes
+        import shutil
+
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    # ── Resolve prompt from template ──
+    prompts_module = _load_prompts_module()
+    final_prompt = prompts_module.resolve_prompt("photo_composite_gemini", params)
+
+    # ── Generate via Gemini ──
+    client = genai.Client(api_key=api_key)
+    image_model = model or "models/gemini-2.0-flash-preview-image-generation"
+    if not image_model.startswith("models/"):
+        image_model = f"models/{image_model}"
+
+    results: list[dict[str, Any]] = []
+    for i in range(variant_count):
+        if i > 0:
+            time.sleep(1.5)
+
+        try:
+            # Build content: prompt + 4 images (bg, legacy crop, home crop, ref composite)
+            content_parts: list = [final_prompt]
+            # Image 1: Background
+            content_parts.append(types.Part.from_bytes(data=bg_bytes, mime_type="image/png"))
+            # Image 2: Legacy player (cropped + mirrored)
+            content_parts.append(
+                types.Part.from_bytes(data=legacy_cropped_bytes, mime_type="image/png")
+            )
+            # Image 3: Current player (cropped)
+            content_parts.append(
+                types.Part.from_bytes(data=home_cropped_bytes, mime_type="image/png")
+            )
+            # Image 4: Reference composite (rough PIL placement guide)
+            content_parts.append(
+                types.Part.from_bytes(data=ref_composite_bytes, mime_type="image/png")
+            )
+
+            response = client.models.generate_content(
+                model=image_model,
+                contents=content_parts,
+                config=types.GenerateContentConfig(
+                    response_modalities=["IMAGE", "TEXT"],
+                    safety_settings=[
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_HARASSMENT", threshold="BLOCK_NONE"
+                        ),
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_HATE_SPEECH", threshold="BLOCK_NONE"
+                        ),
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold="BLOCK_NONE"
+                        ),
+                        types.SafetySetting(
+                            category="HARM_CATEGORY_DANGEROUS_CONTENT", threshold="BLOCK_NONE"
+                        ),
+                    ],
+                ),
+            )
+
+            image_bytes = None
+            if (
+                not response.candidates
+                or not response.candidates[0].content
+                or not response.candidates[0].content.parts
+            ):
+                block_reason = getattr(response, "prompt_feedback", None)
+                logger.warning(
+                    "Empty Gemini response for photo_composite variant %d (block=%s)",
+                    i + 1,
+                    block_reason,
+                )
+                results.append(
+                    {
+                        "image_bytes": None,
+                        "image_base64": None,
+                        "mime_type": None,
+                        "filename": None,
+                        "variant_index": i,
+                        "error": f"Gemini returned empty (block: {block_reason})",
+                    }
+                )
+                continue
+
+            for part in response.candidates[0].content.parts:
+                if hasattr(part, "inline_data") and part.inline_data:
+                    image_bytes = part.inline_data.data
+                    break
+
+            if image_bytes:
+                filename = f"photo_composite_gemini_v{i+1}_{int(time.time())}.png"
+                results.append(
+                    {
+                        "image_bytes": image_bytes,
+                        "image_base64": base64.b64encode(image_bytes).decode("utf-8"),
+                        "mime_type": "image/png",
+                        "filename": filename,
+                        "variant_index": i,
+                        "metadata": {
+                            "template_id": "photo_composite_gemini",
+                            "params": params,
+                        },
+                    }
+                )
+                logger.info("Photo composite Gemini variant %d/%d generated", i + 1, variant_count)
+            else:
+                results.append(
+                    {
+                        "image_bytes": None,
+                        "image_base64": None,
+                        "mime_type": None,
+                        "filename": None,
+                        "variant_index": i,
+                        "error": "No image in Gemini response",
+                    }
+                )
+        except Exception as e:  # noqa: BLE001
+            logger.exception("Photo composite Gemini variant %d failed: %s", i + 1, e)
+            results.append(
+                {
+                    "image_bytes": None,
+                    "image_base64": None,
+                    "mime_type": None,
+                    "filename": None,
+                    "variant_index": i,
+                    "error": str(e),
+                }
+            )
+
+    return results
+
+
 def generate_asset(
     template_id: str,
     params: dict[str, str],
@@ -764,6 +969,11 @@ def generate_asset(
     model: str | None = None,
 ) -> list[dict[str, Any]]:
     """Generate asset variants using the TeamReel prompt pipeline.
+
+    Special handling for ``photo_composite_gemini``: crops player fullbodies
+    to hips, creates a rough PIL reference composite, then sends all 4 images
+    (background + 2 cropped players + reference) to Gemini for photorealistic
+    compositing.
 
     Args:
         template_id: Template key from teamreel_prompts.TEMPLATES
@@ -781,6 +991,13 @@ def generate_asset(
     # =========================================================================
     if template_id in PILLOW_ONLY_TEMPLATES:
         return _pillow_only_postprocess(template_id, params, input_images)
+
+    # =========================================================================
+    # Photo composite Gemini: custom multi-image preprocessing.
+    # Crops fullbodies to hips, creates reference composite, sends 4 images.
+    # =========================================================================
+    if template_id == "photo_composite_gemini":
+        return _generate_photo_composite_gemini(input_images, params, variant_count, model)
 
     # Import the prompts module (root-level)
     import importlib.util
