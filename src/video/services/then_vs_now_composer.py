@@ -331,13 +331,16 @@ def compose_then_vs_now_video(
     vid_h = int(CONTENT_HEIGHT * scale)
 
     # ── 3b. Pre-render background+header as a REAL video file ──
-    # This is the key to reliable duration control: overlaying a member
-    # video on a real .mp4 (not looped images) guarantees the output
-    # duration matches the base video, not the overlay.
-    # Fixed per-member duration (independent of input clip length).
-    per_member_clip_dur = PLAY_SECONDS + FREEZE_SECONDS + EMPTY_FIELD_SECONDS
-    # Add a small buffer for encoder rounding.
-    bg_video_dur = per_member_clip_dur + 2.0
+    # Compute max needed duration across all members (full source + slow-mo + freeze).
+    max_member_dur = 0.0
+    member_durations: list[float] = []
+    for _member, vpath in member_paths:
+        dur = _probe_duration(vpath)
+        member_durations.append(dur)
+        slowed = dur * SLOWMO_FACTOR + FREEZE_SECONDS
+        max_member_dur = max(max_member_dur, slowed)
+    # Add buffer for encoder rounding.
+    bg_video_dur = max_member_dur + 4.0
 
     bg_video_path = asset_dir / "bg_loop.mp4"
     bg_fc: list[str] = []
@@ -405,13 +408,12 @@ def compose_then_vs_now_video(
         if progress_callback:
             progress_callback(int(idx / total * 80))
 
-        _src_duration = _probe_duration(video_path)  # for logging only
+        src_duration = member_durations[idx]
 
-        play_dur = PLAY_SECONDS
         slowmo = SLOWMO_FACTOR
-        slowed_play_dur = play_dur * slowmo  # 7.5s after slow-mo
+        slowed_play_dur = src_duration * slowmo  # full video slowed down
         freeze_dur = FREEZE_SECONDS
-        member_segment_dur = slowed_play_dur + freeze_dur  # ~9.5s
+        member_segment_dur = slowed_play_dur + freeze_dur
 
         # Escape name for FFmpeg drawtext
         safe_name = (
@@ -429,10 +431,10 @@ def compose_then_vs_now_video(
         # Trim background to exact duration needed
         fc_video.append(f"[0:v]trim=duration={member_segment_dur},setpts=PTS-STARTPTS[bg]")
 
-        # Member video: trim → slow-mo → freeze last frame
+        # Member video: play FULL source (no trim), slow-mo, then freeze last frame
         if video_type == "sidebyside":
             fc_video.append(
-                f"[1:v]trim=duration={play_dur},setpts={slowmo}*PTS,"
+                f"[1:v]setpts={slowmo}*PTS,"
                 f"tpad=stop_mode=clone:stop_duration={freeze_dur},"
                 f"scale={vid_w}:{vid_h}:force_original_aspect_ratio=increase,"
                 f"crop={vid_w}:{vid_h},setsar=1[vid]"
@@ -444,7 +446,7 @@ def compose_then_vs_now_video(
             fc_video.append(f"[bg][vid]overlay={vid_x}:{vid_y}:eof_action=repeat:shortest=0[main]")
         else:
             fc_video.append(
-                f"[1:v]trim=duration={play_dur},setpts={slowmo}*PTS,"
+                f"[1:v]setpts={slowmo}*PTS,"
                 f"tpad=stop_mode=clone:stop_duration={freeze_dur},"
                 f"scale={vid_w}:{vid_h}:force_original_aspect_ratio=decrease,"
                 f"setsar=1[vid]"
