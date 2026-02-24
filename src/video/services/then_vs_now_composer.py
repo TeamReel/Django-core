@@ -55,12 +55,12 @@ SBS_SCALE = 1.05
 TRANSFORM_SCALE = 0.80
 
 # ── Transition timing ──
-# Target pacing: ~10s per member of on-screen time, with 2s crossfades.
-# Because xfade overlaps clips, each member clip is slightly longer so that
-# total runtime still scales to ~10s/member (e.g. 4 members ≈ 40s+).
-PLAY_SECONDS = 5.0
-FREEZE_SECONDS = 3.0  # freeze on last frame before fading out
-EMPTY_FIELD_SECONDS = 4.0  # empty background between members
+# Playback is slowed down to 1.5x duration (setpts=1.5*PTS) for a cinematic feel.
+# After the slowed clip, freeze last frame briefly, then a short bg pause.
+PLAY_SECONDS = 5.0  # trim from source (before slow-mo)
+SLOWMO_FACTOR = 1.5  # 1.5 = 50% slower playback
+FREEZE_SECONDS = 2.0  # freeze on last frame
+EMPTY_FIELD_SECONDS = 1.0  # short background pause between members
 
 
 @dataclass
@@ -408,9 +408,11 @@ def compose_then_vs_now_video(
         _src_duration = _probe_duration(video_path)  # for logging only
 
         play_dur = PLAY_SECONDS
+        slowmo = SLOWMO_FACTOR
+        slowed_play_dur = play_dur * slowmo  # 7.5s after slow-mo
         freeze_dur = FREEZE_SECONDS
         gap_dur = EMPTY_FIELD_SECONDS
-        member_segment_dur = play_dur + freeze_dur  # 8s
+        member_segment_dur = slowed_play_dur + freeze_dur  # ~9.5s
 
         # Escape name for FFmpeg drawtext
         safe_name = (
@@ -428,10 +430,10 @@ def compose_then_vs_now_video(
         # Trim background to exact duration needed
         fc_video.append(f"[0:v]trim=duration={member_segment_dur},setpts=PTS-STARTPTS[bg]")
 
-        # Member video: trim to play_dur, then freeze last frame for freeze_dur
+        # Member video: trim → slow-mo → freeze last frame
         if video_type == "sidebyside":
             fc_video.append(
-                f"[1:v]trim=duration={play_dur},setpts=PTS-STARTPTS,"
+                f"[1:v]trim=duration={play_dur},setpts={slowmo}*PTS,"
                 f"tpad=stop_mode=clone:stop_duration={freeze_dur},"
                 f"scale={vid_w}:{vid_h}:force_original_aspect_ratio=increase,"
                 f"crop={vid_w}:{vid_h},setsar=1[vid]"
@@ -443,7 +445,7 @@ def compose_then_vs_now_video(
             fc_video.append(f"[bg][vid]overlay={vid_x}:{vid_y}:eof_action=repeat:shortest=0[main]")
         else:
             fc_video.append(
-                f"[1:v]trim=duration={play_dur},setpts=PTS-STARTPTS,"
+                f"[1:v]trim=duration={play_dur},setpts={slowmo}*PTS,"
                 f"tpad=stop_mode=clone:stop_duration={freeze_dur},"
                 f"scale={vid_w}:{vid_h}:force_original_aspect_ratio=decrease,"
                 f"setsar=1[vid]"
@@ -453,14 +455,21 @@ def compose_then_vs_now_video(
                 f":eof_action=repeat:shortest=0[main]"
             )
 
-        # Name text
-        name_y = HEIGHT - BOTTOM_RESERVED + 10
+        # Name label with brand color background box
+        name_y = HEIGHT - BOTTOM_RESERVED + 5
+        label_h = 80
+        # Brand color for the name box (default red if not provided)
+        brand_hex = (brand_color or "#D2122E").lstrip("#")
         fc_video.append(
-            f"[main]drawtext=text='{safe_name}'"
+            f"[main]drawbox=x=0:y={name_y - 10}:w=iw:h={label_h}"
+            f":color=0x{brand_hex}@0.85:t=fill[main_nb]"
+        )
+        fc_video.append(
+            f"[main_nb]drawtext=text='{safe_name}'"
             f":fontfile='{font_path}'"
-            f":fontsize=56:fontcolor=white"
-            f":x=(w-tw)/2:y={name_y}"
-            f":shadowcolor=black@0.7:shadowx=3:shadowy=3"
+            f":fontsize=72:fontcolor=white"
+            f":x=(w-tw)/2:y={name_y + 5}"
+            f":shadowcolor=black@0.5:shadowx=2:shadowy=2"
             + ("[main_txt]" if sponsor_path else "[out]")
         )
 
