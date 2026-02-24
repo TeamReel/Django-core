@@ -1361,6 +1361,12 @@ class SaveAssetInputSerializer(serializers.Serializer):
         allow_null=True,
         help_text="Index of the chosen variant to mark as approved",
     )
+    label = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+        help_text="Display label for multi-instance types (e.g. club backgrounds)",
+    )
 
 
 @api_view(["POST"])
@@ -1391,6 +1397,7 @@ def save_asset_view(request: Request) -> Response:
     asset_type = serializer.validated_data.get("asset_type")
     task_id = serializer.validated_data.get("task_id")
     variant_index = serializer.validated_data.get("variant_index")
+    label = serializer.validated_data.get("label") or ""
 
     logger.info(
         f"🎯 Save asset request: type={asset_type}, org={organisation_id}, project={project_id}"
@@ -1738,16 +1745,31 @@ def save_asset_view(request: Request) -> Response:
                         )
                         logger.info(f"🆕 Created org-level BrandProfile: {brand_profile.id}")
 
-                # Create or update the BrandAsset
-                brand_asset, created = BrandAsset.objects.update_or_create(
-                    profile=brand_profile,
-                    asset_type=asset_type,
-                    defaults={
-                        "file": file_asset,
-                        "alt_text": f"AI-processed {asset_type.replace('_', ' ')}",
-                        "is_active": True,
-                    },
-                )
+                # Multi-instance types (e.g. club_background) always create new,
+                # single-instance types use update_or_create.
+                MULTI_INSTANCE_ASSET_TYPES = {"club_background", "club_background_upload"}
+
+                if asset_type in MULTI_INSTANCE_ASSET_TYPES:
+                    brand_asset = BrandAsset.objects.create(
+                        profile=brand_profile,
+                        asset_type=asset_type,
+                        file=file_asset,
+                        label=label,
+                        alt_text=f"AI-processed {asset_type.replace('_', ' ')}",
+                        is_active=True,
+                    )
+                    created = True
+                else:
+                    # Create or update the BrandAsset
+                    brand_asset, created = BrandAsset.objects.update_or_create(
+                        profile=brand_profile,
+                        asset_type=asset_type,
+                        defaults={
+                            "file": file_asset,
+                            "alt_text": f"AI-processed {asset_type.replace('_', ' ')}",
+                            "is_active": True,
+                        },
+                    )
                 action = "created" if created else "updated"
                 logger.info(f"🎨 BrandAsset {action}: {brand_asset.id} (type={asset_type})")
 

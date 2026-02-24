@@ -466,7 +466,7 @@ class BrandAssetSerializer(serializers.ModelSerializer):
         asset_type = data.get("asset_type")
 
         # Multi-instance types: allow multiple per profile
-        MULTI_INSTANCE_TYPES = {"club_background"}
+        MULTI_INSTANCE_TYPES = {"club_background", "club_background_upload"}
 
         if profile and asset_type and asset_type not in MULTI_INSTANCE_TYPES:
             # On update, exclude self from check

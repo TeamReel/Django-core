@@ -509,7 +509,7 @@ export function AssetsTab({
     'kit_coach_upload': 'kit_coach',
     'kit_assistant_upload': 'kit_assistant',
     'kit_legacy_upload': 'kit_legacy',
-    'club_background': 'club_background',
+    'club_background_upload': 'club_background',
   };
 
   const uploadAutoGen = useAssetGeneration();
@@ -599,7 +599,7 @@ export function AssetsTab({
     'kit_assistant_upload': { templateId: 'coach_outfit' },
     'kit_legacy_upload': { templateId: 'legacy_tenue_generate' },
     'location_photo': { templateId: 'location_standardize' },
-    'club_background': { templateId: 'background_standardize' },
+    'club_background_upload': { templateId: 'background_standardize' },
   };
 
   const handleUpload = async (file: File, assetType: string) => {
@@ -644,7 +644,7 @@ export function AssetsTab({
       if (outputType) {
         const inputKey = assetType === 'logo_upload' ? 'logo'
           : assetType === 'sponsor_logo_upload' ? 'sponsor'
-          : assetType === 'club_background' ? 'source'
+          : assetType === 'club_background_upload' ? 'source'
           : 'reference';
 
         const params: Record<string, string> = { ...(autoAi.initialParams || {}) };
@@ -652,6 +652,11 @@ export function AssetsTab({
         if (parentProjectId && (autoAi.templateId === 'tenue_generate' || autoAi.templateId === 'legacy_tenue_generate' || autoAi.templateId === 'keeper_tenue')) {
           params['team_level'] = 'true';
         }
+
+        // Derive label for multi-instance types (use filename without extension)
+        const uploadLabel = MULTI_INSTANCE_TYPES.has(assetType)
+          ? (result as any)?.label || file.name.replace(/\.[^.]+$/, '')
+          : undefined;
 
         setUploadProcessingAsset(outputType);
         uploadAutoGen.submit({
@@ -661,6 +666,7 @@ export function AssetsTab({
           projectId: projectId || '',
           organisationId,
           outputAssetType: outputType,
+          label: uploadLabel,
           inputImageUrls: {
             [inputKey]: uploadUrl,
             // Also pass logo+sponsor context for kit generation
@@ -1125,12 +1131,25 @@ export function AssetsTab({
         {/* Club Backgrounds — multiple custom backgrounds */}
         <Section title="🖼️ Achtergronden" description="Upload eigen achtergronden voor video's. AI optimaliseert ze automatisch voor portrait formaat (1080×1920) zodat spelers er realistisch op geplaatst kunnen worden.">
           {(() => {
-            const clubBackgrounds = getAssets('club_background');
+            const bgUploads = getAssets('club_background_upload');
+            const bgProcessed = getAssets('club_background');
             const bgFileRef = React.createRef<HTMLInputElement>();
+
+            // Group by label: match uploads with their AI-processed counterparts
+            const allLabels = new Set<string>();
+            bgUploads.forEach(bg => allLabels.add(bg.label || bg.file_details?.name || 'Achtergrond'));
+            bgProcessed.forEach(bg => allLabels.add(bg.label || bg.file_details?.name || 'Achtergrond'));
+
+            const bgPairs = Array.from(allLabels).map(label => ({
+              label,
+              upload: bgUploads.find(bg => (bg.label || bg.file_details?.name || 'Achtergrond') === label),
+              processed: bgProcessed.find(bg => (bg.label || bg.file_details?.name || 'Achtergrond') === label),
+            }));
+
             return (
               <>
                 {/* Upload Button */}
-                <div style={{ marginBottom: 12 }}>
+                <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
                   <input
                     ref={bgFileRef}
                     type="file"
@@ -1140,14 +1159,14 @@ export function AssetsTab({
                     onChange={async (e) => {
                       const files = Array.from(e.target.files || []);
                       for (const file of files) {
-                        await handleUpload(file, 'club_background');
+                        await handleUpload(file, 'club_background_upload');
                       }
                       if (bgFileRef.current) bgFileRef.current.value = '';
                     }}
                   />
                   <button
                     onClick={() => bgFileRef.current?.click()}
-                    disabled={uploading === 'club_background'}
+                    disabled={uploading === 'club_background_upload' || uploadProcessingAsset === 'club_background'}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1155,76 +1174,53 @@ export function AssetsTab({
                       padding: '10px 20px',
                       fontSize: 13,
                       fontWeight: 600,
-                      background: uploading === 'club_background' ? '#555' : 'linear-gradient(135deg, #10b981, #059669)',
+                      background: (uploading === 'club_background_upload' || uploadProcessingAsset === 'club_background') ? '#555' : 'linear-gradient(135deg, #10b981, #059669)',
                       color: '#fff',
                       border: 'none',
                       borderRadius: 8,
-                      cursor: uploading === 'club_background' ? 'not-allowed' : 'pointer',
+                      cursor: (uploading === 'club_background_upload' || uploadProcessingAsset === 'club_background') ? 'not-allowed' : 'pointer',
                     }}
                   >
-                    {uploading === 'club_background' ? '⏳ Uploaden...' : uploadProcessingAsset === 'club_background' ? '🤖 AI verwerkt...' : '📤 Achtergrond Uploaden'}
+                    {uploading === 'club_background_upload' ? '⏳ Uploaden...' : uploadProcessingAsset === 'club_background' ? '🤖 AI verwerkt...' : '📤 Achtergrond Uploaden'}
                   </button>
                   {uploadProcessingAsset === 'club_background' && (
-                    <span style={{ fontSize: 11, color: '#f59e0b', marginLeft: 8 }}>
+                    <span style={{ fontSize: 11, color: '#f59e0b' }}>
                       ⏳ AI optimaliseert achtergrond voor video compositing...
                     </span>
                   )}
                 </div>
 
-                {/* Gallery Grid */}
-                {clubBackgrounds.length > 0 ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
-                    {clubBackgrounds.map((bg) => {
-                      const bgUrl = bg.url ? getAssetUrl(bg.url) : null;
-                      return (
-                        <div
-                          key={bg.id}
-                          style={{
-                            border: '1px solid var(--vscode-widget-border, #333)',
-                            borderRadius: 8,
-                            overflow: 'hidden',
-                            background: 'var(--vscode-editor-background, #1e1e1e)',
-                          }}
-                        >
-                          {/* Preview */}
-                          <div
-                            style={{
-                              aspectRatio: '9 / 16',
-                              background: bgUrl
-                                ? `url(${bgUrl}) center/cover no-repeat`
-                                : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                              minHeight: 200,
-                            }}
-                          />
-                          {/* Info + Delete */}
-                          <div style={{ padding: 8 }}>
-                            <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {bg.label || bg.file_details?.name || 'Achtergrond'}
-                            </div>
-                            <div style={{ fontSize: 10, color: '#888', marginBottom: 6 }}>
-                              {new Date(bg.created_at).toLocaleDateString()}
-                            </div>
-                            {!readOnly && (
-                              <button
-                                onClick={() => handleDeleteById(bg.id)}
-                                style={{
-                                  width: '100%',
-                                  padding: '4px 0',
-                                  fontSize: 11,
-                                  background: 'transparent',
-                                  color: '#f44',
-                                  border: '1px solid #f44',
-                                  borderRadius: 4,
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                🗑 Verwijderen
-                              </button>
-                            )}
-                          </div>
+                {/* Background pairs: upload + AI processed */}
+                {bgPairs.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+                    {bgPairs.map((pair) => (
+                      <div key={pair.label} style={{ background: '#252526', padding: 12, borderRadius: 8, border: '1px solid #333' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                          <span style={{ fontSize: 18 }}>🖼️</span>
+                          <span style={{ fontWeight: 600, fontSize: 13 }}>{pair.label}</span>
                         </div>
-                      );
-                    })}
+                        <AssetGrid>
+                          <AssetCard
+                            label="Upload (bron)"
+                            assetType="club_background_upload"
+                            asset={pair.upload}
+                            onUpload={handleUpload}
+                            onDelete={() => pair.upload && handleDeleteById(pair.upload.id)}
+                            aspectRatio="9 / 16"
+                          />
+                          <AssetCard
+                            label="Bewerkt (AI)"
+                            assetType="club_background"
+                            asset={pair.processed}
+                            onDelete={() => pair.processed && handleDeleteById(pair.processed.id)}
+                            onReplace={handleReplaceAi}
+                            onPostProcess={handlePostProcess}
+                            isProcessing={postProcessingAsset === 'club_background' || uploadProcessingAsset === 'club_background'}
+                            aspectRatio="9 / 16"
+                          />
+                        </AssetGrid>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div style={{ padding: 20, textAlign: 'center', color: '#888', fontSize: 13, background: '#252526', borderRadius: 8, border: '1px dashed #444' }}>

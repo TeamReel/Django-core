@@ -240,7 +240,8 @@ class BrandAsset(models.Model):
         # ── Location & Other ──
         ("stadium_background", "Stadium/Pitch Background"),
         ("location_photo", "Location Photo"),
-        ("club_background", "Club Background (Custom)"),
+        ("club_background_upload", "Club Background (Raw Upload)"),
+        ("club_background", "Club Background (AI Processed)"),
         ("other", "Other"),
     ]
 
@@ -274,7 +275,7 @@ class BrandAsset(models.Model):
             models.UniqueConstraint(
                 fields=["profile", "asset_type"],
                 name="unique_asset_type_per_profile",
-                condition=~models.Q(asset_type="club_background"),
+                condition=~models.Q(asset_type__in=["club_background", "club_background_upload"]),
             )
         ]
         indexes = [

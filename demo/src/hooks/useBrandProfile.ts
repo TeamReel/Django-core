@@ -151,7 +151,7 @@ export const ASSET_TYPE_LABELS: Record<string, string> = {
 };
 
 /** Multi-instance asset types (allow multiple per profile) */
-export const MULTI_INSTANCE_TYPES = new Set(['club_background']);
+export const MULTI_INSTANCE_TYPES = new Set(['club_background', 'club_background_upload']);
 
 // ============================================================================
 // S3 URL helper

@@ -100,6 +100,8 @@ export interface SubmitParams {
   workflowTemplateId?: number;
   /** Route through approval queue instead of auto-saving */
   requireApproval?: boolean;
+  /** Display label for multi-instance types (e.g. club backgrounds) */
+  label?: string;
 }
 
 // ============================================================================
@@ -135,6 +137,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
     workflowObjectId?: number;
     workflowTemplateId?: number;
     taskId?: string;
+    label?: string;
   } | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
@@ -234,6 +237,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         workflowContentType: params.workflowContentType,
         workflowObjectId: params.workflowObjectId,
         workflowTemplateId: params.workflowTemplateId,
+        label: params.label,
       };
       console.log('📝 Storing context for save:', saveContext);
 
@@ -456,6 +460,8 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             ...(memberId ? { membership_id: memberId } : {}),
             // Auto-approve the GenerationJob in the queue
             ...(context?.taskId ? { task_id: context.taskId, variant_index: variantIndex } : {}),
+            // Label for multi-instance types (e.g. club backgrounds)
+            ...(context?.label ? { label: context.label } : {}),
           }),
         });
 
