@@ -105,7 +105,10 @@ def _download_file(url: str, dest: Path, timeout: int = 120) -> bool:
 def _probe_duration(video_path: Path) -> float:
     """Get video duration in seconds using ffprobe."""
     ffmpeg = _get_ffmpeg_path()
-    ffprobe = ffmpeg.replace("ffmpeg", "ffprobe")
+    # Only replace the binary name, not the entire path
+    # e.g. /usr/local/ffmpeg/bin/ffmpeg -> /usr/local/ffmpeg/bin/ffprobe
+    ffmpeg_path = Path(ffmpeg)
+    ffprobe = str(ffmpeg_path.parent / "ffprobe")
     try:
         result = subprocess.run(  # noqa: S603
             [
