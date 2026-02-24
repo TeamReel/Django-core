@@ -840,7 +840,7 @@ def _generate_photo_composite_gemini(
 
     # ── Generate via Gemini ──
     client = genai.Client(api_key=api_key)
-    image_model = model or "models/gemini-2.0-flash-exp"
+    image_model = model or "models/nano-banana-pro-preview"
     if not image_model.startswith("models/"):
         image_model = f"models/{image_model}"
 
