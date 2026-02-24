@@ -427,52 +427,51 @@ def compose_then_vs_now_video(
         fc: list[str] = []
 
         # Member video: enforce fixed play duration, then freeze the last frame.
-        # If the source video is shorter than PLAY_SECONDS, pad by cloning the last frame.
-        # We over-pad and then trim to guarantee exact length.
-        member_base = (
-            f"trim=duration={play_dur},setpts=PTS-STARTPTS,"
-            f"tpad=stop_mode=clone:stop_duration={play_dur + freeze_dur},"
-            f"trim=duration={play_dur + freeze_dur},setpts=PTS-STARTPTS"
-        )
+        # If source is shorter than PLAY_SECONDS, tpad clones last frame.
+        # tpad stop_duration = how much padding to ADD (not total duration).
+        member_visible_time = play_dur + freeze_dur  # 8s: video plays then freezes
 
-        # Fade the member video on/off over the background (no overlap between members).
-        # This makes transitions smooth while still ensuring the next clip starts only
-        # after the previous clip (and its gap) has finished.
-        transition_dur = min(XFADE_DURATION, (play_dur + freeze_dur) / 2)
-        fade_out_start = max(0.0, (play_dur + freeze_dur) - transition_dur)
-
+        # Build the member video filter: trim → pad → trim → scale.
+        # No alpha fades here — we rely on eof_action=pass for clean transitions.
         if video_type == "sidebyside":
             fc.append(
-                f"[1:v]{member_base},scale={vid_w}:{vid_h}"
-                f":force_original_aspect_ratio=increase,"
-                f"crop={vid_w}:{vid_h},setsar=1,format=rgba,"
-                f"fade=t=in:st=0:d={transition_dur}:alpha=1,"
-                f"fade=t=out:st={fade_out_start}:d={transition_dur}:alpha=1[vid]"
+                f"[1:v]trim=duration={play_dur},setpts=PTS-STARTPTS,"
+                f"tpad=stop_mode=clone:stop_duration={freeze_dur},"
+                f"scale={vid_w}:{vid_h}:force_original_aspect_ratio=increase,"
+                f"crop={vid_w}:{vid_h},setsar=1,"
+                f"fade=t=in:st=0:d=0.5,"
+                f"fade=t=out:st={member_visible_time - 0.5}:d=0.5[vid]"
             )
         else:
             fc.append(
-                f"[1:v]{member_base},scale={vid_w}:{vid_h}"
-                f":force_original_aspect_ratio=decrease"
-                f",setsar=1,format=rgba,"
-                f"fade=t=in:st=0:d={transition_dur}:alpha=1,"
-                f"fade=t=out:st={fade_out_start}:d={transition_dur}:alpha=1[vid]"
+                f"[1:v]trim=duration={play_dur},setpts=PTS-STARTPTS,"
+                f"tpad=stop_mode=clone:stop_duration={freeze_dur},"
+                f"scale={vid_w}:{vid_h}:force_original_aspect_ratio=decrease,"
+                f"setsar=1,"
+                f"fade=t=in:st=0:d=0.5,"
+                f"fade=t=out:st={member_visible_time - 0.5}:d=0.5[vid]"
             )
 
-        # Overlay video on background (eof_action=pass → bg shows after video ends)
+        # Overlay video on background.
+        # eof_action=pass: when member video ends, bg continues through.
+        # shortest=0 ensures we don't cut early.
         if video_type == "sidebyside":
             vid_x = f"({WIDTH}-{vid_w})/2"
             vid_y = int(HEADER_HEIGHT + (CONTENT_HEIGHT - vid_h) // 2)
-            fc.append(f"[0:v][vid]overlay={vid_x}:{vid_y}:eof_action=pass:shortest=0[main]")
+            fc.append(
+                f"[0:v][vid]overlay={vid_x}:{vid_y}"
+                f":eof_action=pass:shortest=0:format=yuv420[main]"
+            )
         else:
             fc.append(
                 f"[0:v][vid]overlay="
                 f"(W-w)/2:({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)/2)"
-                f":eof_action=pass:shortest=0[main]"
+                f":eof_action=pass:shortest=0:format=yuv420[main]"
             )
 
         # Name text — only visible during member video (not during gap)
         name_y = HEIGHT - BOTTOM_RESERVED + 10
-        member_visible_dur = play_dur + freeze_dur
+        member_visible_dur = member_visible_time
         fc.append(
             f"[main]drawtext=text='{safe_name}'"
             f":fontfile='{font_path}'"
@@ -599,9 +598,11 @@ def compose_then_vs_now_video(
         shutil.copy2(str(clip_paths[0]), str(joined_output))
     else:
         concat_file = tmp_dir / "concat.txt"
-        with open(concat_file, "w") as f:
+        with open(concat_file, "w", encoding="utf-8") as f:
             for path in clip_paths:
-                f.write(f"file '{path}'\n")
+                # Use forward slashes and escape for FFmpeg concat demuxer
+                safe_path = str(path).replace("\\", "/")
+                f.write(f"file '{safe_path}'\n")
 
         # First try: fast concat without re-encoding.
         concat_cmd = [
