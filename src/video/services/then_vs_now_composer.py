@@ -411,7 +411,6 @@ def compose_then_vs_now_video(
         slowmo = SLOWMO_FACTOR
         slowed_play_dur = play_dur * slowmo  # 7.5s after slow-mo
         freeze_dur = FREEZE_SECONDS
-        gap_dur = EMPTY_FIELD_SECONDS
         member_segment_dur = slowed_play_dur + freeze_dur  # ~9.5s
 
         # Escape name for FFmpeg drawtext
@@ -456,7 +455,8 @@ def compose_then_vs_now_video(
             )
 
         # Name label with brand color background box
-        name_y = HEIGHT - BOTTOM_RESERVED + 5
+        # Position: just below the content area, above the sponsor zone
+        name_y = HEADER_HEIGHT + CONTENT_HEIGHT - 10
         label_h = 80
         # Brand color for the name box (default red if not provided)
         brand_hex = (brand_color or "#D2122E").lstrip("#")
@@ -529,21 +529,69 @@ def compose_then_vs_now_video(
             logger.error("FFmpeg failed for member %s: %s", member.name, result.stderr[-2000:])
             continue
 
+        actual_dur = _probe_duration(video_clip_path)
+        logger.info(
+            "Member %d/%d %s: clip=%.1fs (expected %.1fs)",
+            idx + 1,
+            total,
+            member.name,
+            actual_dur,
+            member_segment_dur,
+        )
+
         clip_paths.append(video_clip_path)
 
-        # ─── CLIP B: Gap segment (pure background + header, no member video) ───
-        gap_clip_path = clips_dir / f"clip_{idx:03d}_gap.mp4"
+    if not clip_paths:
+        raise ValueError("No member clips were successfully composed.")
 
-        # Simply trim the background video to gap duration
-        cmd_gap = [
+    # ── 5. Concatenate clips with crossfade transitions ──
+    # Use xfade to smoothly transition between member clips.
+    # The next member fades in as the current one fades out.
+    joined_output = output_dir / "then_vs_now_joined.mp4"
+    final_output = output_dir / "then_vs_now_compilation.mp4"
+
+    if len(clip_paths) == 1:
+        import shutil
+
+        shutil.copy2(str(clip_paths[0]), str(joined_output))
+    else:
+        # Probe durations for xfade offset calculation
+        durations = [_probe_duration(p) for p in clip_paths]
+        logger.info(
+            "Clip durations for xfade: %s",
+            [f"{d:.1f}s" for d in durations],
+        )
+
+        input_args: list[str] = []
+        for clip in clip_paths:
+            input_args += ["-i", str(clip)]
+
+        # Build xfade chain: normalize each stream, then chain xfades
+        fc_parts: list[str] = []
+        for i in range(len(clip_paths)):
+            fc_parts.append(f"[{i}:v]settb=AVTB,fps={FPS},format=yuv420p,setsar=1[v{i}]")
+
+        cumulative_dur = durations[0]
+        prev_label = "v0"
+        for i in range(1, len(clip_paths)):
+            offset = max(0.1, cumulative_dur - XFADE_DURATION)
+            out_label = f"xv{i}"
+            fc_parts.append(
+                f"[{prev_label}][v{i}]xfade="
+                f"transition=fade:duration={XFADE_DURATION}:offset={offset:.2f}"
+                f"[{out_label}]"
+            )
+            cumulative_dur = offset + durations[i]
+            prev_label = out_label
+
+        concat_cmd = [
             ffmpeg,
             "-y",
-            "-i",
-            str(bg_video_path),
-            "-vf",
-            f"trim=duration={gap_dur},setpts=PTS-STARTPTS",
-            "-t",
-            f"{gap_dur:.2f}",
+            *input_args,
+            "-filter_complex",
+            ";".join(fc_parts),
+            "-map",
+            f"[{prev_label}]",
             "-c:v",
             "libx264",
             "-preset",
@@ -555,115 +603,43 @@ def compose_then_vs_now_video(
             "-r",
             str(FPS),
             "-an",
-            str(gap_clip_path),
-        ]
-
-        logger.info("Composing gap segment %d/%d (%.1fs)", idx + 1, total, gap_dur)
-        result = subprocess.run(cmd_gap, capture_output=True, text=True, timeout=600)  # noqa: S603
-        if result.returncode != 0:
-            logger.error("FFmpeg gap failed: %s", result.stderr[-1000:])
-            continue
-
-        clip_paths.append(gap_clip_path)
-
-        # Log timing
-        video_actual = _probe_duration(video_clip_path)
-        gap_actual = _probe_duration(gap_clip_path)
-        logger.info(
-            "Member %d/%d %s: video=%.1fs (expected %.1fs), gap=%.1fs (expected %.1fs)",
-            idx + 1,
-            total,
-            member.name,
-            video_actual,
-            member_segment_dur,
-            gap_actual,
-            gap_dur,
-        )
-
-    if not clip_paths:
-        raise ValueError("No member clips were successfully composed.")
-
-    # ── 5. Concatenate all clips (no overlap) ──
-    # We concatenate sequentially so member B never starts before member A finishes.
-    joined_output = output_dir / "then_vs_now_joined.mp4"
-    final_output = output_dir / "then_vs_now_compilation.mp4"
-
-    if len(clip_paths) == 1:
-        # Single clip: just copy
-        import shutil
-
-        shutil.copy2(str(clip_paths[0]), str(joined_output))
-    else:
-        concat_file = tmp_dir / "concat.txt"
-        with open(concat_file, "w", encoding="utf-8") as f:
-            for path in clip_paths:
-                # Use forward slashes and escape for FFmpeg concat demuxer
-                safe_path = str(path).replace("\\", "/")
-                f.write(f"file '{safe_path}'\n")
-
-        # First try: fast concat without re-encoding.
-        concat_cmd = [
-            ffmpeg,
-            "-y",
-            "-f",
-            "concat",
-            "-safe",
-            "0",
-            "-i",
-            str(concat_file),
-            "-c",
-            "copy",
             str(joined_output),
         ]
-        logger.info("Concatenating %d clips sequentially (no overlap)", len(clip_paths))
+
+        logger.info(
+            "Concatenating %d clips with %.1fs xfade crossfade",
+            len(clip_paths),
+            XFADE_DURATION,
+        )
         result = subprocess.run(
             concat_cmd, capture_output=True, text=True, timeout=600
         )  # noqa: S603
         if result.returncode != 0:
             logger.warning(
-                "concat copy failed, falling back to re-encode concat: %s",
+                "xfade failed, falling back to simple concat: %s",
                 result.stderr[-1000:],
             )
-
-            # Fallback: concat filter (re-encode) for maximum compatibility.
-            input_args: list[str] = []
-            for clip in clip_paths:
-                input_args += ["-i", str(clip)]
-
-            fc_parts: list[str] = []
-            for i in range(len(clip_paths)):
-                fc_parts.append(f"[{i}:v]settb=AVTB,fps={FPS},format=yuv420p,setsar=1[v{i}]")
-            fc_parts.append(
-                "".join([f"[v{i}]" for i in range(len(clip_paths))])
-                + f"concat=n={len(clip_paths)}:v=1:a=0[out]"
-            )
-
-            concat_filter_cmd = [
+            # Fallback: simple concat
+            concat_file = tmp_dir / "concat.txt"
+            with open(concat_file, "w", encoding="utf-8") as f:
+                for path in clip_paths:
+                    safe_path = str(path).replace("\\", "/")
+                    f.write(f"file '{safe_path}'\n")
+            fallback_cmd = [
                 ffmpeg,
                 "-y",
-                *input_args,
-                "-filter_complex",
-                ";".join(fc_parts),
-                "-map",
-                "[out]",
-                "-c:v",
-                "libx264",
-                "-preset",
-                "fast",
-                "-crf",
-                "23",
-                "-pix_fmt",
-                "yuv420p",
-                "-r",
-                str(FPS),
-                "-an",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                str(concat_file),
+                "-c",
+                "copy",
                 str(joined_output),
             ]
             result = subprocess.run(
-                concat_filter_cmd,
-                capture_output=True,
-                text=True,
-                timeout=600,
+                fallback_cmd, capture_output=True, text=True, timeout=600
             )  # noqa: S603
             if result.returncode != 0:
                 raise RuntimeError(f"FFmpeg concat failed: {result.stderr[-2000:]}")
