@@ -32,7 +32,7 @@ WIDTH = 1080
 HEIGHT = 1920
 FPS = 30
 HEADER_HEIGHT = 300
-XFADE_DURATION = 1.5  # seconds crossfade between members
+XFADE_DURATION = 2.0  # seconds crossfade between members
 
 # ── Reserved zones ──
 SPONSOR_BOX_H = 120
@@ -46,14 +46,14 @@ BOTTOM_RESERVED = SPONSOR_BOX_H + SPONSOR_MARGIN + NAME_LABEL_H  # ~216px
 CONTENT_HEIGHT = HEIGHT - HEADER_HEIGHT - BOTTOM_RESERVED  # ~1404px
 
 # ── Per-type sizing ──
-# sidebyside: covers full content area
-SBS_SCALE = 1.0
-# transformation: slightly smaller, centered
-TRANSFORM_SCALE = 0.88
+# sidebyside: large, nearly full content area (cover-crop)
+SBS_SCALE = 1.05
+# transformation: fit-inside, no cropping, well within content zone
+TRANSFORM_SCALE = 0.62
 
 # ── Transition timing ──
-FREEZE_SECONDS = 2.0  # freeze on last frame
-EMPTY_FIELD_SECONDS = 1.5  # empty background between members
+FREEZE_SECONDS = 3.5  # freeze on last frame before fading out
+EMPTY_FIELD_SECONDS = 3.0  # empty background between members
 
 
 @dataclass
@@ -360,23 +360,42 @@ def compose_then_vs_now_video(
         # Header: ensure correct width
         hdr_filter = f"[1:v]scale={WIDTH}:{HEADER_HEIGHT}[hdr]"
 
-        # Member video: scale to fill sized area (cover + crop)
+        # Member video: scale and position per video_type
         # Freeze last frame for FREEZE_SECONDS, then video ends → bg shows through
         freeze_pad = f",tpad=stop_mode=clone:stop_duration={FREEZE_SECONDS}" if not is_last else ""
-        vid_filter = (
-            f"[2:v]scale={vid_w}:{vid_h}"
-            f":force_original_aspect_ratio=increase,"
-            f"crop={vid_w}:{vid_h},setsar=1{freeze_pad}[vid]"
-        )
+
+        if video_type == "sidebyside":
+            # Cover-crop: scale up to fill, crop to exact box
+            vid_filter = (
+                f"[2:v]scale={vid_w}:{vid_h}"
+                f":force_original_aspect_ratio=increase,"
+                f"crop={vid_w}:{vid_h},setsar=1{freeze_pad}[vid]"
+            )
+        else:
+            # Transformation: fit-inside — scale DOWN to fit, keep full video visible
+            vid_filter = (
+                f"[2:v]scale={vid_w}:{vid_h}"
+                f":force_original_aspect_ratio=decrease"
+                f",setsar=1{freeze_pad}[vid]"
+            )
 
         # Overlay header on background
         overlay1 = "[bg][hdr]overlay=0:0[bgh]"
 
         # Center video in content area (between header and bottom reserved zone)
         # After video+freeze ends, overlay disappears → bg+header gap visible
-        vid_x = f"({WIDTH}-{vid_w})/2"
-        vid_y = int(HEADER_HEIGHT + (CONTENT_HEIGHT - vid_h) // 2)
-        overlay2 = f"[bgh][vid]overlay={vid_x}:{vid_y}" f":eof_action=pass:shortest=0[main]"
+        if video_type == "sidebyside":
+            vid_x = f"({WIDTH}-{vid_w})/2"
+            vid_y = int(HEADER_HEIGHT + (CONTENT_HEIGHT - vid_h) // 2)
+            overlay2 = f"[bgh][vid]overlay={vid_x}:{vid_y}:eof_action=pass:shortest=0[main]"
+        else:
+            # Transformation: dynamic centering — actual size may differ from vid_w×vid_h
+            # overlay uses w/h for overlay stream dimensions
+            overlay2 = (
+                f"[bgh][vid]overlay="
+                f"(W-w)/2:({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)/2)"
+                f":eof_action=pass:shortest=0[main]"
+            )
 
         # Name text — only visible while member video plays (not during gap)
         name_y = HEIGHT - BOTTOM_RESERVED + 10  # just above sponsor box

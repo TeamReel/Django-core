@@ -55,6 +55,7 @@ class PeriodSerializer(serializers.ModelSerializer):
             "parent_period_id",
             "sport",
             "sport_id",
+            "period_type",
             "name",
             "description",
             "start_date",

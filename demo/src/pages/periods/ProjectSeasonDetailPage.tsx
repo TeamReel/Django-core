@@ -57,6 +57,7 @@ type Period = {
   slug?: string;
   start_date: string;
   end_date: string;
+  period_type?: string;
   parent_period?: { id: string; name: string } | null;
   children_count?: number;
   matches_count?: number;
@@ -1650,8 +1651,45 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       <div>
         <PageHeader
           title={season ? season.name : 'Season'}
+          subtitle={(season as any)?.period_type === 'legends' ? 'Legends Seizoen' : undefined}
           actions={
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+              {/* Period type (regular / legends) */}
+              <select
+                value={(season as any)?.period_type || 'regular'}
+                onChange={async (e) => {
+                  const newType = e.target.value;
+                  try {
+                    const res = await fetch(
+                      `${apiBaseUrl}/api/v1/periods/${encodeURIComponent(String(season?.id))}/`,
+                      {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                        credentials: 'include',
+                        body: JSON.stringify({ period_type: newType }),
+                      },
+                    );
+                    if (!res.ok) throw new Error('Failed to update period type');
+                    setSeason((prev: any) => prev ? { ...prev, period_type: newType } : prev);
+                  } catch (err) {
+                    console.error('Failed to update period type:', err);
+                    alert('Kon seizoenstype niet opslaan');
+                  }
+                }}
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  border: '1px solid #e5e7eb',
+                  borderRadius: 6,
+                  padding: '4px 10px',
+                  background: (season as any)?.period_type === 'legends' ? '#fffbeb' : 'white',
+                  cursor: 'pointer',
+                  color: (season as any)?.period_type === 'legends' ? '#d97706' : '#374151',
+                }}
+              >
+                <option value="regular">Regulier</option>
+                <option value="legends">Legends</option>
+              </select>
               {(() => {
                 const isActive = !!season && String(activeContext?.season?.id ?? '') === String((season as any)?.id ?? '');
                 return (
@@ -2154,6 +2192,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
                         {completedVideoJobs.map(job => {
                           const typeDisplay = getJobTypeDisplay(job.job_type);
+                          // Differentiate Then & Now vs Transformatie based on config.video_type
+                          const videoType = (job.config as any)?.video_type;
+                          const tileLabel = videoType === 'transformation'
+                            ? { icon: '🔄', label: 'Transformatie' }
+                            : videoType === 'sidebyside'
+                            ? { icon: '⏪', label: 'Then & Now' }
+                            : typeDisplay;
                           const ago = (() => {
                             const diff = Date.now() - new Date(job.completed_at || job.created_at).getTime();
                             const mins = Math.floor(diff / 60000);
@@ -2183,7 +2228,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               onClick={() => {
                                 if (stableUrl) {
                                   setPreviewVideoUrl(stableUrl);
-                                  setPreviewVideoLabel(`${typeDisplay.icon} ${typeDisplay.label}`);
+                                  setPreviewVideoLabel(`${tileLabel.icon} ${tileLabel.label}`);
                                 }
                               }}
                               style={{
@@ -2214,7 +2259,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text)' }}>
-                                    {typeDisplay.icon} {typeDisplay.label}
+                                    {tileLabel.icon} {tileLabel.label}
                                   </span>
                                   <span style={{
                                     fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99,

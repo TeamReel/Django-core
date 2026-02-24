@@ -38,6 +38,10 @@ class Period(models.Model):
             - Summer Tournament (Football 7v7)
     """
 
+    class PeriodType(models.TextChoices):
+        REGULAR = "regular", "Regulier"
+        LEGENDS = "legends", "Legends"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organisation = models.ForeignKey(
         "organisations.Organisation", on_delete=models.CASCADE, related_name="periods"
@@ -65,6 +69,12 @@ class Period(models.Model):
         blank=True,
         related_name="periods",
         help_text="Sport variant for this period (typically set on Competition, not Season).",
+    )
+    period_type = models.CharField(
+        max_length=20,
+        choices=PeriodType.choices,
+        default=PeriodType.REGULAR,
+        help_text="Period type (regular, legends). Enables legend-specific features like lineup videos.",
     )
     name = models.CharField(max_length=200, help_text='Display name (e.g., "Seizoen 2023/2024")')
     description = models.TextField(blank=True, default="")

@@ -12,6 +12,7 @@ type Period = {
   name: string;
   start_date: string;
   end_date: string;
+  period_type?: string;
   parent_period?: { id: string; name: string } | string | null;
   children_count?: number;
 };
@@ -185,7 +186,14 @@ export const ProjectSeasonsPage: React.FC = () => {
                 <tbody>
                   {seasons.map((season) => (
                     <tr key={season.id}>
-                      <td style={{ fontWeight: 600 }}>{season.name}</td>
+                      <td style={{ fontWeight: 600 }}>
+                        {season.name}
+                        {season.period_type === 'legends' && (
+                          <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 600, padding: '2px 6px', borderRadius: 4, background: '#fffbeb', color: '#d97706' }}>
+                            Legends
+                          </span>
+                        )}
+                      </td>
                       <td style={{ whiteSpace: 'nowrap' }}>
                         {new Date(season.start_date).toLocaleDateString()} – {new Date(season.end_date).toLocaleDateString()}
                       </td>
