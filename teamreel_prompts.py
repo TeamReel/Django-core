@@ -1141,38 +1141,44 @@ RULES:
         "prompt_template": """Create a photorealistic composite image in PORTRAIT orientation (9:16, 1080x1920px).
 
 TASK:
-Place the two football players (cropped from waist/hips up) realistically on the background image.
+Place the two football players on the background image.
 They must look like they were actually photographed together at this location.
+The players are already cropped to show only their UPPER BODY (head to navel/waist).
+
+CRITICAL — NO LEGS:
+- The player images show ONLY their upper body (head, shoulders, chest, arms, stomach).
+- Do NOT generate, add, or show ANY legs, hips, thighs, or lower body.
+- The players should appear to be cropped at the navel/waist level — as if the photo crops off there.
+- This is intentional. NEVER extend the body downward. NEVER add legs.
 
 LAYOUT:
 - The background fills the entire frame (portrait 9:16)
-- Player 1 (legacy kit) stands on the LEFT side of the frame
-- Player 2 (current kit) stands on the RIGHT side of the frame
-- Small gap between them (about 30-50cm in real space) — they do NOT touch
-- Both visible from waist/stomach up, filling most of the vertical frame
+- Player 1 (legacy kit) on the LEFT side of the frame
+- Player 2 (current kit) on the RIGHT side of the frame
+- Small gap between them (30-50cm) — they do NOT touch
+- Both visible from navel/waist UP, filling the frame nicely
 - Both facing the camera directly, looking straight ahead
-- Both players at the same height (feet at same ground level in the scene)
-- The reference composite image shows the approximate desired composition
+- The reference composite shows the approximate positioning
 
 CRITICAL — PRESERVE EXACTLY:
-- FACE: The exact face, facial features, skin tone, hair from each player image. Do NOT alter faces.
+- FACE: The exact face, facial features, skin tone, hair from each player. Do NOT alter faces.
 - KIT/UNIFORM: The exact football kit, jersey, colors, logos, details. Copy pixel-perfect.
-- BODY: The exact body proportions and pose from the source images.
+- BODY: The exact pose and proportions from the source images.
 - Do NOT generate new faces or uniforms. Use ONLY what is in the source images.
 
 REALISM REQUIREMENTS:
 - Match the lighting direction and color temperature of the background scene
-- Add realistic soft shadows behind/beneath the players matching the scene's light source
+- Add realistic soft shadows matching the scene's light source
 - Correct perspective — players should look like they belong at this distance from camera
 - Both players should appear at the same scale (as if standing next to each other)
-- Natural depth of field — slight background blur if appropriate for the scene
-- Seamless edge blending — no visible cutout edges or halos around players
+- Natural depth of field — slight background blur if appropriate
+- Seamless edge blending — no visible cutout edges or halos
 
 OUTPUT RULES:
 - No text, no overlays, no added logos, no graphics
 - Do NOT change or regenerate faces, kits, or poses
+- Do NOT add legs or any body parts below the waist/navel
 - The output must be photorealistic, as if photographed with a real camera
-- Do NOT add any elements not present in the source images
 """,
     },
 

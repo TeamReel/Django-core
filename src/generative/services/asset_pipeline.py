@@ -761,8 +761,8 @@ PHOTO_COMPOSITE_VALIDATION_PROMPT = """You are a quality control AI for photo co
 
 SOURCE IMAGES PROVIDED:
 1. Generated composite (the image to validate)
-2. Original legacy player photo (cropped)
-3. Original current player photo (cropped)
+2. Original legacy player photo (cropped to upper body)
+3. Original current player photo (cropped to upper body)
 
 VALIDATION CRITERIA - Check each one:
 
@@ -774,10 +774,10 @@ VALIDATION CRITERIA - Check each one:
    - Are the football kits/jerseys preserved exactly from the source images?
    - Correct colors, logos, patterns, sponsor text?
 
-3. REALISTIC PLACEMENT:
-   - Are both players at roughly the same height (feet at same ground level)?
-   - Appropriate scale relative to each other and the background?
-   - No floating or sunken into ground?
+3. NO LEGS VISIBLE (Critical):
+   - The players should be cropped at waist/navel level — upper body only.
+   - Are there ANY legs, thighs, hips, or lower body visible?
+   - If ANY legs or lower body is visible, this is an AUTOMATIC FAIL.
 
 4. NO TOUCHING:
    - Is there a visible gap between the two players?
@@ -797,6 +797,7 @@ SCORE: X/6 (number of criteria passed)
 ISSUES: [list specific problems found, or "None" if all pass]
 
 Be strict. If faces or kits are noticeably different from source, that's a FAIL.
+If ANY legs or lower body is visible beyond the waist, that's a FAIL.
 """
 
 
@@ -942,11 +943,11 @@ def _generate_photo_composite_gemini(
         legacy_path.write_bytes(person_bytes)  # fullbody content
         bg_path.write_bytes(bg_bytes)
 
-        # Crop both players to waist level (55% = head to waist, no legs)
+        # Crop both players to upper body only (50% = head to navel, no legs visible)
         home_cropped = tmp_dir / "home_crop.png"
         legacy_cropped = tmp_dir / "legacy_crop.png"
-        _crop_player_to_hips(home_path, home_cropped, mirror=False, crop_ratio=0.55)
-        _crop_player_to_hips(legacy_path, legacy_cropped, mirror=False, crop_ratio=0.55)
+        _crop_player_to_hips(home_path, home_cropped, mirror=False, crop_ratio=0.50)
+        _crop_player_to_hips(legacy_path, legacy_cropped, mirror=False, crop_ratio=0.50)
 
         # Create rough reference composite (PIL)
         ref_composite = tmp_dir / "ref_composite.png"
