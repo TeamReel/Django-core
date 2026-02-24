@@ -4326,13 +4326,19 @@ export default function ProjectSeasonMemberDetailPage() {
           const clubBgs = clubBrand.getAssets?.('club_background') || [];
           clubBgs.forEach((bg, idx) => {
             if (bg?.url) {
-              bgs.push({ url: getAssetUrl(bg.url), label: bg.label || `Clubachtergrond ${idx + 1}` });
+              const resolvedUrl = getAssetUrl(bg.url);
+              if (resolvedUrl) {
+                bgs.push({ url: resolvedUrl, label: bg.label || `Clubachtergrond ${idx + 1}` });
+              }
             }
           });
           // Stadium background as fallback
           const stadiumBg = clubBrand.getAsset?.('stadium_background');
           if (stadiumBg?.url) {
-            bgs.push({ url: getAssetUrl(stadiumBg.url), label: 'Stadion' });
+            const resolvedUrl = getAssetUrl(stadiumBg.url);
+            if (resolvedUrl) {
+              bgs.push({ url: resolvedUrl, label: 'Stadion' });
+            }
           }
           return bgs;
         })()}
