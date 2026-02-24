@@ -881,7 +881,7 @@ def _gemini_composite(
 
     try:
         response = client.models.generate_content(
-            model="models/gemini-2.0-flash-preview-image-generation",
+            model="models/gemini-2.0-flash-exp",
             contents=content_parts,
             config=types.GenerateContentConfig(
                 response_modalities=["IMAGE", "TEXT"],
