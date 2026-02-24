@@ -5,7 +5,7 @@ import {
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
   LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder,
       Bell, CreditCard, UserCircle, Star, PanelLeftClose, PanelLeft, Calendar, Film, Fingerprint, Scissors,
-  ClipboardCheck, GitBranch, Video
+  ClipboardCheck, GitBranch, Video, Image
 } from 'lucide-react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -659,6 +659,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                         { label: 'Short Intro', path: makeTabUrl(baseUrl, 'intro'), icon: Sparkles },
                                         { label: 'Celebration', path: makeTabUrl(baseUrl, 'celebration'), icon: Trophy },
                                         { label: 'Then vs Now', path: makeTabUrl(baseUrl, 'then_vs_now'), icon: Video },
+                                        { label: 'Foto Composite', path: makeTabUrl(baseUrl, 'photo_composite'), icon: Image },
                                         { label: 'Legacy in Tenue', path: makeTabUrl(baseUrl, 'legacy'), icon: Trophy },
                                         { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                                         { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
