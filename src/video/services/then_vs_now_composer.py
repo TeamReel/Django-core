@@ -320,6 +320,76 @@ def compose_then_vs_now_video(
     vid_w = int(WIDTH * scale)
     vid_h = int(CONTENT_HEIGHT * scale)
 
+    # ── 3b. Pre-render background+header as a REAL video file ──
+    # This is the key to reliable duration control: overlaying a member
+    # video on a real .mp4 (not looped images) guarantees the output
+    # duration matches the base video, not the overlay.
+    # Compute max needed duration across all members.
+    max_clip_dur = 0.0
+    for _idx, (_member, vpath) in enumerate(member_paths):
+        dur = _probe_duration(vpath)
+        is_last = _idx == total - 1
+        member_clip_dur = dur + (0.0 if is_last else FREEZE_SECONDS + EMPTY_FIELD_SECONDS)
+        max_clip_dur = max(max_clip_dur, member_clip_dur)
+    # Add a small buffer
+    bg_video_dur = max_clip_dur + 2.0
+
+    bg_video_path = asset_dir / "bg_loop.mp4"
+    bg_fc: list[str] = []
+    bg_parts = []
+    if bg_is_landscape:
+        bg_parts.append("transpose=1")
+    bg_parts.append(f"scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=increase")
+    bg_parts.append(f"crop={WIDTH}:{HEIGHT}")
+    bg_parts.append("setsar=1")
+    bg_parts.append("colorbalance=rs=-0.15:gs=-0.15:bs=-0.15")
+    bg_fc.append(f"[0:v]{','.join(bg_parts)}[bg_img]")
+    bg_fc.append(f"[1:v]scale={WIDTH}:{HEADER_HEIGHT}[hdr]")
+    bg_fc.append(f"color=c=black:s={WIDTH}x{HEIGHT}:r={FPS}:d={bg_video_dur:.2f}[canvas]")
+    bg_fc.append("[canvas][bg_img]overlay=0:0:eof_action=repeat[bg]")
+    bg_fc.append("[bg][hdr]overlay=0:0:eof_action=repeat[out]")
+
+    bg_cmd = [
+        ffmpeg,
+        "-y",
+        "-loop",
+        "1",
+        "-i",
+        str(bg_path),
+        "-loop",
+        "1",
+        "-i",
+        str(header_path),
+        "-filter_complex",
+        ";".join(bg_fc),
+        "-map",
+        "[out]",
+        "-t",
+        f"{bg_video_dur:.2f}",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "fast",
+        "-crf",
+        "20",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        str(FPS),
+        "-an",
+        str(bg_video_path),
+    ]
+    logger.info(
+        "Pre-rendering background+header video (%.1fs) for %d members",
+        bg_video_dur,
+        total,
+    )
+    result = subprocess.run(bg_cmd, capture_output=True, text=True, timeout=300)  # noqa: S603
+    if result.returncode != 0:
+        raise RuntimeError(f"Failed to render background video: {result.stderr[-2000:]}")
+    bg_actual_dur = _probe_duration(bg_video_path)
+    logger.info("Background video rendered: %.1fs", bg_actual_dur)
+
     # ── 4. Compose a clip per member ──
     for idx, (member, video_path) in enumerate(member_paths):
         if progress_callback:
@@ -343,73 +413,47 @@ def compose_then_vs_now_video(
         )
 
         # ── Build FFmpeg filter complex ──
-        # Use a color source as timing anchor (guarantees exact duration).
-        # Image inputs are looped but duration is controlled by the color
-        # source, not by -t on inputs (which is unreliable for image2 demuxer).
+        # Two-pass approach: overlay member video on the pre-rendered
+        # bg_loop.mp4 (a real video with guaranteed duration).
+        # This avoids all image2 demuxer / color source duration issues.
         #
         # Inputs:
-        # [0] = background image (looped)
-        # [1] = header image (looped)
-        # [2] = member video
-        # [3] = sponsor image (looped, optional)
+        # [0] = bg_loop.mp4 (background+header video, real .mp4)
+        # [1] = member video
+        # [2] = sponsor image (looped, optional)
 
         fc: list[str] = []
 
-        # Canvas: color source with explicit duration — this is the timing anchor
-        fc.append(f"color=c=black:s={WIDTH}x{HEIGHT}:r={FPS}:d={total_clip_dur:.2f}[canvas]")
-
-        # Background: scale+crop to 1080x1920, darken slightly
-        bg_parts = []
-        if bg_is_landscape:
-            bg_parts.append("transpose=1")
-        bg_parts.append(f"scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=increase")
-        bg_parts.append(f"crop={WIDTH}:{HEIGHT}")
-        bg_parts.append("setsar=1")
-        bg_parts.append("colorbalance=rs=-0.15:gs=-0.15:bs=-0.15")
-        fc.append(f"[0:v]{','.join(bg_parts)}[bg_img]")
-
-        # Overlay background image on canvas (canvas controls duration)
-        fc.append("[canvas][bg_img]overlay=0:0:eof_action=repeat[bg]")
-
-        # Header: ensure correct width, overlay on background
-        fc.append(f"[1:v]scale={WIDTH}:{HEADER_HEIGHT}[hdr]")
-        fc.append("[bg][hdr]overlay=0:0:eof_action=repeat[bgh]")
-
-        # Member video: scale and position per video_type
-        # Freeze last frame for FREEZE_SECONDS, then video ends → bg shows through
+        # Member video: scale per video_type, freeze last frame
         freeze_pad = f",tpad=stop_mode=clone:stop_duration={FREEZE_SECONDS}" if not is_last else ""
 
         if video_type == "sidebyside":
-            # Cover-crop: scale up to fill, crop to exact box
             fc.append(
-                f"[2:v]scale={vid_w}:{vid_h}"
+                f"[1:v]scale={vid_w}:{vid_h}"
                 f":force_original_aspect_ratio=increase,"
                 f"crop={vid_w}:{vid_h},setsar=1{freeze_pad}[vid]"
             )
         else:
-            # Transformation: fit-inside — scale DOWN to fit, keep full video visible
             fc.append(
-                f"[2:v]scale={vid_w}:{vid_h}"
+                f"[1:v]scale={vid_w}:{vid_h}"
                 f":force_original_aspect_ratio=decrease"
                 f",setsar=1{freeze_pad}[vid]"
             )
 
-        # Center video in content area (between header and bottom reserved zone)
-        # After video+freeze ends, overlay disappears → bg+header gap visible
+        # Overlay video on background (eof_action=pass → bg shows after video ends)
         if video_type == "sidebyside":
             vid_x = f"({WIDTH}-{vid_w})/2"
             vid_y = int(HEADER_HEIGHT + (CONTENT_HEIGHT - vid_h) // 2)
-            fc.append(f"[bgh][vid]overlay={vid_x}:{vid_y}:eof_action=pass[main]")
+            fc.append(f"[0:v][vid]overlay={vid_x}:{vid_y}:eof_action=pass[main]")
         else:
-            # Transformation: dynamic centering — actual size may differ from vid_w×vid_h
             fc.append(
-                f"[bgh][vid]overlay="
+                f"[0:v][vid]overlay="
                 f"(W-w)/2:({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)/2)"
                 f":eof_action=pass[main]"
             )
 
-        # Name text — only visible while member video plays (not during gap)
-        name_y = HEIGHT - BOTTOM_RESERVED + 10  # just above sponsor box
+        # Name text — only visible during member video (not during gap)
+        name_y = HEIGHT - BOTTOM_RESERVED + 10
         member_visible_dur = duration + freeze_dur
         fc.append(
             f"[main]drawtext=text='{safe_name}'"
@@ -421,8 +465,7 @@ def compose_then_vs_now_video(
             + ("[main_txt]" if sponsor_path else "[out]")
         )
 
-        # Sponsor logo overlay (bottom-left, like lineup videos)
-        # Also only visible during member video, not during empty gap
+        # Sponsor logo overlay
         if sponsor_path:
             sponsor_w = int(WIDTH * 0.22)
             sponsor_box_w = sponsor_w + 2 * SPONSOR_PAD
@@ -433,7 +476,7 @@ def compose_then_vs_now_video(
                 f":color=0x90EE90@0.85:t=fill"
                 f":enable='between(t,0,{member_visible_dur:.2f})'[main_sb]"
             )
-            fc.append(f"[3:v]scale={sponsor_w}:-1,format=rgba[sponsor]")
+            fc.append(f"[2:v]scale={sponsor_w}:-1,format=rgba[sponsor]")
             fc.append(
                 f"[main_sb][sponsor]overlay="
                 f"({SPONSOR_MARGIN + SPONSOR_PAD}):(main_h-h-{SPONSOR_MARGIN + SPONSOR_PAD})"
@@ -446,18 +489,11 @@ def compose_then_vs_now_video(
         cmd = [
             ffmpeg,
             "-y",
-            "-loop",
-            "1",
             "-i",
-            str(bg_path),
-            "-loop",
-            "1",
-            "-i",
-            str(header_path),
+            str(bg_video_path),
             "-i",
             str(video_path),
         ]
-        # Add sponsor as input [3] if present
         if sponsor_path:
             cmd += ["-loop", "1", "-i", str(sponsor_path)]
 
