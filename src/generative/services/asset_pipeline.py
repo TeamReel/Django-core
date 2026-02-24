@@ -756,6 +756,131 @@ def _pillow_only_postprocess(
 # =============================================================================
 
 
+# Validation prompt for photo composite quality check
+PHOTO_COMPOSITE_VALIDATION_PROMPT = """You are a quality control AI for photo composites. Analyze this composite image against the source images.
+
+SOURCE IMAGES PROVIDED:
+1. Generated composite (the image to validate)
+2. Original legacy player photo (cropped)
+3. Original current player photo (cropped)
+
+VALIDATION CRITERIA - Check each one:
+
+1. FACE ACCURACY (Critical):
+   - Do both faces in the composite match the source faces exactly?
+   - No distortion, no AI-generated features, no wrong facial structure?
+
+2. KIT/UNIFORM ACCURACY (Critical):
+   - Are the football kits/jerseys preserved exactly from the source images?
+   - Correct colors, logos, patterns, sponsor text?
+
+3. REALISTIC PLACEMENT:
+   - Are both players at roughly the same height (feet at same ground level)?
+   - Appropriate scale relative to each other and the background?
+   - No floating or sunken into ground?
+
+4. NO TOUCHING:
+   - Is there a visible gap between the two players?
+   - They should NOT be touching shoulders, arms, or overlapping.
+
+5. CLEAN EDGES:
+   - No visible halos or cutout edges around the players?
+   - Seamless blending with the background?
+
+6. NO ARTIFACTS:
+   - No distorted limbs, extra fingers, blurred faces?
+   - No obvious AI generation artifacts?
+
+RESPOND IN THIS EXACT FORMAT:
+PASS or FAIL
+SCORE: X/6 (number of criteria passed)
+ISSUES: [list specific problems found, or "None" if all pass]
+
+Be strict. If faces or kits are noticeably different from source, that's a FAIL.
+"""
+
+
+def _validate_photo_composite(
+    generated_bytes: bytes,
+    legacy_cropped_bytes: bytes,
+    current_cropped_bytes: bytes,
+    api_key: str,
+) -> tuple[bool, str, int]:
+    """Validate a generated photo composite against source images.
+
+    Returns:
+        tuple: (passed: bool, issues: str, score: int out of 6)
+    """
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=api_key)
+
+    try:
+        content_parts: list = [PHOTO_COMPOSITE_VALIDATION_PROMPT]
+        # Image 1: Generated composite
+        content_parts.append(types.Part.from_bytes(data=generated_bytes, mime_type="image/png"))
+        # Image 2: Legacy player source
+        content_parts.append(
+            types.Part.from_bytes(data=legacy_cropped_bytes, mime_type="image/png")
+        )
+        # Image 3: Current player source
+        content_parts.append(
+            types.Part.from_bytes(data=current_cropped_bytes, mime_type="image/png")
+        )
+
+        response = client.models.generate_content(
+            model="models/gemini-2.0-flash",  # Fast model for validation
+            contents=content_parts,
+            config=types.GenerateContentConfig(
+                response_modalities=["TEXT"],
+            ),
+        )
+
+        if not response.candidates or not response.candidates[0].content:
+            logger.warning("Empty validation response from Gemini")
+            return True, "Validation skipped (empty response)", 6  # Pass on error
+
+        response_text = ""
+        for part in response.candidates[0].content.parts:
+            if hasattr(part, "text"):
+                response_text += part.text
+
+        # Parse response
+        lines = response_text.strip().split("\n")
+        passed = lines[0].strip().upper().startswith("PASS") if lines else True
+
+        score = 6
+        for line in lines:
+            if line.strip().upper().startswith("SCORE:"):
+                try:
+                    score_part = line.split(":")[1].strip()
+                    score = int(score_part.split("/")[0])
+                except (IndexError, ValueError):
+                    pass
+
+        issues = "None"
+        for i, line in enumerate(lines):
+            if line.strip().upper().startswith("ISSUES:"):
+                issues = line.split(":", 1)[1].strip() if ":" in line else "None"
+                # Include following lines as part of issues
+                if i + 1 < len(lines):
+                    issues += " " + " ".join(lines[i + 1 :])
+                break
+
+        logger.info(
+            "Photo composite validation: %s (score %d/6) - %s",
+            "PASS" if passed else "FAIL",
+            score,
+            issues[:100],
+        )
+        return passed, issues, score
+
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Photo composite validation error: %s", e)
+        return True, f"Validation skipped ({e})", 6  # Pass on error to not block
+
+
 def _generate_photo_composite_gemini(
     input_images: dict[str, bytes],
     params: dict[str, str],
@@ -922,21 +1047,115 @@ def _generate_photo_composite_gemini(
                     break
 
             if image_bytes:
+                # ── Validate the generated composite ──
+                max_retries = 3
+                attempt = 1
+                validated = False
+                final_image_bytes = image_bytes
+                validation_issues = ""
+
+                while attempt <= max_retries and not validated:
+                    passed, issues, score = _validate_photo_composite(
+                        final_image_bytes,
+                        legacy_cropped_bytes,
+                        home_cropped_bytes,
+                        api_key,
+                    )
+
+                    if passed or score >= 5:
+                        validated = True
+                        logger.info(
+                            "Photo composite variant %d passed validation (attempt %d, score %d/6)",
+                            i + 1,
+                            attempt,
+                            score,
+                        )
+                    else:
+                        validation_issues = issues
+                        logger.warning(
+                            "Photo composite variant %d failed validation (attempt %d, score %d/6): %s",
+                            i + 1,
+                            attempt,
+                            score,
+                            issues[:200],
+                        )
+
+                        if attempt < max_retries:
+                            # Retry: generate again
+                            time.sleep(1.5)
+                            logger.info(
+                                "Retrying photo composite variant %d (attempt %d/%d)...",
+                                i + 1,
+                                attempt + 1,
+                                max_retries,
+                            )
+
+                            retry_response = client.models.generate_content(
+                                model=image_model,
+                                contents=content_parts,
+                                config=types.GenerateContentConfig(
+                                    response_modalities=["IMAGE", "TEXT"],
+                                    safety_settings=[
+                                        types.SafetySetting(
+                                            category="HARM_CATEGORY_HARASSMENT",
+                                            threshold="BLOCK_NONE",
+                                        ),
+                                        types.SafetySetting(
+                                            category="HARM_CATEGORY_HATE_SPEECH",
+                                            threshold="BLOCK_NONE",
+                                        ),
+                                        types.SafetySetting(
+                                            category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                                            threshold="BLOCK_NONE",
+                                        ),
+                                        types.SafetySetting(
+                                            category="HARM_CATEGORY_DANGEROUS_CONTENT",
+                                            threshold="BLOCK_NONE",
+                                        ),
+                                    ],
+                                ),
+                            )
+
+                            retry_image_bytes = None
+                            if retry_response.candidates and retry_response.candidates[0].content:
+                                for part in retry_response.candidates[0].content.parts:
+                                    if hasattr(part, "inline_data") and part.inline_data:
+                                        retry_image_bytes = part.inline_data.data
+                                        break
+
+                            if retry_image_bytes:
+                                final_image_bytes = retry_image_bytes
+
+                        attempt += 1
+
                 filename = f"photo_composite_gemini_v{i+1}_{int(time.time())}.png"
+                result_metadata = {
+                    "template_id": "photo_composite_gemini",
+                    "params": params,
+                    "validation_passed": validated,
+                    "validation_attempts": attempt,
+                }
+                if not validated:
+                    result_metadata["validation_issues"] = validation_issues[:500]
+                    result_metadata["needs_manual_review"] = True
+
                 results.append(
                     {
-                        "image_bytes": image_bytes,
-                        "image_base64": base64.b64encode(image_bytes).decode("utf-8"),
+                        "image_bytes": final_image_bytes,
+                        "image_base64": base64.b64encode(final_image_bytes).decode("utf-8"),
                         "mime_type": "image/png",
                         "filename": filename,
                         "variant_index": i,
-                        "metadata": {
-                            "template_id": "photo_composite_gemini",
-                            "params": params,
-                        },
+                        "metadata": result_metadata,
                     }
                 )
-                logger.info("Photo composite Gemini variant %d/%d generated", i + 1, variant_count)
+                logger.info(
+                    "Photo composite Gemini variant %d/%d generated (validated=%s, attempts=%d)",
+                    i + 1,
+                    variant_count,
+                    validated,
+                    attempt,
+                )
             else:
                 results.append(
                     {
