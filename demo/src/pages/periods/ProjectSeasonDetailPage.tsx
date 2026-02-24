@@ -183,7 +183,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [thenVsNowModalSearch, setThenVsNowModalSearch] = useState('');
   const [thenVsNowModalJobId, setThenVsNowModalJobId] = useState<string | null>(null);
   const [thenVsNowModalError, setThenVsNowModalError] = useState<string | null>(null);
-  const [thenVsNowBackgrounds, setThenVsNowBackgrounds] = useState<Array<{ id: string; url: string; profile_name?: string }>>([]);
+  const [thenVsNowBackgrounds, setThenVsNowBackgrounds] = useState<Array<{ id: string; url: string; label?: string; profile_name?: string }>>([]);
   const [thenVsNowSelectedBgUrl, setThenVsNowSelectedBgUrl] = useState<string | null>(null);
   // Per-member transformation variant key override: { memberId: "transformation_snap" }
   const [thenVsNowVariantKeys, setThenVsNowVariantKeys] = useState<Record<string, string>>({});
