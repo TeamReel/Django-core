@@ -343,9 +343,20 @@ def compose_then_vs_now_video(
         )
 
         # ── Build FFmpeg filter complex ──
+        # Use a color source as timing anchor (guarantees exact duration).
+        # Image inputs are looped but duration is controlled by the color
+        # source, not by -t on inputs (which is unreliable for image2 demuxer).
+        #
+        # Inputs:
         # [0] = background image (looped)
-        # [1] = header image
+        # [1] = header image (looped)
         # [2] = member video
+        # [3] = sponsor image (looped, optional)
+
+        fc: list[str] = []
+
+        # Canvas: color source with explicit duration — this is the timing anchor
+        fc.append(f"color=c=black:s={WIDTH}x{HEIGHT}:r={FPS}:d={total_clip_dur:.2f}[canvas]")
 
         # Background: scale+crop to 1080x1920, darken slightly
         bg_parts = []
@@ -355,10 +366,14 @@ def compose_then_vs_now_video(
         bg_parts.append(f"crop={WIDTH}:{HEIGHT}")
         bg_parts.append("setsar=1")
         bg_parts.append("colorbalance=rs=-0.15:gs=-0.15:bs=-0.15")
-        bg_filter = f"[0:v]{','.join(bg_parts)}[bg]"
+        fc.append(f"[0:v]{','.join(bg_parts)}[bg_img]")
 
-        # Header: ensure correct width
-        hdr_filter = f"[1:v]scale={WIDTH}:{HEADER_HEIGHT}[hdr]"
+        # Overlay background image on canvas (canvas controls duration)
+        fc.append("[canvas][bg_img]overlay=0:0:eof_action=repeat[bg]")
+
+        # Header: ensure correct width, overlay on background
+        fc.append(f"[1:v]scale={WIDTH}:{HEADER_HEIGHT}[hdr]")
+        fc.append("[bg][hdr]overlay=0:0:eof_action=repeat[bgh]")
 
         # Member video: scale and position per video_type
         # Freeze last frame for FREEZE_SECONDS, then video ends → bg shows through
@@ -366,47 +381,44 @@ def compose_then_vs_now_video(
 
         if video_type == "sidebyside":
             # Cover-crop: scale up to fill, crop to exact box
-            vid_filter = (
+            fc.append(
                 f"[2:v]scale={vid_w}:{vid_h}"
                 f":force_original_aspect_ratio=increase,"
                 f"crop={vid_w}:{vid_h},setsar=1{freeze_pad}[vid]"
             )
         else:
             # Transformation: fit-inside — scale DOWN to fit, keep full video visible
-            vid_filter = (
+            fc.append(
                 f"[2:v]scale={vid_w}:{vid_h}"
                 f":force_original_aspect_ratio=decrease"
                 f",setsar=1{freeze_pad}[vid]"
             )
-
-        # Overlay header on background
-        overlay1 = "[bg][hdr]overlay=0:0[bgh]"
 
         # Center video in content area (between header and bottom reserved zone)
         # After video+freeze ends, overlay disappears → bg+header gap visible
         if video_type == "sidebyside":
             vid_x = f"({WIDTH}-{vid_w})/2"
             vid_y = int(HEADER_HEIGHT + (CONTENT_HEIGHT - vid_h) // 2)
-            overlay2 = f"[bgh][vid]overlay={vid_x}:{vid_y}:eof_action=pass:shortest=0[main]"
+            fc.append(f"[bgh][vid]overlay={vid_x}:{vid_y}:eof_action=pass[main]")
         else:
             # Transformation: dynamic centering — actual size may differ from vid_w×vid_h
-            # overlay uses w/h for overlay stream dimensions
-            overlay2 = (
+            fc.append(
                 f"[bgh][vid]overlay="
                 f"(W-w)/2:({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)/2)"
-                f":eof_action=pass:shortest=0[main]"
+                f":eof_action=pass[main]"
             )
 
         # Name text — only visible while member video plays (not during gap)
         name_y = HEIGHT - BOTTOM_RESERVED + 10  # just above sponsor box
         member_visible_dur = duration + freeze_dur
-        text_filter = (
+        fc.append(
             f"[main]drawtext=text='{safe_name}'"
             f":fontfile='{font_path}'"
             f":fontsize=56:fontcolor=white"
             f":x=(w-tw)/2:y={name_y}"
             f":shadowcolor=black@0.7:shadowx=3:shadowy=3"
             f":enable='between(t,0,{member_visible_dur:.2f})'"
+            + ("[main_txt]" if sponsor_path else "[out]")
         )
 
         # Sponsor logo overlay (bottom-left, like lineup videos)
@@ -414,65 +426,40 @@ def compose_then_vs_now_video(
         if sponsor_path:
             sponsor_w = int(WIDTH * 0.22)
             sponsor_box_w = sponsor_w + 2 * SPONSOR_PAD
-            text_filter += "[main_txt]"
-            sponsor_filter = (
-                f";[main_txt]drawbox="
+            fc.append(
+                f"[main_txt]drawbox="
                 f"x={SPONSOR_MARGIN}:y=ih-{SPONSOR_BOX_H}-{SPONSOR_MARGIN}"
                 f":w={sponsor_box_w}:h={SPONSOR_BOX_H}"
                 f":color=0x90EE90@0.85:t=fill"
                 f":enable='between(t,0,{member_visible_dur:.2f})'[main_sb]"
-                f";[3:v]scale={sponsor_w}:-1,format=rgba[sponsor]"
-                f";[main_sb][sponsor]overlay="
+            )
+            fc.append(f"[3:v]scale={sponsor_w}:-1,format=rgba[sponsor]")
+            fc.append(
+                f"[main_sb][sponsor]overlay="
                 f"({SPONSOR_MARGIN + SPONSOR_PAD}):(main_h-h-{SPONSOR_MARGIN + SPONSOR_PAD})"
                 f":format=auto"
                 f":enable='between(t,0,{member_visible_dur:.2f})'[out]"
             )
-            text_filter += sponsor_filter
-        else:
-            text_filter += "[out]"
 
-        filter_complex = ";".join(
-            [bg_filter, hdr_filter, vid_filter, overlay1, overlay2, text_filter]
-        )
+        filter_complex = ";".join(fc)
 
         cmd = [
             ffmpeg,
             "-y",
-            # [0] Background image — looped with explicit framerate + duration
-            # so FFmpeg generates frames for the FULL clip (video + freeze + gap)
             "-loop",
             "1",
-            "-framerate",
-            str(FPS),
-            "-t",
-            f"{total_clip_dur:.2f}",
             "-i",
             str(bg_path),
-            # [1] Header image — also looped for full duration
             "-loop",
             "1",
-            "-framerate",
-            str(FPS),
-            "-t",
-            f"{total_clip_dur:.2f}",
             "-i",
             str(header_path),
-            # [2] Member video
             "-i",
             str(video_path),
         ]
         # Add sponsor as input [3] if present
         if sponsor_path:
-            cmd += [
-                "-loop",
-                "1",
-                "-framerate",
-                str(FPS),
-                "-t",
-                f"{total_clip_dur:.2f}",
-                "-i",
-                str(sponsor_path),
-            ]
+            cmd += ["-loop", "1", "-i", str(sponsor_path)]
 
         cmd += [
             "-filter_complex",
