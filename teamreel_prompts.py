@@ -1141,32 +1141,38 @@ RULES:
         "prompt_template": """Create a photorealistic composite image in PORTRAIT orientation (9:16, 1080x1920px).
 
 TASK:
-Take the two football players (cropped from hips up) and place them realistically
-on the background image. They should look like they are actually standing there,
-photographed by a camera at the location.
+Place the two football players (cropped from waist/hips up) realistically on the background image.
+They must look like they were actually photographed together at this location.
 
 LAYOUT:
 - The background fills the entire frame (portrait 9:16)
-- Player 1 (legacy kit) stands on the LEFT side, facing slightly right
-- Player 2 (current kit) stands on the RIGHT side, facing slightly left
-- They stand close together, about shoulder-width apart
-- Both visible from hips/waist up, filling most of the vertical frame
-- Both looking straight ahead at the camera
-- The reference composite image shows the approximate desired composition/positioning
+- Player 1 (legacy kit) stands on the LEFT side of the frame
+- Player 2 (current kit) stands on the RIGHT side of the frame
+- Small gap between them (about 30-50cm in real space) — they do NOT touch
+- Both visible from waist/stomach up, filling most of the vertical frame
+- Both facing the camera directly, looking straight ahead
+- Both players at the same height (feet at same ground level in the scene)
+- The reference composite image shows the approximate desired composition
+
+CRITICAL — PRESERVE EXACTLY:
+- FACE: The exact face, facial features, skin tone, hair from each player image. Do NOT alter faces.
+- KIT/UNIFORM: The exact football kit, jersey, colors, logos, details. Copy pixel-perfect.
+- BODY: The exact body proportions and pose from the source images.
+- Do NOT generate new faces or uniforms. Use ONLY what is in the source images.
 
 REALISM REQUIREMENTS:
-- Match the lighting and color temperature of the background
-- Add subtle shadows on the ground/background behind players
-- Correct perspective — players should look like they belong in the scene
-- Preserve the exact appearance, face, skin tone from the player images
-- Preserve the exact kit/clothing details from the player images
-- Natural depth of field — slight background blur if appropriate
-- No text, no logos, no overlays — just the composite photo
+- Match the lighting direction and color temperature of the background scene
+- Add realistic soft shadows behind/beneath the players matching the scene's light source
+- Correct perspective — players should look like they belong at this distance from camera
+- Both players should appear at the same scale (as if standing next to each other)
+- Natural depth of field — slight background blur if appropriate for the scene
+- Seamless edge blending — no visible cutout edges or halos around players
 
-IMPORTANT:
-- Do NOT change the players' poses or faces
-- Do NOT add any elements not in the source images
-- The output must be photorealistic, as if taken with a real camera
+OUTPUT RULES:
+- No text, no overlays, no added logos, no graphics
+- Do NOT change or regenerate faces, kits, or poses
+- The output must be photorealistic, as if photographed with a real camera
+- Do NOT add any elements not present in the source images
 """,
     },
 
@@ -1190,41 +1196,49 @@ IMPORTANT:
             "minimax_model": "video-01",
             "composite_mode": None,  # No preprocessing — single image input
         },
-        "prompt_template": """A cinematic 6-second portrait video of two football players standing side by side on a football pitch.
+        "prompt_template": """A cinematic 6-second portrait video of two football players standing side by side.
 
 The provided image shows the FIRST FRAME: two people standing next to each other in football kits.
 - The LEGACY player (older photo) is on the LEFT side of the frame.
 - The CURRENT player (recent photo) is on the RIGHT side of the frame.
+- There is a small gap between them — they are NOT touching.
 
-CRITICAL HEAD DIRECTION RULES:
-- The LEFT person must turn their head TOWARD THE RIGHT (toward center) to look at the other person.
-- The RIGHT person must turn their head TOWARD THE LEFT (toward center) to look at the other person.
-- They are looking AT EACH OTHER in the middle of the frame. NOT outward. INWARD toward center.
-- This means: LEFT person's face rotates clockwise (chin moves right), RIGHT person's face rotates counter-clockwise (chin moves left).
+CRITICAL — WHAT MOVES:
+- ONLY the HEAD rotates. The head pivots on the neck axis (like turning to look at someone).
+- The neck stays straight and upright. Do NOT tilt the neck forward, backward, or sideways.
+- The shoulders, body, and torso remain COMPLETELY STILL. No leaning.
+- The players do NOT move closer to each other. They do NOT touch at any point.
 
-MOVEMENT SEQUENCE (SLOW and NATURAL):
-1. FRAMES 0-1.5s: Both stand facing the camera, looking straight ahead. Neutral, calm expression. Minimal movement (natural breathing only). Hold this pose.
-2. FRAMES 1.5-3s: SLOWLY turn heads toward each other. LEFT person turns head RIGHT (toward center). RIGHT person turns head LEFT (toward center). Movement is gradual and smooth. Their eyes meet in the middle.
-3. FRAMES 3-4.5s: They begin with a gentle smile. The smile grows into genuine, warm laughter. Bodies can subtly shift toward each other. Natural, heartfelt moment between two versions of the same person.
-4. FRAMES 4.5-5.5s: While still smiling/laughing softly, they SLOWLY turn their heads back to face the camera. Gradual movement.
-5. FRAMES 5.5-6s: Both face forward again with a warm, content smile. Return to near-starting pose for seamless loop.
+HEAD ROTATION DIRECTION:
+- LEFT person: Head rotates to the RIGHT (chin moves right, toward center of frame).
+- RIGHT person: Head rotates to the LEFT (chin moves left, toward center of frame).
+- They look AT EACH OTHER. Both heads turn INWARD toward the center.
 
-TIMING:
-- This is a SLOW, emotional moment. Do not rush any movement.
-- Head turns should take 1-1.5 seconds each way.
-- The laughter builds slowly from a smile.
+MOVEMENT SEQUENCE:
+1. 0-1.5s: Both face camera. Neutral expression. Still pose. Natural breathing only.
+2. 1.5-3s: Heads SLOWLY rotate toward each other. Only head pivots — neck stays vertical. Eyes meet in the middle.
+3. 3-4.5s: While looking at each other, a gentle smile appears. Smile grows into a warm, natural laugh. Shoulders stay still — only facial expression changes.
+4. 4.5-5.5s: Heads SLOWLY rotate back to face camera. Still smiling softly.
+5. 5.5-6s: Both face forward with content smile. Return to starting pose for loop.
+
+REALISM RULES:
+- Head rotation is natural and subtle (about 45 degrees, not exaggerated).
+- Neck remains straight and vertical throughout — no bending or tilting.
+- Bodies frozen in place — no swaying, no leaning, no shoulder movement.
+- The gap between players stays constant — they never touch or get closer.
+- Laughter is genuine but subtle — mouth opens slightly, eyes crinkle.
 
 BACKGROUND:
-- Keep the background from the input image exactly as-is. Do NOT change or replace the background.
-- The players must remain in their exact positions from the first frame.
+- Keep the background from the input image exactly as-is. Do NOT change it.
+- Players remain in their exact positions from frame 1.
 
 STRICT RULES:
-- NO visual effects, NO particles, NO lens flares, NO glow, NO transitions.
-- NO text overlays, NO graphics, NO logos added.
-- NO camera movement. Completely static locked-off camera.
-- Photorealistic quality. Natural lighting matching the input image.
-- Both people must remain fully visible at all times.
-- Movement is slow, natural, and controlled. No sudden jerks or fast motions.
+- NO visual effects, NO particles, NO glow, NO transitions.
+- NO text, NO graphics, NO logos added.
+- NO camera movement. Static locked-off camera.
+- Photorealistic quality. Natural lighting.
+- Both people fully visible at all times.
+- Movement is slow, controlled, natural. No jerky or fast motion.
 - 9:16 vertical aspect ratio.
 """,
     },
