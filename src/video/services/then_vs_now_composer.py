@@ -48,8 +48,8 @@ CONTENT_HEIGHT = HEIGHT - HEADER_HEIGHT - BOTTOM_RESERVED  # ~1404px
 # ── Per-type sizing ──
 # sidebyside: large, nearly full content area (cover-crop)
 SBS_SCALE = 1.05
-# transformation: fit-inside, no cropping, well within content zone
-TRANSFORM_SCALE = 0.62
+# transformation: fit-inside, no cropping, centered in content zone
+TRANSFORM_SCALE = 0.80
 
 # ── Transition timing ──
 FREEZE_SECONDS = 2.0  # freeze on last frame before fading out
@@ -247,7 +247,7 @@ def compose_then_vs_now_video(
     2. Header overlay at top
     3. Member's then_vs_now video in content area (sized per video_type)
     4. Name text above sponsor zone
-    5. Freeze last frame 2s → empty field 1.5s → next member
+    5. Freeze last frame → empty background → crossfade to next member
 
     Args:
         members: List of MemberClip with name and video URL.
@@ -438,18 +438,41 @@ def compose_then_vs_now_video(
         cmd = [
             ffmpeg,
             "-y",
+            # [0] Background image — looped with explicit framerate + duration
+            # so FFmpeg generates frames for the FULL clip (video + freeze + gap)
             "-loop",
             "1",
+            "-framerate",
+            str(FPS),
+            "-t",
+            f"{total_clip_dur:.2f}",
             "-i",
             str(bg_path),
+            # [1] Header image — also looped for full duration
+            "-loop",
+            "1",
+            "-framerate",
+            str(FPS),
+            "-t",
+            f"{total_clip_dur:.2f}",
             "-i",
             str(header_path),
+            # [2] Member video
             "-i",
             str(video_path),
         ]
         # Add sponsor as input [3] if present
         if sponsor_path:
-            cmd += ["-loop", "1", "-i", str(sponsor_path)]
+            cmd += [
+                "-loop",
+                "1",
+                "-framerate",
+                str(FPS),
+                "-t",
+                f"{total_clip_dur:.2f}",
+                "-i",
+                str(sponsor_path),
+            ]
 
         cmd += [
             "-filter_complex",
@@ -494,6 +517,29 @@ def compose_then_vs_now_video(
             )
             continue
 
+        # Verify clip has correct duration
+        actual_dur = _probe_duration(clip_path)
+        logger.info(
+            "Clip %d/%d for %s: expected=%.1fs, actual=%.1fs "
+            "(video=%.1fs + freeze=%.1fs + gap=%.1fs)",
+            idx + 1,
+            total,
+            member.name,
+            total_clip_dur,
+            actual_dur,
+            duration,
+            freeze_dur,
+            gap_dur,
+        )
+        if actual_dur < total_clip_dur - 0.5:
+            logger.warning(
+                "Clip %d duration mismatch: expected %.1fs but got %.1fs — "
+                "freeze/gap may not be rendered",
+                idx + 1,
+                total_clip_dur,
+                actual_dur,
+            )
+
         clip_paths.append(clip_path)
 
     if not clip_paths:
@@ -516,6 +562,11 @@ def compose_then_vs_now_video(
 
         # Probe durations for xfade offset calculation
         durations = [_probe_duration(p) for p in clip_paths]
+        logger.info(
+            "Clip durations for xfade: %s (total=%d clips)",
+            [f"{d:.1f}s" for d in durations],
+            len(durations),
+        )
 
         # Build xfade filter chain:
         # [0:v][1:v]xfade=transition=fade:duration=0.8:offset=D0-0.8[v01]
