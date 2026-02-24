@@ -776,7 +776,7 @@ def _prepare_gemini_composite_image(
     legacy_img = Image.open(legacy_cropped_path).convert("RGBA")
 
     # Scale players to fill the content zone nicely
-    # Each player should be about 45% of frame width, positioned close together
+    # Each player should be about 42% of frame width, positioned close together
     player_w = int(WIDTH * 0.42)
     for player in [home_img, legacy_img]:
         pass  # we resize below individually
@@ -788,9 +788,10 @@ def _prepare_gemini_composite_image(
     home_scaled = _scale_to_width(home_img, player_w)
     legacy_scaled = _scale_to_width(legacy_img, player_w)
 
-    # Position: legacy on left, home on right, both in lower 2/3 of frame
-    # Players should be "standing" on the ground, visible from hips up
-    content_bottom = int(HEIGHT * 0.85)  # leave space for ground/feet
+    # Position: legacy on left, home on right
+    # Players are halfbody (head to waist) — place them so they appear at
+    # realistic height: waist near vertical center, heads in upper third.
+    content_bottom = int(HEIGHT * 0.72)  # waist level at ~72% from top
     gap = int(WIDTH * 0.02)
 
     # Legacy (left)

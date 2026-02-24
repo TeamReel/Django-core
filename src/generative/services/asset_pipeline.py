@@ -883,13 +883,13 @@ def _validate_photo_composite(
 
 
 def _crop_gemini_output_upper_body(image_bytes: bytes) -> bytes:
-    """Crop Gemini composite output to ensure consistent upper body framing.
+    """Post-process Gemini composite output for consistent framing.
 
-    Takes the Gemini output and crops to keep only the upper ~60% which should
-    contain head, shoulders, chest, stomach. This ensures no legs are visible
-    and both players are cropped at the same level.
+    With halfbody input the output should already be well-framed (head to waist).
+    We keep the top ~75% of the image (removing bottom 25% where Gemini may have
+    added stray artifacts or extended the body), then scale to 9:16 portrait.
 
-    Returns the cropped image as PNG bytes, scaled back to 9:16 portrait format.
+    Returns the processed image as PNG bytes at 1080x1920.
     """
     import io
 
@@ -897,8 +897,8 @@ def _crop_gemini_output_upper_body(image_bytes: bytes) -> bytes:
 
     img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
 
-    # Keep top 60% of the image (removes bottom 40% where legs might be)
-    crop_h = int(img.height * 0.60)
+    # Keep top 75% of the image (generous — halfbody should already be clean)
+    crop_h = int(img.height * 0.75)
     cropped = img.crop((0, 0, img.width, crop_h))
 
     # Scale back to 9:16 portrait format (1080x1920)
@@ -914,8 +914,8 @@ def _crop_gemini_output_upper_body(image_bytes: bytes) -> bytes:
     new_h = int(cropped.height * scale)
     cropped_scaled = cropped.resize((new_w, new_h), Image.Resampling.LANCZOS)
 
-    # Position slightly above center (players in upper portion of frame)
-    y_offset = int((target_h - new_h) * 0.25)
+    # Position in upper portion of frame (players should be prominent)
+    y_offset = int((target_h - new_h) * 0.20)
     if cropped_scaled.mode == "RGBA":
         result.paste(cropped_scaled, (0, y_offset), cropped_scaled)
     else:
@@ -929,7 +929,7 @@ def _crop_gemini_output_upper_body(image_bytes: bytes) -> bytes:
         "Post-Gemini crop: %d bytes → %d bytes (%.0f%% height kept)",
         len(image_bytes),
         len(cropped_bytes),
-        60.0,
+        75.0,
     )
     return cropped_bytes
 
@@ -975,10 +975,10 @@ def _generate_photo_composite_gemini(
     if not bg_bytes:
         raise ValueError("photo_composite_gemini requires a background image")
 
-    # ── Preprocessing: crop to hips + mirror legacy + create reference ──
-    # Use the functions from then_vs_now_composer (they work on file paths)
+    # ── Preprocessing: use halfbody images directly + create reference composite ──
+    # Input images are already halfbody (head to waist, ~55% crop, 768x1024).
+    # No additional cropping needed — just create the reference layout for Gemini.
     from src.video.services.then_vs_now_composer import (
-        _crop_player_to_hips,
         _prepare_gemini_composite_image,
     )
 
@@ -986,28 +986,24 @@ def _generate_photo_composite_gemini(
     try:
         # Write input bytes to temp files
         # Swap assignment: Gemini seems to invert the reference layout
-        # So we put fullbody in legacy_path (LEFT) → Gemini outputs fullbody RIGHT
+        # So we put current halfbody in legacy_path (LEFT) → Gemini outputs current RIGHT
         # And legacy in home_path (RIGHT) → Gemini outputs legacy LEFT
         home_path = tmp_dir / "home.png"
         legacy_path = tmp_dir / "legacy.png"
         bg_path = tmp_dir / "background.png"
-        home_path.write_bytes(reference_bytes)  # legacy content
-        legacy_path.write_bytes(person_bytes)  # fullbody content
+        home_path.write_bytes(reference_bytes)  # legacy content (goes LEFT in ref)
+        legacy_path.write_bytes(person_bytes)  # current content (goes RIGHT in ref)
         bg_path.write_bytes(bg_bytes)
 
-        # Crop both players to upper body only (50% = head to navel, no legs visible)
-        home_cropped = tmp_dir / "home_crop.png"
-        legacy_cropped = tmp_dir / "legacy_crop.png"
-        _crop_player_to_hips(home_path, home_cropped, mirror=False, crop_ratio=0.50)
-        _crop_player_to_hips(legacy_path, legacy_cropped, mirror=False, crop_ratio=0.50)
+        # No cropping needed — halfbody images are already head-to-waist
 
-        # Create rough reference composite (PIL)
+        # Create rough reference composite (PIL) for Gemini positioning guidance
         ref_composite = tmp_dir / "ref_composite.png"
-        _prepare_gemini_composite_image(bg_path, home_cropped, legacy_cropped, ref_composite)
+        _prepare_gemini_composite_image(bg_path, home_path, legacy_path, ref_composite)
 
-        # Read preprocessed bytes
-        home_cropped_bytes = home_cropped.read_bytes()
-        legacy_cropped_bytes = legacy_cropped.read_bytes()
+        # Read bytes for Gemini input
+        home_cropped_bytes = home_path.read_bytes()
+        legacy_cropped_bytes = legacy_path.read_bytes()
         ref_composite_bytes = ref_composite.read_bytes()
     finally:
         # Cleanup happens after we read the bytes

@@ -3555,13 +3555,12 @@ export default function ProjectSeasonMemberDetailPage() {
 
                 {/* Assets Tab - Member-specific generated assets */}
                 {activeTab === 'photo_composite' && (() => {
-                  // Resolve input images for Step 1 (Gemini composite)
-                  const legacyFullbodyUrl =
-                    resolveDisplayUrl(getBestUrl(videoVariants.fullbody.legacy)) || null;
-                  const currentFullbodyUrl =
-                    resolveDisplayUrl(getBestUrl(videoVariants.fullbody.home))
-                    || resolveDisplayUrl(form.kit?.url) || null;
-                  const hasBothInputs = Boolean(legacyFullbodyUrl) && Boolean(currentFullbodyUrl);
+                  // Resolve input images for Step 1 (Gemini composite) — use halfbody (head-to-waist)
+                  const legacyHalfbodyUrl =
+                    resolveDisplayUrl(getBestUrl(videoVariants.halfbody.legacy)) || null;
+                  const currentHalfbodyUrl =
+                    resolveDisplayUrl(getBestUrl(videoVariants.halfbody.home)) || null;
+                  const hasBothInputs = Boolean(legacyHalfbodyUrl) && Boolean(currentHalfbodyUrl);
 
                   // Step 1: Gemini composite image (stored in images.photo_composite.home)
                   const compositeImageData = videoVariants.photo_composite?.home;
@@ -3598,30 +3597,30 @@ export default function ProjectSeasonMemberDetailPage() {
                         <div style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                           <div style={{
                             flex: '1 1 200px',
-                            border: legacyFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
+                            border: legacyHalfbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
                             borderRadius: '8px',
                             padding: '12px',
                             textAlign: 'center',
                           }}>
-                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>🏆 Legacy in Tenue</div>
-                            {legacyFullbodyUrl ? (
-                              <img src={legacyFullbodyUrl} alt="Legacy" style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>🏆 Legacy Halfbody</div>
+                            {legacyHalfbodyUrl ? (
+                              <img src={legacyHalfbodyUrl} alt="Legacy" style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                             ) : (
-                              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Legacy in Tenue</div>
+                              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Legacy Halfbody</div>
                             )}
                           </div>
                           <div style={{
                             flex: '1 1 200px',
-                            border: currentFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
+                            border: currentHalfbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
                             borderRadius: '8px',
                             padding: '12px',
                             textAlign: 'center',
                           }}>
-                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>👕 Huidige Fullbody</div>
-                            {currentFullbodyUrl ? (
-                              <img src={currentFullbodyUrl} alt="Current" style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>👕 Huidige Halfbody</div>
+                            {currentHalfbodyUrl ? (
+                              <img src={currentHalfbodyUrl} alt="Current" style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                             ) : (
-                              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Player in Tenue</div>
+                              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Halfbody</div>
                             )}
                           </div>
                         </div>
@@ -3663,7 +3662,7 @@ export default function ProjectSeasonMemberDetailPage() {
                               </div>
                               <Button
                                 size="sm"
-                                onClick={() => openAiModal('photo_composite_gemini', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)}
+                                onClick={() => openAiModal('photo_composite_gemini', 'home', legacyHalfbodyUrl, null, currentHalfbodyUrl)}
                                 disabled={!hasBothInputs}
                                 style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
                               >

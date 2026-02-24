@@ -1143,27 +1143,29 @@ RULES:
 TASK:
 Place the two football players on the background image.
 They must look like they were actually photographed together at this location.
-The players are already cropped to show only their UPPER BODY (head to navel/waist).
+The player images are HALFBODY crops: they show head, shoulders, chest, arms, and stomach down to roughly the waist/hip area. This is the FULL extent of each player — do NOT extend them further.
 
-CRITICAL — NO LEGS:
-- The player images show ONLY their upper body (head, shoulders, chest, arms, stomach).
-- Do NOT generate, add, or show ANY legs, hips, thighs, or lower body.
-- The players should appear to be cropped at the navel/waist level — as if the photo crops off there.
-- This is intentional. NEVER extend the body downward. NEVER add legs.
+BODY FRAMING:
+- The player images are already cropped at the waist/hip level.
+- Do NOT generate, add, or invent ANY body parts below what is visible in the source images.
+- If the source image ends at the waist, the composite player must also end at the waist.
+- NEVER add legs, full hips, or extend the body downward beyond what the source shows.
 
 LAYOUT:
 - The background fills the entire frame (portrait 9:16)
 - Player 1 (legacy kit) on the LEFT side of the frame
 - Player 2 (current kit) on the RIGHT side of the frame
 - Small gap between them (30-50cm) — they do NOT touch
-- Both visible from navel/waist UP, filling the frame nicely
+- Both players should be placed at a REALISTIC height in the scene — as if they are real people standing at approximately 1.7-1.9m tall, photographed from roughly chest level
+- The bottom of each player (waist area) should sit at roughly the vertical center or slightly below center of the frame
+- Their heads should be in the upper third of the frame
 - Both facing the camera directly, looking straight ahead
-- The reference composite shows the approximate positioning
+- The reference composite shows the approximate positioning and scale
 
 CRITICAL — PRESERVE EXACTLY:
 - FACE: The exact face, facial features, skin tone, hair from each player. Do NOT alter faces.
 - KIT/UNIFORM: The exact football kit, jersey, colors, logos, details. Copy pixel-perfect.
-- BODY: The exact pose and proportions from the source images.
+- BODY: The exact pose, proportions, and crop boundary from the source images.
 - Do NOT generate new faces or uniforms. Use ONLY what is in the source images.
 
 REALISM REQUIREMENTS:
@@ -1171,13 +1173,14 @@ REALISM REQUIREMENTS:
 - Add realistic soft shadows matching the scene's light source
 - Correct perspective — players should look like they belong at this distance from camera
 - Both players should appear at the same scale (as if standing next to each other)
+- The players should appear at a NATURAL SIZE relative to the background — not too small, not too large
 - Natural depth of field — slight background blur if appropriate
 - Seamless edge blending — no visible cutout edges or halos
 
 OUTPUT RULES:
 - No text, no overlays, no added logos, no graphics
 - Do NOT change or regenerate faces, kits, or poses
-- Do NOT add legs or any body parts below the waist/navel
+- Do NOT add ANY body parts not present in the source images
 - The output must be photorealistic, as if photographed with a real camera
 """,
     },
