@@ -328,8 +328,8 @@ def compose_then_vs_now_video(
     max_clip_dur = 0.0
     for _idx, (_member, vpath) in enumerate(member_paths):
         dur = _probe_duration(vpath)
-        is_last = _idx == total - 1
-        member_clip_dur = dur + (0.0 if is_last else FREEZE_SECONDS + EMPTY_FIELD_SECONDS)
+        # Always include freeze + empty gap, even for the last member.
+        member_clip_dur = dur + FREEZE_SECONDS + EMPTY_FIELD_SECONDS
         max_clip_dur = max(max_clip_dur, member_clip_dur)
     # Add a small buffer
     bg_video_dur = max_clip_dur + 2.0
@@ -398,10 +398,9 @@ def compose_then_vs_now_video(
         duration = _probe_duration(video_path)
         clip_path = clips_dir / f"clip_{idx:03d}.mp4"
 
-        # Transition timing: last clip has no freeze/gap
-        is_last = idx == total - 1
-        freeze_dur = 0.0 if is_last else FREEZE_SECONDS
-        gap_dur = 0.0 if is_last else EMPTY_FIELD_SECONDS
+        # Transition timing: always include freeze + gap for every member.
+        freeze_dur = FREEZE_SECONDS
+        gap_dur = EMPTY_FIELD_SECONDS
         total_clip_dur = duration + freeze_dur + gap_dur
 
         # Escape name for FFmpeg drawtext
@@ -425,7 +424,7 @@ def compose_then_vs_now_video(
         fc: list[str] = []
 
         # Member video: scale per video_type, freeze last frame
-        freeze_pad = f",tpad=stop_mode=clone:stop_duration={FREEZE_SECONDS}" if not is_last else ""
+        freeze_pad = f",tpad=stop_mode=clone:stop_duration={FREEZE_SECONDS}"
 
         if video_type == "sidebyside":
             fc.append(
@@ -444,12 +443,12 @@ def compose_then_vs_now_video(
         if video_type == "sidebyside":
             vid_x = f"({WIDTH}-{vid_w})/2"
             vid_y = int(HEADER_HEIGHT + (CONTENT_HEIGHT - vid_h) // 2)
-            fc.append(f"[0:v][vid]overlay={vid_x}:{vid_y}:eof_action=pass[main]")
+            fc.append(f"[0:v][vid]overlay={vid_x}:{vid_y}:eof_action=pass:shortest=0[main]")
         else:
             fc.append(
                 f"[0:v][vid]overlay="
                 f"(W-w)/2:({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)/2)"
-                f":eof_action=pass[main]"
+                f":eof_action=pass:shortest=0[main]"
             )
 
         # Name text — only visible during member video (not during gap)
@@ -480,7 +479,7 @@ def compose_then_vs_now_video(
             fc.append(
                 f"[main_sb][sponsor]overlay="
                 f"({SPONSOR_MARGIN + SPONSOR_PAD}):(main_h-h-{SPONSOR_MARGIN + SPONSOR_PAD})"
-                f":format=auto"
+                f":format=auto:shortest=0"
                 f":enable='between(t,0,{member_visible_dur:.2f})'[out]"
             )
 
@@ -591,17 +590,19 @@ def compose_then_vs_now_video(
             len(durations),
         )
 
-        # Build xfade filter chain:
-        # [0:v][1:v]xfade=transition=fade:duration=0.8:offset=D0-0.8[v01]
-        # [v01][2:v]xfade=transition=fade:duration=0.8:offset=D0+D1-2*0.8[v012]
+        # Build xfade filter chain.
+        # Normalize each input stream first to reduce xfade failures.
         fc_parts: list[str] = []
+        for i in range(len(clip_paths)):
+            fc_parts.append(f"[{i}:v]settb=AVTB,fps={FPS},format=yuv420p,setsar=1[v{i}]")
+
         cumulative_dur = durations[0]
-        prev_label = "0:v"
+        prev_label = "v0"
         for i in range(1, len(clip_paths)):
             offset = max(0.1, cumulative_dur - XFADE_DURATION)
-            out_label = f"v{i}"
+            out_label = f"xv{i}"
             fc_parts.append(
-                f"[{prev_label}][{i}:v]xfade="
+                f"[{prev_label}][v{i}]xfade="
                 f"transition=fade:duration={XFADE_DURATION}:offset={offset:.2f}"
                 f"[{out_label}]"
             )
