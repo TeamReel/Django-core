@@ -72,6 +72,16 @@ class MemberClip:
     video_url: str
 
 
+@dataclass
+class MemberPhotoComposite:
+    """A single member's data for photo composite compilation."""
+
+    member_id: str
+    name: str
+    fullbody_home_url: str  # Current kit fullbody (transparent PNG)
+    fullbody_legacy_url: str  # Legacy kit fullbody (transparent PNG)
+
+
 def _get_ffmpeg_path() -> str:
     """Find FFmpeg binary (delegates to lineup_composer)."""
     from src.video.services.lineup_composer import _get_ffmpeg_path as _lineup_ffmpeg
@@ -681,5 +691,451 @@ def compose_then_vs_now_video(
         final_output,
         len(clip_paths),
         XFADE_DURATION,
+    )
+    return final_output
+
+
+# ── Photo Composite settings ──
+PHOTO_CLIP_DURATION = 6.0  # seconds per member
+PHOTO_FREEZE_SECONDS = 1.5  # hold before transition
+PHOTO_ZOOM_START = 1.0  # start scale
+PHOTO_ZOOM_END = 1.08  # end scale (subtle zoom-in effect)
+PHOTO_PLAYER_SCALE = 0.75  # fraction of content height for each player
+PHOTO_PLAYER_GAP = 0.04  # horizontal gap between players as fraction of WIDTH
+
+
+def _composite_member_frame(
+    bg_path: Path,
+    home_path: Path,
+    legacy_path: Path,
+    name: str,
+    brand_color: str | None,
+    header_path: Path,
+    sponsor_path: Path | None,
+    output_path: Path,
+) -> Path:
+    """Create a single composite frame: background + header + 2 players + name label.
+
+    Layout:
+    - Header at top (HEADER_HEIGHT)
+    - Content area: two fullbody players side by side (legacy left, home right)
+      visible from knees up, mirrored to face each other
+    - Name label with brand-color box at bottom of content area
+    - Sponsor logo bottom-left (optional)
+    """
+    from src.video.services.header_generator import (
+        _hex_to_rgba,
+        get_font,
+    )
+
+    # Open and prepare background
+    bg = Image.open(bg_path).convert("RGBA")
+    # Rotate landscape to portrait
+    if bg.width > bg.height:
+        bg = bg.transpose(Image.Transpose.ROTATE_90)
+    # Scale and crop to canvas size
+    scale_factor = max(WIDTH / bg.width, HEIGHT / bg.height)
+    bg = bg.resize(
+        (int(bg.width * scale_factor), int(bg.height * scale_factor)),
+        Image.Resampling.LANCZOS,
+    )
+    # Center crop
+    left = (bg.width - WIDTH) // 2
+    top = (bg.height - HEIGHT) // 2
+    bg = bg.crop((left, top, left + WIDTH, top + HEIGHT))
+
+    # Slight darken for contrast
+    darken = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 40))
+    bg = Image.alpha_composite(bg, darken)
+
+    # Paste header at top
+    header = Image.open(header_path).convert("RGBA")
+    bg.paste(header, (0, 0), header)
+
+    # Load and prepare player images
+    home_img = Image.open(home_path).convert("RGBA")
+    legacy_img = Image.open(legacy_path).convert("RGBA")
+
+    # Mirror legacy so they face each other (legacy faces right, home faces left)
+    legacy_img = legacy_img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+
+    # Target height for players: fill content area, showing from knees up
+    # We want the upper ~70% of the fullbody to be visible (head to knees)
+    player_h = int(CONTENT_HEIGHT * PHOTO_PLAYER_SCALE)
+    # Crop top 70% of each player image (head to knees)
+    crop_ratio = 0.72  # show top 72% of the body (head to upper knees)
+
+    def _prepare_player(img: Image.Image) -> Image.Image:
+        """Scale and crop player to show from knees up."""
+        # First, scale to target height (as if showing full body)
+        full_h = int(player_h / crop_ratio)  # full body height before crop
+        aspect = img.width / img.height
+        full_w = int(full_h * aspect)
+        img = img.resize((full_w, full_h), Image.Resampling.LANCZOS)
+        # Crop to show only top portion (head to knees)
+        return img.crop((0, 0, full_w, player_h))
+
+    home_cropped = _prepare_player(home_img)
+    legacy_cropped = _prepare_player(legacy_img)
+
+    # Position players side by side in the content area
+    gap = int(WIDTH * PHOTO_PLAYER_GAP)
+    total_w = legacy_cropped.width + gap + home_cropped.width
+
+    # If players are too wide, scale down proportionally
+    if total_w > WIDTH - 40:  # 20px margin each side
+        scale_down = (WIDTH - 40) / total_w
+        legacy_cropped = legacy_cropped.resize(
+            (int(legacy_cropped.width * scale_down), int(legacy_cropped.height * scale_down)),
+            Image.Resampling.LANCZOS,
+        )
+        home_cropped = home_cropped.resize(
+            (int(home_cropped.width * scale_down), int(home_cropped.height * scale_down)),
+            Image.Resampling.LANCZOS,
+        )
+        total_w = legacy_cropped.width + gap + home_cropped.width
+
+    # Center horizontally
+    start_x = (WIDTH - total_w) // 2
+    # Align to bottom of content area (players "stand" at ground level)
+    content_bottom = HEADER_HEIGHT + CONTENT_HEIGHT
+    player_y = content_bottom - max(legacy_cropped.height, home_cropped.height) - NAME_LABEL_H - 10
+
+    # Paste legacy (left) then home (right)
+    bg.paste(legacy_cropped, (start_x, player_y), legacy_cropped)
+    bg.paste(
+        home_cropped,
+        (start_x + legacy_cropped.width + gap, player_y),
+        home_cropped,
+    )
+
+    # Draw name label with brand-color background
+    draw = ImageDraw.Draw(bg)
+    brand_hex = (brand_color or "#D2122E").lstrip("#")
+    brand_rgba = _hex_to_rgba(f"#{brand_hex}") if brand_color else (210, 18, 46, 255)
+    label_y = content_bottom - NAME_LABEL_H - 10
+    label_box_h = 80
+    # Semi-transparent brand color box
+    label_bg = Image.new("RGBA", (WIDTH, label_box_h), (*brand_rgba[:3], 220))
+    bg.paste(label_bg, (0, label_y), label_bg)
+    # Name text centered
+    font = get_font(72, bold=True)
+    text_bbox = draw.textbbox((0, 0), name.upper(), font=font)
+    text_w = text_bbox[2] - text_bbox[0]
+    text_h = text_bbox[3] - text_bbox[1]
+    text_x = (WIDTH - text_w) // 2
+    text_y = label_y + (label_box_h - text_h) // 2
+    # Shadow
+    draw.text((text_x + 2, text_y + 2), name.upper(), fill=(0, 0, 0, 128), font=font)
+    draw.text((text_x, text_y), name.upper(), fill=(255, 255, 255, 255), font=font)
+
+    # Sponsor logo (bottom-left, optional)
+    if sponsor_path and sponsor_path.exists():
+        sponsor_img = Image.open(sponsor_path).convert("RGBA")
+        sponsor_w = int(WIDTH * 0.22)
+        aspect = sponsor_img.width / sponsor_img.height
+        sponsor_img = sponsor_img.resize(
+            (sponsor_w, int(sponsor_w / aspect)),
+            Image.Resampling.LANCZOS,
+        )
+        # Green box behind sponsor
+        spx = SPONSOR_MARGIN + SPONSOR_PAD
+        spy = HEIGHT - SPONSOR_BOX_H - SPONSOR_MARGIN + SPONSOR_PAD
+        sponsor_box = Image.new(
+            "RGBA",
+            (sponsor_w + 2 * SPONSOR_PAD, SPONSOR_BOX_H),
+            (144, 238, 144, 220),
+        )
+        bg.paste(
+            sponsor_box, (SPONSOR_MARGIN, HEIGHT - SPONSOR_BOX_H - SPONSOR_MARGIN), sponsor_box
+        )
+        bg.paste(sponsor_img, (spx, spy), sponsor_img)
+
+    # Save as RGB (for FFmpeg)
+    bg = bg.convert("RGB")
+    bg.save(str(output_path), "PNG", quality=95)
+    return output_path
+
+
+def compose_photo_composite_video(
+    members: list[MemberPhotoComposite],
+    background_url: str,
+    logo_url: str | None,
+    team_name: str,
+    season_name: str | None,
+    brand_color: str | None,
+    sponsor_url: str | None = None,
+    output_dir: Path | None = None,
+    progress_callback=None,
+) -> Path:
+    """Compose a Then vs Now compilation from static fullbody images.
+
+    For each member:
+    1. Composite: legacy fullbody (left, mirrored) + home fullbody (right)
+       on the club/stadium background, visible from knees up
+    2. Ken Burns animation: slow zoom-in over PHOTO_CLIP_DURATION seconds
+    3. Header overlay + name label + sponsor
+
+    Clips are concatenated with crossfade transitions.
+
+    Args:
+        members: List of MemberPhotoComposite with fullbody image URLs.
+        background_url: Club/stadium background image URL.
+        logo_url: Club logo URL (header).
+        team_name: Team name for header.
+        season_name: Season/period name for header.
+        brand_color: Brand hex color.
+        sponsor_url: Optional sponsor logo URL.
+        output_dir: Output directory.
+        progress_callback: Optional fn(percent: int).
+
+    Returns:
+        Path to the composed MP4 file.
+    """
+    ffmpeg = _get_ffmpeg_path()
+
+    tmp_dir = Path(tempfile.mkdtemp(prefix="photo_composite_"))
+    asset_dir = tmp_dir / "assets"
+    asset_dir.mkdir()
+    clips_dir = tmp_dir / "clips"
+    clips_dir.mkdir()
+
+    if output_dir is None:
+        output_dir = tmp_dir
+
+    # ── 1. Download background ──
+    bg_path = asset_dir / "background.jpg"
+    if not _download_file(background_url, bg_path):
+        raise ValueError("Failed to download background image.")
+
+    # ── 2. Render header ──
+    header_path = _render_header(logo_url, team_name, season_name, brand_color, asset_dir)
+
+    # ── 2b. Download sponsor logo (optional) ──
+    sponsor_path: Path | None = None
+    if sponsor_url:
+        _sp = asset_dir / "sponsor.png"
+        if _download_file(sponsor_url, _sp):
+            sponsor_path = _sp
+
+    # ── 3. Download fullbody images & composite per member ──
+    total = len(members)
+    clip_paths: list[Path] = []
+
+    for idx, member in enumerate(members):
+        if progress_callback:
+            progress_callback(int(idx / total * 80))
+
+        # Download both fullbody images
+        home_path = asset_dir / f"member_{idx}_home.png"
+        legacy_path = asset_dir / f"member_{idx}_legacy.png"
+
+        if not _download_file(member.fullbody_home_url, home_path):
+            logger.warning("Skipping %s: failed to download home fullbody", member.name)
+            continue
+        if not _download_file(member.fullbody_legacy_url, legacy_path):
+            logger.warning("Skipping %s: failed to download legacy fullbody", member.name)
+            continue
+
+        # Create composite frame (PIL)
+        frame_path = asset_dir / f"member_{idx}_frame.png"
+        try:
+            _composite_member_frame(
+                bg_path=bg_path,
+                home_path=home_path,
+                legacy_path=legacy_path,
+                name=member.name,
+                brand_color=brand_color,
+                header_path=header_path,
+                sponsor_path=sponsor_path,
+                output_path=frame_path,
+            )
+        except Exception:
+            logger.exception("Failed to composite frame for %s", member.name)
+            continue
+
+        # ── 4. Animate frame with FFmpeg Ken Burns (slow zoom-in) ──
+        clip_duration = PHOTO_CLIP_DURATION + PHOTO_FREEZE_SECONDS
+        clip_path = clips_dir / f"clip_{idx:03d}.mp4"
+
+        # Ken Burns: slow zoom from PHOTO_ZOOM_START to PHOTO_ZOOM_END,
+        # centered on the players (center of content area)
+        # zoompan filter: z goes from 1.0 to 1.08 over the clip duration
+        total_frames = int(clip_duration * FPS)
+        zoom_expr = f"{PHOTO_ZOOM_START}+on*{(PHOTO_ZOOM_END - PHOTO_ZOOM_START) / total_frames}"
+        # Keep centered: x = (iw - iw/zoom)/2, y = (ih - ih/zoom)/2
+        ken_burns_filter = (
+            f"zoompan=z='{zoom_expr}':"
+            f"x='(iw-iw/zoom)/2':y='(ih-ih/zoom)/2':"
+            f"d={total_frames}:s={WIDTH}x{HEIGHT}:fps={FPS},"
+            f"format=yuv420p"
+        )
+
+        cmd = [
+            ffmpeg,
+            "-y",
+            "-loop",
+            "1",
+            "-i",
+            str(frame_path),
+            "-vf",
+            ken_burns_filter,
+            "-t",
+            f"{clip_duration:.2f}",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "fast",
+            "-crf",
+            "20",
+            "-pix_fmt",
+            "yuv420p",
+            "-r",
+            str(FPS),
+            "-an",
+            str(clip_path),
+        ]
+
+        logger.info("Creating Ken Burns clip %d/%d for %s", idx + 1, total, member.name)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)  # noqa: S603
+        if result.returncode != 0:
+            logger.error("FFmpeg Ken Burns failed for %s: %s", member.name, result.stderr[-2000:])
+            continue
+
+        clip_paths.append(clip_path)
+
+    if not clip_paths:
+        raise ValueError("No member clips were successfully composed.")
+
+    # ── 5. Concatenate clips with crossfade transitions ──
+    joined_output = output_dir / "photo_composite_joined.mp4"
+    final_output = output_dir / "then_vs_now_compilation.mp4"
+
+    if len(clip_paths) == 1:
+        import shutil
+
+        shutil.copy2(str(clip_paths[0]), str(joined_output))
+    else:
+        durations = [_probe_duration(p) for p in clip_paths]
+        logger.info(
+            "Photo composite clip durations for xfade: %s",
+            [f"{d:.1f}s" for d in durations],
+        )
+
+        input_args: list[str] = []
+        for clip in clip_paths:
+            input_args += ["-i", str(clip)]
+
+        # Build xfade chain
+        fc_parts: list[str] = []
+        for i in range(len(clip_paths)):
+            fc_parts.append(f"[{i}:v]settb=AVTB,fps={FPS},format=yuv420p,setsar=1[v{i}]")
+
+        cumulative_dur = durations[0]
+        prev_label = "v0"
+        for i in range(1, len(clip_paths)):
+            offset = max(0.1, cumulative_dur - XFADE_DURATION)
+            out_label = f"xv{i}"
+            fc_parts.append(
+                f"[{prev_label}][v{i}]xfade="
+                f"transition=fade:duration={XFADE_DURATION}:offset={offset:.2f}"
+                f"[{out_label}]"
+            )
+            cumulative_dur = offset + durations[i]
+            prev_label = out_label
+
+        concat_cmd = [
+            ffmpeg,
+            "-y",
+            *input_args,
+            "-filter_complex",
+            ";".join(fc_parts),
+            "-map",
+            f"[{prev_label}]",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "fast",
+            "-crf",
+            "23",
+            "-pix_fmt",
+            "yuv420p",
+            "-r",
+            str(FPS),
+            "-an",
+            str(joined_output),
+        ]
+
+        logger.info(
+            "Concatenating %d photo composite clips with %.1fs crossfade",
+            len(clip_paths),
+            XFADE_DURATION,
+        )
+        result = subprocess.run(
+            concat_cmd, capture_output=True, text=True, timeout=600
+        )  # noqa: S603
+        if result.returncode != 0:
+            logger.warning(
+                "xfade failed, falling back to simple concat: %s",
+                result.stderr[-1000:],
+            )
+            concat_file = tmp_dir / "concat.txt"
+            with open(concat_file, "w", encoding="utf-8") as f:
+                for path in clip_paths:
+                    safe_path = str(path).replace("\\", "/")
+                    f.write(f"file '{safe_path}'\n")
+            fallback_cmd = [
+                ffmpeg,
+                "-y",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                str(concat_file),
+                "-c",
+                "copy",
+                str(joined_output),
+            ]
+            result = subprocess.run(
+                fallback_cmd, capture_output=True, text=True, timeout=600
+            )  # noqa: S603
+            if result.returncode != 0:
+                raise RuntimeError(f"FFmpeg concat failed: {result.stderr[-2000:]}")
+
+    # Smooth ending: fade out during the last second.
+    total_dur = _probe_duration(joined_output)
+    fade_start = max(0.0, total_dur - 1.0)
+    fade_cmd = [
+        ffmpeg,
+        "-y",
+        "-i",
+        str(joined_output),
+        "-vf",
+        f"fade=t=out:st={fade_start:.2f}:d=1.0",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "fast",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        str(FPS),
+        "-an",
+        str(final_output),
+    ]
+    result = subprocess.run(fade_cmd, capture_output=True, text=True, timeout=600)  # noqa: S603
+    if result.returncode != 0:
+        raise RuntimeError(f"FFmpeg fade-out failed: {result.stderr[-2000:]}")
+
+    if progress_callback:
+        progress_callback(100)
+
+    logger.info(
+        "Photo composite compilation complete: %s (%d members)",
+        final_output,
+        len(clip_paths),
     )
     return final_output

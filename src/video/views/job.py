@@ -1209,7 +1209,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
         Request body:
             project_id  (str, required)  – Team project UUID.
-            video_type  (str, required)  – "sidebyside" or "transformation".
+            video_type  (str, required)  – "sidebyside", "transformation", or "photo_composite".
             period_id   (str, optional)  – Season/period UUID for header text.
             selected_member_ids (list, optional) – Restrict to these members.
             background_url (str, optional) – Override background (app-level location).
@@ -1228,9 +1228,11 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 {"error": "project_id is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if video_type not in ("sidebyside", "transformation"):
+        if video_type not in ("sidebyside", "transformation", "photo_composite"):
             return Response(
-                {"error": "video_type must be 'sidebyside' or 'transformation'"},
+                {
+                    "error": "video_type must be 'sidebyside', 'transformation', or 'photo_composite'"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

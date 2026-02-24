@@ -63,23 +63,44 @@ class ThenVsNowProcessor(BaseVideoProcessor):
             ) = self._gather_data(project_id, video_type, selected_member_ids, member_variant_keys)
 
             if not members:
+                if video_type == "photo_composite":
+                    raise ValueError("No members found with both fullbody home and legacy images.")
                 raise ValueError(f"No members found with then_vs_now '{video_type}' videos.")
 
             # Compose the video
-            from src.video.services.then_vs_now_composer import compose_then_vs_now_video
+            if video_type == "photo_composite":
+                from src.video.services.then_vs_now_composer import (
+                    compose_photo_composite_video,
+                )
 
-            output_path = compose_then_vs_now_video(
-                members=members,
-                background_url=background_url,
-                logo_url=logo_url,
-                team_name=team_name,
-                season_name=season_name,
-                brand_color=brand_color,
-                sponsor_url=sponsor_url,
-                video_type=video_type,
-                output_dir=self.temp_dir,
-                progress_callback=self._update_progress,
-            )
+                output_path = compose_photo_composite_video(
+                    members=members,
+                    background_url=background_url,
+                    logo_url=logo_url,
+                    team_name=team_name,
+                    season_name=season_name,
+                    brand_color=brand_color,
+                    sponsor_url=sponsor_url,
+                    output_dir=self.temp_dir,
+                    progress_callback=self._update_progress,
+                )
+            else:
+                from src.video.services.then_vs_now_composer import (
+                    compose_then_vs_now_video,
+                )
+
+                output_path = compose_then_vs_now_video(
+                    members=members,
+                    background_url=background_url,
+                    logo_url=logo_url,
+                    team_name=team_name,
+                    season_name=season_name,
+                    brand_color=brand_color,
+                    sponsor_url=sponsor_url,
+                    video_type=video_type,
+                    output_dir=self.temp_dir,
+                    progress_callback=self._update_progress,
+                )
 
             # Upload output
             output_file = self._upload_output(str(output_path))
@@ -147,7 +168,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
         from django.apps import apps
 
         from src.video.services.asset_processing_specs import get_ffmpeg_best_url
-        from src.video.services.then_vs_now_composer import MemberClip
+        from src.video.services.then_vs_now_composer import MemberClip, MemberPhotoComposite
 
         Project = apps.get_model("projects", "Project")  # noqa: N806
         ProjectMembership = apps.get_model("projects", "ProjectMembership")  # noqa: N806
@@ -175,10 +196,16 @@ class ThenVsNowProcessor(BaseVideoProcessor):
         # ── Background URL (prefer config override, then brand asset) ──
         background_url = (self.job.config or {}).get("background_url")
         if not background_url:
+            # For photo_composite, prefer club_background, then stadium_background
+            bg_types = (
+                ["club_background", "stadium_background"]
+                if video_type == "photo_composite"
+                else ["stadium_background"]
+            )
             background_url = self._resolve_brand_asset_url(
                 project,
                 club_project,
-                ["stadium_background"],
+                bg_types,
                 BrandProfile,
                 BrandAsset,
             )
@@ -220,71 +247,132 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                     brand_color = value
                     break
 
-        # ── Members with then_vs_now videos ──
+        # ── Members ──
         qs = ProjectMembership.objects.filter(project=project).select_related("user")
         if selected_member_ids:
             qs = qs.filter(id__in=selected_member_ids)
 
-        members: list[MemberClip] = []
-        for pm in qs:
-            meta = pm.metadata or {}
-            tr = meta.get("teamreel_assets", {})
-            videos = tr.get("videos", {})
-            then_vs_now = videos.get("then_vs_now", {})
+        members: list[MemberClip] | list[MemberPhotoComposite] = []
 
-            # Find matching video variant
-            # For transformation, prefer RVM-processed variants (those with
-            # processed_source) over AI-only variants.
-            variant = None
-            member_id_str = str(pm.id)
-            if video_type == "sidebyside":
-                variant = then_vs_now.get("sidebyside")
-            elif video_type == "transformation":
-                # If the frontend specified a variant key for this member, use it
-                explicit_key = (member_variant_keys or {}).get(member_id_str)
-                if explicit_key and explicit_key in then_vs_now:
-                    variant = then_vs_now[explicit_key]
-                else:
-                    # Collect all transformation candidates, prefer RVM-processed
-                    best = None
-                    for key in list(then_vs_now.keys()):
-                        if key == "transformation" or key.startswith("transformation_"):
-                            candidate = then_vs_now[key]
-                            if isinstance(candidate, dict) and candidate.get("processed_source"):
-                                best = candidate
-                                break  # RVM-processed is best, stop looking
-                            elif best is None:
-                                best = candidate
-                    variant = best
-            else:
-                variant = then_vs_now.get(video_type)
+        if video_type == "photo_composite":
+            # ── Photo composite: gather fullbody images (home + legacy) ──
+            for pm in qs:
+                meta = pm.metadata or {}
+                tr = meta.get("teamreel_assets", {})
+                images = tr.get("images", {})
+                fullbody = images.get("fullbody", {})
 
-            if not variant:
-                continue
+                home_variant = fullbody.get("home", {})
+                legacy_variant = fullbody.get("legacy", {})
 
-            url = get_ffmpeg_best_url(variant)
-            if not url:
-                continue
-
-            # Presign relative paths
-            if url and not url.startswith("http"):
-                try:
-                    from files.utils import get_storage_backend
-
-                    backend = get_storage_backend()
-                    url = backend.get_url(url, signed=True, expiry_seconds=3600)
-                except Exception:
-                    pass
-
-            if url:
-                name = pm.user.get_full_name() if pm.user else "Unknown"
-                members.append(
-                    MemberClip(
-                        member_id=str(pm.id),
-                        name=name,
-                        video_url=url,
+                # Extract URL: prefer processed (bg-removed) > raw
+                def _extract_image_url(variant_data):
+                    if not variant_data:
+                        return None
+                    if isinstance(variant_data, str):
+                        return variant_data
+                    return (
+                        variant_data.get("processed")
+                        or variant_data.get("raw")
+                        or variant_data.get("presigned_url")
+                        or variant_data.get("url")
+                        or None
                     )
-                )
+
+                home_url = _extract_image_url(home_variant)
+                legacy_url = _extract_image_url(legacy_variant)
+
+                if not home_url or not legacy_url:
+                    continue
+
+                # Presign relative paths
+                def _presign_if_needed(url):
+                    if url and not url.startswith("http"):
+                        try:
+                            from files.utils import get_storage_backend
+
+                            backend = get_storage_backend()
+                            return backend.get_url(url, signed=True, expiry_seconds=3600)
+                        except Exception:
+                            pass
+                    return url
+
+                home_url = _presign_if_needed(home_url)
+                legacy_url = _presign_if_needed(legacy_url)
+
+                if home_url and legacy_url:
+                    name = pm.user.get_full_name() if pm.user else "Unknown"
+                    members.append(
+                        MemberPhotoComposite(
+                            member_id=str(pm.id),
+                            name=name,
+                            fullbody_home_url=home_url,
+                            fullbody_legacy_url=legacy_url,
+                        )
+                    )
+        else:
+            # ── Video clip types: sidebyside / transformation ──
+            for pm in qs:
+                meta = pm.metadata or {}
+                tr = meta.get("teamreel_assets", {})
+                videos = tr.get("videos", {})
+                then_vs_now = videos.get("then_vs_now", {})
+
+                # Find matching video variant
+                # For transformation, prefer RVM-processed variants (those with
+                # processed_source) over AI-only variants.
+                variant = None
+                member_id_str = str(pm.id)
+                if video_type == "sidebyside":
+                    variant = then_vs_now.get("sidebyside")
+                elif video_type == "transformation":
+                    # If the frontend specified a variant key for this member, use it
+                    explicit_key = (member_variant_keys or {}).get(member_id_str)
+                    if explicit_key and explicit_key in then_vs_now:
+                        variant = then_vs_now[explicit_key]
+                    else:
+                        # Collect all transformation candidates, prefer RVM-processed
+                        best = None
+                        for key in list(then_vs_now.keys()):
+                            if key == "transformation" or key.startswith("transformation_"):
+                                candidate = then_vs_now[key]
+                                if isinstance(candidate, dict) and candidate.get(
+                                    "processed_source"
+                                ):
+                                    best = candidate
+                                    break  # RVM-processed is best, stop looking
+                                elif best is None:
+                                    best = candidate
+                        variant = best
+                else:
+                    variant = then_vs_now.get(video_type)
+
+                if not variant:
+                    continue
+
+                url = get_ffmpeg_best_url(variant)
+                if not url:
+                    continue
+
+                # Presign relative paths
+                if url and not url.startswith("http"):
+                    try:
+                        from files.utils import get_storage_backend
+
+                        backend = get_storage_backend()
+                        url = backend.get_url(url, signed=True, expiry_seconds=3600)
+                    except Exception:
+                        pass
+
+                if url:
+                    name = pm.user.get_full_name() if pm.user else "Unknown"
+                    members.append(
+                        MemberClip(
+                            member_id=str(pm.id),
+                            name=name,
+                            video_url=url,
+                        )
+                    )
 
         # Sort by the order specified in selected_member_ids (preserve user's chosen order)
         if selected_member_ids:

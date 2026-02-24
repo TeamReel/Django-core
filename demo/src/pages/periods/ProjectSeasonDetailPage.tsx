@@ -177,7 +177,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   // Then vs Now compilation modal state
   const [thenVsNowModalOpen, setThenVsNowModalOpen] = useState(false);
-  const [thenVsNowModalType, setThenVsNowModalType] = useState<'sidebyside' | 'transformation'>('sidebyside');
+  const [thenVsNowModalType, setThenVsNowModalType] = useState<'sidebyside' | 'transformation' | 'photo_composite'>('sidebyside');
   const [thenVsNowModalStep, setThenVsNowModalStep] = useState<'members' | 'generating' | 'submitted' | 'error'>('members');
   const [thenVsNowModalSelected, setThenVsNowModalSelected] = useState<string[]>([]);
   const [thenVsNowModalSearch, setThenVsNowModalSearch] = useState('');
@@ -1179,6 +1179,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         if (v && (v.processed || v.raw)) transformationKeys.push(k);
       }
       const hasTransformation = transformationKeys.length > 0;
+
+      // Photo composite eligibility: needs both fullbody home + legacy
+      const images = m?.metadata?.teamreel_assets?.images || {};
+      const fbHome = images?.fullbody?.home;
+      const fbLegacy = images?.fullbody?.legacy;
+      const extractUrl = (val: any): string | null => {
+        if (!val) return null;
+        if (typeof val === 'string') return val;
+        if (typeof val === 'object') return val.processed || val.raw || null;
+        return null;
+      };
+      const hasPhotoComposite = !!(extractUrl(fbHome) && extractUrl(fbLegacy));
+
       return {
         id: String(m.id || ''),
         userId: String(m.user?.id || m.user_id || ''),
@@ -1187,6 +1200,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         position: m.metadata?.position || m.position || null,
         hasSidebyside,
         hasTransformation,
+        hasPhotoComposite,
         transformationKeys,
       };
     }).filter((m: any) => m.id);
@@ -1196,17 +1210,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const thenVsNowCounts = useMemo(() => {
     let sidebyside = 0;
     let transformation = 0;
+    let photo_composite = 0;
     for (const m of thenVsNowEligibleMembers) {
       if (m.hasSidebyside) sidebyside++;
       if (m.hasTransformation) transformation++;
+      if (m.hasPhotoComposite) photo_composite++;
     }
-    return { sidebyside, transformation };
+    return { sidebyside, transformation, photo_composite };
   }, [thenVsNowEligibleMembers]);
 
   // Open the Then vs Now compilation modal
-  const openThenVsNowModal = (videoType: 'sidebyside' | 'transformation') => {
+  const openThenVsNowModal = (videoType: 'sidebyside' | 'transformation' | 'photo_composite') => {
     const eligible = thenVsNowEligibleMembers.filter((m: any) =>
-      videoType === 'sidebyside' ? m.hasSidebyside : m.hasTransformation
+      videoType === 'sidebyside' ? m.hasSidebyside
+        : videoType === 'photo_composite' ? m.hasPhotoComposite
+        : m.hasTransformation
     );
     // Pre-select all eligible members
     setThenVsNowModalSelected(eligible.map((m: any) => m.id));
@@ -2094,14 +2112,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         const matchedTemplate = templates[0];
                         const hasTemplate = !!matchedTemplate;
                         // Then vs Now types bypass ContentGenerationModal and use our dedicated modal
-                        const isThenVsNow = item.subtype === 'transformation' || item.subtype === 'sidebyside';
+                        const isThenVsNow = item.subtype === 'transformation' || item.subtype === 'sidebyside' || item.subtype === 'photo_composite';
 
                         return (
                           <div
                             key={item.id}
                             onClick={() => {
                               if (isThenVsNow) {
-                                openThenVsNowModal(item.subtype as 'sidebyside' | 'transformation');
+                                openThenVsNowModal(item.subtype as 'sidebyside' | 'transformation' | 'photo_composite');
                               } else if (hasTemplate) {
                                 openContentModal(matchedTemplate, item.label);
                               }
@@ -4417,7 +4435,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--app-border, #333)' }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>
-                    Then vs Now — {thenVsNowModalType === 'sidebyside' ? 'Then & Now' : 'Transformatie'}
+                    Then vs Now — {thenVsNowModalType === 'sidebyside' ? 'Then & Now' : thenVsNowModalType === 'photo_composite' ? 'Foto Composite' : 'Transformatie'}
                   </h3>
                   <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '2px' }}>
                     {thenVsNowModalStep === 'members' ? 'Selecteer spelers voor de compilatie video'
@@ -4437,7 +4455,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               {/* Step: Member selection with ordering */}
               {thenVsNowModalStep === 'members' && (() => {
                 const eligible = thenVsNowEligibleMembers.filter((m: any) =>
-                  thenVsNowModalType === 'sidebyside' ? m.hasSidebyside : m.hasTransformation
+                  thenVsNowModalType === 'sidebyside' ? m.hasSidebyside
+                    : thenVsNowModalType === 'photo_composite' ? m.hasPhotoComposite
+                    : m.hasTransformation
                 );
                 const eligibleMap = new Map(eligible.map((m: any) => [m.id, m]));
                 const q = thenVsNowModalSearch.toLowerCase().trim();
