@@ -4320,6 +4320,22 @@ export default function ProjectSeasonMemberDetailPage() {
                             ? getBestUrl(videoVariants.photo_composite?.default) || null
                             : null
         }
+        availableBackgrounds={(() => {
+          const bgs: Array<{ url: string; label?: string }> = [];
+          // Club backgrounds
+          const clubBgs = clubBrand.getAssets?.('club_background') || [];
+          clubBgs.forEach((bg, idx) => {
+            if (bg?.url) {
+              bgs.push({ url: getAssetUrl(bg.url), label: bg.label || `Clubachtergrond ${idx + 1}` });
+            }
+          });
+          // Stadium background as fallback
+          const stadiumBg = clubBrand.getAsset?.('stadium_background');
+          if (stadiumBg?.url) {
+            bgs.push({ url: getAssetUrl(stadiumBg.url), label: 'Stadion' });
+          }
+          return bgs;
+        })()}
         onAssetSaved={async (savedInfo) => {
           // Capture membershipId from URL params at call time — never rely on
           // `membership` state which may still hold the previous member's data

@@ -67,6 +67,8 @@ interface AssetGenerationModalProps {
   onAssetSaved?: (info?: SavedAssetInfo) => void;
   /** Route through approval queue instead of auto-saving (shows different message) */
   requireApproval?: boolean;
+  /** Available backgrounds for photo_composite_gemini selection */
+  availableBackgrounds?: Array<{ url: string; label?: string }>;
 }
 
 type ModalStep = 'template' | 'configure' | 'results';
@@ -377,6 +379,7 @@ export default function AssetGenerationModal({
   label,
   onAssetSaved,
   requireApproval = false,
+  availableBackgrounds = [],
 }: AssetGenerationModalProps) {
   // State
   const [modalStep, setModalStep] = useState<ModalStep>('template');
@@ -399,6 +402,7 @@ export default function AssetGenerationModal({
   const [shoeColor, setShoeColor] = useState<string>('zwart'); // For fullbody_in_tenue template
   const [videoProvider, setVideoProvider] = useState<string>(''); // '' = auto-select
   const [selectedModel, setSelectedModel] = useState<string>(''); // '' = provider default
+  const [selectedBackgroundIdx, setSelectedBackgroundIdx] = useState<number>(0); // For photo_composite_gemini
 
   const generation = useAssetGeneration();
 
@@ -499,6 +503,14 @@ export default function AssetGenerationModal({
     Object.entries(inputAssets).forEach(([key, val]) => {
       if (val) validInputs[key] = val;
     });
+
+    // Override background with selected background for photo_composite_gemini
+    if (selectedTemplate.id === 'photo_composite_gemini' && availableBackgrounds.length > 0) {
+      const selectedBg = availableBackgrounds[selectedBackgroundIdx];
+      if (selectedBg?.url) {
+        validInputs['background'] = selectedBg.url;
+      }
+    }
 
     // Source picker: swap the primary input with previousResultUrl when 'previous' is selected
     if (referenceSource === 'previous' && previousResultUrl) {
@@ -605,6 +617,14 @@ export default function AssetGenerationModal({
     Object.entries(inputAssets).forEach(([key, val]) => {
       if (val) validInputs[key] = val;
     });
+
+    // Override background with selected background for photo_composite_gemini
+    if (selectedTemplate.id === 'photo_composite_gemini' && availableBackgrounds.length > 0) {
+      const selectedBg = availableBackgrounds[selectedBackgroundIdx];
+      if (selectedBg?.url) {
+        validInputs['background'] = selectedBg.url;
+      }
+    }
 
     // ── KEY FIX: On regeneration, ALWAYS use the last generated result as
     // the reference input so the AI can iterate on its own output.
@@ -932,6 +952,74 @@ export default function AssetGenerationModal({
                   ]}
                   onChange={setShoeColor}
                 />
+              )}
+
+              {/* Background selector — only for photo_composite_gemini */}
+              {selectedTemplate.id === 'photo_composite_gemini' && availableBackgrounds.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      marginBottom: 8,
+                      color: 'var(--vscode-foreground, #ccc)',
+                    }}
+                  >
+                    Selecteer achtergrond
+                  </label>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {availableBackgrounds.map((bg, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedBackgroundIdx(idx)}
+                        style={{
+                          position: 'relative',
+                          width: '80px',
+                          height: '80px',
+                          padding: 0,
+                          border: idx === selectedBackgroundIdx
+                            ? '3px solid #10b981'
+                            : '2px solid var(--vscode-widget-border, #333)',
+                          borderRadius: 8,
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          background: '#1a1a1a',
+                        }}
+                      >
+                        <img
+                          src={bg.url}
+                          alt={bg.label || `Achtergrond ${idx + 1}`}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                        {idx === selectedBackgroundIdx && (
+                          <div style={{
+                            position: 'absolute',
+                            bottom: 2,
+                            right: 2,
+                            background: '#10b981',
+                            color: '#fff',
+                            borderRadius: '50%',
+                            width: '18px',
+                            height: '18px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '10px',
+                          }}>
+                            ✓
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  {availableBackgrounds[selectedBackgroundIdx]?.label && (
+                    <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>
+                      {availableBackgrounds[selectedBackgroundIdx].label}
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Variant count */}
