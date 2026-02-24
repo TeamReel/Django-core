@@ -438,6 +438,7 @@ export function AssetsTab({
   const [aiPreviousResultUrl, setAiPreviousResultUrl] = useState<string | null>(null);
   const [aiCustomInputs, setAiCustomInputs] = useState<Record<string, string | null>>({});
   const [aiInitialParams, setAiInitialParams] = useState<Record<string, string>>({});
+  const [aiLabel, setAiLabel] = useState<string | undefined>();
 
   // Postprocess: direct API call without modal
   const postProcessGen = useAssetGeneration();
@@ -509,7 +510,6 @@ export function AssetsTab({
     'kit_coach_upload': 'kit_coach',
     'kit_assistant_upload': 'kit_assistant',
     'kit_legacy_upload': 'kit_legacy',
-    'club_background_upload': 'club_background',
   };
 
   const uploadAutoGen = useAssetGeneration();
@@ -644,7 +644,6 @@ export function AssetsTab({
       if (outputType) {
         const inputKey = assetType === 'logo_upload' ? 'logo'
           : assetType === 'sponsor_logo_upload' ? 'sponsor'
-          : assetType === 'club_background_upload' ? 'source'
           : 'reference';
 
         const params: Record<string, string> = { ...(autoAi.initialParams || {}) };
@@ -677,15 +676,22 @@ export function AssetsTab({
         return; // Done — auto-accept via useEffect
       }
 
-      // ── Modal path: location_photo → location_standardize (needs user review) ──
+      // ── Modal path: location_photo, club_background_upload → needs user review ──
       setTimeout(() => {
         const inputs: Record<string, string | null> = { ...baseAiInputAssets };
         if (assetType === 'location_photo') inputs['location'] = uploadUrl;
+        if (assetType === 'club_background_upload') inputs['source'] = uploadUrl;
 
         setAiPreviousResultUrl(null);
         setAiPreselectedTemplate(autoAi.templateId);
         setAiInitialParams(autoAi.initialParams || {});
         setAiCustomInputs(inputs);
+        // Pass label for multi-instance types so the AI result pairs with the upload
+        if (MULTI_INSTANCE_TYPES.has(assetType)) {
+          setAiLabel(file.name.replace(/\.[^.]+$/, ''));
+        } else {
+          setAiLabel(undefined);
+        }
         setShowAiModal(true);
       }, 300);
     }
@@ -837,6 +843,11 @@ export function AssetsTab({
         referenceAssetType = 'location_photo';
     }
 
+    if (assetType === 'club_background') {
+        templateId = 'background_standardize';
+        referenceAssetType = 'club_background_upload';
+    }
+
     if (templateId) {
        // Look for effective asset if local is missing, to allow "Improving" an inherited asset into a local one
        const getEff = (type: string) => {
@@ -852,6 +863,9 @@ export function AssetsTab({
        setAiPreselectedTemplate(templateId);
        setAiInitialParams(initialParams);
 
+       // Pass label for multi-instance types (e.g. backgrounds)
+       setAiLabel(asset?.label || undefined);
+
        // Build inputs specific to this flow
        const inputs: Record<string, string | null> = { ...baseAiInputAssets };
        if (referenceAssetType) {
@@ -860,6 +874,8 @@ export function AssetsTab({
              // Map the reference asset to the correct input key expected by the template
              if (referenceAssetType === 'location_photo') {
                inputs['location'] = getAssetUrl(refAsset.url);
+             } else if (referenceAssetType === 'club_background_upload') {
+               inputs['source'] = getAssetUrl(refAsset.url);
              } else {
                inputs['reference'] = getAssetUrl(refAsset.url);
              }
@@ -1030,7 +1046,7 @@ export function AssetsTab({
         {/* AI Generation Generation Modal */}
         <AssetGenerationModal
           isOpen={showAiModal}
-          onClose={() => { setShowAiModal(false); setAiPreviousResultUrl(null); }}
+          onClose={() => { setShowAiModal(false); setAiPreviousResultUrl(null); setAiLabel(undefined); }}
           context="club"
           preSelectedTemplate={aiPreselectedTemplate}
           projectId={projectId || ''}
@@ -1038,6 +1054,7 @@ export function AssetsTab({
           inputAssets={aiCustomInputs}
           previousResultUrl={aiPreviousResultUrl}
           initialParams={aiInitialParams}
+          label={aiLabel}
           onAssetSaved={refresh}
         />
 
@@ -1129,7 +1146,7 @@ export function AssetsTab({
         </Section>
 
         {/* Club Backgrounds — multiple custom backgrounds */}
-        <Section title="🖼️ Achtergronden" description="Upload eigen achtergronden voor video's. AI optimaliseert ze automatisch voor portrait formaat (1080×1920) zodat spelers er realistisch op geplaatst kunnen worden.">
+        <Section title="🖼️ Achtergronden" description="Upload eigen achtergronden voor video's. Na upload opent de AI-modal om de achtergrond te optimaliseren voor portrait formaat (1080×1920) zodat spelers er realistisch op geplaatst kunnen worden.">
           {(() => {
             const bgUploads = getAssets('club_background_upload');
             const bgProcessed = getAssets('club_background');
@@ -1149,7 +1166,7 @@ export function AssetsTab({
             return (
               <>
                 {/* Upload Button */}
-                <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ marginBottom: 16 }}>
                   <input
                     ref={bgFileRef}
                     type="file"
@@ -1166,7 +1183,7 @@ export function AssetsTab({
                   />
                   <button
                     onClick={() => bgFileRef.current?.click()}
-                    disabled={uploading === 'club_background_upload' || uploadProcessingAsset === 'club_background'}
+                    disabled={uploading === 'club_background_upload'}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1174,20 +1191,15 @@ export function AssetsTab({
                       padding: '10px 20px',
                       fontSize: 13,
                       fontWeight: 600,
-                      background: (uploading === 'club_background_upload' || uploadProcessingAsset === 'club_background') ? '#555' : 'linear-gradient(135deg, #10b981, #059669)',
+                      background: uploading === 'club_background_upload' ? '#555' : 'linear-gradient(135deg, #10b981, #059669)',
                       color: '#fff',
                       border: 'none',
                       borderRadius: 8,
-                      cursor: (uploading === 'club_background_upload' || uploadProcessingAsset === 'club_background') ? 'not-allowed' : 'pointer',
+                      cursor: uploading === 'club_background_upload' ? 'not-allowed' : 'pointer',
                     }}
                   >
-                    {uploading === 'club_background_upload' ? '⏳ Uploaden...' : uploadProcessingAsset === 'club_background' ? '🤖 AI verwerkt...' : '📤 Achtergrond Uploaden'}
+                    {uploading === 'club_background_upload' ? '⏳ Uploaden...' : '📤 Achtergrond Uploaden'}
                   </button>
-                  {uploadProcessingAsset === 'club_background' && (
-                    <span style={{ fontSize: 11, color: '#f59e0b' }}>
-                      ⏳ AI optimaliseert achtergrond voor video compositing...
-                    </span>
-                  )}
                 </div>
 
                 {/* Background pairs: upload + AI processed */}
@@ -1213,9 +1225,21 @@ export function AssetsTab({
                             assetType="club_background"
                             asset={pair.processed}
                             onDelete={() => pair.processed && handleDeleteById(pair.processed.id)}
-                            onReplace={handleReplaceAi}
-                            onPostProcess={handlePostProcess}
-                            isProcessing={postProcessingAsset === 'club_background' || uploadProcessingAsset === 'club_background'}
+                            onReplace={() => {
+                              // Open AI modal with this specific upload as source
+                              const sourceUrl = pair.upload?.url ? getAssetUrl(pair.upload.url) : null;
+                              const prevUrl = pair.processed?.url ? getAssetUrl(pair.processed.url) : null;
+                              setAiPreviousResultUrl(prevUrl);
+                              setAiPreselectedTemplate('background_standardize');
+                              setAiInitialParams({});
+                              setAiLabel(pair.label);
+                              setAiCustomInputs({
+                                ...baseAiInputAssets,
+                                ...(sourceUrl ? { source: sourceUrl } : {}),
+                              });
+                              setShowAiModal(true);
+                            }}
+                            isProcessing={postProcessingAsset === 'club_background'}
                             aspectRatio="9 / 16"
                           />
                         </AssetGrid>
@@ -1336,7 +1360,7 @@ export function AssetsTab({
         {/* AI Generation Modal */}
         <AssetGenerationModal
           isOpen={showAiModal}
-          onClose={() => { setShowAiModal(false); setAiPreviousResultUrl(null); }}
+          onClose={() => { setShowAiModal(false); setAiPreviousResultUrl(null); setAiLabel(undefined); }}
           context="club"
           preSelectedTemplate={aiPreselectedTemplate}
           projectId={projectId || ''}
@@ -1344,6 +1368,7 @@ export function AssetsTab({
           inputAssets={aiCustomInputs}
           previousResultUrl={aiPreviousResultUrl}
           initialParams={aiInitialParams}
+          label={aiLabel}
           onAssetSaved={refresh}
         />
 

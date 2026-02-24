@@ -331,29 +331,31 @@ CRITICAL INSTRUCTIONS:
         "input_requirements": ["source"],
         "parameters": {},
         "preprocessing": {},
-        "prompt_template": """You are given an uploaded image that will be used as a VIDEO BACKGROUND for a football (soccer) content video. A real player photo will be composited on top of this background later.
+        "prompt_template": """You are given an uploaded image. Transform it into a PORTRAIT background (9:16, 1080x1920px) for a football video where a CUTOUT of a real player will be pasted on top later.
 
-Your task is to transform this image into a PERFECT portrait-format background optimized for player compositing.
+COMPOSITING CONTEXT — HOW THE PLAYER WILL BE PLACED:
+- The player cutout shows the person from approximately the KNEES UP (knees, upper legs, hips, torso, arms, shoulders, head).
+- The player cutout will be placed in the CENTER-BOTTOM of the frame.
+- The player's FEET/SHOES ARE NOT VISIBLE — the cutout starts at roughly knee height.
+- The player will occupy approximately the bottom 70-75% of the frame height, centered horizontally.
+- The player cutout has a TRANSPARENT background, so whatever is behind it in your output will show through.
 
-CRITICAL COMPOSITION LAYOUT:
-1. The output MUST be PORTRAIT orientation (9:16 aspect ratio, 1080x1920 pixels).
-2. The background must be designed so a person (visible from approximately mid-thigh upward — upper legs, torso, arms, head) can be realistically composited ON TOP of it.
-3. The LOWER 40-50% of the image should contain a suitable ground/floor/surface area where the player will appear to be standing.
-4. The UPPER 50-60% should have an interesting but NOT too busy background (stadium, field, sky, gradient, etc.).
-5. Keep the CENTER of the image relatively clean and uncluttered — this is where the player's body will be placed.
-6. Do NOT place any dominant objects, structures, or visual elements in the center-bottom area where the player will stand.
+LAYOUT REQUIREMENTS (design the background accordingly):
+1. The BOTTOM 25-30% of the image should be a clean, relatively uniform area (e.g., grass, floor, ground, blurred surface). This area will be mostly BEHIND the player's legs/torso — it should NOT have strong patterns or distracting details.
+2. The MIDDLE 40% (roughly from 30% to 70% height) is where the player's torso will be. Keep this area visually interesting but NOT too busy — no sharp objects, no dominant lines cutting through.
+3. The TOP 30% should contain the main "scene" atmosphere (sky, stadium lights, architecture, etc.) — this part will be fully visible above the player's head.
+4. The HORIZONTAL CENTER must be clean and free of dominant objects — the player stands there.
+5. Make the left and right edges slightly more detailed/interesting since those will remain visible beside the player.
 
 VISUAL QUALITY:
-7. FILL the entire canvas — no black bars, no letterboxing, no empty space.
-8. Use the uploaded image as the PRIMARY visual source — enhance and recompose it, do NOT replace it entirely.
-9. Apply subtle darkening (10-15%) to ensure text overlay readability on the top portion.
-10. Add a very subtle vignette around the edges for a cinematic, broadcast-quality look.
-11. Colors should be vibrant but professional — suitable for sports broadcast content.
-12. Maintain sharp image quality — no blur, no distortion, no artifacts.
-13. The lighting should feel natural and consistent, as if a real person could stand in this scene.
-14. Do NOT add any text, logos, watermarks, or people to the image.
-
-The result must look like a high-quality, broadcast-ready vertical background where a footballer's upper body photo can be seamlessly composited on top.
+6. FILL the entire 1080x1920 canvas — absolutely NO black bars, letterboxing, or empty space.
+7. Use the uploaded image as the PRIMARY visual source — recompose and enhance it, but keep it recognizable.
+8. Apply subtle darkening (10-15%) across the image for text overlay readability.
+9. The lighting must feel natural and directional (as if a real person could stand in the scene with consistent shadows).
+10. Colors: rich, saturated, broadcast-quality — suitable for sports content.
+11. Maintain sharp image quality — no blur, no distortion, no artifacts.
+12. Do NOT add any text, logos, watermarks, or people.
+13. The result must look like a professional broadcast sports backdrop where a real player photo will be seamlessly composited.
 """,
     },
 

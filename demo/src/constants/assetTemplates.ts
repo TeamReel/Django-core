@@ -162,6 +162,18 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     },
   },
   {
+    id: 'background_standardize',
+    name: 'Achtergrond Optimaliseren',
+    icon: '🖼️',
+    category: 'location',
+    description: 'Optimaliseer een achtergrond voor portrait video compositing. De AI past de afbeelding aan zodat een speler er realistisch op geplakt kan worden.',
+    inputRequirements: ['source'],
+    requiredAssetTypes: [],
+    outputAssetType: 'club_background',
+    creditsCost: 1,
+    parameters: {},
+  },
+  {
     id: 'tenue_generate',
     name: 'Tenue Genereren',
     icon: '👕',

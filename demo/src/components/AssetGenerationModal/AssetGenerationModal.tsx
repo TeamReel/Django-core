@@ -61,6 +61,8 @@ interface AssetGenerationModalProps {
   previousResultUrl?: string | null;
   /** Initial parameter overrides (e.g. for pre-selecting output type) */
   initialParams?: Record<string, string>;
+  /** Label for multi-instance asset types (e.g. club backgrounds) — passed through to save endpoint */
+  label?: string;
   /** Callback after a variant is accepted and saved. Receives info about the saved asset. */
   onAssetSaved?: (info?: SavedAssetInfo) => void;
   /** Route through approval queue instead of auto-saving (shows different message) */
@@ -372,6 +374,7 @@ export default function AssetGenerationModal({
   inputAssets = {},
   previousResultUrl,
   initialParams = {},
+  label,
   onAssetSaved,
   requireApproval = false,
 }: AssetGenerationModalProps) {
@@ -536,6 +539,7 @@ export default function AssetGenerationModal({
       userPrompt: extraInstructions,
       ...(videoProvider ? { provider: videoProvider } : {}),
       ...(selectedModel ? { model: selectedModel } : {}),
+      ...(label ? { label } : {}),
       requireApproval,
     });
     setModalStep('results');
@@ -683,6 +687,7 @@ export default function AssetGenerationModal({
       userPrompt: prompt,
       ...(videoProvider ? { provider: videoProvider } : {}),
       ...(selectedModel ? { model: selectedModel } : {}),
+      ...(label ? { label } : {}),
       requireApproval,
     });
   };
