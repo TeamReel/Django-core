@@ -572,7 +572,6 @@ PILLOW_ONLY_TEMPLATES: set[str] = {
     "sponsor_postprocess",
     "kit_postprocess",
     "location_postprocess",
-    "background_standardize",
 }
 
 

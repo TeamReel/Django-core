@@ -327,22 +327,33 @@ CRITICAL INSTRUCTIONS:
         "id": "background_standardize",
         "name": "Achtergrond Standaardiseren",
         "category": "postprocess",
-        "description": "Zet een geüploade afbeelding om naar portrait formaat (1080×1920) voor video achtergronden.",
+        "description": "Zet een geüploade afbeelding om naar een geoptimaliseerde portrait achtergrond (1080×1920) voor video compositing met spelers.",
         "input_requirements": ["source"],
         "parameters": {},
         "preprocessing": {},
-        "prompt_template": """You are given an uploaded image that will be used as a video background. Your task is to convert it into a clean, professional portrait-format background.
+        "prompt_template": """You are given an uploaded image that will be used as a VIDEO BACKGROUND for a football (soccer) content video. A real player photo will be composited on top of this background later.
 
-CRITICAL INSTRUCTIONS:
-1. The output MUST be PORTRAIT orientation (9:16, 1080x1920 pixels).
-2. FILL the entire canvas — no black bars, no letterboxing.
-3. Use intelligent cropping/scaling: keep the most visually important area centered.
-4. If the source is landscape, crop to the most interesting vertical segment.
-5. Apply a very subtle darkening (10-15%) to ensure text overlay readability.
-6. Add a very subtle vignette around the edges for a professional look.
-7. Maintain image quality — no blur, no distortion, no artifacts.
-8. Do NOT add text, logos, or watermarks.
-9. The result should look like a high-quality, broadcast-ready background for vertical video content.
+Your task is to transform this image into a PERFECT portrait-format background optimized for player compositing.
+
+CRITICAL COMPOSITION LAYOUT:
+1. The output MUST be PORTRAIT orientation (9:16 aspect ratio, 1080x1920 pixels).
+2. The background must be designed so a person (visible from approximately mid-thigh upward — upper legs, torso, arms, head) can be realistically composited ON TOP of it.
+3. The LOWER 40-50% of the image should contain a suitable ground/floor/surface area where the player will appear to be standing.
+4. The UPPER 50-60% should have an interesting but NOT too busy background (stadium, field, sky, gradient, etc.).
+5. Keep the CENTER of the image relatively clean and uncluttered — this is where the player's body will be placed.
+6. Do NOT place any dominant objects, structures, or visual elements in the center-bottom area where the player will stand.
+
+VISUAL QUALITY:
+7. FILL the entire canvas — no black bars, no letterboxing, no empty space.
+8. Use the uploaded image as the PRIMARY visual source — enhance and recompose it, do NOT replace it entirely.
+9. Apply subtle darkening (10-15%) to ensure text overlay readability on the top portion.
+10. Add a very subtle vignette around the edges for a cinematic, broadcast-quality look.
+11. Colors should be vibrant but professional — suitable for sports broadcast content.
+12. Maintain sharp image quality — no blur, no distortion, no artifacts.
+13. The lighting should feel natural and consistent, as if a real person could stand in this scene.
+14. Do NOT add any text, logos, watermarks, or people to the image.
+
+The result must look like a high-quality, broadcast-ready vertical background where a footballer's upper body photo can be seamlessly composited on top.
 """,
     },
 

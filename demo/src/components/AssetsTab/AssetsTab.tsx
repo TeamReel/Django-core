@@ -509,6 +509,7 @@ export function AssetsTab({
     'kit_coach_upload': 'kit_coach',
     'kit_assistant_upload': 'kit_assistant',
     'kit_legacy_upload': 'kit_legacy',
+    'club_background': 'club_background',
   };
 
   const uploadAutoGen = useAssetGeneration();
@@ -639,10 +640,11 @@ export function AssetsTab({
 
       const outputType = UPLOAD_OUTPUT_TYPE[assetType];
 
-      // ── Auto-process path: logo, sponsor, kits → fire & auto-accept ──
+      // ── Auto-process path: logo, sponsor, kits, backgrounds → fire & auto-accept ──
       if (outputType) {
         const inputKey = assetType === 'logo_upload' ? 'logo'
           : assetType === 'sponsor_logo_upload' ? 'sponsor'
+          : assetType === 'club_background' ? 'source'
           : 'reference';
 
         const params: Record<string, string> = { ...(autoAi.initialParams || {}) };
@@ -673,7 +675,6 @@ export function AssetsTab({
       setTimeout(() => {
         const inputs: Record<string, string | null> = { ...baseAiInputAssets };
         if (assetType === 'location_photo') inputs['location'] = uploadUrl;
-        if (assetType === 'club_background') inputs['source'] = uploadUrl;
 
         setAiPreviousResultUrl(null);
         setAiPreselectedTemplate(autoAi.templateId);
@@ -1122,7 +1123,7 @@ export function AssetsTab({
         </Section>
 
         {/* Club Backgrounds — multiple custom backgrounds */}
-        <Section title="🖼️ Achtergronden" description="Upload eigen achtergronden voor video's. Worden automatisch omgezet naar portrait formaat (1080×1920). Meerdere achtergronden mogelijk.">
+        <Section title="🖼️ Achtergronden" description="Upload eigen achtergronden voor video's. AI optimaliseert ze automatisch voor portrait formaat (1080×1920) zodat spelers er realistisch op geplaatst kunnen worden.">
           {(() => {
             const clubBackgrounds = getAssets('club_background');
             const bgFileRef = React.createRef<HTMLInputElement>();
@@ -1139,14 +1140,8 @@ export function AssetsTab({
                     onChange={async (e) => {
                       const files = Array.from(e.target.files || []);
                       for (const file of files) {
-                        setUploading('club_background');
-                        const slug = entityName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'club';
-                        const pid = projectId?.toString() || '';
-                        const pathId = pid ? `${slug}-${pid}` : slug;
-                        const prefix = `clubs/${pathId}/backgrounds`;
-                        await uploadAsset(file, 'club_background', prefix, file.name.replace(/\.[^.]+$/, ''));
+                        await handleUpload(file, 'club_background');
                       }
-                      setUploading(null);
                       if (bgFileRef.current) bgFileRef.current.value = '';
                     }}
                   />
@@ -1167,8 +1162,13 @@ export function AssetsTab({
                       cursor: uploading === 'club_background' ? 'not-allowed' : 'pointer',
                     }}
                   >
-                    {uploading === 'club_background' ? '⏳ Uploaden...' : '📤 Achtergrond Uploaden'}
+                    {uploading === 'club_background' ? '⏳ Uploaden...' : uploadProcessingAsset === 'club_background' ? '🤖 AI verwerkt...' : '📤 Achtergrond Uploaden'}
                   </button>
+                  {uploadProcessingAsset === 'club_background' && (
+                    <span style={{ fontSize: 11, color: '#f59e0b', marginLeft: 8 }}>
+                      ⏳ AI optimaliseert achtergrond voor video compositing...
+                    </span>
+                  )}
                 </div>
 
                 {/* Gallery Grid */}
