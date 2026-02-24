@@ -32,7 +32,7 @@ WIDTH = 1080
 HEIGHT = 1920
 FPS = 30
 HEADER_HEIGHT = 300
-XFADE_DURATION = 2.0  # seconds crossfade between members
+XFADE_DURATION = 1.5  # seconds crossfade between members
 
 # ── Reserved zones ──
 SPONSOR_BOX_H = 120
@@ -52,8 +52,8 @@ SBS_SCALE = 1.05
 TRANSFORM_SCALE = 0.62
 
 # ── Transition timing ──
-FREEZE_SECONDS = 3.5  # freeze on last frame before fading out
-EMPTY_FIELD_SECONDS = 3.0  # empty background between members
+FREEZE_SECONDS = 2.0  # freeze on last frame before fading out
+EMPTY_FIELD_SECONDS = 4.0  # empty background between members
 
 
 @dataclass

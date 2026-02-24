@@ -93,7 +93,7 @@ const SUB_TABS: Record<HierarchyTab, { key: string; label: string }[]> = {
   season: [
     { key: 'all', label: 'Alles' },
     { key: 'season', label: 'Season Content' },
-    { key: 'transformation', label: 'Then & Now' },
+    { key: 'transformation', label: 'Transformatie' },
   ],
   member: [
     { key: 'all', label: 'Alles' },

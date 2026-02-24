@@ -66,6 +66,8 @@ class VideoJobListSerializer(serializers.ModelSerializer):
     output_url = serializers.SerializerMethodField()
     thumbnail_url = serializers.SerializerMethodField()
 
+    config = serializers.JSONField(read_only=True)
+
     class Meta:
         model = VideoJob
         fields = [
@@ -76,6 +78,7 @@ class VideoJobListSerializer(serializers.ModelSerializer):
             "input_file",
             "output_file",
             "preset",
+            "config",
             "error_message",
             "retry_count",
             "created_at",
