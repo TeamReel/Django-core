@@ -64,6 +64,140 @@ interface NotificationResponse {
 
 const navGroups: NavGroup[] = [];
 
+// ─── Photo Composite Follow-Up Modal Component ───────────────────────────────
+interface PhotoCompositeFollowUpInfo {
+  membershipId: string;
+  projectId: string;
+  approvedImageUrl: string;
+  memberName: string;
+}
+
+interface NavbarPhotoCompositeFollowUpModalProps {
+  info: PhotoCompositeFollowUpInfo;
+  onClose: () => void;
+  onSubmitted: () => void;
+}
+
+function NavbarPhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: NavbarPhotoCompositeFollowUpModalProps) {
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmitVideo = async () => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const { getApiBaseUrl } = await import('../utils/apiBase');
+      const apiBase = getApiBaseUrl();
+      const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
+
+      const body = {
+        template_id: 'photo_composite_video',
+        parameters: {},
+        variant_count: 1,
+        project_id: info.projectId,
+        membership_id: info.membershipId,
+        output_asset_type: 'photo_composite_video',
+        input_image_urls: { person_photo: info.approvedImageUrl },
+        output_type: 'video',
+        require_approval: true,
+      };
+
+      const res = await fetch(`${apiBase}/api/v1/generative/assets/generate/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.data?.error || err?.error || `HTTP ${res.status}`);
+      }
+      setSubmitted(true);
+    } catch (e) {
+      console.error('Failed to submit photo_composite_video:', e);
+      setError(e instanceof Error ? e.message : 'Generatie mislukt');
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      onClick={e => { if (e.target === e.currentTarget && !submitting) onClose(); }}
+      style={{ position: 'fixed', inset: 0, zIndex: 10001, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+    >
+      <div style={{ width: '100%', maxWidth: 480, backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
+        {/* Header */}
+        <div style={{ padding: '20px 24px 12px', borderBottom: '1px solid var(--app-border, #334155)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text, #fff)' }}>
+                {submitted ? '✅ Video in de wachtrij!' : '🎬 Video genereren?'}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 4 }}>
+                {submitted
+                  ? 'De video wordt gegenereerd en verschijnt binnenkort in de approval queue.'
+                  : `Foto composite goedgekeurd voor ${info.memberName}. Wil je de geanimeerde video versie genereren?`
+                }
+              </div>
+            </div>
+            {!submitting && <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}>✕</button>}
+          </div>
+        </div>
+
+        {/* Preview */}
+        {!submitted && (
+          <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'center' }}>
+            <img
+              src={info.approvedImageUrl}
+              alt="Approved composite"
+              style={{ maxHeight: 200, maxWidth: '100%', borderRadius: 8, objectFit: 'contain' }}
+            />
+          </div>
+        )}
+
+        {error && (
+          <div style={{ margin: '0 24px 16px', fontSize: 12, color: '#dc2626', backgroundColor: '#fee2e2', borderRadius: 8, padding: '8px 12px' }}>{error}</div>
+        )}
+
+        {/* Footer */}
+        <div style={{ padding: '14px 24px', borderTop: '1px solid var(--app-border, #334155)', display: 'flex', justifyContent: submitted ? 'center' : 'space-between', alignItems: 'center' }}>
+          {submitted ? (
+            <button
+              onClick={() => { onSubmitted(); onClose(); }}
+              style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+            >
+              Sluiten
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={onClose}
+                disabled={submitting}
+                style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--app-border, #334155)', background: 'transparent', color: 'var(--app-text-secondary, #9ca3af)', fontWeight: 500, fontSize: 13, cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.5 : 1 }}
+              >
+                Overslaan
+              </button>
+              <button
+                onClick={handleSubmitVideo}
+                disabled={submitting}
+                style={{
+                  padding: '9px 24px', borderRadius: 8, border: 'none',
+                  background: '#2563eb', color: '#fff',
+                  fontWeight: 600, fontSize: 13, cursor: submitting ? 'wait' : 'pointer',
+                  opacity: submitting ? 0.7 : 1,
+                }}
+              >
+                {submitting ? 'Bezig...' : '🚀 Genereer Video'}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface TopNavbarProps {
   isSidebarOpen?: boolean;
   onToggleSidebar?: () => void;
@@ -100,6 +234,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   const [quickReviewIdx, setQuickReviewIdx] = useState(0);
   const [quickReviewBusy, setQuickReviewBusy] = useState(false);
   const [selectedVariantIdx, setSelectedVariantIdx] = useState<number | null>(null);
+  const [photoCompositeFollowUp, setPhotoCompositeFollowUp] = useState<PhotoCompositeFollowUpInfo | null>(null);
 
   // Quick-review: fetch pending_review jobs (only when modal is open or count > 0)
   const { jobs: allAiJobs, refresh: refreshAiJobs } = useGenerationJobs({
@@ -1304,15 +1439,31 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
         const handleQuickReview = async (action: 'approve' | 'reject') => {
           if (quickReviewBusy) return;
           setQuickReviewBusy(true);
+          const approvedJobRef = job; // capture current job before async
           try {
             // If a specific variant is selected, pass its index
             const variantIndices = selectedVariantIdx !== null ? [selectedVariantIdx] : undefined;
-            await reviewJob(job.task_id, action, variantIndices);
+            const result = await reviewJob(job.task_id, action, variantIndices);
             setSelectedVariantIdx(null);
             refreshAiJobs();
             // Advance to next (idx stays, list shrinks on refresh)
             if (quickReviewIdx >= pendingReviewJobs.length - 1) {
               setQuickReviewIdx(Math.max(0, pendingReviewJobs.length - 2));
+            }
+
+            // After approving photo_composite_gemini, offer to generate video
+            if (action === 'approve' && approvedJobRef.template_id === 'photo_composite_gemini' && approvedJobRef.membership_id) {
+              const approvedVariants = result?.output_variants?.filter((v: any) => v.approved === true) || [];
+              const imageUrl = approvedVariants[0]?.presigned_url || approvedJobRef.output_url;
+              if (imageUrl) {
+                setQuickReviewOpen(false); // Close quick review modal first
+                setPhotoCompositeFollowUp({
+                  membershipId: approvedJobRef.membership_id,
+                  projectId: approvedJobRef.project_id || '',
+                  approvedImageUrl: imageUrl,
+                  memberName: approvedJobRef.membership_name || approvedJobRef.label || 'Speler',
+                });
+              }
             }
           } catch (e) {
             console.error('Quick review failed:', e);
@@ -1469,6 +1620,15 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           </div>
         );
       })()}
+
+      {/* Photo Composite Video Follow-Up Modal */}
+      {photoCompositeFollowUp && (
+        <NavbarPhotoCompositeFollowUpModal
+          info={photoCompositeFollowUp}
+          onClose={() => setPhotoCompositeFollowUp(null)}
+          onSubmitted={() => refreshAiJobs()}
+        />
+      )}
     </div>
   );
 }
