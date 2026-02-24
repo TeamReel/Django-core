@@ -32,7 +32,10 @@ WIDTH = 1080
 HEIGHT = 1920
 FPS = 30
 HEADER_HEIGHT = 300
-XFADE_DURATION = 2.0  # seconds crossfade between members
+# Transition duration used for fade-in/out between members.
+# Important: we do NOT overlap members anymore (no xfade), because that makes
+# the next member start before the previous ends.
+XFADE_DURATION = 2.0
 
 # ── Reserved zones ──
 SPONSOR_BOX_H = 120
@@ -432,17 +435,27 @@ def compose_then_vs_now_video(
             f"trim=duration={play_dur + freeze_dur},setpts=PTS-STARTPTS"
         )
 
+        # Fade the member video on/off over the background (no overlap between members).
+        # This makes transitions smooth while still ensuring the next clip starts only
+        # after the previous clip (and its gap) has finished.
+        transition_dur = min(XFADE_DURATION, (play_dur + freeze_dur) / 2)
+        fade_out_start = max(0.0, (play_dur + freeze_dur) - transition_dur)
+
         if video_type == "sidebyside":
             fc.append(
                 f"[1:v]{member_base},scale={vid_w}:{vid_h}"
                 f":force_original_aspect_ratio=increase,"
-                f"crop={vid_w}:{vid_h},setsar=1[vid]"
+                f"crop={vid_w}:{vid_h},setsar=1,format=rgba,"
+                f"fade=t=in:st=0:d={transition_dur}:alpha=1,"
+                f"fade=t=out:st={fade_out_start}:d={transition_dur}:alpha=1[vid]"
             )
         else:
             fc.append(
                 f"[1:v]{member_base},scale={vid_w}:{vid_h}"
                 f":force_original_aspect_ratio=decrease"
-                f",setsar=1[vid]"
+                f",setsar=1,format=rgba,"
+                f"fade=t=in:st=0:d={transition_dur}:alpha=1,"
+                f"fade=t=out:st={fade_out_start}:d={transition_dur}:alpha=1[vid]"
             )
 
         # Overlay video on background (eof_action=pass → bg shows after video ends)
@@ -574,118 +587,121 @@ def compose_then_vs_now_video(
     if not clip_paths:
         raise ValueError("No member clips were successfully composed.")
 
-    # ── 5. Concatenate all clips (with crossfade transitions) ──
+    # ── 5. Concatenate all clips (no overlap) ──
+    # We concatenate sequentially so member B never starts before member A finishes.
+    joined_output = output_dir / "then_vs_now_joined.mp4"
     final_output = output_dir / "then_vs_now_compilation.mp4"
 
     if len(clip_paths) == 1:
         # Single clip: just copy
         import shutil
 
-        shutil.copy2(str(clip_paths[0]), str(final_output))
+        shutil.copy2(str(clip_paths[0]), str(joined_output))
     else:
-        # Build xfade chain between consecutive clips
-        # Each clip needs to be re-encoded for xfade to work
-        input_args: list[str] = []
-        for clip in clip_paths:
-            input_args += ["-i", str(clip)]
+        concat_file = tmp_dir / "concat.txt"
+        with open(concat_file, "w") as f:
+            for path in clip_paths:
+                f.write(f"file '{path}'\n")
 
-        # Probe durations for xfade offset calculation
-        durations = [_probe_duration(p) for p in clip_paths]
-        logger.info(
-            "Clip durations for xfade: %s (total=%d clips)",
-            [f"{d:.1f}s" for d in durations],
-            len(durations),
-        )
-
-        # Build xfade filter chain.
-        # Normalize each input stream first to reduce xfade failures.
-        fc_parts: list[str] = []
-        for i in range(len(clip_paths)):
-            fc_parts.append(f"[{i}:v]settb=AVTB,fps={FPS},format=yuv420p,setsar=1[v{i}]")
-
-        cumulative_dur = durations[0]
-        prev_label = "v0"
-        for i in range(1, len(clip_paths)):
-            offset = max(0.1, cumulative_dur - XFADE_DURATION)
-            out_label = f"xv{i}"
-            fc_parts.append(
-                f"[{prev_label}][v{i}]xfade="
-                f"transition=fade:duration={XFADE_DURATION}:offset={offset:.2f}"
-                f"[{out_label}]"
-            )
-            cumulative_dur = offset + durations[i]
-            prev_label = out_label
-
-        # Smooth ending: fade out during the last second.
-        fade_start = max(0.0, cumulative_dur - 1.0)
-        fc_parts.append(f"[{prev_label}]fade=t=out:st={fade_start:.2f}:d=1.0[final]")
-
+        # First try: fast concat without re-encoding.
         concat_cmd = [
             ffmpeg,
             "-y",
-            *input_args,
-            "-filter_complex",
-            ";".join(fc_parts),
-            "-map",
-            "[final]",
-            "-c:v",
-            "libx264",
-            "-preset",
-            "fast",
-            "-crf",
-            "23",
-            "-pix_fmt",
-            "yuv420p",
-            "-r",
-            str(FPS),
-            "-an",
-            str(final_output),
+            "-f",
+            "concat",
+            "-safe",
+            "0",
+            "-i",
+            str(concat_file),
+            "-c",
+            "copy",
+            str(joined_output),
         ]
-
-        logger.info("Concatenating %d clips with crossfade into final output", len(clip_paths))
-        result = subprocess.run(  # noqa: S603
-            concat_cmd,
-            capture_output=True,
-            text=True,
-            timeout=600,
-        )
+        logger.info("Concatenating %d clips sequentially (no overlap)", len(clip_paths))
+        result = subprocess.run(
+            concat_cmd, capture_output=True, text=True, timeout=600
+        )  # noqa: S603
         if result.returncode != 0:
             logger.warning(
-                "xfade concat failed, falling back to simple concat: %s",
+                "concat copy failed, falling back to re-encode concat: %s",
                 result.stderr[-1000:],
             )
-            # Fallback: simple concat without crossfade
-            concat_file = tmp_dir / "concat.txt"
-            with open(concat_file, "w") as f:
-                for path in clip_paths:
-                    f.write(f"file '{path}'\n")
-            fallback_cmd = [
+
+            # Fallback: concat filter (re-encode) for maximum compatibility.
+            input_args: list[str] = []
+            for clip in clip_paths:
+                input_args += ["-i", str(clip)]
+
+            fc_parts: list[str] = []
+            for i in range(len(clip_paths)):
+                fc_parts.append(f"[{i}:v]settb=AVTB,fps={FPS},format=yuv420p,setsar=1[v{i}]")
+            fc_parts.append(
+                "".join([f"[v{i}]" for i in range(len(clip_paths))])
+                + f"concat=n={len(clip_paths)}:v=1:a=0[out]"
+            )
+
+            concat_filter_cmd = [
                 ffmpeg,
                 "-y",
-                "-f",
-                "concat",
-                "-safe",
-                "0",
-                "-i",
-                str(concat_file),
-                "-c",
-                "copy",
-                str(final_output),
+                *input_args,
+                "-filter_complex",
+                ";".join(fc_parts),
+                "-map",
+                "[out]",
+                "-c:v",
+                "libx264",
+                "-preset",
+                "fast",
+                "-crf",
+                "23",
+                "-pix_fmt",
+                "yuv420p",
+                "-r",
+                str(FPS),
+                "-an",
+                str(joined_output),
             ]
-            result = subprocess.run(  # noqa: S603
-                fallback_cmd,
+            result = subprocess.run(
+                concat_filter_cmd,
                 capture_output=True,
                 text=True,
                 timeout=600,
-            )
+            )  # noqa: S603
             if result.returncode != 0:
                 raise RuntimeError(f"FFmpeg concat failed: {result.stderr[-2000:]}")
+
+    # Smooth ending: fade out during the last second.
+    total_dur = _probe_duration(joined_output)
+    fade_start = max(0.0, total_dur - 1.0)
+    fade_cmd = [
+        ffmpeg,
+        "-y",
+        "-i",
+        str(joined_output),
+        "-vf",
+        f"fade=t=out:st={fade_start:.2f}:d=1.0",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "fast",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        str(FPS),
+        "-an",
+        str(final_output),
+    ]
+    result = subprocess.run(fade_cmd, capture_output=True, text=True, timeout=600)  # noqa: S603
+    if result.returncode != 0:
+        raise RuntimeError(f"FFmpeg fade-out failed: {result.stderr[-2000:]}")
 
     if progress_callback:
         progress_callback(100)
 
     logger.info(
-        "Then vs Now compilation complete: %s (%d members, xfade=%.1fs)",
+        "Then vs Now compilation complete: %s (%d members, transition=%.1fs)",
         final_output,
         len(clip_paths),
         XFADE_DURATION,
