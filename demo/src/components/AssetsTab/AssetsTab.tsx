@@ -496,6 +496,67 @@ export function AssetsTab({
     }
   }, [postProcessGen.step, postProcessGen.variants.length]);
 
+  // ── Upload auto-processing: fire AI after upload, auto-accept result ──
+  // Maps upload type → output asset type for auto-save
+  const UPLOAD_OUTPUT_TYPE: Record<string, string> = {
+    'logo_upload': 'logo',
+    'sponsor_logo_upload': 'sponsor_logo',
+    'kit_home_upload': 'kit_home',
+    'kit_away_upload': 'kit_away',
+    'kit_third_upload': 'kit_third',
+    'kit_goalkeeper_upload': 'kit_goalkeeper',
+    'kit_training_upload': 'kit_training',
+    'kit_coach_upload': 'kit_coach',
+    'kit_assistant_upload': 'kit_assistant',
+    'kit_legacy_upload': 'kit_legacy',
+  };
+
+  const uploadAutoGen = useAssetGeneration();
+  const [uploadProcessingAsset, setUploadProcessingAsset] = useState<string | null>(null);
+  const uploadAutoSavingRef = useRef(false);
+
+  // Auto-accept upload auto-gen result when generation completes
+  useEffect(() => {
+    if (uploadAutoGen.step === 'completed' && uploadAutoGen.variants.length > 0 && uploadProcessingAsset) {
+      if (uploadAutoSavingRef.current) return;
+      uploadAutoSavingRef.current = true;
+
+      (async () => {
+        try {
+          const variant = uploadAutoGen.variants[0];
+          if (variant?.error) {
+            console.error('❌ Upload auto-process variant has error:', variant.error);
+            return;
+          }
+          if (!variant?.image_base64 && !variant?.storage_path && !variant?.presigned_url && !variant?.storage_info?.storage_path) {
+            console.error('❌ Upload auto-process variant has no content:', variant);
+            return;
+          }
+          console.log('📝 Upload auto-accept starting for', uploadProcessingAsset);
+          const result = await uploadAutoGen.acceptVariant(0);
+          if (result) {
+            console.log('✅ Upload auto-saved:', uploadProcessingAsset, result);
+            await refresh();
+            console.log('🔄 Profile refreshed after upload auto-process');
+          } else {
+            console.error('❌ Upload auto-save failed for', uploadProcessingAsset);
+          }
+        } catch (err) {
+          console.error('❌ Upload auto-accept error:', err);
+        } finally {
+          setUploadProcessingAsset(null);
+          uploadAutoGen.reset();
+          uploadAutoSavingRef.current = false;
+        }
+      })();
+    } else if (uploadAutoGen.step === 'error' && uploadProcessingAsset) {
+      console.error('❌ Upload auto-process failed:', uploadAutoGen.error);
+      setUploadProcessingAsset(null);
+      uploadAutoGen.reset();
+      uploadAutoSavingRef.current = false;
+    }
+  }, [uploadAutoGen.step, uploadAutoGen.variants.length]);
+
   // History State
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [historyAssetType, setHistoryAssetType] = useState<string | null>(null);
@@ -571,26 +632,55 @@ export function AssetsTab({
     // Auto-trigger AI processing after successful upload
     if (result) {
       const autoAi = UPLOAD_TO_AI_TEMPLATE[assetType];
-      if (autoAi) {
-        // Small delay to let state settle after upload
-        setTimeout(() => {
-          const uploadUrl = result.url ? getAssetUrl(result.url) : null;
-          const inputs: Record<string, string | null> = { ...baseAiInputAssets };
+      if (!autoAi) return;
 
-          // Map the upload type to the correct input key for the template
-          if (assetType === 'logo_upload' && uploadUrl) inputs['logo'] = uploadUrl;
-          if (assetType === 'sponsor_logo_upload' && uploadUrl) inputs['sponsor'] = uploadUrl;
-          if (assetType.startsWith('kit_') && uploadUrl) inputs['reference'] = uploadUrl;
-          if (assetType === 'location_photo' && uploadUrl) inputs['location'] = uploadUrl;
-          if (assetType === 'club_background' && uploadUrl) inputs['source'] = uploadUrl;
+      const uploadUrl = result.url ? getAssetUrl(result.url) : null;
+      if (!uploadUrl) return;
 
-          setAiPreviousResultUrl(null);
-          setAiPreselectedTemplate(autoAi.templateId);
-          setAiInitialParams(autoAi.initialParams || {});
-          setAiCustomInputs(inputs);
-          setShowAiModal(true);
-        }, 300);
+      const outputType = UPLOAD_OUTPUT_TYPE[assetType];
+
+      // ── Auto-process path: logo, sponsor, kits → fire & auto-accept ──
+      if (outputType) {
+        const inputKey = assetType === 'logo_upload' ? 'logo'
+          : assetType === 'sponsor_logo_upload' ? 'sponsor'
+          : 'reference';
+
+        const params: Record<string, string> = { ...(autoAi.initialParams || {}) };
+        // Team-level: tell backend to preserve club kit, only add sponsor
+        if (parentProjectId && (autoAi.templateId === 'tenue_generate' || autoAi.templateId === 'legacy_tenue_generate' || autoAi.templateId === 'keeper_tenue')) {
+          params['team_level'] = 'true';
+        }
+
+        setUploadProcessingAsset(outputType);
+        uploadAutoGen.submit({
+          templateId: autoAi.templateId,
+          parameters: params,
+          variantCount: 1,
+          projectId: projectId || '',
+          organisationId,
+          outputAssetType: outputType,
+          inputImageUrls: {
+            [inputKey]: uploadUrl,
+            // Also pass logo+sponsor context for kit generation
+            ...(baseAiInputAssets.logo ? { logo: baseAiInputAssets.logo } : {}),
+            ...(baseAiInputAssets.sponsor ? { sponsor: baseAiInputAssets.sponsor } : {}),
+          },
+        });
+        return; // Done — auto-accept via useEffect
       }
+
+      // ── Modal path: location_photo → location_standardize (needs user review) ──
+      setTimeout(() => {
+        const inputs: Record<string, string | null> = { ...baseAiInputAssets };
+        if (assetType === 'location_photo') inputs['location'] = uploadUrl;
+        if (assetType === 'club_background') inputs['source'] = uploadUrl;
+
+        setAiPreviousResultUrl(null);
+        setAiPreselectedTemplate(autoAi.templateId);
+        setAiInitialParams(autoAi.initialParams || {});
+        setAiCustomInputs(inputs);
+        setShowAiModal(true);
+      }, 300);
     }
   };
 
@@ -952,7 +1042,7 @@ export function AssetsTab({
              <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het clublogo → AI standaardiseert het.</p>
              <AssetGrid>
                 <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-                <AssetCard label="Logo (bewerkt)" assetType="logo" asset={getAsset('logo')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'logo'} aspectRatio="1 / 1" />
+                <AssetCard label="Logo (bewerkt)" assetType="logo" asset={getAsset('logo')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'logo' || uploadProcessingAsset === 'logo'} aspectRatio="1 / 1" />
              </AssetGrid>
           </div>
 
@@ -962,7 +1052,7 @@ export function AssetsTab({
              <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het sponsor logo. Wordt gestandaardiseerd door AI.</p>
              <AssetGrid>
                 <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
-                <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'sponsor_logo'} aspectRatio="1 / 1" />
+                <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'sponsor_logo' || uploadProcessingAsset === 'sponsor_logo'} aspectRatio="1 / 1" />
              </AssetGrid>
           </div>
         </div>
@@ -997,7 +1087,7 @@ export function AssetsTab({
                   onDelete={handleDelete}
                   onReplace={handleReplaceAi}
                   onPostProcess={handlePostProcess}
-                  isProcessing={postProcessingAsset === processedType}
+                  isProcessing={postProcessingAsset === processedType || uploadProcessingAsset === processedType}
                   onShowHistory={handleShowHistory}
                 />
               </AssetGrid>
@@ -1270,7 +1360,7 @@ export function AssetsTab({
              <AssetGrid>
                 <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
                 {(() => { const e = getEffectiveAsset('logo'); return (
-                  <AssetCard label="Logo (bewerkt)" assetType="logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'logo'} aspectRatio="1 / 1" />
+                  <AssetCard label="Logo (bewerkt)" assetType="logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'logo' || uploadProcessingAsset === 'logo'} aspectRatio="1 / 1" />
                 ); })()}
              </AssetGrid>
           </div>
@@ -1282,7 +1372,7 @@ export function AssetsTab({
              <AssetGrid>
                 <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
                 {(() => { const e = getEffectiveAsset('sponsor_logo'); return (
-                  <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'sponsor_logo'} aspectRatio="1 / 1" />
+                  <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'sponsor_logo' || uploadProcessingAsset === 'sponsor_logo'} aspectRatio="1 / 1" />
                 ); })()}
              </AssetGrid>
           </div>
@@ -1321,7 +1411,7 @@ export function AssetsTab({
                   onDelete={handleDelete}
                   onReplace={handleReplaceAi}
                   onPostProcess={handlePostProcess}
-                  isProcessing={postProcessingAsset === processedType}
+                  isProcessing={postProcessingAsset === processedType || uploadProcessingAsset === processedType}
                   onShowHistory={handleShowHistory}
                 />
               </AssetGrid>
@@ -1489,7 +1579,7 @@ export function AssetsTab({
                                     onDelete={handleDelete}
                                     onReplace={handleReplaceAi}
                                     onPostProcess={handlePostProcess}
-                                    isProcessing={postProcessingAsset === processedType}
+                                    isProcessing={postProcessingAsset === processedType || uploadProcessingAsset === processedType}
                                   />
                               )}
                           </>
