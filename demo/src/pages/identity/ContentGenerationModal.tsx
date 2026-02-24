@@ -469,8 +469,7 @@ export default function ContentGenerationModal({
   const [lineupAnimationStyle, setLineupAnimationStyle] = useState<'slide_up' | 'appear' | 'slide_in' | 'zoom' | 'fade'>('slide_up');
   const [lineupIntroStyle, setLineupIntroStyle] = useState<'per_line' | 'per_player'>('per_line');
   const [selectedBackgroundUrl, setSelectedBackgroundUrl] = useState<string | null>(null);
-  const [appBackgrounds, setAppBackgrounds] = useState<Array<{ id: string; url: string; profile_name?: string }>>([]);
-
+  const [appBackgrounds, setAppBackgrounds] = useState<Array<{ id: string; url: string; label?: string; profile_name?: string }>>([]);
   // Match flyer options
   const [matchFlyerVariant, setMatchFlyerVariant] = useState<'classic' | 'bold' | 'stadium'>('classic');
 
@@ -585,7 +584,7 @@ export default function ContentGenerationModal({
     fetchSeasonSquad();
   }, [isOpen, matchData?.project?.id, season?.project_id, season?.id]);
 
-  // Fetch app-level backgrounds (stadium_background assets from all profiles)
+  // Fetch app-level backgrounds (stadium_background + club_background assets)
   useEffect(() => {
     if (!isOpen) return;
 
@@ -603,7 +602,8 @@ export default function ContentGenerationModal({
             .map((a: any) => ({
               id: a.id,
               url: a.url,
-              profile_name: a.profile?.project?.name || a.profile?.organisation?.name || '',
+              label: a.label || '',
+              profile_name: a.project_name || a.profile_name || '',
             }));
           setAppBackgrounds(bgs);
         }
@@ -2840,7 +2840,7 @@ export default function ContentGenerationModal({
                               textOverflow: 'ellipsis',
                               whiteSpace: 'nowrap',
                             }}>
-                              {bg.profile_name || 'Locatie'}
+                              {bg.label || bg.profile_name || 'Locatie'}
                             </div>
                             {isSelected && (
                               <div style={{
@@ -3625,7 +3625,7 @@ export default function ContentGenerationModal({
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
                                 }}>
-                                  {bg.profile_name || 'Locatie'}
+                                  {bg.label || bg.profile_name || 'Locatie'}
                                 </div>
                               </button>
                             );

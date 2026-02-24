@@ -444,16 +444,17 @@ class BrandAssetViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="app-backgrounds")
     def app_backgrounds(self, request):
-        """List ALL stadium_background assets across all profiles (app-level).
+        """List ALL background assets across all profiles (app-level).
 
         GET /api/v1/branding/assets/app-backgrounds/
 
-        Returns deduplicated list of backgrounds available for any lineup,
+        Returns deduplicated list of backgrounds available for any video,
         regardless of which project/club originally generated them.
+        Includes both stadium_background and club_background assets.
         """
         qs = (
             BrandAsset.objects.filter(
-                asset_type="stadium_background",
+                asset_type__in=["stadium_background", "club_background"],
                 is_active=True,
             )
             .select_related(

@@ -1219,7 +1219,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     setThenVsNowVariantKeys({});
     setThenVsNowModalOpen(true);
 
-    // Fetch available backgrounds (stadium_background assets)
+    // Fetch available backgrounds (stadium_background + club_background assets)
     (async () => {
       try {
         const res = await fetch(`${apiBaseUrl}/api/v1/branding/assets/app-backgrounds/`, {
@@ -1234,7 +1234,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             .map((a: any) => ({
               id: a.id,
               url: a.url,
-              profile_name: a.profile?.project?.name || a.profile?.organisation?.name || '',
+              label: a.label || '',
+              profile_name: a.project_name || a.profile_name || '',
             }));
           setThenVsNowBackgrounds(bgs);
         }
@@ -4666,7 +4667,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   background: isSelected ? 'var(--app-primary, #2563eb)' : 'var(--app-surface-2, #2a2a3e)',
                                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                 }}>
-                                  {bg.profile_name || 'Locatie'}
+                                  {bg.label || bg.profile_name || 'Locatie'}
                                 </div>
                                 {isSelected && (
                                   <div style={{ position: 'absolute', top: 3, right: 3, width: 14, height: 14, borderRadius: '50%', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: '#fff', fontWeight: 700 }}>{"\u2713"}</div>
