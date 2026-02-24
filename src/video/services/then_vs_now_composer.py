@@ -392,19 +392,22 @@ def compose_then_vs_now_video(
     bg_actual_dur = _probe_duration(bg_video_path)
     logger.info("Background video rendered: %.1fs", bg_actual_dur)
 
-    # ── 4. Compose a clip per member ──
+    # ── 4. Compose clips per member ──
+    # SIMPLE APPROACH: create TWO separate clips per member:
+    #   1) video_clip: background + header + member video overlay (play + freeze)
+    #   2) gap_clip: just background + header (empty field pause)
+    # Then concatenate all clips. No eof_action magic needed.
+
     for idx, (member, video_path) in enumerate(member_paths):
         if progress_callback:
             progress_callback(int(idx / total * 80))
 
-        duration = _probe_duration(video_path)
-        clip_path = clips_dir / f"clip_{idx:03d}.mp4"
+        _src_duration = _probe_duration(video_path)  # for logging only
 
-        # Transition timing: fixed schedule per member.
         play_dur = PLAY_SECONDS
         freeze_dur = FREEZE_SECONDS
         gap_dur = EMPTY_FIELD_SECONDS
-        total_clip_dur = play_dur + freeze_dur + gap_dur
+        member_segment_dur = play_dur + freeze_dur  # 8s
 
         # Escape name for FFmpeg drawtext
         safe_name = (
@@ -414,71 +417,44 @@ def compose_then_vs_now_video(
             .replace("%", "\\%")
         )
 
-        # ── Build FFmpeg filter complex ──
-        # Two-pass approach: overlay member video on the pre-rendered
-        # bg_loop.mp4 (a real video with guaranteed duration).
-        # This avoids all image2 demuxer / color source duration issues.
-        #
-        # Inputs:
-        # [0] = bg_loop.mp4 (background+header video, real .mp4)
-        # [1] = member video
-        # [2] = sponsor image (looped, optional)
+        # ─── CLIP A: Member video segment (play + freeze) ───
+        video_clip_path = clips_dir / f"clip_{idx:03d}_video.mp4"
 
-        fc: list[str] = []
+        fc_video: list[str] = []
 
-        # Member video: enforce fixed play duration, then freeze the last frame.
-        # If source is shorter than PLAY_SECONDS, tpad clones last frame.
-        # tpad stop_duration = how much padding to ADD (not total duration).
-        member_visible_time = play_dur + freeze_dur  # 8s: video plays then freezes
+        # Trim background to exact duration needed
+        fc_video.append(f"[0:v]trim=duration={member_segment_dur},setpts=PTS-STARTPTS[bg]")
 
-        # Build the member video filter: trim → pad → trim → scale.
-        # No alpha fades here — we rely on eof_action=pass for clean transitions.
+        # Member video: trim to play_dur, then freeze last frame for freeze_dur
         if video_type == "sidebyside":
-            fc.append(
+            fc_video.append(
                 f"[1:v]trim=duration={play_dur},setpts=PTS-STARTPTS,"
                 f"tpad=stop_mode=clone:stop_duration={freeze_dur},"
                 f"scale={vid_w}:{vid_h}:force_original_aspect_ratio=increase,"
-                f"crop={vid_w}:{vid_h},setsar=1,"
-                f"fade=t=in:st=0:d=0.5,"
-                f"fade=t=out:st={member_visible_time - 0.5}:d=0.5[vid]"
+                f"crop={vid_w}:{vid_h},setsar=1[vid]"
             )
+            vid_x = f"({WIDTH}-{vid_w})/2"
+            vid_y = int(HEADER_HEIGHT + (CONTENT_HEIGHT - vid_h) // 2)
+            fc_video.append(f"[bg][vid]overlay={vid_x}:{vid_y}[main]")
         else:
-            fc.append(
+            fc_video.append(
                 f"[1:v]trim=duration={play_dur},setpts=PTS-STARTPTS,"
                 f"tpad=stop_mode=clone:stop_duration={freeze_dur},"
                 f"scale={vid_w}:{vid_h}:force_original_aspect_ratio=decrease,"
-                f"setsar=1,"
-                f"fade=t=in:st=0:d=0.5,"
-                f"fade=t=out:st={member_visible_time - 0.5}:d=0.5[vid]"
+                f"setsar=1[vid]"
+            )
+            fc_video.append(
+                f"[bg][vid]overlay=(W-w)/2:({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)/2)[main]"
             )
 
-        # Overlay video on background.
-        # eof_action=pass: when member video ends, bg continues through.
-        # shortest=0 ensures we don't cut early.
-        if video_type == "sidebyside":
-            vid_x = f"({WIDTH}-{vid_w})/2"
-            vid_y = int(HEADER_HEIGHT + (CONTENT_HEIGHT - vid_h) // 2)
-            fc.append(
-                f"[0:v][vid]overlay={vid_x}:{vid_y}"
-                f":eof_action=pass:shortest=0:format=yuv420[main]"
-            )
-        else:
-            fc.append(
-                f"[0:v][vid]overlay="
-                f"(W-w)/2:({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)/2)"
-                f":eof_action=pass:shortest=0:format=yuv420[main]"
-            )
-
-        # Name text — only visible during member video (not during gap)
+        # Name text
         name_y = HEIGHT - BOTTOM_RESERVED + 10
-        member_visible_dur = member_visible_time
-        fc.append(
+        fc_video.append(
             f"[main]drawtext=text='{safe_name}'"
             f":fontfile='{font_path}'"
             f":fontsize=56:fontcolor=white"
             f":x=(w-tw)/2:y={name_y}"
             f":shadowcolor=black@0.7:shadowx=3:shadowy=3"
-            f":enable='between(t,0,{member_visible_dur:.2f})'"
             + ("[main_txt]" if sponsor_path else "[out]")
         )
 
@@ -486,24 +462,20 @@ def compose_then_vs_now_video(
         if sponsor_path:
             sponsor_w = int(WIDTH * 0.22)
             sponsor_box_w = sponsor_w + 2 * SPONSOR_PAD
-            fc.append(
+            fc_video.append(
                 f"[main_txt]drawbox="
                 f"x={SPONSOR_MARGIN}:y=ih-{SPONSOR_BOX_H}-{SPONSOR_MARGIN}"
                 f":w={sponsor_box_w}:h={SPONSOR_BOX_H}"
-                f":color=0x90EE90@0.85:t=fill"
-                f":enable='between(t,0,{member_visible_dur:.2f})'[main_sb]"
+                f":color=0x90EE90@0.85:t=fill[main_sb]"
             )
-            fc.append(f"[2:v]scale={sponsor_w}:-1,format=rgba[sponsor]")
-            fc.append(
+            fc_video.append(f"[2:v]scale={sponsor_w}:-1,format=rgba[sponsor]")
+            fc_video.append(
                 f"[main_sb][sponsor]overlay="
                 f"({SPONSOR_MARGIN + SPONSOR_PAD}):(main_h-h-{SPONSOR_MARGIN + SPONSOR_PAD})"
-                f":format=auto:shortest=0"
-                f":enable='between(t,0,{member_visible_dur:.2f})'[out]"
+                f":format=auto[out]"
             )
 
-        filter_complex = ";".join(fc)
-
-        cmd = [
+        cmd_video = [
             ffmpeg,
             "-y",
             "-i",
@@ -512,15 +484,14 @@ def compose_then_vs_now_video(
             str(video_path),
         ]
         if sponsor_path:
-            cmd += ["-loop", "1", "-i", str(sponsor_path)]
-
-        cmd += [
+            cmd_video += ["-loop", "1", "-i", str(sponsor_path)]
+        cmd_video += [
             "-filter_complex",
-            filter_complex,
+            ";".join(fc_video),
             "-map",
             "[out]",
             "-t",
-            f"{total_clip_dur:.2f}",
+            f"{member_segment_dur:.2f}",
             "-c:v",
             "libx264",
             "-preset",
@@ -532,56 +503,67 @@ def compose_then_vs_now_video(
             "-r",
             str(FPS),
             "-an",
-            str(clip_path),
+            str(video_clip_path),
         ]
 
-        logger.info(
-            "Composing clip %d/%d for %s (%.1fs)",
-            idx + 1,
-            total,
-            member.name,
-            duration,
-        )
-
-        result = subprocess.run(  # noqa: S603
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=600,
-        )
+        logger.info("Composing video segment %d/%d for %s", idx + 1, total, member.name)
+        result = subprocess.run(
+            cmd_video, capture_output=True, text=True, timeout=600
+        )  # noqa: S603
         if result.returncode != 0:
-            logger.error(
-                "FFmpeg failed for member %s: %s",
-                member.name,
-                result.stderr[-2000:],
-            )
+            logger.error("FFmpeg failed for member %s: %s", member.name, result.stderr[-2000:])
             continue
 
-        # Verify clip has correct duration
-        actual_dur = _probe_duration(clip_path)
+        clip_paths.append(video_clip_path)
+
+        # ─── CLIP B: Gap segment (pure background + header, no member video) ───
+        gap_clip_path = clips_dir / f"clip_{idx:03d}_gap.mp4"
+
+        # Simply trim the background video to gap duration
+        cmd_gap = [
+            ffmpeg,
+            "-y",
+            "-i",
+            str(bg_video_path),
+            "-vf",
+            f"trim=duration={gap_dur},setpts=PTS-STARTPTS",
+            "-t",
+            f"{gap_dur:.2f}",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "fast",
+            "-crf",
+            "23",
+            "-pix_fmt",
+            "yuv420p",
+            "-r",
+            str(FPS),
+            "-an",
+            str(gap_clip_path),
+        ]
+
+        logger.info("Composing gap segment %d/%d (%.1fs)", idx + 1, total, gap_dur)
+        result = subprocess.run(cmd_gap, capture_output=True, text=True, timeout=600)  # noqa: S603
+        if result.returncode != 0:
+            logger.error("FFmpeg gap failed: %s", result.stderr[-1000:])
+            continue
+
+        clip_paths.append(gap_clip_path)
+
+        # Log timing
+        video_actual = _probe_duration(video_clip_path)
+        gap_actual = _probe_duration(gap_clip_path)
         logger.info(
-            "Clip %d/%d for %s: expected=%.1fs, actual=%.1fs "
-            "(play=%.1fs + freeze=%.1fs + gap=%.1fs; src=%.1fs)",
+            "Member %d/%d %s: video=%.1fs (expected %.1fs), gap=%.1fs (expected %.1fs)",
             idx + 1,
             total,
             member.name,
-            total_clip_dur,
-            actual_dur,
-            play_dur,
-            freeze_dur,
+            video_actual,
+            member_segment_dur,
+            gap_actual,
             gap_dur,
-            duration,
         )
-        if actual_dur < total_clip_dur - 0.5:
-            logger.warning(
-                "Clip %d duration mismatch: expected %.1fs but got %.1fs — "
-                "freeze/gap may not be rendered",
-                idx + 1,
-                total_clip_dur,
-                actual_dur,
-            )
-
-        clip_paths.append(clip_path)
 
     if not clip_paths:
         raise ValueError("No member clips were successfully composed.")
