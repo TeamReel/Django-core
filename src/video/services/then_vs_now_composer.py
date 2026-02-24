@@ -32,7 +32,7 @@ WIDTH = 1080
 HEIGHT = 1920
 FPS = 30
 HEADER_HEIGHT = 300
-XFADE_DURATION = 1.5  # seconds crossfade between members
+XFADE_DURATION = 2.0  # seconds crossfade between members
 
 # ── Reserved zones ──
 SPONSOR_BOX_H = 120
@@ -52,7 +52,11 @@ SBS_SCALE = 1.05
 TRANSFORM_SCALE = 0.80
 
 # ── Transition timing ──
-FREEZE_SECONDS = 2.0  # freeze on last frame before fading out
+# Target pacing: ~10s per member of on-screen time, with 2s crossfades.
+# Because xfade overlaps clips, each member clip is slightly longer so that
+# total runtime still scales to ~10s/member (e.g. 4 members ≈ 40s+).
+PLAY_SECONDS = 5.0
+FREEZE_SECONDS = 3.0  # freeze on last frame before fading out
 EMPTY_FIELD_SECONDS = 4.0  # empty background between members
 
 
@@ -324,15 +328,10 @@ def compose_then_vs_now_video(
     # This is the key to reliable duration control: overlaying a member
     # video on a real .mp4 (not looped images) guarantees the output
     # duration matches the base video, not the overlay.
-    # Compute max needed duration across all members.
-    max_clip_dur = 0.0
-    for _idx, (_member, vpath) in enumerate(member_paths):
-        dur = _probe_duration(vpath)
-        # Always include freeze + empty gap, even for the last member.
-        member_clip_dur = dur + FREEZE_SECONDS + EMPTY_FIELD_SECONDS
-        max_clip_dur = max(max_clip_dur, member_clip_dur)
-    # Add a small buffer
-    bg_video_dur = max_clip_dur + 2.0
+    # Fixed per-member duration (independent of input clip length).
+    per_member_clip_dur = PLAY_SECONDS + FREEZE_SECONDS + EMPTY_FIELD_SECONDS
+    # Add a small buffer for encoder rounding.
+    bg_video_dur = per_member_clip_dur + 2.0
 
     bg_video_path = asset_dir / "bg_loop.mp4"
     bg_fc: list[str] = []
@@ -398,10 +397,11 @@ def compose_then_vs_now_video(
         duration = _probe_duration(video_path)
         clip_path = clips_dir / f"clip_{idx:03d}.mp4"
 
-        # Transition timing: always include freeze + gap for every member.
+        # Transition timing: fixed schedule per member.
+        play_dur = PLAY_SECONDS
         freeze_dur = FREEZE_SECONDS
         gap_dur = EMPTY_FIELD_SECONDS
-        total_clip_dur = duration + freeze_dur + gap_dur
+        total_clip_dur = play_dur + freeze_dur + gap_dur
 
         # Escape name for FFmpeg drawtext
         safe_name = (
@@ -423,20 +423,26 @@ def compose_then_vs_now_video(
 
         fc: list[str] = []
 
-        # Member video: scale per video_type, freeze last frame
-        freeze_pad = f",tpad=stop_mode=clone:stop_duration={FREEZE_SECONDS}"
+        # Member video: enforce fixed play duration, then freeze the last frame.
+        # If the source video is shorter than PLAY_SECONDS, pad by cloning the last frame.
+        # We over-pad and then trim to guarantee exact length.
+        member_base = (
+            f"trim=duration={play_dur},setpts=PTS-STARTPTS,"
+            f"tpad=stop_mode=clone:stop_duration={play_dur + freeze_dur},"
+            f"trim=duration={play_dur + freeze_dur},setpts=PTS-STARTPTS"
+        )
 
         if video_type == "sidebyside":
             fc.append(
-                f"[1:v]scale={vid_w}:{vid_h}"
+                f"[1:v]{member_base},scale={vid_w}:{vid_h}"
                 f":force_original_aspect_ratio=increase,"
-                f"crop={vid_w}:{vid_h},setsar=1{freeze_pad}[vid]"
+                f"crop={vid_w}:{vid_h},setsar=1[vid]"
             )
         else:
             fc.append(
-                f"[1:v]scale={vid_w}:{vid_h}"
+                f"[1:v]{member_base},scale={vid_w}:{vid_h}"
                 f":force_original_aspect_ratio=decrease"
-                f",setsar=1{freeze_pad}[vid]"
+                f",setsar=1[vid]"
             )
 
         # Overlay video on background (eof_action=pass → bg shows after video ends)
@@ -453,7 +459,7 @@ def compose_then_vs_now_video(
 
         # Name text — only visible during member video (not during gap)
         name_y = HEIGHT - BOTTOM_RESERVED + 10
-        member_visible_dur = duration + freeze_dur
+        member_visible_dur = play_dur + freeze_dur
         fc.append(
             f"[main]drawtext=text='{safe_name}'"
             f":fontfile='{font_path}'"
@@ -543,15 +549,16 @@ def compose_then_vs_now_video(
         actual_dur = _probe_duration(clip_path)
         logger.info(
             "Clip %d/%d for %s: expected=%.1fs, actual=%.1fs "
-            "(video=%.1fs + freeze=%.1fs + gap=%.1fs)",
+            "(play=%.1fs + freeze=%.1fs + gap=%.1fs; src=%.1fs)",
             idx + 1,
             total,
             member.name,
             total_clip_dur,
             actual_dur,
-            duration,
+            play_dur,
             freeze_dur,
             gap_dur,
+            duration,
         )
         if actual_dur < total_clip_dur - 0.5:
             logger.warning(
@@ -609,6 +616,10 @@ def compose_then_vs_now_video(
             cumulative_dur = offset + durations[i]
             prev_label = out_label
 
+        # Smooth ending: fade out during the last second.
+        fade_start = max(0.0, cumulative_dur - 1.0)
+        fc_parts.append(f"[{prev_label}]fade=t=out:st={fade_start:.2f}:d=1.0[final]")
+
         concat_cmd = [
             ffmpeg,
             "-y",
@@ -616,7 +627,7 @@ def compose_then_vs_now_video(
             "-filter_complex",
             ";".join(fc_parts),
             "-map",
-            f"[{prev_label}]",
+            "[final]",
             "-c:v",
             "libx264",
             "-preset",
