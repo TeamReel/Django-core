@@ -16,6 +16,7 @@ Output: 1080×1920 vertical MP4 at 30fps.
 
 from __future__ import annotations
 
+import io
 import logging
 import subprocess
 import tempfile
@@ -918,6 +919,47 @@ def _gemini_composite(
         return None
 
 
+def _crop_composite_upper_body(image_bytes: bytes) -> bytes:
+    """Crop a photo composite to upper body only (no legs).
+
+    Crops the bottom portion of the image to ensure no legs are visible.
+    Keeps approximately the top 65% of the image, which should show:
+    - Head, shoulders, chest, arms, stomach/navel area
+    - No hips, thighs, legs, or feet
+
+    Returns cropped image as PNG bytes.
+    """
+    img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+
+    # Keep top 65% of the image (removes bottom 35% where legs would be)
+    crop_h = int(img.height * 0.65)
+    cropped = img.crop((0, 0, img.width, crop_h))
+
+    # Resize back to 9:16 portrait format to maintain MiniMax input requirements
+    # Target: 1080x1920 → after crop we need to scale back
+    target_w = 1080
+    target_h = 1920
+
+    # Create new canvas at target size with background
+    result = Image.new("RGB", (target_w, target_h), (0, 0, 0))
+
+    # Scale cropped image to fit width, position in upper portion
+    scale = target_w / cropped.width
+    new_w = target_w
+    new_h = int(cropped.height * scale)
+    cropped_scaled = cropped.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+    # Position at top of frame (players visible from navel up)
+    y_offset = int((target_h - new_h) * 0.3)  # Slightly above center
+    result.paste(
+        cropped_scaled, (0, y_offset), cropped_scaled if cropped_scaled.mode == "RGBA" else None
+    )
+
+    output = io.BytesIO()
+    result.save(output, format="PNG", quality=95)
+    return output.getvalue()
+
+
 def _minimax_generate_video(
     composite_image_path: Path,
     member_name: str,
@@ -951,7 +993,10 @@ def _minimax_generate_video(
         "Smooth, slow, cinematic motion. 6 seconds."
     )
 
-    image_bytes = composite_image_path.read_bytes()
+    # Read and crop composite to ensure no legs visible
+    raw_image_bytes = composite_image_path.read_bytes()
+    image_bytes = _crop_composite_upper_body(raw_image_bytes)
+    logger.info("Cropped composite for MiniMax input: %s → %d bytes", member_name, len(image_bytes))
 
     try:
         client = MiniMaxClient(
