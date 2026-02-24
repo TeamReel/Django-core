@@ -1193,25 +1193,38 @@ IMPORTANT:
         "prompt_template": """A cinematic 6-second portrait video of two football players standing side by side on a football pitch.
 
 The provided image shows the FIRST FRAME: two people standing next to each other in football kits.
+- The LEGACY player (older photo) is on the LEFT side of the frame.
+- The CURRENT player (recent photo) is on the RIGHT side of the frame.
 
-MOVEMENT SEQUENCE (must be precise):
-1. FRAMES 0-1s: Both stand facing the camera, looking straight ahead. Neutral expression. Minimal movement (natural breathing only).
-2. FRAMES 1-2.5s: They slowly turn their heads to look at EACH OTHER. Left person turns head RIGHT. Right person turns head LEFT. Their eyes meet.
-3. FRAMES 2.5-4s: They begin to smile, then laugh together. Natural, genuine laughter. Their bodies can shift slightly toward each other. Keep it subtle and warm.
-4. FRAMES 4-5.5s: Still laughing/smiling, they slowly turn their heads back to face the camera.
-5. FRAMES 5.5-6s: Both face forward again with a warm smile. Return to near-starting pose for seamless loop.
+CRITICAL HEAD DIRECTION RULES:
+- The LEFT person must turn their head TOWARD THE RIGHT (toward center) to look at the other person.
+- The RIGHT person must turn their head TOWARD THE LEFT (toward center) to look at the other person.
+- They are looking AT EACH OTHER in the middle of the frame. NOT outward. INWARD toward center.
+- This means: LEFT person's face rotates clockwise (chin moves right), RIGHT person's face rotates counter-clockwise (chin moves left).
+
+MOVEMENT SEQUENCE (SLOW and NATURAL):
+1. FRAMES 0-1.5s: Both stand facing the camera, looking straight ahead. Neutral, calm expression. Minimal movement (natural breathing only). Hold this pose.
+2. FRAMES 1.5-3s: SLOWLY turn heads toward each other. LEFT person turns head RIGHT (toward center). RIGHT person turns head LEFT (toward center). Movement is gradual and smooth. Their eyes meet in the middle.
+3. FRAMES 3-4.5s: They begin with a gentle smile. The smile grows into genuine, warm laughter. Bodies can subtly shift toward each other. Natural, heartfelt moment between two versions of the same person.
+4. FRAMES 4.5-5.5s: While still smiling/laughing softly, they SLOWLY turn their heads back to face the camera. Gradual movement.
+5. FRAMES 5.5-6s: Both face forward again with a warm, content smile. Return to near-starting pose for seamless loop.
+
+TIMING:
+- This is a SLOW, emotional moment. Do not rush any movement.
+- Head turns should take 1-1.5 seconds each way.
+- The laughter builds slowly from a smile.
 
 BACKGROUND:
-- Keep the background from the input image as-is. Do NOT change the background.
-- The players should remain in their exact positions from the first frame.
+- Keep the background from the input image exactly as-is. Do NOT change or replace the background.
+- The players must remain in their exact positions from the first frame.
 
-RULES:
+STRICT RULES:
 - NO visual effects, NO particles, NO lens flares, NO glow, NO transitions.
 - NO text overlays, NO graphics, NO logos added.
-- NO camera movement. Static locked-off camera.
-- Photorealistic quality. Natural lighting.
+- NO camera movement. Completely static locked-off camera.
+- Photorealistic quality. Natural lighting matching the input image.
 - Both people must remain fully visible at all times.
-- Movement is slow, natural, and controlled. No sudden jerks.
+- Movement is slow, natural, and controlled. No sudden jerks or fast motions.
 - 9:16 vertical aspect ratio.
 """,
     },

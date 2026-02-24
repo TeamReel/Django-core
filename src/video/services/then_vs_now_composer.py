@@ -717,10 +717,13 @@ def compose_then_vs_now_video(
 PHOTO_CLIP_DURATION = 6.0  # seconds — MiniMax generates ~6s clips
 
 
-def _crop_player_to_hips(img_path: Path, output_path: Path, mirror: bool = False) -> Path:
-    """Crop a fullbody transparent PNG to show from head to hips (~60%).
+def _crop_player_to_hips(
+    img_path: Path, output_path: Path, mirror: bool = False, crop_ratio: float = 0.60
+) -> Path:
+    """Crop a fullbody transparent PNG to show upper portion.
 
-    Trims transparent padding, keeps upper 60% of the visible person.
+    Trims transparent padding, keeps upper portion of the visible person.
+    Default 60% (head to hips), use higher values (e.g. 0.85) to include legs.
     Optionally mirrors horizontally so legacy faces the other direction.
     """
     img = Image.open(img_path).convert("RGBA")
@@ -730,8 +733,8 @@ def _crop_player_to_hips(img_path: Path, output_path: Path, mirror: bool = False
     if bbox:
         img = img.crop(bbox)
 
-    # Keep upper ~60% (head to hips)
-    crop_h = int(img.height * 0.60)
+    # Keep upper portion based on crop_ratio
+    crop_h = int(img.height * crop_ratio)
     img = img.crop((0, 0, img.width, crop_h))
 
     if mirror:

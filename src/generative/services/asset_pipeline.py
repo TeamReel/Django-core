@@ -807,18 +807,21 @@ def _generate_photo_composite_gemini(
     tmp_dir = Path(tempfile.mkdtemp(prefix="photo_composite_gemini_"))
     try:
         # Write input bytes to temp files
+        # Swap assignment: Gemini seems to invert the reference layout
+        # So we put fullbody in legacy_path (LEFT) → Gemini outputs fullbody RIGHT
+        # And legacy in home_path (RIGHT) → Gemini outputs legacy LEFT
         home_path = tmp_dir / "home.png"
         legacy_path = tmp_dir / "legacy.png"
         bg_path = tmp_dir / "background.png"
-        home_path.write_bytes(person_bytes)
-        legacy_path.write_bytes(reference_bytes)
+        home_path.write_bytes(reference_bytes)  # legacy content
+        legacy_path.write_bytes(person_bytes)  # fullbody content
         bg_path.write_bytes(bg_bytes)
 
-        # Crop both players to hips (upper 60%)
+        # Crop both players to upper body (no mirroring - preserve logos)
         home_cropped = tmp_dir / "home_crop.png"
         legacy_cropped = tmp_dir / "legacy_crop.png"
-        _crop_player_to_hips(home_path, home_cropped, mirror=False)
-        _crop_player_to_hips(legacy_path, legacy_cropped, mirror=True)
+        _crop_player_to_hips(home_path, home_cropped, mirror=False, crop_ratio=0.85)
+        _crop_player_to_hips(legacy_path, legacy_cropped, mirror=False, crop_ratio=0.85)
 
         # Create rough reference composite (PIL)
         ref_composite = tmp_dir / "ref_composite.png"

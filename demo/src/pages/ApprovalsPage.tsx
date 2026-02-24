@@ -325,6 +325,147 @@ function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUpModalPr
   );
 }
 
+// ─── Photo Composite Follow-Up Modal (after photo_composite_gemini approval) ──────────
+
+interface PhotoCompositeFollowUpInfo {
+  membershipId: string;
+  projectId: string;
+  approvedImageUrl: string; // presigned URL of the approved photo composite
+  memberName: string;
+  backgroundUrl?: string; // carry over the background if available
+}
+
+interface PhotoCompositeFollowUpModalProps {
+  info: PhotoCompositeFollowUpInfo;
+  onClose: () => void;
+  onSubmitted: () => void;
+}
+
+function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: PhotoCompositeFollowUpModalProps) {
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const { getApiBaseUrl } = await import('../utils/apiBase');
+      const apiBase = getApiBaseUrl();
+      const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
+
+      const body: Record<string, unknown> = {
+        template_id: 'photo_composite_video',
+        parameters: {},
+        variant_count: 1,
+        project_id: info.projectId,
+        membership_id: info.membershipId,
+        output_asset_type: 'photo_composite_video',
+        input_image_urls: { person_photo: info.approvedImageUrl },
+        output_type: 'video',
+        require_approval: true,
+      };
+      if (info.backgroundUrl) {
+        body.input_image_urls = { person_photo: info.approvedImageUrl, background: info.backgroundUrl };
+      }
+
+      const res = await fetch(`${apiBase}/api/v1/generative/assets/generate/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.data?.error || err?.error || `HTTP ${res.status}`);
+      }
+      setSubmitted(true);
+    } catch (e) {
+      console.error('Failed to submit photo_composite_video:', e);
+      setError(e instanceof Error ? e.message : 'Generatie mislukt');
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 10001, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      onClick={e => { if (e.target === e.currentTarget && !submitting) onClose(); }}
+    >
+      <div style={{ width: '100%', maxWidth: 480, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
+
+        {/* Header */}
+        <div style={{ padding: '20px 24px 12px', borderBottom: '1px solid var(--app-border, #e5e7eb)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text, #111)' }}>
+                {submitted ? '✅ Video in de wachtrij!' : '🎬 Video genereren?'}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', marginTop: 4 }}>
+                {submitted
+                  ? `De video wordt gegenereerd en verschijnt binnenkort in de approval queue.`
+                  : `Foto composite goedgekeurd voor ${info.memberName}. Wil je de geanimeerde video versie genereren?`
+                }
+              </div>
+            </div>
+            {!submitting && <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}>✕</button>}
+          </div>
+        </div>
+
+        {/* Preview */}
+        {!submitted && (
+          <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'center' }}>
+            <img
+              src={info.approvedImageUrl}
+              alt="Approved composite"
+              style={{ maxHeight: 200, maxWidth: '100%', borderRadius: 8, objectFit: 'contain' }}
+            />
+          </div>
+        )}
+
+        {error && (
+          <div style={{ margin: '0 24px 16px', fontSize: 12, color: '#dc2626', backgroundColor: '#fee2e2', borderRadius: 8, padding: '8px 12px' }}>{error}</div>
+        )}
+
+        {/* Footer */}
+        <div style={{ padding: '14px 24px', borderTop: '1px solid var(--app-border, #e5e7eb)', display: 'flex', justifyContent: submitted ? 'center' : 'space-between', alignItems: 'center' }}>
+          {submitted ? (
+            <button
+              onClick={() => { onSubmitted(); onClose(); }}
+              style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+            >
+              Sluiten
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={onClose}
+                disabled={submitting}
+                style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--app-border, #e5e7eb)', background: 'transparent', color: 'var(--app-text-secondary, #6b7280)', fontWeight: 500, fontSize: 13, cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.5 : 1 }}
+              >
+                Overslaan
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                style={{
+                  padding: '9px 24px', borderRadius: 8, border: 'none',
+                  background: '#2563eb', color: '#fff',
+                  fontWeight: 600, fontSize: 13, cursor: submitting ? 'wait' : 'pointer',
+                  opacity: submitting ? 0.7 : 1,
+                }}
+              >
+                {submitting ? 'Bezig...' : '🚀 Genereer Video'}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Review Modal ─────────────────────────────────────────────
 
 interface ReviewModalProps {
@@ -533,6 +674,9 @@ export default function ApprovalsPage() {
   // Video follow-up modal (shown after fullbody_in_tenue approval)
   const [videoFollowUp, setVideoFollowUp] = useState<VideoFollowUpInfo | null>(null);
 
+  // Photo composite follow-up modal (shown after photo_composite_gemini approval)
+  const [photoCompositeFollowUp, setPhotoCompositeFollowUp] = useState<PhotoCompositeFollowUpInfo | null>(null);
+
   // Optimistic approval overrides (task_id → approval_status string)
   const [optimisticApprovals, setOptimisticApprovals] = useState<Record<string, string>>({});
 
@@ -670,6 +814,20 @@ export default function ApprovalsPage() {
             });
           }
         }
+
+        // After approving a photo_composite_gemini job, offer to generate video
+        if (approvedJob && approvedJob.template_id === 'photo_composite_gemini' && approvedJob.membership_id) {
+          const approvedVariants = result?.output_variants?.filter((v: any) => v.approved === true) || [];
+          const imageUrl = approvedVariants[0]?.presigned_url || approvedJob.output_url;
+          if (imageUrl) {
+            setPhotoCompositeFollowUp({
+              membershipId: approvedJob.membership_id,
+              projectId: approvedJob.project_id || '',
+              approvedImageUrl: imageUrl,
+              memberName: approvedJob.membership_name || approvedJob.label || 'Speler',
+            });
+          }
+        }
       }
     } catch (e) {
       pushToast(e instanceof Error ? e.message : 'Review mislukt', 'error');
@@ -758,6 +916,19 @@ export default function ApprovalsPage() {
           onSubmitted={(count) => {
             pushToast(`🎬 ${count} video${count > 1 ? "'s" : ''} in de wachtrij gezet!`, 'success');
             setVideoFollowUp(null);
+            refreshAiJobs();
+          }}
+        />
+      )}
+
+      {/* Photo composite video follow-up modal (after photo_composite_gemini approval) */}
+      {photoCompositeFollowUp && (
+        <PhotoCompositeFollowUpModal
+          info={photoCompositeFollowUp}
+          onClose={() => setPhotoCompositeFollowUp(null)}
+          onSubmitted={() => {
+            pushToast('🎬 Video in de wachtrij gezet!', 'success');
+            setPhotoCompositeFollowUp(null);
             refreshAiJobs();
           }}
         />
