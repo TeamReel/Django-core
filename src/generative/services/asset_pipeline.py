@@ -817,11 +817,11 @@ def _generate_photo_composite_gemini(
         legacy_path.write_bytes(person_bytes)  # fullbody content
         bg_path.write_bytes(bg_bytes)
 
-        # Crop both players to upper body (no mirroring - preserve logos)
+        # Crop both players to waist level (55% = head to waist, no legs)
         home_cropped = tmp_dir / "home_crop.png"
         legacy_cropped = tmp_dir / "legacy_crop.png"
-        _crop_player_to_hips(home_path, home_cropped, mirror=False, crop_ratio=0.85)
-        _crop_player_to_hips(legacy_path, legacy_cropped, mirror=False, crop_ratio=0.85)
+        _crop_player_to_hips(home_path, home_cropped, mirror=False, crop_ratio=0.55)
+        _crop_player_to_hips(legacy_path, legacy_cropped, mirror=False, crop_ratio=0.55)
 
         # Create rough reference composite (PIL)
         ref_composite = tmp_dir / "ref_composite.png"
