@@ -438,7 +438,9 @@ def compose_then_vs_now_video(
             )
             vid_x = f"({WIDTH}-{vid_w})/2"
             vid_y = int(HEADER_HEIGHT + (CONTENT_HEIGHT - vid_h) // 2)
-            fc_video.append(f"[bg][vid]overlay={vid_x}:{vid_y}[main]")
+            # eof_action=repeat: if overlay ends before bg, keep showing last frame
+            # shortest=0: output duration = longest stream (bg), not shortest (vid)
+            fc_video.append(f"[bg][vid]overlay={vid_x}:{vid_y}:eof_action=repeat:shortest=0[main]")
         else:
             fc_video.append(
                 f"[1:v]trim=duration={play_dur},setpts=PTS-STARTPTS,"
@@ -447,7 +449,8 @@ def compose_then_vs_now_video(
                 f"setsar=1[vid]"
             )
             fc_video.append(
-                f"[bg][vid]overlay=(W-w)/2:({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)/2)[main]"
+                f"[bg][vid]overlay=(W-w)/2:({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)/2)"
+                f":eof_action=repeat:shortest=0[main]"
             )
 
         # Name text
