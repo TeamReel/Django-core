@@ -740,6 +740,51 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     },
   },
   // ============================================================================
+  // Photo Composite Templates (Gemini image + MiniMax video)
+  // ============================================================================
+  {
+    id: 'photo_composite_gemini',
+    name: 'Foto Composite (Beeld)',
+    icon: '📸',
+    category: 'photo_composite',
+    description: 'AI-composiet: legacy en huidige speler samen op een clubachtergrond. Gemini combineert beide fullbody-afbeeldingen realistisch.',
+    inputRequirements: ['person', 'reference', 'background'], // person = legacy fullbody, reference = current fullbody, background = club background
+    requiredAssetTypes: [],
+    outputAssetType: 'photo_composite_gemini',
+    creditsCost: 3,
+    outputType: 'image',
+    parameters: {
+      background_style: {
+        label: 'Achtergrond',
+        type: 'select' as const,
+        options: [
+          { value: 'club', label: 'Clubachtergrond' },
+          { value: 'stadium', label: 'Stadion' },
+          { value: 'field', label: 'Speelveld' },
+        ],
+        default: 'club',
+      },
+    },
+  },
+  {
+    id: 'photo_composite_video',
+    name: 'Foto Composite (Video)',
+    icon: '🎬',
+    category: 'photo_composite',
+    description: 'MiniMax video (6 sec): de twee spelers op het composiet-beeld kijken naar elkaar, lachen, en kijken terug naar de camera.',
+    inputRequirements: ['person'], // person = the gemini composite image
+    requiredAssetTypes: [],
+    outputAssetType: 'photo_composite_video',
+    creditsCost: 5,
+    outputType: 'video',
+    videoConfig: {
+      durationSeconds: 6,
+      aspectRatio: '9:16',
+      resolution: '720p',
+    },
+    parameters: {},
+  },
+  // ============================================================================
   // Post-Process Templates (optimize AI-generated assets for print/flyers)
   // ============================================================================
   {
@@ -873,11 +918,11 @@ export function getTemplate(id: string): AssetTemplate | undefined {
 /** Get templates suitable for a specific context */
 export function getTemplatesForContext(context: 'club' | 'member' | 'guest'): AssetTemplate[] {
   if (context === 'member' || context === 'guest') {
-    // Guest uses same templates as member but without then_vs_now (no legacy photo)
+    // Guest uses same templates as member but without then_vs_now/photo_composite (no legacy photo)
     const memberCategories = context === 'guest'
       ? ['fullbody', 'closeup', 'intro', 'celebration']
-      : ['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now'];
+      : ['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite'];
     return ASSET_TEMPLATES.filter((t) => memberCategories.includes(t.category));
   }
-  return ASSET_TEMPLATES.filter((t) => !['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now'].includes(t.category));
+  return ASSET_TEMPLATES.filter((t) => !['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite'].includes(t.category));
 }
