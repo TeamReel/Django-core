@@ -22,6 +22,7 @@ import {
   getAssetUrl,
   ASSET_TYPE_LABELS,
   KIT_ROLES,
+  MULTI_INSTANCE_TYPES,
   type BrandAsset,
   type BrandProfile,
 } from '../../hooks/useBrandProfile';
@@ -414,9 +415,11 @@ export function AssetsTab({
     loading,
     error,
     getAsset,
+    getAssets,
     getAssetUrl: getAssetUrlByType,
     uploadAsset,
     deleteAsset,
+    deleteAssetById,
     refresh,
   } = useBrandProfile({
     organisationId,
@@ -534,6 +537,7 @@ export function AssetsTab({
     'kit_assistant_upload': { templateId: 'coach_outfit' },
     'kit_legacy_upload': { templateId: 'legacy_tenue_generate' },
     'location_photo': { templateId: 'location_standardize' },
+    'club_background': { templateId: 'background_standardize' },
   };
 
   const handleUpload = async (file: File, assetType: string) => {
@@ -561,7 +565,7 @@ export function AssetsTab({
     const typeFolder = assetType.replace('_upload', '');
     const prefix = `${folder}/${pathId}/${typeFolder}`;
 
-    const result = await uploadAsset(file, assetType, prefix);
+    const result = await uploadAsset(file, assetType, prefix, MULTI_INSTANCE_TYPES.has(assetType) ? file.name.replace(/\.[^.]+$/, '') : undefined);
     setUploading(null);
 
     // Auto-trigger AI processing after successful upload
@@ -578,6 +582,7 @@ export function AssetsTab({
           if (assetType === 'sponsor_logo_upload' && uploadUrl) inputs['sponsor'] = uploadUrl;
           if (assetType.startsWith('kit_') && uploadUrl) inputs['reference'] = uploadUrl;
           if (assetType === 'location_photo' && uploadUrl) inputs['location'] = uploadUrl;
+          if (assetType === 'club_background' && uploadUrl) inputs['source'] = uploadUrl;
 
           setAiPreviousResultUrl(null);
           setAiPreselectedTemplate(autoAi.templateId);
@@ -591,6 +596,10 @@ export function AssetsTab({
 
   const handleDelete = async (assetType: string) => {
     await deleteAsset(assetType);
+  };
+
+  const handleDeleteById = async (assetId: string) => {
+    await deleteAssetById(assetId);
   };
 
   // Helper: get asset from this level OR parent
@@ -1020,6 +1029,121 @@ export function AssetsTab({
               aspectRatio="9 / 16"
             />
           </AssetGrid>
+        </Section>
+
+        {/* Club Backgrounds — multiple custom backgrounds */}
+        <Section title="🖼️ Achtergronden" description="Upload eigen achtergronden voor video's. Worden automatisch omgezet naar portrait formaat (1080×1920). Meerdere achtergronden mogelijk.">
+          {(() => {
+            const clubBackgrounds = getAssets('club_background');
+            const bgFileRef = React.createRef<HTMLInputElement>();
+            return (
+              <>
+                {/* Upload Button */}
+                <div style={{ marginBottom: 12 }}>
+                  <input
+                    ref={bgFileRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={async (e) => {
+                      const files = Array.from(e.target.files || []);
+                      for (const file of files) {
+                        setUploading('club_background');
+                        const slug = entityName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'club';
+                        const pid = projectId?.toString() || '';
+                        const pathId = pid ? `${slug}-${pid}` : slug;
+                        const prefix = `clubs/${pathId}/backgrounds`;
+                        await uploadAsset(file, 'club_background', prefix, file.name.replace(/\.[^.]+$/, ''));
+                      }
+                      setUploading(null);
+                      if (bgFileRef.current) bgFileRef.current.value = '';
+                    }}
+                  />
+                  <button
+                    onClick={() => bgFileRef.current?.click()}
+                    disabled={uploading === 'club_background'}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '10px 20px',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      background: uploading === 'club_background' ? '#555' : 'linear-gradient(135deg, #10b981, #059669)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      cursor: uploading === 'club_background' ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {uploading === 'club_background' ? '⏳ Uploaden...' : '📤 Achtergrond Uploaden'}
+                  </button>
+                </div>
+
+                {/* Gallery Grid */}
+                {clubBackgrounds.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
+                    {clubBackgrounds.map((bg) => {
+                      const bgUrl = bg.url ? getAssetUrl(bg.url) : null;
+                      return (
+                        <div
+                          key={bg.id}
+                          style={{
+                            border: '1px solid var(--vscode-widget-border, #333)',
+                            borderRadius: 8,
+                            overflow: 'hidden',
+                            background: 'var(--vscode-editor-background, #1e1e1e)',
+                          }}
+                        >
+                          {/* Preview */}
+                          <div
+                            style={{
+                              aspectRatio: '9 / 16',
+                              background: bgUrl
+                                ? `url(${bgUrl}) center/cover no-repeat`
+                                : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                              minHeight: 200,
+                            }}
+                          />
+                          {/* Info + Delete */}
+                          <div style={{ padding: 8 }}>
+                            <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {bg.label || bg.file_details?.name || 'Achtergrond'}
+                            </div>
+                            <div style={{ fontSize: 10, color: '#888', marginBottom: 6 }}>
+                              {new Date(bg.created_at).toLocaleDateString()}
+                            </div>
+                            {!readOnly && (
+                              <button
+                                onClick={() => handleDeleteById(bg.id)}
+                                style={{
+                                  width: '100%',
+                                  padding: '4px 0',
+                                  fontSize: 11,
+                                  background: 'transparent',
+                                  color: '#f44',
+                                  border: '1px solid #f44',
+                                  borderRadius: 4,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                🗑 Verwijderen
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ padding: 20, textAlign: 'center', color: '#888', fontSize: 13, background: '#252526', borderRadius: 8, border: '1px dashed #444' }}>
+                    Nog geen achtergronden geüpload. Klik op "Achtergrond Uploaden" om te beginnen.
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </Section>
 
         {!profile && (

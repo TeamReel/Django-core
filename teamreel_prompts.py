@@ -323,6 +323,29 @@ CRITICAL INSTRUCTIONS:
 """,
     },
 
+    "background_standardize": {
+        "id": "background_standardize",
+        "name": "Achtergrond Standaardiseren",
+        "category": "postprocess",
+        "description": "Zet een geüploade afbeelding om naar portrait formaat (1080×1920) voor video achtergronden.",
+        "input_requirements": ["source"],
+        "parameters": {},
+        "preprocessing": {},
+        "prompt_template": """You are given an uploaded image that will be used as a video background. Your task is to convert it into a clean, professional portrait-format background.
+
+CRITICAL INSTRUCTIONS:
+1. The output MUST be PORTRAIT orientation (9:16, 1080x1920 pixels).
+2. FILL the entire canvas — no black bars, no letterboxing.
+3. Use intelligent cropping/scaling: keep the most visually important area centered.
+4. If the source is landscape, crop to the most interesting vertical segment.
+5. Apply a very subtle darkening (10-15%) to ensure text overlay readability.
+6. Add a very subtle vignette around the edges for a professional look.
+7. Maintain image quality — no blur, no distortion, no artifacts.
+8. Do NOT add text, logos, or watermarks.
+9. The result should look like a high-quality, broadcast-ready background for vertical video content.
+""",
+    },
+
     # =========================================================================
     # 3. TENUE (KIT) GENERATION
     # =========================================================================

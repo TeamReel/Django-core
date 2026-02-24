@@ -17,6 +17,7 @@ export interface BrandAsset {
   profile: string;
   file: string;
   asset_type: string;
+  label: string;
   alt_text: string;
   is_active: boolean;
   file_details: {
@@ -145,8 +146,12 @@ export const ASSET_TYPE_LABELS: Record<string, string> = {
   font_file: 'Lettertype',
   location_photo: 'Locatie foto',
   stadium_background: 'Stadion achtergrond',
+  'club_background': 'Achtergrond',
   other: 'Overig',
 };
+
+/** Multi-instance asset types (allow multiple per profile) */
+export const MULTI_INSTANCE_TYPES = new Set(['club_background']);
 
 // ============================================================================
 // S3 URL helper
@@ -214,14 +219,18 @@ interface UseBrandProfileReturn {
   error: string | null;
   /** Reload profile and assets */
   refresh: () => Promise<void>;
-  /** Get asset by type */
+  /** Get first asset by type (for single-instance types) */
   getAsset: (assetType: string) => BrandAsset | undefined;
+  /** Get all assets of a given type (for multi-instance types like club_background) */
+  getAssets: (assetType: string) => BrandAsset[];
   /** Get asset URL by type (with S3 prefix) */
   getAssetUrl: (assetType: string) => string | null;
   /** Upload a file and create/update a BrandAsset */
-  uploadAsset: (file: File, assetType: string, pathPrefix?: string) => Promise<BrandAsset | null>;
-  /** Delete (deactivate) a BrandAsset by asset type */
+  uploadAsset: (file: File, assetType: string, pathPrefix?: string, label?: string) => Promise<BrandAsset | null>;
+  /** Delete (deactivate) a BrandAsset by asset type (first match) */
   deleteAsset: (assetType: string) => Promise<boolean>;
+  /** Delete a specific BrandAsset by its UUID */
+  deleteAssetById: (assetId: string) => Promise<boolean>;
   /** Fetch history for a specific asset type */
   fetchHistory: (assetType: string) => Promise<Array<{id: string, url: string, created_at: string, original_name: string}>>;
   /** Restore a previous version */
@@ -310,6 +319,11 @@ export function useBrandProfile({
     [assets]
   );
 
+  const getAssets = useCallback(
+    (assetType: string) => assets.filter((a) => a.asset_type === assetType && a.is_active),
+    [assets]
+  );
+
   const getAssetUrlByType = useCallback(
     (assetType: string): string | null => {
       const asset = assets.find((a) => a.asset_type === assetType && a.is_active);
@@ -319,7 +333,7 @@ export function useBrandProfile({
   );
 
   const uploadAsset = useCallback(
-    async (file: File, assetType: string, pathPrefix?: string): Promise<BrandAsset | null> => {
+    async (file: File, assetType: string, pathPrefix?: string, label?: string): Promise<BrandAsset | null> => {
       let activeProfile = profile;
 
       // Auto-create BrandProfile if missing (e.g. first upload on a team page)
@@ -388,7 +402,9 @@ export function useBrandProfile({
         const fileData = fileJson?.data || fileJson;
 
         // Step 2: Create or update BrandAsset
-        const existing = assets.find((a) => a.asset_type === assetType);
+        // Multi-instance types always create new; single-instance types update existing
+        const isMulti = MULTI_INSTANCE_TYPES.has(assetType);
+        const existing = isMulti ? undefined : assets.find((a) => a.asset_type === assetType);
 
         let brandAsset: BrandAsset;
 
@@ -425,6 +441,7 @@ export function useBrandProfile({
                 file: fileData.id,
                 asset_type: assetType,
                 is_active: true,
+                ...(label ? { label } : {}),
               }),
             }
           );
@@ -443,6 +460,33 @@ export function useBrandProfile({
       }
     },
     [apiBase, organisationId, projectId, profile, assets, fetchProfile]
+  );
+
+  const deleteAssetById = useCallback(
+    async (assetId: string): Promise<boolean> => {
+      if (!profile) return false;
+
+      try {
+        const res = await fetch(
+          `${apiBase}/api/v1/branding/profiles/${profile.id}/assets/${assetId}/`,
+          {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+              'X-CSRFToken': getCsrfToken(),
+            },
+          }
+        );
+        if (!res.ok && res.status !== 204) throw new Error(`Delete failed: ${res.status}`);
+        await fetchProfile();
+        return true;
+      } catch (err) {
+        console.error('[useBrandProfile] DeleteById error:', err);
+        setError(err instanceof Error ? err.message : 'Delete failed');
+        return false;
+      }
+    },
+    [apiBase, profile, fetchProfile]
   );
 
   const deleteAsset = useCallback(
@@ -532,9 +576,11 @@ export function useBrandProfile({
     error,
     refresh: fetchProfile,
     getAsset,
+    getAssets,
     getAssetUrl: getAssetUrlByType,
     uploadAsset,
     deleteAsset,
+    deleteAssetById,
     fetchHistory,
     restoreAsset,
   };

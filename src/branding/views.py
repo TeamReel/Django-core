@@ -467,6 +467,39 @@ class BrandAssetViewSet(viewsets.ModelViewSet):
         serializer = BrandAssetSerializer(qs, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
 
+    @action(detail=False, methods=["get"], url_path="club-backgrounds")
+    def club_backgrounds(self, request):
+        """List club_background assets for a specific profile.
+
+        GET /api/v1/branding/assets/club-backgrounds/?profile=<uuid>
+
+        Returns all club_background assets for the given profile,
+        ordered newest first.
+        """
+        profile_id = request.query_params.get("profile")
+        if not profile_id:
+            return Response(
+                {"detail": "profile query parameter is required."},
+                status=400,
+            )
+
+        qs = (
+            BrandAsset.objects.filter(
+                profile_id=profile_id,
+                asset_type="club_background",
+                is_active=True,
+            )
+            .select_related(
+                "profile",
+                "profile__project",
+                "profile__project__parent_project",
+                "file",
+            )
+            .order_by("-created_at")
+        )
+        serializer = BrandAssetSerializer(qs, many=True, context=self.get_serializer_context())
+        return Response(serializer.data)
+
 
 class TokenResolutionView(APIView):
     """Resolve merged brand tokens for a project or organisation.

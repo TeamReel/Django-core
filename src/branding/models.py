@@ -240,6 +240,7 @@ class BrandAsset(models.Model):
         # ── Location & Other ──
         ("stadium_background", "Stadium/Pitch Background"),
         ("location_photo", "Location Photo"),
+        ("club_background", "Club Background (Custom)"),
         ("other", "Other"),
     ]
 
@@ -252,6 +253,11 @@ class BrandAsset(models.Model):
         help_text="B22 FileAsset reference (PROTECT to prevent accidental deletion)",
     )
     asset_type = models.CharField(max_length=50, choices=ASSET_TYPE_CHOICES)
+    label = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Optional display label for multi-instance types (e.g. club backgrounds)",
+    )
     alt_text = models.CharField(
         max_length=255, blank=True, help_text="Accessibility text for images"
     )
@@ -266,7 +272,9 @@ class BrandAsset(models.Model):
         verbose_name_plural = "Brand Assets"
         constraints = [
             models.UniqueConstraint(
-                fields=["profile", "asset_type"], name="unique_asset_type_per_profile"
+                fields=["profile", "asset_type"],
+                name="unique_asset_type_per_profile",
+                condition=~models.Q(asset_type="club_background"),
             )
         ]
         indexes = [

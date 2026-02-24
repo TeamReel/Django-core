@@ -322,6 +322,7 @@ class BrandAssetSerializer(serializers.ModelSerializer):
             "profile",
             "file",
             "asset_type",
+            "label",
             "alt_text",
             "is_active",
             "file_details",
@@ -450,6 +451,7 @@ class BrandAssetSerializer(serializers.ModelSerializer):
 
         Prevents multiple assets of the same type (e.g., multiple logos) for
         one profile. Users should update existing assets instead.
+        Multi-instance types (club_background) are exempt from this check.
 
         Args:
             data: Validated field data
@@ -463,7 +465,10 @@ class BrandAssetSerializer(serializers.ModelSerializer):
         profile = data.get("profile")
         asset_type = data.get("asset_type")
 
-        if profile and asset_type:
+        # Multi-instance types: allow multiple per profile
+        MULTI_INSTANCE_TYPES = {"club_background"}
+
+        if profile and asset_type and asset_type not in MULTI_INSTANCE_TYPES:
             # On update, exclude self from check
             qs = BrandAsset.objects.filter(profile=profile, asset_type=asset_type)
             if self.instance:

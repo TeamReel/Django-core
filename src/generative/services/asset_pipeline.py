@@ -498,6 +498,40 @@ def _postprocess_location_standardize(
     return buf.getvalue()
 
 
+def _postprocess_background_portrait(
+    image_bytes: bytes, canvas_w: int = 1080, canvas_h: int = 1920
+) -> bytes:
+    """Convert any image to portrait (1080x1920) for video backgrounds.
+
+    Uses cover-crop: scales to fill the canvas entirely, then center-crops.
+    Applies subtle darkening (10%) for text overlay readability.
+    """
+    from PIL import Image, ImageEnhance
+
+    img = Image.open(BytesIO(image_bytes)).convert("RGB")
+    w, h = img.size
+
+    # Cover-crop: scale so image fills canvas entirely, then crop center
+    scale = max(canvas_w / w, canvas_h / h)
+    new_w = max(1, int(w * scale))
+    new_h = max(1, int(h * scale))
+
+    resized = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+    # Center-crop to exact canvas size
+    left = (new_w - canvas_w) // 2
+    top = (new_h - canvas_h) // 2
+    cropped = resized.crop((left, top, left + canvas_w, top + canvas_h))
+
+    # Subtle darkening for text overlay readability
+    enhancer = ImageEnhance.Brightness(cropped)
+    darkened = enhancer.enhance(0.90)
+
+    buf = BytesIO()
+    darkened.save(buf, format="PNG")
+    return buf.getvalue()
+
+
 # Map template_id → postprocess function that runs on Gemini's output
 OUTPUT_POSTPROCESSORS: dict[str, Any] = {
     "logo_postprocess": lambda img_bytes, params: _postprocess_crop_and_center(
@@ -524,6 +558,9 @@ OUTPUT_POSTPROCESSORS: dict[str, Any] = {
     "location_postprocess": lambda img_bytes, params: _postprocess_location_standardize(
         img_bytes,
     ),
+    "background_standardize": lambda img_bytes, params: _postprocess_background_portrait(
+        img_bytes,
+    ),
 }
 
 # Postprocess templates that use pure Pillow (no AI / Gemini call).
@@ -535,6 +572,7 @@ PILLOW_ONLY_TEMPLATES: set[str] = {
     "sponsor_postprocess",
     "kit_postprocess",
     "location_postprocess",
+    "background_standardize",
 }
 
 
