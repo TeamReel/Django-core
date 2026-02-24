@@ -137,12 +137,24 @@ THEN_VS_NOW_SPEC = VideoSpec(
     aspect_ratio="9:16",
 )
 
+PHOTO_COMPOSITE_SPEC = VideoSpec(
+    width=540,
+    height=960,
+    format="webm",
+    fps=25,
+    codec="vp9",
+    bg_removed=True,
+    max_duration=None,
+    aspect_ratio="9:16",
+)
+
 ASSET_SPECS: dict[str, ImageSpec | VideoSpec] = {
     "fullbody": FULLBODY_SPEC,
     "closeup": CLOSEUP_SPEC,
     "intro": INTRO_SPEC,
     "celebration": CELEBRATION_SPEC,
     "then_vs_now": THEN_VS_NOW_SPEC,
+    "photo_composite": PHOTO_COMPOSITE_SPEC,
 }
 
 

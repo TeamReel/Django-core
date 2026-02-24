@@ -1605,6 +1605,7 @@ def save_asset_view(request: Request) -> Response:
             or asset_type.startswith("member_closeup")
             or asset_type.startswith("member_intro")
             or asset_type.startswith("member_goal_celebration")
+            or asset_type.startswith("photo_composite")
         )
     )
 
