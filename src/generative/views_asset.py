@@ -1745,20 +1745,34 @@ def save_asset_view(request: Request) -> Response:
                         )
                         logger.info(f"🆕 Created org-level BrandProfile: {brand_profile.id}")
 
-                # Multi-instance types (e.g. club_background) always create new,
-                # single-instance types use update_or_create.
+                # Multi-instance types (e.g. club_background) use label-based
+                # update_or_create when a label is provided (so regenerating
+                # replaces the existing processed asset for that label).
+                # Without a label they always create new.
                 MULTI_INSTANCE_ASSET_TYPES = {"club_background", "club_background_upload"}
 
                 if asset_type in MULTI_INSTANCE_ASSET_TYPES:
-                    brand_asset = BrandAsset.objects.create(
-                        profile=brand_profile,
-                        asset_type=asset_type,
-                        file=file_asset,
-                        label=label,
-                        alt_text=f"AI-processed {asset_type.replace('_', ' ')}",
-                        is_active=True,
-                    )
-                    created = True
+                    if label:
+                        brand_asset, created = BrandAsset.objects.update_or_create(
+                            profile=brand_profile,
+                            asset_type=asset_type,
+                            label=label,
+                            defaults={
+                                "file": file_asset,
+                                "alt_text": f"AI-processed {asset_type.replace('_', ' ')}",
+                                "is_active": True,
+                            },
+                        )
+                    else:
+                        brand_asset = BrandAsset.objects.create(
+                            profile=brand_profile,
+                            asset_type=asset_type,
+                            file=file_asset,
+                            label=label,
+                            alt_text=f"AI-processed {asset_type.replace('_', ' ')}",
+                            is_active=True,
+                        )
+                        created = True
                 else:
                     # Create or update the BrandAsset
                     brand_asset, created = BrandAsset.objects.update_or_create(

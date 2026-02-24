@@ -1153,15 +1153,29 @@ export function AssetsTab({
             const bgFileRef = React.createRef<HTMLInputElement>();
 
             // Group by label: match uploads with their AI-processed counterparts
-            const allLabels = new Set<string>();
-            bgUploads.forEach(bg => allLabels.add(bg.label || bg.file_details?.name || 'Achtergrond'));
-            bgProcessed.forEach(bg => allLabels.add(bg.label || bg.file_details?.name || 'Achtergrond'));
+            // Uploads are the primary source. Each upload tries to find a matching processed asset.
+            // Processed assets without a matching upload (legacy/orphaned) are shown separately.
+            const matchedProcessedIds = new Set<string>();
+            const bgPairs: { label: string; upload?: any; processed?: any }[] = [];
 
-            const bgPairs = Array.from(allLabels).map(label => ({
-              label,
-              upload: bgUploads.find(bg => (bg.label || bg.file_details?.name || 'Achtergrond') === label),
-              processed: bgProcessed.find(bg => (bg.label || bg.file_details?.name || 'Achtergrond') === label),
-            }));
+            for (const upload of bgUploads) {
+              const uploadLabel = upload.label || upload.file_details?.name || 'Achtergrond';
+              // Find processed asset with same label
+              const match = bgProcessed.find(bg => bg.label && bg.label === uploadLabel);
+              if (match) matchedProcessedIds.add(match.id);
+              bgPairs.push({ label: uploadLabel, upload, processed: match });
+            }
+
+            // Orphaned processed assets (no matching upload — e.g. saved before label flow)
+            for (const proc of bgProcessed) {
+              if (!matchedProcessedIds.has(proc.id)) {
+                bgPairs.push({
+                  label: proc.label || proc.file_details?.name || 'Achtergrond',
+                  upload: undefined,
+                  processed: proc,
+                });
+              }
+            }
 
             return (
               <>
