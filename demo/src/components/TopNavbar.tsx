@@ -231,10 +231,14 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   const [commandOpen, setCommandOpen] = useState(false);
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [quickReviewOpen, setQuickReviewOpen] = useState(false);
+  const [queueModalTab, setQueueModalTab] = useState<'review' | 'in-progress'>('review');
   const [quickReviewIdx, setQuickReviewIdx] = useState(0);
   const [quickReviewBusy, setQuickReviewBusy] = useState(false);
   const [selectedVariantIdx, setSelectedVariantIdx] = useState<number | null>(null);
   const [photoCompositeFollowUp, setPhotoCompositeFollowUp] = useState<PhotoCompositeFollowUpInfo | null>(null);
+  const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
+  const [notificationsList, setNotificationsList] = useState<Array<{ id: string; message: string; is_read: boolean; created_at: string }>>([]);
+  const [creditsModalOpen, setCreditsModalOpen] = useState(false);
 
   // Quick-review: fetch pending_review jobs (only when modal is open or count > 0)
   const { jobs: allAiJobs, refresh: refreshAiJobs } = useGenerationJobs({
@@ -242,6 +246,10 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   });
   const pendingReviewJobs = useMemo(() =>
     allAiJobs.filter(j => j.status === 'completed' && (j.approval_status === 'pending_review' || !j.approval_status)),
+    [allAiJobs],
+  );
+  const inProgressJobs = useMemo(() =>
+    allAiJobs.filter(j => j.status === 'queued' || j.status === 'processing'),
     [allAiJobs],
   );
   const createMenuRef = useRef<HTMLDivElement | null>(null);
@@ -484,6 +492,15 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             : 0;
           debugLog('[TopNavbar] Unread count:', unread);
           setUnreadCount(unread);
+          // Store full notifications list for modal
+          if (Array.isArray(notifications)) {
+            setNotificationsList(notifications.slice(0, 10).map((n: any) => ({
+              id: n.id,
+              message: n.message || n.content || 'Notification',
+              is_read: n.is_read ?? false,
+              created_at: n.created_at || new Date().toISOString(),
+            })));
+          }
         } else {
           console.error('[TopNavbar] Notifications API error:', response.status, response.statusText);
         }
@@ -1085,13 +1102,11 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             {/* Queue Icon - shows active/review count */}
             <button
               onClick={() => {
-                if (queueCounts.review > 0) {
-                  setQuickReviewIdx(0);
-                  setSelectedVariantIdx(null);
-                  setQuickReviewOpen(true);
-                } else {
-                  navigate('/approvals');
-                }
+                // Always open modal, default tab based on what has items
+                setQueueModalTab(queueCounts.review > 0 ? 'review' : 'in-progress');
+                setQuickReviewIdx(0);
+                setSelectedVariantIdx(null);
+                setQuickReviewOpen(true);
               }}
               className="nav-right-fixed nav-icon-button"
               aria-label="Queue"
@@ -1126,7 +1141,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
 
             {/* Notification Icon - always visible */}
             <button
-              onClick={() => navigate('/notifications')}
+              onClick={() => setNotificationsModalOpen(true)}
               className="nav-right-fixed nav-icon-button"
               aria-label="Notifications"
               style={{
@@ -1162,11 +1177,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             {!isMobile && user ? (
               <button
                 className="nav-credits-button nav-icon-button"
-                onClick={() => {
-                  const id = Number(currentUserId);
-                  if (!Number.isFinite(id)) return;
-                  navigate(`/users/${id}?tab=balance`);
-                }}
+                onClick={() => setCreditsModalOpen(true)}
                 style={{
                   position: 'relative',
                   padding: '8px',
@@ -1404,9 +1415,126 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
 
       {/* ─── Quick Review Modal (triggered from navbar queue icon) ─── */}
       {quickReviewOpen && (() => {
-        const job = pendingReviewJobs[quickReviewIdx];
+        // Choose which jobs to show based on tab
+        const jobsToShow = queueModalTab === 'review' ? pendingReviewJobs : inProgressJobs;
+        const job = queueModalTab === 'review' ? jobsToShow[quickReviewIdx] : null;
+
+        // Empty state for current tab
+        if (jobsToShow.length === 0) {
+          return (
+            <div
+              onClick={() => setQuickReviewOpen(false)}
+              style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+            >
+              <div onClick={e => e.stopPropagation()} style={{ backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, padding: '24px 32px', textAlign: 'center', boxShadow: '0 24px 64px rgba(0,0,0,0.36)', minWidth: 400 }}>
+                {/* Tabs */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 20, justifyContent: 'center' }}>
+                  <button
+                    onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); }}
+                    style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: queueModalTab === 'review' ? '#2563eb' : 'var(--app-border, #334155)', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+                  >
+                    Te Reviewen ({pendingReviewJobs.length})
+                  </button>
+                  <button
+                    onClick={() => setQueueModalTab('in-progress')}
+                    style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: queueModalTab === 'in-progress' ? '#f59e0b' : 'var(--app-border, #334155)', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+                  >
+                    In Progress ({inProgressJobs.length})
+                  </button>
+                </div>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>{queueModalTab === 'review' ? '✅' : '⏳'}</div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text)', marginBottom: 8 }}>
+                  {queueModalTab === 'review' ? 'Alles beoordeeld!' : 'Geen actieve jobs'}
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--app-text-secondary, #9ca3af)', marginBottom: 20 }}>
+                  {queueModalTab === 'review' ? 'Er zijn geen items meer die review nodig hebben.' : 'Er zijn geen jobs in uitvoering.'}
+                </div>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                  <button
+                    onClick={() => { setQuickReviewOpen(false); navigate('/approvals'); }}
+                    style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text-secondary)', fontWeight: 500, fontSize: 12, cursor: 'pointer' }}
+                  >
+                    Open Queue →
+                  </button>
+                  <button
+                    onClick={() => setQuickReviewOpen(false)}
+                    style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+                  >
+                    Sluiten
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // In-progress tab: show list view
+        if (queueModalTab === 'in-progress') {
+          return (
+            <div
+              onClick={() => setQuickReviewOpen(false)}
+              style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+            >
+              <div
+                onClick={e => e.stopPropagation()}
+                style={{ width: '100%', maxWidth: 560, backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '80vh', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}
+              >
+                {/* Header with tabs */}
+                <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text)' }}>Queue</div>
+                    <button onClick={() => setQuickReviewOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--app-text-secondary)', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}>✕</button>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); }}
+                      style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--app-border, #334155)', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+                    >
+                      Te Reviewen ({pendingReviewJobs.length})
+                    </button>
+                    <button
+                      onClick={() => setQueueModalTab('in-progress')}
+                      style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: '#f59e0b', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+                    >
+                      In Progress ({inProgressJobs.length})
+                    </button>
+                  </div>
+                </div>
+
+                {/* In-progress list */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+                  {inProgressJobs.map((j, i) => (
+                    <div key={j.task_id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px', borderRadius: 8, background: 'var(--app-background, #0f172a)', marginBottom: 8 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 6, backgroundColor: j.status === 'processing' ? '#f59e0b' : '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>
+                        {j.status === 'processing' ? '⚙️' : '⏳'}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text)' }}>{j.label || j.template_id}</div>
+                        <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
+                          {j.status === 'processing' ? 'Bezig...' : 'In wachtrij'} · {new Date(j.created_at).toLocaleTimeString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer */}
+                <div style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border, #334155)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <button
+                    onClick={() => { setQuickReviewOpen(false); navigate('/approvals?tab=ai_queue'); }}
+                    style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text-secondary)', fontWeight: 500, fontSize: 12, cursor: 'pointer' }}
+                  >
+                    Open Queue →
+                  </button>
+                  <button onClick={() => setQuickReviewOpen(false)} style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Sluiten</button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // Review tab: existing single-item review UI
         if (!job) {
-          // No more items to review
           return (
             <div
               onClick={() => setQuickReviewOpen(false)}
@@ -1486,40 +1614,78 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 boxShadow: '0 24px 64px rgba(0,0,0,0.36)',
               }}
             >
-              {/* Header */}
-              <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
-                    {job.label || job.template_id}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
-                    {job.output_type} · {new Date(job.created_at).toLocaleString()}
-                    {pendingReviewJobs.length > 0 && ` · ${quickReviewIdx + 1} van ${pendingReviewJobs.length}`}
-                  </div>
-                </div>
-                {/* Nav arrows */}
-                <div style={{ display: 'flex', gap: 4 }}>
+              {/* Header with tabs */}
+              <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)', flexShrink: 0 }}>
+                {/* Tab buttons */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                   <button
-                    disabled={quickReviewIdx <= 0}
-                    onClick={() => { setQuickReviewIdx(i => Math.max(0, i - 1)); setSelectedVariantIdx(null); }}
-                    style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text)', cursor: quickReviewIdx > 0 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx > 0 ? 1 : 0.4, fontSize: 14 }}
+                    onClick={() => setQueueModalTab('review')}
+                    style={{
+                      padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                      backgroundColor: 'var(--app-primary, #3b82f6)',
+                      color: '#fff',
+                      fontSize: 13, fontWeight: 600,
+                    }}
                   >
-                    ‹
+                    Te Reviewen ({pendingReviewJobs.length})
                   </button>
                   <button
-                    disabled={quickReviewIdx >= pendingReviewJobs.length - 1}
-                    onClick={() => { setQuickReviewIdx(i => Math.min(pendingReviewJobs.length - 1, i + 1)); setSelectedVariantIdx(null); }}
-                    style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text)', cursor: quickReviewIdx < pendingReviewJobs.length - 1 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx < pendingReviewJobs.length - 1 ? 1 : 0.4, fontSize: 14 }}
+                    onClick={() => setQueueModalTab('in-progress')}
+                    style={{
+                      padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                      backgroundColor: 'var(--app-surface-elevated, #334155)',
+                      color: 'var(--app-text-secondary, #9ca3af)',
+                      fontSize: 13, fontWeight: 600,
+                    }}
                   >
-                    ›
+                    In Progress ({inProgressJobs.length})
+                  </button>
+                  <button
+                    onClick={() => { setQuickReviewOpen(false); navigate('/queue'); }}
+                    style={{
+                      marginLeft: 'auto', padding: '6px 12px', borderRadius: 8, border: '1px solid var(--app-border, #475569)',
+                      backgroundColor: 'transparent', color: 'var(--app-text-secondary, #9ca3af)',
+                      fontSize: 12, cursor: 'pointer',
+                    }}
+                  >
+                    Volledige Queue →
                   </button>
                 </div>
-                <button
-                  onClick={() => setQuickReviewOpen(false)}
-                  style={{ background: 'none', border: 'none', color: 'var(--app-text-secondary)', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}
-                >
-                  ✕
-                </button>
+                {/* Job info row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
+                      {job.label || job.template_id}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
+                      {job.output_type} · {new Date(job.created_at).toLocaleString()}
+                      {pendingReviewJobs.length > 0 && ` · ${quickReviewIdx + 1} van ${pendingReviewJobs.length}`}
+                    </div>
+                  </div>
+                  {/* Nav arrows */}
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button
+                      disabled={quickReviewIdx <= 0}
+                      onClick={() => { setQuickReviewIdx(i => Math.max(0, i - 1)); setSelectedVariantIdx(null); }}
+                      style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text)', cursor: quickReviewIdx > 0 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx > 0 ? 1 : 0.4, fontSize: 14 }}
+                    >
+                      ‹
+                    </button>
+                    <button
+                      disabled={quickReviewIdx >= pendingReviewJobs.length - 1}
+                      onClick={() => { setQuickReviewIdx(i => Math.min(pendingReviewJobs.length - 1, i + 1)); setSelectedVariantIdx(null); }}
+                      style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text)', cursor: quickReviewIdx < pendingReviewJobs.length - 1 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx < pendingReviewJobs.length - 1 ? 1 : 0.4, fontSize: 14 }}
+                    >
+                      ›
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => setQuickReviewOpen(false)}
+                    style={{ background: 'none', border: 'none', color: 'var(--app-text-secondary)', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               {/* Variants */}
@@ -1628,6 +1794,138 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           onClose={() => setPhotoCompositeFollowUp(null)}
           onSubmitted={() => refreshAiJobs()}
         />
+      )}
+
+      {/* Notifications Modal */}
+      {notificationsModalOpen && (
+        <div
+          onClick={() => setNotificationsModalOpen(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 480,
+              backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, overflow: 'hidden',
+              display: 'flex', flexDirection: 'column', maxHeight: '70vh',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.36)',
+            }}
+          >
+            {/* Header */}
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
+                  Notificaties
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
+                  {notificationsList.length} recente notificaties
+                </div>
+              </div>
+              <button
+                onClick={() => { setNotificationsModalOpen(false); navigate('/notifications'); }}
+                style={{
+                  padding: '6px 12px', borderRadius: 8, border: '1px solid var(--app-border, #475569)',
+                  backgroundColor: 'transparent', color: 'var(--app-text-secondary, #9ca3af)',
+                  fontSize: 12, cursor: 'pointer',
+                }}
+              >
+                Alle Notificaties →
+              </button>
+              <button
+                onClick={() => setNotificationsModalOpen(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--app-text-secondary)', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}
+              >
+                ✕
+              </button>
+            </div>
+            {/* Content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+              {notificationsList.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 24, color: 'var(--app-text-secondary, #9ca3af)' }}>
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
+                  <div style={{ fontSize: 14 }}>Geen notificaties</div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {notificationsList.slice(0, 10).map((notif: any) => (
+                    <div
+                      key={notif.id}
+                      style={{
+                        padding: 12, borderRadius: 8,
+                        backgroundColor: notif.read ? 'var(--app-surface-elevated, #334155)' : 'rgba(59, 130, 246, 0.15)',
+                        border: notif.read ? '1px solid var(--app-border, #475569)' : '1px solid rgba(59, 130, 246, 0.3)',
+                      }}
+                    >
+                      <div style={{ fontSize: 13, color: 'var(--app-text)', fontWeight: notif.read ? 400 : 600 }}>
+                        {notif.title || notif.message}
+                      </div>
+                      {notif.message && notif.title && (
+                        <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 4 }}>
+                          {notif.message}
+                        </div>
+                      )}
+                      <div style={{ fontSize: 10, color: 'var(--app-text-secondary, #6b7280)', marginTop: 4 }}>
+                        {new Date(notif.created_at).toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Credits Modal */}
+      {creditsModalOpen && (
+        <div
+          onClick={() => setCreditsModalOpen(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 400,
+              backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, overflow: 'hidden',
+              display: 'flex', flexDirection: 'column',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.36)',
+            }}
+          >
+            {/* Header */}
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
+                  Credits
+                </div>
+              </div>
+              <button
+                onClick={() => setCreditsModalOpen(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--app-text-secondary)', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}
+              >
+                ✕
+              </button>
+            </div>
+            {/* Content */}
+            <div style={{ padding: 24, textAlign: 'center' }}>
+              <div style={{ fontSize: 48, fontWeight: 700, color: 'var(--app-primary, #3b82f6)' }}>
+                {myCreditsBalance}
+              </div>
+              <div style={{ fontSize: 14, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 4 }}>
+                beschikbare credits
+              </div>
+              <button
+                onClick={() => { setCreditsModalOpen(false); navigate('/credits'); }}
+                style={{
+                  marginTop: 20, padding: '10px 24px', borderRadius: 8, border: '1px solid var(--app-border, #475569)',
+                  backgroundColor: 'transparent', color: 'var(--app-text)', fontWeight: 600,
+                  fontSize: 13, cursor: 'pointer', width: '100%',
+                }}
+              >
+                Bekijk Credits Overzicht →
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
