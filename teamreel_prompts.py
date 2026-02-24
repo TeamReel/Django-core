@@ -347,15 +347,17 @@ LAYOUT REQUIREMENTS (design the background accordingly):
 4. The HORIZONTAL CENTER must be clean and free of dominant objects — the player stands there.
 5. Make the left and right edges slightly more detailed/interesting since those will remain visible beside the player.
 
-VISUAL QUALITY:
+CROPPING & ZOOMING:
 6. FILL the entire 1080x1920 canvas — absolutely NO black bars, letterboxing, or empty space.
-7. Use the uploaded image as the PRIMARY visual source — recompose and enhance it, but keep it recognizable.
-8. Apply subtle darkening (10-15%) across the image for text overlay readability.
-9. The lighting must feel natural and directional (as if a real person could stand in the scene with consistent shadows).
-10. Colors: rich, saturated, broadcast-quality — suitable for sports content.
-11. Maintain sharp image quality — no blur, no distortion, no artifacts.
-12. Do NOT add any text, logos, watermarks, or people.
-13. The result must look like a professional broadcast sports backdrop where a real player photo will be seamlessly composited.
+7. If the source image is landscape or doesn't naturally fill portrait format, ZOOM IN / CROP to select the most interesting section that works as a portrait background. Don't stretch or distort — just pick a compelling crop.
+8. Use the uploaded image as the PRIMARY visual source — recompose and enhance it, but keep it recognizable.
+VISUAL QUALITY:
+9. Apply subtle darkening (10-15%) across the image for text overlay readability.
+10. The lighting must feel natural and directional (as if a real person could stand in the scene with consistent shadows).
+11. Colors: rich, saturated, broadcast-quality — suitable for sports content.
+12. Maintain sharp image quality — no blur, no distortion, no artifacts.
+13. Do NOT add any text, logos, watermarks, or people.
+14. The result must look like a professional broadcast sports backdrop where a real player photo will be seamlessly composited.
 """,
     },
 
