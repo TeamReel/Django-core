@@ -44,7 +44,7 @@ def _update_variant_metadata(
     meta = getattr(membership, "metadata", None) or {}
     tr = meta.get("teamreel_assets", {})
 
-    if asset_type in ("fullbody", "closeup"):
+    if asset_type in ("fullbody", "closeup", "halfbody"):
         images = tr.setdefault("images", {})
         cat = images.setdefault(asset_type, {})
         cat[kit_type] = variant_value
@@ -94,7 +94,7 @@ def _get_variant_state(
     meta = getattr(membership, "metadata", None) or {}
     tr = meta.get("teamreel_assets", {})
 
-    if asset_type in ("fullbody", "closeup"):
+    if asset_type in ("fullbody", "closeup", "halfbody"):
         variant_val = (tr.get("images", {}).get(asset_type, {}) or {}).get(kit_type)
     else:
         composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
@@ -664,3 +664,184 @@ def auto_crop_halfbody_from_fullbody(
         return None
 
     return membership_id
+
+
+# ── Periodic cleanup: reprocess stuck/missing assets ─────────────────────────
+
+
+@shared_task(
+    bind=True,
+    max_retries=0,
+    soft_time_limit=600,
+    time_limit=660,
+    acks_late=True,
+)
+def reprocess_stuck_assets_periodic(self, *, stuck_minutes: int = 60) -> dict:
+    """Periodic task to find and fix stuck/missing assets.
+
+    Runs daily via Celery Beat. Scans all memberships for:
+    1. Images stuck in 'processing' state > stuck_minutes
+    2. Processed fullbodies missing closeup or halfbody crops
+
+    For stuck images: resets to 'pending' state.
+    For missing crops: queues auto_crop tasks.
+    """
+    from datetime import timedelta
+
+    ProjectMembership = apps.get_model("projects", "ProjectMembership")
+    stuck_threshold = timezone.now() - timedelta(minutes=stuck_minutes)
+
+    stats = {
+        "images_reset": 0,
+        "videos_reset": 0,
+        "closeups_queued": 0,
+        "halfbodies_queued": 0,
+        "members_modified": 0,
+    }
+
+    for membership in ProjectMembership.objects.all().iterator():
+        meta = getattr(membership, "metadata", None) or {}
+        tr = meta.get("teamreel_assets", {})
+        if not tr:
+            continue
+
+        images = tr.get("images", {})
+        member_changed = False
+
+        # ── 1. Reset stuck images ────────────────────────────────
+        for asset_type in list(images.keys()):
+            kits = images.get(asset_type, {})
+            if not isinstance(kits, dict):
+                continue
+            for kit_type, variant in kits.items():
+                if not isinstance(variant, dict):
+                    continue
+                state = variant.get("processing_state")
+                if state not in ("processing", "cancelling"):
+                    continue
+
+                # Check threshold
+                started_at = variant.get("processing_started_at")
+                if started_at:
+                    try:
+                        from django.utils.dateparse import parse_datetime
+
+                        started = parse_datetime(started_at)
+                        if started and started > stuck_threshold:
+                            continue  # Still within time window
+                    except (ValueError, TypeError):
+                        pass
+
+                variant["processing_state"] = "pending"
+                variant.pop("processing_started_at", None)
+                variant.pop("cancel_requested_at", None)
+                member_changed = True
+                stats["images_reset"] += 1
+                logger.info(
+                    "reprocess_stuck: reset images.%s.%s for membership %s",
+                    asset_type,
+                    kit_type,
+                    membership.id,
+                )
+
+        # ── 2. Reset stuck videos ────────────────────────────────
+        videos = tr.get("videos", {})
+        for asset_type in list(videos.keys()):
+            variants = videos.get(asset_type, {})
+            if not isinstance(variants, dict):
+                continue
+            for variant_key, variant in variants.items():
+                if not isinstance(variant, dict):
+                    continue
+                state = variant.get("processing_state")
+                if state not in ("processing", "cancelling"):
+                    continue
+
+                raw_url = variant.get("raw")
+                if not raw_url:
+                    variant["processing_state"] = "failed"
+                    variant["error"] = "periodic_cleanup: no raw URL"
+                else:
+                    variant["processing_state"] = "pending"
+                    variant.pop("processing_started_at", None)
+                    variant.pop("cancel_requested_at", None)
+                    variant.pop("progress_frames", None)
+                member_changed = True
+                stats["videos_reset"] += 1
+                logger.info(
+                    "reprocess_stuck: reset videos.%s.%s for membership %s",
+                    asset_type,
+                    variant_key,
+                    membership.id,
+                )
+
+        # ── 3. Queue missing crops ───────────────────────────────
+        fullbodies = images.get("fullbody", {})
+        if isinstance(fullbodies, dict):
+            for kit_type, fb_data in fullbodies.items():
+                if not isinstance(fb_data, dict):
+                    continue
+                if fb_data.get("processing_state") != "processed":
+                    continue
+                if not (fb_data.get("processed") or fb_data.get("raw")):
+                    continue
+
+                # Missing closeup?
+                closeups = images.get("closeup", {})
+                cu_data = closeups.get(kit_type, {}) if isinstance(closeups, dict) else {}
+                if not isinstance(cu_data, dict) or not cu_data.get("processed"):
+                    try:
+                        auto_crop_closeup_from_fullbody.delay(
+                            membership_id=str(membership.id),
+                            kit_type=kit_type,
+                        )
+                        stats["closeups_queued"] += 1
+                        logger.info(
+                            "reprocess_stuck: queued closeup crop for membership=%s kit=%s",
+                            membership.id,
+                            kit_type,
+                        )
+                    except Exception:  # noqa: BLE001
+                        logger.warning(
+                            "reprocess_stuck: failed to queue closeup crop for %s/%s",
+                            membership.id,
+                            kit_type,
+                        )
+
+                # Missing halfbody?
+                halfbodies = images.get("halfbody", {})
+                hb_data = halfbodies.get(kit_type, {}) if isinstance(halfbodies, dict) else {}
+                if not isinstance(hb_data, dict) or not hb_data.get("processed"):
+                    try:
+                        auto_crop_halfbody_from_fullbody.delay(
+                            membership_id=str(membership.id),
+                            kit_type=kit_type,
+                        )
+                        stats["halfbodies_queued"] += 1
+                        logger.info(
+                            "reprocess_stuck: queued halfbody crop for membership=%s kit=%s",
+                            membership.id,
+                            kit_type,
+                        )
+                    except Exception:  # noqa: BLE001
+                        logger.warning(
+                            "reprocess_stuck: failed to queue halfbody crop for %s/%s",
+                            membership.id,
+                            kit_type,
+                        )
+
+        # Save metadata changes
+        if member_changed:
+            try:
+                meta["teamreel_assets"] = tr
+                membership.metadata = meta
+                membership.save(update_fields=["metadata", "updated_at"])
+                stats["members_modified"] += 1
+            except Exception:  # noqa: BLE001
+                logger.exception(
+                    "reprocess_stuck: failed to save membership %s",
+                    membership.id,
+                )
+
+    logger.info("reprocess_stuck_assets_periodic complete: %s", stats)
+    return stats

@@ -172,6 +172,15 @@ CELERY_BEAT_SCHEDULE = {
             "expires": 600,  # Task expires if not run within 10 minutes
         },
     },
+    # Reprocess stuck/missing TeamReel assets daily at 4:00 AM UTC
+    "reprocess-stuck-assets": {
+        "task": "src.video.tasks.asset_processing.reprocess_stuck_assets_periodic",
+        "schedule": crontab(hour=4, minute=0),  # Daily at 4 AM UTC
+        "kwargs": {"stuck_minutes": 60},
+        "options": {
+            "expires": 3600,  # Task expires if not run within 1 hour
+        },
+    },
 }
 
 # Beat Scheduler Settings
