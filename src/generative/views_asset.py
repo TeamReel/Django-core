@@ -2173,6 +2173,28 @@ def _run_video_upload(
 
     membership_id = storage_context.get("membership_id")
 
+    # Resolve organisation from membership/project if not provided directly
+    if not v_org and membership_id:
+        try:
+            from memberships.models import Membership
+
+            _mem = Membership.objects.select_related("project__organisation").get(id=membership_id)
+            v_org = _mem.project.organisation
+            logger.debug("Resolved org from membership %s: %s", membership_id, v_org.id)
+        except Exception:
+            pass
+    if not v_org and storage_context.get("project_id"):
+        try:
+            from projects.models import Project
+
+            _proj = Project.objects.select_related("organisation").get(
+                id=storage_context["project_id"]
+            )
+            v_org = _proj.organisation
+            logger.debug("Resolved org from project %s: %s", _proj.id, v_org.id)
+        except Exception:
+            pass
+
     for i, v_result in enumerate(all_variants):
         variant: dict[str, Any] = {
             "variant_index": i,
@@ -2198,7 +2220,7 @@ def _run_video_upload(
                 variant["presigned_url"] = purl
             except Exception as url_err:
                 logger.warning("Presigned URL failed for %s: %s", v_spath, url_err)
-        elif v_bytes and v_org:
+        elif v_bytes:
             try:
                 from django.core.files.base import ContentFile
                 from django.utils import timezone
@@ -2228,17 +2250,27 @@ def _run_video_upload(
                 fo = ContentFile(v_bytes, name=fname)
                 final_sp = v_storage.save(sp, fo)
 
-                from files.models import FileAsset
+                # Create FileAsset record if organisation is available
+                if v_org:
+                    from files.models import FileAsset
 
-                fa = FileAsset.objects.create(
-                    organization=v_org,
-                    original_name=fname,
-                    storage_path=final_sp,
-                    file_size=len(v_bytes),
-                    mime_type="video/mp4",
-                    is_public=False,
-                    metadata={"source": "ai_generation", "template_id": template_id},
-                )
+                    fa = FileAsset.objects.create(
+                        organization=v_org,
+                        original_name=fname,
+                        storage_path=final_sp,
+                        file_size=len(v_bytes),
+                        mime_type="video/mp4",
+                        is_public=False,
+                        metadata={"source": "ai_generation", "template_id": template_id},
+                    )
+                    variant["file_asset_id"] = str(fa.id)
+                else:
+                    logger.warning(
+                        "Video upload variant %d: no org available, "
+                        "skipping FileAsset record (storage_path=%s)",
+                        i,
+                        final_sp,
+                    )
 
                 try:
                     purl = v_storage.get_url(final_sp, signed=True)
@@ -2247,13 +2279,10 @@ def _run_video_upload(
 
                 variant["video_url"] = purl
                 variant["storage_path"] = final_sp
-                variant["file_asset_id"] = str(fa.id)
                 logger.info("Video upload variant %d stored: %s", i, final_sp)
             except Exception as store_err:
                 logger.exception("Video upload variant %d S3 failed: %s", i, store_err)
                 variant["video_base64"] = base64.b64encode(v_bytes).decode("utf-8")
-        elif v_bytes:
-            variant["video_base64"] = base64.b64encode(v_bytes).decode("utf-8")
         elif v_result.get("video_base64"):
             variant["video_base64"] = v_result["video_base64"]
 
