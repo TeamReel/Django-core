@@ -177,7 +177,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   // Then vs Now compilation modal state
   const [thenVsNowModalOpen, setThenVsNowModalOpen] = useState(false);
-  const [thenVsNowModalType, setThenVsNowModalType] = useState<'duo_portret' | 'transformation' | 'walking_composite'>('duo_portret');
+  const [thenVsNowModalType, setThenVsNowModalType] = useState<'duo_portret' | 'duo_portret_cover' | 'duo_portret_overlay' | 'sidebyside_cover' | 'sidebyside_overlay' | 'transformation' | 'walking_composite'>('duo_portret_cover');
   const [thenVsNowModalStep, setThenVsNowModalStep] = useState<'members' | 'generating' | 'submitted' | 'error'>('members');
   const [thenVsNowModalSelected, setThenVsNowModalSelected] = useState<string[]>([]);
   const [thenVsNowModalSearch, setThenVsNowModalSearch] = useState('');
@@ -1204,6 +1204,32 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         && compositeVideo.processed
       );
 
+      // Duo Portret Cover: needs a raw photo_composite video (AI-generated)
+      const hasDuoPortretCover = !!(
+        compositeVideo
+        && typeof compositeVideo === 'object'
+        && compositeVideo.raw
+      );
+
+      // Duo Portret Overlay: needs a processed (RVM) photo_composite video
+      const hasDuoPortretOverlay = hasDuoPortret;
+
+      // Sidebyside eligibility: raw AI video
+      const sideData = thenVsNow?.sidebyside;
+      const hasSidebysideCover = !!(
+        sideData
+        && typeof sideData === 'object'
+        && (sideData.raw || (typeof sideData === 'string'))
+      );
+
+      // Sidebyside Overlay: needs processed (RVM) sidebyside video
+      const hasSidebysideOverlay = !!(
+        sideData
+        && typeof sideData === 'object'
+        && sideData.processing_state === 'processed'
+        && sideData.processed
+      );
+
       // Walking Composite eligibility: needs a processed walking_composite video
       const walkingVideo = videos?.walking_composite?.default;
       const hasWalkingComposite = !!(
@@ -1220,6 +1246,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         shirtNumber: m.metadata?.shirt_number || m.shirt_number || null,
         position: m.metadata?.position || m.position || null,
         hasDuoPortret,
+        hasDuoPortretCover,
+        hasDuoPortretOverlay,
+        hasSidebysideCover,
+        hasSidebysideOverlay,
         hasTransformation,
         hasWalkingComposite,
         transformationKeys,
@@ -1230,20 +1260,32 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   // Count members that have then_vs_now videos (for content tiles)
   const thenVsNowCounts = useMemo(() => {
     let duo_portret = 0;
+    let duo_portret_cover = 0;
+    let duo_portret_overlay = 0;
+    let sidebyside_cover = 0;
+    let sidebyside_overlay = 0;
     let transformation = 0;
     let walking_composite = 0;
     for (const m of thenVsNowEligibleMembers) {
       if (m.hasDuoPortret) duo_portret++;
+      if (m.hasDuoPortretCover) duo_portret_cover++;
+      if (m.hasDuoPortretOverlay) duo_portret_overlay++;
+      if (m.hasSidebysideCover) sidebyside_cover++;
+      if (m.hasSidebysideOverlay) sidebyside_overlay++;
       if (m.hasTransformation) transformation++;
       if (m.hasWalkingComposite) walking_composite++;
     }
-    return { duo_portret, transformation, walking_composite };
+    return { duo_portret, duo_portret_cover, duo_portret_overlay, sidebyside_cover, sidebyside_overlay, transformation, walking_composite };
   }, [thenVsNowEligibleMembers]);
 
   // Open the Then vs Now compilation modal
-  const openThenVsNowModal = (videoType: 'duo_portret' | 'transformation' | 'walking_composite') => {
+  const openThenVsNowModal = (videoType: 'duo_portret' | 'duo_portret_cover' | 'duo_portret_overlay' | 'sidebyside_cover' | 'sidebyside_overlay' | 'transformation' | 'walking_composite') => {
     const eligible = thenVsNowEligibleMembers.filter((m: any) =>
       videoType === 'duo_portret' ? m.hasDuoPortret
+        : videoType === 'duo_portret_cover' ? m.hasDuoPortretCover
+        : videoType === 'duo_portret_overlay' ? m.hasDuoPortretOverlay
+        : videoType === 'sidebyside_cover' ? m.hasSidebysideCover
+        : videoType === 'sidebyside_overlay' ? m.hasSidebysideOverlay
         : videoType === 'walking_composite' ? m.hasWalkingComposite
         : m.hasTransformation
     );
@@ -1296,6 +1338,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     try {
       const projId = String((project as any)?.id || '').trim();
       if (!projId) throw new Error('No project ID available');
+
+      // Parse compound type into video_type + composition_style
+      let videoType = thenVsNowModalType as string;
+      let compositionStyle: string | null = null;
+      if (videoType === 'duo_portret_cover') {
+        videoType = 'duo_portret';
+        compositionStyle = 'cover';
+      } else if (videoType === 'duo_portret_overlay') {
+        videoType = 'duo_portret';
+        compositionStyle = 'overlay';
+      } else if (videoType === 'sidebyside_cover') {
+        videoType = 'sidebyside';
+        compositionStyle = 'cover';
+      } else if (videoType === 'sidebyside_overlay') {
+        videoType = 'sidebyside';
+        compositionStyle = 'overlay';
+      }
+
       const res = await fetch(`${apiBaseUrl}/api/v1/video/jobs/then-vs-now-compilation/`, {
         method: 'POST',
         headers: {
@@ -1305,7 +1365,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         credentials: 'include',
         body: JSON.stringify({
           project_id: projId,
-          video_type: thenVsNowModalType,
+          video_type: videoType,
+          ...(compositionStyle ? { composition_style: compositionStyle } : {}),
           period_id: resolvedSeasonId || effectiveSeasonId || null,
           selected_member_ids: thenVsNowModalSelected,
           ...(thenVsNowSelectedBgUrl ? { background_url: thenVsNowSelectedBgUrl } : {}),
@@ -2133,14 +2194,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         const matchedTemplate = templates[0];
                         const hasTemplate = !!matchedTemplate;
                         // Then vs Now types bypass ContentGenerationModal and use our dedicated modal
-                        const isThenVsNow = item.subtype === 'transformation' || item.subtype === 'duo_portret' || item.subtype === 'walking_composite';
+                        const isThenVsNow = item.subtype === 'transformation' || item.subtype === 'duo_portret' || item.subtype === 'duo_portret_cover' || item.subtype === 'duo_portret_overlay' || item.subtype === 'sidebyside_cover' || item.subtype === 'sidebyside_overlay' || item.subtype === 'walking_composite';
 
                         return (
                           <div
                             key={item.id}
                             onClick={() => {
                               if (isThenVsNow) {
-                                openThenVsNowModal(item.subtype as 'duo_portret' | 'transformation' | 'walking_composite');
+                                openThenVsNowModal(item.subtype as 'duo_portret' | 'duo_portret_cover' | 'duo_portret_overlay' | 'sidebyside_cover' | 'sidebyside_overlay' | 'transformation' | 'walking_composite');
                               } else if (hasTemplate) {
                                 openContentModal(matchedTemplate, item.label);
                               }
@@ -2232,17 +2293,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
                         {completedVideoJobs.map(job => {
                           const typeDisplay = getJobTypeDisplay(job.job_type);
-                          // Differentiate video types based on config.video_type
+                          // Differentiate video types based on config.video_type + composition_style
                           const videoType = (job.config as any)?.video_type;
-                          const tileLabel = videoType === 'transformation'
-                            ? { icon: '🔄', label: 'Transformation' }
-                            : videoType === 'duo_portret' || videoType === 'photo_composite'
-                            ? { icon: '👥', label: 'Duo Portret' }
-                            : videoType === 'walking_composite'
-                            ? { icon: '🚶', label: 'Walking Composite' }
-                            : videoType === 'sidebyside'
-                            ? { icon: '⏪', label: 'Then & Now' }
-                            : typeDisplay;
+                          const compStyle = (job.config as any)?.composition_style;
+                          const tileLabel = (() => {
+                            if (videoType === 'transformation') return { icon: '🔄', label: 'Transformation' };
+                            if (videoType === 'walking_composite') return { icon: '🚶', label: 'Walking Composite' };
+                            if (videoType === 'duo_portret' || videoType === 'photo_composite') {
+                              if (compStyle === 'cover') return { icon: '👥', label: 'Duo Portret Cover' };
+                              if (compStyle === 'overlay') return { icon: '👥', label: 'Duo Portret Overlay' };
+                              return { icon: '👥', label: 'Duo Portret' };
+                            }
+                            if (videoType === 'sidebyside') {
+                              if (compStyle === 'cover') return { icon: '⏪', label: 'Then vs Now Cover' };
+                              if (compStyle === 'overlay') return { icon: '⏪', label: 'Then vs Now Overlay' };
+                              return { icon: '⏪', label: 'Then & Now' };
+                            }
+                            return typeDisplay;
+                          })();
                           const ago = (() => {
                             const diff = Date.now() - new Date(job.completed_at || job.created_at).getTime();
                             const mins = Math.floor(diff / 60000);
@@ -4356,7 +4424,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--app-border, #333)' }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>
-                    Compilatie — {thenVsNowModalType === 'duo_portret' ? 'Duo Portret' : thenVsNowModalType === 'walking_composite' ? 'Walking Composite' : 'Transformation'}
+                    Compilatie — {
+                      thenVsNowModalType === 'duo_portret_cover' ? 'Duo Portret Cover'
+                        : thenVsNowModalType === 'duo_portret_overlay' ? 'Duo Portret Overlay'
+                        : thenVsNowModalType === 'duo_portret' ? 'Duo Portret'
+                        : thenVsNowModalType === 'sidebyside_cover' ? 'Then vs Now Cover'
+                        : thenVsNowModalType === 'sidebyside_overlay' ? 'Then vs Now Overlay'
+                        : thenVsNowModalType === 'walking_composite' ? 'Walking Composite'
+                        : 'Transformation'
+                    }
                   </h3>
                   <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '2px' }}>
                     {thenVsNowModalStep === 'members' ? 'Selecteer spelers voor de compilatie video'
@@ -4377,6 +4453,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               {thenVsNowModalStep === 'members' && (() => {
                 const eligible = thenVsNowEligibleMembers.filter((m: any) =>
                   thenVsNowModalType === 'duo_portret' ? m.hasDuoPortret
+                    : thenVsNowModalType === 'duo_portret_cover' ? m.hasDuoPortretCover
+                    : thenVsNowModalType === 'duo_portret_overlay' ? m.hasDuoPortretOverlay
+                    : thenVsNowModalType === 'sidebyside_cover' ? m.hasSidebysideCover
+                    : thenVsNowModalType === 'sidebyside_overlay' ? m.hasSidebysideOverlay
                     : thenVsNowModalType === 'walking_composite' ? m.hasWalkingComposite
                     : m.hasTransformation
                 );
@@ -4556,8 +4636,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    {/* Background / Location selector */}
-                    {thenVsNowBackgrounds.length > 0 && (
+                    {/* Background / Location selector — hidden for cover mode (no background needed) */}
+                    {thenVsNowBackgrounds.length > 0 && thenVsNowModalType !== 'duo_portret_cover' && thenVsNowModalType !== 'sidebyside_cover' && (
                       <div style={{ marginTop: '16px' }}>
                         <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--app-muted-text)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
                           Achtergrond / Locatie

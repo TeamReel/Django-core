@@ -23,6 +23,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
     {
         "project_id": "uuid",          # Team project ID
         "video_type": "sidebyside" | "transformation" | "photo_composite" | "duo_portret" | "walking_composite",
+        "composition_style": "cover" | "overlay" | null,  # Optional — cover (fullscreen, no bg) or overlay (RVM on bg)
         "period_id": "uuid",           # Optional — season/period ID
         "selected_member_ids": [...],  # Optional — filter to specific members
         "background_url": "https://...",  # Optional — override location background
@@ -47,6 +48,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
             config = self.job.config or {}
             project_id = config.get("project_id") or str(self.job.project_id)
             video_type = config.get("video_type", "sidebyside")
+            composition_style = config.get("composition_style")  # "cover" | "overlay" | None
             selected_member_ids = config.get("selected_member_ids", [])
             # Per-member variant key override: { member_id: "transformation_snap" }
             member_variant_keys = config.get("member_variant_keys", {})
@@ -60,7 +62,13 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 season_name,
                 brand_color,
                 sponsor_url,
-            ) = self._gather_data(project_id, video_type, selected_member_ids, member_variant_keys)
+            ) = self._gather_data(
+                project_id,
+                video_type,
+                selected_member_ids,
+                member_variant_keys,
+                composition_style=composition_style,
+            )
 
             if not members:
                 if video_type in ("photo_composite", "duo_portret"):
@@ -69,8 +77,28 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                     raise ValueError("No members found with walking composite videos.")
                 raise ValueError(f"No members found with then_vs_now '{video_type}' videos.")
 
-            # Compose the video
-            if video_type in ("photo_composite", "walking_composite"):
+            # Compose the video — route based on composition_style then video_type
+            if composition_style == "cover":
+                # Cover mode: no background, raw video fills frame
+                from src.video.services.then_vs_now_composer import (
+                    compose_cover_video,
+                )
+
+                output_path = compose_cover_video(
+                    members=members,
+                    logo_url=logo_url,
+                    team_name=team_name,
+                    season_name=season_name,
+                    brand_color=brand_color,
+                    video_type=video_type,
+                    output_dir=self.temp_dir,
+                    progress_callback=self._update_progress,
+                )
+            elif composition_style == "overlay" or video_type in (
+                "photo_composite",
+                "walking_composite",
+            ):
+                # Overlay mode: transparent RVM video on stadium background
                 from src.video.services.then_vs_now_composer import (
                     compose_photo_composite_video,
                 )
@@ -160,6 +188,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
         video_type: str,
         selected_member_ids: list[str],
         member_variant_keys: dict[str, str] | None = None,
+        composition_style: str | None = None,
     ) -> tuple:
         """Gather all data needed for the composition.
 
@@ -256,7 +285,113 @@ class ThenVsNowProcessor(BaseVideoProcessor):
 
         members: list[MemberClip] | list[MemberPhotoComposite] = []
 
-        if video_type == "photo_composite":
+        if composition_style == "cover":
+            # ── Cover mode: gather RAW AI-generated videos ──
+            # For sidebyside: raw from then_vs_now.sidebyside
+            # For duo_portret: raw from photo_composite.default
+            for pm in qs:
+                meta = pm.metadata or {}
+                tr = meta.get("teamreel_assets", {})
+                videos = tr.get("videos", {})
+
+                if video_type == "sidebyside":
+                    variant = videos.get("then_vs_now", {}).get("sidebyside")
+                    if not variant:
+                        continue
+                    from src.video.services.asset_processing_specs import (
+                        normalize_variant_value,
+                    )
+
+                    normalized = normalize_variant_value(variant)
+                    url = normalized.get("raw") if normalized else None
+                    if not url:
+                        url = get_ffmpeg_best_url(variant)
+                else:
+                    # duo_portret: use raw from photo_composite
+                    variant_data = videos.get("photo_composite", {}).get("default", {})
+                    if not variant_data:
+                        continue
+                    url = (
+                        variant_data.get("raw") if isinstance(variant_data, dict) else variant_data
+                    )
+
+                if not url:
+                    continue
+
+                if url and not url.startswith("http"):
+                    try:
+                        from files.utils import get_storage_backend
+
+                        backend = get_storage_backend()
+                        url = backend.get_url(url, signed=True, expiry_seconds=3600)
+                    except Exception:
+                        pass
+
+                if url:
+                    name = pm.user.get_full_name() if pm.user else "Unknown"
+                    members.append(MemberClip(member_id=str(pm.id), name=name, video_url=url))
+
+        elif composition_style == "overlay":
+            # ── Overlay mode: gather RVM-processed transparent videos ──
+            # For sidebyside: processed from then_vs_now.sidebyside
+            # For duo_portret: processed from photo_composite.default
+            for pm in qs:
+                meta = pm.metadata or {}
+                tr = meta.get("teamreel_assets", {})
+                videos = tr.get("videos", {})
+
+                if video_type == "sidebyside":
+                    variant = videos.get("then_vs_now", {}).get("sidebyside", {})
+                    if isinstance(variant, dict):
+                        url = variant.get("processed") or None
+                        state = variant.get("processing_state", "")
+                        if state != "processed":
+                            logger.info(
+                                "Skipping %s: sidebyside not processed (state=%s)",
+                                pm.user.get_full_name() if pm.user else "?",
+                                state,
+                            )
+                            continue
+                    else:
+                        continue
+                else:
+                    # duo_portret: processed from photo_composite
+                    variant_data = videos.get("photo_composite", {}).get("default", {})
+                    if not variant_data or not isinstance(variant_data, dict):
+                        continue
+                    url = variant_data.get("processed") or None
+                    state = variant_data.get("processing_state", "")
+                    if state != "processed":
+                        logger.info(
+                            "Skipping %s: photo_composite not processed (state=%s)",
+                            pm.user.get_full_name() if pm.user else "?",
+                            state,
+                        )
+                        continue
+
+                if not url:
+                    continue
+
+                if url and not url.startswith("http"):
+                    try:
+                        from files.utils import get_storage_backend
+
+                        backend = get_storage_backend()
+                        url = backend.get_url(url, signed=True, expiry_seconds=3600)
+                    except Exception:
+                        pass
+
+                if url:
+                    name = pm.user.get_full_name() if pm.user else "Unknown"
+                    members.append(
+                        MemberPhotoComposite(
+                            member_id=str(pm.id),
+                            name=name,
+                            transparent_video_url=url,
+                        )
+                    )
+
+        elif video_type == "photo_composite":
             # ── Photo composite: gather pre-processed transparent videos ──
             # These have been through the modular pipeline:
             #   Gemini composite → MiniMax video → RVM bg removal

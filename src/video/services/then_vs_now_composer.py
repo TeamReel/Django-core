@@ -705,6 +705,337 @@ def compose_then_vs_now_video(
     return final_output
 
 
+def compose_cover_video(
+    members: list[MemberClip],
+    logo_url: str | None,
+    team_name: str,
+    season_name: str | None,
+    brand_color: str | None,
+    video_type: str = "duo_portret",
+    output_dir: Path | None = None,
+    progress_callback=None,
+) -> Path:
+    """Compose a 'cover' style compilation video.
+
+    Cover style: no stadium background, raw AI video fills the entire frame
+    below the header. Name label is a semi-transparent brand-color bar
+    overlaying the bottom of the video. No sponsor logo.
+
+    Args:
+        members: List of MemberClip with video_url.
+        logo_url: Club logo URL (header).
+        team_name: Team name for header.
+        season_name: Season/period name for header.
+        brand_color: Brand hex color.
+        video_type: 'sidebyside' or 'duo_portret'.
+        output_dir: Output directory.
+        progress_callback: Optional fn(percent: int).
+
+    Returns:
+        Path to the composed MP4 file.
+    """
+    font_path = _resolve_font_path()
+    ffmpeg = _get_ffmpeg_path()
+
+    tmp_dir = Path(tempfile.mkdtemp(prefix="cover_"))
+    asset_dir = tmp_dir / "assets"
+    asset_dir.mkdir()
+    clips_dir = tmp_dir / "clips"
+    clips_dir.mkdir()
+
+    if output_dir is None:
+        output_dir = tmp_dir
+
+    # ── 1. Render header ──
+    header_path = _render_header(logo_url, team_name, season_name, brand_color, asset_dir)
+
+    # ── 2. Download all member videos ──
+    member_paths: list[tuple[MemberClip, Path]] = []
+    for i, member in enumerate(members):
+        video_path = asset_dir / f"member_{i}.mp4"
+        if _download_file(member.video_url, video_path):
+            member_paths.append((member, video_path))
+        else:
+            logger.warning("Cover: failed to download video for %s", member.name)
+
+    if not member_paths:
+        raise ValueError("No member videos could be downloaded.")
+
+    total = len(member_paths)
+    clip_paths: list[Path] = []
+
+    # Cover area = full frame below header
+    cover_h = HEIGHT - HEADER_HEIGHT  # 1620px
+
+    # ── 3. Pre-render header-only video (black canvas + header) ──
+    max_member_dur = 0.0
+    member_durations: list[float] = []
+    for _member, vpath in member_paths:
+        dur = _probe_duration(vpath)
+        member_durations.append(dur)
+        slowed = dur * SLOWMO_FACTOR + FREEZE_SECONDS
+        max_member_dur = max(max_member_dur, slowed)
+    bg_video_dur = max_member_dur + 4.0
+
+    bg_video_path = asset_dir / "bg_loop.mp4"
+    bg_fc = [
+        f"[0:v]scale={WIDTH}:{HEADER_HEIGHT}[hdr]",
+        f"color=c=black:s={WIDTH}x{HEIGHT}:r={FPS}:d={bg_video_dur:.2f}[canvas]",
+        "[canvas][hdr]overlay=0:0:eof_action=repeat[out]",
+    ]
+
+    bg_cmd = [
+        ffmpeg,
+        "-y",
+        "-loop",
+        "1",
+        "-i",
+        str(header_path),
+        "-filter_complex",
+        ";".join(bg_fc),
+        "-map",
+        "[out]",
+        "-t",
+        f"{bg_video_dur:.2f}",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "fast",
+        "-crf",
+        "20",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        str(FPS),
+        "-an",
+        str(bg_video_path),
+    ]
+
+    logger.info(
+        "Cover: pre-rendering header video (%.1fs) for %d members",
+        bg_video_dur,
+        total,
+    )
+    result = subprocess.run(bg_cmd, capture_output=True, text=True, timeout=300)  # noqa: S603
+    if result.returncode != 0:
+        raise RuntimeError(f"Failed to render header video: {result.stderr[-2000:]}")
+
+    # ── 4. Compose per-member clips ──
+    for idx, (member, video_path) in enumerate(member_paths):
+        if progress_callback:
+            progress_callback(int(idx / total * 80))
+
+        src_duration = member_durations[idx]
+        slowmo = SLOWMO_FACTOR
+        slowed_play_dur = src_duration * slowmo
+        freeze_dur = FREEZE_SECONDS
+        member_segment_dur = slowed_play_dur + freeze_dur
+
+        safe_name = (
+            member.name.replace("\\", "\\\\")
+            .replace("'", "'\\''")
+            .replace(":", "\\:")
+            .replace("%", "\\%")
+        )
+
+        video_clip_path = clips_dir / f"clip_{idx:03d}_video.mp4"
+        fc: list[str] = []
+
+        # Trim header-bg to exact duration
+        fc.append(f"[0:v]trim=duration={member_segment_dur},setpts=PTS-STARTPTS[bg]")
+
+        # Scale video to COVER the area below header (no letterbox)
+        fc.append(
+            f"[1:v]setpts={slowmo}*PTS,"
+            f"tpad=stop_mode=clone:stop_duration={freeze_dur},"
+            f"scale={WIDTH}:{cover_h}:force_original_aspect_ratio=increase,"
+            f"crop={WIDTH}:{cover_h},setsar=1[vid]"
+        )
+
+        # Overlay video below header
+        fc.append(f"[bg][vid]overlay=0:{HEADER_HEIGHT}" f":eof_action=repeat:shortest=0[main]")
+
+        # Semi-transparent name label at bottom of frame
+        brand_hex = (brand_color or "#D2122E").lstrip("#")
+        cover_label_h = 90
+        cover_name_y = HEIGHT - cover_label_h
+
+        fc.append(
+            f"[main]drawbox=x=0:y={cover_name_y}:w=iw:h={cover_label_h}"
+            f":color=0x{brand_hex}@0.60:t=fill[main_nb]"
+        )
+        fc.append(
+            f"[main_nb]drawtext=text='{safe_name}'"
+            f":fontfile='{font_path}'"
+            f":fontsize=72:fontcolor=white"
+            f":x=(w-tw)/2:y={cover_name_y + 10}"
+            f":shadowcolor=black@0.5:shadowx=2:shadowy=2"
+            "[out]"
+        )
+
+        cmd = [
+            ffmpeg,
+            "-y",
+            "-i",
+            str(bg_video_path),
+            "-i",
+            str(video_path),
+            "-filter_complex",
+            ";".join(fc),
+            "-map",
+            "[out]",
+            "-t",
+            f"{member_segment_dur:.2f}",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "fast",
+            "-crf",
+            "23",
+            "-pix_fmt",
+            "yuv420p",
+            "-r",
+            str(FPS),
+            "-an",
+            str(video_clip_path),
+        ]
+
+        logger.info("Cover: composing segment %d/%d for %s", idx + 1, total, member.name)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)  # noqa: S603
+        if result.returncode != 0:
+            logger.error("FFmpeg cover failed for %s: %s", member.name, result.stderr[-2000:])
+            continue
+
+        clip_paths.append(video_clip_path)
+
+    if not clip_paths:
+        raise ValueError("No member clips were successfully composed.")
+
+    # ── 5. Concatenate clips with crossfade transitions ──
+    joined_output = output_dir / "cover_joined.mp4"
+    final_output = output_dir / "then_vs_now_compilation.mp4"
+
+    if len(clip_paths) == 1:
+        import shutil
+
+        shutil.copy2(str(clip_paths[0]), str(joined_output))
+    else:
+        durations = [_probe_duration(p) for p in clip_paths]
+        logger.info("Cover clip durations: %s", [f"{d:.1f}s" for d in durations])
+
+        input_args: list[str] = []
+        for clip in clip_paths:
+            input_args += ["-i", str(clip)]
+
+        fc_parts: list[str] = []
+        for i in range(len(clip_paths)):
+            fc_parts.append(f"[{i}:v]settb=AVTB,fps={FPS},format=yuv420p,setsar=1[v{i}]")
+
+        cumulative_dur = durations[0]
+        prev_label = "v0"
+        for i in range(1, len(clip_paths)):
+            offset = max(0.1, cumulative_dur - XFADE_DURATION)
+            out_label = f"xv{i}"
+            fc_parts.append(
+                f"[{prev_label}][v{i}]xfade="
+                f"transition=fade:duration={XFADE_DURATION}:offset={offset:.2f}"
+                f"[{out_label}]"
+            )
+            cumulative_dur = offset + durations[i]
+            prev_label = out_label
+
+        concat_cmd = [
+            ffmpeg,
+            "-y",
+            *input_args,
+            "-filter_complex",
+            ";".join(fc_parts),
+            "-map",
+            f"[{prev_label}]",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "fast",
+            "-crf",
+            "23",
+            "-pix_fmt",
+            "yuv420p",
+            "-r",
+            str(FPS),
+            "-an",
+            str(joined_output),
+        ]
+
+        logger.info(
+            "Cover: concatenating %d clips with %.1fs xfade", len(clip_paths), XFADE_DURATION
+        )
+        result = subprocess.run(
+            concat_cmd, capture_output=True, text=True, timeout=600
+        )  # noqa: S603
+        if result.returncode != 0:
+            logger.warning("xfade failed, falling back to concat: %s", result.stderr[-1000:])
+            concat_file = tmp_dir / "concat.txt"
+            with open(concat_file, "w", encoding="utf-8") as f:
+                for path in clip_paths:
+                    safe_path = str(path).replace("\\", "/")
+                    f.write(f"file '{safe_path}'\n")
+            fallback_cmd = [
+                ffmpeg,
+                "-y",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                str(concat_file),
+                "-c",
+                "copy",
+                str(joined_output),
+            ]
+            result = subprocess.run(
+                fallback_cmd, capture_output=True, text=True, timeout=600
+            )  # noqa: S603
+            if result.returncode != 0:
+                raise RuntimeError(f"FFmpeg concat failed: {result.stderr[-2000:]}")
+
+    # Smooth ending: fade out last second
+    total_dur = _probe_duration(joined_output)
+    fade_start = max(0.0, total_dur - 1.0)
+    fade_cmd = [
+        ffmpeg,
+        "-y",
+        "-i",
+        str(joined_output),
+        "-vf",
+        f"fade=t=out:st={fade_start:.2f}:d=1.0",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "fast",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        str(FPS),
+        "-an",
+        str(final_output),
+    ]
+    result = subprocess.run(fade_cmd, capture_output=True, text=True, timeout=600)  # noqa: S603
+    if result.returncode != 0:
+        raise RuntimeError(f"FFmpeg fade-out failed: {result.stderr[-2000:]}")
+
+    if progress_callback:
+        progress_callback(100)
+
+    logger.info(
+        "Cover compilation complete: %s (%d members)",
+        final_output,
+        len(clip_paths),
+    )
+    return final_output
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Photo Composite Pipeline (AI-powered)
 #
