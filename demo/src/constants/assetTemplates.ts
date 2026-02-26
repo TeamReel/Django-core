@@ -854,6 +854,77 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     parameters: {},
   },
   // ============================================================================
+  // Action Photo Templates (AI-generated dynamic action shots)
+  // ============================================================================
+  {
+    id: 'member_action_photo',
+    name: 'Actiefoto',
+    icon: '⚡',
+    category: 'action_photo',
+    description: 'Dynamische actiefoto van de speler in tenue — dribbelen, schieten, koppen en meer.',
+    inputRequirements: ['person', 'reference'],
+    requiredAssetTypes: [],
+    outputAssetType: 'action_photo',
+    creditsCost: 2,
+    parameters: {
+      kit_type: {
+        label: 'Tenue Type',
+        type: 'select',
+        options: [
+          { value: 'home', label: 'Thuistenue' },
+          { value: 'away', label: 'Uittenue' },
+          { value: 'third', label: 'Derde tenue' },
+          { value: 'goalkeeper', label: 'Keeperstenue' },
+        ],
+        default: 'home',
+      },
+      style_variant: {
+        label: 'Actie Stijl',
+        type: 'select',
+        options: [
+          { value: 'dribbling', label: '🏃 Dribbelen' },
+          { value: 'shooting', label: '⚽ Schieten' },
+          { value: 'ball_at_feet', label: '🦶 Bal aan de voet' },
+          { value: 'celebrating', label: '🎉 Vieren' },
+          { value: 'heading', label: '🤕 Koppen' },
+          { value: 'sliding_tackle', label: '🦵 Sliding' },
+        ],
+        default: 'dribbling',
+      },
+      sleeves: {
+        label: 'Mouwen',
+        type: 'select',
+        options: [
+          { value: 'long', label: 'Lang' },
+          { value: 'short', label: 'Kort' },
+        ],
+        default: 'long',
+      },
+      role: {
+        label: 'Rol',
+        type: 'select',
+        options: [
+          { value: 'player', label: 'Speler' },
+          { value: 'goalkeeper', label: 'Keeper' },
+        ],
+        default: 'player',
+      },
+      shoe_color: {
+        label: 'Schoenen kleur',
+        type: 'select',
+        options: [
+          { value: 'zwart', label: 'Zwart' },
+          { value: 'wit', label: 'Wit' },
+          { value: 'rood', label: 'Rood' },
+          { value: 'blauw', label: 'Blauw' },
+          { value: 'geel', label: 'Geel' },
+          { value: 'oranje', label: 'Oranje' },
+        ],
+        default: 'zwart',
+      },
+    },
+  },
+  // ============================================================================
   // Post-Process Templates (optimize AI-generated assets for print/flyers)
   // ============================================================================
   {
@@ -989,9 +1060,9 @@ export function getTemplatesForContext(context: 'club' | 'member' | 'guest'): As
   if (context === 'member' || context === 'guest') {
     // Guest uses same templates as member but without then_vs_now/photo_composite (no legacy photo)
     const memberCategories = context === 'guest'
-      ? ['fullbody', 'closeup', 'intro', 'celebration']
-      : ['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite', 'walking_composite'];
+      ? ['fullbody', 'intro', 'celebration']
+      : ['fullbody', 'intro', 'celebration', 'action_photo', 'then_vs_now', 'photo_composite', 'walking_composite'];
     return ASSET_TEMPLATES.filter((t) => memberCategories.includes(t.category));
   }
-  return ASSET_TEMPLATES.filter((t) => !['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite', 'walking_composite'].includes(t.category));
+  return ASSET_TEMPLATES.filter((t) => !['fullbody', 'closeup', 'intro', 'celebration', 'action_photo', 'then_vs_now', 'photo_composite', 'walking_composite'].includes(t.category));
 }
