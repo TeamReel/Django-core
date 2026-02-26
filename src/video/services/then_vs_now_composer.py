@@ -776,8 +776,8 @@ def _prepare_gemini_composite_image(
     legacy_img = Image.open(legacy_cropped_path).convert("RGBA")
 
     # Scale players to fill the content zone nicely.
-    # Each player ~48% of frame width so they fill the frame prominently.
-    player_w = int(WIDTH * 0.48)
+    # Each player ~46% of frame width (was 48%) so they fill the frame prominently.
+    player_w = int(WIDTH * 0.46)
 
     def _scale_to_width(img: Image.Image, target_w: int) -> Image.Image:
         aspect = img.height / img.width
@@ -849,18 +849,21 @@ def _gemini_composite(
         "TASK:\n"
         "Take the two football players (cropped from hips up) and place them realistically "
         "on the background image. They should look like they are actually standing there, "
-        "photographed by a camera at the location.\n\n"
-        "LAYOUT:\n"
+        "photographed by a professional camera with cinematic lighting.\n\n"
+        "LAYOUT & COMPOSITION (CRITICAL):\n"
         "- The background fills the entire frame (portrait 9:16)\n"
+        "- Players MUST be anchored to the BOTTOM of the frame. DO NOT CENTER VERTICALLY.\n"
+        "- We prefer 'lots of sky' over 'floating players'.\n"
         "- Player 1 (legacy kit - Image 2) stands on the LEFT side, facing slightly right\n"
         "- Player 2 (current kit - Image 3) stands on the RIGHT side, facing slightly left\n"
         "- They stand close together, about shoulder-width apart\n"
-        "- Both visible from hips/waist up, filling most of the vertical frame\n"
-        "- Both looking straight ahead at the camera\n"
-        "- Image 4 shows the approximate desired composition/positioning\n\n"
+        "- Image 4 shows the approximate desired composition/positioning - follow this closely for scale.\n\n"
+        "LIGHTING & ATMOSPHERE:\n"
+        "- Cinematic lighting with dramatic rim light on the players.\n"
+        "- Subtle volumetric fog or atmosphere to blend players into the scene.\n"
+        "- Match the lighting direction and color temperature of the background stadium.\n"
+        "- Add realistic shadows on the ground/background behind players.\n\n"
         "REALISM REQUIREMENTS:\n"
-        "- Match the lighting and color temperature of the background\n"
-        "- Add subtle shadows on the ground/background behind players\n"
         "- Correct perspective — players should look like they belong in the scene\n"
         "- Preserve the exact appearance, face, skin tone from the player images\n"
         "- Preserve the exact kit/clothing details from the player images\n"
@@ -868,7 +871,7 @@ def _gemini_composite(
         "- No text, no logos, no overlays — just the composite photo\n\n"
         "IMPORTANT:\n"
         "- Do NOT change the players' poses or faces\n"
-        "- Do NOT add any elements not in the source images\n"
+        "- Do NOT add any elements not in the source images (no fake legs)\n"
         "- The output must be photorealistic, as if taken with a real camera\n"
     )
 

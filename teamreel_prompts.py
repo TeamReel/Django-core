@@ -1141,48 +1141,40 @@ RULES:
         "prompt_template": """Create a photorealistic composite image in PORTRAIT orientation (9:16, 1080x1920px).
 
 TASK:
-Place the two football players on the background image.
-They must look like they were actually photographed together at this location.
-The player images are HALFBODY crops: they show head, shoulders, chest, arms, and stomach down to roughly the waist/hip area. This is the FULL extent of each player — do NOT extend them further.
+Generate a MEDIUM SHOT (Waist-Up Portrait) of two football players standing side-by-side on the provided background.
+Imagine this is a cover photo for a magazine or a hero image for a website.
 
-BODY FRAMING:
-- The player images are already cropped at the waist/hip level.
-- Do NOT generate, add, or invent ANY body parts below what is visible in the source images.
-- If the source image ends at the waist, the composite player must also end at the waist.
-- NEVER add legs, full hips, or extend the body downward beyond what the source shows.
-- There must be ZERO pixels of background visible below the players' waist line.
+COMPOSITION & FRAMING:
+- **Shot Type:** classic waist-up medium shot.
+- **Framing:** The top of the frame should be slightly above their heads. The BOTTOM of the frame must cut off exactly at their waists.
+- **Scale:** The players should dominate the frame. They should appear large and powerful.
+- **Positioning:**
+    - Player 1 (Legacy) on the LEFT.
+    - Player 2 (Current) on the RIGHT.
+    - They stand close (shoulder-to-shoulder distance), creating a unified team feeling.
 
-LAYOUT:
-- The background fills the entire frame (portrait 9:16) — NO black bars, NO empty space
-- Player 1 (legacy kit) on the LEFT side of the frame
-- Player 2 (current kit) on the RIGHT side of the frame
-- Small gap between them (30-50cm) — they do NOT touch
-- ABSOLUTE RULE — BOTTOM EDGE: The very last row of pixels in the output image (y=1919) must contain part of the players' bodies (jersey/kit fabric at the waist crop line). There must be NO background, NO ground, NO grass, NO pavement visible below the players. The crop line of each player IS the bottom edge of the output image. Think of it as if the camera frame cuts off exactly where the player image cuts off.
-- The players should be LARGE — filling roughly 80-90% of the image height. Heads near the top, waist at the absolute bottom.
-- Both facing the camera directly, looking straight ahead
-- The reference composite image shows the EXACT positioning — match it precisely
+CRITICAL - NO LEGS VISIBLE:
+- The image MUST end at the waist line.
+- Do NOT generate legs, knees, or feet.
+- If the model tries to generate legs, CROP them out. The output image height (1920px) represents the view from slightly above the head down to the waist ONLY.
+- There should be NO ground visible at the bottom edge, only the players' jerseys/kits at the waist level.
 
-CRITICAL — PRESERVE EXACTLY:
-- FACE: The exact face, facial features, skin tone, hair from each player. Do NOT alter faces.
-- KIT/UNIFORM: The exact football kit, jersey, colors, logos, details. Copy pixel-perfect.
-- BODY: The exact pose, proportions, and crop boundary from the source images.
-- Do NOT generate new faces or uniforms. Use ONLY what is in the source images.
+REALISM & LIGHTING:
+- Match the lighting of the background scene perfectly.
+- Soft, cinematic lighting on the faces.
+- Realistic shadows and depth.
+- The players must look integrated into the environment, not just pasted on top.
 
-REALISM REQUIREMENTS:
-- Match the lighting direction and color temperature of the background scene
-- Add realistic soft shadows matching the scene's light source
-- Correct perspective — players should look like they belong at this distance from camera
-- Both players should appear at the same scale (as if standing next to each other)
-- The players should appear at a NATURAL SIZE relative to the background — not too small, not too large
-- Natural depth of field — slight background blur if appropriate
-- Seamless edge blending — no visible cutout edges or halos
+PRESERVE IDENTITY:
+- Use the EXACT faces provided in the source images. Do NOT change facial features.
+- Use the EXACT kits/uniforms provided.
+- Maintain the source image poses.
 
-OUTPUT RULES:
-- No text, no overlays, no added logos, no graphics
-- Do NOT change or regenerate faces, kits, or poses
-- Do NOT add ANY body parts not present in the source images
-- The output must be photorealistic, as if photographed with a real camera
-""",
+OUTPUT:
+- A single 1080x1920 portrait image.
+- Photorealistic quality.
+- No text, graphics, or overlays.
+""",oldString:,
     },
 
     # =========================================================================
