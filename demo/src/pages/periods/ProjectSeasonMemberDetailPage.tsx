@@ -1808,21 +1808,20 @@ export default function ProjectSeasonMemberDetailPage() {
                     { key: 'closeup', icon: '🔍', label: 'Close-up', tab: 'assets', hasContent: Boolean(form.closeup?.url) },
                     { key: 'legacy', icon: '🏆', label: 'Legacy in Tenue', tab: 'assets', hasContent: Boolean(form.legacy?.url) },
                   ];
-                  const hasAnyIntro = Object.keys(videoVariants.intro || {}).some(k => {
-                    const v = (videoVariants.intro || {})[k]; return v?.raw || v?.processed;
-                  });
-                  const hasAnyCelebration = Object.keys(videoVariants.celebration || {}).some(k => {
-                    const v = (videoVariants.celebration || {})[k]; return v?.raw || v?.processed;
-                  });
-                  const hasAnyThenVsNow = Object.keys(videoVariants.then_vs_now || {}).some(k => {
-                    const v = (videoVariants.then_vs_now || {})[k]; return v?.raw || v?.processed;
-                  });
-                  const hasAnyDuoPortret = Object.keys(videoVariants.photo_composite || {}).some(k => {
-                    const v = (videoVariants.photo_composite || {})[k]; return v?.raw || v?.processed;
-                  });
-                  const hasAnyWalking = Object.keys(videoVariants.walking_composite || {}).some(k => {
-                    const v = (videoVariants.walking_composite || {})[k]; return v?.raw || v?.processed;
-                  });
+                  const hasVariantContent = (v: unknown): boolean => {
+                    if (!v) return false;
+                    if (typeof v === 'string') return true;
+                    if (typeof v === 'object' && v !== null) {
+                      const obj = v as Record<string, unknown>;
+                      return Boolean(obj.raw || obj.processed);
+                    }
+                    return false;
+                  };
+                  const hasAnyIntro = Object.values(videoVariants.intro || {}).some(hasVariantContent);
+                  const hasAnyCelebration = Object.values(videoVariants.celebration || {}).some(hasVariantContent);
+                  const hasAnyThenVsNow = Object.values(videoVariants.then_vs_now || {}).some(hasVariantContent);
+                  const hasAnyDuoPortret = Object.values(videoVariants.photo_composite || {}).some(hasVariantContent);
+                  const hasAnyWalking = Object.values(videoVariants.walking_composite || {}).some(hasVariantContent);
                   const videoItems = [
                     { key: 'intro', icon: '🎬', label: 'Short Intro', tab: 'intro', hasContent: hasAnyIntro },
                     { key: 'celebration', icon: '🎉', label: 'Celebration', tab: 'celebration', hasContent: hasAnyCelebration },
