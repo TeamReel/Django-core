@@ -145,6 +145,8 @@ const SLOT_TO_VARIANT_CATEGORY: Record<string, { branch: 'images' | 'videos'; ca
   intro: { branch: 'videos', category: 'intro' },
   celebration: { branch: 'videos', category: 'celebration' },
   then_vs_now: { branch: 'videos', category: 'then_vs_now' },
+  photo_composite: { branch: 'images', category: 'photo_composite' },
+  walking_composite: { branch: 'images', category: 'walking_composite' },
 };
 
 /**

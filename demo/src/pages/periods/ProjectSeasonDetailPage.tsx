@@ -3085,120 +3085,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
               {activeTab === 'media' && (
                 <div className="grid grid-cols-1 gap-6">
-                  {/* In Tenue Generation Info Card */}
-                  <Card>
-                    <div style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '24px' }}>👕</span>
-                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>In Tenue Generation</h3>
-                      </div>
-                      <div style={{ color: 'var(--app-muted-text)', fontSize: '13px', marginBottom: '12px' }}>
-                        Generate "In Tenue" images by combining profile photos with the team&apos;s kit.
-                      </div>
-                      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', fontSize: '13px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span>{(club as any)?.metadata?.teamreel_assets?.tenue?.url ? '✅' : '⚠️'}</span>
-                          <span>Club Tenue</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span>{(club as any)?.metadata?.teamreel_assets?.logo?.url ? '✅' : '⚠️'}</span>
-                          <span>Club Logo</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span>{((season as any)?.metadata?.teamreel_assets?.sponsor?.url || (club as any)?.metadata?.teamreel_assets?.sponsor?.url) ? '✅' : '—'}</span>
-                          <span>Sponsor (optional)</span>
-                        </div>
-                      </div>
-                      {!(club as any)?.metadata?.teamreel_assets?.tenue?.url && (
-                        <Alert variant="warning" style={{ marginTop: '12px' }}>
-                          Missing club tenue. Go to the club&apos;s Assets tab to upload kit images.
-                        </Alert>
-                      )}
-                    </div>
-                  </Card>
-
-                  {/* Guest Player Card */}
-                  <Card>
-                    <div style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '24px' }}>🏃</span>
-                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Gast Speler</h3>
-                        <Badge variant={guestPlayer?.has_avatar ? 'success' : 'default'}>
-                          {guestPlayer?.has_avatar ? 'Avatar beschikbaar' : 'Geen avatar'}
-                        </Badge>
-                      </div>
-                      <div style={{ color: 'var(--app-muted-text)', fontSize: '13px', marginBottom: '12px' }}>
-                        Anonieme speler in teamtenue voor onvolledige line-ups. Kan meerdere keren in dezelfde opstelling worden gebruikt.
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                        {guestPlayer?.has_avatar && (() => {
-                          const gp = guestPlayer?.guest_player || {};
-                          const fullbodyHome = gp?.images?.fullbody?.home;
-                          const previewPath = fullbodyHome?.processed || fullbodyHome?.raw || fullbodyHome?.presigned_url || fullbodyHome?.url;
-                          const previewUrl = previewPath ? (previewPath.startsWith('http') ? previewPath : getAssetUrl(previewPath)) : null;
-                          return previewUrl ? (
-                            <img
-                              src={previewUrl}
-                              alt="Gast speler avatar"
-                              style={{
-                                width: 60,
-                                height: 100,
-                                objectFit: 'cover',
-                                borderRadius: 8,
-                                border: '1px solid var(--app-border)',
-                                background: 'var(--app-muted)',
-                              }}
-                            />
-                          ) : null;
-                        })()}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                            <Button
-                              variant={guestPlayer?.has_avatar ? 'outline' : 'primary'}
-                              onClick={() => openGuestAiModal('fullbody_in_tenue')}
-                              disabled={!(clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home'))}
-                              style={{ fontSize: '12px', padding: '4px 10px' }}
-                            >
-                              {guestPlayer?.has_avatar ? '🔄' : '🤖'} Fullbody
-                            </Button>
-                            <Button
-                              variant={guestPlayer?.has_closeup ? 'outline' : 'secondary'}
-                              onClick={() => cropGuestCloseup('home')}
-                              disabled={!guestPlayer?.has_avatar || croppingGuestCloseup}
-                              style={{ fontSize: '12px', padding: '4px 10px' }}
-                              title={!guestPlayer?.has_avatar ? 'Genereer eerst een fullbody' : croppingGuestCloseup ? 'Bezig met croppen...' : undefined}
-                            >
-                              {croppingGuestCloseup ? '⏳' : guestPlayer?.has_closeup ? '🔄' : '📸'} Close-up
-                            </Button>
-                            <Button
-                              variant={guestPlayer?.has_intro ? 'outline' : 'secondary'}
-                              onClick={() => openGuestAiModal('member_intro')}
-                              disabled={!guestPlayer?.has_avatar}
-                              style={{ fontSize: '12px', padding: '4px 10px' }}
-                              title={!guestPlayer?.has_avatar ? 'Genereer eerst een fullbody' : undefined}
-                            >
-                              {guestPlayer?.has_intro ? '🔄' : '🎬'} Intro
-                            </Button>
-                            <Button
-                              variant={guestPlayer?.has_celebration ? 'outline' : 'secondary'}
-                              onClick={() => openGuestAiModal('member_goal_celebration')}
-                              disabled={!guestPlayer?.has_avatar}
-                              style={{ fontSize: '12px', padding: '4px 10px' }}
-                              title={!guestPlayer?.has_avatar ? 'Genereer eerst een fullbody' : undefined}
-                            >
-                              {guestPlayer?.has_celebration ? '🔄' : '🎉'} Celebration
-                            </Button>
-                          </div>
-                          {!(clubBrand.getAsset?.('kit_home_combined') || clubBrand.getAsset?.('kit_home')) && (
-                            <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
-                              Upload eerst een club tenue
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-
                   <Card>
                     <div style={{ padding: '16px 16px 0 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
@@ -3376,11 +3262,20 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         : procState === 'processing' ? `${slot.label}: Bezig met bewerken…`
                                         : procState === 'raw' ? `${slot.label}: Ruw (nog niet bewerkt)`
                                         : `${slot.label}: Ontbreekt`;
+                                      // Map matrix slot IDs to member detail page tab IDs
+                                      const slotTabMap: Record<string, string> = {
+                                        profile: 'input',
+                                        legacy_photo: 'input',
+                                        kit: 'assets',
+                                        closeup: 'assets',
+                                        legacy: 'assets',
+                                      };
+                                      const tabId = slotTabMap[slot.id] || slot.id;
                                       return (
                                         <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
                                           {href ? (
                                             <Link
-                                              to={`${href}?tab=${slot.id}`}
+                                              to={`${href}?tab=${tabId}`}
                                               style={{ textDecoration: 'none' }}
                                               title={title}
                                             >
