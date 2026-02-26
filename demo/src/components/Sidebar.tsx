@@ -5,7 +5,7 @@ import {
   Users, Library, Sparkles, Settings, Activity, Flag, Puzzle, Palette,
   LineChart, Lock, BookOpen, Scroll, Command, LucideIcon, Folder,
       Bell, CreditCard, UserCircle, Star, PanelLeftClose, PanelLeft, Calendar, Film, Fingerprint, Scissors,
-  ClipboardCheck, GitBranch, Video, Image, Footprints
+  ClipboardCheck, GitBranch, Video, Image, Footprints, Camera, UsersRound
 } from 'lucide-react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -652,18 +652,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     title = 'Member';
                                     items = [
                                         { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
-                                        { label: 'Profile Photo', path: makeTabUrl(baseUrl, 'profile'), icon: UserCircle },
-                                        { label: 'Legacy Photo', path: makeTabUrl(baseUrl, 'legacy_photo'), icon: Timer },
-                                        { label: 'In Tenue', path: makeTabUrl(baseUrl, 'kit'), icon: Shirt },
-                                        { label: 'Close-up', path: makeTabUrl(baseUrl, 'closeup'), icon: Star },
+                                        { label: 'Input Foto\'s', path: makeTabUrl(baseUrl, 'input'), icon: Camera },
+                                        { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                                         { label: 'Short Intro', path: makeTabUrl(baseUrl, 'intro'), icon: Sparkles },
                                         { label: 'Celebration', path: makeTabUrl(baseUrl, 'celebration'), icon: Trophy },
                                         { label: 'Then vs Now', path: makeTabUrl(baseUrl, 'then_vs_now'), icon: Video },
-                                        { label: 'Foto Composite', path: makeTabUrl(baseUrl, 'photo_composite'), icon: Image },
+                                        { label: 'Duo Portret', path: makeTabUrl(baseUrl, 'photo_composite'), icon: UsersRound },
                                         { label: 'Walking Composite', path: makeTabUrl(baseUrl, 'walking_composite'), icon: Footprints },
-                                        { label: 'Legacy in Tenue', path: makeTabUrl(baseUrl, 'legacy'), icon: Trophy },
-                                        { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
-                                        { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
                                         { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Fingerprint },
                                     ];
                                     break;
