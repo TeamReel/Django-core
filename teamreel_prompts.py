@@ -1055,11 +1055,16 @@ HEAD ROTATION — HORIZONTAL ONLY (CRITICAL):
 - Right person's face rotates LEFT (chin swings left toward center).
 - Rotation is about 30-45 degrees — natural, not exaggerated.
 
+MOVEMENT SPEED — VERY SLOW (CRITICAL):
+- Every head movement must be EXTREMELY SLOW and GENTLE. Think slow-motion romance scene.
+- The head rotation takes MULTIPLE SECONDS to complete. Never fast or snappy.
+- The overall mood is calm, intimate, unhurried. No urgency.
+
 MOVEMENT SEQUENCE (must be precise):
-1. FRAMES 0-1s: Both stand facing the camera, looking straight ahead. Neutral expression. Minimal movement (natural breathing only).
-2. FRAMES 1-2.5s: They slowly rotate their heads HORIZONTALLY to look SIDEWAYS at each other. Left person rotates face to the right. Right person rotates face to the left. Their eyes meet. Chins stay level — NO vertical tilt.
-3. FRAMES 2.5-4s: While looking sideways at each other, they begin to smile, then laugh together. Natural, genuine laughter. Bodies stay mostly still. Keep it subtle and warm.
-4. FRAMES 4-5.5s: Still laughing/smiling, they slowly rotate their heads HORIZONTALLY back to face the camera.
+1. FRAMES 0-1.5s: Both stand facing the camera, looking straight ahead. Neutral expression. Completely still (natural breathing only).
+2. FRAMES 1.5-3.5s: They VERY SLOWLY rotate their heads HORIZONTALLY to look SIDEWAYS at each other. This rotation takes a full 2 seconds. Left person rotates face to the right. Right person rotates face to the left. Their eyes meet. Chins stay level — NO vertical tilt.
+3. FRAMES 3.5-4.5s: While looking sideways at each other, a gentle smile appears. Warm, natural. Bodies stay completely still.
+4. FRAMES 4.5-5.5s: Still smiling, they VERY SLOWLY rotate their heads HORIZONTALLY back to face the camera. Again, this takes a full second.
 5. FRAMES 5.5-6s: Both face forward again with a warm smile. Return to near-starting pose for seamless loop.
 
 BACKGROUND:
@@ -1068,13 +1073,14 @@ BACKGROUND:
 - Both people must be completely isolated against the flat color.
 
 RULES:
-- NO visual effects, NO particles, NO lens flares, NO glow, NO transitions.
+- ABSOLUTELY NO special effects of any kind. No blur, no glow, no light effects, no particles, no lens flares, no transitions, no filters.
+- NO morphing, NO warping, NO distortion effects.
 - NO text overlays, NO graphics, NO logos added.
 - NO camera movement. Static locked-off camera.
-- Photorealistic quality. Natural lighting. Professional studio setup.
+- 100% photorealistic. Must look like a real video camera recording. Natural lighting. Professional studio setup.
 - Both people must remain fully visible at all times (head to at least mid-thigh, no cropping).
 - 9:16 vertical aspect ratio.
-- Movement is slow, natural, and controlled. No sudden jerks.
+- ALL movement is very slow, natural, and controlled. No sudden jerks. No fast motion.
 """,
     },
 
@@ -1161,10 +1167,17 @@ COMPOSITION & FRAMING:
     - Player 2 (Current) on the RIGHT.
     - They stand close (shoulder-to-shoulder distance), creating a unified team feeling.
 
-CRITICAL - NO LEGS VISIBLE:
+CRITICAL — BOTTOM EDGE ALIGNMENT (MOST IMPORTANT RULE):
+- The BOTTOM EDGE of the halfbody images MUST be the BOTTOM EDGE of the output image. There should be NOTHING below the players.
+- The bottom pixel row of each player's body IS the bottom pixel row of the final 1920px image.
+- Do NOT generate ANY content below the waist line — no legs, no ground, no grass, no shadow, no surface, NOTHING.
+- The players' bodies must extend ALL THE WAY to the very bottom edge of the frame.
+- If the model tries to add space or ground below the players, REMOVE IT. The players are flush with the bottom.
+- Think of it as: the image is cropped exactly at the waist and the waist IS the bottom of the image.
+
+NO LEGS VISIBLE:
 - The image MUST end at the waist line.
 - Do NOT generate legs, knees, or feet.
-- If the model tries to generate legs, CROP them out. The output image height (1920px) represents the view from slightly above the head down to the waist ONLY.
 - There should be NO ground visible at the bottom edge, only the players' jerseys/kits at the waist level.
 
 REALISM & LIGHTING:
@@ -1373,11 +1386,16 @@ HEAD ROTATION DIRECTION:
 - They look SIDEWAYS at each other. Both heads turn INWARD toward the center.
 - Rotation is about 30-45 degrees — natural, not exaggerated.
 
+MOVEMENT SPEED — VERY SLOW (CRITICAL):
+- Every head movement must be EXTREMELY SLOW and GENTLE. Think slow-motion romance scene.
+- The head rotation takes MULTIPLE SECONDS to complete. Never fast or snappy.
+- The overall mood is calm, intimate, unhurried. No urgency.
+
 MOVEMENT SEQUENCE:
-1. 0-1.5s: Both face camera. Neutral expression. Still pose. Natural breathing only.
-2. 1.5-3s: Heads SLOWLY rotate HORIZONTALLY toward each other. Faces turn sideways — chins stay level, no vertical tilt. Eyes meet in the middle.
-3. 3-4.5s: While looking sideways at each other, a gentle smile appears. Smile grows into a warm, natural laugh. Shoulders stay still — only facial expression changes.
-4. 4.5-5.5s: Heads SLOWLY rotate HORIZONTALLY back to face camera. Still smiling softly.
+1. 0-1.5s: Both face camera. Neutral expression. Completely still. Natural breathing only.
+2. 1.5-3.5s: Heads VERY SLOWLY rotate HORIZONTALLY toward each other. This rotation takes a full 2 seconds. Faces turn sideways — chins stay level, no vertical tilt. Eyes meet in the middle.
+3. 3.5-4.5s: While looking sideways at each other, a gentle smile appears. Warm and natural. Shoulders stay still — only facial expression changes.
+4. 4.5-5.5s: Heads VERY SLOWLY rotate HORIZONTALLY back to face camera. Still smiling softly.
 5. 5.5-6s: Both face forward with content smile. Return to starting pose for loop.
 
 REALISM RULES:
@@ -1393,12 +1411,13 @@ BACKGROUND:
 - Players remain in their exact positions from frame 1.
 
 STRICT RULES:
-- NO visual effects, NO particles, NO glow, NO transitions.
+- ABSOLUTELY NO special effects of any kind. No blur, no glow, no light effects, no particles, no lens flares, no transitions, no filters.
+- NO morphing, NO warping, NO distortion effects.
 - NO text, NO graphics, NO logos added.
 - NO camera movement. Static locked-off camera.
-- Photorealistic quality. Natural lighting.
+- 100% photorealistic. Must look like a real video camera recording. Natural lighting.
 - Both people fully visible at all times.
-- Movement is slow, controlled, natural. No jerky or fast motion.
+- ALL movement is very slow, natural, and controlled. No sudden jerks. No fast motion.
 - 9:16 vertical aspect ratio.
 """,
     },
