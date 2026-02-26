@@ -1174,7 +1174,7 @@ OUTPUT:
 - A single 1080x1920 portrait image.
 - Photorealistic quality.
 - No text, graphics, or overlays.
-""",oldString:,
+""",
     },
 
     # =========================================================================
