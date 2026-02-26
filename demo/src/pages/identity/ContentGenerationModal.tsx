@@ -144,6 +144,7 @@ export const CONTENT_TYPES = {
       { id: 'sidebyside', label: 'Then & Now', icon: '⏪', subtype: 'sidebyside' },
       { id: 'transformation', label: 'Transformatie', icon: '🔄', subtype: 'transformation' },
       { id: 'photo_composite', label: 'Foto Composite', icon: '📸', subtype: 'photo_composite' },
+      { id: 'walking_composite', label: 'Walking Composite', icon: '🚶', subtype: 'walking_composite' },
       { id: 'season_recap', label: 'Season Recap', icon: '📅', subtype: 'season_recap' },
     ],
   },
