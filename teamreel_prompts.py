@@ -1178,6 +1178,148 @@ OUTPUT:
     },
 
     # =========================================================================
+    # 12b. WALKING COMPOSITE — FAR IMAGE (Gemini: players far/background)
+    # =========================================================================
+    "walking_composite_far": {
+        "id": "walking_composite_far",
+        "name": "Walking Composite (Ver)",
+        "category": "walking_composite",
+        "output_type": "image",
+        "description": "AI-composiet: twee full-body spelers (legacy + current) op afstand geplaatst op de achtergrond.",
+        "input_requirements": ["person_photo", "reference_photo", "background"],
+        "parameters": {},
+        "prompt_template": """Create a photorealistic composite image in PORTRAIT orientation (9:16, 1080x1920px).
+
+TASK:
+Place two full-body football players walking towards the camera on the background image.
+They should appear to be IN THE BACKGROUND — at a distance of roughly 15-20 meters from the camera.
+This is the STARTING FRAME of a walking video: they are far away and will walk towards the camera.
+
+COMPOSITION:
+- The background fills the entire frame (portrait 9:16). Every pixel must be covered.
+- Player 1 (Legacy kit) on the LEFT. Player 2 (Current kit) on the RIGHT.
+- Players should be SMALL in the frame — approximately 40-50% of the image height.
+- They should be standing on the ground/surface realistically (feet touching ground, correct perspective).
+- Players should be vertically centered or slightly lower in the frame.
+- There should be natural space/environment above and around them (sky, buildings, stadium).
+- Both players are mid-stride walking forward (toward the camera), weight on one foot.
+
+REALISM:
+- Match the lighting, color temperature, and perspective of the background perfectly.
+- Players must look like they BELONG in the scene — correct shadows on the ground.
+- The distance should feel natural — they are far away but clearly recognizable.
+- Atmospheric perspective: slight reduction in contrast/saturation due to distance.
+- Both players fully visible: head to feet.
+
+PRESERVE IDENTITY:
+- Use the EXACT faces from the source images.
+- Use the EXACT kits/uniforms from the source images.
+- Full body visible (head to feet, including shoes/boots).
+
+OUTPUT:
+- A single 1080x1920 portrait image.
+- Photorealistic quality.
+- No text, graphics, or overlays.
+""",
+    },
+
+    # =========================================================================
+    # 12c. WALKING COMPOSITE — NEAR IMAGE (Gemini: players near/foreground)
+    # =========================================================================
+    "walking_composite_near": {
+        "id": "walking_composite_near",
+        "name": "Walking Composite (Dichtbij)",
+        "category": "walking_composite",
+        "output_type": "image",
+        "description": "AI-composiet: twee full-body spelers (legacy + current) op de voorgrond geplaatst op de achtergrond.",
+        "input_requirements": ["person_photo", "reference_photo", "background"],
+        "parameters": {},
+        "prompt_template": """Create a photorealistic composite image in PORTRAIT orientation (9:16, 1080x1920px).
+
+TASK:
+Place two full-body football players on the background image.
+They should appear to be IN THE FOREGROUND — close to the camera, roughly 3-5 meters away.
+This is the ENDING FRAME of a walking video: they have walked close to the camera.
+
+COMPOSITION:
+- The background fills the entire frame (portrait 9:16). Every pixel must be covered.
+- Player 1 (Legacy kit) on the LEFT. Player 2 (Current kit) on the RIGHT.
+- Players should be LARGE in the frame — approximately 85-90% of the image height.
+- Full body visible: top of head near the top edge, feet near the bottom edge.
+- They should be standing on the ground/surface realistically (feet touching ground).
+- Small gap between them (shoulder width apart).
+- Both players facing the camera, mid-stride walking, confident pose.
+
+REALISM:
+- Match the lighting, color temperature, and perspective of the background perfectly.
+- Players must look integrated into the environment — correct shadows, depth.
+- Close-up means more detail visible on faces and kits.
+- Natural shallow depth of field — background slightly softer than players.
+- Both players fully visible: head to feet.
+
+PRESERVE IDENTITY:
+- Use the EXACT faces from the source images (same as the "far" image).
+- Use the EXACT kits/uniforms from the source images.
+- Full body visible (head to feet, including shoes/boots).
+- Same players, same kits, same poses — just CLOSER to the camera.
+
+OUTPUT:
+- A single 1080x1920 portrait image.
+- Photorealistic quality.
+- No text, graphics, or overlays.
+""",
+    },
+
+    # =========================================================================
+    # 12d. WALKING COMPOSITE — VIDEO (MiniMax: far→near walking animation)
+    # =========================================================================
+    "walking_composite_video": {
+        "id": "walking_composite_video",
+        "name": "Walking Composite Video",
+        "category": "walking_composite",
+        "output_type": "video",
+        "description": "6 seconden video: twee spelers lopen langzaam naar de camera toe (ver → dichtbij).",
+        "input_requirements": ["person_photo", "reference_photo"],
+        "parameters": {},
+        "video_config": {
+            "duration_seconds": 6,
+            "fps": 30,
+            "resolution": "1080p",
+            "aspect_ratio": "9:16",
+            "loop": False,
+            "minimax_model": "MiniMax-Hailuo-02",
+            "composite_mode": "first_last_frame",
+        },
+        "prompt_template": """A cinematic 6-second portrait video of two football players walking slowly towards the camera.
+
+The FIRST FRAME shows two players far away in the background, walking forward.
+The LAST FRAME shows the same two players up close in the foreground.
+
+MOVEMENT:
+- Both players walk SLOWLY and CONFIDENTLY toward the camera.
+- They walk in sync, side by side, maintaining the same gap between them.
+- Player on the LEFT stays on the left. Player on the RIGHT stays on the right.
+- Walking is natural and athletic — like a hero entrance in a sports documentary.
+- The players grow larger in the frame as they approach.
+
+TIMING:
+1. 0-1s: Players are far away, small in the frame. They begin walking forward.
+2. 1-3s: Steady walk toward camera. They grow noticeably larger.
+3. 3-5s: They are now close, filling most of the frame.
+4. 5-6s: They reach the foreground, large and imposing. Final pose facing camera.
+
+RULES:
+- NO camera movement. Static locked-off camera. Only the players move.
+- Both players visible at ALL times (no one walks out of frame).
+- Background stays consistent throughout the walk.
+- Walking motion is smooth, steady, and realistic — no jerky movements.
+- Photorealistic quality. Cinematic lighting.
+- 9:16 vertical aspect ratio.
+- NO text, NO graphics, NO visual effects, NO overlays.
+""",
+    },
+
+    # =========================================================================
     # 13. PHOTO COMPOSITE — VIDEO (MiniMax: 6s video from composite image)
     # =========================================================================
     "photo_composite_video": {

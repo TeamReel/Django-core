@@ -3566,6 +3566,8 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
         "fullbody_in_tenue": ("fullbody", "images"),
         "closeup_in_tenue": ("closeup", "images"),
         "photo_composite_gemini": ("photo_composite", "images"),
+        "walking_composite_far": ("walking_composite", "images"),
+        "walking_composite_near": ("walking_composite", "images"),
     }
     mapping = IMAGE_TEMPLATE_MAP.get(job.template_id)
     if not mapping or not job.membership_id:
@@ -3606,13 +3608,20 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
     # Use [a-zA-Z0-9]+ (no underscore) to stop at the next param boundary.
     source_str = filename or storage_path or ""
     kit_match = re.search(r"kit_type-([a-zA-Z0-9]+)", source_str)
-    kit_type = kit_match.group(1) if kit_match else "home"
+
+    # Walking composite: derive key from template_id (far/near)
+    if job.template_id == "walking_composite_far":
+        kit_type = "far"
+    elif job.template_id == "walking_composite_near":
+        kit_type = "near"
+    else:
+        kit_type = kit_match.group(1) if kit_match else "home"
 
     if storage_path:
         # Photo composite images are already composited — no bg removal needed.
         # They go directly to "processed" state so they can be used as input
         # for the next step (MiniMax video generation).
-        needs_processing = asset_type not in ("photo_composite",)
+        needs_processing = asset_type not in ("photo_composite", "walking_composite")
         asset_type_dict[kit_type] = {
             "raw": storage_path,
             "processed": None if needs_processing else storage_path,
@@ -3691,6 +3700,7 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
         "then_vs_now_sidebyside": "then_vs_now",
         "then_vs_now_transformation": "then_vs_now",
         "photo_composite_video": "photo_composite",
+        "walking_composite_video": "walking_composite",
     }
     asset_type = VIDEO_TEMPLATE_MAP.get(job.template_id)
     if not asset_type or not job.membership_id:
@@ -3738,8 +3748,8 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
                 composite_key = f"{base_key}_{style_variant}"
             else:
                 composite_key = base_key
-        elif asset_type == "photo_composite":
-            # photo_composite_video → use "default" as key (single variant per member)
+        elif asset_type in ("photo_composite", "walking_composite"):
+            # photo_composite_video / walking_composite_video → use "default" as key (single variant per member)
             composite_key = "default"
         else:
             # Parse kit_type and style_variant from filename or storage_path
