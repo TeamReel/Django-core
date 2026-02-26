@@ -1047,11 +1047,19 @@ IDENTITY (CRITICAL):
 - RIGHT person clothing stays EXACTLY as shown in the input image throughout the entire video.
 - NO clothing changes. NO appearance changes. What they wear in frame 1 is what they wear in the last frame.
 
+HEAD ROTATION — HORIZONTAL ONLY (CRITICAL):
+- Heads rotate HORIZONTALLY (left-right, like saying "no"). This is a YAW rotation.
+- ABSOLUTELY NO vertical head movement. No nodding, no tilting up or down, no pitch.
+- The chin stays level at all times. Only the horizontal angle of the face changes.
+- Left person's face rotates RIGHT (chin swings right toward center).
+- Right person's face rotates LEFT (chin swings left toward center).
+- Rotation is about 30-45 degrees — natural, not exaggerated.
+
 MOVEMENT SEQUENCE (must be precise):
 1. FRAMES 0-1s: Both stand facing the camera, looking straight ahead. Neutral expression. Minimal movement (natural breathing only).
-2. FRAMES 1-2.5s: They slowly turn their heads to look at EACH OTHER. Left person turns head RIGHT. Right person turns head LEFT. Their eyes meet.
-3. FRAMES 2.5-4s: They begin to smile, then laugh together. Natural, genuine laughter. Their bodies can shift slightly toward each other. Keep it subtle and warm.
-4. FRAMES 4-5.5s: Still laughing/smiling, they slowly turn their heads back to face the camera.
+2. FRAMES 1-2.5s: They slowly rotate their heads HORIZONTALLY to look SIDEWAYS at each other. Left person rotates face to the right. Right person rotates face to the left. Their eyes meet. Chins stay level — NO vertical tilt.
+3. FRAMES 2.5-4s: While looking sideways at each other, they begin to smile, then laugh together. Natural, genuine laughter. Bodies stay mostly still. Keep it subtle and warm.
+4. FRAMES 4-5.5s: Still laughing/smiling, they slowly rotate their heads HORIZONTALLY back to face the camera.
 5. FRAMES 5.5-6s: Both face forward again with a warm smile. Return to near-starting pose for seamless loop.
 
 BACKGROUND:
@@ -1351,26 +1359,30 @@ The provided image shows the FIRST FRAME: two people standing next to each other
 - The CURRENT player (recent photo) is on the RIGHT side of the frame.
 - There is a small gap between them — they are NOT touching.
 
-CRITICAL — WHAT MOVES:
-- ONLY the HEAD rotates. The head pivots on the neck axis (like turning to look at someone).
+CRITICAL — HORIZONTAL HEAD ROTATION ONLY:
+- Heads rotate HORIZONTALLY — left and right only, like saying "no". This is a YAW rotation on the vertical neck axis.
+- ABSOLUTELY NO vertical head movement. No nodding up or down, no pitch, no tilt.
+- The chin stays LEVEL at all times. The face turns sideways but never looks up or down.
 - The neck stays straight and upright. Do NOT tilt the neck forward, backward, or sideways.
 - The shoulders, body, and torso remain COMPLETELY STILL. No leaning.
 - The players do NOT move closer to each other. They do NOT touch at any point.
 
 HEAD ROTATION DIRECTION:
-- LEFT person: Head rotates to the RIGHT (chin moves right, toward center of frame).
-- RIGHT person: Head rotates to the LEFT (chin moves left, toward center of frame).
-- They look AT EACH OTHER. Both heads turn INWARD toward the center.
+- LEFT person: Head rotates HORIZONTALLY to the RIGHT (chin swings right, face turns toward center of frame).
+- RIGHT person: Head rotates HORIZONTALLY to the LEFT (chin swings left, face turns toward center of frame).
+- They look SIDEWAYS at each other. Both heads turn INWARD toward the center.
+- Rotation is about 30-45 degrees — natural, not exaggerated.
 
 MOVEMENT SEQUENCE:
 1. 0-1.5s: Both face camera. Neutral expression. Still pose. Natural breathing only.
-2. 1.5-3s: Heads SLOWLY rotate toward each other. Only head pivots — neck stays vertical. Eyes meet in the middle.
-3. 3-4.5s: While looking at each other, a gentle smile appears. Smile grows into a warm, natural laugh. Shoulders stay still — only facial expression changes.
-4. 4.5-5.5s: Heads SLOWLY rotate back to face camera. Still smiling softly.
+2. 1.5-3s: Heads SLOWLY rotate HORIZONTALLY toward each other. Faces turn sideways — chins stay level, no vertical tilt. Eyes meet in the middle.
+3. 3-4.5s: While looking sideways at each other, a gentle smile appears. Smile grows into a warm, natural laugh. Shoulders stay still — only facial expression changes.
+4. 4.5-5.5s: Heads SLOWLY rotate HORIZONTALLY back to face camera. Still smiling softly.
 5. 5.5-6s: Both face forward with content smile. Return to starting pose for loop.
 
 REALISM RULES:
-- Head rotation is natural and subtle (about 45 degrees, not exaggerated).
+- Head rotation is HORIZONTAL only (yaw) — never vertical (pitch). Chin stays level.
+- Rotation is natural and subtle (about 30-45 degrees, not exaggerated).
 - Neck remains straight and vertical throughout — no bending or tilting.
 - Bodies frozen in place — no swaying, no leaning, no shoulder movement.
 - The gap between players stays constant — they never touch or get closer.
