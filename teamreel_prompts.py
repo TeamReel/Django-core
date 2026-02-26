@@ -983,6 +983,12 @@ RULES:
 The provided image is the FIRST FRAME. Keep the player EXACTLY as shown — same face, hair, skin tone, body, clothing, and kit.
 Kit type: {kit_type_label}.
 
+FACE & IDENTITY PRESERVATION (CRITICAL):
+- The player's FACE must remain the SAME PERSON in every single frame.
+- Facial features (eyes, nose, mouth shape, jawline, skin tone) must be 100% consistent throughout.
+- The face in frame 1 must be identical to the face in every other frame. No morphing into a different person.
+- Do NOT change, distort, or reshape the face at any point. Only facial EXPRESSIONS change (neutral → joyful).
+
 OUTFIT CONSISTENCY (CRITICAL — applies to EVERY SINGLE FRAME):
 - The kit must be IDENTICAL in every frame from start to finish. No exceptions.
 - SLEEVE LENGTH: The sleeve length visible in the input image is FIXED. If the input shows short sleeves, every frame must have short sleeves. If the input shows long sleeves, every frame must have long sleeves. The sleeve length MUST NOT change at any point in the video.
@@ -1112,6 +1118,13 @@ RULES:
 
 The provided image is the FIRST FRAME showing the person in their OLD / legacy appearance.
 
+IDENTITY PRESERVATION (CRITICAL):
+- The FACE must remain recognizably the SAME PERSON throughout the entire video.
+- Facial features (eyes, nose, mouth shape, jawline) must be consistent from first frame to last.
+- The face in the first frame and the face in the last frame must clearly be the same person.
+- Do NOT generate a different face. Do NOT distort or reshape the face.
+- Only age-appropriate subtle changes are allowed (e.g., slightly more mature features if transforming from young to current).
+
 TRANSFORMATION SEQUENCE (must be precise):
 1. FRAMES 0-0.5s: The person stands still, looking at the camera. Old appearance exactly as shown in the input image.
 2. FRAMES 0.5-1.5s: {style_variant_label}
@@ -1119,6 +1132,7 @@ TRANSFORMATION SEQUENCE (must be precise):
    - Clothing morphs and changes color to modern football kit
    - The person visibly ages/matures slightly (if the legacy photo shows a younger version)
    - Hair may update to current style
+   - The FACE stays the SAME PERSON — only subtle age progression, not a different face
    - The transformation should feel magical but REALISTIC — like a time-lapse, NOT like a cartoon or glitch effect
 4. FRAMES 3-4s: The person completes the gesture, now in their CURRENT / modern appearance. They look at themselves briefly (looking down at their new kit), then look up at the camera with a big proud smile.
 
