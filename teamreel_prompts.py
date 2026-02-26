@@ -1245,14 +1245,16 @@ COMPOSITION:
 - The background fills the entire frame (portrait 9:16). Every pixel must be covered.
 - Player 1 (Legacy kit) on the LEFT. Player 2 (Current kit) on the RIGHT.
 - Players should be LARGE in the frame — approximately 85-90% of the image height.
-- Full body visible: top of head near the top edge, feet near the bottom edge.
-- They should be standing on the ground/surface realistically (feet touching ground).
+- Full body visible: top of head near the top edge.
+- CRITICAL: Players' feet MUST be anchored to the very BOTTOM EDGE of the image. Their soles/boots should be AT or within 2% of the bottom pixel row. There must be NO empty space or gap below the players' feet.
+- Players must stand ON the ground surface of the background (grass, pitch, floor). Their feet blend naturally with the ground — no floating, no hovering, no visible gap between soles and surface.
 - Small gap between them (shoulder width apart).
 - Both players facing the camera, mid-stride walking, confident pose.
 
 REALISM:
 - Match the lighting, color temperature, and perspective of the background perfectly.
-- Players must look integrated into the environment — correct shadows, depth.
+- Players must look integrated into the environment — correct shadows under feet, proper depth.
+- Ground contact is essential: feet press into the surface with natural shadow contact.
 - Close-up means more detail visible on faces and kits.
 - Natural shallow depth of field — background slightly softer than players.
 - Both players fully visible: head to feet.
