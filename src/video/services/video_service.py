@@ -88,10 +88,10 @@ class VideoService:
             WorkflowInstance = apps.get_model("workflows", "WorkflowInstance")
             job.workflow_instance = WorkflowInstance.objects.create(
                 workflow=workflow_template,
-                workflow_snapshot=workflow_template.snapshot,
+                workflow_snapshot=workflow_template.definition,
                 project=project,
                 content_object=job,
-                current_state=workflow_template.initial_state,
+                current_state=workflow_template.get_initial_state(),
                 created_by=user,
             )
             job.save(update_fields=["workflow_instance", "updated_at"])
