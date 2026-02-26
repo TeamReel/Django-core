@@ -1420,15 +1420,14 @@ export default function ProjectSeasonMemberDetailPage() {
 
   /**
    * Resolve a storage path to a displayable URL.
-   * Uses presigned URL cache for S3 keys, falls back to getAssetUrl.
+   * Uses presigned URL cache for S3 keys.  Returns null if not yet resolved
+   * (never falls back to unsigned direct S3 URLs which 403 on private buckets).
    */
   const resolveDisplayUrl = useCallback((storagePath: string | null | undefined): string | null => {
     if (!storagePath) return null;
     if (storagePath.startsWith('http')) return storagePath;
-    // Check presigned cache first
-    if (presignedCache[storagePath]) return presignedCache[storagePath];
-    // Fallback to direct S3 URL (may 403 for private buckets, but shows something)
-    return getAssetUrl(storagePath);
+    // Check presigned cache — return null while awaiting resolution
+    return presignedCache[storagePath] || null;
   }, [presignedCache]);
 
   // ── Reset membership state immediately when navigating to a different member ──
@@ -3565,12 +3564,14 @@ export default function ProjectSeasonMemberDetailPage() {
                   // Step 1: Gemini composite image (stored in images.photo_composite.home)
                   const compositeImageData = videoVariants.photo_composite?.home;
                   const compositeImageUrl = compositeImageData ? resolveDisplayUrl(getBestUrl(compositeImageData)) : null;
-                  const hasCompositeImage = Boolean(compositeImageUrl);
+                  // hasCompositeImage = data exists in metadata (even if presigned URL hasn't resolved yet)
+                  const hasCompositeImage = Boolean(compositeImageData && getBestUrl(compositeImageData));
 
                   // Step 2: MiniMax video
                   const compositeVideoData = videoVariants.photo_composite?.default;
                   const compositeVideoUrl = compositeVideoData ? resolveDisplayUrl(getBestUrl(compositeVideoData)) : null;
-                  const hasCompositeVideo = Boolean(compositeVideoUrl);
+                  // hasCompositeVideo = data exists in metadata
+                  const hasCompositeVideo = Boolean(compositeVideoData && getBestUrl(compositeVideoData));
                   const compositeVideoNormalized = normalizeVariantValue(compositeVideoData as any);
                   const compositeVideoLineupReady = isLineupReady(compositeVideoData);
                   const compositeVideoProcessing = isProcessing(compositeVideoData);
@@ -3648,7 +3649,11 @@ export default function ProjectSeasonMemberDetailPage() {
                               minHeight: '200px',
                             }}>
                               {hasCompositeImage && compositeImageUrl ? (
-                                <img src={compositeImageUrl} alt="Gemini Composite" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                <img key={compositeImageUrl} src={compositeImageUrl} alt="Gemini Composite" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                              ) : hasCompositeImage ? (
+                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                  ⏳<br />Laden...
+                                </div>
                               ) : (
                                 <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
                                   📸<br />Niet gegenereerd
@@ -3701,12 +3706,16 @@ export default function ProjectSeasonMemberDetailPage() {
                               }}>
                               {hasCompositeVideo && compositeVideoUrl ? (
                                 <>
-                                  <video key={compositeVideoUrl} src={compositeVideoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} muted loop playsInline autoPlay onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }} />
+                                  <video key={compositeVideoUrl} src={compositeVideoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} muted loop playsInline autoPlay />
                                   <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
                                     <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
                                     <ProcessingBadge value={compositeVideoData} />
                                   </div>
                                 </>
+                              ) : hasCompositeVideo ? (
+                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                  ⏳<br />Laden...
+                                </div>
                               ) : (
                                 <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
                                   🎬<br />Niet gegenereerd

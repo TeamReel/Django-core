@@ -1152,13 +1152,13 @@ BODY FRAMING:
 - NEVER add legs, full hips, or extend the body downward beyond what the source shows.
 
 LAYOUT:
-- The background fills the entire frame (portrait 9:16)
+- The background fills the entire frame (portrait 9:16) — NO black bars, NO empty space, the background must cover every pixel
 - Player 1 (legacy kit) on the LEFT side of the frame
 - Player 2 (current kit) on the RIGHT side of the frame
 - Small gap between them (30-50cm) — they do NOT touch
-- Both players should be placed at a REALISTIC height in the scene — as if they are real people standing at approximately 1.7-1.9m tall, photographed from roughly chest level
-- The bottom of each player (waist area) should sit at roughly the vertical center or slightly below center of the frame
-- Their heads should be in the upper third of the frame
+- CRITICAL VERTICAL POSITIONING: The BOTTOM EDGE of each player's visible body (waist/hip crop line) must align with the BOTTOM EDGE of the image. The players are "anchored" to the bottom of the frame.
+- Their heads should be in the upper portion of the frame (roughly upper 40%)
+- Scale the players so they fill most of the vertical space — they should appear large and prominent
 - Both facing the camera directly, looking straight ahead
 - The reference composite shows the approximate positioning and scale
 
