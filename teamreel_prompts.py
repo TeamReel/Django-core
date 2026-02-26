@@ -1238,32 +1238,35 @@ OUTPUT:
 
 TASK:
 Place two full-body football players on the background image.
-They should appear to be IN THE FOREGROUND — close to the camera, roughly 3-5 meters away.
-This is the ENDING FRAME of a walking video: they have walked close to the camera.
+They should appear to be VERY CLOSE to the camera — roughly 2-3 meters away, towering in the foreground.
+This is the ENDING FRAME of a walking video: they have walked right up to the camera.
 
 COMPOSITION:
 - The background fills the entire frame (portrait 9:16). Every pixel must be covered.
 - Player 1 (Legacy kit) on the LEFT. Player 2 (Current kit) on the RIGHT.
-- Players should be LARGE in the frame — approximately 85-90% of the image height.
-- Full body visible: top of head near the top edge.
-- CRITICAL: Players' feet MUST be anchored to the very BOTTOM EDGE of the image. Their soles/boots should be AT or within 2% of the bottom pixel row. There must be NO empty space or gap below the players' feet.
-- Players must stand ON the ground surface of the background (grass, pitch, floor). Their feet blend naturally with the ground — no floating, no hovering, no visible gap between soles and surface.
+- Players should FILL the frame — approximately 92-97% of the image height.
+- The camera is at a LOW ANGLE (slightly below waist height, looking upward), making the players appear tall, powerful and imposing.
+- Top of heads near or slightly cropped by the top edge — this is intentional, the frame is TIGHT.
+- CRITICAL BOTTOM ANCHORING: Players' feet/boots MUST touch the ABSOLUTE BOTTOM EDGE of the image — pixel row 1920. There must be ZERO gap, ZERO empty space, ZERO ground visible below their soles. The bottom of the image is where the soles of their boots are. Think of it as if the camera is placed on the ground looking up at them.
+- Players must stand ON the ground surface of the background (grass, pitch, floor). Their feet blend seamlessly with the ground surface — no floating, no hovering, no air gap.
 - Small gap between them (shoulder width apart).
-- Both players facing the camera, mid-stride walking, confident pose.
+- Both players facing the camera, mid-stride walking, confident dominant pose.
+- The lower 40% of the image should be dominated by their legs, knees, shins, and boots.
 
 REALISM:
 - Match the lighting, color temperature, and perspective of the background perfectly.
 - Players must look integrated into the environment — correct shadows under feet, proper depth.
-- Ground contact is essential: feet press into the surface with natural shadow contact.
-- Close-up means more detail visible on faces and kits.
-- Natural shallow depth of field — background slightly softer than players.
-- Both players fully visible: head to feet.
+- Ground contact is essential: feet press into the surface with visible shadow contact beneath the boots.
+- Close-up means high detail visible on faces, kit textures, boot details.
+- Natural shallow depth of field — background noticeably softer than players.
+- Low camera angle perspective: slight upward convergence on the players' bodies.
+- Both players fully visible: head to feet (feet at absolute bottom, heads may touch or slightly exceed top).
 
 PRESERVE IDENTITY:
 - Use the EXACT faces from the source images (same as the "far" image).
 - Use the EXACT kits/uniforms from the source images.
 - Full body visible (head to feet, including shoes/boots).
-- Same players, same kits, same poses — just CLOSER to the camera.
+- Same players, same kits, same poses — just MUCH CLOSER to the camera.
 
 OUTPUT:
 - A single 1080x1920 portrait image.
