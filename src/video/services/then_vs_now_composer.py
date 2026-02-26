@@ -449,11 +449,13 @@ def compose_then_vs_now_video(
         # Member video: play FULL source (no trim), slow-mo, then freeze last frame
         if video_type == "sidebyside":
             # Cover-crop: scale up to fill, then crop to exact size
+            # Apply chromakey to remove green screen background from AI video
             fc_video.append(
                 f"[1:v]setpts={slowmo}*PTS,"
                 f"tpad=stop_mode=clone:stop_duration={freeze_dur},"
                 f"scale={vid_w}:{vid_h}:force_original_aspect_ratio=increase,"
-                f"crop={vid_w}:{vid_h},setsar=1[vid]"
+                f"crop={vid_w}:{vid_h},setsar=1,"
+                f"chromakey=0x00FF00:0.24:0.12[vid]"
             )
             vid_x = f"({WIDTH}-{vid_w})/2"
             vid_y = int(HEADER_HEIGHT + (CONTENT_HEIGHT - vid_h) // 2)
@@ -1324,14 +1326,15 @@ def _minimax_generate_video(
     prompt = (
         "A cinematic portrait video of two football players standing side by side "
         "on a football pitch. "
-        "THE MAIN ACTION: Both players MUST turn their heads to look at each other. This head turn is the entire point of the video. "
-        "The players smoothly and gradually rotate their heads HORIZONTALLY (sideways, left-right) to look at each other. "
-        "Left person turns face to the right, right person turns face to the left — they look sideways at each other and smile. "
-        "Head rotation is HORIZONTAL only (yaw). No vertical head movement, no nodding. Chins stay level. "
-        "After smiling at each other, they smoothly rotate heads back to face the camera. "
-        "The camera is completely static. Only the players' heads rotate sideways — no body movement. "
+        "BODIES ARE PERFECTLY STILL like statues from the neck down. No leaning, no swaying, no shoulder movement. "
+        "THE MAIN ACTION: Both players MUST slowly turn their FACES to look at each other. This is the entire point of the video. "
+        "ONLY the faces rotate slowly on their necks — HORIZONTAL rotation only (yaw, left-right like saying no). "
+        "Left person's face turns slowly to the right, right person's face turns slowly to the left — they look sideways at each other and smile. "
+        "Chins stay level. No vertical head movement, no nodding. "
+        "After smiling at each other, faces slowly rotate back to face the camera. "
+        "The camera is completely static. The ONLY movement is the faces rotating slowly. Bodies frozen. "
         "No special effects, no blur, no glow, no particles, no filters. Photorealistic — like a real camera recording. "
-        "Smooth, natural motion. 6 seconds."
+        "Smooth, slow, natural motion. 6 seconds."
     )
 
     # Read and crop composite to ensure no legs visible

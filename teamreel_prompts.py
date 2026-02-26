@@ -1053,22 +1053,31 @@ IDENTITY (CRITICAL):
 - RIGHT person clothing stays EXACTLY as shown in the input image throughout the entire video.
 - NO clothing changes. NO appearance changes. What they wear in frame 1 is what they wear in the last frame.
 
+BODY STABILITY (CRITICAL — NON-NEGOTIABLE):
+- Both bodies must remain PERFECTLY STILL throughout the entire video. Like statues from the neck down.
+- NO leaning sideways. NO leaning forward or backward. NO swaying.
+- Shoulders stay LOCKED in position. Arms stay exactly where they are in frame 1.
+- Torso, hips, legs — completely frozen. Zero body movement.
+- The ONLY movement in this entire video is the FACE rotating on the neck.
+
 HEAD ROTATION — HORIZONTAL ONLY (CRITICAL):
+- ONLY the face rotates. The neck acts as a pivot point. The body below the neck does NOT move.
 - Heads rotate HORIZONTALLY (left-right, like saying "no"). This is a YAW rotation.
 - NO vertical head movement. No nodding, no tilting up or down.
 - The chin stays level at all times. Only the horizontal angle of the face changes.
 - Left person's face rotates RIGHT (chin swings right toward center).
 - Right person's face rotates LEFT (chin swings left toward center).
 - Rotation is about 30-45 degrees — clearly visible but natural.
+- The rotation is SLOW. Think of someone calmly turning to look at a friend. Not snapping their head.
 
 THE MAIN ACTION — MUST HAPPEN:
 The head turn is the ENTIRE POINT of this video. Both people MUST turn their heads to look at each other. This is not optional. If the heads don't turn, the video is a failure.
 
 MOVEMENT SEQUENCE (must be precise):
-1. FRAMES 0-1s: Both stand facing the camera, looking straight ahead. Neutral expression. Still.
-2. FRAMES 1-3s: Both smoothly and gradually rotate their heads HORIZONTALLY to look SIDEWAYS at each other. Left person rotates face to the right. Right person rotates face to the left. The rotation is smooth and natural — not rushed, not jerky. Their eyes meet. Chins stay level.
-3. FRAMES 3-4.5s: While looking sideways at each other, they smile and share a warm laugh. Bodies stay still.
-4. FRAMES 4.5-5.5s: Still smiling, they smoothly rotate their heads back to face the camera.
+1. FRAMES 0-1s: Both stand facing the camera, looking straight ahead. Neutral expression. Bodies completely still.
+2. FRAMES 1-3s: ONLY the faces slowly and smoothly rotate HORIZONTALLY to look SIDEWAYS at each other. Left person rotates face to the right. Right person rotates face to the left. The rotation is slow, smooth, and natural. Their eyes meet. Chins stay level. Bodies remain perfectly still — no shoulder movement, no leaning.
+3. FRAMES 3-4.5s: While looking sideways at each other, they smile and share a warm laugh. Bodies stay perfectly still.
+4. FRAMES 4.5-5.5s: Still smiling, faces slowly and smoothly rotate back to face the camera. Bodies still.
 5. FRAMES 5.5-6s: Both face forward again with a warm smile. Return to starting pose for seamless loop.
 
 BACKGROUND:
@@ -1083,7 +1092,7 @@ RULES:
 - Photorealistic. Must look like a real video camera recording. Natural lighting. Professional studio setup.
 - Both people must remain fully visible at all times (head to at least mid-thigh, no cropping).
 - 9:16 vertical aspect ratio.
-- Movement is smooth, natural, and controlled. No sudden jerks.
+- The ONLY movement is faces rotating slowly on their necks. Everything else is frozen.
 """,
     },
 
@@ -1383,37 +1392,36 @@ The provided image shows the FIRST FRAME: two people standing next to each other
 - The CURRENT player (recent photo) is on the RIGHT side of the frame.
 - There is a small gap between them — they are NOT touching.
 
-CRITICAL — HORIZONTAL HEAD ROTATION ONLY:
+BODY STABILITY (CRITICAL — NON-NEGOTIABLE):
+- Both bodies must remain PERFECTLY STILL throughout the entire video. Like statues from the neck down.
+- NO leaning sideways. NO leaning forward or backward. NO swaying. NO shoulder movement.
+- Torso, arms, hips, legs — completely frozen. Zero body movement.
+- The players do NOT move closer to each other. They do NOT touch.
+- The gap between players stays EXACTLY constant throughout.
+- The ONLY movement in this entire video is the FACES rotating slowly on their necks.
+
+HEAD ROTATION — HORIZONTAL ONLY (CRITICAL):
+- ONLY the face rotates. The neck is the pivot point. The body below the neck does NOT move.
 - Heads rotate HORIZONTALLY — left and right only, like saying "no". This is a YAW rotation on the vertical neck axis.
 - NO vertical head movement. No nodding up or down, no tilt.
 - The chin stays LEVEL at all times. The face turns sideways but never looks up or down.
-- The neck stays straight and upright.
-- The shoulders, body, and torso remain STILL. No leaning.
-- The players do NOT move closer to each other. They do NOT touch.
+- The rotation is SLOW. Think of someone calmly turning to look at a friend. Not snapping.
 
 HEAD ROTATION DIRECTION:
-- LEFT person: Head rotates HORIZONTALLY to the RIGHT (face turns toward center of frame).
-- RIGHT person: Head rotates HORIZONTALLY to the LEFT (face turns toward center of frame).
-- They look SIDEWAYS at each other. Both heads turn INWARD toward the center.
+- LEFT person: Face rotates HORIZONTALLY to the RIGHT (toward center of frame).
+- RIGHT person: Face rotates HORIZONTALLY to the LEFT (toward center of frame).
+- They look SIDEWAYS at each other. Both faces turn INWARD toward the center.
 - Rotation is about 30-45 degrees — clearly visible but natural.
 
 THE MAIN ACTION — MUST HAPPEN:
 The head turn is the ENTIRE POINT of this video. Both people MUST turn their heads to look at each other. This is not optional. If the heads don't turn, the video is a failure.
 
 MOVEMENT SEQUENCE:
-1. 0-1s: Both face camera. Neutral expression. Still pose.
-2. 1-3s: Both smoothly and gradually rotate their heads HORIZONTALLY toward each other. The rotation is smooth and natural — not rushed, not jerky. Faces turn sideways — chins stay level. Eyes meet in the middle.
-3. 3-4.5s: While looking sideways at each other, they smile warmly. Shoulders stay still — only facial expression changes.
-4. 4.5-5.5s: Heads smoothly rotate HORIZONTALLY back to face camera. Still smiling.
+1. 0-1s: Both face camera. Neutral expression. Bodies completely still.
+2. 1-3s: ONLY the faces slowly and smoothly rotate HORIZONTALLY toward each other. The rotation is slow, smooth, and natural. Faces turn sideways — chins stay level. Eyes meet in the middle. Bodies remain perfectly still — no shoulder movement, no leaning.
+3. 3-4.5s: While looking sideways at each other, they smile warmly. Bodies perfectly still.
+4. 4.5-5.5s: Faces slowly and smoothly rotate HORIZONTALLY back to face camera. Still smiling. Bodies still.
 5. 5.5-6s: Both face forward with content smile. Return to starting pose for loop.
-
-REALISM RULES:
-- Head rotation is HORIZONTAL only (yaw) — never vertical (pitch). Chin stays level.
-- Rotation is about 30-45 degrees — clearly visible.
-- Neck remains straight throughout.
-- Bodies still — no swaying, no leaning, no shoulder movement.
-- The gap between players stays constant.
-- Smile is genuine but subtle — mouth opens slightly, eyes crinkle.
 
 BACKGROUND:
 - Keep the background from the input image exactly as-is. Do NOT change it.
@@ -1425,7 +1433,7 @@ STRICT RULES:
 - NO camera movement. Static locked-off camera.
 - Photorealistic. Must look like a real video camera recording. Natural lighting.
 - Both people fully visible at all times.
-- Movement is smooth, natural, and controlled. No sudden jerks.
+- The ONLY movement is faces rotating slowly on their necks. Everything else is frozen.
 - 9:16 vertical aspect ratio.
 """,
     },
