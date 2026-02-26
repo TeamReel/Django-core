@@ -1744,18 +1744,13 @@ export default function ProjectSeasonMemberDetailPage() {
       <MobileTabBar
         tabs={[
           { id: 'overview', label: 'Overview' },
-          { id: 'profile', label: 'Profile Photo' },
-          { id: 'legacy_photo', label: 'Legacy Photo' },
-          { id: 'kit', label: 'In Tenue' },
-          { id: 'closeup', label: 'Close-up' },
+          { id: 'input', label: 'Input Foto\'s' },
+          { id: 'assets', label: 'Assets' },
           { id: 'intro', label: 'Short Intro' },
           { id: 'celebration', label: 'Celebration' },
           { id: 'then_vs_now', label: 'Then vs Now' },
-          { id: 'photo_composite', label: 'Foto Composite' },
+          { id: 'photo_composite', label: 'Duo Portret' },
           { id: 'walking_composite', label: 'Walking Composite' },
-          { id: 'legacy', label: 'Legacy in Tenue' },
-          { id: 'assets', label: 'Assets' },
-          { id: 'workflow', label: 'Workflow' },
           { id: 'identity', label: 'Identity' },
         ]}
         activeTab={activeTab}
@@ -1802,502 +1797,278 @@ export default function ProjectSeasonMemberDetailPage() {
                 )}
 
                 {/* Overview Tab - Media completion matrix */}
-                {activeTab === 'overview' && (
+                {activeTab === 'overview' && (() => {
+                  // Phase-based overview that maps to new tab structure
+                  const inputItems = [
+                    { key: 'profile', icon: '👤', label: 'Profielfoto', tab: 'input', hasContent: Boolean(form.profile?.url) },
+                    { key: 'legacy_photo', icon: '📸', label: 'Legacy Foto', tab: 'input', hasContent: Boolean(form.legacy_photo?.url) },
+                  ];
+                  const assetItems = [
+                    { key: 'kit', icon: '👕', label: 'In Tenue', tab: 'assets', hasContent: Boolean(form.kit?.url) },
+                    { key: 'closeup', icon: '🔍', label: 'Close-up', tab: 'assets', hasContent: Boolean(form.closeup?.url) },
+                    { key: 'legacy', icon: '🏆', label: 'Legacy in Tenue', tab: 'assets', hasContent: Boolean(form.legacy?.url) },
+                  ];
+                  const hasAnyIntro = Object.keys(videoVariants.intro || {}).some(k => {
+                    const v = (videoVariants.intro || {})[k]; return v?.raw || v?.processed;
+                  });
+                  const hasAnyCelebration = Object.keys(videoVariants.celebration || {}).some(k => {
+                    const v = (videoVariants.celebration || {})[k]; return v?.raw || v?.processed;
+                  });
+                  const hasAnyThenVsNow = Object.keys(videoVariants.then_vs_now || {}).some(k => {
+                    const v = (videoVariants.then_vs_now || {})[k]; return v?.raw || v?.processed;
+                  });
+                  const hasAnyDuoPortret = Object.keys(videoVariants.photo_composite || {}).some(k => {
+                    const v = (videoVariants.photo_composite || {})[k]; return v?.raw || v?.processed;
+                  });
+                  const hasAnyWalking = Object.keys(videoVariants.walking_composite || {}).some(k => {
+                    const v = (videoVariants.walking_composite || {})[k]; return v?.raw || v?.processed;
+                  });
+                  const videoItems = [
+                    { key: 'intro', icon: '🎬', label: 'Short Intro', tab: 'intro', hasContent: hasAnyIntro },
+                    { key: 'celebration', icon: '🎉', label: 'Celebration', tab: 'celebration', hasContent: hasAnyCelebration },
+                    { key: 'then_vs_now', icon: '⏳', label: 'Then vs Now', tab: 'then_vs_now', hasContent: hasAnyThenVsNow },
+                    { key: 'duo_portret', icon: '👥', label: 'Duo Portret', tab: 'photo_composite', hasContent: hasAnyDuoPortret },
+                    { key: 'walking', icon: '🚶', label: 'Walking Composite', tab: 'walking_composite', hasContent: hasAnyWalking },
+                  ];
+                  const allItems = [...inputItems, ...assetItems, ...videoItems];
+                  const completedCount = allItems.filter(i => i.hasContent).length;
+                  const totalCount = allItems.length;
+
+                  const renderPhase = (title: string, emoji: string, items: typeof inputItems) => (
+                    <div style={{ marginBottom: '20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                        <span style={{ fontSize: '18px' }}>{emoji}</span>
+                        <div style={{ fontSize: '14px', fontWeight: 700 }}>{title}</div>
+                        <div style={{ fontSize: '12px', opacity: 0.6 }}>
+                          {items.filter(i => i.hasContent).length}/{items.length}
+                        </div>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
+                        {items.map(item => (
+                          <div
+                            key={item.key}
+                            onClick={() => navigateToTab(item.tab)}
+                            style={{
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: `1px solid ${item.hasContent ? '#10b981' : 'var(--app-border)'}`,
+                              background: item.hasContent ? 'rgba(16, 185, 129, 0.08)' : 'var(--app-surface)',
+                              cursor: 'pointer',
+                              transition: 'border-color 0.15s',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '18px' }}>{item.icon}</span>
+                              <span style={{ fontWeight: 600, fontSize: '13px' }}>{item.label}</span>
+                              <span style={{ marginLeft: 'auto', fontSize: '13px' }}>
+                                {item.hasContent ? '✅' : '⬜'}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+
+                  return (
                   <Card>
                     <div style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ fontSize: '16px', fontWeight: 800 }}>Media Overview</div>
+                        <div style={{ fontSize: '16px', fontWeight: 800 }}>Overzicht</div>
                         <Badge variant={userCanEditProject ? 'default' : 'info'}>
                           {userCanEditProject ? 'Editable' : 'Read-only'}
                         </Badge>
                       </div>
 
                       <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                        Track which media assets have been uploaded for this member's season profile.
+                        Status per fase: welke assets zijn geüpload of gegenereerd.
                       </div>
 
-                      <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
-                        {MEDIA_SLOTS.map((slot) => {
-                          const hasContent = Boolean(form[slot.id]?.url || form[slot.id]?.caption);
-                          return (
-                            <div
-                              key={slot.id}
-                              onClick={() => navigateToTab(slot.id)}
-                              style={{
-                                padding: '14px',
-                                borderRadius: '8px',
-                                border: `1px solid ${hasContent ? '#10b981' : 'var(--app-border)'}`,
-                                background: hasContent ? '#dcfce7' : 'var(--app-surface)',
-                                cursor: 'pointer',
-                              }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '20px' }}>{slot.icon}</span>
-                                <span style={{ fontWeight: 600 }}>{slot.label}</span>
-                                <span style={{ marginLeft: 'auto', fontSize: '14px' }}>
-                                  {hasContent ? '✅' : '⬜'}
-                                </span>
-                              </div>
-                              <div style={{ marginTop: '6px', fontSize: '12px', opacity: 0.7 }}>
-                                {slot.description}
-                              </div>
-                            </div>
-                          );
-                        })}
+                      <div style={{ marginTop: '16px' }}>
+                        {renderPhase('📥 Input Foto\'s', '📥', inputItems)}
+                        {renderPhase('🖼️ Gegenereerde Assets', '🖼️', assetItems)}
+                        {renderPhase('🎬 Video Content', '🎬', videoItems)}
                       </div>
 
-                      <div style={{ marginTop: '20px', padding: '12px', background: 'var(--app-muted)', borderRadius: '8px' }}>
+                      <div style={{ marginTop: '8px', padding: '12px', background: 'var(--app-muted)', borderRadius: '8px' }}>
                         <div style={{ fontSize: '13px', fontWeight: 600 }}>
-                          Completion: {MEDIA_SLOTS.filter((s) => form[s.id]?.url || form[s.id]?.caption).length} / {MEDIA_SLOTS.length} media slots
+                          Voortgang: {completedCount} / {totalCount} assets
                         </div>
                         <div style={{ marginTop: '8px', height: '8px', background: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' }}>
                           <div
                             style={{
                               height: '100%',
-                              width: `${(MEDIA_SLOTS.filter((s) => form[s.id]?.url || form[s.id]?.caption).length / MEDIA_SLOTS.length) * 100}%`,
-                              background: '#10b981',
+                              width: `${(completedCount / totalCount) * 100}%`,
+                              background: completedCount === totalCount ? '#10b981' : '#3b82f6',
+                              transition: 'width 0.3s',
                             }}
                           />
                         </div>
                       </div>
                     </div>
                   </Card>
-                )}
+                  );
+                })()}
 
-                {/* Dynamic media slot tabs */}
-                {/* Profile Photo tab — photo picker like Identity */}
-                {activeTab === 'profile' && (
+                {/* Input Photos tab — Profile + Legacy side by side */}
+                {activeTab === 'input' && (
                   <Card>
                     <div style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ fontSize: '24px' }}>📷</span>
-                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Profile Photo</div>
+                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Input Foto's</div>
                         </div>
                         <Badge variant={userCanEditProject ? 'default' : 'info'}>
                           {userCanEditProject ? 'Editable' : 'Read-only'}
                         </Badge>
                       </div>
-
-                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                        Select or upload a profile photo for this member.
+                      <div style={{ marginTop: '4px', opacity: 0.7, fontSize: '12px' }}>
+                        Upload de bronfotos die als input worden gebruikt voor alle AI-generaties.
                       </div>
 
-                      <div style={{ marginTop: '20px' }}>
-                        {/* Current profile photo */}
-                        <div style={{ marginBottom: '24px' }}>
-                          <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Current Photo</div>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
-                            <div style={{
-                              width: '160px',
-                              height: '160px',
-                              borderRadius: '12px',
-                              overflow: 'hidden',
-                              backgroundColor: 'var(--app-surface-secondary)',
-                              border: '2px solid var(--app-border)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}>
-                              {(profilePreview || form.profile?.url || membership?.user?.avatar_url) ? (
-                                <img
-                                  src={profilePreview || form.profile?.url || membership?.user?.avatar_url}
-                                  alt={getUserDisplayName(membership)}
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: profileUploading ? 0.5 : 1 }}
-                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                />
-                              ) : (
-                                <div style={{ fontSize: '48px', opacity: 0.3 }}>👤</div>
-                              )}
-                            </div>
-                            <div style={{ flex: 1, minWidth: '200px' }}>
-                              {(profilePreview || form.profile?.url || membership?.user?.avatar_url) ? (
-                                <span style={{ fontSize: 13, color: '#28a745', fontWeight: 600 }}>✓ Profielfoto ingesteld</span>
-                              ) : (
-                                <div style={{ fontSize: 13, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
-                                  No profile photo set
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Upload area */}
-                        <div
-                          onClick={() => userCanEditProject && !profileUploading && profileInputRef.current?.click()}
-                          style={{
-                            padding: '24px',
-                            border: '2px dashed var(--app-border)',
-                            borderRadius: '8px',
-                            textAlign: 'center',
-                            opacity: userCanEditProject ? 1 : 0.5,
-                            cursor: userCanEditProject && !profileUploading ? 'pointer' : 'default',
-                            transition: 'border-color 0.2s',
-                          }}
-                          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (!userCanEditProject || profileUploading) return;
-                            const file = e.dataTransfer.files?.[0];
-                            if (file && file.type.startsWith('image/')) handleProfilePhotoUpload(file);
-                          }}
-                        >
-                          <input
-                            ref={profileInputRef}
-                            type="file"
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleProfilePhotoUpload(file);
-                              e.target.value = '';
-                            }}
-                          />
-                          {profileUploading ? (
-                            <>
-                              <div style={{ fontSize: '32px', marginBottom: '8px' }}>⏳</div>
-                              <div style={{ fontSize: '14px', fontWeight: 600 }}>Uploaden...</div>
-                            </>
-                          ) : (
-                            <>
-                              <div style={{ fontSize: '32px', marginBottom: '8px' }}>📤</div>
-                              <div style={{ fontSize: '14px', fontWeight: 600 }}>Upload Profielfoto</div>
-                              <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>
-                                Klik of sleep een afbeelding hierheen
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {!userCanEditProject && (
-                        <div style={{ marginTop: '16px' }}>
-                          <Alert variant="info">You don't have permission to edit this member's media.</Alert>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                )}
-
-                {/* Legacy Photo tab - dedicated upload like profile */}
-                {activeTab === 'legacy_photo' && (
-                  <Card>
-                    <div style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '24px' }}>📸</span>
-                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Legacy Photo</div>
-                        </div>
-                        <Badge variant={userCanEditProject ? 'default' : 'info'}>
-                          {userCanEditProject ? 'Editable' : 'Read-only'}
-                        </Badge>
-                      </div>
-
-                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                        Upload een historische foto van de speler. Deze foto wordt gebruikt als input voor "Legacy in Tenue" generatie (samen met het legacy tenue van het team).
-                      </div>
-
-                      <div style={{ marginTop: '20px' }}>
-                        {/* Current legacy photo */}
-                        <div style={{ marginBottom: '24px' }}>
-                          <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Huidige Foto</div>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
-                            <div style={{
-                              width: '240px',
-                              height: '240px',
-                              borderRadius: '12px',
-                              overflow: 'hidden',
-                              backgroundColor: 'var(--app-surface-secondary)',
-                              border: '2px solid var(--app-border)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}>
-                              {(legacyPhotoPreview || form.legacy_photo?.url) ? (
-                                <img
-                                  src={legacyPhotoPreview || resolveDisplayUrl(form.legacy_photo?.url) || undefined}
-                                  alt="Legacy Photo"
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: legacyPhotoUploading ? 0.5 : 1 }}
-                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                />
-                              ) : (
-                                <div style={{ fontSize: '64px', opacity: 0.3 }}>📸</div>
-                              )}
-                            </div>
-                            <div style={{ flex: 1, minWidth: '200px' }}>
-                              {(legacyPhotoPreview || form.legacy_photo?.url) ? (
-                                <span style={{ fontSize: 13, color: '#28a745', fontWeight: 600 }}>✓ Legacy foto ingesteld</span>
-                              ) : (
-                                <div style={{ fontSize: 13, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
-                                  Nog geen legacy foto geüpload
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Upload area */}
-                        <div
-                          onClick={() => userCanEditProject && !legacyPhotoUploading && legacyPhotoInputRef.current?.click()}
-                          style={{
-                            padding: '24px',
-                            border: '2px dashed var(--app-border)',
-                            borderRadius: '8px',
-                            textAlign: 'center',
-                            opacity: userCanEditProject ? 1 : 0.5,
-                            cursor: userCanEditProject && !legacyPhotoUploading ? 'pointer' : 'default',
-                            transition: 'border-color 0.2s',
-                          }}
-                          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (!userCanEditProject || legacyPhotoUploading) return;
-                            const file = e.dataTransfer.files?.[0];
-                            if (file && file.type.startsWith('image/')) handleLegacyPhotoUpload(file);
-                          }}
-                        >
-                          <input
-                            ref={legacyPhotoInputRef}
-                            type="file"
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleLegacyPhotoUpload(file);
-                              e.target.value = '';
-                            }}
-                          />
-                          {legacyPhotoUploading ? (
-                            <>
-                              <div style={{ fontSize: '32px', marginBottom: '8px' }}>⏳</div>
-                              <div style={{ fontSize: '14px', fontWeight: 600 }}>Uploaden...</div>
-                            </>
-                          ) : (
-                            <>
-                              <div style={{ fontSize: '32px', marginBottom: '8px' }}>📤</div>
-                              <div style={{ fontSize: '14px', fontWeight: 600 }}>Upload Legacy Foto</div>
-                              <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>
-                                Klik of sleep een afbeelding hierheen
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {!userCanEditProject && (
-                        <div style={{ marginTop: '16px' }}>
-                          <Alert variant="info">You don't have permission to edit this member's media.</Alert>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                )}
-
-                {/* Other media slot tabs — preview + upload only (no URL/caption inputs) */}
-                {/* AI-generative slots and dedicated tabs are handled separately */}
-                {(MEDIA_SLOTS as readonly { id: string; label: string; icon: string; description: string; isInput: boolean }[]).filter((s) => !['profile', 'legacy_photo', 'kit', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite', 'walking_composite', 'legacy'].includes(s.id)).map((slot) => activeTab === slot.id && (
-                  <Card key={slot.id}>
-                    <div style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '24px' }}>{slot.icon}</span>
-                          <div style={{ fontSize: '16px', fontWeight: 800 }}>{slot.label}</div>
-                        </div>
-                        <Badge variant={userCanEditProject ? 'default' : 'info'}>
-                          {userCanEditProject ? 'Editable' : 'Read-only'}
-                        </Badge>
-                      </div>
-
-                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                        {slot.description}
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginTop: '20px' }}>
-                        {(form as any)[slot.id]?.url && (
-                          <div>
-                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Preview</div>
-                            <div style={{
-                              border: '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: '#f3f4f6',
-                              maxWidth: '400px',
-                            }}>
-                              {(slot.id === 'intro' || slot.id === 'celebration') && (form as any)[slot.id]?.url?.includes('.mp4') ? (
-                                <video
-                                  src={(form as any)[slot.id].url}
-                                  controls
-                                  style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
-                                />
-                              ) : (
-                                <img
-                                  src={(form as any)[slot.id].url}
-                                  alt={slot.label}
-                                  style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                  }}
-                                />
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        <div style={{
-                          padding: '24px',
-                          border: '2px dashed var(--app-border)',
-                          borderRadius: '8px',
-                          textAlign: 'center',
-                          opacity: userCanEditProject ? 1 : 0.5,
-                        }}>
-                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>📤</div>
-                          <div style={{ fontSize: '14px', fontWeight: 600 }}>Upload {slot.label}</div>
-                          <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>
-                            Drag & drop or click to upload
-                          </div>
-                          <div style={{ fontSize: '11px', opacity: 0.5, marginTop: '8px' }}>
-                            (File upload coming soon)
-                          </div>
-                        </div>
-                      </div>
-
-                      {!userCanEditProject && (
-                        <div style={{ marginTop: '16px' }}>
-                          <Alert variant="info">You don't have permission to edit this member's media.</Alert>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                ))}
-
-                {/* In Tenue (Kit) Tab - AI Generative with tenue selector */}
-                {activeTab === 'kit' && (
-                  <Card>
-                    <div style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '24px' }}>👕</span>
-                          <div style={{ fontSize: '16px', fontWeight: 800 }}>In Tenue</div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <Badge variant={userCanEditProject ? 'default' : 'info'}>
-                            {userCanEditProject ? 'Editable' : 'Read-only'}
-                          </Badge>
-                          {userCanEditProject && (
-                            <Button
-                              size="sm"
-                              onClick={() => openAiModal('fullbody_in_tenue')}
-                              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', border: 'none' }}
-                            >
-                              ✨ AI Genereren
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-
-                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                        Fullbody foto van de speler in het seizoenstenue. Selecteer een tenue en genereer met AI.
-                      </div>
-
-                      {/* Current result preview */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginTop: '20px' }}>
-                        {form.kit?.url && (
-                          <div>
-                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Huidig Resultaat</div>
-                            <div style={{
-                              border: '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: '#f3f4f6',
-                              maxWidth: '300px',
-                            }}>
+                      <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        {/* Profile Photo */}
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '10px' }}>📷 Profielfoto</div>
+                          <div style={{
+                            width: '100%',
+                            aspectRatio: '1/1',
+                            maxWidth: '220px',
+                            borderRadius: '10px',
+                            overflow: 'hidden',
+                            backgroundColor: 'var(--app-surface-secondary)',
+                            border: '2px solid var(--app-border)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: '12px',
+                          }}>
+                            {(profilePreview || form.profile?.url || membership?.user?.avatar_url) ? (
                               <img
-                                src={form.kit.url}
-                                alt="In Tenue"
-                                style={{ width: '100%', maxHeight: '400px', objectFit: 'contain' }}
+                                src={profilePreview || form.profile?.url || membership?.user?.avatar_url}
+                                alt={getUserDisplayName(membership)}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: profileUploading ? 0.5 : 1 }}
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                               />
-                            </div>
+                            ) : (
+                              <div style={{ fontSize: '48px', opacity: 0.3 }}>👤</div>
+                            )}
                           </div>
-                        )}
-
-                        {/* Tenue Selector */}
-                        <div style={{ marginTop: '16px' }}>
-                          <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Selecteer Tenue (van Seizoen)</div>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px' }}>
-                            {effectiveKits.map((kit) => (
-                              <button
-                                key={kit.id}
-                                onClick={() => {
-                                  setAiSelectedKitType(kit.id);
-                                  setAiSelectedKitUrl(kit.url);
-                                }}
-                                style={{
-                                  padding: '12px 8px',
-                                  border: aiSelectedKitType === kit.id
-                                    ? '2px solid #6366f1'
-                                    : '1px solid var(--app-border)',
-                                  borderRadius: '8px',
-                                  background: aiSelectedKitType === kit.id
-                                    ? 'rgba(99, 102, 241, 0.1)'
-                                    : 'var(--app-surface)',
-                                  cursor: 'pointer',
-                                  textAlign: 'center',
-                                }}
-                              >
-                                {kit.url ? (
-                                  <img
-                                    src={kit.url}
-                                    alt={kit.label}
-                                    style={{ width: '60px', height: '80px', objectFit: 'contain', margin: '0 auto 8px' }}
-                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                  />
-                                ) : (
-                                  <div style={{ width: '60px', height: '80px', background: '#e5e7eb', borderRadius: '4px', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-                                    {kit.icon}
-                                  </div>
-                                )}
-                                <div style={{ fontSize: '11px', fontWeight: 600 }}>{kit.icon} {kit.label}</div>
-                                {!kit.url && <div style={{ fontSize: '10px', color: '#888' }}>Niet beschikbaar</div>}
-                              </button>
-                            ))}
-                          </div>
-                          {!effectiveKits.some(k => k.url) && (
-                            <Alert variant="warning" style={{ marginTop: '12px' }}>
-                              Geen tenues beschikbaar. Upload eerst tenues op de club-pagina.
-                            </Alert>
+                          {(profilePreview || form.profile?.url || membership?.user?.avatar_url) && (
+                            <div style={{ fontSize: '11px', color: '#28a745', fontWeight: 600, marginBottom: '8px' }}>✓ Ingesteld</div>
                           )}
+                          <div
+                            onClick={() => userCanEditProject && !profileUploading && profileInputRef.current?.click()}
+                            style={{
+                              padding: '16px',
+                              border: '2px dashed var(--app-border)',
+                              borderRadius: '8px',
+                              textAlign: 'center',
+                              opacity: userCanEditProject ? 1 : 0.5,
+                              cursor: userCanEditProject && !profileUploading ? 'pointer' : 'default',
+                              maxWidth: '220px',
+                            }}
+                            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (!userCanEditProject || profileUploading) return;
+                              const file = e.dataTransfer.files?.[0];
+                              if (file && file.type.startsWith('image/')) handleProfilePhotoUpload(file);
+                            }}
+                          >
+                            <input
+                              ref={profileInputRef}
+                              type="file"
+                              accept="image/*"
+                              style={{ display: 'none' }}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleProfilePhotoUpload(file);
+                                e.target.value = '';
+                              }}
+                            />
+                            {profileUploading ? (
+                              <div style={{ fontSize: '12px', fontWeight: 600 }}>⏳ Uploaden...</div>
+                            ) : (
+                              <>
+                                <div style={{ fontSize: '24px', marginBottom: '4px' }}>📤</div>
+                                <div style={{ fontSize: '11px', fontWeight: 600 }}>Upload / Vervang</div>
+                              </>
+                            )}
+                          </div>
                         </div>
 
-                        {/* AI Generation CTA */}
-                        {userCanEditProject && effectiveKits.some(k => k.url) && (
-                          <div style={{ marginTop: '20px', padding: '20px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))', borderRadius: '8px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '32px', marginBottom: '8px' }}>✨</div>
-                            <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>Genereer met AI</div>
-                            <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '16px' }}>
-                              Gebruik de profielfoto en het geselecteerde tenue om een fullbody foto te genereren.
-                            </div>
-                            <Button onClick={() => openAiModal('fullbody_in_tenue', aiSelectedKitType)}>
-                              🎨 Start AI Generatie
-                            </Button>
+                        {/* Legacy Photo */}
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '10px' }}>📸 Legacy Foto</div>
+                          <div style={{
+                            width: '100%',
+                            aspectRatio: '1/1',
+                            maxWidth: '220px',
+                            borderRadius: '10px',
+                            overflow: 'hidden',
+                            backgroundColor: 'var(--app-surface-secondary)',
+                            border: '2px solid var(--app-border)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: '12px',
+                          }}>
+                            {(legacyPhotoPreview || form.legacy_photo?.url) ? (
+                              <img
+                                src={legacyPhotoPreview || resolveDisplayUrl(form.legacy_photo?.url) || undefined}
+                                alt="Legacy Photo"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: legacyPhotoUploading ? 0.5 : 1 }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : (
+                              <div style={{ fontSize: '48px', opacity: 0.3 }}>📸</div>
+                            )}
                           </div>
-                        )}
-
-                        {/* Manual upload fallback */}
-                        <div style={{
-                          padding: '24px',
-                          border: '2px dashed var(--app-border)',
-                          borderRadius: '8px',
-                          textAlign: 'center',
-                          opacity: userCanEditProject ? 1 : 0.5,
-                          marginTop: '16px',
-                        }}>
-                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>📤</div>
-                          <div style={{ fontSize: '14px', fontWeight: 600 }}>Of upload handmatig</div>
-                          <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>
-                            Drag & drop of klik om te uploaden
+                          {(legacyPhotoPreview || form.legacy_photo?.url) && (
+                            <div style={{ fontSize: '11px', color: '#28a745', fontWeight: 600, marginBottom: '8px' }}>✓ Ingesteld</div>
+                          )}
+                          <div
+                            onClick={() => userCanEditProject && !legacyPhotoUploading && legacyPhotoInputRef.current?.click()}
+                            style={{
+                              padding: '16px',
+                              border: '2px dashed var(--app-border)',
+                              borderRadius: '8px',
+                              textAlign: 'center',
+                              opacity: userCanEditProject ? 1 : 0.5,
+                              cursor: userCanEditProject && !legacyPhotoUploading ? 'pointer' : 'default',
+                              maxWidth: '220px',
+                            }}
+                            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (!userCanEditProject || legacyPhotoUploading) return;
+                              const file = e.dataTransfer.files?.[0];
+                              if (file && file.type.startsWith('image/')) handleLegacyPhotoUpload(file);
+                            }}
+                          >
+                            <input
+                              ref={legacyPhotoInputRef}
+                              type="file"
+                              accept="image/*"
+                              style={{ display: 'none' }}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleLegacyPhotoUpload(file);
+                                e.target.value = '';
+                              }}
+                            />
+                            {legacyPhotoUploading ? (
+                              <div style={{ fontSize: '12px', fontWeight: 600 }}>⏳ Uploaden...</div>
+                            ) : (
+                              <>
+                                <div style={{ fontSize: '24px', marginBottom: '4px' }}>📤</div>
+                                <div style={{ fontSize: '11px', fontWeight: 600 }}>Upload / Vervang</div>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -2311,154 +2082,8 @@ export default function ProjectSeasonMemberDetailPage() {
                   </Card>
                 )}
 
-                {/* Close-up Tab - AI Generative */}
-                {activeTab === 'closeup' && (
-                  <Card>
-                    <div style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '24px' }}>📸</span>
-                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Close-up</div>
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <Badge variant={userCanEditProject ? 'default' : 'info'}>
-                            {userCanEditProject ? 'Editable' : 'Read-only'}
-                          </Badge>
-                        </div>
-                      </div>
 
-                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                        Close-up portret van de speler in het seizoenstenue. Transparante achtergrond.
-                      </div>
 
-                      {/* Current result preview */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginTop: '20px' }}>
-                        {form.closeup?.url && (
-                          <div>
-                            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px' }}>Huidig Resultaat</div>
-                            <div style={{
-                              border: '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: '#f3f4f6',
-                              maxWidth: '300px',
-                            }}>
-                              <img
-                                src={form.closeup.url}
-                                alt="Close-up"
-                                style={{ width: '100%', maxHeight: '400px', objectFit: 'contain' }}
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Tenue Selector for close-up */}
-                        <div style={{ marginTop: '16px' }}>
-                          <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Selecteer Tenue (van Seizoen)</div>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px' }}>
-                            {effectiveKits.map((kit) => (
-                              <button
-                                key={kit.id}
-                                onClick={() => {
-                                  setAiSelectedKitType(kit.id);
-                                  setAiSelectedKitUrl(kit.url);
-                                }}
-                                style={{
-                                  padding: '12px 8px',
-                                  border: aiSelectedKitType === kit.id
-                                    ? '2px solid #6366f1'
-                                    : '1px solid var(--app-border)',
-                                  borderRadius: '8px',
-                                  background: aiSelectedKitType === kit.id
-                                    ? 'rgba(99, 102, 241, 0.1)'
-                                    : 'var(--app-surface)',
-                                  cursor: 'pointer',
-                                  textAlign: 'center',
-                                }}
-                              >
-                                {kit.url ? (
-                                  <img
-                                    src={kit.url}
-                                    alt={kit.label}
-                                    style={{ width: '60px', height: '80px', objectFit: 'contain', margin: '0 auto 8px' }}
-                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                  />
-                                ) : (
-                                  <div style={{ width: '60px', height: '80px', background: '#e5e7eb', borderRadius: '4px', margin: '0 auto 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-                                    {kit.icon}
-                                  </div>
-                                )}
-                                <div style={{ fontSize: '11px', fontWeight: 600 }}>{kit.icon} {kit.label}</div>
-                                {!kit.url && <div style={{ fontSize: '10px', color: '#888' }}>Niet beschikbaar</div>}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Crop from Fullbody */}
-                        {userCanEditProject && getBestUrl(videoVariants.fullbody[aiSelectedKitType]) && (
-                          <div style={{ marginTop: '20px', padding: '20px', background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1))', borderRadius: '8px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '32px', marginBottom: '8px' }}>✂️</div>
-                            <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>Crop uit Fullbody</div>
-                            <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '16px' }}>
-                              Automatisch bijsnijden van hoofd + schouders uit de fullbody afbeelding.
-                            </div>
-                            <Button
-                              onClick={() => cropCloseupFromFullbody(aiSelectedKitType)}
-                              disabled={croppingCloseup[aiSelectedKitType]}
-                            >
-                              {croppingCloseup[aiSelectedKitType] ? '⏳ Bijsnijden...' : '✂️ Crop Close-up'}
-                            </Button>
-                          </div>
-                        )}
-
-                        {/* AI Generation CTA */}
-                        {userCanEditProject && effectiveKits.some(k => k.url) && (
-                          <div style={{ marginTop: '16px', padding: '20px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))', borderRadius: '8px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '32px', marginBottom: '8px' }}>✨</div>
-                            <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>Of genereer met AI</div>
-                            <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '16px' }}>
-                              {!getBestUrl(videoVariants.fullbody[aiSelectedKitType])
-                                ? '⚠️ Je moet eerst een "Player in Tenue (Fullbody)" genereren om een close-up te maken.'
-                                : 'Gebruik AI om een close-up te genereren (kost credits).'
-                              }
-                            </div>
-                            <Button
-                              variant="secondary"
-                              onClick={() => openAiModal('closeup_in_tenue', aiSelectedKitType, getBestUrl(videoVariants.fullbody[aiSelectedKitType]))}
-                              disabled={!getBestUrl(videoVariants.fullbody[aiSelectedKitType])}
-                            >
-                              🎨 Start AI Generatie
-                            </Button>
-                          </div>
-                        )}
-
-                        {/* Manual upload fallback */}
-                        <div style={{
-                          padding: '24px',
-                          border: '2px dashed var(--app-border)',
-                          borderRadius: '8px',
-                          textAlign: 'center',
-                          opacity: userCanEditProject ? 1 : 0.5,
-                          marginTop: '16px',
-                        }}>
-                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>📤</div>
-                          <div style={{ fontSize: '14px', fontWeight: 600 }}>Of upload handmatig</div>
-                          <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>
-                            Drag & drop of klik om te uploaden
-                          </div>
-                        </div>
-                      </div>
-
-                      {!userCanEditProject && (
-                        <div style={{ marginTop: '16px' }}>
-                          <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                )}
 
                 {/* Short Intro Tab - AI Generated Video Variants */}
                 {activeTab === 'intro' && (
@@ -3041,10 +2666,6 @@ export default function ProjectSeasonMemberDetailPage() {
                     || null;
                   const hasBothInputs = Boolean(legacyFullbodyUrl) && Boolean(currentFullbodyUrl);
 
-                  const thenVsNowDefs = [
-                    { id: 'sidebyside', templateId: 'then_vs_now_sidebyside', icon: '👫', label: 'Naast Elkaar', desc: '6 sec — kijken naar elkaar en lachen' },
-                  ];
-
                   const transformationVariantDefs = [
                     { id: 'hands_on_head', icon: '🤯', label: 'Handen op hoofd' },
                     { id: 'spin', icon: '🔄', label: '360° Spin' },
@@ -3112,222 +2733,6 @@ export default function ProjectSeasonMemberDetailPage() {
                               <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Player in Tenue</div>
                             )}
                           </div>
-                        </div>
-
-                        {/* Side-by-side variant */}
-                        <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', opacity: hasBothInputs ? 1 : 0.5 }}>
-                          {thenVsNowDefs.map((variant) => {
-                            const variantRaw = videoVariants.then_vs_now[variant.id];
-                            const variantUrl = getBestUrl(variantRaw) || '';
-                            const hasVideo = Boolean(variantUrl);
-                            const resolvedUrl = hasVideo ? resolveDisplayUrl(variantUrl) : null;
-                            const variantLineupReady = isLineupReady(variantRaw);
-                            const variantProcessing = isProcessing(variantRaw);
-                            const normalizedVariant = normalizeVariantValue(variantRaw as any);
-                            const isCancellingOrProcessing =
-                              normalizedVariant?.processing_state === 'processing' ||
-                              normalizedVariant?.processing_state === 'cancelling';
-
-                            return (
-                              <div key={variant.id} style={{
-                                border: hasVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                background: 'var(--app-surface)',
-                              }}>
-                                <div
-                                  onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
-                                  style={{
-                                    aspectRatio: '9/16',
-                                    background: (hasVideo && !variantLineupReady)
-                                      ? '#000'
-                                      : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    minHeight: '200px',
-                                    position: 'relative',
-                                    cursor: hasVideo ? 'pointer' : 'default',
-                                  }}>
-                                  {hasVideo && resolvedUrl ? (
-                                    <>
-                                      <video
-                                        key={resolvedUrl}
-                                        src={resolvedUrl}
-                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                        muted
-                                        loop
-                                        playsInline
-                                        autoPlay
-                                        onError={(e) => {
-                                          (e.target as HTMLVideoElement).style.display = 'none';
-                                        }}
-                                      />
-                                      <div style={{
-                                        position: 'absolute',
-                                        top: '6px',
-                                        right: '6px',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '3px',
-                                        alignItems: 'flex-end',
-                                      }}>
-                                        <div style={{
-                                          background: 'rgba(99, 102, 241, 0.85)',
-                                          color: '#fff',
-                                          fontSize: '9px',
-                                          fontWeight: 700,
-                                          padding: '2px 5px',
-                                          borderRadius: '4px',
-                                        }}>
-                                          AI
-                                        </div>
-                                        <ProcessingBadge value={variantRaw} />
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                      {variant.icon}<br />Niet gegenereerd
-                                    </div>
-                                  )}
-                                </div>
-                                <div style={{ padding: '12px' }}>
-                                  <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>
-                                    {variant.icon} {variant.label}
-                                  </div>
-                                  <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '10px' }}>
-                                    {variant.desc}
-                                  </div>
-                                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                                    {hasVideo ? (
-                                      <>
-                                        <Button
-                                          size="sm"
-                                          onClick={() => openAiModal(variant.templateId, 'home', legacyFullbodyUrl, null, currentFullbodyUrl)}
-                                          disabled={!hasBothInputs}
-                                          style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
-                                        >
-                                          Opnieuw
-                                        </Button>
-                                        {!variantProcessing && (
-                                          <Button
-                                            size="sm"
-                                            variant="secondary"
-                                            onClick={async () => {
-                                              const result = await triggerAssetProcessing(
-                                                apiBaseUrl, membershipId!, 'then_vs_now', variant.id, null
-                                              );
-                                              if (result.ok) {
-                                                const rawUrl = getVariantRawUrl(variantRaw) || '';
-                                                const newVV: VideoVariantsMap = {
-                                                  ...videoVariants,
-                                                  then_vs_now: {
-                                                    ...videoVariants.then_vs_now,
-                                                    [variant.id]: {
-                                                      raw: rawUrl,
-                                                      processed: null,
-                                                      processing_state: 'processing' as const,
-                                                    },
-                                                  },
-                                                };
-                                                setVideoVariants(newVV);
-                                                startProcessingPoll('then_vs_now', variant.id);
-                                              }
-                                            }}
-                                            style={{
-                                              fontSize: '10px',
-                                              padding: '4px 8px',
-                                              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                              border: 'none',
-                                              color: '#fff',
-                                            }}
-                                          >
-                                            {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
-                                          </Button>
-                                        )}
-
-                                        {isCancellingOrProcessing && (
-                                          <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={async () => {
-                                              const isCancelling = normalizedVariant?.processing_state === 'cancelling';
-                                              const result = await cancelAssetProcessing(
-                                                apiBaseUrl, membershipId!, 'then_vs_now', variant.id, null, isCancelling
-                                              );
-                                              if (result.ok) {
-                                                if (isCancelling) {
-                                                  // Force cancel — refresh membership to get updated state
-                                                  try {
-                                                    const memberRes = await fetch(
-                                                      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project?.id || '')}/members/${encodeURIComponent(membershipId!)}/`,
-                                                      { credentials: 'include' }
-                                                    );
-                                                    if (memberRes.ok) {
-                                                      const json = await memberRes.json();
-                                                      setMembership(json?.data || json);
-                                                    }
-                                                  } catch { /* best-effort */ }
-                                                } else {
-                                                  const rawUrl = getVariantRawUrl(variantRaw) || '';
-                                                  const newVV: VideoVariantsMap = {
-                                                    ...videoVariants,
-                                                    then_vs_now: {
-                                                      ...videoVariants.then_vs_now,
-                                                      [variant.id]: {
-                                                        raw: rawUrl,
-                                                        processed: null,
-                                                        processing_state: 'cancelling' as const,
-                                                      },
-                                                    },
-                                                  };
-                                                  setVideoVariants(newVV);
-                                                  startProcessingPoll('then_vs_now', variant.id);
-                                                }
-                                              }
-                                            }}
-                                            style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
-                                          >
-                                            {normalizedVariant?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
-                                          </Button>
-                                        )}
-                                        {variantLineupReady && (
-                                          <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
-                                        )}
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={async () => {
-                                            if (!confirm('Weet je zeker dat je deze video wilt verwijderen?')) return;
-                                            const newVV: VideoVariantsMap = {
-                                              ...videoVariants,
-                                              then_vs_now: { ...videoVariants.then_vs_now },
-                                            };
-                                            delete newVV.then_vs_now[variant.id];
-                                            setVideoVariants(newVV);
-                                            const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
-                                            await handleMetadataUpdate(updatedMeta);
-                                          }}
-                                          style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}
-                                        >
-                                          🗑️
-                                        </Button>
-                                      </>
-                                    ) : (
-                                      <Button
-                                        size="sm"
-                                        onClick={() => openAiModal(variant.templateId, 'home', legacyFullbodyUrl, null, currentFullbodyUrl)}
-                                        disabled={!hasBothInputs}
-                                        style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                      >
-                                        ✨ Genereer
-                                      </Button>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
                         </div>
 
                         {/* Transformation variants */}
@@ -3591,7 +2996,7 @@ export default function ProjectSeasonMemberDetailPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ fontSize: '24px' }}>📸</span>
-                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Foto Composite</div>
+                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Duo Portret</div>
                           </div>
                           <Badge variant={userCanEditProject ? 'default' : 'info'}>
                             {userCanEditProject ? 'Editable' : 'Read-only'}
@@ -4734,13 +4139,6 @@ export default function ProjectSeasonMemberDetailPage() {
                   </div>
                 )}
 
-                {activeTab === 'workflow' && membership && project && (
-                  <WorkflowPanel
-                    projectId={String(project.id)}
-                    contentTypeName="projectmembership"
-                    objectId={String(membership.id)}
-                  />
-                )}
               </div>
 
               <div className="space-y-6">
