@@ -7,9 +7,10 @@ Creates a compilation video from individual member then_vs_now clips:
 - Smooth transitions: freeze last frame → empty field → next member fades in
 - Optional sponsor logo (bottom-left)
 
-Supports two video types with different sizing:
-- sidebyside: video fills full width between header and name/sponsor zone
-- transformation: video slightly smaller, centered in the same zone
+Supports multiple video types with different sizing:
+- sidebyside: video fills full width between header and name/sponsor zone (raw AI video)
+- transformation: video slightly smaller, positioned below center (processed/RVM video)
+- duo_portret: same sizing as transformation, uses raw AI video
 
 Output: 1080×1920 vertical MP4 at 30fps.
 """
@@ -281,7 +282,7 @@ def compose_then_vs_now_video(
         season_name: Season/period name for header.
         brand_color: Brand primary hex color (e.g. "#D2122E").
         sponsor_url: Optional sponsor logo URL (bottom-left overlay).
-        video_type: "sidebyside" or "transformation" (controls video sizing).
+        video_type: "sidebyside", "transformation", or "duo_portret" (controls video sizing).
         output_dir: Output directory. Uses tempfile if None.
         progress_callback: Optional fn(percent: int).
 
@@ -447,6 +448,7 @@ def compose_then_vs_now_video(
 
         # Member video: play FULL source (no trim), slow-mo, then freeze last frame
         if video_type == "sidebyside":
+            # Cover-crop: scale up to fill, then crop to exact size
             fc_video.append(
                 f"[1:v]setpts={slowmo}*PTS,"
                 f"tpad=stop_mode=clone:stop_duration={freeze_dur},"
@@ -459,14 +461,18 @@ def compose_then_vs_now_video(
             # shortest=0: output duration = longest stream (bg), not shortest (vid)
             fc_video.append(f"[bg][vid]overlay={vid_x}:{vid_y}:eof_action=repeat:shortest=0[main]")
         else:
+            # Fit-inside: scale to fit within target size, no cropping
+            # Used for transformation + duo_portret
             fc_video.append(
                 f"[1:v]setpts={slowmo}*PTS,"
                 f"tpad=stop_mode=clone:stop_duration={freeze_dur},"
                 f"scale={vid_w}:{vid_h}:force_original_aspect_ratio=decrease,"
                 f"setsar=1[vid]"
             )
+            # Position slightly below center (3/5 of remaining space above,
+            # 2/5 below) so the video sits nicely under the header.
             fc_video.append(
-                f"[bg][vid]overlay=(W-w)/2:({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)/2)"
+                f"[bg][vid]overlay=(W-w)/2:({HEADER_HEIGHT}+({CONTENT_HEIGHT}-h)*3/5)"
                 f":eof_action=repeat:shortest=0[main]"
             )
 

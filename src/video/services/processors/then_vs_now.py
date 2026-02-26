@@ -70,7 +70,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 raise ValueError(f"No members found with then_vs_now '{video_type}' videos.")
 
             # Compose the video
-            if video_type in ("photo_composite", "duo_portret", "walking_composite"):
+            if video_type in ("photo_composite", "walking_composite"):
                 from src.video.services.then_vs_now_composer import (
                     compose_photo_composite_video,
                 )
@@ -256,8 +256,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
 
         members: list[MemberClip] | list[MemberPhotoComposite] = []
 
-        if video_type in ("photo_composite", "duo_portret"):
-            # ── Duo Portret / Photo composite: gather pre-processed transparent videos ──
+        if video_type == "photo_composite":
+            # ── Photo composite: gather pre-processed transparent videos ──
             # These have been through the modular pipeline:
             #   Gemini composite → MiniMax video → RVM bg removal
             # We just need the final transparent video URL.
@@ -313,6 +313,50 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                             transparent_video_url=video_url,
                         )
                     )
+        elif video_type == "duo_portret":
+            # ── Duo Portret: use RAW AI-generated video (not RVM-processed) ──
+            # Routed through compose_then_vs_now_video for header + name + sponsor.
+            for pm in qs:
+                meta = pm.metadata or {}
+                tr = meta.get("teamreel_assets", {})
+                videos = tr.get("videos", {})
+                photo_composite = videos.get("photo_composite", {})
+
+                variant_data = photo_composite.get("default", {})
+                if not variant_data:
+                    continue
+
+                if isinstance(variant_data, str):
+                    video_url = variant_data
+                else:
+                    # Use RAW AI-generated video, not RVM-processed
+                    video_url = variant_data.get("raw") or None
+
+                if not video_url:
+                    continue
+
+                def _presign_if_needed(url):
+                    if url and not url.startswith("http"):
+                        try:
+                            from files.utils import get_storage_backend
+
+                            backend = get_storage_backend()
+                            return backend.get_url(url, signed=True, expiry_seconds=3600)
+                        except Exception:
+                            pass
+                    return url
+
+                video_url = _presign_if_needed(video_url)
+
+                if video_url:
+                    name = pm.user.get_full_name() if pm.user else "Unknown"
+                    members.append(
+                        MemberClip(
+                            member_id=str(pm.id),
+                            name=name,
+                            video_url=video_url,
+                        )
+                    )
         elif video_type == "walking_composite":
             # ── Walking Composite: gather pre-processed transparent walking videos ──
             for pm in qs:
@@ -364,7 +408,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                         )
                     )
         else:
-            # ── Video clip types: sidebyside / transformation ──
+            # ── Video clip types: sidebyside / transformation / duo_portret ──
             for pm in qs:
                 meta = pm.metadata or {}
                 tr = meta.get("teamreel_assets", {})
@@ -374,6 +418,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 # Find matching video variant
                 # For transformation, prefer RVM-processed variants (those with
                 # processed_source) over AI-only variants.
+                # For sidebyside, use RAW AI-generated video (not processed).
                 variant = None
                 member_id_str = str(pm.id)
                 if video_type == "sidebyside":
@@ -403,7 +448,20 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 if not variant:
                     continue
 
-                url = get_ffmpeg_best_url(variant)
+                # Sidebyside: use raw AI-generated video (not processed/RVM)
+                # Transformation: prefer processed (RVM) for transparent overlay
+                if video_type == "sidebyside":
+                    from src.video.services.asset_processing_specs import (
+                        normalize_variant_value,
+                    )
+
+                    normalized = normalize_variant_value(variant)
+                    url = normalized.get("raw") if normalized else None
+                    # Fall back to get_ffmpeg_best_url if raw not available
+                    if not url:
+                        url = get_ffmpeg_best_url(variant)
+                else:
+                    url = get_ffmpeg_best_url(variant)
                 if not url:
                     continue
 
