@@ -177,7 +177,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   // Then vs Now compilation modal state
   const [thenVsNowModalOpen, setThenVsNowModalOpen] = useState(false);
-  const [thenVsNowModalType, setThenVsNowModalType] = useState<'sidebyside' | 'transformation' | 'photo_composite'>('sidebyside');
+  const [thenVsNowModalType, setThenVsNowModalType] = useState<'duo_portret' | 'transformation' | 'walking_composite'>('duo_portret');
   const [thenVsNowModalStep, setThenVsNowModalStep] = useState<'members' | 'generating' | 'submitted' | 'error'>('members');
   const [thenVsNowModalSelected, setThenVsNowModalSelected] = useState<string[]>([]);
   const [thenVsNowModalSearch, setThenVsNowModalSearch] = useState('');
@@ -1168,9 +1168,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   // Members eligible for then_vs_now (for modal member picker)
   const thenVsNowEligibleMembers = useMemo(() => {
     return (members || []).map((m: any) => {
-      const thenVsNow = m?.metadata?.teamreel_assets?.videos?.then_vs_now || {};
-      const sbVariant = thenVsNow.sidebyside;
-      const hasSidebyside = !!(sbVariant && (sbVariant.processed || sbVariant.raw));
+      const videos = m?.metadata?.teamreel_assets?.videos || {};
+      const thenVsNow = videos?.then_vs_now || {};
+
       // Collect all transformation variant keys with data
       const transformationKeys: string[] = [];
       for (const k of Object.keys(thenVsNow)) {
@@ -1180,14 +1180,22 @@ export const ProjectSeasonDetailPage: React.FC = () => {
       }
       const hasTransformation = transformationKeys.length > 0;
 
-      // Photo composite eligibility: needs a processed transparent video (RVM output)
-      const videos = m?.metadata?.teamreel_assets?.videos || {};
+      // Duo Portret eligibility: needs a processed photo_composite video (RVM output)
       const compositeVideo = videos?.photo_composite?.default;
-      const hasPhotoComposite = !!(
+      const hasDuoPortret = !!(
         compositeVideo
         && typeof compositeVideo === 'object'
         && compositeVideo.processing_state === 'processed'
         && compositeVideo.processed
+      );
+
+      // Walking Composite eligibility: needs a processed walking_composite video
+      const walkingVideo = videos?.walking_composite?.default;
+      const hasWalkingComposite = !!(
+        walkingVideo
+        && typeof walkingVideo === 'object'
+        && walkingVideo.processing_state === 'processed'
+        && walkingVideo.processed
       );
 
       return {
@@ -1196,9 +1204,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         name: m.user ? `${m.user.first_name || ''} ${m.user.last_name || ''}`.trim() || m.user.email || 'Unknown' : 'Unknown',
         shirtNumber: m.metadata?.shirt_number || m.shirt_number || null,
         position: m.metadata?.position || m.position || null,
-        hasSidebyside,
+        hasDuoPortret,
         hasTransformation,
-        hasPhotoComposite,
+        hasWalkingComposite,
         transformationKeys,
       };
     }).filter((m: any) => m.id);
@@ -1206,22 +1214,22 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   // Count members that have then_vs_now videos (for content tiles)
   const thenVsNowCounts = useMemo(() => {
-    let sidebyside = 0;
+    let duo_portret = 0;
     let transformation = 0;
-    let photo_composite = 0;
+    let walking_composite = 0;
     for (const m of thenVsNowEligibleMembers) {
-      if (m.hasSidebyside) sidebyside++;
+      if (m.hasDuoPortret) duo_portret++;
       if (m.hasTransformation) transformation++;
-      if (m.hasPhotoComposite) photo_composite++;
+      if (m.hasWalkingComposite) walking_composite++;
     }
-    return { sidebyside, transformation, photo_composite };
+    return { duo_portret, transformation, walking_composite };
   }, [thenVsNowEligibleMembers]);
 
   // Open the Then vs Now compilation modal
-  const openThenVsNowModal = (videoType: 'sidebyside' | 'transformation' | 'photo_composite') => {
+  const openThenVsNowModal = (videoType: 'duo_portret' | 'transformation' | 'walking_composite') => {
     const eligible = thenVsNowEligibleMembers.filter((m: any) =>
-      videoType === 'sidebyside' ? m.hasSidebyside
-        : videoType === 'photo_composite' ? m.hasPhotoComposite
+      videoType === 'duo_portret' ? m.hasDuoPortret
+        : videoType === 'walking_composite' ? m.hasWalkingComposite
         : m.hasTransformation
     );
     // Pre-select all eligible members
@@ -2110,14 +2118,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         const matchedTemplate = templates[0];
                         const hasTemplate = !!matchedTemplate;
                         // Then vs Now types bypass ContentGenerationModal and use our dedicated modal
-                        const isThenVsNow = item.subtype === 'transformation' || item.subtype === 'sidebyside' || item.subtype === 'photo_composite';
+                        const isThenVsNow = item.subtype === 'transformation' || item.subtype === 'duo_portret' || item.subtype === 'walking_composite';
 
                         return (
                           <div
                             key={item.id}
                             onClick={() => {
                               if (isThenVsNow) {
-                                openThenVsNowModal(item.subtype as 'sidebyside' | 'transformation' | 'photo_composite');
+                                openThenVsNowModal(item.subtype as 'duo_portret' | 'transformation' | 'walking_composite');
                               } else if (hasTemplate) {
                                 openContentModal(matchedTemplate, item.label);
                               }
@@ -2209,10 +2217,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
                         {completedVideoJobs.map(job => {
                           const typeDisplay = getJobTypeDisplay(job.job_type);
-                          // Differentiate Then & Now vs Transformatie based on config.video_type
+                          // Differentiate video types based on config.video_type
                           const videoType = (job.config as any)?.video_type;
                           const tileLabel = videoType === 'transformation'
-                            ? { icon: '🔄', label: 'Transformatie' }
+                            ? { icon: '🔄', label: 'Transformation' }
+                            : videoType === 'duo_portret' || videoType === 'photo_composite'
+                            ? { icon: '👥', label: 'Duo Portret' }
+                            : videoType === 'walking_composite'
+                            ? { icon: '🚶', label: 'Walking Composite' }
                             : videoType === 'sidebyside'
                             ? { icon: '⏪', label: 'Then & Now' }
                             : typeDisplay;
@@ -4328,7 +4340,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--app-border, #333)' }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>
-                    Transformation — {thenVsNowModalType === 'sidebyside' ? 'Side by Side' : thenVsNowModalType === 'photo_composite' ? 'Foto Composite' : 'Transformatie'}
+                    Compilatie — {thenVsNowModalType === 'duo_portret' ? 'Duo Portret' : thenVsNowModalType === 'walking_composite' ? 'Walking Composite' : 'Transformation'}
                   </h3>
                   <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '2px' }}>
                     {thenVsNowModalStep === 'members' ? 'Selecteer spelers voor de compilatie video'
@@ -4348,8 +4360,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               {/* Step: Member selection with ordering */}
               {thenVsNowModalStep === 'members' && (() => {
                 const eligible = thenVsNowEligibleMembers.filter((m: any) =>
-                  thenVsNowModalType === 'sidebyside' ? m.hasSidebyside
-                    : thenVsNowModalType === 'photo_composite' ? m.hasPhotoComposite
+                  thenVsNowModalType === 'duo_portret' ? m.hasDuoPortret
+                    : thenVsNowModalType === 'walking_composite' ? m.hasWalkingComposite
                     : m.hasTransformation
                 );
                 const eligibleMap = new Map(eligible.map((m: any) => [m.id, m]));

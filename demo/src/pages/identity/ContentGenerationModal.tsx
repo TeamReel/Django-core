@@ -141,11 +141,9 @@ export const CONTENT_TYPES = {
     label: 'Season',
     sportRequired: true,
     items: [
-      { id: 'sidebyside', label: 'Then & Now', icon: '⏪', subtype: 'sidebyside' },
-      { id: 'transformation', label: 'Transformatie', icon: '🔄', subtype: 'transformation' },
-      { id: 'photo_composite', label: 'Foto Composite', icon: '📸', subtype: 'photo_composite' },
+      { id: 'duo_portret', label: 'Duo Portret', icon: '👥', subtype: 'duo_portret' },
+      { id: 'transformation', label: 'Transformation', icon: '🔄', subtype: 'transformation' },
       { id: 'walking_composite', label: 'Walking Composite', icon: '🚶', subtype: 'walking_composite' },
-      { id: 'season_recap', label: 'Season Recap', icon: '📅', subtype: 'season_recap' },
     ],
   },
   member: {

@@ -22,7 +22,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
     Config schema:
     {
         "project_id": "uuid",          # Team project ID
-        "video_type": "sidebyside" | "transformation",
+        "video_type": "sidebyside" | "transformation" | "photo_composite" | "duo_portret" | "walking_composite",
         "period_id": "uuid",           # Optional — season/period ID
         "selected_member_ids": [...],  # Optional — filter to specific members
         "background_url": "https://...",  # Optional — override location background
@@ -63,12 +63,14 @@ class ThenVsNowProcessor(BaseVideoProcessor):
             ) = self._gather_data(project_id, video_type, selected_member_ids, member_variant_keys)
 
             if not members:
-                if video_type == "photo_composite":
-                    raise ValueError("No members found with both fullbody home and legacy images.")
+                if video_type in ("photo_composite", "duo_portret"):
+                    raise ValueError("No members found with duo portret videos.")
+                if video_type == "walking_composite":
+                    raise ValueError("No members found with walking composite videos.")
                 raise ValueError(f"No members found with then_vs_now '{video_type}' videos.")
 
             # Compose the video
-            if video_type == "photo_composite":
+            if video_type in ("photo_composite", "duo_portret", "walking_composite"):
                 from src.video.services.then_vs_now_composer import (
                     compose_photo_composite_video,
                 )
@@ -254,8 +256,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
 
         members: list[MemberClip] | list[MemberPhotoComposite] = []
 
-        if video_type == "photo_composite":
-            # ── Photo composite: gather pre-processed transparent videos ──
+        if video_type in ("photo_composite", "duo_portret"):
+            # ── Duo Portret / Photo composite: gather pre-processed transparent videos ──
             # These have been through the modular pipeline:
             #   Gemini composite → MiniMax video → RVM bg removal
             # We just need the final transparent video URL.
@@ -289,6 +291,56 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                     continue
 
                 # Presign relative paths
+                def _presign_if_needed(url):
+                    if url and not url.startswith("http"):
+                        try:
+                            from files.utils import get_storage_backend
+
+                            backend = get_storage_backend()
+                            return backend.get_url(url, signed=True, expiry_seconds=3600)
+                        except Exception:
+                            pass
+                    return url
+
+                video_url = _presign_if_needed(video_url)
+
+                if video_url:
+                    name = pm.user.get_full_name() if pm.user else "Unknown"
+                    members.append(
+                        MemberPhotoComposite(
+                            member_id=str(pm.id),
+                            name=name,
+                            transparent_video_url=video_url,
+                        )
+                    )
+        elif video_type == "walking_composite":
+            # ── Walking Composite: gather pre-processed transparent walking videos ──
+            for pm in qs:
+                meta = pm.metadata or {}
+                tr = meta.get("teamreel_assets", {})
+                videos = tr.get("videos", {})
+                walking = videos.get("walking_composite", {})
+
+                variant_data = walking.get("default", {})
+                if not variant_data:
+                    continue
+
+                if isinstance(variant_data, str):
+                    video_url = variant_data
+                else:
+                    video_url = variant_data.get("processed") or variant_data.get("raw") or None
+                    processing_state = variant_data.get("processing_state", "")
+                    if processing_state not in ("processed",):
+                        logger.info(
+                            "Skipping %s: walking_composite not yet processed (state=%s)",
+                            pm.user.get_full_name() if pm.user else "?",
+                            processing_state,
+                        )
+                        continue
+
+                if not video_url:
+                    continue
+
                 def _presign_if_needed(url):
                     if url and not url.startswith("http"):
                         try:

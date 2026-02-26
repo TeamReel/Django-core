@@ -1228,10 +1228,16 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 {"error": "project_id is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if video_type not in ("sidebyside", "transformation", "photo_composite"):
+        if video_type not in (
+            "sidebyside",
+            "transformation",
+            "photo_composite",
+            "duo_portret",
+            "walking_composite",
+        ):
             return Response(
                 {
-                    "error": "video_type must be 'sidebyside', 'transformation', or 'photo_composite'"
+                    "error": "video_type must be 'sidebyside', 'transformation', 'photo_composite', 'duo_portret', or 'walking_composite'"
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
