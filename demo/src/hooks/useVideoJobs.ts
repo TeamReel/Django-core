@@ -169,7 +169,7 @@ export function getJobTypeDisplay(type: VideoJobType): {
     case 'match_intro':
       return { icon: '🎬', label: 'Match Intro' };
     case 'then_vs_now':
-      return { icon: '🔄', label: 'Then vs Now' };
+      return { icon: '🔄', label: 'Transformation' };
     default:
       return { icon: '📦', label: type || 'Unknown' };
   }

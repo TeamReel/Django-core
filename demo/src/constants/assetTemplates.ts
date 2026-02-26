@@ -690,7 +690,7 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
   // ============================================================================
   {
     id: 'then_vs_now_sidebyside',
-    name: 'Then vs Now (Naast Elkaar)',
+    name: 'Transformation (Naast Elkaar)',
     icon: '👫',
     category: 'then_vs_now',
     description: 'Portretvideo (6 sec): legacy-versie (links) en huidige speler (rechts) naast elkaar. Ze kijken naar elkaar en lachen.',
@@ -708,7 +708,7 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
   },
   {
     id: 'then_vs_now_transformation',
-    name: 'Then vs Now (Transformatie)',
+    name: 'Transformation (Transformatie)',
     icon: '🔄',
     category: 'then_vs_now',
     description: 'Portretvideo (4 sec): de speler transformeert van legacy-look naar huidige look in tenue. Magisch maar realistisch.',

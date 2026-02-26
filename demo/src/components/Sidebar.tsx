@@ -656,7 +656,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                         { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
                                         { label: 'Short Intro', path: makeTabUrl(baseUrl, 'intro'), icon: Sparkles },
                                         { label: 'Celebration', path: makeTabUrl(baseUrl, 'celebration'), icon: Trophy },
-                                        { label: 'Then vs Now', path: makeTabUrl(baseUrl, 'then_vs_now'), icon: Video },
+                                        { label: 'Transformation', path: makeTabUrl(baseUrl, 'then_vs_now'), icon: Video },
                                         { label: 'Duo Portret', path: makeTabUrl(baseUrl, 'photo_composite'), icon: UsersRound },
                                         { label: 'Walking Composite', path: makeTabUrl(baseUrl, 'walking_composite'), icon: Footprints },
                                         { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Fingerprint },

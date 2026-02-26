@@ -77,7 +77,7 @@ const SUBTYPE_LABELS: Record<string, string> = {
   match_summary: 'Match Summary',
   highlights: 'Highlights Reel',
   // Season
-  transformation: 'Then vs Now',
+  transformation: 'Transformation',
   season_recap: 'Season Recap',
   // Member
   profile_photo: 'Profile Photo',

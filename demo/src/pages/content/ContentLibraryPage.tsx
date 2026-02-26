@@ -125,7 +125,7 @@ const CONTENT_TYPE_FILTERS: { key: string; label: string; icon: string }[] = [
   { key: 'match_summary', label: 'Match Summary', icon: '📊' },
   { key: 'highlights', label: 'Highlights', icon: '🎬' },
   // Season
-  { key: 'transformation', label: 'Then & Now', icon: '🔄' },
+  { key: 'transformation', label: 'Transformation', icon: '🔄' },
   { key: 'season_recap', label: 'Season Recap', icon: '📅' },
   // Member
   { key: 'member_intro', label: 'Member Intro', icon: '👋' },

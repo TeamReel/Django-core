@@ -14,7 +14,7 @@ export const MEDIA_SLOTS = [
   { id: 'closeup', label: 'Close-up', icon: '🔍', description: 'In Tenue → Generated image', isInput: false },
   { id: 'intro', label: 'Short Intro', icon: '🎬', description: 'In Tenue → Generated video', isInput: false },
   { id: 'celebration', label: 'Celebration', icon: '🎉', description: 'In Tenue → Generated video', isInput: false },
-  { id: 'then_vs_now', label: 'Then vs Now', icon: '⏳', description: 'Legacy + Current → Generated video', isInput: false },
+  { id: 'then_vs_now', label: 'Transformation', icon: '⏳', description: 'Legacy + Current → Generated video', isInput: false },
   { id: 'legacy', label: 'Legacy in Tenue', icon: '🏆', description: 'Legacy Photo + Legacy Tenue → Generated', isInput: false },
   { id: 'photo_composite', label: 'Duo Portret', icon: '👥', description: 'Photo composite → Generated image', isInput: false },
   { id: 'walking_composite', label: 'Walking', icon: '🚶', description: 'Walking composite → Generated video', isInput: false },

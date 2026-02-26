@@ -4328,7 +4328,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--app-border, #333)' }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>
-                    Then vs Now — {thenVsNowModalType === 'sidebyside' ? 'Then & Now' : thenVsNowModalType === 'photo_composite' ? 'Foto Composite' : 'Transformatie'}
+                    Transformation — {thenVsNowModalType === 'sidebyside' ? 'Side by Side' : thenVsNowModalType === 'photo_composite' ? 'Foto Composite' : 'Transformatie'}
                   </h3>
                   <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '2px' }}>
                     {thenVsNowModalStep === 'members' ? 'Selecteer spelers voor de compilatie video'

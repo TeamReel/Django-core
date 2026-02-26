@@ -1748,7 +1748,7 @@ export default function ProjectSeasonMemberDetailPage() {
           { id: 'assets', label: 'Assets' },
           { id: 'intro', label: 'Short Intro' },
           { id: 'celebration', label: 'Celebration' },
-          { id: 'then_vs_now', label: 'Then vs Now' },
+          { id: 'then_vs_now', label: 'Transformation' },
           { id: 'photo_composite', label: 'Duo Portret' },
           { id: 'walking_composite', label: 'Walking Composite' },
           { id: 'identity', label: 'Identity' },
@@ -1825,7 +1825,7 @@ export default function ProjectSeasonMemberDetailPage() {
                   const videoItems = [
                     { key: 'intro', icon: '🎬', label: 'Short Intro', tab: 'intro', hasContent: hasAnyIntro },
                     { key: 'celebration', icon: '🎉', label: 'Celebration', tab: 'celebration', hasContent: hasAnyCelebration },
-                    { key: 'then_vs_now', icon: '⏳', label: 'Then vs Now', tab: 'then_vs_now', hasContent: hasAnyThenVsNow },
+                    { key: 'then_vs_now', icon: '⏳', label: 'Transformation', tab: 'then_vs_now', hasContent: hasAnyThenVsNow },
                     { key: 'duo_portret', icon: '👥', label: 'Duo Portret', tab: 'photo_composite', hasContent: hasAnyDuoPortret },
                     { key: 'walking', icon: '🚶', label: 'Walking Composite', tab: 'walking_composite', hasContent: hasAnyWalking },
                   ];
@@ -2681,7 +2681,7 @@ export default function ProjectSeasonMemberDetailPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ fontSize: '24px' }}>⏳</span>
-                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Then vs Now</div>
+                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Transformation</div>
                           </div>
                           <Badge variant={userCanEditProject ? 'default' : 'info'}>
                             {userCanEditProject ? 'Editable' : 'Read-only'}
@@ -2977,24 +2977,25 @@ export default function ProjectSeasonMemberDetailPage() {
                   // Step 1: Gemini composite image (stored in images.photo_composite.home)
                   const compositeImageData = videoVariants.photo_composite?.home;
                   const compositeImageUrl = compositeImageData ? resolveDisplayUrl(getBestUrl(compositeImageData)) : null;
-                  // hasCompositeImage = data exists in metadata (even if presigned URL hasn't resolved yet)
                   const hasCompositeImage = Boolean(compositeImageData && getBestUrl(compositeImageData));
 
                   // Step 2: MiniMax video
                   const compositeVideoData = videoVariants.photo_composite?.default;
                   const compositeVideoUrl = compositeVideoData ? resolveDisplayUrl(getBestUrl(compositeVideoData)) : null;
-                  // hasCompositeVideo = data exists in metadata
                   const hasCompositeVideo = Boolean(compositeVideoData && getBestUrl(compositeVideoData));
                   const compositeVideoNormalized = normalizeVariantValue(compositeVideoData as any);
                   const compositeVideoLineupReady = isLineupReady(compositeVideoData);
                   const compositeVideoProcessing = isProcessing(compositeVideoData);
+                  const compositeVideoCancellingOrProcessing =
+                    compositeVideoNormalized?.processing_state === 'processing' ||
+                    compositeVideoNormalized?.processing_state === 'cancelling';
 
                   return (
                     <Card>
                       <div style={{ padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '24px' }}>📸</span>
+                            <span style={{ fontSize: '24px' }}>👥</span>
                             <div style={{ fontSize: '16px', fontWeight: 800 }}>Duo Portret</div>
                           </div>
                           <Badge variant={userCanEditProject ? 'default' : 'info'}>
@@ -3003,11 +3004,10 @@ export default function ProjectSeasonMemberDetailPage() {
                         </div>
 
                         <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
-                          AI-composiet van twee versies van de speler (legacy + huidig) op een achtergrond.
-                          Stap 1: Gemini maakt het composiet-beeld. Stap 2: MiniMax maakt er een 6s video van.
+                          AI-composiet van twee versies van de speler (legacy + huidig). Vereist halfbody afbeeldingen van beide versies.
                         </div>
 
-                        {/* Prerequisites check */}
+                        {/* Prerequisites */}
                         <div style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                           <div style={{
                             flex: '1 1 200px',
@@ -3039,177 +3039,163 @@ export default function ProjectSeasonMemberDetailPage() {
                           </div>
                         </div>
 
-                        {/* Step 1: Gemini Composite Image */}
+                        {/* Pipeline steps as card grid (consistent with intro/celebration) */}
                         <div style={{ marginTop: '24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                            <span style={{ background: '#6366f1', color: '#fff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>1</span>
-                            <span style={{ fontWeight: 700, fontSize: '14px' }}>Gemini Composite (Beeld)</span>
-                            {hasCompositeImage && <span style={{ fontSize: '12px', color: '#10b981' }}>✓</span>}
-                          </div>
-                          <div style={{
-                            border: hasCompositeImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                            borderRadius: '8px',
-                            overflow: 'hidden',
-                            background: 'var(--app-surface)',
-                            maxWidth: '300px',
-                          }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasBothInputs ? 1 : 0.5 }}>
+                            {/* Step 1: Gemini Composite Image */}
                             <div style={{
-                              aspectRatio: '9/16',
-                              background: hasCompositeImage ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              minHeight: '200px',
+                              border: hasCompositeImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              background: 'var(--app-surface)',
                             }}>
-                              {hasCompositeImage && compositeImageUrl ? (
-                                <img key={compositeImageUrl} src={compositeImageUrl} alt="Gemini Composite" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                              ) : hasCompositeImage ? (
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  ⏳<br />Laden...
-                                </div>
-                              ) : (
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  📸<br />Niet gegenereerd
-                                </div>
-                              )}
-                            </div>
-                            <div style={{ padding: '12px' }}>
-                              <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>📸 Gemini Composite</div>
-                              <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '10px' }}>
-                                Gemini composiet de twee spelers realistisch op de achtergrond
-                              </div>
-                              <Button
-                                size="sm"
-                                onClick={() => openAiModal('photo_composite_gemini', 'home', legacyHalfbodyUrl, null, currentHalfbodyUrl)}
-                                disabled={!hasBothInputs}
-                                style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                              >
-                                {hasCompositeImage ? '🔄 Opnieuw genereren' : '✨ Genereer Composite'}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Step 2: MiniMax Video */}
-                        <div style={{ marginTop: '24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                            <span style={{ background: hasCompositeImage ? '#6366f1' : '#555', color: '#fff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>2</span>
-                            <span style={{ fontWeight: 700, fontSize: '14px', opacity: hasCompositeImage ? 1 : 0.5 }}>MiniMax Video (6s)</span>
-                            {hasCompositeVideo && <span style={{ fontSize: '12px', color: '#10b981' }}>✓</span>}
-                          </div>
-                          <div style={{
-                            border: hasCompositeVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                            borderRadius: '8px',
-                            overflow: 'hidden',
-                            background: 'var(--app-surface)',
-                            maxWidth: '300px',
-                            opacity: hasCompositeImage ? 1 : 0.4,
-                          }}>
-                            <div
-                              onClick={() => { if (compositeVideoUrl) setVideoPreviewUrl(compositeVideoUrl); }}
-                              style={{
+                              <div style={{
                                 aspectRatio: '9/16',
-                                background: (hasCompositeVideo && !compositeVideoLineupReady) ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                background: hasCompositeImage ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                minHeight: '200px',
+                                minHeight: '180px',
                                 position: 'relative',
-                                cursor: hasCompositeVideo ? 'pointer' : 'default',
                               }}>
-                              {hasCompositeVideo && compositeVideoUrl ? (
-                                <>
-                                  <video key={compositeVideoUrl} src={compositeVideoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} muted loop playsInline autoPlay />
-                                  <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
-                                    <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
-                                    <ProcessingBadge value={compositeVideoData} />
-                                  </div>
-                                </>
-                              ) : hasCompositeVideo ? (
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  ⏳<br />Laden...
-                                </div>
-                              ) : (
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  🎬<br />Niet gegenereerd
-                                </div>
-                              )}
-                            </div>
-                            <div style={{ padding: '12px' }}>
-                              <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>🎬 MiniMax Video</div>
-                              <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '10px' }}>
-                                6s video: spelers kijken naar elkaar, lachen, kijken terug
-                              </div>
-                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                                {hasCompositeVideo ? (
+                                {hasCompositeImage && compositeImageUrl ? (
                                   <>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => {
-                                        if (compositeImageUrl) {
-                                          openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null);
-                                        }
-                                      }}
-                                      disabled={!hasCompositeImage}
-                                      style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
-                                    >
-                                      Opnieuw
-                                    </Button>
-                                    {!compositeVideoProcessing && (
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        onClick={async () => {
-                                          const result = await triggerAssetProcessing(
-                                            apiBaseUrl, membershipId!, 'photo_composite', 'default', null
-                                          );
-                                          if (result.ok) {
-                                            const rawUrl = getVariantRawUrl(compositeVideoData) || '';
-                                            setVideoVariants(prev => ({
-                                              ...prev,
-                                              photo_composite: {
-                                                ...prev.photo_composite,
-                                                default: { raw: rawUrl, processed: null, processing_state: 'processing' as const },
-                                              },
-                                            }));
-                                            startProcessingPoll('photo_composite', 'default');
-                                          }
-                                        }}
-                                        style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}
-                                      >
-                                        {compositeVideoLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
-                                      </Button>
-                                    )}
-                                    {compositeVideoLineupReady && (
-                                      <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
-                                    )}
+                                    <img key={compositeImageUrl} src={compositeImageUrl} alt="Gemini Composite" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
+                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                    </div>
                                   </>
                                 ) : (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => {
-                                      if (compositeImageUrl) {
-                                        openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null);
-                                      }
-                                    }}
-                                    disabled={!hasCompositeImage}
-                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                  >
-                                    ✨ Genereer Video
-                                  </Button>
+                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                    Niet gegenereerd
+                                  </div>
                                 )}
                               </div>
+                              <div style={{ padding: '10px' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                  📸 Gemini Composite
+                                </div>
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openAiModal('photo_composite_gemini', 'home', legacyHalfbodyUrl, null, currentHalfbodyUrl)}
+                                    disabled={!hasBothInputs}
+                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                  >
+                                    {hasCompositeImage ? '🔄 Opnieuw' : '✨ Genereer'}
+                                  </Button>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
 
-                        {/* Progress summary */}
-                        <div style={{ marginTop: '24px', padding: '12px', background: 'var(--app-surface-alt)', borderRadius: '8px', fontSize: '12px' }}>
-                          <div style={{ fontWeight: 700, marginBottom: '8px' }}>Pipeline Status</div>
-                          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                            <div>1. Gemini Composite: <span style={{ color: hasCompositeImage ? '#10b981' : '#f59e0b' }}>{hasCompositeImage ? '✓ Klaar' : '⏳ Niet gestart'}</span></div>
-                            <div>2. MiniMax Video: <span style={{ color: hasCompositeVideo ? '#10b981' : '#f59e0b' }}>{hasCompositeVideo ? '✓ Klaar' : '⏳ Niet gestart'}</span></div>
-                            <div>3. RVM Processing: <span style={{ color: compositeVideoLineupReady ? '#10b981' : '#f59e0b' }}>{compositeVideoLineupReady ? '✓ Ready' : compositeVideoProcessing ? '🔧 Bezig...' : '⏳ Wacht op video'}</span></div>
+                            {/* Step 2: MiniMax Video */}
+                            <div style={{
+                              border: hasCompositeVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              background: 'var(--app-surface)',
+                              opacity: hasCompositeImage ? 1 : 0.4,
+                            }}>
+                              <div
+                                onClick={() => { if (compositeVideoUrl) setVideoPreviewUrl(compositeVideoUrl); }}
+                                style={{
+                                  aspectRatio: '9/16',
+                                  background: (hasCompositeVideo && !compositeVideoLineupReady) ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  minHeight: '180px',
+                                  position: 'relative',
+                                  cursor: hasCompositeVideo ? 'pointer' : 'default',
+                                }}>
+                                {hasCompositeVideo && compositeVideoUrl ? (
+                                  <>
+                                    <video key={compositeVideoUrl} src={compositeVideoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} muted loop playsInline autoPlay />
+                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
+                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                      <ProcessingBadge value={compositeVideoData} />
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                    Niet gegenereerd
+                                  </div>
+                                )}
+                              </div>
+                              <div style={{ padding: '10px' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                  🎬 MiniMax Video
+                                </div>
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                  {hasCompositeVideo ? (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => { if (compositeImageUrl) openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null); }}
+                                        disabled={!hasCompositeImage}
+                                        style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
+                                      >
+                                        Opnieuw
+                                      </Button>
+                                      {!compositeVideoProcessing && (
+                                        <Button
+                                          size="sm"
+                                          variant="secondary"
+                                          onClick={async () => {
+                                            const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'photo_composite', 'default', null);
+                                            if (result.ok) {
+                                              const rawUrl = getVariantRawUrl(compositeVideoData) || '';
+                                              setVideoVariants(prev => ({ ...prev, photo_composite: { ...prev.photo_composite, default: { raw: rawUrl, processed: null, processing_state: 'processing' as const } } }));
+                                              startProcessingPoll('photo_composite', 'default');
+                                            }
+                                          }}
+                                          style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}
+                                        >
+                                          {compositeVideoLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                                        </Button>
+                                      )}
+                                      {compositeVideoCancellingOrProcessing && (
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={async () => {
+                                            const isCancelling = compositeVideoNormalized?.processing_state === 'cancelling';
+                                            const result = await cancelAssetProcessing(apiBaseUrl, membershipId!, 'photo_composite', 'default', null, isCancelling);
+                                            if (result.ok) {
+                                              if (isCancelling) {
+                                                try {
+                                                  const memberRes = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project?.id || '')}/members/${encodeURIComponent(membershipId!)}/`, { credentials: 'include' });
+                                                  if (memberRes.ok) { const json = await memberRes.json(); setMembership(json?.data || json); }
+                                                } catch { /* best-effort */ }
+                                              } else {
+                                                const rawUrl = getVariantRawUrl(compositeVideoData) || '';
+                                                setVideoVariants(prev => ({ ...prev, photo_composite: { ...prev.photo_composite, default: { raw: rawUrl, processed: null, processing_state: 'cancelling' as const } } }));
+                                                startProcessingPoll('photo_composite', 'default');
+                                              }
+                                            }
+                                          }}
+                                          style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
+                                        >
+                                          {compositeVideoNormalized?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
+                                        </Button>
+                                      )}
+                                      {compositeVideoLineupReady && (
+                                        <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => { if (compositeImageUrl) openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null); }}
+                                      disabled={!hasCompositeImage}
+                                      style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                    >
+                                      ✨ Genereer
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
@@ -3232,22 +3218,26 @@ export default function ProjectSeasonMemberDetailPage() {
                     resolveDisplayUrl(getBestUrl(videoVariants.fullbody.home)) || null;
                   const hasBothInputs = Boolean(legacyFullbodyUrl) && Boolean(currentFullbodyUrl);
 
-                  // Step 1: Far image (full-body players far away on background)
+                  // Step 1: Far image
                   const farImageData = videoVariants.walking_composite?.far;
                   const farImageUrl = farImageData ? resolveDisplayUrl(getBestUrl(farImageData)) : null;
                   const hasFarImage = Boolean(farImageData && getBestUrl(farImageData));
 
-                  // Step 2: Near image (full-body players close to camera)
+                  // Step 2: Near image
                   const nearImageData = videoVariants.walking_composite?.near;
                   const nearImageUrl = nearImageData ? resolveDisplayUrl(getBestUrl(nearImageData)) : null;
                   const hasNearImage = Boolean(nearImageData && getBestUrl(nearImageData));
 
-                  // Step 3: Walking video (MiniMax first_last_frame)
+                  // Step 3: Walking video
                   const walkingVideoData = videoVariants.walking_composite?.default;
                   const walkingVideoUrl = walkingVideoData ? resolveDisplayUrl(getBestUrl(walkingVideoData)) : null;
                   const hasWalkingVideo = Boolean(walkingVideoData && getBestUrl(walkingVideoData));
                   const walkingVideoLineupReady = isLineupReady(walkingVideoData);
                   const walkingVideoProcessing = isProcessing(walkingVideoData);
+                  const walkingVideoNormalized = normalizeVariantValue(walkingVideoData as any);
+                  const walkingVideoCancellingOrProcessing =
+                    walkingVideoNormalized?.processing_state === 'processing' ||
+                    walkingVideoNormalized?.processing_state === 'cancelling';
 
                   return (
                     <Card>
@@ -3264,10 +3254,9 @@ export default function ProjectSeasonMemberDetailPage() {
 
                         <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
                           Full-body walking video: twee Gemini-beelden (ver + dichtbij) en een MiniMax video waarin de spelers naar de camera lopen.
-                          Stap 1: Ver beeld (achtergrond). Stap 2: Dichtbij beeld (voorgrond). Stap 3: Walking video.
                         </div>
 
-                        {/* Prerequisites check */}
+                        {/* Prerequisites */}
                         <div style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                           <div style={{
                             flex: '1 1 200px',
@@ -3299,229 +3288,209 @@ export default function ProjectSeasonMemberDetailPage() {
                           </div>
                         </div>
 
-                        {/* Step 1: Far Image (Gemini) */}
+                        {/* Pipeline steps as card grid (consistent with intro/celebration) */}
                         <div style={{ marginTop: '24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                            <span style={{ background: '#6366f1', color: '#fff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>1</span>
-                            <span style={{ fontWeight: 700, fontSize: '14px' }}>Ver Beeld (Full-body, 15-20m)</span>
-                            {hasFarImage && <span style={{ fontSize: '12px', color: '#10b981' }}>✓</span>}
-                          </div>
-                          <div style={{
-                            border: hasFarImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                            borderRadius: '8px',
-                            overflow: 'hidden',
-                            background: 'var(--app-surface)',
-                            maxWidth: '300px',
-                          }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasBothInputs ? 1 : 0.5 }}>
+                            {/* Step 1: Far Image */}
                             <div style={{
-                              aspectRatio: '9/16',
-                              background: hasFarImage ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              minHeight: '200px',
+                              border: hasFarImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              background: 'var(--app-surface)',
                             }}>
-                              {hasFarImage && farImageUrl ? (
-                                <img key={farImageUrl} src={farImageUrl} alt="Far composite" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                              ) : hasFarImage ? (
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  ⏳<br />Laden...
-                                </div>
-                              ) : (
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  📸<br />Niet gegenereerd
-                                </div>
-                              )}
-                            </div>
-                            <div style={{ padding: '12px' }}>
-                              <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>📸 Ver Beeld</div>
-                              <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '10px' }}>
-                                Full-body spelers ver weg op de achtergrond (15-20m afstand)
-                              </div>
-                              <Button
-                                size="sm"
-                                onClick={() => openAiModal('walking_composite_far', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)}
-                                disabled={!hasBothInputs}
-                                style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                              >
-                                {hasFarImage ? '🔄 Opnieuw genereren' : '✨ Genereer Ver Beeld'}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Step 2: Near Image (Gemini) */}
-                        <div style={{ marginTop: '24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                            <span style={{ background: '#6366f1', color: '#fff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>2</span>
-                            <span style={{ fontWeight: 700, fontSize: '14px' }}>Dichtbij Beeld (Full-body, 3-5m)</span>
-                            {hasNearImage && <span style={{ fontSize: '12px', color: '#10b981' }}>✓</span>}
-                          </div>
-                          <div style={{
-                            border: hasNearImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                            borderRadius: '8px',
-                            overflow: 'hidden',
-                            background: 'var(--app-surface)',
-                            maxWidth: '300px',
-                          }}>
-                            <div style={{
-                              aspectRatio: '9/16',
-                              background: hasNearImage ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              minHeight: '200px',
-                            }}>
-                              {hasNearImage && nearImageUrl ? (
-                                <img key={nearImageUrl} src={nearImageUrl} alt="Near composite" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                              ) : hasNearImage ? (
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  ⏳<br />Laden...
-                                </div>
-                              ) : (
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  📸<br />Niet gegenereerd
-                                </div>
-                              )}
-                            </div>
-                            <div style={{ padding: '12px' }}>
-                              <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>📸 Dichtbij Beeld</div>
-                              <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '10px' }}>
-                                Full-body spelers dichtbij op de voorgrond (3-5m afstand)
-                              </div>
-                              <Button
-                                size="sm"
-                                onClick={() => openAiModal('walking_composite_near', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)}
-                                disabled={!hasBothInputs}
-                                style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                              >
-                                {hasNearImage ? '🔄 Opnieuw genereren' : '✨ Genereer Dichtbij Beeld'}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Step 3: Walking Video (MiniMax first_last_frame) */}
-                        <div style={{ marginTop: '24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                            <span style={{ background: (hasFarImage && hasNearImage) ? '#6366f1' : '#555', color: '#fff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>3</span>
-                            <span style={{ fontWeight: 700, fontSize: '14px', opacity: (hasFarImage && hasNearImage) ? 1 : 0.5 }}>Walking Video (6s)</span>
-                            {hasWalkingVideo && <span style={{ fontSize: '12px', color: '#10b981' }}>✓</span>}
-                          </div>
-                          <div style={{
-                            border: hasWalkingVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                            borderRadius: '8px',
-                            overflow: 'hidden',
-                            background: 'var(--app-surface)',
-                            maxWidth: '300px',
-                            opacity: (hasFarImage && hasNearImage) ? 1 : 0.4,
-                          }}>
-                            <div
-                              onClick={() => { if (walkingVideoUrl) setVideoPreviewUrl(walkingVideoUrl); }}
-                              style={{
+                              <div style={{
                                 aspectRatio: '9/16',
-                                background: (hasWalkingVideo && !walkingVideoLineupReady) ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                background: hasFarImage ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                minHeight: '200px',
+                                minHeight: '180px',
                                 position: 'relative',
-                                cursor: hasWalkingVideo ? 'pointer' : 'default',
                               }}>
-                              {hasWalkingVideo && walkingVideoUrl ? (
-                                <>
-                                  <video key={walkingVideoUrl} src={walkingVideoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} muted loop playsInline autoPlay />
-                                  <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
-                                    <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
-                                    <ProcessingBadge value={walkingVideoData} />
-                                  </div>
-                                </>
-                              ) : hasWalkingVideo ? (
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  ⏳<br />Laden...
-                                </div>
-                              ) : (
-                                <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
-                                  🎬<br />Niet gegenereerd
-                                </div>
-                              )}
-                            </div>
-                            <div style={{ padding: '12px' }}>
-                              <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>🎬 Walking Video</div>
-                              <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '10px' }}>
-                                6s video: spelers lopen van ver naar dichtbij de camera
-                              </div>
-                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                                {hasWalkingVideo ? (
+                                {hasFarImage && farImageUrl ? (
                                   <>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => {
-                                        if (farImageUrl) {
-                                          openAiModal('walking_composite_video', 'home', farImageUrl, null, nearImageUrl);
-                                        }
-                                      }}
-                                      disabled={!(hasFarImage && hasNearImage)}
-                                      style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
-                                    >
-                                      Opnieuw
-                                    </Button>
-                                    {!walkingVideoProcessing && (
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        onClick={async () => {
-                                          const result = await triggerAssetProcessing(
-                                            apiBaseUrl, membershipId!, 'walking_composite', 'default', null
-                                          );
-                                          if (result.ok) {
-                                            const rawUrl = getVariantRawUrl(walkingVideoData) || '';
-                                            setVideoVariants(prev => ({
-                                              ...prev,
-                                              walking_composite: {
-                                                ...prev.walking_composite,
-                                                default: { raw: rawUrl, processed: null, processing_state: 'processing' as const },
-                                              },
-                                            }));
-                                            startProcessingPoll('walking_composite', 'default');
-                                          }
-                                        }}
-                                        style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}
-                                      >
-                                        {walkingVideoLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
-                                      </Button>
-                                    )}
-                                    {walkingVideoLineupReady && (
-                                      <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
-                                    )}
+                                    <img key={farImageUrl} src={farImageUrl} alt="Far composite" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
+                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                    </div>
                                   </>
                                 ) : (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => {
-                                      if (farImageUrl) {
-                                        openAiModal('walking_composite_video', 'home', farImageUrl, null, nearImageUrl);
-                                      }
-                                    }}
-                                    disabled={!(hasFarImage && hasNearImage)}
-                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
-                                  >
-                                    ✨ Genereer Walking Video
-                                  </Button>
+                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                    Niet gegenereerd
+                                  </div>
                                 )}
                               </div>
+                              <div style={{ padding: '10px' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                  📸 Ver Beeld
+                                </div>
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openAiModal('walking_composite_far', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)}
+                                    disabled={!hasBothInputs}
+                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                  >
+                                    {hasFarImage ? '🔄 Opnieuw' : '✨ Genereer'}
+                                  </Button>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
 
-                        {/* Progress summary */}
-                        <div style={{ marginTop: '24px', padding: '12px', background: 'var(--app-surface-alt)', borderRadius: '8px', fontSize: '12px' }}>
-                          <div style={{ fontWeight: 700, marginBottom: '8px' }}>Pipeline Status</div>
-                          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                            <div>1. Ver Beeld: <span style={{ color: hasFarImage ? '#10b981' : '#f59e0b' }}>{hasFarImage ? '✓ Klaar' : '⏳ Niet gestart'}</span></div>
-                            <div>2. Dichtbij Beeld: <span style={{ color: hasNearImage ? '#10b981' : '#f59e0b' }}>{hasNearImage ? '✓ Klaar' : '⏳ Niet gestart'}</span></div>
-                            <div>3. Walking Video: <span style={{ color: hasWalkingVideo ? '#10b981' : '#f59e0b' }}>{hasWalkingVideo ? '✓ Klaar' : '⏳ Niet gestart'}</span></div>
-                            <div>4. RVM Processing: <span style={{ color: walkingVideoLineupReady ? '#10b981' : '#f59e0b' }}>{walkingVideoLineupReady ? '✓ Ready' : walkingVideoProcessing ? '🔧 Bezig...' : '⏳ Wacht op video'}</span></div>
+                            {/* Step 2: Near Image */}
+                            <div style={{
+                              border: hasNearImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              background: 'var(--app-surface)',
+                            }}>
+                              <div style={{
+                                aspectRatio: '9/16',
+                                background: hasNearImage ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                minHeight: '180px',
+                                position: 'relative',
+                              }}>
+                                {hasNearImage && nearImageUrl ? (
+                                  <>
+                                    <img key={nearImageUrl} src={nearImageUrl} alt="Near composite" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
+                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                    Niet gegenereerd
+                                  </div>
+                                )}
+                              </div>
+                              <div style={{ padding: '10px' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                  📸 Dichtbij Beeld
+                                </div>
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openAiModal('walking_composite_near', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)}
+                                    disabled={!hasBothInputs}
+                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                  >
+                                    {hasNearImage ? '🔄 Opnieuw' : '✨ Genereer'}
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Step 3: Walking Video */}
+                            <div style={{
+                              border: hasWalkingVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              background: 'var(--app-surface)',
+                              opacity: (hasFarImage && hasNearImage) ? 1 : 0.4,
+                            }}>
+                              <div
+                                onClick={() => { if (walkingVideoUrl) setVideoPreviewUrl(walkingVideoUrl); }}
+                                style={{
+                                  aspectRatio: '9/16',
+                                  background: (hasWalkingVideo && !walkingVideoLineupReady) ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  minHeight: '180px',
+                                  position: 'relative',
+                                  cursor: hasWalkingVideo ? 'pointer' : 'default',
+                                }}>
+                                {hasWalkingVideo && walkingVideoUrl ? (
+                                  <>
+                                    <video key={walkingVideoUrl} src={walkingVideoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} muted loop playsInline autoPlay />
+                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
+                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                      <ProcessingBadge value={walkingVideoData} />
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                    Niet gegenereerd
+                                  </div>
+                                )}
+                              </div>
+                              <div style={{ padding: '10px' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                  🎬 Walking Video
+                                </div>
+                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                  {hasWalkingVideo ? (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => { if (farImageUrl) openAiModal('walking_composite_video', 'home', farImageUrl, null, nearImageUrl); }}
+                                        disabled={!(hasFarImage && hasNearImage)}
+                                        style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
+                                      >
+                                        Opnieuw
+                                      </Button>
+                                      {!walkingVideoProcessing && (
+                                        <Button
+                                          size="sm"
+                                          variant="secondary"
+                                          onClick={async () => {
+                                            const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'walking_composite', 'default', null);
+                                            if (result.ok) {
+                                              const rawUrl = getVariantRawUrl(walkingVideoData) || '';
+                                              setVideoVariants(prev => ({ ...prev, walking_composite: { ...prev.walking_composite, default: { raw: rawUrl, processed: null, processing_state: 'processing' as const } } }));
+                                              startProcessingPoll('walking_composite', 'default');
+                                            }
+                                          }}
+                                          style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}
+                                        >
+                                          {walkingVideoLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                                        </Button>
+                                      )}
+                                      {walkingVideoCancellingOrProcessing && (
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={async () => {
+                                            const isCancelling = walkingVideoNormalized?.processing_state === 'cancelling';
+                                            const result = await cancelAssetProcessing(apiBaseUrl, membershipId!, 'walking_composite', 'default', null, isCancelling);
+                                            if (result.ok) {
+                                              if (isCancelling) {
+                                                try {
+                                                  const memberRes = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project?.id || '')}/members/${encodeURIComponent(membershipId!)}/`, { credentials: 'include' });
+                                                  if (memberRes.ok) { const json = await memberRes.json(); setMembership(json?.data || json); }
+                                                } catch { /* best-effort */ }
+                                              } else {
+                                                const rawUrl = getVariantRawUrl(walkingVideoData) || '';
+                                                setVideoVariants(prev => ({ ...prev, walking_composite: { ...prev.walking_composite, default: { raw: rawUrl, processed: null, processing_state: 'cancelling' as const } } }));
+                                                startProcessingPoll('walking_composite', 'default');
+                                              }
+                                            }
+                                          }}
+                                          style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
+                                        >
+                                          {walkingVideoNormalized?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
+                                        </Button>
+                                      )}
+                                      {walkingVideoLineupReady && (
+                                        <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => { if (farImageUrl) openAiModal('walking_composite_video', 'home', farImageUrl, null, nearImageUrl); }}
+                                      disabled={!(hasFarImage && hasNearImage)}
+                                      style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                    >
+                                      ✨ Genereer
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
@@ -3535,577 +3504,231 @@ export default function ProjectSeasonMemberDetailPage() {
                   );
                 })()}
 
-                {/* Assets Tab continued */}
+                {/* Assets Tab - Grouped by tenue type */}
                 {activeTab === 'assets' && (
                   <Card>
-                    <div style={{ padding: '20px' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '4px' }}>🎨 Gegenereerde Assets</h3>
-                      <p style={{ fontSize: '13px', color: 'var(--vscode-descriptionForeground)', marginBottom: '20px' }}>
-                        AI-gegenereerde afbeeldingen van dit lid in het teamtenue.
-                      </p>
+                    <div style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '24px' }}>🎨</span>
+                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Gegenereerde Assets</div>
+                        </div>
+                        <Badge variant={userCanEditProject ? 'default' : 'info'}>
+                          {userCanEditProject ? 'Editable' : 'Read-only'}
+                        </Badge>
+                      </div>
 
-                      {/* Fullbody Assets Grid */}
-                      <div style={{ marginBottom: '24px' }}>
-                        <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>👕 Fullbody in Tenue</h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
-                          {effectiveKits.map((kit) => {
-                            // Per-kit-type: read from videoVariants.fullbody, fallback to form.kit for home
-                            const variantVal = videoVariants.fullbody[kit.id]
-                              || (kit.id === 'home' ? form.kit?.url : null)
-                              || null;
-                            const assetUrl = getVariantDisplayUrl(variantVal);
-                            const normalized = normalizeVariantValue(variantVal as any);
-                            const lineupReady = isLineupReady(variantVal);
-                            const currentlyProcessing = isProcessing(variantVal);
+                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                        AI-gegenereerde afbeeldingen van dit lid per tenue type: fullbody, halfbody en close-up.
+                      </div>
 
-                            return (
-                              <div
-                                key={`fullbody-${kit.id}`}
-                                style={{
-                                  border: lineupReady
-                                    ? '2px solid #10b981'
-                                    : assetUrl
-                                      ? '2px solid #f59e0b'
-                                      : '1px solid var(--vscode-widget-border, #333)',
-                                  borderRadius: '8px',
-                                  overflow: 'hidden',
-                                  background: 'var(--vscode-editor-background)',
-                                }}
-                              >
-                                {/* Preview */}
+                      {/* Per-Kit Sections */}
+                      {effectiveKits.map((kit) => {
+                        // Fullbody for this kit
+                        const fbVal = videoVariants.fullbody[kit.id] || (kit.id === 'home' ? form.kit?.url : null) || null;
+                        const fbUrl = getVariantDisplayUrl(fbVal);
+                        const fbLineupReady = isLineupReady(fbVal);
+                        const fbProcessing = isProcessing(fbVal);
+
+                        // Halfbody for this kit
+                        const hbVal = videoVariants.halfbody[kit.id] || null;
+                        const hbUrl = getVariantDisplayUrl(hbVal);
+                        const hbLineupReady = isLineupReady(hbVal);
+                        const hbProcessing = isProcessing(hbVal);
+
+                        // Closeup for this kit
+                        const cuVal = videoVariants.closeup[kit.id] || (kit.id === 'home' ? form.closeup?.url : null) || null;
+                        const cuUrl = getVariantDisplayUrl(cuVal);
+                        const cuLineupReady = isLineupReady(cuVal);
+                        const cuProcessing = isProcessing(cuVal);
+
+                        const fullbodyRef = getVariantDisplayUrl(videoVariants.fullbody[kit.id]);
+
+                        return (
+                          <div key={`assets-kit-${kit.id}`} style={{ marginTop: '24px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                              {kit.url ? (
+                                <img src={kit.url} alt={kit.label} style={{ width: '32px', height: '42px', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              ) : (
+                                <span style={{ fontSize: '20px' }}>{kit.icon}</span>
+                              )}
+                              <div style={{ fontSize: '14px', fontWeight: 700 }}>{kit.label}</div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
+                              {/* Fullbody Card */}
+                              <div style={{
+                                border: fbLineupReady ? '2px solid var(--vscode-charts-green)' : fbUrl ? '2px solid #f59e0b' : '1px solid var(--app-border)',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                background: 'var(--app-surface)',
+                              }}>
                                 <div
-                                  onClick={() => {
-                                    const url = resolveDisplayUrl(assetUrl);
-                                    if (url) window.open(url, '_blank');
-                                  }}
+                                  onClick={() => { const url = resolveDisplayUrl(fbUrl); if (url) window.open(url, '_blank'); }}
                                   style={{
                                     aspectRatio: '3/4',
-                                    background: assetUrl
-                                      ? `url(${resolveDisplayUrl(assetUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
+                                    background: fbUrl
+                                      ? `url(${resolveDisplayUrl(fbUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
                                       : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                     position: 'relative',
-                                    minHeight: '200px',
-                                    cursor: assetUrl ? 'zoom-in' : 'default',
-                                  }}
-                                >
-                                  {!assetUrl && (
-                                    <div style={{
-                                      position: 'absolute',
-                                      inset: 0,
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      color: 'var(--vscode-descriptionForeground)',
-                                      fontSize: '12px',
-                                    }}>
-                                      Niet gegenereerd
+                                    minHeight: '180px',
+                                    cursor: fbUrl ? 'zoom-in' : 'default',
+                                  }}>
+                                  {!fbUrl && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--app-text-muted)', fontSize: '12px' }}>Niet gegenereerd</div>}
+                                  {fbUrl && (
+                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
+                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                      <ProcessingBadge value={fbVal} />
                                     </div>
                                   )}
-                                  {assetUrl && (
-                                    <div style={{
-                                      position: 'absolute',
-                                      top: '6px',
-                                      right: '6px',
-                                      display: 'flex',
-                                      flexDirection: 'column',
-                                      gap: '4px',
-                                      alignItems: 'flex-end',
-                                    }}>
-                                      <span style={{
-                                        background: '#6366f1dd',
-                                        color: '#fff',
-                                        fontSize: '10px',
-                                        padding: '2px 6px',
-                                        borderRadius: '4px',
-                                        fontWeight: 600,
-                                      }}>
-                                        AI
-                                      </span>
-                                      <ProcessingBadge value={variantVal} />
-                                    </div>
-                                  )}
-                                  {currentlyProcessing && (
-                                    <div style={{
-                                      position: 'absolute',
-                                      inset: 0,
-                                      background: 'rgba(0,0,0,0.4)',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      color: '#fff',
-                                      fontSize: '13px',
-                                      fontWeight: 600,
-                                    }}>
-                                      ⏳ Bezig met verwerken...
-                                    </div>
-                                  )}
+                                  {fbProcessing && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 600 }}>⏳ Bezig...</div>}
                                 </div>
-
-                                {/* Label + Actions */}
                                 <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
-                                    {kit.icon} {kit.label}
-                                  </div>
-                                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => openAiModal('fullbody_in_tenue', kit.id)}
-                                      style={{ fontSize: '11px', padding: '4px 8px' }}
-                                    >
-                                      {assetUrl ? '🔄 Opnieuw' : '✨ Genereer'}
+                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>👕 Fullbody</div>
+                                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                    <Button size="sm" onClick={() => openAiModal('fullbody_in_tenue', kit.id)} style={{ fontSize: '10px', padding: '4px 8px' }}>
+                                      {fbUrl ? '🔄 Opnieuw' : '✨ Genereer'}
                                     </Button>
-                                    {assetUrl && !currentlyProcessing && (
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        onClick={async () => {
-                                          const result = await triggerAssetProcessing(
-                                            apiBaseUrl, membershipId!, 'fullbody', kit.id
-                                          );
-                                          if (result.ok) {
-                                            // Optimistically update to processing state
-                                            const rawUrl = getVariantRawUrl(variantVal);
-                                            const newVV = {
-                                              ...videoVariants,
-                                              fullbody: {
-                                                ...videoVariants.fullbody,
-                                                [kit.id]: {
-                                                  raw: rawUrl || '',
-                                                  processed: null,
-                                                  processing_state: 'processing' as const,
-                                                },
-                                              },
-                                            };
-                                            setVideoVariants(newVV);
-                                            // Poll for result and auto-refresh
-                                            startProcessingPoll('fullbody', kit.id, null);
-                                          }
-                                        }}
-                                        style={{
-                                          fontSize: '11px',
-                                          padding: '4px 8px',
-                                          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                          border: 'none',
-                                          color: '#fff',
-                                        }}
-                                      >
-                                        {lineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                                    {fbUrl && !fbProcessing && (
+                                      <Button size="sm" variant="secondary" onClick={async () => {
+                                        const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'fullbody', kit.id);
+                                        if (result.ok) {
+                                          const rawUrl = getVariantRawUrl(fbVal);
+                                          setVideoVariants(prev => ({ ...prev, fullbody: { ...prev.fullbody, [kit.id]: { raw: rawUrl || '', processed: null, processing_state: 'processing' as const } } }));
+                                          startProcessingPoll('fullbody', kit.id, null);
+                                        }
+                                      }} style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}>
+                                        {fbLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                       </Button>
                                     )}
-                                    {assetUrl && lineupReady && (
-                                      <span style={{
-                                        fontSize: '11px',
-                                        padding: '4px 8px',
-                                        color: '#10b981',
-                                        fontWeight: 600,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '3px',
-                                      }}>
-                                        ✅ Lineup-ready
-                                      </span>
-                                    )}
-                                    {assetUrl && (
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={async () => {
-                                          if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
-                                          // Clear per-kit-type fullbody
-                                          const newVV = {
-                                            ...videoVariants,
-                                            fullbody: { ...videoVariants.fullbody },
-                                          };
-                                          delete newVV.fullbody[kit.id];
-                                          setVideoVariants(newVV);
-                                          // Also clear form.kit if home
-                                          const newForm = kit.id === 'home'
-                                            ? { ...form, kit: { url: '', caption: '' } }
-                                            : form;
-                                          if (kit.id === 'home') setForm(newForm);
-                                          const updated = mergeAssetsIntoMetadata(
-                                            membership?.metadata,
-                                            newForm,
-                                            newVV
-                                          );
-                                          await handleMetadataUpdate(updated);
-                                        }}
-                                        style={{ fontSize: '11px', padding: '4px 8px', color: '#ef4444' }}
-                                      >
-                                        🗑️
-                                      </Button>
+                                    {fbUrl && fbLineupReady && <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>}
+                                    {fbUrl && (
+                                      <Button size="sm" variant="ghost" onClick={async () => {
+                                        if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
+                                        const newVV = { ...videoVariants, fullbody: { ...videoVariants.fullbody } };
+                                        delete newVV.fullbody[kit.id];
+                                        setVideoVariants(newVV);
+                                        const newForm = kit.id === 'home' ? { ...form, kit: { url: '', caption: '' } } : form;
+                                        if (kit.id === 'home') setForm(newForm);
+                                        const updated = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVV);
+                                        await handleMetadataUpdate(updated);
+                                      }} style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}>🗑️</Button>
                                     )}
                                   </div>
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      </div>
 
-                      {/* Halfbody Assets Grid */}
-                      <div>
-                        <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>👤 Halfbody in Tenue</h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
-                          {effectiveKits.map((kit) => {
-                            const variantVal = videoVariants.halfbody[kit.id] || null;
-                            const assetUrl = getVariantDisplayUrl(variantVal);
-                            const lineupReady = isLineupReady(variantVal);
-                            const currentlyProcessing = isProcessing(variantVal);
-                            const fullbodyRef = getVariantDisplayUrl(videoVariants.fullbody[kit.id]);
-
-                            return (
-                              <div
-                                key={`halfbody-${kit.id}`}
-                                style={{
-                                  border: lineupReady
-                                    ? '2px solid #10b981'
-                                    : assetUrl
-                                      ? '2px solid #f59e0b'
-                                      : '1px solid var(--vscode-widget-border, #333)',
-                                  borderRadius: '8px',
-                                  overflow: 'hidden',
-                                  background: 'var(--vscode-editor-background)',
-                                }}
-                              >
-                                {/* Preview */}
+                              {/* Halfbody Card */}
+                              <div style={{
+                                border: hbLineupReady ? '2px solid var(--vscode-charts-green)' : hbUrl ? '2px solid #f59e0b' : '1px solid var(--app-border)',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                background: 'var(--app-surface)',
+                              }}>
                                 <div
-                                  onClick={() => {
-                                    const url = resolveDisplayUrl(assetUrl);
-                                    if (url) window.open(url, '_blank');
-                                  }}
+                                  onClick={() => { const url = resolveDisplayUrl(hbUrl); if (url) window.open(url, '_blank'); }}
                                   style={{
                                     aspectRatio: '3/4',
-                                    background: assetUrl
-                                      ? `url(${resolveDisplayUrl(assetUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
+                                    background: hbUrl
+                                      ? `url(${resolveDisplayUrl(hbUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
                                       : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                     position: 'relative',
-                                    minHeight: '150px',
-                                    cursor: assetUrl ? 'zoom-in' : 'default',
-                                  }}
-                                >
-                                  {!assetUrl && (
-                                    <div style={{
-                                      position: 'absolute',
-                                      inset: 0,
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      color: 'var(--vscode-descriptionForeground)',
-                                      fontSize: '12px',
-                                    }}>
-                                      Niet gegenereerd
+                                    minHeight: '180px',
+                                    cursor: hbUrl ? 'zoom-in' : 'default',
+                                  }}>
+                                  {!hbUrl && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--app-text-muted)', fontSize: '12px' }}>Niet gegenereerd</div>}
+                                  {hbUrl && (
+                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
+                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                      <ProcessingBadge value={hbVal} />
                                     </div>
                                   )}
-                                  {assetUrl && (
-                                    <div style={{
-                                      position: 'absolute',
-                                      top: '6px',
-                                      right: '6px',
-                                      display: 'flex',
-                                      flexDirection: 'column',
-                                      gap: '4px',
-                                      alignItems: 'flex-end',
-                                    }}>
-                                      <span style={{
-                                        background: '#6366f1dd',
-                                        color: '#fff',
-                                        fontSize: '10px',
-                                        padding: '2px 6px',
-                                        borderRadius: '4px',
-                                        fontWeight: 600,
-                                      }}>
-                                        AI
-                                      </span>
-                                      <ProcessingBadge value={variantVal} />
-                                    </div>
-                                  )}
-                                  {currentlyProcessing && (
-                                    <div style={{
-                                      position: 'absolute',
-                                      inset: 0,
-                                      background: 'rgba(0,0,0,0.4)',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      color: '#fff',
-                                      fontSize: '13px',
-                                      fontWeight: 600,
-                                    }}>
-                                      ⏳ Bezig met verwerken...
-                                    </div>
-                                  )}
+                                  {hbProcessing && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 600 }}>⏳ Bezig...</div>}
                                 </div>
-
-                                {/* Label + Actions */}
                                 <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
-                                    {kit.icon} {kit.label}
-                                  </div>
-                                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => cropHalfbodyFromFullbody(kit.id)}
-                                      disabled={croppingHalfbody[kit.id] || !fullbodyRef}
-                                      style={{ fontSize: '11px', padding: '4px 8px' }}
-                                      title={!fullbodyRef ? 'Genereer eerst een fullbody' : ''}
-                                    >
-                                      {croppingHalfbody[kit.id] ? '⏳...' : assetUrl ? '🔄 Opnieuw' : '✂️ Crop'}
+                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>👤 Halfbody</div>
+                                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                    <Button size="sm" onClick={() => cropHalfbodyFromFullbody(kit.id)} disabled={croppingHalfbody[kit.id] || !fullbodyRef} style={{ fontSize: '10px', padding: '4px 8px' }} title={!fullbodyRef ? 'Genereer eerst een fullbody' : ''}>
+                                      {croppingHalfbody[kit.id] ? '⏳...' : hbUrl ? '🔄 Opnieuw' : '✂️ Crop'}
                                     </Button>
-                                    {assetUrl && !currentlyProcessing && (
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        onClick={async () => {
-                                          const result = await triggerAssetProcessing(
-                                            apiBaseUrl, membershipId!, 'halfbody', kit.id
-                                          );
-                                          if (result.ok) {
-                                            const rawUrl = getVariantRawUrl(variantVal);
-                                            const newVV = {
-                                              ...videoVariants,
-                                              halfbody: {
-                                                ...videoVariants.halfbody,
-                                                [kit.id]: {
-                                                  raw: rawUrl || '',
-                                                  processed: null,
-                                                  processing_state: 'processing' as const,
-                                                },
-                                              },
-                                            };
-                                            setVideoVariants(newVV);
-                                            startProcessingPoll('halfbody', kit.id, null);
-                                          }
-                                        }}
-                                        style={{
-                                          fontSize: '11px',
-                                          padding: '4px 8px',
-                                          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                          border: 'none',
-                                          color: '#fff',
-                                        }}
-                                      >
-                                        {lineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
-                                      </Button>
-                                    )}
-                                    {assetUrl && (
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={async () => {
-                                          if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
-                                          const newVV = {
-                                            ...videoVariants,
-                                            halfbody: { ...videoVariants.halfbody },
-                                          };
-                                          delete newVV.halfbody[kit.id];
-                                          setVideoVariants(newVV);
-                                          const updated = mergeAssetsIntoMetadata(
-                                            membership?.metadata,
-                                            form,
-                                            newVV
-                                          );
-                                          await handleMetadataUpdate(updated);
-                                        }}
-                                        style={{ fontSize: '11px', padding: '4px 8px', color: '#ef4444' }}
-                                      >
-                                        🗑️
-                                      </Button>
+                                    {hbUrl && (
+                                      <Button size="sm" variant="ghost" onClick={async () => {
+                                        if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
+                                        const newVV = { ...videoVariants, halfbody: { ...videoVariants.halfbody } };
+                                        delete newVV.halfbody[kit.id];
+                                        setVideoVariants(newVV);
+                                        const updated = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
+                                        await handleMetadataUpdate(updated);
+                                      }} style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}>🗑️</Button>
                                     )}
                                   </div>
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      </div>
 
-                      {/* Closeup Assets Grid */}
-                      <div>
-                        <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>📸 Close-up in Tenue</h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
-                          {effectiveKits.map((kit) => {
-                            // Per-kit-type: read from videoVariants.closeup, fallback to form.closeup for home
-                            const variantVal = videoVariants.closeup[kit.id]
-                              || (kit.id === 'home' ? form.closeup?.url : null)
-                              || null;
-                            const assetUrl = getVariantDisplayUrl(variantVal);
-                            const lineupReady = isLineupReady(variantVal);
-                            const currentlyProcessing = isProcessing(variantVal);
-
-                            // For fullbody reference: also handle new variant format
-                            const fullbodyRef = getVariantDisplayUrl(videoVariants.fullbody[kit.id]);
-
-                            return (
-                              <div
-                                key={`closeup-${kit.id}`}
-                                style={{
-                                  border: lineupReady
-                                    ? '2px solid #10b981'
-                                    : assetUrl
-                                      ? '2px solid #f59e0b'
-                                      : '1px solid var(--vscode-widget-border, #333)',
-                                  borderRadius: '8px',
-                                  overflow: 'hidden',
-                                  background: 'var(--vscode-editor-background)',
-                                }}
-                              >
-                                {/* Preview */}
+                              {/* Closeup Card */}
+                              <div style={{
+                                border: cuLineupReady ? '2px solid var(--vscode-charts-green)' : cuUrl ? '2px solid #f59e0b' : '1px solid var(--app-border)',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                background: 'var(--app-surface)',
+                              }}>
                                 <div
-                                  onClick={() => {
-                                    const url = resolveDisplayUrl(assetUrl);
-                                    if (url) window.open(url, '_blank');
-                                  }}
+                                  onClick={() => { const url = resolveDisplayUrl(cuUrl); if (url) window.open(url, '_blank'); }}
                                   style={{
                                     aspectRatio: '1/1',
-                                    background: assetUrl
-                                      ? `url(${resolveDisplayUrl(assetUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
+                                    background: cuUrl
+                                      ? `url(${resolveDisplayUrl(cuUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
                                       : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                                     position: 'relative',
                                     minHeight: '150px',
-                                    cursor: assetUrl ? 'zoom-in' : 'default',
-                                  }}
-                                >
-                                  {!assetUrl && (
-                                    <div style={{
-                                      position: 'absolute',
-                                      inset: 0,
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      color: 'var(--vscode-descriptionForeground)',
-                                      fontSize: '12px',
-                                    }}>
-                                      Niet gegenereerd
+                                    cursor: cuUrl ? 'zoom-in' : 'default',
+                                  }}>
+                                  {!cuUrl && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--app-text-muted)', fontSize: '12px' }}>Niet gegenereerd</div>}
+                                  {cuUrl && (
+                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
+                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                      <ProcessingBadge value={cuVal} />
                                     </div>
                                   )}
-                                  {assetUrl && (
-                                    <div style={{
-                                      position: 'absolute',
-                                      top: '6px',
-                                      right: '6px',
-                                      display: 'flex',
-                                      flexDirection: 'column',
-                                      gap: '4px',
-                                      alignItems: 'flex-end',
-                                    }}>
-                                      <span style={{
-                                        background: '#6366f1dd',
-                                        color: '#fff',
-                                        fontSize: '10px',
-                                        padding: '2px 6px',
-                                        borderRadius: '4px',
-                                        fontWeight: 600,
-                                      }}>
-                                        AI
-                                      </span>
-                                      <ProcessingBadge value={variantVal} />
-                                    </div>
-                                  )}
-                                  {currentlyProcessing && (
-                                    <div style={{
-                                      position: 'absolute',
-                                      inset: 0,
-                                      background: 'rgba(0,0,0,0.4)',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      color: '#fff',
-                                      fontSize: '13px',
-                                      fontWeight: 600,
-                                    }}>
-                                      ⏳ Bezig met verwerken...
-                                    </div>
-                                  )}
+                                  {cuProcessing && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 600 }}>⏳ Bezig...</div>}
                                 </div>
-
-                                {/* Label + Actions */}
                                 <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
-                                    {kit.icon} {kit.label}
-                                  </div>
-                                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => cropCloseupFromFullbody(kit.id)}
-                                      disabled={croppingCloseup[kit.id] || !fullbodyRef}
-                                      style={{ fontSize: '11px', padding: '4px 8px' }}
-                                      title={!fullbodyRef ? 'Genereer eerst een fullbody' : ''}
-                                    >
-                                      {croppingCloseup[kit.id] ? '⏳...' : assetUrl ? '🔄 Opnieuw' : '✂️ Crop'}
+                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>📸 Close-up</div>
+                                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                    <Button size="sm" onClick={() => cropCloseupFromFullbody(kit.id)} disabled={croppingCloseup[kit.id] || !fullbodyRef} style={{ fontSize: '10px', padding: '4px 8px' }} title={!fullbodyRef ? 'Genereer eerst een fullbody' : ''}>
+                                      {croppingCloseup[kit.id] ? '⏳...' : cuUrl ? '🔄 Opnieuw' : '✂️ Crop'}
                                     </Button>
-                                    {assetUrl && !currentlyProcessing && (
-                                      <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        onClick={async () => {
-                                          const result = await triggerAssetProcessing(
-                                            apiBaseUrl, membershipId!, 'closeup', kit.id
-                                          );
-                                          if (result.ok) {
-                                            const rawUrl = getVariantRawUrl(variantVal);
-                                            const newVV = {
-                                              ...videoVariants,
-                                              closeup: {
-                                                ...videoVariants.closeup,
-                                                [kit.id]: {
-                                                  raw: rawUrl || '',
-                                                  processed: null,
-                                                  processing_state: 'processing' as const,
-                                                },
-                                              },
-                                            };
-                                            setVideoVariants(newVV);
-                                            // Poll for result and auto-refresh
-                                            startProcessingPoll('closeup', kit.id, null);
-                                          }
-                                        }}
-                                        style={{
-                                          fontSize: '11px',
-                                          padding: '4px 8px',
-                                          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                          border: 'none',
-                                          color: '#fff',
-                                        }}
-                                      >
-                                        {lineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                                    {cuUrl && !cuProcessing && (
+                                      <Button size="sm" variant="secondary" onClick={async () => {
+                                        const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'closeup', kit.id);
+                                        if (result.ok) {
+                                          const rawUrl = getVariantRawUrl(cuVal);
+                                          setVideoVariants(prev => ({ ...prev, closeup: { ...prev.closeup, [kit.id]: { raw: rawUrl || '', processed: null, processing_state: 'processing' as const } } }));
+                                          startProcessingPoll('closeup', kit.id, null);
+                                        }
+                                      }} style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}>
+                                        {cuLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                       </Button>
                                     )}
-                                    {assetUrl && (
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={async () => {
-                                          if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
-                                          const newVV = {
-                                            ...videoVariants,
-                                            closeup: { ...videoVariants.closeup },
-                                          };
-                                          delete newVV.closeup[kit.id];
-                                          setVideoVariants(newVV);
-                                          const newForm = kit.id === 'home'
-                                            ? { ...form, closeup: { url: '', caption: '' } }
-                                            : form;
-                                          if (kit.id === 'home') setForm(newForm);
-                                          const updated = mergeAssetsIntoMetadata(
-                                            membership?.metadata,
-                                            newForm,
-                                            newVV
-                                          );
-                                          await handleMetadataUpdate(updated);
-                                        }}
-                                        style={{ fontSize: '11px', padding: '4px 8px', color: '#ef4444' }}
-                                      >
-                                        🗑️
-                                      </Button>
+                                    {cuUrl && (
+                                      <Button size="sm" variant="ghost" onClick={async () => {
+                                        if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
+                                        const newVV = { ...videoVariants, closeup: { ...videoVariants.closeup } };
+                                        delete newVV.closeup[kit.id];
+                                        setVideoVariants(newVV);
+                                        const newForm = kit.id === 'home' ? { ...form, closeup: { url: '', caption: '' } } : form;
+                                        if (kit.id === 'home') setForm(newForm);
+                                        const updated = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVV);
+                                        await handleMetadataUpdate(updated);
+                                      }} style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}>🗑️</Button>
                                     )}
                                   </div>
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      </div>
+                            </div>
+                          </div>
+                        );
+                      })}
 
                       {/* Team/Club Assets Section */}
                       <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--vscode-widget-border)' }}>
@@ -4122,6 +3745,12 @@ export default function ProjectSeasonMemberDetailPage() {
                           readOnly
                         />
                       </div>
+
+                      {!userCanEditProject && (
+                        <div style={{ marginTop: '16px' }}>
+                          <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
+                        </div>
+                      )}
                     </div>
                   </Card>
                 )}
