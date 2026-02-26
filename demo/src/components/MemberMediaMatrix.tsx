@@ -107,8 +107,21 @@ export function MemberMediaMatrix({
                     Member
                   </th>
                   {MEDIA_SLOTS.map((slot) => (
-                    <th key={slot.id} style={{ ...thStyle, textAlign: 'center', minWidth: 50 }} title={slot.label}>
-                      <span style={{ fontSize: 16 }}>{slot.icon}</span>
+                    <th key={slot.id} style={{ ...thStyle, textAlign: 'center', minWidth: 60, height: 80, verticalAlign: 'bottom', position: 'relative' }} title={slot.label}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <span style={{
+                          display: 'block',
+                          fontSize: 9,
+                          fontWeight: 500,
+                          whiteSpace: 'nowrap',
+                          transform: 'rotate(-45deg)',
+                          transformOrigin: 'center center',
+                          marginBottom: 4,
+                          opacity: 0.8,
+                          letterSpacing: '0.02em',
+                        }}>{slot.label}</span>
+                        <span style={{ fontSize: 16 }}>{slot.icon}</span>
+                      </div>
                     </th>
                   ))}
                   <th style={{ ...thStyle, textAlign: 'center' }}>Score</th>

@@ -3237,8 +3237,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 </th>
                                 <th style={{ ...compactThStyle, position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>Member</th>
                                 {MEDIA_SLOTS.map((slot) => (
-                                  <th key={slot.id} style={{ ...compactThStyle, textAlign: 'center', minWidth: '60px' }} title={slot.label}>
-                                    <span style={{ fontSize: '16px' }}>{slot.icon}</span>
+                                  <th key={slot.id} style={{ ...compactThStyle, textAlign: 'center', minWidth: '60px', height: '80px', verticalAlign: 'bottom', position: 'relative' }} title={slot.label}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                                      <span style={{
+                                        display: 'block',
+                                        fontSize: '9px',
+                                        fontWeight: 500,
+                                        whiteSpace: 'nowrap',
+                                        transform: 'rotate(-45deg)',
+                                        transformOrigin: 'center center',
+                                        marginBottom: '4px',
+                                        opacity: 0.8,
+                                        letterSpacing: '0.02em',
+                                      }}>{slot.label}</span>
+                                      <span style={{ fontSize: '16px' }}>{slot.icon}</span>
+                                    </div>
                                   </th>
                                 ))}
                                 <th style={{ ...compactThStyle, textAlign: 'center' }}>Score</th>

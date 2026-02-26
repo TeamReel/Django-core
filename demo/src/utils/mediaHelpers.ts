@@ -16,10 +16,16 @@ export function memberHasMedia(membership: any, slotId: MediaSlotId): boolean {
     const avatarUrl = membership?.user?.avatar_url;
     if (avatarUrl) return true;
   }
-  const media = membership?.metadata?.teamreel_assets?.media;
-  if (!media) return false;
-  const slot = media[slotId];
-  return !!(slot?.url || slot?.caption);
+  const tr = membership?.metadata?.teamreel_assets;
+  const media = tr?.media;
+  // Check flat media slot
+  if (media?.[slotId]?.url || media?.[slotId]?.caption) return true;
+  // Legacy slot: also check images.fullbody.legacy
+  if (slotId === 'legacy') {
+    const legacyVariant = tr?.images?.fullbody?.legacy;
+    if (legacyVariant?.raw || legacyVariant?.processed) return true;
+  }
+  return false;
 }
 
 /**
@@ -138,15 +144,25 @@ export function getMediaCaption(membership: any, slotId: MediaSlotId): string | 
 /**
  * Mapping from flat media slot ID to per-variant category and storage branch.
  * Only for slots that support processing (AI-generated assets).
+ *
+ * - variantKey: if set, only check this specific variant (e.g. 'legacy')
+ *   instead of all variants in the category.
+ * - excludeVariants: if set, skip these variant keys (e.g. exclude 'legacy' for kit slot).
  */
-const SLOT_TO_VARIANT_CATEGORY: Record<string, { branch: 'images' | 'videos'; category: string }> = {
-  kit: { branch: 'images', category: 'fullbody' },
-  closeup: { branch: 'images', category: 'closeup' },
+const SLOT_TO_VARIANT_CATEGORY: Record<string, {
+  branch: 'images' | 'videos';
+  category: string;
+  variantKey?: string;
+  excludeVariants?: string[];
+}> = {
+  kit: { branch: 'images', category: 'fullbody', excludeVariants: ['legacy'] },
+  closeup: { branch: 'images', category: 'closeup', excludeVariants: ['legacy'] },
+  legacy: { branch: 'images', category: 'fullbody', variantKey: 'legacy' },
   intro: { branch: 'videos', category: 'intro' },
   celebration: { branch: 'videos', category: 'celebration' },
   then_vs_now: { branch: 'videos', category: 'then_vs_now' },
-  photo_composite: { branch: 'images', category: 'photo_composite' },
-  walking_composite: { branch: 'images', category: 'walking_composite' },
+  photo_composite: { branch: 'videos', category: 'photo_composite' },
+  walking_composite: { branch: 'videos', category: 'walking_composite' },
 };
 
 /**
@@ -170,7 +186,7 @@ export function getMediaProcessingState(
 
   const mapping = SLOT_TO_VARIANT_CATEGORY[slotId];
   if (!mapping) {
-    // Non-processable slot (profile, legacy_photo, legacy) — binary check
+    // Non-processable slot (profile, legacy_photo) — binary check
     // For 'profile': also count user.avatar_url as a valid source
     if (slotId === 'profile') {
       const avatarUrl = membership?.user?.avatar_url;
@@ -190,8 +206,13 @@ export function getMediaProcessingState(
   let hasProcessing = false;
   let hasProcessed = false;
 
-  for (const val of Object.values(branchData)) {
+  for (const [key, val] of Object.entries(branchData)) {
     if (!val) continue;
+    // If variantKey is set, only check that specific variant
+    if (mapping.variantKey && key !== mapping.variantKey) continue;
+    // If excludeVariants is set, skip those variants
+    if (mapping.excludeVariants?.includes(key)) continue;
+
     if (typeof val === 'string') {
       hasRaw = true;
       continue;
