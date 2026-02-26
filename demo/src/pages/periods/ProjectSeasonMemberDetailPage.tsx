@@ -3949,8 +3949,8 @@ export default function ProjectSeasonMemberDetailPage() {
                         {/* Step 2: Near Image (Gemini) */}
                         <div style={{ marginTop: '24px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                            <span style={{ background: hasFarImage ? '#6366f1' : '#555', color: '#fff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>2</span>
-                            <span style={{ fontWeight: 700, fontSize: '14px', opacity: hasFarImage ? 1 : 0.5 }}>Dichtbij Beeld (Full-body, 3-5m)</span>
+                            <span style={{ background: '#6366f1', color: '#fff', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>2</span>
+                            <span style={{ fontWeight: 700, fontSize: '14px' }}>Dichtbij Beeld (Full-body, 3-5m)</span>
                             {hasNearImage && <span style={{ fontSize: '12px', color: '#10b981' }}>✓</span>}
                           </div>
                           <div style={{
@@ -3959,7 +3959,6 @@ export default function ProjectSeasonMemberDetailPage() {
                             overflow: 'hidden',
                             background: 'var(--app-surface)',
                             maxWidth: '300px',
-                            opacity: hasFarImage ? 1 : 0.4,
                           }}>
                             <div style={{
                               aspectRatio: '9/16',
