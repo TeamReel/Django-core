@@ -140,10 +140,10 @@ THEN_VS_NOW_SPEC = VideoSpec(
 PHOTO_COMPOSITE_SPEC = VideoSpec(
     width=540,
     height=960,
-    format="webm",
+    format="mp4",
     fps=25,
-    codec="vp9",
-    bg_removed=True,
+    codec="h264",
+    bg_removed=False,
     max_duration=None,
     aspect_ratio="9:16",
 )
@@ -151,10 +151,10 @@ PHOTO_COMPOSITE_SPEC = VideoSpec(
 WALKING_COMPOSITE_SPEC = VideoSpec(
     width=540,
     height=960,
-    format="webm",
+    format="mp4",
     fps=25,
-    codec="vp9",
-    bg_removed=True,
+    codec="h264",
+    bg_removed=False,
     max_duration=None,
     aspect_ratio="9:16",
 )

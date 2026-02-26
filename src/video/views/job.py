@@ -420,6 +420,11 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         from src.video.tasks.asset_processing import process_member_asset
 
         backend = "rvm" if asset_type in ("intro", "celebration", "then_vs_now") else "rembg"
+        # Composite videos (photo_composite, walking_composite) don't need bg removal.
+        # The processor checks spec.bg_removed and skips it, but we set backend to
+        # "none" for clarity in logging.
+        if asset_type in ("photo_composite", "walking_composite"):
+            backend = "none"
 
         logger.info(
             "process_asset_background_start membership_id=%s asset_type=%s kit_type=%s variant_id=%s backend=%s",

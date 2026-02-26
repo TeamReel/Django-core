@@ -320,6 +320,24 @@ class AssetProcessor:
             except Exception:  # noqa: BLE001
                 pass
 
+            # Composite videos (photo_composite, walking_composite) already have
+            # backgrounds and should NOT have bg removal applied. Just resize/re-encode.
+            if not spec.bg_removed:
+                logger.info(
+                    "asset_processing_video_backend_selected type=%s backend=passthrough (no bg removal)",
+                    asset_type,
+                )
+                return self._process_video_passthrough(
+                    input_path,
+                    spec,
+                    membership_id,
+                    asset_type,
+                    kit_type,
+                    variant_id,
+                    backend,
+                    should_cancel=should_cancel,
+                )
+
             # Determine effective bg removal backend
             effective_backend = bg_removal_backend
             if effective_backend == "rvm":
@@ -363,6 +381,125 @@ class AssetProcessor:
                 backend,
                 should_cancel=should_cancel,
             )
+
+    def _process_video_passthrough(
+        self,
+        input_path: Path,
+        spec: VideoSpec,
+        membership_id: str,
+        asset_type: str,
+        kit_type: str,
+        variant_id: str | None,
+        storage_backend: Any,
+        should_cancel: Callable[[], bool] | None = None,
+    ) -> tuple[str, dict]:
+        """Process a composite video: resize + re-encode WITHOUT background removal.
+
+        Used for photo_composite and walking_composite videos which already
+        have their intended background (stadium, pitch, etc.).
+        """
+        if should_cancel and should_cancel():
+            raise AssetProcessingCancelled()
+
+        # Get source video info
+        src_fps = self._get_video_fps(str(input_path)) or spec.fps
+        duration = self._get_video_duration(str(input_path))
+
+        logger.info(
+            "passthrough_video_info type=%s src_fps=%s duration=%s target=%dx%d",
+            asset_type,
+            src_fps,
+            duration,
+            spec.width,
+            spec.height,
+        )
+
+        # Re-encode to target dimensions using H.264 MP4
+        output_path = input_path.parent / "output_passthrough.mp4"
+        encode_cmd = [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(input_path),
+            "-vf",
+            f"scale={spec.width}:{spec.height}:force_original_aspect_ratio=decrease,"
+            f"pad={spec.width}:{spec.height}:(ow-iw)/2:(oh-ih)/2:color=black",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "veryfast",
+            "-crf",
+            "23",
+            "-pix_fmt",
+            "yuv420p",
+            "-r",
+            str(spec.fps),
+            "-movflags",
+            "+faststart",
+            "-an",
+            str(output_path),
+        ]
+        logger.info("passthrough_ffmpeg_encode_cmd cmd=%s", " ".join(encode_cmd))
+
+        t_enc = time.monotonic()
+        result = subprocess.run(
+            encode_cmd,
+            capture_output=True,
+            text=True,
+            timeout=300,
+            check=False,
+        )
+        if result.returncode != 0:
+            raise AssetProcessingError(
+                f"FFmpeg passthrough encode failed (exit {result.returncode}): "
+                f"{result.stderr[:500]}"
+            )
+
+        if not output_path.exists():
+            raise AssetProcessingError("FFmpeg passthrough produced no output file")
+
+        logger.info(
+            "passthrough_encode_done type=%s in=%.3fs size_bytes=%d",
+            asset_type,
+            time.monotonic() - t_enc,
+            output_path.stat().st_size,
+        )
+
+        if should_cancel and should_cancel():
+            raise AssetProcessingCancelled()
+
+        # Get output duration for metadata
+        out_duration = self._get_video_duration(str(output_path))
+
+        # Upload processed version
+        variant_suffix = f"_{variant_id}" if variant_id else ""
+        hash_suffix = uuid4().hex[:8]
+        storage_path = (
+            f"members/{membership_id}/processed/{asset_type}/"
+            f"{kit_type}{variant_suffix}_{hash_suffix}.mp4"
+        )
+
+        t_up = time.monotonic()
+        with open(output_path, "rb") as f:
+            saved_path = storage_backend.save(storage_path, f)
+        logger.info(
+            "passthrough_upload_done type=%s in=%.3fs storage_path=%s",
+            asset_type,
+            time.monotonic() - t_up,
+            storage_path,
+        )
+
+        actual_specs = {
+            "width": spec.width,
+            "height": spec.height,
+            "format": "mp4",
+            "fps": spec.fps,
+            "codec": "h264",
+            "bg_removed": False,
+            "duration": out_duration,
+        }
+
+        return saved_path, actual_specs
 
     def _process_video_rvm(
         self,
