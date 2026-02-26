@@ -504,8 +504,9 @@ export default function AssetGenerationModal({
       if (val) validInputs[key] = val;
     });
 
-    // Override background with selected background for photo_composite_gemini
-    if (selectedTemplate.id === 'photo_composite_gemini' && availableBackgrounds.length > 0) {
+    // Override background with selected background for composite templates that need it
+    const needsBackground = ['photo_composite_gemini', 'walking_composite_far', 'walking_composite_near'].includes(selectedTemplate.id);
+    if (needsBackground && availableBackgrounds.length > 0) {
       const selectedBg = availableBackgrounds[selectedBackgroundIdx];
       if (selectedBg?.url) {
         validInputs['background'] = selectedBg.url;
@@ -618,8 +619,8 @@ export default function AssetGenerationModal({
       if (val) validInputs[key] = val;
     });
 
-    // Override background with selected background for photo_composite_gemini
-    if (selectedTemplate.id === 'photo_composite_gemini' && availableBackgrounds.length > 0) {
+    // Override background with selected background for composite templates
+    if (['photo_composite_gemini', 'walking_composite_far', 'walking_composite_near'].includes(selectedTemplate.id) && availableBackgrounds.length > 0) {
       const selectedBg = availableBackgrounds[selectedBackgroundIdx];
       if (selectedBg?.url) {
         validInputs['background'] = selectedBg.url;
@@ -954,8 +955,8 @@ export default function AssetGenerationModal({
                 />
               )}
 
-              {/* Background selector — only for photo_composite_gemini */}
-              {selectedTemplate.id === 'photo_composite_gemini' && availableBackgrounds.length > 0 && (
+              {/* Background selector — for composite templates that need background */}
+              {['photo_composite_gemini', 'walking_composite_far', 'walking_composite_near'].includes(selectedTemplate.id) && availableBackgrounds.length > 0 && (
                 <div style={{ marginBottom: 16 }}>
                   <label
                     style={{

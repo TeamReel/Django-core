@@ -785,6 +785,75 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
     parameters: {},
   },
   // ============================================================================
+  // Walking Composite Templates (far + near Gemini images + MiniMax walking video)
+  // ============================================================================
+  {
+    id: 'walking_composite_far',
+    name: 'Walking Composite (Ver)',
+    icon: '🚶',
+    category: 'walking_composite',
+    description: 'Full-body spelers ver weg op de achtergrond (15-20m afstand). Gemini plaatst beide spelers realistisch op het veld.',
+    inputRequirements: ['person', 'reference', 'background'],
+    requiredAssetTypes: [],
+    outputAssetType: 'walking_composite_far',
+    creditsCost: 3,
+    outputType: 'image',
+    parameters: {
+      background_style: {
+        label: 'Achtergrond',
+        type: 'select' as const,
+        options: [
+          { value: 'club', label: 'Clubachtergrond' },
+          { value: 'stadium', label: 'Stadion' },
+          { value: 'field', label: 'Speelveld' },
+        ],
+        default: 'club',
+      },
+    },
+  },
+  {
+    id: 'walking_composite_near',
+    name: 'Walking Composite (Dichtbij)',
+    icon: '🚶',
+    category: 'walking_composite',
+    description: 'Full-body spelers dichtbij op de voorgrond (3-5m afstand). Gemini plaatst beide spelers groot en prominent in beeld.',
+    inputRequirements: ['person', 'reference', 'background'],
+    requiredAssetTypes: [],
+    outputAssetType: 'walking_composite_near',
+    creditsCost: 3,
+    outputType: 'image',
+    parameters: {
+      background_style: {
+        label: 'Achtergrond',
+        type: 'select' as const,
+        options: [
+          { value: 'club', label: 'Clubachtergrond' },
+          { value: 'stadium', label: 'Stadion' },
+          { value: 'field', label: 'Speelveld' },
+        ],
+        default: 'club',
+      },
+    },
+  },
+  {
+    id: 'walking_composite_video',
+    name: 'Walking Composite (Video)',
+    icon: '🎬',
+    category: 'walking_composite',
+    description: 'MiniMax video (6 sec): spelers lopen van ver naar dichtbij de camera. Gebruikt het verre beeld als eerste frame en het dichtbije beeld als laatste frame.',
+    inputRequirements: ['person'],
+    requiredAssetTypes: [],
+    outputAssetType: 'walking_composite_video',
+    creditsCost: 5,
+    outputType: 'video',
+    videoConfig: {
+      durationSeconds: 6,
+      aspectRatio: '9:16',
+      resolution: '720p',
+    },
+    parameters: {},
+  },
+  // ============================================================================
   // Post-Process Templates (optimize AI-generated assets for print/flyers)
   // ============================================================================
   {
@@ -921,8 +990,8 @@ export function getTemplatesForContext(context: 'club' | 'member' | 'guest'): As
     // Guest uses same templates as member but without then_vs_now/photo_composite (no legacy photo)
     const memberCategories = context === 'guest'
       ? ['fullbody', 'closeup', 'intro', 'celebration']
-      : ['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite'];
+      : ['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite', 'walking_composite'];
     return ASSET_TEMPLATES.filter((t) => memberCategories.includes(t.category));
   }
-  return ASSET_TEMPLATES.filter((t) => !['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite'].includes(t.category));
+  return ASSET_TEMPLATES.filter((t) => !['fullbody', 'closeup', 'intro', 'celebration', 'then_vs_now', 'photo_composite', 'walking_composite'].includes(t.category));
 }
