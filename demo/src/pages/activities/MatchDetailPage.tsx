@@ -426,6 +426,21 @@ export default function HierarchyMatchDetailPage() {
     void refreshMatchMedia();
   };
 
+  // ── Toast notifications ──
+  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'info' | 'warning' | 'error' }[]>([]);
+  const pushToast = useCallback((message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
+    const id = String(Date.now());
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 6000);
+  }, []);
+  const dismissToast = useCallback((id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  const handleContentGenerated = useCallback((message?: string) => {
+    pushToast(message || '📋 Content wordt gegenereerd en komt in de approval queue.', 'success');
+  }, [pushToast]);
+
   // Open content preview modal
   const openContentPreview = (item: ContentItem) => {
     setSelectedContentItem(item);
@@ -2138,6 +2153,7 @@ export default function HierarchyMatchDetailPage() {
         <ContentGenerationModal
             isOpen={isContentModalOpen}
             onClose={closeContentModal}
+            onGenerated={handleContentGenerated}
             matchData={match}
             season={season}
             organisationSport={org?.sport}
@@ -3201,6 +3217,38 @@ export default function HierarchyMatchDetailPage() {
           )}
         </PageContent>
       </div>
+
+      {/* Toast notifications */}
+      {toasts.length > 0 && (
+        <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 420 }}>
+          {toasts.map(toast => (
+            <div
+              key={toast.id}
+              style={{
+                padding: '12px 16px',
+                borderRadius: 8,
+                background: toast.type === 'success' ? '#166534' : toast.type === 'error' ? '#991b1b' : toast.type === 'warning' ? '#92400e' : '#1e40af',
+                color: '#fff',
+                fontSize: 14,
+                fontWeight: 500,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                animation: 'slideInRight 0.3s ease-out',
+              }}
+            >
+              <span style={{ flex: 1 }}>{toast.message}</span>
+              <button
+                onClick={() => dismissToast(toast.id)}
+                style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 0, opacity: 0.7 }}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }

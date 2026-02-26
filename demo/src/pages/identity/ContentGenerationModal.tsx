@@ -231,6 +231,8 @@ interface ContentGenerationModalProps {
   contentTypeLabel?: string;
   /** Asset type for BrandAsset linking (e.g. logo, kit_home) */
   assetType?: string | null;
+  /** Callback fired when content has been successfully submitted/queued */
+  onGenerated?: (message?: string) => void;
 }
 
 // Map template asset_types to teamreel_assets media slot keys
@@ -445,8 +447,9 @@ export default function ContentGenerationModal({
   template: initialTemplate,
   contentTypeLabel,
   assetType,
+  onGenerated,
 }: ContentGenerationModalProps) {
-  const [step, setStep] = useState<'type' | 'template' | 'members' | 'lineup_squad' | 'confirm' | 'generating' | 'success' | 'error'>('type');
+  const [step, setStep] = useState<'type' | 'template' | 'members' | 'lineup_squad' | 'confirm' | 'generating' | 'video_queued' | 'success' | 'error'>('type');
   const [selectedType, setSelectedType] = useState<{ type: string; subtype: string; label: string } | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
   const [progress, setProgress] = useState(0);
@@ -1325,111 +1328,12 @@ export default function ContentGenerationModal({
       setVideoJobId(jobId);
       setVideoJobStatus('queued');
       setVideoJobProgressRaw(0);
-      setProgress(30);
+      setProgress(100);
 
-      // Create a fresh abort controller for this polling session
-      const pollController = new AbortController();
-      activeVideoJobPollRef.current = pollController;
-      const pollSignal = pollController.signal;
-
-      // Poll for job completion
-      let pollCount = 0;
-      const maxPolls = 360; // 30 minutes max (5s intervals)
-      let consecutiveErrors = 0;
-      const maxConsecutiveErrors = 5; // Allow up to 5 transient failures
-
-      const pollJob = async (): Promise<void> => {
-        if (pollSignal.aborted) return;
-        if (pollCount >= maxPolls) {
-          throw new Error('Video processing timed out. Please try again.');
-        }
-
-        let statusRes: Response;
-        try {
-          statusRes = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/${jobId}/`, {
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            signal: pollSignal,
-          });
-        } catch (networkErr) {
-          if ((networkErr as any)?.name === 'AbortError' || pollSignal.aborted) return;
-          // Network error (offline, DNS, etc.) — retry
-          consecutiveErrors++;
-          console.warn(`⚠️ Poll network error (${consecutiveErrors}/${maxConsecutiveErrors}):`, networkErr);
-          if (consecutiveErrors >= maxConsecutiveErrors) {
-            throw new Error('Lost connection to server. Please check your network and try again.');
-          }
-          pollCount++;
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          return pollJob();
-        }
-
-        if (!statusRes.ok) {
-          // Server error (500, 502, etc.) — retry instead of aborting
-          consecutiveErrors++;
-          console.warn(`⚠️ Poll HTTP ${statusRes.status} (${consecutiveErrors}/${maxConsecutiveErrors})`);
-          if (consecutiveErrors >= maxConsecutiveErrors) {
-            throw new Error(`Server error while checking job status (HTTP ${statusRes.status})`);
-          }
-          pollCount++;
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          return pollJob();
-        }
-
-        // Successful response — reset error counter
-        consecutiveErrors = 0;
-
-        const statusData = await statusRes.json();
-        const job = statusData.data || statusData;
-        const status = job.status;
-        const progressPercent = job.progress_percent || 0;
-
-        setVideoJobStatus(status);
-        setVideoJobProgressRaw(progressPercent);
-        setVideoJobMeta(job.metadata || {});
-        setProgress(30 + (progressPercent * 0.6)); // Map 0-100% to 30-90%
-
-        if (status === 'completed') {
-          // Job finished - get output
-          const outputUrl = job.output_file?.presigned_url || job.output_file?.url;
-          if (outputUrl) {
-            setGeneratedVariants([{
-              variant_index: 0,
-              image_base64: null,
-              presigned_url: outputUrl,
-              mime_type: 'video/mp4',
-              filename: `lineup_${jobId}.mp4`,
-              error: null,
-              storage_info: job.output_file?.storage_info || null,
-              metadata: { job_id: jobId, type: 'lineup_video' },
-            }]);
-            setProgress(100);
-            setTimeout(() => setStep('success'), 300);
-          } else {
-            throw new Error('Video completed but no output file found');
-          }
-          // Stop polling once resolved
-          abortActiveVideoJobPoll();
-          return;
-        }
-
-        if (status === 'failed') {
-          abortActiveVideoJobPoll();
-          throw new Error(job.error_message || 'Video processing failed');
-        }
-
-        if (status === 'cancelled') {
-          abortActiveVideoJobPoll();
-          throw new Error('Video processing was cancelled');
-        }
-
-        // Still processing, poll again
-        pollCount++;
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        return pollJob();
-      };
-
-      await pollJob();
+      // Show queued confirmation — video processes in the background
+      // and will appear in the approval queue when ready.
+      setStep('video_queued');
+      onGenerated?.('🎬 Lineup video staat in de wachtrij en wordt op de achtergrond verwerkt.');
 
     } catch (err) {
       if ((err as any)?.name === 'AbortError') return;
@@ -1497,103 +1401,11 @@ export default function ContentGenerationModal({
       setVideoJobId(jobId);
       setVideoJobStatus('queued');
       setVideoJobProgressRaw(0);
-      setProgress(30);
+      setProgress(100);
 
-      // Poll for completion (same pattern as lineup)
-      const pollController = new AbortController();
-      activeVideoJobPollRef.current = pollController;
-      const pollSignal = pollController.signal;
-
-      let pollCount = 0;
-      const maxPolls = 360;
-      let consecutiveErrors = 0;
-      const maxConsecutiveErrors = 5;
-
-      const pollJob = async (): Promise<void> => {
-        if (pollSignal.aborted) return;
-        if (pollCount >= maxPolls) {
-          throw new Error('Video processing timed out. Please try again.');
-        }
-
-        let statusRes: Response;
-        try {
-          statusRes = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/${jobId}/`, {
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            signal: pollSignal,
-          });
-        } catch (networkErr) {
-          if ((networkErr as any)?.name === 'AbortError' || pollSignal.aborted) return;
-          consecutiveErrors++;
-          console.warn(`⚠️ Poll network error (${consecutiveErrors}/${maxConsecutiveErrors}):`, networkErr);
-          if (consecutiveErrors >= maxConsecutiveErrors) {
-            throw new Error('Lost connection to server. Please check your network and try again.');
-          }
-          pollCount++;
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          return pollJob();
-        }
-
-        if (!statusRes.ok) {
-          consecutiveErrors++;
-          console.warn(`⚠️ Poll HTTP ${statusRes.status} (${consecutiveErrors}/${maxConsecutiveErrors})`);
-          if (consecutiveErrors >= maxConsecutiveErrors) {
-            throw new Error(`Server error while checking job status (HTTP ${statusRes.status})`);
-          }
-          pollCount++;
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          return pollJob();
-        }
-
-        consecutiveErrors = 0;
-        const statusData = await statusRes.json();
-        const job = statusData.data || statusData;
-        const jobStatus = job.status;
-        const progressPercent = job.progress_percent || 0;
-
-        setVideoJobStatus(jobStatus);
-        setVideoJobProgressRaw(progressPercent);
-        setVideoJobMeta(job.metadata || {});
-        setProgress(30 + (progressPercent * 0.6));
-
-        if (jobStatus === 'completed') {
-          const outputUrl = job.output_file?.presigned_url || job.output_file?.url;
-          if (outputUrl) {
-            setGeneratedVariants([{
-              variant_index: 0,
-              image_base64: null,
-              presigned_url: outputUrl,
-              mime_type: 'video/mp4',
-              filename: `goal_celebration_${jobId}.mp4`,
-              error: null,
-              storage_info: job.output_file?.storage_info || null,
-              metadata: { job_id: jobId, type: 'goal_celebration' },
-            }]);
-            setProgress(100);
-            setTimeout(() => setStep('success'), 300);
-          } else {
-            throw new Error('Video completed but no output file found');
-          }
-          abortActiveVideoJobPoll();
-          return;
-        }
-
-        if (jobStatus === 'failed') {
-          abortActiveVideoJobPoll();
-          throw new Error(job.error_message || 'Video processing failed');
-        }
-
-        if (jobStatus === 'cancelled') {
-          abortActiveVideoJobPoll();
-          throw new Error('Video processing was cancelled');
-        }
-
-        pollCount++;
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        return pollJob();
-      };
-
-      await pollJob();
+      // Show queued confirmation — video processes in the background
+      setStep('video_queued');
+      onGenerated?.('⚽ Goal celebration staat in de wachtrij en wordt op de achtergrond verwerkt.');
 
     } catch (err) {
       if ((err as any)?.name === 'AbortError') return;
@@ -1649,103 +1461,11 @@ export default function ContentGenerationModal({
       setVideoJobId(jobId);
       setVideoJobStatus('queued');
       setVideoJobProgressRaw(0);
-      setProgress(30);
+      setProgress(100);
 
-      // Poll for completion (same pattern as lineup/goal)
-      const pollController = new AbortController();
-      activeVideoJobPollRef.current = pollController;
-      const pollSignal = pollController.signal;
-
-      let pollCount = 0;
-      const maxPolls = 360;
-      let consecutiveErrors = 0;
-      const maxConsecutiveErrors = 5;
-
-      const pollJob = async (): Promise<void> => {
-        if (pollSignal.aborted) return;
-        if (pollCount >= maxPolls) {
-          throw new Error('Video processing timed out. Please try again.');
-        }
-
-        let statusRes: Response;
-        try {
-          statusRes = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/${jobId}/`, {
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            signal: pollSignal,
-          });
-        } catch (networkErr) {
-          if ((networkErr as any)?.name === 'AbortError' || pollSignal.aborted) return;
-          consecutiveErrors++;
-          console.warn(`⚠️ Poll network error (${consecutiveErrors}/${maxConsecutiveErrors}):`, networkErr);
-          if (consecutiveErrors >= maxConsecutiveErrors) {
-            throw new Error('Lost connection to server. Please check your network and try again.');
-          }
-          pollCount++;
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          return pollJob();
-        }
-
-        if (!statusRes.ok) {
-          consecutiveErrors++;
-          console.warn(`⚠️ Poll HTTP ${statusRes.status} (${consecutiveErrors}/${maxConsecutiveErrors})`);
-          if (consecutiveErrors >= maxConsecutiveErrors) {
-            throw new Error(`Server error while checking job status (HTTP ${statusRes.status})`);
-          }
-          pollCount++;
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          return pollJob();
-        }
-
-        consecutiveErrors = 0;
-        const statusData = await statusRes.json();
-        const job = statusData.data || statusData;
-        const jobStatus = job.status;
-        const progressPercent = job.progress_percent || 0;
-
-        setVideoJobStatus(jobStatus);
-        setVideoJobProgressRaw(progressPercent);
-        setVideoJobMeta(job.metadata || {});
-        setProgress(30 + (progressPercent * 0.6));
-
-        if (jobStatus === 'completed') {
-          const outputUrl = job.output_file?.presigned_url || job.output_file?.url;
-          if (outputUrl) {
-            setGeneratedVariants([{
-              variant_index: 0,
-              image_base64: null,
-              presigned_url: outputUrl,
-              mime_type: 'video/mp4',
-              filename: `match_intro_${jobId}.mp4`,
-              error: null,
-              storage_info: job.output_file?.storage_info || null,
-              metadata: { job_id: jobId, type: 'match_intro' },
-            }]);
-            setProgress(100);
-            setTimeout(() => setStep('success'), 300);
-          } else {
-            throw new Error('Video completed but no output file found');
-          }
-          abortActiveVideoJobPoll();
-          return;
-        }
-
-        if (jobStatus === 'failed') {
-          abortActiveVideoJobPoll();
-          throw new Error(job.error_message || 'Video processing failed');
-        }
-
-        if (jobStatus === 'cancelled') {
-          abortActiveVideoJobPoll();
-          throw new Error('Video processing was cancelled');
-        }
-
-        pollCount++;
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        return pollJob();
-      };
-
-      await pollJob();
+      // Show queued confirmation — video processes in the background
+      setStep('video_queued');
+      onGenerated?.('🎥 Match intro staat in de wachtrij en wordt op de achtergrond verwerkt.');
 
     } catch (err) {
       if ((err as any)?.name === 'AbortError') return;
@@ -2252,6 +1972,7 @@ export default function ContentGenerationModal({
               {step === 'members' && (isLineupFlow ? 'Lineup Opties' : `Create ${contentTypeLabel || selectedType?.label || 'Content'}`)}
               {step === 'lineup_squad' && 'Opstelling kiezen'}
               {step === 'generating' && 'Generating...'}
+              {step === 'video_queued' && 'In de wachtrij!'}
               {step === 'success' && 'Content Ready!'}
             </h2>
             <div className="text-sm text-gray-500 mt-1">
@@ -2263,7 +1984,7 @@ export default function ContentGenerationModal({
               )}
             </div>
           </div>
-          {!(isLineupFlow || step === 'generating' || step === 'members' || step === 'lineup_squad') && (
+          {!(isLineupFlow || step === 'generating' || step === 'video_queued' || step === 'members' || step === 'lineup_squad') && (
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-2xl"
@@ -3761,6 +3482,38 @@ export default function ContentGenerationModal({
                   </div>
                 );
               })()}
+            </div>
+          )}
+
+          {/* Video Queued — shown after video job is submitted */}
+          {step === 'video_queued' && (
+            <div className="flex flex-col items-center justify-center h-full py-12">
+              <div className="w-full max-w-md text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+                  <span className="text-3xl">✅</span>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-800 mb-2">In de wachtrij!</h2>
+                <p className="text-sm text-gray-500 mb-6">
+                  Je {selectedType?.label || 'video'} wordt op de achtergrond gegenereerd.
+                  <br />
+                  Zodra het klaar is, verschijnt het in de <strong>Approvals</strong> pagina waar je het kunt goedkeuren.
+                </p>
+                <div className="flex flex-col items-center gap-3">
+                  <a
+                    href="/approvals"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    📋 Ga naar Approvals
+                  </a>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onClose}
+                  >
+                    Sluiten
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
 

@@ -1285,7 +1285,25 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     (itemPath === '/permissions' && isOrganisationRoute) ||
                                     (itemPath === '/health' && isPlatformRoute);
 
-                                const active = isActive || isActiveViaItem;
+                                // For app section items that share the same pathname
+                                // but differ by ?tab= query param, refine isActive to
+                                // also match the tab so only the correct one highlights.
+                                let refinedIsActive = isActive;
+                                if (section.id === 'app' && isActive) {
+                                    const itemUrl = new URL(item.path, window.location.origin);
+                                    const itemTab = itemUrl.searchParams.get('tab');
+                                    const currentTab = new URLSearchParams(location.search).get('tab');
+                                    if (itemTab) {
+                                        // Item has a specific tab — only active if current tab matches
+                                        refinedIsActive = currentTab === itemTab;
+                                    } else if (currentTab && itemUrl.pathname === path) {
+                                        // Item has NO tab but current URL does — not active
+                                        // (e.g. Season item when on ?tab=competitions)
+                                        refinedIsActive = false;
+                                    }
+                                }
+
+                                const active = refinedIsActive || isActiveViaItem;
 
                                 return {
                                 position: 'relative' as const,
