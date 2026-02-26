@@ -1323,15 +1323,15 @@ def _minimax_generate_video(
 
     prompt = (
         "A cinematic portrait video of two football players standing side by side "
-        "on a football pitch. Very subtle, realistic movement only. "
-        "The players VERY SLOWLY rotate their heads HORIZONTALLY (sideways, left-right) to look at each other. "
-        "The head rotation is extremely slow and gentle — takes about 2 full seconds. "
-        "Left person turns face to the right, right person turns face to the left — they look sideways at each other. "
-        "IMPORTANT: Head rotation is HORIZONTAL only (yaw). Absolutely NO vertical head movement, no nodding, no tilting up or down. Chins stay level. "
-        "They smile warmly while looking at each other, then very slowly rotate heads horizontally back to face the camera. "
+        "on a football pitch. "
+        "THE MAIN ACTION: Both players MUST turn their heads to look at each other. This head turn is the entire point of the video. "
+        "The players smoothly and gradually rotate their heads HORIZONTALLY (sideways, left-right) to look at each other. "
+        "Left person turns face to the right, right person turns face to the left — they look sideways at each other and smile. "
+        "Head rotation is HORIZONTAL only (yaw). No vertical head movement, no nodding. Chins stay level. "
+        "After smiling at each other, they smoothly rotate heads back to face the camera. "
         "The camera is completely static. Only the players' heads rotate sideways — no body movement. "
-        "ABSOLUTELY NO special effects, no blur, no glow, no particles, no light effects, no filters. 100% photorealistic — must look like a real camera recording. "
-        "Smooth, extremely slow, cinematic motion. 6 seconds."
+        "No special effects, no blur, no glow, no particles, no filters. Photorealistic — like a real camera recording. "
+        "Smooth, natural motion. 6 seconds."
     )
 
     # Read and crop composite to ensure no legs visible

@@ -1049,23 +1049,21 @@ IDENTITY (CRITICAL):
 
 HEAD ROTATION — HORIZONTAL ONLY (CRITICAL):
 - Heads rotate HORIZONTALLY (left-right, like saying "no"). This is a YAW rotation.
-- ABSOLUTELY NO vertical head movement. No nodding, no tilting up or down, no pitch.
+- NO vertical head movement. No nodding, no tilting up or down.
 - The chin stays level at all times. Only the horizontal angle of the face changes.
 - Left person's face rotates RIGHT (chin swings right toward center).
 - Right person's face rotates LEFT (chin swings left toward center).
-- Rotation is about 30-45 degrees — natural, not exaggerated.
+- Rotation is about 30-45 degrees — clearly visible but natural.
 
-MOVEMENT SPEED — VERY SLOW (CRITICAL):
-- Every head movement must be EXTREMELY SLOW and GENTLE. Think slow-motion romance scene.
-- The head rotation takes MULTIPLE SECONDS to complete. Never fast or snappy.
-- The overall mood is calm, intimate, unhurried. No urgency.
+THE MAIN ACTION — MUST HAPPEN:
+The head turn is the ENTIRE POINT of this video. Both people MUST turn their heads to look at each other. This is not optional. If the heads don't turn, the video is a failure.
 
 MOVEMENT SEQUENCE (must be precise):
-1. FRAMES 0-1.5s: Both stand facing the camera, looking straight ahead. Neutral expression. Completely still (natural breathing only).
-2. FRAMES 1.5-3.5s: They VERY SLOWLY rotate their heads HORIZONTALLY to look SIDEWAYS at each other. This rotation takes a full 2 seconds. Left person rotates face to the right. Right person rotates face to the left. Their eyes meet. Chins stay level — NO vertical tilt.
-3. FRAMES 3.5-4.5s: While looking sideways at each other, a gentle smile appears. Warm, natural. Bodies stay completely still.
-4. FRAMES 4.5-5.5s: Still smiling, they VERY SLOWLY rotate their heads HORIZONTALLY back to face the camera. Again, this takes a full second.
-5. FRAMES 5.5-6s: Both face forward again with a warm smile. Return to near-starting pose for seamless loop.
+1. FRAMES 0-1s: Both stand facing the camera, looking straight ahead. Neutral expression. Still.
+2. FRAMES 1-3s: Both smoothly and gradually rotate their heads HORIZONTALLY to look SIDEWAYS at each other. Left person rotates face to the right. Right person rotates face to the left. The rotation is smooth and natural — not rushed, not jerky. Their eyes meet. Chins stay level.
+3. FRAMES 3-4.5s: While looking sideways at each other, they smile and share a warm laugh. Bodies stay still.
+4. FRAMES 4.5-5.5s: Still smiling, they smoothly rotate their heads back to face the camera.
+5. FRAMES 5.5-6s: Both face forward again with a warm smile. Return to starting pose for seamless loop.
 
 BACKGROUND:
 - Plain solid color background (bright green #00FF00 or bright blue #0000FF chroma-key).
@@ -1073,14 +1071,13 @@ BACKGROUND:
 - Both people must be completely isolated against the flat color.
 
 RULES:
-- ABSOLUTELY NO special effects of any kind. No blur, no glow, no light effects, no particles, no lens flares, no transitions, no filters.
-- NO morphing, NO warping, NO distortion effects.
+- No special effects, no blur, no glow, no particles, no lens flares, no transitions, no filters.
 - NO text overlays, NO graphics, NO logos added.
 - NO camera movement. Static locked-off camera.
-- 100% photorealistic. Must look like a real video camera recording. Natural lighting. Professional studio setup.
+- Photorealistic. Must look like a real video camera recording. Natural lighting. Professional studio setup.
 - Both people must remain fully visible at all times (head to at least mid-thigh, no cropping).
 - 9:16 vertical aspect ratio.
-- ALL movement is very slow, natural, and controlled. No sudden jerks. No fast motion.
+- Movement is smooth, natural, and controlled. No sudden jerks.
 """,
     },
 
@@ -1374,50 +1371,47 @@ The provided image shows the FIRST FRAME: two people standing next to each other
 
 CRITICAL — HORIZONTAL HEAD ROTATION ONLY:
 - Heads rotate HORIZONTALLY — left and right only, like saying "no". This is a YAW rotation on the vertical neck axis.
-- ABSOLUTELY NO vertical head movement. No nodding up or down, no pitch, no tilt.
+- NO vertical head movement. No nodding up or down, no tilt.
 - The chin stays LEVEL at all times. The face turns sideways but never looks up or down.
-- The neck stays straight and upright. Do NOT tilt the neck forward, backward, or sideways.
-- The shoulders, body, and torso remain COMPLETELY STILL. No leaning.
-- The players do NOT move closer to each other. They do NOT touch at any point.
+- The neck stays straight and upright.
+- The shoulders, body, and torso remain STILL. No leaning.
+- The players do NOT move closer to each other. They do NOT touch.
 
 HEAD ROTATION DIRECTION:
-- LEFT person: Head rotates HORIZONTALLY to the RIGHT (chin swings right, face turns toward center of frame).
-- RIGHT person: Head rotates HORIZONTALLY to the LEFT (chin swings left, face turns toward center of frame).
+- LEFT person: Head rotates HORIZONTALLY to the RIGHT (face turns toward center of frame).
+- RIGHT person: Head rotates HORIZONTALLY to the LEFT (face turns toward center of frame).
 - They look SIDEWAYS at each other. Both heads turn INWARD toward the center.
-- Rotation is about 30-45 degrees — natural, not exaggerated.
+- Rotation is about 30-45 degrees — clearly visible but natural.
 
-MOVEMENT SPEED — VERY SLOW (CRITICAL):
-- Every head movement must be EXTREMELY SLOW and GENTLE. Think slow-motion romance scene.
-- The head rotation takes MULTIPLE SECONDS to complete. Never fast or snappy.
-- The overall mood is calm, intimate, unhurried. No urgency.
+THE MAIN ACTION — MUST HAPPEN:
+The head turn is the ENTIRE POINT of this video. Both people MUST turn their heads to look at each other. This is not optional. If the heads don't turn, the video is a failure.
 
 MOVEMENT SEQUENCE:
-1. 0-1.5s: Both face camera. Neutral expression. Completely still. Natural breathing only.
-2. 1.5-3.5s: Heads VERY SLOWLY rotate HORIZONTALLY toward each other. This rotation takes a full 2 seconds. Faces turn sideways — chins stay level, no vertical tilt. Eyes meet in the middle.
-3. 3.5-4.5s: While looking sideways at each other, a gentle smile appears. Warm and natural. Shoulders stay still — only facial expression changes.
-4. 4.5-5.5s: Heads VERY SLOWLY rotate HORIZONTALLY back to face camera. Still smiling softly.
+1. 0-1s: Both face camera. Neutral expression. Still pose.
+2. 1-3s: Both smoothly and gradually rotate their heads HORIZONTALLY toward each other. The rotation is smooth and natural — not rushed, not jerky. Faces turn sideways — chins stay level. Eyes meet in the middle.
+3. 3-4.5s: While looking sideways at each other, they smile warmly. Shoulders stay still — only facial expression changes.
+4. 4.5-5.5s: Heads smoothly rotate HORIZONTALLY back to face camera. Still smiling.
 5. 5.5-6s: Both face forward with content smile. Return to starting pose for loop.
 
 REALISM RULES:
 - Head rotation is HORIZONTAL only (yaw) — never vertical (pitch). Chin stays level.
-- Rotation is natural and subtle (about 30-45 degrees, not exaggerated).
-- Neck remains straight and vertical throughout — no bending or tilting.
-- Bodies frozen in place — no swaying, no leaning, no shoulder movement.
-- The gap between players stays constant — they never touch or get closer.
-- Laughter is genuine but subtle — mouth opens slightly, eyes crinkle.
+- Rotation is about 30-45 degrees — clearly visible.
+- Neck remains straight throughout.
+- Bodies still — no swaying, no leaning, no shoulder movement.
+- The gap between players stays constant.
+- Smile is genuine but subtle — mouth opens slightly, eyes crinkle.
 
 BACKGROUND:
 - Keep the background from the input image exactly as-is. Do NOT change it.
 - Players remain in their exact positions from frame 1.
 
 STRICT RULES:
-- ABSOLUTELY NO special effects of any kind. No blur, no glow, no light effects, no particles, no lens flares, no transitions, no filters.
-- NO morphing, NO warping, NO distortion effects.
+- No special effects, no blur, no glow, no particles, no transitions, no filters.
 - NO text, NO graphics, NO logos added.
 - NO camera movement. Static locked-off camera.
-- 100% photorealistic. Must look like a real video camera recording. Natural lighting.
+- Photorealistic. Must look like a real video camera recording. Natural lighting.
 - Both people fully visible at all times.
-- ALL movement is very slow, natural, and controlled. No sudden jerks. No fast motion.
+- Movement is smooth, natural, and controlled. No sudden jerks.
 - 9:16 vertical aspect ratio.
 """,
     },
