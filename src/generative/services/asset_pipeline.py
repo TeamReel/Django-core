@@ -936,9 +936,13 @@ def _crop_gemini_output_upper_body(image_bytes: bytes) -> bytes:
     new_h = int(cropped.height * scale)
     scaled = cropped.resize((new_w, new_h), Image.Resampling.LANCZOS)
 
-    # Center-crop to exact target size
+    # BOTTOM-anchored crop: keep the bottom of the image (where players are),
+    # trim excess from the top (sky / roof).  This ensures player bottoms stay
+    # flush with the bottom edge of the final output.
     left = (new_w - target_w) // 2
-    top = (new_h - target_h) // 2
+    top = new_h - target_h  # anchor to bottom
+    if top < 0:
+        top = 0
     result = scaled.crop((left, top, left + target_w, top + target_h))
 
     output = io.BytesIO()

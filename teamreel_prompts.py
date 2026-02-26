@@ -1150,17 +1150,17 @@ BODY FRAMING:
 - Do NOT generate, add, or invent ANY body parts below what is visible in the source images.
 - If the source image ends at the waist, the composite player must also end at the waist.
 - NEVER add legs, full hips, or extend the body downward beyond what the source shows.
+- There must be ZERO pixels of background visible below the players' waist line.
 
 LAYOUT:
-- The background fills the entire frame (portrait 9:16) — NO black bars, NO empty space, the background must cover every pixel
+- The background fills the entire frame (portrait 9:16) — NO black bars, NO empty space
 - Player 1 (legacy kit) on the LEFT side of the frame
 - Player 2 (current kit) on the RIGHT side of the frame
 - Small gap between them (30-50cm) — they do NOT touch
-- CRITICAL VERTICAL POSITIONING: The BOTTOM EDGE of each player's visible body (waist/hip crop line) must align with the BOTTOM EDGE of the image. The players are "anchored" to the bottom of the frame.
-- Their heads should be in the upper portion of the frame (roughly upper 40%)
-- Scale the players so they fill most of the vertical space — they should appear large and prominent
+- ABSOLUTE RULE — BOTTOM EDGE: The very last row of pixels in the output image (y=1919) must contain part of the players' bodies (jersey/kit fabric at the waist crop line). There must be NO background, NO ground, NO grass, NO pavement visible below the players. The crop line of each player IS the bottom edge of the output image. Think of it as if the camera frame cuts off exactly where the player image cuts off.
+- The players should be LARGE — filling roughly 80-90% of the image height. Heads near the top, waist at the absolute bottom.
 - Both facing the camera directly, looking straight ahead
-- The reference composite shows the approximate positioning and scale
+- The reference composite image shows the EXACT positioning — match it precisely
 
 CRITICAL — PRESERVE EXACTLY:
 - FACE: The exact face, facial features, skin tone, hair from each player. Do NOT alter faces.
