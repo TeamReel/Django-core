@@ -3513,10 +3513,9 @@ export default function ProjectSeasonMemberDetailPage() {
                   );
                 })()}
 
-                {/* Action Photo Tab */}
+                {/* Action Photo Tab - Grouped by tenue type */}
                 {activeTab === 'action_photo' && (() => {
                   const actionVariants = videoVariants.action_photo || {};
-                  const kitTypes = ['home', 'away', 'third', 'goalkeeper'];
                   const styleVariants = ['dribbling', 'shooting', 'ball_at_feet', 'celebrating', 'heading', 'sliding_tackle'];
                   const styleLabels: Record<string, string> = {
                     dribbling: '🏃 Dribbelen',
@@ -3544,91 +3543,130 @@ export default function ProjectSeasonMemberDetailPage() {
                           Dynamische actiebeelden van de speler — dribbelen, schieten, koppen en meer.
                         </div>
 
-                        <div style={{ marginTop: '16px' }}>
-                          {/* Grid of action photo variants */}
-                          {Object.entries(actionVariants).length === 0 ? (
-                            <div style={{ padding: '40px 20px', textAlign: 'center', opacity: 0.5 }}>
-                              <div style={{ fontSize: '40px', marginBottom: '8px' }}>⚡</div>
-                              <div style={{ fontSize: '14px' }}>Nog geen actiefoto's gegenereerd.</div>
-                              <div style={{ fontSize: '12px', marginTop: '4px' }}>Gebruik de ✨ Generate knop om actiefoto's te maken.</div>
-                            </div>
-                          ) : (
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
-                              {Object.entries(actionVariants).map(([variantKey, variantValue]) => {
-                                const normalized = typeof variantValue === 'string'
-                                  ? { raw: variantValue, processed: null, processing_state: 'raw' }
-                                  : (variantValue as Record<string, any>);
-                                const url = normalized?.processed || normalized?.raw;
-                                const state = normalized?.processing_state || 'raw';
-                                const isProcessing = state === 'processing';
-                                const isProcessed = state === 'processed' && normalized?.processed;
+                        {/* Per-Kit Sections - matches Assets tab structure */}
+                        {effectiveKits.map((kit) => {
+                          // Get all action photo variants for this kit
+                          const kitActionPhotos = styleVariants.map((style) => {
+                            const variantKey = `${kit.id}_${style}`;
+                            const variantValue = actionVariants[variantKey];
+                            const normalized = typeof variantValue === 'string'
+                              ? { raw: variantValue, processed: null, processing_state: 'raw' }
+                              : (variantValue as Record<string, any>);
+                            const url = normalized?.processed || normalized?.raw || null;
+                            const state = normalized?.processing_state || 'raw';
+                            return { style, variantKey, url, state, normalized };
+                          });
 
-                                return (
-                                  <div key={variantKey} style={{
-                                    border: '1px solid var(--border)',
-                                    borderRadius: '8px',
-                                    overflow: 'hidden',
-                                    background: 'var(--card)',
-                                  }}>
-                                    {url ? (
-                                      <div style={{ position: 'relative', aspectRatio: '9/16' }}>
-                                        <img
-                                          src={url}
-                                          alt={variantKey}
-                                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
+                          const fullbodyRef = getVariantDisplayUrl(videoVariants.fullbody?.[kit.id]);
+
+                          return (
+                            <div key={`action-kit-${kit.id}`} style={{ marginTop: '24px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                                {kit.url ? (
+                                  <img src={kit.url} alt={kit.label} style={{ width: '32px', height: '42px', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                ) : (
+                                  <span style={{ fontSize: '20px' }}>{kit.icon}</span>
+                                )}
+                                <div style={{ fontSize: '14px', fontWeight: 700 }}>{kit.label}</div>
+                                {userCanEditProject && fullbodyRef && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openAiModal('member_action_photo', kit.id, fullbodyRef, null)}
+                                    style={{ fontSize: '10px', padding: '4px 8px', marginLeft: 'auto' }}
+                                  >
+                                    ✨ Genereer
+                                  </Button>
+                                )}
+                                {!fullbodyRef && (
+                                  <span style={{ fontSize: '10px', opacity: 0.5, marginLeft: 'auto' }}>Fullbody vereist</span>
+                                )}
+                              </div>
+
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
+                                {kitActionPhotos.map(({ style, variantKey, url, state, normalized }) => {
+                                  const isProcessing = state === 'processing';
+                                  const isProcessed = state === 'processed' && normalized?.processed;
+
+                                  return (
+                                    <div key={variantKey} style={{
+                                      border: isProcessed ? '2px solid var(--vscode-charts-green)' : url ? '2px solid #f59e0b' : '1px solid var(--app-border)',
+                                      borderRadius: '8px',
+                                      overflow: 'hidden',
+                                      background: 'var(--app-surface)',
+                                    }}>
+                                      <div
+                                        onClick={() => { if (url) window.open(url, '_blank'); }}
+                                        style={{
+                                          aspectRatio: '9/16',
+                                          background: url
+                                            ? `url(${url}) center/cover no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
+                                            : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
+                                          position: 'relative',
+                                          minHeight: '180px',
+                                          cursor: url ? 'zoom-in' : 'default',
+                                        }}
+                                      >
+                                        {!url && (
+                                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--app-text-muted)', fontSize: '12px' }}>
+                                            Niet gegenereerd
+                                          </div>
+                                        )}
+                                        {url && (
+                                          <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
+                                            <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                            <ProcessingBadge value={normalized} />
+                                          </div>
+                                        )}
                                         {isProcessing && (
-                                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)' }}>
-                                            <span style={{ color: '#fff', fontSize: '12px' }}>⏳ Verwerken...</span>
+                                          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 600 }}>
+                                            ⏳ Bezig...
                                           </div>
                                         )}
                                       </div>
-                                    ) : (
-                                      <div style={{ aspectRatio: '9/16', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--muted)', opacity: 0.5 }}>
-                                        <span style={{ fontSize: '32px' }}>⚡</span>
-                                      </div>
-                                    )}
-                                    <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                      <div style={{ fontSize: '11px', fontWeight: 600 }}>
-                                        {styleLabels[variantKey.replace(/^(home|away|third|goalkeeper)_/, '')] || variantKey}
-                                      </div>
-                                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                                        {isProcessed && (
-                                          <span style={{ fontSize: '9px', padding: '2px 5px', background: '#10b98120', color: '#10b981', borderRadius: 4, fontWeight: 600 }}>✓ Verwerkt</span>
-                                        )}
-                                        {!isProcessed && url && userCanEditProject && (
-                                          <Button
-                                            size="sm"
-                                            onClick={() => triggerAssetProcessing(apiBaseUrl, membershipId!, 'action_photo', variantKey, null)}
-                                            style={{ fontSize: '9px', padding: '2px 6px' }}
-                                          >
-                                            ⚙️ Verwerken
-                                          </Button>
-                                        )}
+                                      <div style={{ padding: '10px' }}>
+                                        <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                          {styleLabels[style] || style}
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                          {url && !isProcessing && userCanEditProject && (
+                                            <Button
+                                              size="sm"
+                                              variant="secondary"
+                                              onClick={async () => {
+                                                await triggerAssetProcessing(apiBaseUrl, membershipId!, 'action_photo', variantKey, null);
+                                              }}
+                                              style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}
+                                            >
+                                              {isProcessed ? '🔄 Opnieuw' : '🔧 Bewerken'}
+                                            </Button>
+                                          )}
+                                          {isProcessed && <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>}
+                                          {url && userCanEditProject && (
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              onClick={async () => {
+                                                if (!confirm('Weet je zeker dat je deze actiefoto wilt verwijderen?')) return;
+                                                const newVV = { ...videoVariants, action_photo: { ...videoVariants.action_photo } };
+                                                delete newVV.action_photo[variantKey];
+                                                setVideoVariants(newVV);
+                                                const updated = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
+                                                await handleMetadataUpdate(updated);
+                                              }}
+                                              style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}
+                                            >
+                                              🗑️
+                                            </Button>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                );
-                              })}
+                                  );
+                                })}
+                              </div>
                             </div>
-                          )}
-                        </div>
-
-                        {userCanEditProject && (
-                          <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                const personUrl = getVariantDisplayUrl(videoVariants.fullbody?.home);
-                                if (personUrl) openAiModal('member_action_photo', 'home', personUrl, null);
-                              }}
-                              disabled={!getVariantDisplayUrl(videoVariants.fullbody?.home)}
-                              style={{ fontSize: '11px' }}
-                            >
-                              ✨ Genereer Actiefoto
-                            </Button>
-                          </div>
-                        )}
+                          );
+                        })}
 
                         {!userCanEditProject && (
                           <div style={{ marginTop: '16px' }}>
