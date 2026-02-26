@@ -1509,7 +1509,11 @@ def _ffmpeg_overlay_on_background(
         dur = PHOTO_CLIP_DURATION
 
     # FFmpeg: loop background image + overlay transparent video
-    # The transparent MOV (ProRes 4444) has alpha, so overlay works directly
+    # The transparent MOV (ProRes 4444) has alpha, so overlay works directly.
+    # Position the video in the content area BELOW the header so the header
+    # is always visible. Cover-crop the video to fill the content area,
+    # trimming top/bottom as needed to fit portrait mode.
+    content_h = CONTENT_HEIGHT  # area between header and name/sponsor zone
     cmd = [
         ffmpeg,
         "-y",
@@ -1522,9 +1526,9 @@ def _ffmpeg_overlay_on_background(
         "-filter_complex",
         (
             f"[0:v]scale={WIDTH}:{HEIGHT},setsar=1,format=yuva420p[bg];"
-            f"[1:v]scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=decrease,"
-            f"pad={WIDTH}:{HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=0x00000000,format=yuva420p[fg];"
-            f"[bg][fg]overlay=0:0:format=auto,format=yuv420p[out]"
+            f"[1:v]scale={WIDTH}:{content_h}:force_original_aspect_ratio=increase,"
+            f"crop={WIDTH}:{content_h},setsar=1,format=yuva420p[fg];"
+            f"[bg][fg]overlay=0:{HEADER_HEIGHT}:format=auto,format=yuv420p[out]"
         ),
         "-map",
         "[out]",
