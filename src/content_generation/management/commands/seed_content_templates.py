@@ -946,6 +946,37 @@ class Command(BaseCommand):
                         }
                     )
 
+                    # Action Photo - 6 style variants
+                    action_photo_styles = [
+                        ("dribbling", "Dribbelen"),
+                        ("shooting", "Schieten"),
+                        ("ball_at_feet", "Bal aan de voet"),
+                        ("celebrating", "Vieren"),
+                        ("heading", "Koppen"),
+                        ("sliding_tackle", "Sliding"),
+                    ]
+                    for style_key, style_label in action_photo_styles:
+                        template_definitions.append(
+                            {
+                                "name": f"{role_label} Actiefoto - {style_label} ({sport_label})",
+                                "template_type": TemplateType.MEMBER,
+                                "template_subtype": TemplateSubtype.MEMBER_ACTION_PHOTO,
+                                "style_variant": style_key,
+                                "ai_workflow_id": f"wf_member_action_photo_{role}_{style_key}_{sport_key}",
+                                "sport_variant": sport_key,
+                                "credits_required": 2,
+                                "input_requirements": {
+                                    "members": {
+                                        role_key: {"count": 1, "asset_types": ["profile_photo"]},
+                                    },
+                                    "season_assets": {
+                                        "required": [{"type": "tenue", "label": "Team Tenue"}],
+                                    },
+                                },
+                                "description": f"Dynamic {style_label.lower()} action photo for {role}",
+                            }
+                        )
+
         # Create the templates
         if template_definitions:
             self.stdout.write(f"\n[4/5] Creating {category} templates...")

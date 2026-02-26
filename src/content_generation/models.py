@@ -61,6 +61,7 @@ class TemplateSubtype(models.TextChoices):
     MEMBER_IN_TENUE = "member_in_tenue", "In Tenue"
     MEMBER_LEGACY_CLOSEUP = "member_legacy_closeup", "Legacy Closeup"
     MEMBER_LEGACY_IN_TENUE = "member_legacy_in_tenue", "Legacy In Tenue"
+    MEMBER_ACTION_PHOTO = "member_action_photo", "Action Photo"
     # Custom templates (no sport required)
     CUSTOM_LOGO = "custom_logo", "Logo"
     CUSTOM_TENUE = "custom_tenue", "Tenue"
