@@ -3549,9 +3549,9 @@ export default function ProjectSeasonMemberDetailPage() {
                           const kitActionPhotos = styleVariants.map((style) => {
                             const variantKey = `${kit.id}_${style}`;
                             const variantValue = actionVariants[variantKey];
-                            const normalized = typeof variantValue === 'string'
+                            const normalized: AssetVariantValue | null = typeof variantValue === 'string'
                               ? { raw: variantValue, processed: null, processing_state: 'raw' }
-                              : (variantValue as Record<string, any>);
+                              : (variantValue as AssetVariantValue | null);
                             const url = normalized?.processed || normalized?.raw || null;
                             const state = normalized?.processing_state || 'raw';
                             return { style, variantKey, url, state, normalized };
