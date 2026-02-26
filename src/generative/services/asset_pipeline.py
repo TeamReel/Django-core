@@ -883,55 +883,78 @@ def _validate_photo_composite(
 
 
 def _crop_gemini_output_upper_body(image_bytes: bytes) -> bytes:
-    """Post-process Gemini composite output for consistent framing.
+    """Post-process Gemini composite output: strip black bars and fill 1080×1920.
 
-    With halfbody input the output should already be well-framed (head to waist).
-    We keep the top ~75% of the image (removing bottom 25% where Gemini may have
-    added stray artifacts or extended the body), then scale to 9:16 portrait.
+    Gemini sometimes outputs images with solid-black padding at the bottom (or top).
+    This function:
+      1. Detects and removes black bars (rows where mean brightness < 10).
+      2. Scales the remaining content to cover the full 1080×1920 canvas
+         (cover-crop, no padding, no black bars).
 
-    Returns the processed image as PNG bytes at 1080x1920.
+    Returns the processed image as PNG bytes at 1080×1920.
     """
     import io
 
+    import numpy as np
     from PIL import Image
 
-    img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+    img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    arr = np.array(img)
 
-    # Keep top 75% of the image (generous — halfbody should already be clean)
-    crop_h = int(img.height * 0.75)
-    cropped = img.crop((0, 0, img.width, crop_h))
+    # ── Detect black bars (rows whose mean pixel value is < 10) ──
+    row_means = arr.mean(axis=(1, 2))  # mean brightness per row
+    non_black = np.where(row_means >= 10)[0]
 
-    # Scale back to 9:16 portrait format (1080x1920)
+    if len(non_black) > 0:
+        top_row = int(non_black[0])
+        bot_row = int(non_black[-1]) + 1
+    else:
+        # Entire image is near-black — keep as-is
+        top_row = 0
+        bot_row = arr.shape[0]
+
+    # Also strip black columns (rare but possible)
+    col_means = arr.mean(axis=(0, 2))
+    non_black_cols = np.where(col_means >= 10)[0]
+    if len(non_black_cols) > 0:
+        left_col = int(non_black_cols[0])
+        right_col = int(non_black_cols[-1]) + 1
+    else:
+        left_col = 0
+        right_col = arr.shape[1]
+
+    cropped = img.crop((left_col, top_row, right_col, bot_row))
+
+    stripped_pct = 100.0 * (1.0 - (cropped.width * cropped.height) / (img.width * img.height))
+
+    # ── Scale to cover 1080×1920 (no padding / letterboxing) ──
     target_w = 1080
     target_h = 1920
 
-    # Create canvas and position cropped content
-    result = Image.new("RGB", (target_w, target_h), (0, 0, 0))
-
-    # Scale cropped image to fit width
-    scale = target_w / cropped.width
-    new_w = target_w
+    scale = max(target_w / cropped.width, target_h / cropped.height)
+    new_w = int(cropped.width * scale)
     new_h = int(cropped.height * scale)
-    cropped_scaled = cropped.resize((new_w, new_h), Image.Resampling.LANCZOS)
+    scaled = cropped.resize((new_w, new_h), Image.Resampling.LANCZOS)
 
-    # Position in upper portion of frame (players should be prominent)
-    y_offset = int((target_h - new_h) * 0.20)
-    if cropped_scaled.mode == "RGBA":
-        result.paste(cropped_scaled, (0, y_offset), cropped_scaled)
-    else:
-        result.paste(cropped_scaled, (0, y_offset))
+    # Center-crop to exact target size
+    left = (new_w - target_w) // 2
+    top = (new_h - target_h) // 2
+    result = scaled.crop((left, top, left + target_w, top + target_h))
 
     output = io.BytesIO()
     result.save(output, format="PNG")
-    cropped_bytes = output.getvalue()
+    result_bytes = output.getvalue()
 
     logger.info(
-        "Post-Gemini crop: %d bytes → %d bytes (%.0f%% height kept)",
-        len(image_bytes),
-        len(cropped_bytes),
-        75.0,
+        "Post-Gemini strip: %dx%d → stripped %.0f%% black → %dx%d → cover-crop 1080x1920 (%d bytes)",
+        img.width,
+        img.height,
+        stripped_pct,
+        cropped.width,
+        cropped.height,
+        len(result_bytes),
     )
-    return cropped_bytes
+    return result_bytes
 
 
 def _generate_photo_composite_gemini(

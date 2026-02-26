@@ -789,9 +789,9 @@ def _prepare_gemini_composite_image(
     legacy_scaled = _scale_to_width(legacy_img, player_w)
 
     # Position: legacy on left, home on right
-    # Players are halfbody (head to waist) — place them so they appear at
-    # realistic height: waist near vertical center, heads in upper third.
-    content_bottom = int(HEIGHT * 0.72)  # waist level at ~72% from top
+    # Players are halfbody (head to waist) — anchor their bottoms to the
+    # bottom edge of the frame so there is no empty space below them.
+    content_bottom = HEIGHT  # bottom of the frame
     gap = int(WIDTH * 0.02)
 
     # Legacy (left)
