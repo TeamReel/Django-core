@@ -1803,11 +1803,6 @@ export default function ProjectSeasonMemberDetailPage() {
                     { key: 'profile', icon: '👤', label: 'Profielfoto', tab: 'input', hasContent: Boolean(form.profile?.url) },
                     { key: 'legacy_photo', icon: '📸', label: 'Legacy Foto', tab: 'input', hasContent: Boolean(form.legacy_photo?.url) },
                   ];
-                  const assetItems = [
-                    { key: 'kit', icon: '👕', label: 'In Tenue', tab: 'assets', hasContent: Boolean(form.kit?.url) },
-                    { key: 'closeup', icon: '🔍', label: 'Close-up', tab: 'assets', hasContent: Boolean(form.closeup?.url) },
-                    { key: 'legacy', icon: '🏆', label: 'Legacy in Tenue', tab: 'assets', hasContent: Boolean(form.legacy?.url) },
-                  ];
                   const hasVariantContent = (v: unknown): boolean => {
                     if (!v) return false;
                     if (typeof v === 'string') return true;
@@ -1817,6 +1812,12 @@ export default function ProjectSeasonMemberDetailPage() {
                     }
                     return false;
                   };
+                  const hasLegacyFullbody = hasVariantContent(videoVariants.fullbody?.legacy);
+                  const assetItems = [
+                    { key: 'kit', icon: '👕', label: 'In Tenue', tab: 'assets', hasContent: Boolean(form.kit?.url) },
+                    { key: 'closeup', icon: '🔍', label: 'Close-up', tab: 'assets', hasContent: Boolean(form.closeup?.url) },
+                    { key: 'legacy', icon: '🏆', label: 'Legacy in Tenue', tab: 'assets', hasContent: Boolean(form.legacy?.url) || hasLegacyFullbody },
+                  ];
                   const hasAnyIntro = Object.values(videoVariants.intro || {}).some(hasVariantContent);
                   const hasAnyCelebration = Object.values(videoVariants.celebration || {}).some(hasVariantContent);
                   const hasAnyThenVsNow = Object.values(videoVariants.then_vs_now || {}).some(hasVariantContent);
