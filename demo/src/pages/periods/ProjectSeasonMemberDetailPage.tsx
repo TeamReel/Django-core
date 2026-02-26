@@ -4495,7 +4495,7 @@ export default function ProjectSeasonMemberDetailPage() {
         projectId={isTeamRoute ? String(project?.id || '') : String(clubId || '')}
         organisationId={String(org?.id || '')}
         membershipId={membershipId}
-        requireApproval={aiPreselectedTemplate === 'fullbody_in_tenue' || aiPreselectedTemplate === 'closeup_in_tenue' || aiPreselectedTemplate === 'photo_composite_gemini'}
+        requireApproval
         inputAssets={{
           logo: (teamBrand.getAsset?.('logo_upload') || clubBrand.getAsset?.('logo_upload'))
             ? getAssetUrl((teamBrand.getAsset?.('logo_upload') || clubBrand.getAsset?.('logo_upload'))!.url)
