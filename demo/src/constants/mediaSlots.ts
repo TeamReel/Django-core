@@ -18,6 +18,7 @@ export const MEDIA_SLOTS = [
   { id: 'legacy', label: 'Legacy in Tenue', icon: '🏆', description: 'Legacy Photo + Legacy Tenue → Generated', isInput: false },
   { id: 'photo_composite', label: 'Duo Portret', icon: '👥', description: 'Photo composite → Generated image', isInput: false },
   { id: 'walking_composite', label: 'Walking', icon: '🚶', description: 'Walking composite → Generated video', isInput: false },
+  { id: 'action_photo', label: 'Actiefoto', icon: '⚡', description: 'In Tenue → Action photo (dribbling, shooting, etc.)', isInput: false },
 ] as const;
 
 /**

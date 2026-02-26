@@ -880,6 +880,114 @@ FINAL CHECK:
     },
 
     # =========================================================================
+    # 7b. ACTION PHOTO — Dynamic action shot of player in kit
+    # =========================================================================
+    "member_action_photo": {
+        "id": "member_action_photo",
+        "name": "Actiefoto Speler",
+        "category": "action_photo",
+        "description": "Genereer een dynamische actiefoto van de speler in tenue (dribbelen, schieten, koppen, etc.).",
+        "input_requirements": ["person_photo", "logo", "sponsor", "reference_photo"],
+        "parameters": {
+            "sleeves": {
+                "label": "Mouwen",
+                "type": "select",
+                "options": ["long", "short"],
+                "default": "long",
+            },
+            "style_variant": {
+                "label": "Actie Stijl",
+                "type": "select",
+                "options": ["dribbling", "shooting", "ball_at_feet", "celebrating", "heading", "sliding_tackle"],
+                "default": "dribbling",
+            },
+            "role": {
+                "label": "Rol",
+                "type": "select",
+                "options": ["player", "goalkeeper"],
+                "default": "player",
+            },
+            "shoe_color": {
+                "label": "Voetbalschoenen kleur",
+                "type": "select",
+                "options": ["zwart", "wit", "rood", "blauw", "geel", "oranje", "groen", "roze"],
+                "default": "zwart",
+            },
+        },
+        "preprocessing": {
+            "logo": "square_pad_512",
+            "sponsor": "pad_512_landscape",
+        },
+        "prompt_template": """Generate a DYNAMIC ACTION PHOTO of this football player in the team kit shown in the reference image.
+
+═══════════════════════════════════════════════════════════
+MANDATORY OVERRIDES — These settings OVERRIDE the reference image:
+═══════════════════════════════════════════════════════════
+- SLEEVES: {sleeves_label}. IGNORE the reference and use {sleeves_label} sleeves.
+- ACTION POSE: {style_variant_label}. The player MUST be performing this exact action.
+- ROLE: {role_label}.
+═══════════════════════════════════════════════════════════
+
+ACTION POSE DETAILS — {style_variant_label}:
+- dribbling: Player running with the ball at their feet, body leaning forward, one foot pushing the ball, dynamic mid-stride pose. Ball MUST be visible near their feet.
+- shooting: Player in the moment of kicking the ball hard, non-kicking foot planted, kicking leg fully extended, powerful striking motion. Ball MUST be visible near the kicking foot.
+- ball_at_feet: Player standing confidently with one foot resting on top of the football, arms relaxed or on hips, composed and ready.
+- celebrating: Player in a triumphant celebration pose — arms raised, fist pump, or sliding on knees. Joyful, energetic expression. NO ball needed.
+- heading: Player airborne or jumping, neck extended, about to head the ball. Ball MUST be visible near/above the head.
+- sliding_tackle: Player performing a sliding tackle on the ground, one leg extended, dynamic and aggressive defensive action. Ball optional.
+
+KIT FROM REFERENCE (use for colors, patterns, logos, sponsor ONLY):
+- Match the EXACT colors, patterns, stripes, and design details from the reference kit
+- SAME logo placement and appearance
+- SAME sponsor placement and appearance
+- DO NOT modify, reinterpret, or "improve" the color scheme or pattern design
+- Include shin guards and {shoe_color_label} football boots
+
+PERSON — FACIAL IDENTITY (HIGHEST PRIORITY):
+The face in the output MUST be the SAME PERSON as in the input photo. This is the most critical requirement.
+- REPRODUCE the exact facial structure: bone structure, jawline, cheekbones, forehead shape
+- REPRODUCE the exact facial features: eyes (shape, color, spacing), nose, mouth, eyebrows EXACTLY
+- PRESERVE skin tone, complexion, and any distinguishing features (beard, wrinkles, dimples)
+- PRESERVE hair color, hairline, and hairstyle EXACTLY as shown in the input photo
+- PRESERVE body build and proportions from the input photo
+- DO NOT generate a generic/stock athlete face. The resulting face must be RECOGNISABLE as the specific person.
+
+{role_equipment}
+
+COMPOSITION:
+- IMAGE FORMAT: PORTRAIT ORIENTATION — the output image MUST be significantly taller than it is wide (9:16 aspect ratio).
+- FULL BODY: Head to toe must be visible. No cropping of limbs.
+- Dynamic camera angle: slightly low angle to make the player look powerful and heroic.
+- The action must feel frozen in time — sharp, no motion blur on the player.
+- Professional sports photography lighting with dramatic rim lighting.
+- Background: PURE SOLID COLOR BACKGROUND (bright green #00FF00 or bright blue #0000FF chroma-key).
+- NO stadium, NO pitch, NO grass, NO scenery. Just the player isolated on solid color.
+
+STYLE:
+- High-end professional sports action photography.
+- Razor-sharp focus on the entire player.
+- Dynamic, energetic composition that conveys movement and athleticism.
+- Even studio lighting with dramatic rim light for depth and edge separation.
+- The player must be FULLY SEPARATED from the background (clean edges, no shadows on background).
+
+FOOTBALL (BALL):
+- If the action requires a ball (dribbling, shooting, ball_at_feet, heading): a standard size 5 football MUST be clearly visible in the scene.
+- The ball should look realistic and properly scaled relative to the player.
+- For celebrating and sliding_tackle: ball is optional.
+
+FINAL CHECK:
+- Is the image in PORTRAIT orientation (taller than wide, 9:16)? ✓ (MANDATORY)
+- Is the face RECOGNISABLE as the specific person from the input photo? ✓ (HIGHEST PRIORITY)
+- Is the player performing this action: {style_variant_label}? ✓ (MANDATORY)
+- Does the kit match the reference colors/patterns/logos? ✓
+- Are the sleeves {sleeves_label}? ✓ (MANDATORY)
+- Is the full body visible from head to toe? ✓
+- Is the background a solid chroma-key color? ✓
+- Is a football visible (if required by the action)? ✓
+""",
+    },
+
+    # =========================================================================
     # 8. MEMBER SHORT INTRO (5-6 second intro video)
     # =========================================================================
     "member_intro": {

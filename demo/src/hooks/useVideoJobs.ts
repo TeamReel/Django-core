@@ -34,6 +34,7 @@ export interface VideoJobWorkflowInfo {
   id: number;
   current_state: string;
   template_name: string;
+  available_actions: string[];
 }
 
 export interface VideoJob {

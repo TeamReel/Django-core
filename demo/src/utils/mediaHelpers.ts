@@ -163,6 +163,7 @@ const SLOT_TO_VARIANT_CATEGORY: Record<string, {
   then_vs_now: { branch: 'videos', category: 'then_vs_now' },
   photo_composite: { branch: 'videos', category: 'photo_composite' },
   walking_composite: { branch: 'videos', category: 'walking_composite' },
+  action_photo: { branch: 'images', category: 'action_photo' },
 };
 
 /**

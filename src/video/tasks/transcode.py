@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 
 from celery import shared_task
-from django.apps import apps
 from django.utils import timezone
 
 from src.video.models import VideoJob
@@ -25,12 +24,13 @@ def _transition_workflow_on_completion(job: VideoJob) -> None:
         return
 
     try:
-        # Dynamically import workflow service to avoid circular dependencies
-        WorkflowService = apps.get_model("workflows", "WorkflowService")
-        service = WorkflowService()
+        # Import workflow engine service
+        from src.workflows.services.engine import WorkflowEngine
+
+        engine = WorkflowEngine()
 
         # Transition workflow to ready_for_review state
-        service.transition(
+        engine.execute_transition(
             instance=job.workflow_instance,
             action="processing_complete",
             user=job.created_by,

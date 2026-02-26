@@ -69,6 +69,21 @@ class VideoService:
                 [VideoOverlay(job=job, **overlay) for overlay in overlays]
             )
 
+        # Auto-attach Video Approval workflow for match-related job types
+        if not workflow_template and job_type in (
+            JobType.LINEUP,
+            JobType.GOAL_CELEBRATION,
+            JobType.MATCH_INTRO,
+            JobType.THEN_VS_NOW,
+        ):
+            WorkflowTemplate = apps.get_model("workflows", "WorkflowTemplate")
+            try:
+                workflow_template = WorkflowTemplate.objects.filter(
+                    name="Video Approval", is_active=True
+                ).first()
+            except Exception:  # noqa: S110
+                pass  # Workflow not found — continue without it
+
         if workflow_template:
             WorkflowInstance = apps.get_model("workflows", "WorkflowInstance")
             job.workflow_instance = WorkflowInstance.objects.create(

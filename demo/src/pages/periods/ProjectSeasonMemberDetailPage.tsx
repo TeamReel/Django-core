@@ -114,13 +114,15 @@ type AssetVariantsMap = {
   photo_composite: AssetVariants; // images: { default: { raw, processed } }, videos: { default: { raw, processed } }
   // Walking composite (far + near images + walking video)
   walking_composite: AssetVariants;
+  // Action photo (dynamic action shots)
+  action_photo: AssetVariants;
 };
 
 // Keep old name as alias for backwards compatibility within file
 type VideoVariantsMap = AssetVariantsMap;
 
 function createEmptyVideoVariants(): AssetVariantsMap {
-  return { fullbody: {}, halfbody: {}, closeup: {}, intro: {}, celebration: {}, then_vs_now: {}, photo_composite: {}, walking_composite: {} };
+  return { fullbody: {}, halfbody: {}, closeup: {}, intro: {}, celebration: {}, then_vs_now: {}, photo_composite: {}, walking_composite: {}, action_photo: {} };
 }
 
 function readAssetsFromMembership(membership: any): MemberMediaForm {
@@ -214,6 +216,8 @@ function readVideoVariantsFromMembership(membership: any): AssetVariantsMap {
       ...safeObj(images?.walking_composite),  // far + near keys from images
       ...safeObj(videos?.walking_composite),  // default key from videos
     },
+    // Action photo (dynamic action shots, stored in images)
+    action_photo: safeObj(images?.action_photo),
   };
 
   // Migrate: if form.kit has a URL but fullbody.home is empty, seed it
@@ -269,6 +273,7 @@ function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm, v
       fullbody: videoVariants.fullbody || {},
       halfbody: videoVariants.halfbody || {},
       closeup: videoVariants.closeup || {},
+      action_photo: videoVariants.action_photo || {},
     };
     next.videos = {
       intro: videoVariants.intro || {},
@@ -1751,6 +1756,7 @@ export default function ProjectSeasonMemberDetailPage() {
           { id: 'then_vs_now', label: 'Transformation' },
           { id: 'photo_composite', label: 'Duo Portret' },
           { id: 'walking_composite', label: 'Walking Composite' },
+          { id: 'action_photo', label: 'Actiefoto' },
           { id: 'identity', label: 'Identity' },
         ]}
         activeTab={activeTab}
@@ -1823,12 +1829,14 @@ export default function ProjectSeasonMemberDetailPage() {
                   const hasAnyThenVsNow = Object.values(videoVariants.then_vs_now || {}).some(hasVariantContent);
                   const hasAnyDuoPortret = Object.values(videoVariants.photo_composite || {}).some(hasVariantContent);
                   const hasAnyWalking = Object.values(videoVariants.walking_composite || {}).some(hasVariantContent);
+                  const hasAnyActionPhoto = Object.values(videoVariants.action_photo || {}).some(hasVariantContent);
                   const videoItems = [
                     { key: 'intro', icon: '🎬', label: 'Short Intro', tab: 'intro', hasContent: hasAnyIntro },
                     { key: 'celebration', icon: '🎉', label: 'Celebration', tab: 'celebration', hasContent: hasAnyCelebration },
                     { key: 'then_vs_now', icon: '⏳', label: 'Transformation', tab: 'then_vs_now', hasContent: hasAnyThenVsNow },
                     { key: 'duo_portret', icon: '👥', label: 'Duo Portret', tab: 'photo_composite', hasContent: hasAnyDuoPortret },
                     { key: 'walking', icon: '🚶', label: 'Walking Composite', tab: 'walking_composite', hasContent: hasAnyWalking },
+                    { key: 'action_photo', icon: '⚡', label: 'Actiefoto', tab: 'action_photo', hasContent: hasAnyActionPhoto },
                   ];
                   const allItems = [...inputItems, ...assetItems, ...videoItems];
                   const completedCount = allItems.filter(i => i.hasContent).length;
@@ -3494,6 +3502,133 @@ export default function ProjectSeasonMemberDetailPage() {
                             </div>
                           </div>
                         </div>
+
+                        {!userCanEditProject && (
+                          <div style={{ marginTop: '16px' }}>
+                            <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })()}
+
+                {/* Action Photo Tab */}
+                {activeTab === 'action_photo' && (() => {
+                  const actionVariants = videoVariants.action_photo || {};
+                  const kitTypes = ['home', 'away', 'third', 'goalkeeper'];
+                  const styleVariants = ['dribbling', 'shooting', 'ball_at_feet', 'celebrating', 'heading', 'sliding_tackle'];
+                  const styleLabels: Record<string, string> = {
+                    dribbling: '🏃 Dribbelen',
+                    shooting: '⚽ Schieten',
+                    ball_at_feet: '🦶 Bal aan de voet',
+                    celebrating: '🎉 Vieren',
+                    heading: '🤕 Koppen',
+                    sliding_tackle: '🦵 Sliding',
+                  };
+
+                  return (
+                    <Card>
+                      <div style={{ padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '24px' }}>⚡</span>
+                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Actiefoto's</div>
+                          </div>
+                          <Badge variant={userCanEditProject ? 'default' : 'info'}>
+                            {userCanEditProject ? 'Editable' : 'Read-only'}
+                          </Badge>
+                        </div>
+
+                        <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                          Dynamische actiebeelden van de speler — dribbelen, schieten, koppen en meer.
+                        </div>
+
+                        <div style={{ marginTop: '16px' }}>
+                          {/* Grid of action photo variants */}
+                          {Object.entries(actionVariants).length === 0 ? (
+                            <div style={{ padding: '40px 20px', textAlign: 'center', opacity: 0.5 }}>
+                              <div style={{ fontSize: '40px', marginBottom: '8px' }}>⚡</div>
+                              <div style={{ fontSize: '14px' }}>Nog geen actiefoto's gegenereerd.</div>
+                              <div style={{ fontSize: '12px', marginTop: '4px' }}>Gebruik de ✨ Generate knop om actiefoto's te maken.</div>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                              {Object.entries(actionVariants).map(([variantKey, variantValue]) => {
+                                const normalized = typeof variantValue === 'string'
+                                  ? { raw: variantValue, processed: null, processing_state: 'raw' }
+                                  : (variantValue as Record<string, any>);
+                                const url = normalized?.processed || normalized?.raw;
+                                const state = normalized?.processing_state || 'raw';
+                                const isProcessing = state === 'processing';
+                                const isProcessed = state === 'processed' && normalized?.processed;
+
+                                return (
+                                  <div key={variantKey} style={{
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '8px',
+                                    overflow: 'hidden',
+                                    background: 'var(--card)',
+                                  }}>
+                                    {url ? (
+                                      <div style={{ position: 'relative', aspectRatio: '9/16' }}>
+                                        <img
+                                          src={url}
+                                          alt={variantKey}
+                                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                        {isProcessing && (
+                                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)' }}>
+                                            <span style={{ color: '#fff', fontSize: '12px' }}>⏳ Verwerken...</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <div style={{ aspectRatio: '9/16', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--muted)', opacity: 0.5 }}>
+                                        <span style={{ fontSize: '32px' }}>⚡</span>
+                                      </div>
+                                    )}
+                                    <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                      <div style={{ fontSize: '11px', fontWeight: 600 }}>
+                                        {styleLabels[variantKey.replace(/^(home|away|third|goalkeeper)_/, '')] || variantKey}
+                                      </div>
+                                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                        {isProcessed && (
+                                          <span style={{ fontSize: '9px', padding: '2px 5px', background: '#10b98120', color: '#10b981', borderRadius: 4, fontWeight: 600 }}>✓ Verwerkt</span>
+                                        )}
+                                        {!isProcessed && url && userCanEditProject && (
+                                          <Button
+                                            size="sm"
+                                            onClick={() => triggerAssetProcessing(apiBaseUrl, membershipId!, 'action_photo', variantKey, null)}
+                                            style={{ fontSize: '9px', padding: '2px 6px' }}
+                                          >
+                                            ⚙️ Verwerken
+                                          </Button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+
+                        {userCanEditProject && (
+                          <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                const personUrl = getVariantDisplayUrl(videoVariants.fullbody?.home);
+                                if (personUrl) openAiModal('member_action_photo', 'home', personUrl, null);
+                              }}
+                              disabled={!getVariantDisplayUrl(videoVariants.fullbody?.home)}
+                              style={{ fontSize: '11px' }}
+                            >
+                              ✨ Genereer Actiefoto
+                            </Button>
+                          </div>
+                        )}
 
                         {!userCanEditProject && (
                           <div style={{ marginTop: '16px' }}>

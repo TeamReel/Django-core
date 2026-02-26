@@ -194,6 +194,82 @@ def seed_ticket_workflow():
     return template
 
 
+def seed_video_approval_workflow():
+    """Create a video approval workflow template for lineup/match videos."""
+    template, created = WorkflowTemplate.objects.update_or_create(
+        name="Video Approval",
+        defaults={
+            "version": "1.0.0",
+            "description": "Approval workflow for generated videos (lineup, goal celebration, match intro)",
+            "is_active": True,
+            "definition": {
+                "states": [
+                    {
+                        "name": "processing",
+                        "label": "Processing",
+                        "is_initial": True,
+                        "is_terminal": False,
+                        "description": "Video is being generated/processed",
+                    },
+                    {
+                        "name": "ready_for_review",
+                        "label": "Ready for Review",
+                        "is_initial": False,
+                        "is_terminal": False,
+                        "description": "Video processing complete, awaiting approval",
+                    },
+                    {
+                        "name": "approved",
+                        "label": "Approved",
+                        "is_initial": False,
+                        "is_terminal": True,
+                        "description": "Video has been approved",
+                    },
+                    {
+                        "name": "rejected",
+                        "label": "Rejected",
+                        "is_initial": False,
+                        "is_terminal": True,
+                        "description": "Video has been rejected",
+                    },
+                ],
+                "transitions": [
+                    {
+                        "action": "processing_complete",
+                        "label": "Processing Complete",
+                        "from_state": "processing",
+                        "to_state": "ready_for_review",
+                        "permissions": [],
+                        "sync_hooks": [],
+                        "async_hooks": [],
+                    },
+                    {
+                        "action": "approve",
+                        "label": "Approve",
+                        "from_state": "ready_for_review",
+                        "to_state": "approved",
+                        "permissions": ["can_approve"],
+                        "sync_hooks": [],
+                        "async_hooks": ["on_enter:approved"],
+                    },
+                    {
+                        "action": "reject",
+                        "label": "Reject",
+                        "from_state": "ready_for_review",
+                        "to_state": "rejected",
+                        "permissions": ["can_approve"],
+                        "sync_hooks": [],
+                        "async_hooks": ["on_enter:rejected"],
+                    },
+                ],
+            },
+        },
+    )
+    action = "Created" if created else "Updated"
+    print(f"✓ {action} workflow: {template.name} v{template.version}")
+    return template
+
+
 def seed_invoice_workflow():
     """Create an invoice approval workflow template."""
     template, created = WorkflowTemplate.objects.update_or_create(
@@ -263,6 +339,7 @@ def main():
     try:
         seed_content_approval_workflow()
         seed_ticket_workflow()
+        seed_video_approval_workflow()
         seed_invoice_workflow()
 
         print("=" * 60)

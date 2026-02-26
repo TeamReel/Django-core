@@ -72,12 +72,25 @@ function filterVideoJobsByTab(jobs: VideoJob[], tab: FilterState): VideoJob[] {
     case 'active':
       return jobs.filter(j => j.status === 'queued' || j.status === 'processing');
     case 'completed':
-      return jobs.filter(j => j.status === 'completed');
+      // Include approved jobs (workflow state 'approved') OR completed without workflow
+      return jobs.filter(j =>
+        j.status === 'completed' &&
+        (!j.workflow_instance || j.workflow_instance.current_state === 'approved')
+      );
     case 'rejected':
-      return jobs.filter(j => j.status === 'failed' || j.status === 'cancelled');
+      return jobs.filter(j =>
+        j.status === 'failed' ||
+        j.status === 'cancelled' ||
+        j.workflow_instance?.current_state === 'rejected'
+      );
     case 'review':
+      // Video jobs ready for review — completed + workflow in review state
+      return jobs.filter(j =>
+        j.status === 'completed' &&
+        j.workflow_instance?.current_state === 'ready_for_review'
+      );
     case 'ai_queue':
-      return []; // these tabs don't show video jobs
+      return []; // ai_queue tab shows only AI jobs
     case 'all':
     default:
       return jobs;
@@ -1143,7 +1156,21 @@ export default function ApprovalsPage() {
                       </div>
                     )}
 
-                    {/* Actions */}
+                    {/* Workflow approval actions (for jobs ready for review) */}
+                    {vJob.workflow_instance && vJob.workflow_instance.available_actions && vJob.workflow_instance.available_actions.length > 0 && (
+                      <WorkflowActionButtons
+                        instanceId={vJob.workflow_instance.id}
+                        availableActions={vJob.workflow_instance.available_actions}
+                        onTransitionComplete={() => {
+                          refreshVideoJobs();
+                          pushToast('✅ Actie uitgevoerd', 'success');
+                        }}
+                        onError={(err) => pushToast(`❌ ${err}`, 'error')}
+                        size="sm"
+                      />
+                    )}
+
+                    {/* Cancel/Retry actions */}
                     {(isActive || vJob.status === 'failed') && (
                       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                         {isActive && (

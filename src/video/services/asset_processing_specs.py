@@ -159,6 +159,14 @@ WALKING_COMPOSITE_SPEC = VideoSpec(
     aspect_ratio="9:16",
 )
 
+ACTION_PHOTO_SPEC = ImageSpec(
+    width=1080,
+    height=1920,
+    format="png",
+    bg_removed=True,
+    aspect_ratio="9:16",
+)
+
 ASSET_SPECS: dict[str, ImageSpec | VideoSpec] = {
     "fullbody": FULLBODY_SPEC,
     "closeup": CLOSEUP_SPEC,
@@ -167,6 +175,7 @@ ASSET_SPECS: dict[str, ImageSpec | VideoSpec] = {
     "then_vs_now": THEN_VS_NOW_SPEC,
     "photo_composite": PHOTO_COMPOSITE_SPEC,
     "walking_composite": WALKING_COMPOSITE_SPEC,
+    "action_photo": ACTION_PHOTO_SPEC,
 }
 
 

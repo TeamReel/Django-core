@@ -257,7 +257,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         Request body:
         {
             "membership_id": "uuid",
-            "asset_type": "fullbody" | "closeup" | "intro" | "celebration" | "photo_composite" | "walking_composite",
+            "asset_type": "fullbody" | "closeup" | "intro" | "celebration" | "photo_composite" | "walking_composite" | "action_photo",
             "kit_type": "home" | "away" | "third" | "goalkeeper" | ...,
             "variant_id": "arms_crossed" | null    // for intro/celebration style
         }
@@ -284,6 +284,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             "then_vs_now",
             "photo_composite",
             "walking_composite",
+            "action_photo",
         ]
         if asset_type not in valid_asset_types:
             return Response(
@@ -311,7 +312,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         teamreel_assets = (membership.metadata or {}).get("teamreel_assets", {})
 
         raw_url = None
-        if asset_type in ("fullbody", "closeup"):
+        if asset_type in ("fullbody", "closeup", "action_photo"):
             images = teamreel_assets.get("images", {})
             variant_val = (images.get(asset_type, {}) or {}).get(kit_type)
             # Handle both old string and new object format
@@ -322,7 +323,11 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             # Fallback: if home, check media.kit / media.closeup
             if not raw_url and kit_type == "home":
                 media = teamreel_assets.get("media", {})
-                slot = "kit" if asset_type == "fullbody" else "closeup"
+                slot = (
+                    "kit"
+                    if asset_type == "fullbody"
+                    else ("closeup" if asset_type == "closeup" else "action_photo")
+                )
                 raw_url = (media.get(slot, {}) or {}).get("url")
         else:
             # intro / celebration / then_vs_now → videos.{asset_type}.{kit_type}_{variant_id}
@@ -698,7 +703,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         Body:
         {
             "membership_id": "uuid",
-            "asset_type": "fullbody" | "closeup" | "intro" | "celebration" | "photo_composite" | "walking_composite",
+            "asset_type": "fullbody" | "closeup" | "intro" | "celebration" | "photo_composite" | "walking_composite" | "action_photo",
             "kit_type": "home" | "away" | "third" | "goalkeeper" | ...,
             "variant_id": "arms_crossed" | null
         }
@@ -726,6 +731,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             "then_vs_now",
             "photo_composite",
             "walking_composite",
+            "action_photo",
         ]
         if asset_type not in valid_asset_types:
             return Response(
@@ -966,7 +972,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         meta = membership.metadata or {}
         tr = meta.get("teamreel_assets", {})
 
-        if asset_type in ("fullbody", "closeup"):
+        if asset_type in ("fullbody", "closeup", "action_photo"):
             images = tr.setdefault("images", {})
             cat = images.setdefault(asset_type, {})
             cat[kit_type] = variant_value
@@ -1013,7 +1019,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         meta = membership.metadata or {}
         tr = meta.get("teamreel_assets") or {}
 
-        if asset_type in ("fullbody", "closeup"):
+        if asset_type in ("fullbody", "closeup", "action_photo"):
             images = tr.get("images", {}) or {}
             return ((images.get(asset_type) or {}) or {}).get(kit_type)
 

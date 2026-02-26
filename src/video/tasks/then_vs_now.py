@@ -14,6 +14,48 @@ from src.video.services.processors.base import JobCancelledError
 logger = logging.getLogger(__name__)
 
 
+def _transition_workflow_on_completion(job: VideoJob) -> None:
+    """Transition workflow to ready_for_review state on job completion.
+
+    Args:
+        job: Completed VideoJob instance
+    """
+    if not job.workflow_instance:
+        return
+
+    try:
+        # Import workflow engine service
+        from src.workflows.services.engine import WorkflowEngine
+
+        engine = WorkflowEngine()
+
+        # Transition workflow to ready_for_review state
+        engine.execute_transition(
+            instance=job.workflow_instance,
+            action="processing_complete",
+            user=job.created_by,
+            comment=f"Then vs Now video processing completed for job {job.id}",
+        )
+
+        logger.info(
+            "Workflow transitioned on job completion",
+            extra={
+                "job_id": str(job.id),
+                "workflow_id": str(job.workflow_instance.id),
+            },
+        )
+    except Exception as exc:
+        # Log error but don't fail the job
+        logger.warning(
+            "Failed to transition workflow on job completion",
+            extra={
+                "job_id": str(job.id),
+                "error": str(exc),
+            },
+            exc_info=True,
+        )
+
+
 @shared_task(
     bind=True,
     max_retries=2,
@@ -63,6 +105,10 @@ def process_then_vs_now_video(self, job_id: str) -> str | None:
 
         processor = ThenVsNowProcessor(job)
         processor.execute()
+
+        # Transition workflow if configured
+        _transition_workflow_on_completion(job)
+
         return job_id
 
     except JobCancelledError:

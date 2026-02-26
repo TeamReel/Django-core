@@ -65,6 +65,7 @@ class VideoJobListSerializer(serializers.ModelSerializer):
     preset = PresetReferenceSerializer(read_only=True)
     output_url = serializers.SerializerMethodField()
     thumbnail_url = serializers.SerializerMethodField()
+    workflow_instance = serializers.SerializerMethodField()
 
     config = serializers.JSONField(read_only=True)
 
@@ -86,6 +87,7 @@ class VideoJobListSerializer(serializers.ModelSerializer):
             "completed_at",
             "output_url",
             "thumbnail_url",
+            "workflow_instance",
         ]
         read_only_fields = fields
 
@@ -97,6 +99,52 @@ class VideoJobListSerializer(serializers.ModelSerializer):
     def get_thumbnail_url(self, obj: VideoJob) -> str | None:
         thumbnail = obj.metadata.get("thumbnail_url") if obj.metadata else None
         return thumbnail
+
+    def get_workflow_instance(self, obj: VideoJob) -> dict | None:
+        """Return workflow instance info with available actions for approval UI."""
+        if not obj.workflow_instance:
+            return None
+        workflow = obj.workflow_instance
+        current_state = (
+            workflow.current_state.name
+            if hasattr(workflow.current_state, "name")
+            else str(workflow.current_state)
+        )
+
+        # Get available actions using workflow engine
+        available_actions = []
+        try:
+            from django.apps import apps
+
+            WorkflowEngine = apps.get_model("workflows", "WorkflowEngine", require_ready=False)
+            if WorkflowEngine is None:
+                # Fallback: use the engine service directly
+                from src.workflows.services.engine import WorkflowEngine as Engine
+
+                engine = Engine()
+            else:
+                engine = WorkflowEngine()
+
+            # Request context may have user for permission checks
+            request = self.context.get("request")
+            if request and hasattr(request, "user") and request.user.is_authenticated:
+                actions = engine.get_available_actions(workflow, request.user)
+                available_actions = [a["action"] for a in actions]
+            else:
+                # No user context - return actions based on workflow snapshot
+                transitions = workflow.workflow_snapshot.get("transitions", [])
+                available_actions = [
+                    t["action"] for t in transitions if t.get("from_state") == current_state
+                ]
+        except Exception:  # noqa: S110
+            pass
+
+        return {
+            "id": workflow.id,
+            "current_state": current_state,
+            "template_name": getattr(workflow.workflow, "name", None),
+            "available_actions": available_actions,
+        }
 
 
 class VideoJobDetailSerializer(VideoJobListSerializer):

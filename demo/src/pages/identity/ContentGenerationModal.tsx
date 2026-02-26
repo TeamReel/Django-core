@@ -156,6 +156,7 @@ export const CONTENT_TYPES = {
       { id: 'member_intro', label: 'Short Intro', icon: '👋', subtype: 'member_intro' },
       { id: 'member_goal_celebration', label: 'Goal Celebration', icon: '⚽', subtype: 'member_goal_celebration' },
       { id: 'member_in_tenue', label: 'In Tenue', icon: '👕', subtype: 'member_in_tenue' },
+      { id: 'member_action_photo', label: 'Actiefoto', icon: '⚡', subtype: 'member_action_photo' },
       { id: 'member_legacy_closeup', label: 'Legacy Closeup', icon: '📷', subtype: 'member_legacy_closeup' },
       { id: 'member_legacy_in_tenue', label: 'Legacy In Tenue', icon: '🎽', subtype: 'member_legacy_in_tenue' },
     ],
@@ -477,7 +478,7 @@ export default function ContentGenerationModal({
   const [selectedBackgroundUrl, setSelectedBackgroundUrl] = useState<string | null>(null);
   const [appBackgrounds, setAppBackgrounds] = useState<Array<{ id: string; url: string; label?: string; profile_name?: string }>>([]);
   // Match flyer options
-  const [matchFlyerVariant, setMatchFlyerVariant] = useState<'classic' | 'bold' | 'stadium'>('classic');
+  const [matchFlyerVariant, setMatchFlyerVariant] = useState<'modern' | 'action' | 'stadium'>('modern');
 
   // Goal celebration options
   const [goalScoreHome, setGoalScoreHome] = useState<number>(0);
@@ -3074,8 +3075,8 @@ export default function ContentGenerationModal({
                   </div>
                   <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {([
-                      { key: 'classic' as const, label: 'Klassiek', desc: 'Header + logo\'s + wedstrijdinfo', icon: '🏟️' },
-                      { key: 'bold' as const, label: 'Bold', desc: 'Groot typografie, hoog contrast', icon: '💪' },
+                      { key: 'modern' as const, label: 'Modern', desc: 'Geometrisch design met clubkleuren en vormen', icon: '🎨' },
+                      { key: 'action' as const, label: 'Actie', desc: 'Met actiefoto\'s van spelers', icon: '⚡' },
                       { key: 'stadium' as const, label: 'Stadium AI', desc: 'AI-gegenereerde stadion achtergrond', icon: '✨' },
                     ]).map((opt) => {
                       const isSelected = matchFlyerVariant === opt.key;
