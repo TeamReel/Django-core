@@ -606,6 +606,10 @@ export default function AssetGenerationModal({
     } else if (selectedTemplate.id === 'closeup_in_tenue') {
       const kitType = params['kit_type'] || 'home';
       effectiveOutputAssetType = `member_closeup_${kitType}`;
+    } else if (selectedTemplate.id === 'member_action_photo') {
+      const kitType = params['kit_type'] || 'home';
+      const styleVariant = params['style_variant'] || 'dribbling';
+      effectiveOutputAssetType = `action_photo_${kitType}_${styleVariant}`;
     }
     return effectiveOutputAssetType;
   };

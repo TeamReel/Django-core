@@ -4248,6 +4248,23 @@ export default function ProjectSeasonMemberDetailPage() {
                   setMembership(json?.data || json);
                 }
               } catch { /* best-effort refresh */ }
+            } else if (assetType.startsWith('action_photo')) {
+              // Action photo: action_photo_{kitType}_{styleVariant}
+              // e.g. action_photo_home_dribbling → composite key: home_dribbling
+              const compositeKey = assetType.replace('action_photo_', '') || `${aiSelectedKitType || 'home'}_dribbling`;
+              console.log(`🎯 Saving action_photo: ${compositeKey} = ${savedUrl}`);
+
+              const newVariants: AssetVariantsMap = {
+                ...videoVariants,
+                action_photo: {
+                  ...videoVariants.action_photo,
+                  [compositeKey]: savedUrl,
+                },
+              };
+              setVideoVariants(newVariants);
+
+              const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVariants);
+              await handleMetadataUpdate(updatedMeta, saveMembershipId);
             } else if (assetType.startsWith('walking_composite')) {
               // Walking composite: far image, near image, or walking video
               // far → walking_composite.far, near → walking_composite.near, video → walking_composite.default
