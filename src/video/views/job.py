@@ -257,7 +257,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         Request body:
         {
             "membership_id": "uuid",
-            "asset_type": "fullbody" | "closeup" | "intro" | "celebration",
+            "asset_type": "fullbody" | "closeup" | "intro" | "celebration" | "photo_composite" | "walking_composite",
             "kit_type": "home" | "away" | "third" | "goalkeeper" | ...,
             "variant_id": "arms_crossed" | null    // for intro/celebration style
         }
@@ -276,7 +276,15 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        valid_asset_types = ["fullbody", "closeup", "intro", "celebration", "then_vs_now"]
+        valid_asset_types = [
+            "fullbody",
+            "closeup",
+            "intro",
+            "celebration",
+            "then_vs_now",
+            "photo_composite",
+            "walking_composite",
+        ]
         if asset_type not in valid_asset_types:
             return Response(
                 {"error": f"asset_type must be one of: {valid_asset_types}"},
@@ -685,7 +693,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         Body:
         {
             "membership_id": "uuid",
-            "asset_type": "fullbody" | "closeup" | "intro" | "celebration",
+            "asset_type": "fullbody" | "closeup" | "intro" | "celebration" | "photo_composite" | "walking_composite",
             "kit_type": "home" | "away" | "third" | "goalkeeper" | ...,
             "variant_id": "arms_crossed" | null
         }
@@ -705,7 +713,15 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        valid_asset_types = ["fullbody", "closeup", "intro", "celebration", "then_vs_now"]
+        valid_asset_types = [
+            "fullbody",
+            "closeup",
+            "intro",
+            "celebration",
+            "then_vs_now",
+            "photo_composite",
+            "walking_composite",
+        ]
         if asset_type not in valid_asset_types:
             return Response(
                 {"error": f"asset_type must be one of: {valid_asset_types}"},
