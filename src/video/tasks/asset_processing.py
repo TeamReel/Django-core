@@ -236,7 +236,8 @@ def process_member_asset(
         if not effective_backend:
             effective_backend = (
                 "rvm"
-                if asset_type in ("intro", "celebration", "then_vs_now", "photo_composite")
+                if asset_type
+                in ("intro", "celebration", "then_vs_now", "photo_composite", "walking_composite")
                 else "rembg"
             )
 

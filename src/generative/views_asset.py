@@ -3781,7 +3781,13 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
         # - intro/celebration: removes bg for lineup video compositing
         # - then_vs_now: removes bg for compilation compositing
         # Auto-queue RVM processing after save (see below).
-        needs_processing = asset_type in ("intro", "celebration", "then_vs_now", "photo_composite")
+        needs_processing = asset_type in (
+            "intro",
+            "celebration",
+            "then_vs_now",
+            "photo_composite",
+            "walking_composite",
+        )
         asset_dict[composite_key] = {
             "raw": storage_path,
             "processing_state": "processing" if needs_processing else "processed",
@@ -3851,7 +3857,7 @@ def _auto_dispatch_rvm_processing(
 
     Args:
         membership_id: ProjectMembership UUID
-        asset_type: "intro", "celebration", or "then_vs_now"
+        asset_type: "intro", "celebration", "then_vs_now", "photo_composite", or "walking_composite"
         items: list of (composite_key, raw_storage_path)
     """
     from django.db import transaction
@@ -3865,7 +3871,7 @@ def _auto_dispatch_rvm_processing(
         # then_vs_now uses bare keys: "sidebyside", "transformation"
         # photo_composite uses bare key: "default"
         # intro/celebration use: "home_arms_crossed" → kit="home", var="arms_crossed"
-        if asset_type in ("then_vs_now", "photo_composite"):
+        if asset_type in ("then_vs_now", "photo_composite", "walking_composite"):
             kit_type, variant_id = composite_key, None
         else:
             kit_type, variant_id = composite_key, None

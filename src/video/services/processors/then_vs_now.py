@@ -343,7 +343,6 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 if video_type == "sidebyside":
                     variant = videos.get("then_vs_now", {}).get("sidebyside", {})
                     if isinstance(variant, dict):
-                        url = variant.get("processed") or None
                         state = variant.get("processing_state", "")
                         if state != "processed":
                             logger.info(
@@ -352,6 +351,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                                 state,
                             )
                             continue
+                        # Prefer processed_source (ProRes MOV with alpha) for overlay
+                        url = get_ffmpeg_best_url(variant)
                     else:
                         continue
                 else:
@@ -359,7 +360,6 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                     variant_data = videos.get("photo_composite", {}).get("default", {})
                     if not variant_data or not isinstance(variant_data, dict):
                         continue
-                    url = variant_data.get("processed") or None
                     state = variant_data.get("processing_state", "")
                     if state != "processed":
                         logger.info(
@@ -368,6 +368,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                             state,
                         )
                         continue
+                    # Prefer processed_source (ProRes MOV with alpha) for overlay
+                    url = get_ffmpeg_best_url(variant_data)
 
                 if not url:
                     continue
@@ -395,7 +397,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
             # ── Photo composite: gather pre-processed transparent videos ──
             # These have been through the modular pipeline:
             #   Gemini composite → MiniMax video → RVM bg removal
-            # We just need the final transparent video URL.
+            # We need the processed_source (ProRes MOV with alpha) for FFmpeg overlay.
             for pm in qs:
                 meta = pm.metadata or {}
                 tr = meta.get("teamreel_assets", {})
@@ -410,9 +412,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 if isinstance(variant_data, str):
                     video_url = variant_data
                 else:
-                    # Prefer RVM-processed (transparent), fall back to raw
-                    video_url = variant_data.get("processed") or variant_data.get("raw") or None
-                    # Only use processed videos that have completed RVM
+                    # Only use fully processed videos
                     processing_state = variant_data.get("processing_state", "")
                     if processing_state not in ("processed",):
                         logger.info(
@@ -421,6 +421,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                             processing_state,
                         )
                         continue
+                    # Prefer processed_source (ProRes MOV with alpha) for FFmpeg overlay
+                    video_url = get_ffmpeg_best_url(variant_data)
 
                 if not video_url:
                     continue
@@ -494,6 +496,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                     )
         elif video_type == "walking_composite":
             # ── Walking Composite: gather pre-processed transparent walking videos ──
+            # Uses processed_source (ProRes MOV with alpha) for FFmpeg overlay.
             for pm in qs:
                 meta = pm.metadata or {}
                 tr = meta.get("teamreel_assets", {})
@@ -507,7 +510,6 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 if isinstance(variant_data, str):
                     video_url = variant_data
                 else:
-                    video_url = variant_data.get("processed") or variant_data.get("raw") or None
                     processing_state = variant_data.get("processing_state", "")
                     if processing_state not in ("processed",):
                         logger.info(
@@ -516,6 +518,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                             processing_state,
                         )
                         continue
+                    # Prefer processed_source (ProRes MOV with alpha) for FFmpeg overlay
+                    video_url = get_ffmpeg_best_url(variant_data)
 
                 if not video_url:
                     continue
