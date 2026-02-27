@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import AppShell from '../components/AppShell';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Alert, Button, Card } from '@django-core/design-system';
+import { Alert, Button, Card, PullToRefresh } from '@django-core/design-system';
 import { getApiBaseUrl } from '../utils/apiBase';
+import SwipeableCard from '../components/SwipeableCard';
 
 const debugLog = (...args: unknown[]) => {
   if (import.meta.env.DEV) console.log(...args);
@@ -72,7 +73,7 @@ export default function NotificationsPage() {
     fetchNotifications();
   }, []);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/`, {
         credentials: 'include',
@@ -101,7 +102,7 @@ export default function NotificationsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiBaseUrl]);
 
   const markAsRead = async (notificationId: string) => {
     try {
@@ -241,6 +242,12 @@ export default function NotificationsPage() {
           </div>
         </div>
 
+        <PullToRefresh
+          onRefresh={fetchNotifications}
+          pullText="Trek om te vernieuwen"
+          releaseText="Laat los om te vernieuwen"
+          refreshingText="Vernieuwen..."
+        >
         <div style={{ maxWidth: 900 }}>
           <Card>
             <div style={{ fontWeight: 800, marginBottom: 4 }}>Notification settings moved</div>
@@ -321,8 +328,32 @@ export default function NotificationsPage() {
                   'var(--app-primary)';
 
                 return (
-                  <div
+                  <SwipeableCard
                     key={notification.id}
+                    onDismiss={() => markAsRead(notification.id)}
+                    disabled={!isUnread}
+                    direction="left"
+                    threshold={80}
+                    leftReveal={
+                      <div
+                        style={{
+                          background: 'var(--app-success, #22c55e)',
+                          color: 'white',
+                          padding: '16px 24px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end',
+                          gap: 8,
+                          height: '100%',
+                          minWidth: 120,
+                        }}
+                      >
+                        <span style={{ fontSize: 18 }}>✓</span>
+                        <span style={{ fontWeight: 600 }}>Gelezen</span>
+                      </div>
+                    }
+                  >
+                  <div
                     onClick={() => isUnread && markAsRead(notification.id)}
                     style={{
                       cursor: isUnread ? 'pointer' : 'default',
@@ -376,18 +407,20 @@ export default function NotificationsPage() {
 
                         {isUnread && (
                           <div style={{ marginTop: 8, fontSize: 12, color: 'var(--app-primary)', fontStyle: 'italic' }}>
-                            Click to mark as read
+                            Swipe of klik om als gelezen te markeren
                           </div>
                         )}
                       </div>
                     </Card>
                   </div>
+                  </SwipeableCard>
                 );
               })}
               </div>
             )}
           </div>
         </div>
+        </PullToRefresh>
       </div>
     </AppShell>
   );

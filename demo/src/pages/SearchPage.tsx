@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { useSearch, type GroupedSearchResults, type PaginatedSearchResults, type SearchResult } from '../hooks/useSearch';
 import AppShell from '../components/AppShell';
 import HierarchyTreeView from '../components/HierarchyTreeView';
+import { BottomSheet, Button } from '@django-core/design-system';
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -15,6 +16,7 @@ export default function SearchPage() {
 
   const [groupedResults, setGroupedResults] = useState<GroupedSearchResults | null>(null);
   const [paginatedResults, setPaginatedResults] = useState<PaginatedSearchResults | null>(null);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const { searchGlobal, searchFiltered, searchHierarchical, isSearching, error } = useSearch();
 
   const isFiltered = types.length > 0;
@@ -34,10 +36,12 @@ export default function SearchPage() {
 
   const handleCategoryClick = (category: string) => {
     setSearchParams({ q: query, types: category });
+    setIsFilterSheetOpen(false);
   };
 
   const handleClearFilter = () => {
     setSearchParams({ q: query });
+    setIsFilterSheetOpen(false);
   };
 
   const handleHierarchyToggle = () => {
@@ -84,6 +88,8 @@ export default function SearchPage() {
     return icons[category] || '📄';
   };
 
+  const allCategories = ['organisations', 'clubs', 'teams', 'seasons', 'competitions', 'matches', 'users', 'periods', 'activities', 'projects'];
+
   const totalResults = groupedResults
     ? (groupedResults.clubs?.length || 0) +
       (groupedResults.teams?.length || 0) +
@@ -101,13 +107,28 @@ export default function SearchPage() {
     <AppShell>
       <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '12px' }}>
             <h1 style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-text-primary)' }}>
               Search Results
             </h1>
-            {/* Hierarchy Toggle */}
-            {query && !isFiltered && (
-              <button
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              {/* Mobile Filter Button */}
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setIsFilterSheetOpen(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                🔍 Filters
+                {isFiltered && (
+                  <span style={{ background: 'var(--color-primary)', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {types.length}
+                  </span>
+                )}
+              </Button>
+              {/* Hierarchy Toggle */}
+              {query && !isFiltered && (
+                <button
                 onClick={handleHierarchyToggle}
                 style={{
                   display: 'flex',
@@ -127,6 +148,7 @@ export default function SearchPage() {
                 🌳 {showHierarchy ? 'Hierarchy On' : 'Show Hierarchy'}
               </button>
             )}
+            </div>
           </div>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '16px' }}>
             {query ? (
@@ -324,6 +346,65 @@ export default function SearchPage() {
           </div>
         )}
       </div>
+
+      {/* Mobile Filter BottomSheet */}
+      <BottomSheet
+        isOpen={isFilterSheetOpen}
+        onClose={() => setIsFilterSheetOpen(false)}
+        title="Filter op categorie"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {/* Clear Filter Option */}
+          <button
+            onClick={handleClearFilter}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '16px',
+              background: !isFiltered ? 'var(--color-primary-bg, rgba(59, 130, 246, 0.1))' : 'transparent',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              textAlign: 'left',
+              minHeight: '44px',
+            }}
+          >
+            <span style={{ fontSize: '20px' }}>🔍</span>
+            <span style={{ fontWeight: !isFiltered ? '600' : '400', color: 'var(--color-text-primary)' }}>
+              Alle categorieën
+            </span>
+          </button>
+
+          {/* Category Options */}
+          {allCategories.map((category) => (
+            <button
+              key={category}
+              onClick={() => handleCategoryClick(category)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '16px',
+                background: types.includes(category) ? 'var(--color-primary-bg, rgba(59, 130, 246, 0.1))' : 'transparent',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                textAlign: 'left',
+                minHeight: '44px',
+              }}
+            >
+              <span style={{ fontSize: '20px' }}>{getCategoryIcon(category)}</span>
+              <span style={{ fontWeight: types.includes(category) ? '600' : '400', color: 'var(--color-text-primary)' }}>
+                {getCategoryLabel(category)}
+              </span>
+              {types.includes(category) && (
+                <span style={{ marginLeft: 'auto', color: 'var(--color-primary)' }}>✓</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </BottomSheet>
     </AppShell>
   );
 }
