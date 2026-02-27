@@ -975,12 +975,16 @@ def generate_match_flyer(
 def build_match_flyer(
     activity_id: str,
     variant: str = "modern",
+    member_id: str | None = None,
+    style_variant: str | None = None,
 ) -> str:
     """High-level entry point: gather data from DB, resolve brand, generate.
 
     Args:
         activity_id: Match/activity UUID
         variant: Variant key to generate (modern / action / stadium)
+        member_id: Optional membership UUID — use this member's action photo
+        style_variant: Optional style (dribbling, ball_at_feet, etc.)
 
     Returns:
         Presigned URL to the generated PNG.
@@ -1153,21 +1157,52 @@ def build_match_flyer(
     action_photo_urls: list[str] = []
     if variant in ("action", "bold"):  # bold maps to action
         ProjectMembership = apps.get_model("projects", "ProjectMembership")
-        memberships = ProjectMembership.objects.filter(project=project)
-        for m in memberships[:6]:  # Limit to 6 members to avoid overloading
-            tr = (m.metadata or {}).get("teamreel_assets", {})
-            action_imgs = tr.get("images", {}).get("action_photo", {})
-            for _key, val in action_imgs.items():
-                url = None
-                if isinstance(val, dict):
-                    url = val.get("processed") or val.get("raw")
-                elif isinstance(val, str):
-                    url = val
-                if url:
-                    action_photo_urls.append(url)
-                    break  # One photo per member is enough
-            if len(action_photo_urls) >= 3:
-                break
+
+        if member_id:
+            # Specific member requested — look up their action photo
+            try:
+                membership = ProjectMembership.objects.get(id=member_id)
+                tr = (membership.metadata or {}).get("teamreel_assets", {})
+                action_imgs = tr.get("images", {}).get("action_photo", {})
+
+                # Find matching photo: try {kit}_{style} keys (e.g. home_dribbling)
+                for _key, val in action_imgs.items():
+                    # If style_variant given, filter to keys containing that style
+                    if style_variant and style_variant not in _key:
+                        continue
+                    url = None
+                    if isinstance(val, dict):
+                        url = val.get("processed") or val.get("raw")
+                    elif isinstance(val, str):
+                        url = val
+                    if url:
+                        if not url.startswith("http"):
+                            url = _get_presigned_url(url)
+                        if url:
+                            action_photo_urls.append(url)
+                            break
+            except ProjectMembership.DoesNotExist:
+                logger.warning("build_match_flyer: member_id %s not found", member_id)
+        else:
+            # Auto-scan: pick first available action photos from team members
+            memberships = ProjectMembership.objects.filter(project=project)
+            for m in memberships[:6]:  # Limit to 6 members to avoid overloading
+                tr = (m.metadata or {}).get("teamreel_assets", {})
+                action_imgs = tr.get("images", {}).get("action_photo", {})
+                for _key, val in action_imgs.items():
+                    url = None
+                    if isinstance(val, dict):
+                        url = val.get("processed") or val.get("raw")
+                    elif isinstance(val, str):
+                        url = val
+                    if url:
+                        if not url.startswith("http"):
+                            url = _get_presigned_url(url)
+                        if url:
+                            action_photo_urls.append(url)
+                            break  # One photo per member is enough
+                if len(action_photo_urls) >= 3:
+                    break
 
     flyer_data = MatchFlyerData(
         activity_id=str(activity_id),

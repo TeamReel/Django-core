@@ -1524,6 +1524,8 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             )
 
         variant = request.data.get("variant", "classic")
+        member_id = request.data.get("member_id")  # Optional: specific member for action photo
+        style_variant = request.data.get("style_variant")  # Optional: action photo style
 
         # Validate activity exists and user has access
         Activity = apps.get_model("activities", "Activity")
@@ -1544,6 +1546,8 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             flyer_url = build_match_flyer(
                 activity_id=str(activity_id),
                 variant=variant,
+                member_id=member_id,
+                style_variant=style_variant,
             )
 
             return Response(

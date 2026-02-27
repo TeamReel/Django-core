@@ -479,6 +479,8 @@ export default function ContentGenerationModal({
   const [appBackgrounds, setAppBackgrounds] = useState<Array<{ id: string; url: string; label?: string; profile_name?: string }>>([]);
   // Match flyer options
   const [matchFlyerVariant, setMatchFlyerVariant] = useState<'modern' | 'action' | 'stadium'>('modern');
+  const [flyerMemberId, setFlyerMemberId] = useState<string | null>(null);
+  const [flyerActionStyle, setFlyerActionStyle] = useState<string>('dribbling');
 
   // Goal celebration options
   const [goalScoreHome, setGoalScoreHome] = useState<number>(0);
@@ -1101,6 +1103,10 @@ export default function ContentGenerationModal({
         body: JSON.stringify({
           activity_id: matchData.id,
           variant: matchFlyerVariant,
+          ...(matchFlyerVariant === 'action' && flyerMemberId ? {
+            member_id: flyerMemberId,
+            style_variant: flyerActionStyle,
+          } : {}),
         }),
       });
 
@@ -3122,6 +3128,150 @@ export default function ContentGenerationModal({
                       );
                     })}
                   </div>
+
+                  {/* Action variant: member + style selection */}
+                  {matchFlyerVariant === 'action' && (() => {
+                    const actionStyleOptions = [
+                      { key: 'dribbling', label: '🏃 Dribbelen' },
+                      { key: 'shooting', label: '⚽ Schieten' },
+                      { key: 'ball_at_feet', label: '🦶 Bal aan de voet' },
+                      { key: 'celebrating', label: '🎉 Vieren' },
+                      { key: 'heading', label: '🤕 Koppen' },
+                      { key: 'sliding_tackle', label: '🦵 Sliding' },
+                    ];
+
+                    // Find members that have at least one action photo
+                    const allMembers = [...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || [])]
+                      .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx);
+
+                    const membersWithActionPhotos = allMembers.filter((member) => {
+                      const tr = (member.metadata as any)?.teamreel_assets || {};
+                      const actionImgs = tr?.images?.action_photo || {};
+                      return Object.keys(actionImgs).length > 0;
+                    });
+
+                    // For the selected member, find which styles have photos
+                    const selectedMemberStyles: string[] = (() => {
+                      if (!flyerMemberId) return [];
+                      const member = allMembers.find(m => m.id === flyerMemberId);
+                      if (!member) return [];
+                      const tr = (member.metadata as any)?.teamreel_assets || {};
+                      const actionImgs = tr?.images?.action_photo || {};
+                      // Keys like "home_dribbling", "away_ball_at_feet" — extract style part
+                      const styles = new Set<string>();
+                      for (const key of Object.keys(actionImgs)) {
+                        // Composite key: {kit}_{style} or {kit}_{style1}_{style2}
+                        const parts = key.split('_');
+                        if (parts.length >= 2) {
+                          styles.add(parts.slice(1).join('_'));
+                        }
+                      }
+                      return Array.from(styles);
+                    })();
+
+                    return (
+                      <div style={{
+                        marginTop: 16,
+                        padding: 16,
+                        border: '1px solid var(--vscode-widget-border, #333)',
+                        borderRadius: 10,
+                        background: 'var(--vscode-editor-inactiveSelectionBackground, #1a1a2e)',
+                      }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: 'var(--vscode-foreground, #ccc)' }}>
+                          ⚡ Actiefoto Instellingen
+                        </div>
+
+                        {/* Member selector */}
+                        <label style={{
+                          display: 'block',
+                          fontSize: 11,
+                          fontWeight: 600,
+                          marginBottom: 6,
+                          color: 'var(--vscode-descriptionForeground, #888)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                        }}>Speler</label>
+                        <select
+                          value={flyerMemberId || ''}
+                          onChange={(e) => {
+                            setFlyerMemberId(e.target.value || null);
+                            // Reset style when member changes
+                            setFlyerActionStyle('dribbling');
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            fontSize: 13,
+                            border: '1px solid var(--vscode-widget-border, #444)',
+                            borderRadius: 6,
+                            background: 'var(--vscode-input-background, #2a2a3e)',
+                            color: 'var(--vscode-foreground, #ccc)',
+                            cursor: 'pointer',
+                            marginBottom: 12,
+                          }}
+                        >
+                          <option value="">-- Automatisch (eerste beschikbare) --</option>
+                          {membersWithActionPhotos.map((member) => {
+                            const user = member.user || member.member;
+                            const name = user ? (
+                              ('name' in user && user.name) ||
+                              ('user_name' in user && user.user_name) ||
+                              `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                            ) : 'Unknown';
+                            const shirtNr = (member.metadata as any)?.shirt_number;
+                            return (
+                              <option key={member.id} value={member.id}>
+                                {shirtNr ? `#${shirtNr} ` : ''}{name} ⚡
+                              </option>
+                            );
+                          })}
+                          {membersWithActionPhotos.length === 0 && (
+                            <option disabled>Geen spelers met actiefoto's</option>
+                          )}
+                        </select>
+
+                        {/* Style selector */}
+                        <label style={{
+                          display: 'block',
+                          fontSize: 11,
+                          fontWeight: 600,
+                          marginBottom: 6,
+                          color: 'var(--vscode-descriptionForeground, #888)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                        }}>Stijl</label>
+                        <select
+                          value={flyerActionStyle}
+                          onChange={(e) => setFlyerActionStyle(e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px',
+                            fontSize: 13,
+                            border: '1px solid var(--vscode-widget-border, #444)',
+                            borderRadius: 6,
+                            background: 'var(--vscode-input-background, #2a2a3e)',
+                            color: 'var(--vscode-foreground, #ccc)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {actionStyleOptions.map((opt) => {
+                            const available = !flyerMemberId || selectedMemberStyles.includes(opt.key);
+                            return (
+                              <option key={opt.key} value={opt.key} disabled={!available}>
+                                {opt.label}{!available ? ' (niet beschikbaar)' : ''}
+                              </option>
+                            );
+                          })}
+                        </select>
+
+                        {flyerMemberId && selectedMemberStyles.length === 0 && (
+                          <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 8 }}>
+                            ⚠️ Deze speler heeft nog geen bewerkte actiefoto's
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
