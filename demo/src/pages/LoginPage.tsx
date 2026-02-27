@@ -83,62 +83,6 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <div style={{ marginTop: '30px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
-        <h3 style={{ fontSize: '16px', marginBottom: '15px', color: '#333' }}>Quick Login (Demo Accounts)</h3>
-        <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>
-          Test different roles with sport-themed data (organisations, teams, users)
-        </p>
-        <div style={{ display: 'grid', gap: '10px' }}>
-          {[
-            { label: '👑 Super Admin', email: 'admin@teamreel.demo', desc: 'Full System Access', pass: 'Basis123.' },
-            { label: '🌍 Land Admin', email: 'land-admin@knvb.demo', desc: 'Federation - KNVB', pass: 'Basis123.' },
-            { label: '👔 Club Admin', email: 'directeur@ajax.demo', desc: 'Club - Ajax', pass: 'Basis123.' },
-            { label: '📋 Team Admin', email: 'coach@ajax1.demo', desc: 'Team - Ajax 1', pass: 'Basis123.' },
-            { label: '🏃 Team Member', email: 'player@ajax1.demo', desc: 'Squad - Ajax 1', pass: 'Basis123.' },
-            { label: '👀 Supporter', email: 'supporter1@ajax.demo', desc: 'Fan - Ajax', pass: 'Basis123.' },
-          ].map((account) => (
-            <button
-              key={account.email}
-              type="button"
-              onClick={() => {
-                setEmail(account.email);
-                setPassword(account.pass);
-              }}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '10px 12px',
-                backgroundColor: '#f8f9fa',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                textAlign: 'left',
-                fontSize: '14px',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#e9ecef';
-                e.currentTarget.style.borderColor = '#007bff';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#f8f9fa';
-                e.currentTarget.style.borderColor = '#ddd';
-              }}
-            >
-              <div>
-                <div style={{ fontWeight: '600', marginBottom: '2px' }}>{account.label}</div>
-                <div style={{ fontSize: '12px', color: '#666' }}>{account.desc}</div>
-              </div>
-              <div style={{ fontSize: '11px', color: '#999', fontFamily: 'monospace' }}>{account.email}</div>
-            </button>
-          ))}
-        </div>
-        <p style={{ fontSize: '12px', color: '#999', marginTop: '12px', fontStyle: 'italic' }}>
-          All passwords: Basis123.
-        </p>
-      </div>
-
       <p style={{ marginTop: '15px', fontSize: '14px', color: '#666', textAlign: 'center' }}>
         Don't have an account? <Link to="/register" style={{ color: '#007bff', textDecoration: 'none' }}>Create one here</Link>
       </p>
