@@ -3147,9 +3147,13 @@ export default function ContentGenerationModal({
                       { key: 'sliding_tackle', label: '🦵 Sliding' },
                     ];
 
-                    // Find members that have at least one action photo
+                    // Find members that have at least one action photo (dedup by user identity)
                     const allMembers = [...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || [])]
-                      .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx);
+                      .filter((p, idx, arr) => {
+                        // Dedup by user id to prevent same person appearing multiple times
+                        const uid = (p.user || p.member)?.id;
+                        return uid ? arr.findIndex(x => (x.user || x.member)?.id === uid) === idx : arr.findIndex(x => x.id === p.id) === idx;
+                      });
 
                     const membersWithActionPhotos = allMembers.filter((member) => {
                       const tr = (member.metadata as any)?.teamreel_assets || {};
