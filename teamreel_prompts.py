@@ -898,7 +898,7 @@ FINAL CHECK:
             "style_variant": {
                 "label": "Actie Stijl",
                 "type": "select",
-                "options": ["dribbling", "shooting", "ball_at_feet", "celebrating", "heading", "sliding_tackle"],
+                "options": ["dribbling", "shooting", "ball_at_feet", "celebrating", "heading", "sliding_tackle", "karate_kick"],
                 "default": "dribbling",
             },
             "role": {
@@ -935,6 +935,7 @@ ACTION POSE DETAILS — {style_variant_label}:
 - celebrating: Player in a triumphant celebration pose — arms raised, fist pump, or sliding on knees. Joyful, energetic expression. NO ball needed.
 - heading: Player airborne or jumping, neck extended, about to head the ball. Ball MUST be visible near/above the head.
 - sliding_tackle: Player performing a sliding tackle on the ground, one leg extended, dynamic and aggressive defensive action. Ball optional.
+- karate_kick: Player performing a powerful KARATE KICK toward the football. The kicking leg is raised HIGH (waist height or above) with the foot striking FORWARD in a straight martial-arts style kick — NOT a side volley or bicycle kick. The non-kicking foot is firmly planted on the ground. Body upright and balanced, arms out for stability. The ball MUST be visible in front of the kicking foot, about to be struck. Think martial arts front kick (mae geri) applied to football. Dynamic, powerful, and aggressive.
 
 KIT FROM REFERENCE (use for colors, patterns, logos, sponsor ONLY):
 - Match the EXACT colors, patterns, stripes, and design details from the reference kit
