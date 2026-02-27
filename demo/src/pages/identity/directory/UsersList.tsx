@@ -165,6 +165,11 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
 
     const handleEditClick = (u: any) => {
         const userData = u.user || u;
+        // Carry project_memberships from the outer membership entry so the
+        // edit modal can populate club/team dropdowns.
+        if (!userData.project_memberships && u.project_memberships) {
+            userData.project_memberships = u.project_memberships;
+        }
         setEditUser(userData);
         setIsEditModalOpen(true);
     };
@@ -1426,6 +1431,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                 onSave={handleSaveUser}
                 onSaved={() => setRefreshKey((k) => k + 1)}
                 organisationSlug={String(getSelectedOrgSlug() || '')}
+                scopeProjectKey={preselectedTeamId || preselectedClubId || ''}
             />
         </div>
     );

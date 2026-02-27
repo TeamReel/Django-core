@@ -183,7 +183,40 @@ export default function UserEditModal({
   };
 
   const availableProjects = useMemo<ProjectChoice[]>(() => {
-    const list = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+    // Primary source: user.projects (from admin detail endpoint)
+    let list = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+
+    // Fallback: derive from project_memberships (from org members endpoint)
+    if (list.length === 0) {
+      const pms = Array.isArray((user as any)?.project_memberships) ? (user as any).project_memberships : [];
+      const seen = new Set<string>();
+      list = pms
+        .map((pm: any) => {
+          const proj = pm?.project || {};
+          const key = String(proj?.slug || proj?.id || pm?.project_id || '').trim();
+          if (!key || seen.has(key)) return null;
+          seen.add(key);
+          return {
+            slug: proj?.slug || key,
+            id: proj?.id || pm?.project_id,
+            name: proj?.name || key,
+            parent_id: proj?.parent_id ?? null,
+            parent_slug: proj?.parent_slug ?? null,
+          };
+        })
+        .filter(Boolean);
+    }
+
+    // If user has no projects at all but orgProjects are loaded, use those
+    // so the dropdowns still show clubs/teams that the user can be linked to.
+    if (list.length === 0 && orgProjects.length > 0) {
+      return orgProjects.map((op) => ({
+        key: op.key,
+        name: op.name,
+        isTeam: op.isTeam,
+        parentKey: op.parentKey ?? undefined,
+      }));
+    }
 
     const orgProjectMap = new Map<string, OrgProjectChoice>();
     if (Array.isArray(orgProjects)) {
