@@ -84,14 +84,15 @@ export const button = recipe({
       },
     },
     size: {
+      // Mobile accessibility: All sizes meet 44px minimum touch target (WCAG 2.5.5)
       sm: {
-        height: '36px',
+        height: '44px',
         paddingLeft: themeVars.spacing['4'],
         paddingRight: themeVars.spacing['4'],
         fontSize: themeVars.typography.fontSize.sm,
       },
       md: {
-        height: '40px',
+        height: '44px',
         paddingLeft: themeVars.spacing['5'],
         paddingRight: themeVars.spacing['5'],
         fontSize: themeVars.typography.fontSize.md,

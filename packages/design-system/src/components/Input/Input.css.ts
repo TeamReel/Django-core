@@ -52,15 +52,19 @@ export const input = recipe({
       },
     },
     size: {
+      // Mobile accessibility: All sizes meet 44px minimum touch target (WCAG 2.5.5)
       sm: {
+        minHeight: '44px',
         padding: `${themeVars.spacing['1']} ${themeVars.spacing['2']}`,
         fontSize: themeVars.typography.fontSize.xs,
       },
       md: {
+        minHeight: '44px',
         padding: `${themeVars.spacing['2']} ${themeVars.spacing['3']}`,
         fontSize: themeVars.typography.fontSize.sm,
       },
       lg: {
+        minHeight: '48px',
         padding: `${themeVars.spacing['3']} ${themeVars.spacing['4']}`,
         fontSize: themeVars.typography.fontSize.md,
       },

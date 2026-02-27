@@ -126,6 +126,9 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
               alignItems: 'center',
               justifyContent: 'center',
               gap: '4px',
+              // Mobile accessibility: 44px minimum touch target (WCAG 2.5.5)
+              minWidth: '44px',
+              minHeight: '44px',
               padding: '8px 4px',
               backgroundColor: 'transparent',
               border: 'none',

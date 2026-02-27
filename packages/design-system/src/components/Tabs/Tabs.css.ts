@@ -25,6 +25,8 @@ export const tabListVertical = style({
 export const tab = style({
   background: 'none',
   border: 'none',
+  // Mobile accessibility: Meet 44px minimum touch target (WCAG 2.5.5)
+  minHeight: '44px',
   padding: `${themeVars.spacing['3']} ${themeVars.spacing['4']}`,
   fontSize: themeVars.typography.fontSize.md,
   fontWeight: themeVars.typography.fontWeight.medium,

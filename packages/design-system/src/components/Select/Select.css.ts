@@ -8,6 +8,8 @@ export const selectContainer = style({
 
 export const selectButton = style({
   width: '100%',
+  // Mobile accessibility: Meet 44px minimum touch target (WCAG 2.5.5)
+  minHeight: '44px',
   padding: `${themeVars.spacing['2']} ${themeVars.spacing['3']}`,
   backgroundColor: themeVars.color.background.primary,
   border: `1px solid ${themeVars.color.border.primary}`,
@@ -44,6 +46,8 @@ export const selectDropdown = style({
 });
 
 export const selectOption = style({
+  // Mobile accessibility: Meet 44px minimum touch target (WCAG 2.5.5)
+  minHeight: '44px',
   padding: `${themeVars.spacing['2']} ${themeVars.spacing['3']}`,
   cursor: 'pointer',
   display: 'flex',
