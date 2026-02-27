@@ -1,17 +1,16 @@
 /**
  * MobileBottomNav - Bottom tab bar for mobile navigation
  *
- * Displays a fixed bottom navigation bar on mobile with quick access to:
- * - Home (Dashboard)
- * - Directory (Browse all entities)
- * - Create (Content creation - center prominent button)
- * - Library (Content/Media)
- * - More (Menu/sidebar toggle)
+ * Displays a fixed bottom navigation bar on mobile with quick access to core pages.
+ * Role-aware: hides admin-only items (Directory) for non-admin users and shows
+ * contextual items (Team) instead.
  *
  * Only visible on mobile (<640px)
  */
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Folder, Plus, Library, Menu } from 'lucide-react';
+import { Home, Sparkles, ClipboardCheck, Library, Menu, Shirt } from 'lucide-react';
+import { useUserRole } from './PermissionGuards';
+import { useAppSelection } from '../hooks/useAppSelection';
 
 interface MobileBottomNavProps {
   /** Callback to open search/command palette */
@@ -25,12 +24,21 @@ interface MobileBottomNavProps {
 export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBottomNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isSystemAdmin } = useUserRole();
+  const { orgSlug, clubSlugOrId, teamSlugOrId } = useAppSelection();
+
+  // Build team path from active context
+  const teamPath = orgSlug && clubSlugOrId && teamSlugOrId
+    ? `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}`
+    : orgSlug && clubSlugOrId
+      ? `/${orgSlug}/${clubSlugOrId}`
+      : '/dashboard';
 
   const tabs = [
     { id: 'home', icon: Home, label: 'Home', path: '/dashboard' },
-    { id: 'directory', icon: Folder, label: 'Directory', path: '/directory' },
-    { id: 'create', icon: Plus, label: 'Create', action: onOpenCreate || (() => navigate('/content?action=create')) },
-    { id: 'library', icon: Library, label: 'Library', path: '/content' },
+    { id: 'team', icon: Shirt, label: 'Team', path: teamPath },
+    { id: 'gallery', icon: Sparkles, label: 'Gallery', path: '/studio' },
+    { id: 'queue', icon: ClipboardCheck, label: 'Queue', path: '/approvals' },
     { id: 'more', icon: Menu, label: 'More', action: onToggleMenu },
   ];
 
@@ -43,13 +51,19 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
       return currentPath === '/' || currentPath === '/dashboard' || currentPath === '/recents' || currentPath === '/favorites';
     }
 
-    if (tabBasePath === '/directory') {
-      return currentPath === '/directory' || currentPath.startsWith('/organisations') ||
-             currentPath.startsWith('/clubs') || currentPath.startsWith('/teams');
+    if (tab.id === 'team') {
+      // Active for any vanity hierarchy route (org/club/team/season/etc)
+      const segs = currentPath.split('/').filter(Boolean);
+      const reserved = new Set(['dashboard', 'directory', 'content', 'studio', 'permissions', 'settings', 'health', 'docs', 'search', 'login', 'logout', 'organisations', 'users', 'credits', 'profile', 'notifications', 'preferences', 'approvals', 'medialib', 'billing', 'memberships', 'audit', 'flags', 'recents', 'favorites', 'content-templates', 'workflow-templates']);
+      return segs.length > 0 && !reserved.has(segs[0]);
     }
 
-    if (tabBasePath === '/content') {
-      return currentPath === '/content' || currentPath.startsWith('/content/');
+    if (tabBasePath === '/studio') {
+      return currentPath.startsWith('/studio');
+    }
+
+    if (tabBasePath === '/approvals') {
+      return currentPath.startsWith('/approvals');
     }
 
     return currentPath.startsWith(tabBasePath);
@@ -103,36 +117,16 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
               transition: 'color 0.2s ease',
             }}
           >
-            {tab.id === 'create' ? (
-              // Special styling for create button
-              <span
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '12px',
-                  backgroundColor: 'var(--app-primary)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                }}
-              >
-                <Icon size={22} strokeWidth={2.5} />
-              </span>
-            ) : (
-              <>
-                <Icon size={22} strokeWidth={active ? 2.5 : 2} />
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: active ? 600 : 400,
-                    lineHeight: 1,
-                  }}
-                >
-                  {tab.label}
-                </span>
-              </>
-            )}
+            <Icon size={22} strokeWidth={active ? 2.5 : 2} />
+            <span
+              style={{
+                fontSize: '10px',
+                fontWeight: active ? 600 : 400,
+                lineHeight: 1,
+              }}
+            >
+              {tab.label}
+            </span>
           </button>
         );
       })}

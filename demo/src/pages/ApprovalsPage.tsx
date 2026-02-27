@@ -9,6 +9,7 @@
  */
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
+import MobileTabBar from '../components/MobileTabBar';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import {
   useWorkflowInstances,
@@ -903,7 +904,7 @@ export default function ApprovalsPage() {
   return (
     <>
       {/* Toasts */}
-      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'none' }}>
+      <div style={{ position: 'fixed', bottom: 88, right: 16, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'none' }}>
         {toasts.map(t => (
           <div key={t.id} style={{ padding: '12px 18px', borderRadius: 10, fontSize: 13, fontWeight: 500, color: '#fff', backgroundColor: t.type === 'success' ? '#16a34a' : '#dc2626', boxShadow: '0 4px 16px rgba(0,0,0,0.18)', pointerEvents: 'auto', maxWidth: 360 }}>
             {t.message}
@@ -968,6 +969,21 @@ export default function ApprovalsPage() {
       />
 
       <PageContent>
+        {/* ── Mobile tab bar (filter tabs from Panel B) ── */}
+        <MobileTabBar
+          tabs={[
+            { id: 'all', label: 'All' },
+            { id: 'review', label: 'Needs Review' },
+            { id: 'active', label: 'In Progress' },
+            { id: 'completed', label: 'Approved' },
+            { id: 'rejected', label: 'Rejected' },
+            { id: 'ai_queue', label: 'AI Queue' },
+            { id: 'video', label: 'Video' },
+          ]}
+          activeTab={filter}
+          basePath="/approvals"
+        />
+
         {/* ── Errors ── */}
         {(error || actionError || aiError || videoError) && (
           <div style={{ padding: '10px 14px', backgroundColor: '#fee2e2', color: '#dc2626', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>

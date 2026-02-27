@@ -26,6 +26,7 @@ import { useLocation } from 'react-router-dom';
 import { Card, Stack, Text, Alert, Badge, Button } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
+import MobileTabBar from '../../components/MobileTabBar';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
@@ -948,8 +949,27 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
         </div>
       )}
 
+      {/* Mobile category tab bar (dropdown, visible <640px via CSS) */}
+      {!embedded && (
+        <div style={{ padding: '12px 16px 0' }}>
+          <MobileTabBar
+            tabs={[
+              { id: 'all', label: 'Alles' },
+              { id: 'pre_match', label: 'Pre-Match' },
+              { id: 'during_match', label: 'During Match' },
+              { id: 'post_match', label: 'Post-Match' },
+              { id: 'season', label: 'Season' },
+              { id: 'member', label: 'Member' },
+            ]}
+            activeTab={categoryFilter}
+            basePath="/studio"
+            paramName="category"
+          />
+        </div>
+      )}
+
       {/* Toolbar: directory-style filters */}
-      <div style={{ padding: '16px 24px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', borderBottom: '1px solid var(--app-border)' }}>
+      <div className="gallery-toolbar" style={{ padding: '16px 24px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', borderBottom: '1px solid var(--app-border)' }}>
         {/* Search */}
         <input
           type="text"
@@ -1096,12 +1116,12 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       </div>
 
       {/* Content area */}
-      <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
+      <div className="gallery-content" style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
         <Stack direction="column" gap="4">
 
           {/* Subtype filter chips (show when category has subtypes) */}
           {categoryFilter !== 'all' && CONTENT_CATEGORIES.find(c => c.key === categoryFilter)?.subtypes.length! > 0 && (
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <div className="gallery-chips" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               <FilterChip
                 active={subtypeFilter === 'all'}
                 onClick={() => setSubtypeFilter('all')}
@@ -1126,7 +1146,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
 
           {/* When 'all' category is selected, show all content type filters */}
           {categoryFilter === 'all' && (
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <div className="gallery-chips" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {CONTENT_TYPE_FILTERS.map(({ key, label, icon }) => {
                 const count = subtypeCounts[key] || 0;
                 return (
@@ -1155,7 +1175,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
           {/* Content Grid */}
           {!loading && (
             filteredContent.length > 0 ? (
-              <div style={{
+              <div className="gallery-grid" style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
                 gap: 16,

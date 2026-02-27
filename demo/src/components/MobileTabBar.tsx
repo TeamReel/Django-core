@@ -22,9 +22,11 @@ interface MobileTabBarProps {
   activeTab: string;
   /** Base path to append ?tab= to, defaults to current pathname */
   basePath?: string;
+  /** Query parameter name to use (default: 'tab') */
+  paramName?: string;
 }
 
-export default function MobileTabBar({ tabs, activeTab, basePath }: MobileTabBarProps) {
+export default function MobileTabBar({ tabs, activeTab, basePath, paramName = 'tab' }: MobileTabBarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -35,10 +37,10 @@ export default function MobileTabBar({ tabs, activeTab, basePath }: MobileTabBar
   const handleTabClick = (tabId: string) => {
     const base = basePath || location.pathname;
     const params = new URLSearchParams(location.search);
-    if (tabId === 'overview') {
-      params.delete('tab');
+    if (tabId === 'overview' || tabId === 'all') {
+      params.delete(paramName);
     } else {
-      params.set('tab', tabId);
+      params.set(paramName, tabId);
     }
     const qs = params.toString();
     navigate(qs ? `${base}?${qs}` : base);
