@@ -554,15 +554,18 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
 
     if hero_img:
         hero_img = hero_img.convert("RGBA")
-        # Scale to cover the photo zone (center-crop)
-        scale = max(WIDTH / hero_img.width, photo_zone_h / hero_img.height)
+        # Scale to fit inside the photo zone (contain — no crop, full figure visible)
+        scale = min(WIDTH / hero_img.width, photo_zone_h / hero_img.height)
         new_w = int(hero_img.width * scale)
         new_h = int(hero_img.height * scale)
         hero_img = hero_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-        crop_x = (new_w - WIDTH) // 2
-        crop_y = (new_h - photo_zone_h) // 2
-        hero_img = hero_img.crop((crop_x, crop_y, crop_x + WIDTH, crop_y + photo_zone_h))
-        canvas.paste(hero_img.convert("RGB"), (0, PHOTO_TOP))
+        # Center within the photo zone
+        paste_x = (WIDTH - new_w) // 2
+        paste_y = PHOTO_TOP + (photo_zone_h - new_h) // 2
+        # Alpha composite so transparent bg shows canvas colour underneath
+        canvas_rgba = canvas.convert("RGBA")
+        canvas_rgba.paste(hero_img, (paste_x, paste_y), hero_img)
+        canvas = canvas_rgba.convert("RGB")
 
         # Subtle side accents: thin vertical brand-color bars
         accent_w = 6
