@@ -1681,9 +1681,9 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             <tr>
               <th style={compactThStyle}>Match</th>
               <th style={compactThStyle}>Date</th>
-              <th style={compactThStyle}>Location</th>
-              <th style={compactThStyle}>Participants</th>
-              <th style={compactThStyle} className="text-right"></th>
+              <th className="hide-mobile" style={compactThStyle}>Location</th>
+              <th className="hide-mobile" style={compactThStyle}>Participants</th>
+              <th className="hide-mobile text-right" style={compactThStyle}></th>
             </tr>
           </thead>
           <tbody>
@@ -1701,15 +1701,15 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 <td style={compactTdStyle}>
                   {m.start_time ? <Badge variant="default">{new Date(m.start_time).toLocaleString()}</Badge> : '—'}
                 </td>
-                <td style={compactTdStyle}>{m.location ? <Badge variant="default">{m.location}</Badge> : '—'}</td>
-                <td style={compactTdStyle}>
+                <td className="hide-mobile" style={compactTdStyle}>{m.location ? <Badge variant="default">{m.location}</Badge> : '—'}</td>
+                <td className="hide-mobile" style={compactTdStyle}>
                   {m.participations_count !== undefined ? (
                     <Badge variant="default">{m.participations_count}</Badge>
                   ) : (
                     '—'
                   )}
                 </td>
-                <td style={compactTdStyle}>
+                <td className="hide-mobile" style={compactTdStyle}>
                   <div style={compactActionsStyle}>
                     <button
                       type="button"

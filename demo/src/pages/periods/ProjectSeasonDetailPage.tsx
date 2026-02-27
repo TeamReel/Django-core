@@ -3646,8 +3646,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             <th style={compactThStyle}>Match</th>
                             <th style={compactThStyle}>Competition</th>
                             <th style={compactThStyle}>Date</th>
-                            <th style={compactThStyle}>Participants</th>
-                            <th style={compactThStyle} className="text-right">Actions</th>
+                            <th className="hide-mobile" style={compactThStyle}>Participants</th>
+                            <th className="hide-mobile text-right" style={compactThStyle}>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -3694,10 +3694,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               <td style={compactTextTdStyle}>
                                 {match.start_time ? new Date(match.start_time).toLocaleString() : '"”'}
                               </td>
-                              <td style={compactTdStyle}>
+                              <td className="hide-mobile" style={compactTdStyle}>
                                 <Badge variant="default">{getMatchParticipantsCount(match)}</Badge>
                               </td>
-                              <td style={compactTdStyle}>
+                              <td className="hide-mobile" style={compactTdStyle}>
                                 <div style={compactActionsStyle}>
                                   <button
                                     type="button"

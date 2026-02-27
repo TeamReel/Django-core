@@ -21,6 +21,7 @@ import {
     compactActionsStyle,
     actionButtonStyle
 } from '../../../utils/directoryStyles';
+import MobileFilterSheet from '../../../components/MobileFilterSheet';
 
 type Activity = {
   id: string;
@@ -781,10 +782,21 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
       .find((row) => row.startsWith('csrftoken='))
       ?.split('=')[1];
 
+  const activeFilterCount = [
+    selectedOrgId !== '',
+    !clubLocked && selectedClubId !== '',
+    !teamLocked && selectedTeamId !== '',
+    selectedSeasonName !== '',
+    selectedCompetitionId !== '',
+    statusFilter !== 'all',
+    sportFilter !== 'all',
+    variantFilter !== 'all',
+  ].filter(Boolean).length;
 
   return (
     <div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <MobileFilterSheet activeFilterCount={activeFilterCount}>
         {isSuperAdmin && !orgLocked && (
           <select
             value={selectedOrgId}
@@ -980,8 +992,9 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
             </option>
           ))}
         </select>
+        </MobileFilterSheet>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div className="hide-mobile" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
             Showing {matchesMaxItems ?? 'all'}
           </span>
@@ -1050,20 +1063,20 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                 <thead>
                   <tr>
                     {!orgLocked && (
-                      <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
+                      <th className="hide-mobile" style={{ ...compactThStyle, width: '15%' }}>Federation</th>
                     )}
                     {!clubLocked && (
-                      <th style={{ ...compactThStyle, width: '15%' }}>Club</th>
+                      <th className="hide-mobile" style={{ ...compactThStyle, width: '15%' }}>Club</th>
                     )}
-                    {!teamLocked && <th style={{ ...compactThStyle, width: '15%' }}>Team</th>}
+                    {!teamLocked && <th className="hide-mobile" style={{ ...compactThStyle, width: '15%' }}>Team</th>}
                     <th style={{ ...compactThStyle, width: '15%' }}>Season</th>
                     <th style={{ ...compactThStyle, width: '18%' }}>Competition</th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Sport</th>
-                    <th style={{ ...compactThStyle, width: '12%' }}>Sport Variant</th>
+                    <th className="hide-mobile" style={{ ...compactThStyle, width: '10%' }}>Sport</th>
+                    <th className="hide-mobile" style={{ ...compactThStyle, width: '12%' }}>Sport Variant</th>
                     <th style={{ ...compactThStyle, width: '15%' }}>Match</th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Squad</th>
+                    <th className="hide-mobile" style={{ ...compactThStyle, width: '8%' }}>Squad</th>
                     <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
-                    <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
+                    <th className="hide-mobile" style={{ ...compactThStyle, width: '12%' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1114,7 +1127,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                     return (
                         <tr key={m.id}>
                         {!orgLocked && (
-                          <td style={compactTextTdStyle}>
+                          <td className="hide-mobile" style={compactTextTdStyle}>
                             {orgId ? (
                               <a
                                 href={`/organisations/${orgTarget}`}
@@ -1130,7 +1143,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                           </td>
                         )}
                         {!clubLocked && (
-                          <td style={compactTextTdStyle}>
+                          <td className="hide-mobile" style={compactTextTdStyle}>
                             {clubId ? (
                               <a
                             href={`/${orgTarget}/${clubTarget}`}
@@ -1146,7 +1159,7 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                           </td>
                         )}
                         {!teamLocked && (
-                          <td style={compactTextTdStyle}>
+                          <td className="hide-mobile" style={compactTextTdStyle}>
                             {teamId ? (
                               <a
                                 href={teamBasePath}
@@ -1193,14 +1206,14 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                                 </a>
                               ) : compName}
                             </td>
-                        <td style={compactTdStyle}>
+                        <td className="hide-mobile" style={compactTdStyle}>
                           {(m as any).period?.sport?.category_name ? (
                             <span style={{ fontSize: '11px' }}>{(m as any).period.sport.category_name}</span>
                           ) : (
                             <span style={{ color: 'var(--app-muted-text)' }}>—</span>
                           )}
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="hide-mobile" style={compactTdStyle}>
                           {(m as any).period?.sport ? (
                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <span>{(m as any).period.sport.sport_icon}</span>
@@ -1230,13 +1243,13 @@ export const MatchesList: React.FC<MatchesListProps> = ({ preselectedOrgId, pres
                               );
                             })()}
                         </td>
-                        <td style={compactTdStyle}>-</td>
+                        <td className="hide-mobile" style={compactTdStyle}>-</td>
                         <td style={compactTdStyle}>
                           <Badge variant={isActive ? 'success' : 'warning'}>
                             {isActive ? 'Active' : 'Inactive'}
                           </Badge>
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="hide-mobile" style={compactTdStyle}>
                           <div style={compactActionsStyle}>
                             <button
                                 onClick={(e) => {
