@@ -592,10 +592,8 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
             if (selectedTeamId) return projectId === String(selectedTeamId);
 
             if (selectedClubId) {
-                if (projectId === String(selectedClubId)) return true;
-                const parentIdRaw = m?.project?.parent_id ?? m?.project?.parent_project_id;
-                const parentId = parentIdRaw === null || parentIdRaw === undefined ? '' : String(parentIdRaw).trim();
-                return parentId === String(selectedClubId);
+                // Club page: only show the club-level role (1 role), not team roles under it
+                return projectId === String(selectedClubId);
             }
 
             return true;
