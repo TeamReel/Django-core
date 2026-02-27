@@ -234,6 +234,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   // Edit member functional roles state
   const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
   const [selectedEditMember, setSelectedEditMember] = useState<any | null>(null);
+  const [editAccessRole, setEditAccessRole] = useState<'admin' | 'viewer'>('viewer');
 
   // Brand profile ID for Kits tab
   const [brandProfileId, setBrandProfileId] = useState<string | null>(null);
@@ -1032,6 +1033,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     if (['manager', 'owner'].includes(role)) return 'admin';
     return 'viewer';
   };
+
+  /** Map membership role + project level → RBAC display label */
+  const getRbacLabel = (membershipRole: string): string => {
+    const role = normalizeAccessRole(membershipRole);
+    if (role === 'admin') return isTeamRoute ? 'Team Admin' : 'Club Admin';
+    return isTeamRoute ? 'Team Member' : 'Supporter';
+  };
+
+  /** Access role options for the current project level */
+  const accessRoleOptions: Array<{ value: 'admin' | 'viewer'; label: string; description: string; icon: string }> = isTeamRoute
+    ? [
+        { value: 'admin', label: 'Team Admin', description: 'Volledige toegang: wedstrijden, content, lineups, profielen', icon: '🛡️' },
+        { value: 'viewer', label: 'Team Member', description: 'Beperkt: eigen content & profiel bewerken, rest alleen bekijken', icon: '👤' },
+      ]
+    : [
+        { value: 'admin', label: 'Club Admin', description: 'Volledige toegang: club, teams, wedstrijden, content', icon: '🏛️' },
+        { value: 'viewer', label: 'Supporter', description: 'Alleen-lezen: wedstrijden bekijken', icon: '👀' },
+      ];
 
   const getBestRoleForUser = (userId: string): 'viewer' | 'editor' | 'admin' => {
     const relevant = teamRoster.filter((m: any) => getUserId(m) === String(userId));
@@ -2849,6 +2868,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                                   const email = memberUser.email || '—';
                                   const role = normalizeAccessRole(m.role || 'viewer');
+                                  const rbacLabel = getRbacLabel(m.role || 'viewer');
                                   const functionalRoles = getFunctionalRolesFromMembership(m);
                                   const position = m.metadata?.position || '—';
                                   const shirtNumber = m.metadata?.shirt_number ?? '';
@@ -2885,7 +2905,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       <td style={compactTextTdStyle}>{email}</td>
                                       <td style={compactTdStyle}>
                                         <Badge variant={role === 'admin' ? 'warning' : 'default'}>
-                                          {role}
+                                          {rbacLabel}
                                         </Badge>
                                       </td>
                                       <td style={compactTdStyle}>
@@ -2912,6 +2932,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             onClick={() => {
                                               if (!membershipId) return;
                                               setSelectedEditMember(m);
+                                              setEditAccessRole(normalizeAccessRole(m.role || 'viewer') === 'admin' ? 'admin' : 'viewer');
                                               setIsEditMemberModalOpen(true);
                                             }}
                                             style={tableActionButtonStyle('primary')}
@@ -2994,7 +3015,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       <td style={compactTextTdStyle}>{email}</td>
                                       <td style={compactTdStyle}>
                                         <Badge variant={role === 'admin' ? 'warning' : 'default'}>
-                                          {role}
+                                          {getRbacLabel(m.role || 'viewer')}
                                         </Badge>
                                       </td>
                                       <td style={compactTdStyle}>
@@ -3131,7 +3152,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       <td style={compactTextTdStyle}>{name}</td>
                                       <td style={compactTextTdStyle}>{email}</td>
                                       <td style={compactTdStyle}>
-                                        <Badge variant="default">{role}</Badge>
+                                        <Badge variant={role === 'admin' ? 'warning' : 'default'}>{getRbacLabel(role)}</Badge>
                                       </td>
                                       <td style={compactTdStyle}>
                                         {functionalRoles.length ? (
@@ -4170,6 +4191,51 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Access Role Section */}
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', marginBottom: '12px', fontWeight: 600, color: '#f1f5f9' }}>
+                  🔐 Access Role
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {accessRoleOptions.map((opt) => {
+                    const isSelected = editAccessRole === opt.value;
+                    return (
+                      <label
+                        key={opt.value}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '14px 16px',
+                          border: isSelected ? '2px solid #3b82f6' : '1px solid #475569',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          backgroundColor: isSelected ? '#1e3a5f' : '#334155',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="accessRole"
+                          value={opt.value}
+                          checked={isSelected}
+                          onChange={() => setEditAccessRole(opt.value)}
+                          style={{ cursor: 'pointer', accentColor: '#3b82f6' }}
+                        />
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#f1f5f9', fontSize: '14px' }}>
+                            {opt.icon} {opt.label}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+                            {opt.description}
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div style={{ marginBottom: '24px' }}>
                 <label style={{ display: 'block', marginBottom: '12px', fontWeight: 600, color: '#f1f5f9' }}>
                   Functional Roles
@@ -4292,6 +4358,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           },
                           credentials: 'include',
                           body: JSON.stringify({
+                            role: editAccessRole,
                             metadata: {
                               ...((selectedEditMember as any)?.metadata || {}),
                               functional_roles: functionalRoles,
@@ -4313,7 +4380,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       setMembers((prev) =>
                         prev.map((m: any) =>
                           String(m.id || '').trim() === membershipId
-                            ? { ...m, functional_roles: functionalRoles }
+                            ? { ...m, role: editAccessRole, functional_roles: functionalRoles }
                             : m
                         )
                       );

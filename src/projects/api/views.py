@@ -1090,6 +1090,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
 
         self._check_can_manage_members(instance.project)
 
+        old_role = instance.role  # capture before mutation
         new_role = serializer.validated_data.get("role")
         # metadata is a read-only SerializerMethodField, so it won't appear in
         # validated_data.  Read it directly from the request payload instead.
@@ -1147,6 +1148,22 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
 
         if getattr(instance, "_prefetched_objects_cache", None):
             instance._prefetched_objects_cache = {}
+
+        # Sync RBAC RoleAssignment when the membership role changed
+        if new_role and new_role != old_role:
+            try:
+                from permissions.sync import sync_rbac_for_membership
+
+                sync_rbac_for_membership(
+                    user_id=instance.user_id,
+                    project_id=instance.project_id,
+                    membership_role=instance.role,
+                    actor=request.user,
+                )
+            except Exception:
+                import logging
+
+                logging.getLogger(__name__).exception("RBAC sync failed (non-fatal)")
 
         # Re-serialize to reflect any changes applied above.
         return Response(self.get_serializer(instance).data)
