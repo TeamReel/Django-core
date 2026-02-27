@@ -251,7 +251,7 @@ def _draw_sponsor_bar(canvas: Image.Image, data: MatchFlyerData) -> Image.Image:
     sponsor_img = _download_image(data.sponsor_url)
     if sponsor_img:
         sponsor_img = _clean_logo(sponsor_img)
-        sponsor_img.thumbnail((200, 65), Image.Resampling.LANCZOS)
+        sponsor_img.thumbnail((320, 100), Image.Resampling.LANCZOS)
         cx = WIDTH // 2
         # Semi-transparent pill background
         pill_w = sponsor_img.width + 30
@@ -544,6 +544,16 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     # -- Canvas with dark brand background --
     canvas = Image.new("RGB", (WIDTH, HEIGHT), darker_primary)
 
+    # -- Optional background image behind the action photo --
+    if data.field_background_url:
+        bg_img = _download_image(data.field_background_url)
+        if bg_img:
+            bg_img = bg_img.convert("RGB").resize((WIDTH, photo_zone_h), Image.Resampling.LANCZOS)
+            # Blend with canvas colour so the photo still pops
+            color_layer = Image.new("RGB", (WIDTH, photo_zone_h), darker_primary)
+            bg_img = Image.blend(bg_img, color_layer, alpha=0.45)
+            canvas.paste(bg_img, (0, PHOTO_TOP))
+
     # -- Load hero action photo --
     hero_img: Image.Image | None = None
     if data.action_photo_urls:
@@ -667,16 +677,20 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     cx = WIDTH // 2
     home_club, home_team, away_club, away_team = _resolve_display_names(data)
 
-    y_cursor = info_top + 30
+    # -- Side-by-side layout: HOME  VS  AWAY --
+    left_cx = WIDTH // 4  # center of left half
+    right_cx = WIDTH * 3 // 4  # center of right half
 
-    club_font = _get_font(50, bold=True)
-    sub_font = _get_font(22, bold=False)
+    club_font = _get_font(38, bold=True)
+    sub_font = _get_font(18, bold=False)
 
-    # Home club + team
-    y_cursor = _draw_team_block(
+    row_top = info_top + 25
+
+    # Home club + team (left side)
+    _draw_team_block(
         draw,
-        cx,
-        y_cursor,
+        left_cx,
+        row_top,
         home_club,
         home_team,
         club_font,
@@ -684,43 +698,43 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
         fill=(255, 255, 255),
     )
 
-    # VS badge
-    vs_font = _get_font(34, bold=True)
-    vs_badge = Image.new("RGBA", (90, 48), (*primary_rgb, 220))
+    # VS badge (center)
+    vs_font = _get_font(30, bold=True)
+    vs_y = row_top + 10
+    vs_badge = Image.new("RGBA", (70, 40), (*primary_rgb, 220))
     vs_badge_draw = ImageDraw.Draw(vs_badge)
-    vs_badge_draw.rectangle([(0, 0), (90, 48)], fill=(*primary_rgb, 220))
+    vs_badge_draw.rectangle([(0, 0), (70, 40)], fill=(*primary_rgb, 220))
     canvas_rgba = canvas.convert("RGBA")
-    canvas_rgba.paste(vs_badge, (cx - 45, y_cursor - 16), vs_badge)
+    canvas_rgba.paste(vs_badge, (cx - 35, vs_y - 8), vs_badge)
     canvas = canvas_rgba.convert("RGB")
     draw = ImageDraw.Draw(canvas)
-    _draw_centered(draw, "VS", cx, y_cursor + 4, vs_font, fill=(*secondary_rgb,))
-    y_cursor += 50
+    _draw_centered(draw, "VS", cx, vs_y + 8, vs_font, fill=(*secondary_rgb,))
 
-    # Away club + team
-    y_cursor = _draw_team_block(
+    # Away club + team (right side)
+    _draw_team_block(
         draw,
-        cx,
-        y_cursor,
+        right_cx,
+        row_top,
         away_club,
         away_team,
         club_font,
         sub_font,
         fill=(255, 255, 255),
     )
-    y_cursor += 10
 
-    # Accent line
-    line_w = 140
+    # Accent line below clubs row
+    y_cursor = row_top + 110
+    line_w = 200
     draw.rectangle(
         [(cx - line_w // 2, y_cursor), (cx + line_w // 2, y_cursor + 3)], fill=(*primary_rgb,)
     )
-    y_cursor += 25
+    y_cursor += 30
 
     # Date / time
     if data.match_date:
         date_str = data.match_date
         if data.kickoff_time:
-            date_str += f"  •  {data.kickoff_time}"
+            date_str += f"  \u2022  {data.kickoff_time}"
         date_font = _get_font(38, bold=True)
         _draw_centered(draw, date_str, cx, y_cursor, date_font, fill=(255, 255, 255))
         y_cursor += 50
@@ -728,7 +742,9 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     # Venue
     if data.venue:
         venue_font = _get_font(24, bold=False)
-        _draw_centered(draw, f"📍 {data.venue}", cx, y_cursor, venue_font, fill=(200, 200, 200))
+        _draw_centered(
+            draw, f"\U0001f4cd {data.venue}", cx, y_cursor, venue_font, fill=(200, 200, 200)
+        )
         y_cursor += 40
 
     # Competition
@@ -980,6 +996,7 @@ def build_match_flyer(
     variant: str = "modern",
     member_id: str | None = None,
     style_variant: str | None = None,
+    background_url: str | None = None,
 ) -> str:
     """High-level entry point: gather data from DB, resolve brand, generate.
 
@@ -1099,7 +1116,7 @@ def build_match_flyer(
 
     logo_url = _resolve_asset_url(["logo"], skip_team=True)
     sponsor_url = _resolve_asset_url(["sponsor_logo"])
-    field_background_url = _resolve_asset_url(["stadium_background"])
+    field_background_url = background_url or _resolve_asset_url(["stadium_background"])
 
     # Opponent logo
     opponent_logo_url: str | None = None

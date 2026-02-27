@@ -1107,6 +1107,9 @@ export default function ContentGenerationModal({
             member_id: flyerMemberId,
             style_variant: flyerActionStyle,
           } : {}),
+          ...(matchFlyerVariant === 'action' && selectedBackgroundUrl ? {
+            background_url: selectedBackgroundUrl,
+          } : {}),
         }),
       });
 
@@ -3267,6 +3270,127 @@ export default function ContentGenerationModal({
                         {flyerMemberId && selectedMemberStyles.length === 0 && (
                           <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 8 }}>
                             ⚠️ Deze speler heeft nog geen bewerkte actiefoto's
+                          </div>
+                        )}
+
+                        {/* Background selector for action flyer */}
+                        {appBackgrounds.length > 0 && (
+                          <div style={{ marginTop: 16 }}>
+                            <label style={{
+                              display: 'block',
+                              fontSize: 11,
+                              fontWeight: 600,
+                              marginBottom: 8,
+                              color: 'var(--vscode-descriptionForeground, #888)',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                            }}>Achtergrond</label>
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
+                              gap: 6,
+                            }}>
+                              {/* Default — no custom background */}
+                              <button
+                                onClick={() => setSelectedBackgroundUrl(null)}
+                                style={{
+                                  position: 'relative',
+                                  border: !selectedBackgroundUrl
+                                    ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                    : '1px solid var(--vscode-widget-border, #444)',
+                                  borderRadius: 6,
+                                  overflow: 'hidden',
+                                  cursor: 'pointer',
+                                  padding: 0,
+                                  background: !selectedBackgroundUrl
+                                    ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                                    : 'var(--vscode-editor-background, #1e1e1e)',
+                                }}
+                              >
+                                <div style={{
+                                  width: '100%',
+                                  aspectRatio: '9/16',
+                                  background: 'linear-gradient(to bottom, #16a34a, #14532d)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}>
+                                  <span style={{ fontSize: 18 }}>⚽</span>
+                                </div>
+                                <div style={{
+                                  padding: '2px 0',
+                                  textAlign: 'center',
+                                  fontWeight: 600,
+                                  fontSize: 9,
+                                  color: !selectedBackgroundUrl ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                                  background: !selectedBackgroundUrl
+                                    ? 'var(--vscode-focusBorder, #007fd4)'
+                                    : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                                }}>Standaard</div>
+                                {!selectedBackgroundUrl && (
+                                  <div style={{
+                                    position: 'absolute', top: 2, right: 2,
+                                    width: 14, height: 14, borderRadius: '50%',
+                                    background: '#10b981', display: 'flex',
+                                    alignItems: 'center', justifyContent: 'center',
+                                    fontSize: 8, color: '#fff', fontWeight: 700,
+                                  }}>✓</div>
+                                )}
+                              </button>
+
+                              {appBackgrounds.map((bg) => {
+                                const isSelected = selectedBackgroundUrl === bg.url;
+                                return (
+                                  <button
+                                    key={bg.id}
+                                    onClick={() => setSelectedBackgroundUrl(bg.url)}
+                                    style={{
+                                      position: 'relative',
+                                      border: isSelected
+                                        ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                        : '1px solid var(--vscode-widget-border, #444)',
+                                      borderRadius: 6,
+                                      overflow: 'hidden',
+                                      cursor: 'pointer',
+                                      padding: 0,
+                                      background: isSelected
+                                        ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                                        : 'var(--vscode-editor-background, #1e1e1e)',
+                                    }}
+                                  >
+                                    <div style={{
+                                      width: '100%',
+                                      aspectRatio: '9/16',
+                                      background: `url(${bg.url}) center/cover`,
+                                    }} />
+                                    <div style={{
+                                      padding: '2px 0',
+                                      textAlign: 'center',
+                                      fontWeight: 600,
+                                      fontSize: 9,
+                                      color: isSelected ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                                      background: isSelected
+                                        ? 'var(--vscode-focusBorder, #007fd4)'
+                                        : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                    }}>
+                                      {bg.label || bg.profile_name || 'Locatie'}
+                                    </div>
+                                    {isSelected && (
+                                      <div style={{
+                                        position: 'absolute', top: 2, right: 2,
+                                        width: 14, height: 14, borderRadius: '50%',
+                                        background: '#10b981', display: 'flex',
+                                        alignItems: 'center', justifyContent: 'center',
+                                        fontSize: 8, color: '#fff', fontWeight: 700,
+                                      }}>✓</div>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
                         )}
                       </div>
