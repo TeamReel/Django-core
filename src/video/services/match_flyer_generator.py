@@ -250,28 +250,22 @@ def _render_header_bar(canvas: Image.Image, data: MatchFlyerData) -> Image.Image
 
 
 def _draw_sponsor_bar(canvas: Image.Image, data: MatchFlyerData) -> Image.Image:
-    """Draw sponsor logo at bottom-left corner of the flyer."""
+    """Overlay sponsor logo at bottom-left of the flyer (no background)."""
     sponsor_img = _download_image(data.sponsor_url)
     if sponsor_img:
         sponsor_img = _clean_logo(sponsor_img)
-        sponsor_img.thumbnail((220, 70), Image.Resampling.LANCZOS)
-        # Semi-transparent pill background — bottom left
-        pill_w = sponsor_img.width + 24
-        pill_h = sponsor_img.height + 14
-        margin = 20
-        pill_x = margin
-        pill_y = HEIGHT - 90 - pill_h // 2
-        pill = Image.new("RGBA", (pill_w, pill_h), (255, 255, 255, 180))
+        sponsor_img.thumbnail((200, 60), Image.Resampling.LANCZOS)
+        # Paste directly — no pill background, just the logo with alpha
+        margin = 24
+        sx = margin
+        sy = HEIGHT - margin - sponsor_img.height
         canvas_rgba = canvas.convert("RGBA")
-        canvas_rgba.paste(pill, (pill_x, pill_y), pill)
-        canvas = canvas_rgba.convert("RGB")
-        sx = pill_x + (pill_w - sponsor_img.width) // 2
-        sy = pill_y + (pill_h - sponsor_img.height) // 2
-        canvas.paste(
+        canvas_rgba.paste(
             sponsor_img.convert("RGBA"),
             (sx, sy),
             sponsor_img.convert("RGBA"),
         )
+        canvas = canvas_rgba.convert("RGB")
     return canvas
 
 
@@ -539,9 +533,8 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
 
     BAND_H = 40  # height of each gradient band
     INFO_H = 360  # height of the info panel
-    SPONSOR_H = 120  # reserved for sponsor bar at bottom
     PHOTO_TOP = HEADER_HEIGHT + BAND_H
-    PHOTO_BOTTOM = HEIGHT - BAND_H - INFO_H - SPONSOR_H
+    PHOTO_BOTTOM = HEIGHT - BAND_H - INFO_H
     photo_zone_h = PHOTO_BOTTOM - PHOTO_TOP
 
     # -- Canvas with dark brand background --
