@@ -3621,8 +3621,8 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
 
     # Action photo uses composite key: {kit_type}_{style_variant} (e.g. home_dribbling)
     if job.template_id == "member_action_photo":
-        style_match = re.search(r"style_variant-([a-z][a-z_]*)", source_str)
-        style_variant = style_match.group(1).strip("_") if style_match else None
+        style_match = re.search(r"style_variant-([a-z]+(?:_[a-z]{2,})*)", source_str)
+        style_variant = style_match.group(1) if style_match else None
         if style_variant:
             kit_type = f"{kit_type}_{style_variant}"
 
@@ -3755,9 +3755,9 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
             # Also parse style_variant from filename for per-variant keying
             # e.g. "then_vs_now_transformation_kit_type-home_style_variant-snap_..." → "transformation_snap"
             source_str = filename or storage_path or ""
-            style_match = re.search(r"style_variant-([a-z][a-z_]*)", source_str)
+            style_match = re.search(r"style_variant-([a-z]+(?:_[a-z]{2,})*)", source_str)
             if style_match:
-                style_variant = style_match.group(1).strip("_")
+                style_variant = style_match.group(1)
                 composite_key = f"{base_key}_{style_variant}"
             else:
                 composite_key = base_key
@@ -3769,10 +3769,10 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
             # Pattern: member_intro_kit_type-{kit}_style_variant-{style}_{hash}_{idx}.mp4
             source_str = filename or storage_path or ""
             kit_match = re.search(r"kit_type-([a-zA-Z0-9]+)", source_str)
-            style_match = re.search(r"style_variant-([a-z][a-z_]*)", source_str)
+            style_match = re.search(r"style_variant-([a-z]+(?:_[a-z]{2,})*)", source_str)
 
             kit_type = kit_match.group(1) if kit_match else "home"
-            style_variant = style_match.group(1).strip("_") if style_match else None
+            style_variant = style_match.group(1) if style_match else None
 
             composite_key = f"{kit_type}_{style_variant}" if style_variant else kit_type
 
