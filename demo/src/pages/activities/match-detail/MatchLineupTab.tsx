@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from '@django-core/design-system';
-import { FORMATION_LAYOUTS } from '../../identity/ContentGenerationModal';
+import { FormationPicker, FORMATION_LAYOUTS } from '../../identity/content-generation';
 
 interface MatchLineupTabProps {
   lineupFormation: string;
@@ -58,126 +58,11 @@ export default function MatchLineupTab({
           }}
         >
           {/* Formation picker */}
-          <div>
-            <label
-              style={{
-                display: 'block',
-                fontSize: 12,
-                fontWeight: 600,
-                marginBottom: 10,
-                color: 'var(--app-text-secondary, #999)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-              }}
-            >
-              Formatie
-            </label>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                gap: 8,
-              }}
-            >
-              {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
-                const isSelected = lineupFormation === code;
-                return (
-                  <button
-                    key={code}
-                    onClick={() => setLineupFormation(code)}
-                    style={{
-                      border: isSelected
-                        ? '2px solid #16a34a'
-                        : '1px solid var(--app-border, #333)',
-                      borderRadius: 8,
-                      cursor: 'pointer',
-                      padding: 0,
-                      background: isSelected
-                        ? 'rgba(22,163,74,0.1)'
-                        : 'var(--app-surface, #1e1e1e)',
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    {/* Mini field preview */}
-                    <div
-                      style={{
-                        position: 'relative',
-                        width: '100%',
-                        aspectRatio: '3/4',
-                        background: isSelected
-                          ? 'linear-gradient(to bottom, #16a34a, #15803d)'
-                          : 'linear-gradient(to bottom, #166534, #14532d)',
-                        borderRadius: '7px 7px 0 0',
-                      }}
-                    >
-                      <div
-                        style={{
-                          position: 'absolute',
-                          left: 8,
-                          right: 8,
-                          top: '15%',
-                          height: 1,
-                          background: 'rgba(255,255,255,0.25)',
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: 'absolute',
-                          left: 8,
-                          right: 8,
-                          top: '50%',
-                          height: 1,
-                          background: 'rgba(255,255,255,0.25)',
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: 'absolute',
-                          left: '50%',
-                          top: '50%',
-                          width: 20,
-                          height: 20,
-                          transform: 'translate(-50%, -50%)',
-                          border: '1px solid rgba(255,255,255,0.25)',
-                          borderRadius: '50%',
-                        }}
-                      />
-                      {layout.positions.map((pos) => (
-                        <div
-                          key={pos.slot}
-                          style={{
-                            position: 'absolute',
-                            left: `${pos.x}%`,
-                            top: `${pos.y}%`,
-                            width: 6,
-                            height: 6,
-                            borderRadius: '50%',
-                            background: isSelected
-                              ? '#fff'
-                              : 'rgba(255,255,255,0.5)',
-                            transform: 'translate(-50%, -50%)',
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <div
-                      style={{
-                        padding: '6px 4px',
-                        textAlign: 'center',
-                        fontSize: 12,
-                        fontWeight: isSelected ? 700 : 500,
-                        color: isSelected
-                          ? '#16a34a'
-                          : 'var(--app-text, #ccc)',
-                      }}
-                    >
-                      {code}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <FormationPicker
+            selectedFormation={lineupFormation}
+            onSelectFormation={setLineupFormation}
+            label="Formatie"
+          />
 
           {/* Field visualization */}
           {lineupSquadLoading ? (
