@@ -4264,8 +4264,18 @@ export default function ProjectSeasonMemberDetailPage() {
               };
               setVideoVariants(newVariants);
 
-              const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVariants);
-              await handleMetadataUpdate(updatedMeta, saveMembershipId);
+              // Don't manually update metadata here — backend propagation handles it
+              // Just refresh the membership to pick up the propagated changes
+              try {
+                const memberRes = await fetch(
+                  `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project?.id || '')}/members/${encodeURIComponent(saveMembershipId)}/`,
+                  { credentials: 'include' }
+                );
+                if (memberRes.ok) {
+                  const json = await memberRes.json();
+                  setMembership(json?.data || json);
+                }
+              } catch { /* best-effort refresh */ }
             } else if (assetType.startsWith('walking_composite')) {
               // Walking composite: far image, near image, or walking video
               // far → walking_composite.far, near → walking_composite.near, video → walking_composite.default
