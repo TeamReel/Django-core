@@ -379,39 +379,177 @@ Op de match-pagina, een enkele **"Generate All"** knop die alle standaard conten
 
 ---
 
-## 8. Open vragen
+## 8. Open vragen — Beantwoord
 
 ### Product / Strategie
 
-1. **Wie is de primaire gebruiker op mobiel?** De coach die matchday content aanmaakt, of de speler die content bekijkt/deelt? Dit bepaalt de hele mobile-first prioriteit.
+**1. Wie is de primaire gebruiker op mobiel?**
+> **Antwoord:** De coach / team-beheerder die content maakt. Doordeweeks wordt meer op desktop gewerkt (beheer, uploads, settings). Maar matchday content (goal updates, lineup video's, score updates) wordt **op mobiel** gemaakt — live tijdens de wedstrijd.
+>
+> **Implicatie:** Mobiele UX moet geoptimaliseerd zijn voor snelheid en één-hand-bediening. Grote knoppen, minimal taps, vooraf ingevulde data. De "Generate All" en readiness-score features zijn daarom extra belangrijk.
 
-2. **Moet de app een PWA worden (installeerbaar)?** Dit unlockt push-notificaties, offline support, en homescreen-icoon. Relatief weinig extra werk.
+**2. Moet de app een PWA worden?**
+> **Antwoord:** Nee, het blijft een webapplicatie.
+>
+> **Implicatie:** Geen service worker / offline-first. Focus op responsive mobile web. Push-notificaties lopen via e-mail + in-app, niet via browser push.
 
-3. **Wat is de monetization-impact van gamification?** Moeten streaks/badges gratis zijn, of zijn sommige features premium (bijv. leaderboard alleen voor betaalde clubs)?
+**3. Wat is de monetization-impact van gamification?**
+> **Antwoord:** Het model is credits-based. Verschillende credit-packages (bijv. starter/pro/premium), en per content-type betaal je credits afhankelijk van de kosten (video duurder dan image). Gamification is gratis — het drijft credits-verbruik aan.
+>
+> **Implicatie:** Streaks en readiness-scores stimuleren meer content-generatie → meer credits-verbruik → meer revenue. Gamification is een retention-driver, niet een revenue-feature. Zie ook **B36 (Payment Gateway Adapters)** in de roadmap voor Stripe/PayPal integratie.
 
-4. **Hoe belangrijk is de speler-ervaring?** Spelers hebben nu de minste features — maar zijn potentieel de grootste viral-growth driver. Hoeveel willen we investeren in "My Wall"?
+**4. Hoe belangrijk is de speler-ervaring?**
+> **Antwoord:** Spelers zijn vooral "assets" in de content (hun foto's, data). Het hoeft niet per speler bijgehouden te worden. Focus op team/club-niveau.
+>
+> **Implicatie:** "My Wall" voor spelers is low priority. Gamification (streaks, leaderboard, badges) moet op **team/club-niveau** zitten, niet per individuele speler. De speler-rol in de app kan minimaal blijven.
 
-5. **Moeten we Instagram/TikTok API-integratie bouwen?** Of is clipboard/Web Share API genoeg? API-integratie is complex maar geeft betere metrics.
+**5. Moeten we Instagram/TikTok API-integratie bouwen?**
+> **Antwoord:** Ja, komt later. Zie geplande modules.
+>
+> **Relevante planned modules:**
+> - **B54 (Social Media Publishing)** — Direct publishing naar Instagram, TikTok, X, Facebook, YouTube. OAuth-flow, platform-adapters, scheduling integratie.
+> - **B59 (Multi-Format Export)** — Platform-specifieke export formats (Stories 9:16, Feed 1:1, Reels, etc.). Smart cropping, batch export.
+> - **B50 (Scheduled Publishing)** — Inplannen op optimale tijden.
+>
+> **Conclusie:** De share-functionaliteit voor nu = Web Share API / clipboard. De echte integratie komt via B54.
 
 ### Technisch
 
-6. **Readiness Score: client-side of server-side?** Client-side is sneller te bouwen, server-side is schaalbaarder en kan in notificaties/digests gebruikt worden.
+**6. Readiness Score: client-side of server-side?**
+> **Antwoord:** We hebben al een server via Railway — wat is het verschil?
+>
+> **Uitleg:** Client-side = de frontend berekent de score door de content-items te tellen die je al hebt. Voordeel: snel te bouwen, geen API-wijziging. Nadeel: kan niet in push-notificaties of weekly digests gebruikt worden.
+>
+> Server-side = een Django endpoint `/api/v1/matches/{id}/readiness/` berekent de score. Voordeel: herbruikbaar voor notificaties, digests, leaderboards.
+>
+> **Aanbeveling:** Start client-side (snelst te bouwen), migreer later naar server-side wanneer B56 (Match Calendar) en notificatie-triggers nodig zijn.
 
-7. **Streak data: waar opslaan?** Nieuw model in backend (`TeamStreak`), of berekend op basis van bestaande content/match data?
+**7. Streak data: waar opslaan?**
+> **Antwoord:** Ja, misschien een extra module in planned.
+>
+> **Voorstel nieuwe module:** `B60 – Gamification Engine` (Phase 14/15):
+> - `TeamStreak` model: team FK, current_streak, longest_streak, last_match_date
+> - `MatchReadiness` model: match FK, score (0-100), content_types_completed (JSON)
+> - `ClubLeaderboard` aggregatie: per seizoen, auto-update bij content-creatie
+> - `Achievement` model: badge definitions + user/team unlock tracking
+> - API: `/api/v1/gamification/streaks/`, `/api/v1/gamification/leaderboard/`, `/api/v1/gamification/achievements/`
+> - Integraties: B39 (activities), B34 (generation), B17 (notifications), B11 (credits)
 
-8. **Performance budget:** Wat is het target voor Time-to-Interactive op mobiel? Huidige staat niet gemeten — moeten we Lighthouse targets stellen?
+**8. Performance budget / Lighthouse targets?**
+> **Antwoord:** Is dat best practice? Moet dan extra module komen in planned.
+>
+> **Ja, het is best practice.** Google's Core Web Vitals zijn de standaard:
+> - **LCP** (Largest Contentful Paint): < 2.5s
+> - **FID** (First Input Delay): < 100ms
+> - **CLS** (Cumulative Layout Shift): < 0.1
+> - **TTI** (Time to Interactive): < 3.8s op 4G
+>
+> **Relevante planned module:** **P05 (Stack & Dependency Validation)** raakt hier deels aan. Maar een dedicated **F16 – Performance Monitoring & Budgets** module zou beter zijn:
+> - Lighthouse CI in pipeline
+> - Bundle size budget (< 250KB gzipped)
+> - Performance dashboard in staging
+> - Mobile-specific targets (Moto G4 / Galaxy A-serie)
 
-9. **Component refactor nu of later?** `MatchDetailPage` (3300 regels) en `ContentGenerationModal` (4800 regels) zijn performance-risico's. Refactoren voor gamification-features (om dezelfde bestanden heen) is efficiënter dan erna.
+**9. Component refactor nu of later?**
+> **Antwoord:** Ja, refactoren is beter.
+>
+> **Plan:**
+> - `MatchDetailPage.tsx` (3300 regels) → split in `MatchOverviewTab`, `MatchContentTab`, `MatchLineupTab`, `MatchTransactionsTab`
+> - `ContentGenerationModal.tsx` (4800 regels) → split in `GenerationTypeStep`, `GenerationTemplateStep`, `GenerationMembersStep`, `GenerationConfirmStep`, `GenerationLoadingStep`
+> - Doe dit **vóór** gamification-features implementeren (dezelfde bestanden worden geraakt)
 
-10. **Welke analytics hebben we?** Kunnen we meten welke features daadwerkelijk gebruikt worden? Zonder analytics bouwen we gamification blind.
+**10. Welke analytics hebben we?**
+> **Antwoord:** Kijk in planned — is dat al iets?
+>
+> **Ja! B49 (Feature Usage Analytics)** staat al gepland:
+> - `AnalyticsEvent` model met event_name, properties, user/org/project context
+> - Event categories: page views, features, funnels, engagement
+> - Aggregatie-modellen: DailyFeatureUsage, FunnelConversion, UserEngagement
+> - Privacy-compliant met opt-out support
+>
+> **B49 zou vóór gamification moeten komen** — anders bouwen we features zonder te weten of ze werken. Verplaats B49 naar eerdere fase.
 
 ### Design
 
-11. **Design system uitbreiding nodig?** Voor badges, progress rings, streak flames, leaderboard — moeten deze nieuwe design-system componenten worden?
+**11. Design system uitbreiding nodig?**
+> **Antwoord:** Ja, denk het wel.
+>
+> **Relevante planned modules:**
+> - **F08 (Data Visualization Components)** — Charts, metric cards, dashboard layouts (recharts/Chart.js). Perfect voor readiness rings, streak grafieken, leaderboard bars.
+> - **F15 (Frontend Form Components)** — Geavanceerde form patterns.
+>
+> **Nieuwe componenten nodig voor gamification:**
+> - `ProgressRing` — circulaire readiness score (SVG based)
+> - `StreakBadge` — vuur-icoon met teller
+> - `LeaderboardRow` — ranking bar met team-info + progress
+> - `AchievementCard` — badge unlock met animatie
+> - `ConfettiOverlay` — celebration animatie bij badge-unlock
+>
+> Deze zouden in het bestaande design system pakket (`@django-core/design-system`) passen.
 
-12. **Donkere modus:** Werken alle gamification-elementen in zowel light als dark theme?
+**12. Donkere modus?**
+> **Antwoord:** Moet wel werken in dark mode.
+>
+> **Impact:** Alle gamification-componenten moeten CSS variables gebruiken (`var(--app-text)`, `var(--app-surface)`, etc.) — hetzelfde patroon als de rest van de app. Geen hardcoded kleuren. De progress rings, streak flames, en badges moeten in beide themes getest worden.
 
-13. **Animatie-library:** Framer Motion, CSS transitions, of Lottie voor de unlock-animaties?
+**13. Animatie-library?**
+> **Antwoord:** Best practice toepassen.
+>
+> **Bestaande basis:** Het design system (F05) gebruikt al CSS transitions (250ms fade) met `prefers-reduced-motion` respect. Dit is de juiste foundation.
+>
+> **Aanbeveling per use case:**
+>
+> | Use case | Technologie | Waarom |
+> |----------|------------|--------|
+> | Page transitions | CSS `@view-transition` of Framer Motion `AnimatePresence` | Natief, geen extra bundle |
+> | Micro-interacties (favorite, tap) | CSS `@keyframes` + `transition` | Simpel, performant, al in codebase |
+> | Badge unlock / confetti | **Lottie** (via `lottie-web`, ~50KB) | Complexe animaties, designer-friendly |
+> | Progress ring animatie | SVG `stroke-dashoffset` + CSS transition | Lightweight, geen library nodig |
+> | Skeleton loading | CSS `@keyframes shimmer` | Al best practice, geen dependency |
+>
+> **Conclusie:** Geen grote library toevoegen. CSS transitions + SVG voor 90% van de cases. Lottie alleen voor confetti/badge-unlock (laad dit lazy). Respecteer altijd `prefers-reduced-motion`.
+
+---
+
+## 9. Samenvatting besluiten
+
+| Besluit | Keuze |
+|---------|-------|
+| Primaire mobiele gebruiker | Coach / team-beheerder op matchday |
+| PWA | Nee — responsive webapplicatie |
+| Monetization | Credits-based, gamification drijft verbruik |
+| Speler-ervaring | Minimaal — focus op team/club-niveau |
+| Social integratie | Nu: Web Share API. Later: B54 + B59 |
+| Readiness score | Start client-side, later server-side |
+| Streak opslag | Nieuwe module B60 (Gamification Engine) |
+| Performance budget | Lighthouse CI — nieuwe module F16 |
+| Component refactor | Ja, vóór gamification |
+| Analytics | B49 eerder in roadmap plaatsen |
+| Design system | Uitbreiden met ProgressRing, StreakBadge, etc. |
+| Dark mode | Verplicht — CSS variables |
+| Animaties | CSS transitions + SVG + Lottie (lazy) |
+
+## 10. Nieuwe geplande modules (voorstel)
+
+### B60 – Gamification Engine (Phase 14)
+
+| Aspect | Beschrijving |
+|--------|-------------|
+| **Doel** | Team/club-level gamification: streaks, readiness scores, achievements, leaderboards |
+| **Modellen** | `TeamStreak`, `MatchReadiness`, `Achievement`, `AchievementUnlock`, `ClubLeaderboard` |
+| **API** | `/api/v1/gamification/streaks/`, `/leaderboard/`, `/achievements/`, `/readiness/` |
+| **Integraties** | B39 (activities), B34 (generation), B17 (notifications), B11 (credits), B49 (analytics) |
+| **Scope** | Backend + frontend componenten |
+
+### F16 – Performance Monitoring & Budgets (Phase 14)
+
+| Aspect | Beschrijving |
+|--------|-------------|
+| **Doel** | Lighthouse CI, bundle size budgets, Core Web Vitals monitoring |
+| **Targets** | LCP < 2.5s, FID < 100ms, CLS < 0.1, TTI < 3.8s, bundle < 250KB gzip |
+| **Tooling** | Lighthouse CI in GitHub Actions, performance dashboard |
+| **Integraties** | P05 (dependency validation), F10 (operations dashboard) |
+| **Scope** | CI/CD + dashboard |
 
 ---
 
