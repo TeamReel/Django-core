@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -138,6 +138,16 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
 
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
+    // Batch selection
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [batchUpdating, setBatchUpdating] = useState(false);
+    const [batchConfirm, setBatchConfirm] = useState<{
+        action: 'role' | 'assign_team' | 'delete';
+        role?: string;
+        teamId?: string;
+        teamName?: string;
+    } | null>(null);
+
     const userRole = String((user as any)?.role || '').toLowerCase();
     const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
 
@@ -161,6 +171,192 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
             : null;
         // Only use context org when no explicit selection was made
         return selectedOrg?.slug || (!selectedOrgId ? context.organisation?.slug : '') || selectedOrgId;
+    };
+
+    // ── Batch selection helpers ──────────────────────────────────────
+    const handleSelectAll = useCallback(() => {
+        if (selectedIds.size === sortedUsers.length && sortedUsers.length > 0) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(sortedUsers.map((u: any) => String(u.id))));
+        }
+    }, [selectedIds, sortedUsers]);
+
+    const handleSelectOne = useCallback((id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    }, []);
+
+    const allSelected = sortedUsers.length > 0 && sortedUsers.every((u: any) => selectedIds.has(String(u.id)));
+    const someSelected = selectedIds.size > 0;
+
+    // Clear selection when users list changes
+    useEffect(() => {
+        setSelectedIds(new Set());
+    }, [users]);
+
+    // ── Batch action execution ────────────────────────────────────────
+    const getSelectedUsers = () => sortedUsers.filter((u: any) => selectedIds.has(String(u.id)));
+
+    const executeBatchRoleChange = async (newRole: string) => {
+        setBatchUpdating(true);
+        const apiBaseUrl = getApiBaseUrl();
+        const csrfToken = getCsrfToken();
+        const selected = getSelectedUsers();
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const u of selected) {
+            try {
+                if (teamLocked && preselectedTeamId) {
+                    // Team context: PATCH project membership
+                    const pmId = u?.project_membership_id;
+                    if (!pmId) { errorCount++; continue; }
+                    const res = await fetch(
+                        `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${pmId}/`,
+                        {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                            body: JSON.stringify({ role: newRole }),
+                            credentials: 'include',
+                        }
+                    );
+                    if (res.ok) successCount++; else errorCount++;
+                } else {
+                    // Club/org context: PATCH project memberships for each club membership
+                    const memberships = Array.isArray(u?.project_memberships) ? u.project_memberships : [];
+                    const relevantPm = memberships.find((m: any) => {
+                        const projectId = String(m?.project_id ?? m?.project?.id ?? '');
+                        if (selectedClubId) return projectId === String(selectedClubId);
+                        // If no club filter, pick first club-level membership
+                        const parentId = m?.project?.parent_id ?? m?.project?.parent_project_id;
+                        return !parentId;
+                    });
+                    if (relevantPm?.id) {
+                        const projectId = String(relevantPm.project_id ?? relevantPm.project?.id ?? '');
+                        const res = await fetch(
+                            `${apiBaseUrl}/api/v1/projects/${projectId}/members/${relevantPm.id}/`,
+                            {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                                body: JSON.stringify({ role: newRole }),
+                                credentials: 'include',
+                            }
+                        );
+                        if (res.ok) successCount++; else errorCount++;
+                    } else {
+                        errorCount++;
+                    }
+                }
+            } catch {
+                errorCount++;
+            }
+        }
+
+        setBatchUpdating(false);
+        setBatchConfirm(null);
+        setSelectedIds(new Set());
+        if (errorCount > 0) {
+            alert(`${successCount} gewijzigd, ${errorCount} mislukt.`);
+        }
+        setRefreshKey(k => k + 1);
+    };
+
+    const executeBatchAssignTeam = async (targetTeamId: string) => {
+        setBatchUpdating(true);
+        const apiBaseUrl = getApiBaseUrl();
+        const csrfToken = getCsrfToken();
+        const selected = getSelectedUsers();
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const u of selected) {
+            try {
+                // POST to project members to add user to team
+                const userId = u?.id;
+                if (!userId) { errorCount++; continue; }
+                const res = await fetch(
+                    `${apiBaseUrl}/api/v1/projects/${targetTeamId}/members/`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                        body: JSON.stringify({ user_id: Number(userId), role: 'viewer' }),
+                        credentials: 'include',
+                    }
+                );
+                if (res.ok || res.status === 201) successCount++;
+                else if (res.status === 400) {
+                    // Possibly already a member
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            } catch {
+                errorCount++;
+            }
+        }
+
+        setBatchUpdating(false);
+        setBatchConfirm(null);
+        setSelectedIds(new Set());
+        if (errorCount > 0) {
+            alert(`${successCount} toegewezen, ${errorCount} mislukt.`);
+        }
+        setRefreshKey(k => k + 1);
+    };
+
+    const executeBatchDelete = async () => {
+        setBatchUpdating(true);
+        const apiBaseUrl = getApiBaseUrl();
+        const csrfToken = getCsrfToken();
+        const selected = getSelectedUsers();
+        const orgSlug = getSelectedOrgSlug();
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const u of selected) {
+            try {
+                if (teamLocked && preselectedTeamId) {
+                    const pmId = u?.project_membership_id;
+                    if (!pmId) { errorCount++; continue; }
+                    const res = await fetch(
+                        `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${pmId}/`,
+                        {
+                            method: 'DELETE',
+                            headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                            credentials: 'include',
+                        }
+                    );
+                    if (res.ok || res.status === 204) successCount++; else errorCount++;
+                } else {
+                    const membershipId = u?.membership?.id;
+                    if (!membershipId || !orgSlug) { errorCount++; continue; }
+                    const res = await fetch(
+                        `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/${membershipId}/`,
+                        {
+                            method: 'DELETE',
+                            headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                            credentials: 'include',
+                        }
+                    );
+                    if (res.ok || res.status === 204) successCount++; else errorCount++;
+                }
+            } catch {
+                errorCount++;
+            }
+        }
+
+        setBatchUpdating(false);
+        setBatchConfirm(null);
+        setSelectedIds(new Set());
+        if (errorCount > 0) {
+            alert(`${successCount} verwijderd, ${errorCount} mislukt.`);
+        }
+        setRefreshKey(k => k + 1);
     };
 
     const handleEditClick = (u: any) => {
@@ -1113,12 +1309,143 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                 <Alert variant="info">No users found.</Alert>
             )}
 
+            {/* ── Batch Confirmation Modal ─────────────────────────── */}
+            {batchConfirm && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                }} onClick={() => !batchUpdating && setBatchConfirm(null)}>
+                    <div style={{
+                        background: 'var(--app-surface, #1e1e2e)',
+                        border: '1px solid var(--app-border, #333)',
+                        borderRadius: 8, padding: 24, minWidth: 360, maxWidth: 480,
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                    }} onClick={e => e.stopPropagation()}>
+                        <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>
+                            {batchConfirm.action === 'role' && 'Rol wijzigen'}
+                            {batchConfirm.action === 'assign_team' && 'Toewijzen aan team'}
+                            {batchConfirm.action === 'delete' && 'Members verwijderen'}
+                        </h3>
+                        <p style={{ margin: '0 0 16px', fontSize: 14, color: 'var(--app-muted-text, #aaa)' }}>
+                            {batchConfirm.action === 'role' && (
+                                <>Weet je zeker dat je de rol van <strong>{selectedIds.size}</strong> member(s) wilt wijzigen naar <strong>{batchConfirm.role === 'admin' ? (teamLocked ? 'Team Admin' : 'Club Admin') : (teamLocked ? 'Team Member' : 'Supporter')}</strong>?</>
+                            )}
+                            {batchConfirm.action === 'assign_team' && (
+                                <>Weet je zeker dat je <strong>{selectedIds.size}</strong> member(s) wilt toewijzen aan <strong>{batchConfirm.teamName || 'team'}</strong>?</>
+                            )}
+                            {batchConfirm.action === 'delete' && (
+                                <>Weet je zeker dat je <strong>{selectedIds.size}</strong> member(s) wilt verwijderen? Dit kan niet ongedaan gemaakt worden.</>
+                            )}
+                        </p>
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                            <Button variant="secondary" size="sm" disabled={batchUpdating} onClick={() => setBatchConfirm(null)}>
+                                Annuleren
+                            </Button>
+                            <Button
+                                variant={batchConfirm.action === 'delete' ? 'danger' as any : 'primary'}
+                                size="sm"
+                                disabled={batchUpdating}
+                                onClick={() => {
+                                    if (batchConfirm.action === 'role' && batchConfirm.role) {
+                                        executeBatchRoleChange(batchConfirm.role);
+                                    } else if (batchConfirm.action === 'assign_team' && batchConfirm.teamId) {
+                                        executeBatchAssignTeam(batchConfirm.teamId);
+                                    } else if (batchConfirm.action === 'delete') {
+                                        executeBatchDelete();
+                                    }
+                                }}
+                            >
+                                {batchUpdating ? 'Bezig...' : 'Bevestigen'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {!isLoading && !error && users.length > 0 && (
                 <Card>
+                    {/* ── Batch action toolbar ─────────────────────────── */}
+                    {someSelected && (
+                        <div style={{
+                            display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center',
+                            padding: '8px 12px', marginBottom: 4,
+                            background: 'var(--app-surface-alt, rgba(59,130,246,0.08))',
+                            borderRadius: 6, border: '1px solid var(--app-border, #333)',
+                        }}>
+                            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--app-text, #fff)' }}>
+                                {selectedIds.size} geselecteerd
+                            </span>
+
+                            {/* ── Rol wijzigen ── */}
+                            <Button variant="primary" size="sm" disabled={batchUpdating}
+                                onClick={() => setBatchConfirm({ action: 'role', role: 'admin' })}>
+                                {teamLocked ? '→ Team Admin' : '→ Club Admin'}
+                            </Button>
+                            <Button variant="secondary" size="sm" disabled={batchUpdating}
+                                onClick={() => setBatchConfirm({ action: 'role', role: 'viewer' })}>
+                                {teamLocked ? '→ Team Member' : '→ Supporter'}
+                            </Button>
+
+                            {/* ── Toewijzen aan team (only on club page) ── */}
+                            {clubLocked && !teamLocked && teams.length > 0 && (
+                                <select
+                                    disabled={batchUpdating}
+                                    defaultValue=""
+                                    onChange={(e) => {
+                                        const tid = e.target.value;
+                                        if (!tid) return;
+                                        const t = teams.find(t => String(t.id) === tid);
+                                        setBatchConfirm({ action: 'assign_team', teamId: tid, teamName: t?.name || tid });
+                                        e.target.value = '';
+                                    }}
+                                    style={{
+                                        padding: '4px 8px', fontSize: 13,
+                                        border: '1px solid var(--app-border)',
+                                        borderRadius: 4,
+                                        backgroundColor: 'var(--app-surface)',
+                                        color: 'var(--app-text)',
+                                    }}
+                                >
+                                    <option value="">Toewijzen aan team…</option>
+                                    {teams
+                                        .filter(t => {
+                                            if (selectedClubId) {
+                                                const parent = t.parent_id || (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
+                                                return String(parent) === String(selectedClubId);
+                                            }
+                                            return true;
+                                        })
+                                        .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+                                        .map(t => (
+                                            <option key={t.id} value={t.id}>{t.name}</option>
+                                        ))
+                                    }
+                                </select>
+                            )}
+
+                            {/* ── Verwijderen ── */}
+                            <Button variant="secondary" size="sm" disabled={batchUpdating}
+                                onClick={() => setBatchConfirm({ action: 'delete' })}
+                                style={{ marginLeft: 'auto', color: '#ef4444' }}>
+                                Verwijderen
+                            </Button>
+                        </div>
+                    )}
+
                     <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', maxWidth: '100%' }}>
                         <Table style={compactTableStyle}>
                             <thead>
                                 <tr>
+                                    <th style={{ ...compactThStyle, width: 36, textAlign: 'center', padding: '4px' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={allSelected}
+                                            onChange={handleSelectAll}
+                                            style={{ cursor: 'pointer', accentColor: '#3b82f6' }}
+                                            title={allSelected ? 'Deselecteer alles' : 'Selecteer alles'}
+                                        />
+                                    </th>
                                     {!orgLocked && (
                                       <th style={{ ...compactThStyle, width: '14%' }}>Federation</th>
                                     )}
@@ -1133,7 +1460,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                     <th style={{ ...compactThStyle, width: '10%' }}>Match</th>
                                     <th style={{ ...compactThStyle, width: '8%' }}>Role</th>
                                     <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
-                                    <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
+                                    <th style={{ ...compactThStyle, width: '10%' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1180,7 +1507,15 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                                         const counts = getUserSeasonCompetitionMatchCounts(u);
 
                                     return (
-                                    <tr key={u.id}>
+                                    <tr key={u.id} style={selectedIds.has(String(u.id)) ? { backgroundColor: 'rgba(59,130,246,0.08)' } : undefined}>
+                                        <td style={{ ...compactTdStyle, textAlign: 'center', padding: '4px', width: 36 }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedIds.has(String(u.id))}
+                                                onChange={() => handleSelectOne(String(u.id))}
+                                                style={{ cursor: 'pointer', accentColor: '#3b82f6' }}
+                                            />
+                                        </td>
                                         {!orgLocked && (
                                           <td style={compactTextTdStyle} title={orgName}>
                                               {orgHref && orgName !== '-' ? (
