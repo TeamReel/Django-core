@@ -481,6 +481,7 @@ export default function ContentGenerationModal({
   const [matchFlyerVariant, setMatchFlyerVariant] = useState<'modern' | 'action' | 'stadium'>('modern');
   const [flyerMemberId, setFlyerMemberId] = useState<string | null>(null);
   const [flyerActionStyle, setFlyerActionStyle] = useState<string>('dribbling');
+  const [flyerPhotoLayout, setFlyerPhotoLayout] = useState<'single' | 'triple' | 'hero_duo'>('single');
 
   // Goal celebration options
   const [goalScoreHome, setGoalScoreHome] = useState<number>(0);
@@ -1109,6 +1110,9 @@ export default function ContentGenerationModal({
           } : {}),
           ...(matchFlyerVariant === 'action' && selectedBackgroundUrl ? {
             background_url: selectedBackgroundUrl,
+          } : {}),
+          ...(matchFlyerVariant === 'action' ? {
+            photo_layout: flyerPhotoLayout,
           } : {}),
         }),
       });
@@ -3272,6 +3276,55 @@ export default function ContentGenerationModal({
                             ⚠️ Deze speler heeft nog geen bewerkte actiefoto's
                           </div>
                         )}
+
+                        {/* Photo layout selector */}
+                        <div style={{ marginTop: 16 }}>
+                          <label style={{
+                            display: 'block',
+                            fontSize: 11,
+                            fontWeight: 600,
+                            marginBottom: 8,
+                            color: 'var(--vscode-descriptionForeground, #888)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                          }}>Foto Layout</label>
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            {([
+                              { key: 'single' as const, label: '1 Groot', icon: '🖼️', desc: '1 actiefoto' },
+                              { key: 'triple' as const, label: '3 Naast', icon: '🖼️🖼️🖼️', desc: '3 naast elkaar' },
+                              { key: 'hero_duo' as const, label: '1+2', icon: '🖼️+🖼️', desc: '1 groot + 2 klein' },
+                            ] as const).map((opt) => {
+                              const isActive = flyerPhotoLayout === opt.key;
+                              return (
+                                <button
+                                  key={opt.key}
+                                  onClick={() => setFlyerPhotoLayout(opt.key)}
+                                  style={{
+                                    flex: 1,
+                                    padding: '8px 4px',
+                                    border: isActive
+                                      ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                      : '1px solid var(--vscode-widget-border, #444)',
+                                    borderRadius: 8,
+                                    background: isActive
+                                      ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                                      : 'var(--vscode-input-background, #2a2a3e)',
+                                    color: isActive ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                                    cursor: 'pointer',
+                                    textAlign: 'center',
+                                    fontSize: 11,
+                                    lineHeight: 1.4,
+                                    transition: 'all 0.15s ease',
+                                  }}
+                                >
+                                  <div style={{ fontSize: 16, marginBottom: 2 }}>{opt.icon}</div>
+                                  <div style={{ fontWeight: 700 }}>{opt.label}</div>
+                                  <div style={{ fontSize: 9, opacity: 0.7, marginTop: 2 }}>{opt.desc}</div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
 
                         {/* Background selector for action flyer */}
                         {appBackgrounds.length > 0 && (

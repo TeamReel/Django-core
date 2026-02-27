@@ -54,6 +54,9 @@ class MatchFlyerData:
     # Player action photos (for variant 2 — "action")
     action_photo_urls: list[str] | None = None
 
+    # Photo layout for action variant: single / triple / hero_duo
+    photo_layout: str = "single"
+
     # Club names (parent project) — displayed large, team names shown smaller
     own_club_name: str | None = None
     opponent_club_name: str | None = None
@@ -554,28 +557,73 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
             bg_img = Image.blend(bg_img, color_layer, alpha=0.45)
             canvas.paste(bg_img, (0, PHOTO_TOP))
 
-    # -- Load hero action photo --
-    hero_img: Image.Image | None = None
+    # -- Load action photo(s) --
+    loaded_photos: list[Image.Image] = []
     if data.action_photo_urls:
         for url in data.action_photo_urls:
-            hero_img = _download_image(url)
-            if hero_img:
+            img = _download_image(url)
+            if img:
+                loaded_photos.append(img.convert("RGBA"))
+            if len(loaded_photos) >= 3:
                 break
 
-    if hero_img:
-        hero_img = hero_img.convert("RGBA")
-        # Scale to fit inside the photo zone (contain — no crop, full figure visible)
-        scale = min(WIDTH / hero_img.width, photo_zone_h / hero_img.height)
-        new_w = int(hero_img.width * scale)
-        new_h = int(hero_img.height * scale)
-        hero_img = hero_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-        # Center within the photo zone
-        paste_x = (WIDTH - new_w) // 2
-        paste_y = PHOTO_TOP + (photo_zone_h - new_h) // 2
-        # Alpha composite so transparent bg shows canvas colour underneath
-        canvas_rgba = canvas.convert("RGBA")
-        canvas_rgba.paste(hero_img, (paste_x, paste_y), hero_img)
-        canvas = canvas_rgba.convert("RGB")
+    layout = data.photo_layout or "single"
+
+    def _contain_paste(
+        target: Image.Image,
+        photo: Image.Image,
+        zone_x: int,
+        zone_y: int,
+        zone_w: int,
+        zone_h: int,
+    ) -> Image.Image:
+        """Scale photo to *contain* inside zone and alpha-composite onto target."""
+        scale = min(zone_w / photo.width, zone_h / photo.height)
+        new_w = int(photo.width * scale)
+        new_h = int(photo.height * scale)
+        photo = photo.resize((new_w, new_h), Image.Resampling.LANCZOS)
+        paste_x = zone_x + (zone_w - new_w) // 2
+        paste_y = zone_y + (zone_h - new_h) // 2
+        target_rgba = target.convert("RGBA")
+        target_rgba.paste(photo, (paste_x, paste_y), photo)
+        return target_rgba.convert("RGB")
+
+    if loaded_photos:
+        if layout == "triple" and len(loaded_photos) >= 3:
+            # ── 3 photos side by side ──
+            gap = 12
+            col_w = (WIDTH - gap * 4) // 3  # 3 columns with gaps
+            for i, photo in enumerate(loaded_photos[:3]):
+                col_x = gap + i * (col_w + gap)
+                canvas = _contain_paste(canvas, photo, col_x, PHOTO_TOP, col_w, photo_zone_h)
+
+        elif layout == "hero_duo" and len(loaded_photos) >= 2:
+            # ── 1 large hero (left 60%) + 2 small stacked (right 40%) ──
+            gap = 10
+            hero_w = int(WIDTH * 0.58)
+            side_w = WIDTH - hero_w - gap * 3
+            side_h = (photo_zone_h - gap) // 2
+
+            # Large hero on the left
+            canvas = _contain_paste(canvas, loaded_photos[0], gap, PHOTO_TOP, hero_w, photo_zone_h)
+            # Top-right small
+            canvas = _contain_paste(
+                canvas, loaded_photos[1], hero_w + gap * 2, PHOTO_TOP, side_w, side_h
+            )
+            # Bottom-right small (use 3rd photo if available, else mirror 2nd)
+            third = loaded_photos[2] if len(loaded_photos) >= 3 else loaded_photos[1]
+            canvas = _contain_paste(
+                canvas,
+                third,
+                hero_w + gap * 2,
+                PHOTO_TOP + side_h + gap,
+                side_w,
+                side_h,
+            )
+
+        else:
+            # ── Single hero (default) ──
+            canvas = _contain_paste(canvas, loaded_photos[0], 0, PHOTO_TOP, WIDTH, photo_zone_h)
 
         # Subtle side accents: thin vertical brand-color bars
         accent_w = 6
@@ -997,6 +1045,7 @@ def build_match_flyer(
     member_id: str | None = None,
     style_variant: str | None = None,
     background_url: str | None = None,
+    photo_layout: str = "single",
 ) -> str:
     """High-level entry point: gather data from DB, resolve brand, generate.
 
@@ -1005,6 +1054,8 @@ def build_match_flyer(
         variant: Variant key to generate (modern / action / stadium)
         member_id: Optional membership UUID — use this member's action photo
         style_variant: Optional style (dribbling, ball_at_feet, etc.)
+        background_url: Optional background image URL
+        photo_layout: Photo layout for action variant (single / triple / hero_duo)
 
     Returns:
         Presigned URL to the generated PNG.
@@ -1179,13 +1230,16 @@ def build_match_flyer(
         ProjectMembership = apps.get_model("projects", "ProjectMembership")
 
         if member_id:
-            # Specific member requested — look up their action photo
+            # Specific member requested — look up their action photo(s)
             try:
                 membership = ProjectMembership.objects.get(id=member_id)
                 tr = (membership.metadata or {}).get("teamreel_assets", {})
                 action_imgs = tr.get("images", {}).get("action_photo", {})
 
-                # Find matching photo: try {kit}_{style} keys (e.g. home_dribbling)
+                # Determine how many photos we need for the layout
+                need = 3 if photo_layout in ("triple", "hero_duo") else 1
+
+                # Find matching photo(s): try {kit}_{style} keys (e.g. home_dribbling)
                 for _key, val in action_imgs.items():
                     # If style_variant given, filter to keys containing that style
                     if style_variant and style_variant not in _key:
@@ -1200,7 +1254,26 @@ def build_match_flyer(
                             url = _get_presigned_url(url)
                         if url:
                             action_photo_urls.append(url)
-                            break
+                            if len(action_photo_urls) >= need:
+                                break
+
+                # If we need more photos and have a style filter, retry without filter
+                if len(action_photo_urls) < need and style_variant:
+                    for _key, val in action_imgs.items():
+                        if style_variant in _key:
+                            continue  # already collected
+                        url = None
+                        if isinstance(val, dict):
+                            url = val.get("processed") or val.get("raw")
+                        elif isinstance(val, str):
+                            url = val
+                        if url:
+                            if not url.startswith("http"):
+                                url = _get_presigned_url(url)
+                            if url:
+                                action_photo_urls.append(url)
+                                if len(action_photo_urls) >= need:
+                                    break
             except ProjectMembership.DoesNotExist:
                 logger.warning("build_match_flyer: member_id %s not found", member_id)
         else:
@@ -1241,6 +1314,7 @@ def build_match_flyer(
         brand_primary=brand_primary,
         brand_secondary=brand_secondary,
         action_photo_urls=action_photo_urls or None,
+        photo_layout=photo_layout,
         own_club_name=own_club_name,
         opponent_club_name=opponent_club_name,
     )

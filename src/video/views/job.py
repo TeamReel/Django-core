@@ -1527,6 +1527,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         member_id = request.data.get("member_id")  # Optional: specific member for action photo
         style_variant = request.data.get("style_variant")  # Optional: action photo style
         background_url = request.data.get("background_url")  # Optional: background image URL
+        photo_layout = request.data.get("photo_layout", "single")  # single / triple / hero_duo
 
         # Validate activity exists and user has access
         Activity = apps.get_model("activities", "Activity")
@@ -1550,6 +1551,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 member_id=member_id,
                 style_variant=style_variant,
                 background_url=background_url,
+                photo_layout=photo_layout,
             )
 
             return Response(
